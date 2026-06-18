@@ -32,7 +32,7 @@ Cada `git push` a `main` despliega automáticamente. GitHub Actions corre tests 
 
 ```powershell
 cd c:\dev\DrFlow
-git remote add origin https://github.com/guillermo-c-bmw/drflow-app.git
+git remote add origin https://github.com/guille6720/DrFlow.git
 git push -u origin main
 ```
 
@@ -48,7 +48,7 @@ git push -u origin main
 O por CLI (con el repo ya en GitHub):
 
 ```powershell
-npx vercel git connect https://github.com/guillermo-c-bmw/drflow-app.git
+npx vercel git connect https://github.com/guille6720/DrFlow.git
 ```
 
 ### 3. Variables de entorno (una sola vez)
