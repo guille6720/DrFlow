@@ -20,13 +20,15 @@ export function QaChecklistView({ userId }: Props) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) setChecked(JSON.parse(raw) as Record<string, boolean>);
-    } catch {
-      /* ignore */
-    }
-    setLoaded(true);
+    queueMicrotask(() => {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) setChecked(JSON.parse(raw) as Record<string, boolean>);
+      } catch {
+        /* ignore */
+      }
+      setLoaded(true);
+    });
   }, [storageKey]);
 
   useEffect(() => {
