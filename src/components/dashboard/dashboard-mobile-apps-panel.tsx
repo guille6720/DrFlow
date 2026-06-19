@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AppInstallCard } from "@/components/portal/app-install-card";
+import { SharePatientAppButton } from "@/components/portal/share-patient-app-button";
 import { ExternalLink, Settings, Smartphone } from "lucide-react";
 
 interface DashboardMobileAppsPanelProps {
@@ -32,12 +33,16 @@ export function DashboardMobileAppsPanel({
         </p>
         {portalSlug ? (
           <div className="min-w-0 space-y-3">
+            <SharePatientAppButton
+              slug={portalSlug}
+              clinicName={clinicName ?? "Consultorio"}
+            />
             <Link
-              href={`/portal/${portalSlug}`}
+              href={`/portal/${portalSlug}/instalar`}
               target="_blank"
               className="inline-flex max-w-full items-center gap-2 break-all text-sm font-medium text-blue-700 hover:underline"
             >
-              <span className="truncate">/portal/{portalSlug}</span>
+              <span className="truncate">/portal/{portalSlug}/instalar</span>
               <ExternalLink className="h-4 w-4 shrink-0" />
             </Link>
             <AppInstallCard

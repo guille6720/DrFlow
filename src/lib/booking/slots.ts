@@ -1,15 +1,16 @@
 import {
-  addDays,
   addMinutes,
-  format,
-  getDay,
   isBefore,
   parseISO,
-  setHours,
-  setMinutes,
-  startOfDay,
 } from "date-fns";
-import { es } from "date-fns/locale";
+import {
+  addClinicDays,
+  clinicDayOfWeek,
+  clinicLocalTimeToUtc,
+  DEFAULT_CLINIC_TIMEZONE,
+  formatClinicDateTime,
+  startOfClinicDay,
+} from "@/lib/utils/clinic-timezone";
 
 export interface AvailabilityRule {
   day_of_week: number;
@@ -23,11 +24,6 @@ export interface TimeBlock {
   end_at: string;
 }
 
-function parseTimeOnDate(date: Date, time: string): Date {
-  const [h, m] = time.split(":").map(Number);
-  return setMinutes(setHours(date, h), m ?? 0);
-}
-
 function overlaps(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
   return aStart < bEnd && aEnd > bStart;
 }
@@ -38,6 +34,7 @@ export function generateAvailableSlots(params: {
   blocks: TimeBlock[];
   daysAhead?: number;
   fromDate?: Date;
+  timeZone?: string;
 }): Array<{ start_at: string; end_at: string; label: string }> {
   const {
     rules,
@@ -45,18 +42,20 @@ export function generateAvailableSlots(params: {
     blocks,
     daysAhead = 14,
     fromDate = new Date(),
+    timeZone = DEFAULT_CLINIC_TIMEZONE,
   } = params;
 
   const slots: Array<{ start_at: string; end_at: string; label: string }> = [];
   const now = new Date();
+  const clinicToday = startOfClinicDay(fromDate, timeZone);
 
   for (let d = 0; d < daysAhead; d++) {
-    const day = startOfDay(addDays(fromDate, d));
-    const dayRules = rules.filter((r) => r.day_of_week === getDay(day));
+    const day = addClinicDays(clinicToday, d, timeZone);
+    const dayRules = rules.filter((r) => r.day_of_week === clinicDayOfWeek(day, timeZone));
 
     for (const rule of dayRules) {
-      let cursor = parseTimeOnDate(day, rule.start_time);
-      const dayEnd = parseTimeOnDate(day, rule.end_time);
+      let cursor = clinicLocalTimeToUtc(day, rule.start_time, timeZone);
+      const dayEnd = clinicLocalTimeToUtc(day, rule.end_time, timeZone);
 
       while (addMinutes(cursor, rule.slot_duration) <= dayEnd) {
         const slotEnd = addMinutes(cursor, rule.slot_duration);
@@ -71,11 +70,15 @@ export function generateAvailableSlots(params: {
             );
 
           if (!busy) {
-            const label = format(cursor, "EEE d 'de' MMM · HH:mm 'hs'", { locale: es });
+            const labelRaw = formatClinicDateTime(
+              cursor,
+              "EEE d 'de' MMM · HH:mm 'hs'",
+              timeZone
+            );
             slots.push({
               start_at: cursor.toISOString(),
               end_at: slotEnd.toISOString(),
-              label: label.charAt(0).toUpperCase() + label.slice(1),
+              label: labelRaw.charAt(0).toUpperCase() + labelRaw.slice(1),
             });
           }
         }

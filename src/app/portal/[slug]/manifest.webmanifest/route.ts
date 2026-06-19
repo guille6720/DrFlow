@@ -1,11 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
-import { PWA_ICONS } from "@/lib/utils/patient-portal-ready";
+import { getPwaIcons } from "@/lib/utils/patient-portal-ready";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
+  const origin = new URL(request.url).origin;
   const supabase = await createClient();
 
   let clinicName = "Consultorio";
@@ -40,11 +41,11 @@ export async function GET(
     start_url: `/portal/${slug}`,
     scope: `/portal/${slug}`,
     display: "standalone" as const,
-    background_color: "#eff6ff",
+    background_color: "#2563eb",
     theme_color: "#2563eb",
     orientation: "portrait" as const,
     lang: "es-AR",
-    icons: PWA_ICONS,
+    icons: getPwaIcons(origin),
   };
 
   return Response.json(manifest, {

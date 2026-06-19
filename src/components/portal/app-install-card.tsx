@@ -185,10 +185,10 @@ export function AppInstallCard({
 
         {!isClinic && slug && !portalMode && (
           <Link
-            href={`/portal/${slug}`}
+            href={`/portal/${slug}/instalar`}
             className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-50"
           >
-            Abrir portal para instalar
+            Abrir instalador para pacientes
             <ExternalLink className="h-3.5 w-3.5 shrink-0" />
           </Link>
         )}

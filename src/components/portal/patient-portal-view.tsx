@@ -106,6 +106,18 @@ export function PatientPortalView({
           />
         )}
 
+        {!portalReady && (
+          <p className="mb-6 text-center text-sm text-slate-600">
+            ¿Te mandó el médico un link?{" "}
+            <a
+              href={`/portal/${slug}/instalar`}
+              className="font-medium text-blue-700 underline"
+            >
+              Instalá la app acá
+            </a>
+          </p>
+        )}
+
         {clinicAddress && (
           <p className="mb-4 text-center text-sm text-slate-500">{clinicAddress}</p>
         )}

@@ -17,3 +17,8 @@ export function buildWhatsAppUrl(phone: string, message: string): string | null 
   if (!normalized) return null;
   return `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`;
 }
+
+/** Compartir mensaje sin número: el usuario elige el contacto en WhatsApp. */
+export function buildWhatsAppShareUrl(message: string): string {
+  return `https://wa.me/?text=${encodeURIComponent(message)}`;
+}

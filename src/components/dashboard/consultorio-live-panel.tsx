@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatClinicDateTime } from "@/lib/utils/clinic-timezone";
 import { format, differenceInMinutes } from "date-fns";
 import { es } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -63,7 +64,7 @@ export function ConsultorioLivePanel({
               <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{patientName}</h2>
               <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-blue-100/90">
                 <Clock className="h-4 w-4" />
-                {format(new Date(next.start_at), "HH:mm", { locale: es })} hs
+                {formatClinicDateTime(next.start_at, "HH:mm")} hs
                 <span className="text-blue-300">·</span>
                 <span className="font-medium text-amber-200">{formatCountdown(next.start_at)}</span>
                 {next.booking_source === "online" && (
@@ -150,7 +151,7 @@ export function ConsultorioLivePanel({
                 >
                   <span className="font-medium text-blue-50">{name}</span>
                   <span className="text-blue-300/80">
-                    {format(new Date(appt.start_at), "HH:mm")}
+                    {formatClinicDateTime(appt.start_at, "HH:mm")}
                   </span>
                   {status && (
                     <span className="text-xs text-blue-200/70">{status.label}</span>

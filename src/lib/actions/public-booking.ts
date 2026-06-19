@@ -100,12 +100,16 @@ export async function loadPublicBookingSlots(
 
   const { data: link } = await supabase
     .from("public_booking_links")
-    .select("clinic_id")
+    .select("clinic_id, clinics(timezone)")
     .eq("slug", slug)
     .eq("is_active", true)
     .single();
 
   if (!link) return { error: "Link inválido", slots: [] };
+
+  const clinic = link.clinics as { timezone?: string } | null;
+  const { DEFAULT_CLINIC_TIMEZONE } = await import("@/lib/utils/clinic-timezone");
+  const timeZone = clinic?.timezone ?? DEFAULT_CLINIC_TIMEZONE;
 
   const { generateAvailableSlots } = await import("@/lib/booking/slots");
 
@@ -135,6 +139,7 @@ export async function loadPublicBookingSlots(
     rules: rules.data ?? [],
     appointments: appointments.data ?? [],
     blocks: blocks.data ?? [],
+    timeZone,
   });
 
   return { slots };

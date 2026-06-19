@@ -1,47 +1,59 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { generateAvailableSlots } from "@/lib/booking/slots";
-import { addDays, nextMonday, setHours, setMinutes, startOfDay } from "date-fns";
+import { fromZonedTime } from "date-fns-tz";
+import { DEFAULT_CLINIC_TIMEZONE } from "@/lib/utils/clinic-timezone";
 
 describe("generateAvailableSlots", () => {
-  const monday = startOfDay(nextMonday(new Date()));
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-18T15:00:00.000Z"));
+  });
 
-  it("generates slots from availability rules", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  // viernes 19 jun 2026 en Argentina
+  const friday = fromZonedTime(
+    new Date(2026, 5, 19, 0, 0, 0),
+    DEFAULT_CLINIC_TIMEZONE
+  );
+
+  it("generates slots with hora Argentina en el label", () => {
     const slots = generateAvailableSlots({
       rules: [
-        { day_of_week: 1, start_time: "09:00", end_time: "10:00", slot_duration: 30 },
+        { day_of_week: 5, start_time: "15:00", end_time: "16:00", slot_duration: 30 },
       ],
       appointments: [],
       blocks: [],
-      fromDate: monday,
-      daysAhead: 7,
+      fromDate: friday,
+      daysAhead: 1,
+      timeZone: DEFAULT_CLINIC_TIMEZONE,
     });
 
     expect(slots.length).toBeGreaterThan(0);
-    expect(slots[0].label).toContain("09:00");
-    expect(slots[0].label).toMatch(/hs$/);
-    expect(slots[0].label).not.toMatch(/Mon|Tue|Wed|Thu|Fri|Sat|Sun/);
+    expect(slots[0].label).toContain("15:00");
+    expect(slots[0].start_at).toBe("2026-06-19T18:00:00.000Z");
   });
 
   it("excludes occupied appointment slots", () => {
-    const slotStart = addDays(monday, 0);
-    const at9 = setMinutes(setHours(slotStart, 9), 0);
-
     const slots = generateAvailableSlots({
       rules: [
-        { day_of_week: 1, start_time: "09:00", end_time: "10:00", slot_duration: 30 },
+        { day_of_week: 5, start_time: "09:00", end_time: "10:00", slot_duration: 30 },
       ],
       appointments: [
         {
-          start_at: at9.toISOString(),
-          end_at: setMinutes(setHours(slotStart, 9), 30).toISOString(),
+          start_at: "2026-06-19T12:00:00.000Z",
+          end_at: "2026-06-19T12:30:00.000Z",
         },
       ],
       blocks: [],
-      fromDate: monday,
+      fromDate: friday,
       daysAhead: 1,
+      timeZone: DEFAULT_CLINIC_TIMEZONE,
     });
 
-    const has9am = slots.some((s) => s.start_at === at9.toISOString());
-    expect(has9am).toBe(false);
+    expect(slots.some((s) => s.start_at === "2026-06-19T12:00:00.000Z")).toBe(false);
+    expect(slots.length).toBeGreaterThan(0);
   });
 });

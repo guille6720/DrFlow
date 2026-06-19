@@ -2,8 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatClinicDateTime } from "@/lib/utils/clinic-timezone";
 import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
@@ -67,7 +66,7 @@ export function DashboardUpcomingList({ appointments, canManage }: Props) {
                 )}
               </div>
               <p className="text-sm text-slate-500">
-                {format(parseISO(appt.start_at), "PPp", { locale: es })}
+                {formatClinicDateTime(appt.start_at, "PPp")}
                 {" · "}
                 {appt.professionals?.profiles?.full_name ?? "Profesional"}
               </p>

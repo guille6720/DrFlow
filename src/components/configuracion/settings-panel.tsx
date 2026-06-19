@@ -23,6 +23,8 @@ import { ExternalLink, Plus, Trash2, Copy } from "lucide-react";
 import Link from "next/link";
 import { TeamInvitePanel } from "@/components/configuracion/team-invite-panel";
 import { AppInstallCard } from "@/components/portal/app-install-card";
+import { SharePatientAppButton } from "@/components/portal/share-patient-app-button";
+import { buildPatientAppInstallUrl } from "@/lib/utils/patient-portal-ready";
 
 interface SettingsPanelProps {
   clinic: Clinic | null;
@@ -118,8 +120,8 @@ export function SettingsPanel({
 
       <Card title="App pacientes (PWA)">
         <p className="mb-3 text-sm text-slate-600">
-          Versión reducida instalable: turnos, solicitud de recetas y WhatsApp. Compartí este link
-          con tus pacientes PAMI.
+          Enviá por WhatsApp un link de instalación a tus pacientes PAMI. Al abrirlo, la app se
+          agrega sola al celular con el icono azul de DrFlow.
         </p>
         {bookingSlug || clinic.slug ? (
           <div className="space-y-4">
@@ -127,12 +129,17 @@ export function SettingsPanel({
               const slug = bookingSlug ?? clinic.slug;
               return (
                 <>
+                  <SharePatientAppButton
+                    slug={slug}
+                    clinicName={clinic.name}
+                    onCopied={(msg) => setMsg(msg)}
+                  />
                   <Link
-                    href={`/portal/${slug}`}
+                    href={`/portal/${slug}/instalar`}
                     target="_blank"
                     className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:underline"
                   >
-                    /portal/{slug}
+                    /portal/{slug}/instalar
                     <ExternalLink className="h-4 w-4" />
                   </Link>
                   <Button
@@ -140,13 +147,13 @@ export function SettingsPanel({
                     size="sm"
                     variant="outline"
                     onClick={() => {
-                      const url = `${window.location.origin}/portal/${slug}`;
+                      const url = buildPatientAppInstallUrl(window.location.origin, slug);
                       navigator.clipboard.writeText(url);
-                      setMsg(`Link app pacientes copiado: ${url}`);
+                      setMsg(`Link de instalación copiado: ${url}`);
                     }}
                   >
                     <Copy className="h-3.5 w-3.5" />
-                    Copiar link app pacientes
+                    Copiar link de instalación
                   </Button>
                   <AppInstallCard
                     variant="patient"

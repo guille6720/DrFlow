@@ -24,8 +24,20 @@ async function getUserWithTimeout(
   }
 }
 
+function isPwaAsset(path: string): boolean {
+  return (
+    path === "/sw.js" ||
+    path === "/manifest.webmanifest" ||
+    path.endsWith("/manifest.webmanifest")
+  );
+}
+
 export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
+
+  if (isPwaAsset(path)) {
+    return NextResponse.next({ request });
+  }
 
   if (path.startsWith("/api/auth")) {
     return NextResponse.next({ request });
@@ -37,7 +49,11 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthRoute = path.startsWith("/login") || path.startsWith("/register");
   const isFullyPublic =
-    path.startsWith("/solicitar-turno") || path === "/" || path === "/onboarding";
+    path.startsWith("/solicitar-turno") ||
+    path.startsWith("/portal") ||
+    path === "/privacidad" ||
+    path === "/" ||
+    path === "/onboarding";
 
   if (isFullyPublic && !isAuthRoute) {
     return NextResponse.next({ request });

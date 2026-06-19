@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatClinicDateTime } from "@/lib/utils/clinic-timezone";
 import { fetchPatientAppointmentStatuses } from "@/lib/actions/public-booking";
 import {
   getPatientRequests,
@@ -172,14 +171,11 @@ export function PatientRequestsPanel({
                     </div>
                     {request.startAt && (
                       <p className="mt-1 text-sm text-slate-600">
-                        {format(parseISO(request.startAt), "EEEE d 'de' MMMM · HH:mm 'hs'", {
-                          locale: es,
-                        })}
+                        {formatClinicDateTime(request.startAt, "EEEE d 'de' MMMM · HH:mm 'hs'")}
                       </p>
                     )}
                     <p className="mt-1 text-xs text-slate-400">
-                      Solicitado{" "}
-                      {format(parseISO(request.createdAt), "d/M/yyyy HH:mm", { locale: es })}
+                      Solicitado {formatClinicDateTime(request.createdAt, "d/M/yyyy HH:mm")}
                     </p>
                   </div>
                   <div className="shrink-0">

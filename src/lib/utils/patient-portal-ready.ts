@@ -28,15 +28,39 @@ export function markPatientPortalInstalled(slug: string): void {
 }
 
 /** Iconos PWA: tamaños reales 192/512 px con fondo sólido (requerido por Android). */
-export const PWA_ICONS = [
-  { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" as const },
-  { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" as const },
-  {
-    src: "/icon-maskable-512.png",
-    sizes: "512x512",
-    type: "image/png",
-    purpose: "maskable" as const,
-  },
-];
+export function getPwaIcons(origin: string) {
+  const base = origin.replace(/\/$/, "");
+  return [
+    { src: `${base}/icon-192.png`, sizes: "192x192", type: "image/png", purpose: "any" as const },
+    { src: `${base}/icon-512.png`, sizes: "512x512", type: "image/png", purpose: "any" as const },
+    {
+      src: `${base}/icon-maskable-512.png`,
+      sizes: "512x512",
+      type: "image/png",
+      purpose: "maskable" as const,
+    },
+  ];
+}
+
+/** Rutas relativas para metadata HTML. */
+export const PWA_ICONS = getPwaIcons("");
 
 export const PWA_APPLE_ICON = "/icon-192.png";
+
+export function buildPatientAppInstallUrl(origin: string, slug: string): string {
+  return `${origin.replace(/\/$/, "")}/portal/${slug}/instalar`;
+}
+
+export function buildPatientAppShareMessage(clinicName: string, installUrl: string): string {
+  return [
+    `Hola! Soy del consultorio ${clinicName}.`,
+    "",
+    "Instalá la app en tu celular para pedir turnos y recetas PAMI:",
+    installUrl,
+    "",
+    "Pasos:",
+    "1. Tocá el link de arriba",
+    '2. Apretá "Agregar a pantalla de inicio"',
+    "3. Listo — queda el icono azul en tu celular",
+  ].join("\n");
+}

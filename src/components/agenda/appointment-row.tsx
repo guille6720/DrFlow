@@ -9,7 +9,7 @@ import { updateAppointmentStatus } from "@/lib/actions/clinic";
 import { canStartConsultation, isOnlineBooking } from "@/lib/utils/appointment";
 import type { Appointment } from "@/types/database";
 import { format, parseISO, isSameDay } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatClinicDateTime } from "@/lib/utils/clinic-timezone";
 import { Globe, Play, User } from "lucide-react";
 
 interface Props {
@@ -57,8 +57,8 @@ export function AppointmentRow({
         </div>
         <p className="text-sm text-slate-500">
           {showDate
-            ? format(parseISO(appointment.start_at), "PPp", { locale: es })
-            : format(parseISO(appointment.start_at), "p", { locale: es })}
+            ? formatClinicDateTime(appointment.start_at, "PPp")
+            : formatClinicDateTime(appointment.start_at, "HH:mm 'hs'")}
           {(appointment.professionals as { profiles?: { full_name?: string } } | undefined)?.profiles
             ?.full_name
             ? ` · ${(appointment.professionals as { profiles?: { full_name?: string } }).profiles?.full_name}`
