@@ -158,18 +158,35 @@ export async function updateAppointmentStatus(
   cancellationReason?: string
 ) {
   const clinicId = await getActiveClinicId();
+  const user = await getSession();
   const { role, isSuperadmin } = await getActiveClinic();
   if (!clinicId || !hasPermission(role, "manageAppointments", isSuperadmin)) {
     return { error: "Sin permisos" };
   }
 
   const supabase = await createClient();
+
+  const { data: before } = await supabase
+    .from("appointments")
+    .select("id, start_at, patient_id, patients(first_name, last_name, phone)")
+    .eq("id", id)
+    .eq("clinic_id", clinicId)
+    .single();
+
+  const updatePayload: Record<string, unknown> = {
+    status,
+    cancellation_reason: status === "cancelled" ? (cancellationReason?.trim() || null) : null,
+  };
+
+  if (status === "cancelled") {
+    updatePayload.cancelled_at = new Date().toISOString();
+    updatePayload.cancelled_by = user?.id ?? null;
+    updatePayload.cancelled_by_type = "clinic";
+  }
+
   const { error } = await supabase
     .from("appointments")
-    .update({
-      status,
-      cancellation_reason: cancellationReason ?? null,
-    })
+    .update(updatePayload)
     .eq("id", id)
     .eq("clinic_id", clinicId);
 
@@ -180,12 +197,34 @@ export async function updateAppointmentStatus(
     entityType: "appointment",
     entityId: id,
     action: "update",
-    metadata: { status },
+    metadata: {
+      status,
+      cancellationReason: cancellationReason ?? null,
+      cancelledBy: status === "cancelled" ? "clinic" : undefined,
+    },
   });
 
   revalidatePath("/agenda");
   revalidatePath("/dashboard");
-  return { success: true };
+  revalidatePath(`/pacientes/${before?.patient_id}`);
+
+  const patient = before?.patients as
+    | { first_name: string; last_name: string; phone: string | null }
+    | { first_name: string; last_name: string; phone: string | null }[]
+    | null;
+  const patientRow = Array.isArray(patient) ? patient[0] : patient;
+
+  return {
+    success: true,
+    whatsapp:
+      status === "confirmed" && patientRow?.phone
+        ? {
+            phone: patientRow.phone,
+            firstName: patientRow.first_name,
+            startAt: before?.start_at as string,
+          }
+        : null,
+  };
 }
 
 export async function createClinicalRecord(formData: FormData) {

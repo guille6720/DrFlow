@@ -34,12 +34,12 @@ export async function GET(
   }
 
   const shortName =
-    clinicName.length > 14 ? `${clinicName.slice(0, 12).trim()}…` : clinicName;
+    clinicName.length > 10 ? `${clinicName.slice(0, 9).trim()}…` : clinicName;
 
   const manifest = {
     id: `drflow-patient-${slug}`,
-    name: `${clinicName} — DrFlow`,
-    short_name: shortName,
+    name: `${clinicName} — DrFlow Pacientes`,
+    short_name: `${shortName} · Pac.`,
     description: "Pedí turnos, recetas y contactá a tu consultorio.",
     start_url: `/portal/${slug}`,
     scope: `/portal/${slug}`,

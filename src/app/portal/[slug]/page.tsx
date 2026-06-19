@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { PatientPortalView } from "@/components/portal/patient-portal-view";
 import { notFound } from "next/navigation";
+import { resolvePortalDoctorInfo } from "@/lib/utils/portal-doctor-info";
 
 export async function generateMetadata({
   params,
@@ -22,6 +23,7 @@ export default async function PatientPortalPage({
 }) {
   const { slug } = await params;
   const supabase = await createClient();
+  const doctor = await resolvePortalDoctorInfo(slug);
 
   const { data: link } = await supabase
     .from("public_booking_links")
@@ -53,6 +55,7 @@ export default async function PatientPortalPage({
         clinicPhone={clinic.phone}
         clinicAddress={clinic.address}
         professionals={professionals ?? []}
+        doctor={doctor}
       />
     );
   }
@@ -79,6 +82,7 @@ export default async function PatientPortalPage({
       clinicPhone={clinic?.phone ?? null}
       clinicAddress={clinic?.address ?? null}
       professionals={professionals ?? []}
+      doctor={doctor}
     />
   );
 }

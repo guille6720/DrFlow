@@ -148,7 +148,7 @@ export function buildPatientAppShareMessage(
     "Pasos:",
     "1. Tocá el link de arriba",
     '2. Apretá "Agregar a pantalla de inicio"',
-    "3. Listo — queda el icono verde de DrFlow en tu celular",
+    "3. Listo — queda el icono verde «Pacientes» en tu pantalla de inicio",
   ]
     .filter((line): line is string => Boolean(line))
     .join("\n");

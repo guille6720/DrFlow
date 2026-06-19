@@ -117,6 +117,9 @@ export interface Appointment {
   notes: string | null;
   booking_source?: "manual" | "online" | null;
   cancellation_reason: string | null;
+  cancelled_at: string | null;
+  cancelled_by: string | null;
+  cancelled_by_type: "patient" | "clinic" | null;
   patients?: Patient;
   professionals?: Professional;
   locations?: { name: string };

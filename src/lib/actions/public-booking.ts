@@ -59,12 +59,19 @@ export async function fetchPatientAppointmentStatuses(
   documentNumber: string,
   appointmentIds: string[]
 ) {
-  if (!appointmentIds.length) return { statuses: [] as Array<{
-    appointmentId: string;
-    status: string;
-    startAt: string;
-    bookingSource: string | null;
-  }> };
+  if (!appointmentIds.length) {
+    return {
+      statuses: [] as Array<{
+        appointmentId: string;
+        status: string;
+        startAt: string;
+        bookingSource: string | null;
+        cancellationReason: string | null;
+        cancelledAt: string | null;
+        cancelledByType: string | null;
+      }>,
+    };
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_patient_appointment_statuses", {
@@ -81,15 +88,53 @@ export async function fetchPatientAppointmentStatuses(
       status: string;
       start_at: string;
       booking_source: string | null;
+      cancellation_reason: string | null;
+      cancelled_at: string | null;
+      cancelled_by_type: string | null;
     }) => ({
       appointmentId: row.appointment_id,
       status: row.status,
       startAt: row.start_at,
       bookingSource: row.booking_source,
+      cancellationReason: row.cancellation_reason,
+      cancelledAt: row.cancelled_at,
+      cancelledByType: row.cancelled_by_type,
     })
   );
 
   return { statuses };
+}
+
+export async function cancelPatientAppointment(
+  slug: string,
+  documentNumber: string,
+  appointmentId: string,
+  reason: string
+) {
+  const trimmed = reason.trim();
+  if (trimmed.length < 3) {
+    return { error: "Indicá el motivo de la cancelación (mín. 3 caracteres)" };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("cancel_patient_appointment", {
+    p_slug: slug,
+    p_document_number: documentNumber.trim(),
+    p_appointment_id: appointmentId,
+    p_reason: trimmed,
+  });
+
+  if (error) {
+    if (error.message.includes("REASON_REQUIRED")) {
+      return { error: "Indicá el motivo de la cancelación" };
+    }
+    if (error.message.includes("APPOINTMENT_NOT_FOUND")) {
+      return { error: "No encontramos ese turno o ya no se puede cancelar" };
+    }
+    return { error: "No pudimos cancelar el turno. Intentá de nuevo." };
+  }
+
+  return { success: true };
 }
 
 export async function loadPublicBookingSlots(

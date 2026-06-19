@@ -36,10 +36,22 @@ export async function recordPatientAppShare(
     .maybeSingle();
 
   if (existing) {
-    return {
-      error: "Ya se compartió la app con este paciente",
-      sharedAt: existing.shared_at,
-    };
+    const { data, error } = await supabase
+      .from("patient_app_share_log")
+      .update({
+        shared_at: new Date().toISOString(),
+        shared_by: session?.id ?? null,
+        channel,
+      })
+      .eq("id", existing.id)
+      .select("shared_at")
+      .single();
+
+    if (error) return { error: error.message };
+
+    revalidatePath("/pacientes");
+    revalidatePath(`/pacientes/${patientId}`);
+    return { success: true, sharedAt: data.shared_at, resent: true };
   }
 
   const { data, error } = await supabase
@@ -53,15 +65,10 @@ export async function recordPatientAppShare(
     .select("shared_at")
     .single();
 
-  if (error) {
-    if (error.code === "23505") {
-      return { error: "Ya se compartió la app con este paciente" };
-    }
-    return { error: error.message };
-  }
+  if (error) return { error: error.message };
 
   revalidatePath("/pacientes");
   revalidatePath(`/pacientes/${patientId}`);
 
-  return { success: true, sharedAt: data.shared_at };
+  return { success: true, sharedAt: data.shared_at, resent: false };
 }

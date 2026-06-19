@@ -49,7 +49,7 @@ export default async function PacienteDetailPage({
   const [{ data: appointments }, { data: records }, { data: appShare }] = await Promise.all([
     supabase
       .from("appointments")
-      .select("id, start_at, status, professionals(profiles(full_name))")
+      .select("id, start_at, status, cancellation_reason, cancelled_by_type, professionals(profiles(full_name))")
       .eq("patient_id", id)
       .order("start_at", { ascending: false })
       .limit(10),
@@ -143,12 +143,20 @@ export default async function PacienteDetailPage({
                 {(appointments ?? []).map((a) => {
                   const statusInfo = appointmentStatusBadge[a.status as string];
                   return (
-                    <li key={a.id} className="flex justify-between py-2">
+                    <li key={a.id} className="py-2">
                       <div>
                         <p>{format(new Date(a.start_at), "PPp", { locale: es })}</p>
                         <p className="text-slate-500">
                           {(a.professionals as unknown as { profiles?: { full_name?: string } })?.profiles?.full_name}
                         </p>
+                        {a.status === "cancelled" && (
+                          <p className="mt-1 text-xs text-red-700">
+                            {(a as { cancelled_by_type?: string }).cancelled_by_type === "patient"
+                              ? "Cancelado por el paciente"
+                              : "Cancelado por el consultorio"}
+                            {a.cancellation_reason ? ` · ${a.cancellation_reason}` : ""}
+                          </p>
+                        )}
                       </div>
                       {statusInfo && <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>}
                     </li>

@@ -1,5 +1,5 @@
 /* Service worker solo para la app de pacientes (scope /portal/). Iconos verdes. */
-const CACHE = "drflow-portal-pwa-v1";
+const CACHE = "drflow-portal-pwa-v2";
 const PRECACHE = [
   "/icon-patient-192.png",
   "/icon-patient-512.png",
