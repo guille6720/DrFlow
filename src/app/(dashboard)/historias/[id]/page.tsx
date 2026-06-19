@@ -16,6 +16,8 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ArrowLeft } from "lucide-react";
 import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
+import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
+import { getPortalSlugForClinic } from "@/lib/actions/patient-app-share";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
 import { ExportClinicalPdfButton } from "@/components/historias/export-pdf-button";
@@ -46,7 +48,26 @@ export default async function HistoriaDetailPage({
 
   if (!record) notFound();
 
-  const [{ data: audit }, { data: prescriptions }, { data: professionals }, { data: medicalOrders }] = await Promise.all([
+  const patient = record.patients as unknown as {
+    id: string;
+    first_name: string;
+    last_name: string;
+    document_number: string;
+    birth_date: string | null;
+    insurance_provider: string | null;
+    insurance_number: string | null;
+    phone: string | null;
+    email: string | null;
+    allergies: string | null;
+    regular_medication: string | null;
+    emergency_contact_name: string | null;
+    emergency_contact_phone: string | null;
+  };
+
+  const portalSlug = await getPortalSlugForClinic(clinicId);
+
+  const [{ data: audit }, { data: prescriptions }, { data: professionals }, { data: medicalOrders }, { data: appShare }] =
+    await Promise.all([
     supabase
       .from("clinical_record_audit")
       .select("*, profiles:changed_by(full_name)")
@@ -69,23 +90,23 @@ export default async function HistoriaDetailPage({
       .eq("clinical_record_id", id)
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false }),
+    portalSlug
+      ? supabase
+          .from("patient_app_share_log")
+          .select("shared_at, channel, profiles(full_name)")
+          .eq("patient_id", patient.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
-  const patient = record.patients as unknown as {
-    id: string;
-    first_name: string;
-    last_name: string;
-    document_number: string;
-    birth_date: string | null;
-    insurance_provider: string | null;
-    insurance_number: string | null;
-    phone: string | null;
-    email: string | null;
-    allergies: string | null;
-    regular_medication: string | null;
-    emergency_contact_name: string | null;
-    emergency_contact_phone: string | null;
-  };
+  const shareProfile = appShare?.profiles as { full_name?: string } | null;
+  const patientShare = appShare
+    ? {
+        sharedAt: appShare.shared_at,
+        sharedByName: shareProfile?.full_name ?? null,
+        channel: appShare.channel,
+      }
+    : null;
   const professional = record.professionals as unknown as { profiles: { full_name: string } | null };
   const canIssue = hasPermission(role, "issuePrescriptions", isSuperadmin);
   const professionalList = (professionals ?? []) as unknown as Array<{
@@ -109,6 +130,19 @@ export default async function HistoriaDetailPage({
 
       <div className="space-y-6 p-4 sm:p-6">
         <PamiPatientBanner patient={patient} />
+
+        {portalSlug && clinic && (
+          <Card title="App para el paciente">
+            <PatientAppShareControl
+              patientId={patient.id}
+              patientName={`${patient.first_name} ${patient.last_name}`}
+              patientPhone={patient.phone}
+              slug={portalSlug}
+              clinicName={clinic.name}
+              share={patientShare}
+            />
+          </Card>
+        )}
 
         <div className="flex flex-wrap items-center gap-3">
           <Link href="/historias" className="inline-flex items-center gap-1 text-sm text-blue-700 hover:underline">

@@ -78,6 +78,15 @@ export interface Patient {
   created_at: string;
 }
 
+export interface PatientAppShareLog {
+  id: string;
+  clinic_id: string;
+  patient_id: string;
+  shared_by: string | null;
+  shared_at: string;
+  channel: "whatsapp" | "copy";
+}
+
 export interface Professional {
   id: string;
   clinic_id: string;

@@ -12,6 +12,8 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { formatAgeLabel, isPamiPatient } from "@/lib/utils/patient-age";
 import { Badge } from "@/components/ui/badge";
+import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
+import { getPortalSlugForClinic } from "@/lib/actions/patient-app-share";
 import { Users, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 const PAGE_SIZE = 20;
@@ -26,7 +28,7 @@ export default async function PacientesPage({
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role } = await getActiveClinic();
+  const { role, clinic } = await getActiveClinic();
   const supabase = await createClient();
 
   let patients: {
@@ -40,8 +42,15 @@ export default async function PacientesPage({
     insurance_provider: string | null;
   }[] = [];
   let total = 0;
+  let portalSlug: string | null = null;
+  const shareByPatient = new Map<
+    string,
+    { sharedAt: string; sharedByName?: string | null; channel?: string | null }
+  >();
 
   if (clinicId) {
+    portalSlug = await getPortalSlugForClinic(clinicId);
+
     let query = supabase
       .from("patients")
       .select("id, first_name, last_name, document_number, birth_date, phone, email, insurance_provider", {
@@ -65,6 +74,26 @@ export default async function PacientesPage({
     const { data, count } = await query.range(from, from + PAGE_SIZE - 1);
     patients = data ?? [];
     total = count ?? 0;
+
+    if (patients.length > 0 && portalSlug) {
+      const { data: shares } = await supabase
+        .from("patient_app_share_log")
+        .select("patient_id, shared_at, channel, profiles(full_name)")
+        .eq("clinic_id", clinicId)
+        .in(
+          "patient_id",
+          patients.map((p) => p.id)
+        );
+
+      for (const row of shares ?? []) {
+        const profile = row.profiles as { full_name?: string } | null;
+        shareByPatient.set(row.patient_id, {
+          sharedAt: row.shared_at,
+          sharedByName: profile?.full_name ?? null,
+          channel: row.channel,
+        });
+      }
+    }
   }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -141,6 +170,7 @@ export default async function PacientesPage({
                       <th className="pb-3 pr-4 font-medium">Contacto</th>
                       <th className="pb-3 pr-4 font-medium">Edad</th>
                       <th className="pb-3 pr-4 font-medium">Obra social</th>
+                      {portalSlug && <th className="pb-3 pr-4 font-medium">App paciente</th>}
                       <th className="pb-3 font-medium"></th>
                     </tr>
                   </thead>
@@ -161,6 +191,19 @@ export default async function PacientesPage({
                             )}
                           </span>
                         </td>
+                        {portalSlug && clinic && (
+                          <td className="py-3 pr-4">
+                            <PatientAppShareControl
+                              patientId={p.id}
+                              patientName={`${p.first_name} ${p.last_name}`}
+                              patientPhone={p.phone}
+                              slug={portalSlug}
+                              clinicName={clinic.name}
+                              share={shareByPatient.get(p.id) ?? null}
+                              compact
+                            />
+                          </td>
+                        )}
                         <td className="py-3 space-x-3">
                           <Link href={`/pacientes/${p.id}`} className="text-blue-700 hover:underline">
                             Ver

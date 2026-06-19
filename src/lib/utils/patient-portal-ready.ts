@@ -51,9 +51,14 @@ export function buildPatientAppInstallUrl(origin: string, slug: string): string 
   return `${origin.replace(/\/$/, "")}/portal/${slug}/instalar`;
 }
 
-export function buildPatientAppShareMessage(clinicName: string, installUrl: string): string {
+export function buildPatientAppShareMessage(
+  clinicName: string,
+  installUrl: string,
+  patientName?: string
+): string {
+  const greeting = patientName ? `Hola ${patientName}!` : "Hola!";
   return [
-    `Hola! Soy del consultorio ${clinicName}.`,
+    `${greeting} Soy del consultorio ${clinicName}.`,
     "",
     "Instalá la app en tu celular para pedir turnos y recetas PAMI:",
     installUrl,

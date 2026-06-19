@@ -23,7 +23,6 @@ import { ExternalLink, Plus, Trash2, Copy } from "lucide-react";
 import Link from "next/link";
 import { TeamInvitePanel } from "@/components/configuracion/team-invite-panel";
 import { AppInstallCard } from "@/components/portal/app-install-card";
-import { SharePatientAppButton } from "@/components/portal/share-patient-app-button";
 import { buildPatientAppInstallUrl } from "@/lib/utils/patient-portal-ready";
 
 interface SettingsPanelProps {
@@ -120,8 +119,11 @@ export function SettingsPanel({
 
       <Card title="App pacientes (PWA)">
         <p className="mb-3 text-sm text-slate-600">
-          Enviá por WhatsApp un link de instalación a tus pacientes PAMI. Al abrirlo, la app se
-          agrega sola al celular con el icono azul de DrFlow.
+          Compartí la app de turnos y recetas desde la ficha de cada paciente en{" "}
+          <Link href="/pacientes" className="font-medium text-blue-700 hover:underline">
+            Pacientes
+          </Link>
+          . El sistema registra el envío para no repetir con el mismo paciente.
         </p>
         {bookingSlug || clinic.slug ? (
           <div className="space-y-4">
@@ -129,11 +131,6 @@ export function SettingsPanel({
               const slug = bookingSlug ?? clinic.slug;
               return (
                 <>
-                  <SharePatientAppButton
-                    slug={slug}
-                    clinicName={clinic.name}
-                    onCopied={(msg) => setMsg(msg)}
-                  />
                   <Link
                     href={`/portal/${slug}/instalar`}
                     target="_blank"
@@ -155,11 +152,7 @@ export function SettingsPanel({
                     <Copy className="h-3.5 w-3.5" />
                     Copiar link de instalación
                   </Button>
-                  <AppInstallCard
-                    variant="patient"
-                    slug={slug}
-                    clinicName={clinic.name}
-                  />
+                  <AppInstallCard variant="patient" slug={slug} clinicName={clinic.name} />
                 </>
               );
             })()}

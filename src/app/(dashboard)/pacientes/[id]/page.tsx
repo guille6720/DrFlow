@@ -4,6 +4,8 @@ import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
+import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
+import { getPortalSlugForClinic } from "@/lib/actions/patient-app-share";
 import { formatAgeLabel } from "@/lib/utils/patient-age";
 import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
 import {
@@ -26,7 +28,7 @@ export default async function PacienteDetailPage({
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role } = await getActiveClinic();
+  const { role, clinic } = await getActiveClinic();
   const supabase = await createClient();
 
   if (!clinicId) notFound();
@@ -40,7 +42,9 @@ export default async function PacienteDetailPage({
 
   if (!patient) notFound();
 
-  const [{ data: appointments }, { data: records }] = await Promise.all([
+  const portalSlug = clinicId ? await getPortalSlugForClinic(clinicId) : null;
+
+  const [{ data: appointments }, { data: records }, { data: appShare }] = await Promise.all([
     supabase
       .from("appointments")
       .select("id, start_at, status, professionals(profiles(full_name))")
@@ -53,7 +57,23 @@ export default async function PacienteDetailPage({
       .eq("patient_id", id)
       .order("created_at", { ascending: false })
       .limit(10),
+    portalSlug
+      ? supabase
+          .from("patient_app_share_log")
+          .select("shared_at, channel, profiles(full_name)")
+          .eq("patient_id", id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
+
+  const shareProfile = appShare?.profiles as { full_name?: string } | null;
+  const patientShare = appShare
+    ? {
+        sharedAt: appShare.shared_at,
+        sharedByName: shareProfile?.full_name ?? null,
+        channel: appShare.channel,
+      }
+    : null;
 
   return (
     <>
@@ -77,6 +97,19 @@ export default async function PacienteDetailPage({
         </div>
 
         <PamiPatientBanner patient={patient} />
+
+        {portalSlug && clinic && (
+          <Card title="App para el paciente">
+            <PatientAppShareControl
+              patientId={patient.id}
+              patientName={`${patient.first_name} ${patient.last_name}`}
+              patientPhone={patient.phone}
+              slug={portalSlug}
+              clinicName={clinic.name}
+              share={patientShare}
+            />
+          </Card>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-2">
           <Card title="Datos personales">
