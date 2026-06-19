@@ -12,10 +12,25 @@ export function isStandaloneMode(): boolean {
   );
 }
 
-/** Portal listo: app instalada en pantalla de inicio. */
+/** App azul del consultorio abierta como PWA (no navegador). */
+export function isConsultorioStandalone(): boolean {
+  if (!isStandaloneMode()) return false;
+  return !window.location.pathname.startsWith("/portal/");
+}
+
+/** App verde del paciente abierta como PWA. */
+export function isPatientStandalone(slug?: string): boolean {
+  if (!isStandaloneMode()) return false;
+  const path = window.location.pathname;
+  if (!path.startsWith("/portal/")) return false;
+  if (slug) return path.startsWith(`/portal/${slug}`);
+  return true;
+}
+
+/** Portal listo: app verde instalada en pantalla de inicio. */
 export function isPatientPortalReady(slug: string): boolean {
   if (typeof window === "undefined") return false;
-  if (isStandaloneMode()) return true;
+  if (isPatientStandalone(slug)) return true;
   try {
     return localStorage.getItem(storageKey(slug)) === "1";
   } catch {

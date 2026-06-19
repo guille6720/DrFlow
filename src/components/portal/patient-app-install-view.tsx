@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { PatientAppIcon } from "@/components/brand/patient-app-icon";
 import { Button } from "@/components/ui/button";
-import { Smartphone } from "lucide-react";
+import { Copy, Smartphone } from "lucide-react";
 import {
+  isConsultorioStandalone,
   isPatientPortalReady,
-  isStandaloneMode,
+  isPatientStandalone,
   markPatientPortalInstalled,
   PATIENT_CONTACT_PHONE_DISCLAIMER,
 } from "@/lib/utils/patient-portal-ready";
@@ -28,19 +30,20 @@ interface Props {
   doctor?: DoctorShareInfo;
 }
 
-/** Pantalla mínima para que pacientes PAMI instalen la app con un solo toque. */
+/** Pantalla de instalación de la app verde del paciente. */
 export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [installed, setInstalled] = useState(false);
   const [installing, setInstalling] = useState(false);
   const [iosHint, setIosHint] = useState(false);
+  const [inConsultorioApp, setInConsultorioApp] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const portalUrl = `/portal/${slug}`;
+  const installPath = `/portal/${slug}/instalar`;
 
   const markInstalled = useCallback(() => {
     markPatientPortalInstalled(slug);
-    setInstalled(true);
   }, [slug]);
 
   const handleInstall = useCallback(async () => {
@@ -51,19 +54,26 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === "accepted") {
         markInstalled();
+        window.location.replace(portalUrl);
       }
       setDeferredPrompt(null);
     } finally {
       setInstalling(false);
     }
-  }, [deferredPrompt, markInstalled]);
+  }, [deferredPrompt, markInstalled, portalUrl]);
 
   useEffect(() => {
     queueMicrotask(() => {
-      setInstalled(isPatientPortalReady(slug) || isStandaloneMode());
-      setIosHint(isIos() && !isStandaloneMode());
+      setIosHint(isIos() && !isPatientStandalone(slug));
+      setInConsultorioApp(isConsultorioStandalone());
     });
   }, [slug]);
+
+  useEffect(() => {
+    if (isPatientStandalone(slug)) {
+      window.location.replace(portalUrl);
+    }
+  }, [slug, portalUrl]);
 
   useEffect(() => {
     const onBeforeInstall = (event: Event) => {
@@ -74,33 +84,18 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
     return () => window.removeEventListener("beforeinstallprompt", onBeforeInstall);
   }, []);
 
-  useEffect(() => {
-    if (installed || isStandaloneMode()) {
-      window.location.replace(portalUrl);
-    }
-  }, [installed, portalUrl]);
-
-  useEffect(() => {
-    if (!deferredPrompt || isPatientPortalReady(slug)) return;
-
-    let timer: number | undefined;
+  async function copyInstallLink() {
+    const url = `${window.location.origin}${installPath}`;
     try {
-      const key = `drflow-auto-install-${slug}`;
-      if (sessionStorage.getItem(key)) return;
-      sessionStorage.setItem(key, "1");
-      timer = window.setTimeout(() => {
-        void handleInstall();
-      }, 800);
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* sessionStorage no disponible */
+      /* clipboard no disponible */
     }
+  }
 
-    return () => {
-      if (timer) window.clearTimeout(timer);
-    };
-  }, [deferredPrompt, slug, handleInstall]);
-
-  if (installed || isStandaloneMode()) {
+  if (isPatientStandalone(slug)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-emerald-600 text-white">
         <p className="text-lg">Abriendo la app…</p>
@@ -111,6 +106,30 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-emerald-600 to-emerald-800 px-6 py-10 text-white">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center text-center">
+        {inConsultorioApp && (
+          <div className="mb-6 w-full rounded-2xl border border-amber-300/40 bg-amber-500/20 p-4 text-left text-sm leading-relaxed text-amber-50">
+            <p className="font-semibold text-white">Estás en la app azul del consultorio</p>
+            <p className="mt-2">
+              Para instalar la app <strong>verde</strong> del paciente, abrí este link en Chrome:
+            </p>
+            <ol className="mt-3 list-decimal space-y-1 pl-5">
+              <li>Tocá ⋮ arriba a la derecha</li>
+              <li>Elegí <strong>Abrir en Chrome</strong></li>
+              <li>Desde Chrome, tocá <strong>Agregar a pantalla de inicio</strong></li>
+            </ol>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="mt-4 w-full border-white/30 bg-white/10 text-white hover:bg-white/20"
+              onClick={() => void copyInstallLink()}
+            >
+              <Copy className="h-4 w-4 shrink-0" />
+              {copied ? "Link copiado" : "Copiar link de instalación"}
+            </Button>
+          </div>
+        )}
+
         <div className="mb-8 rounded-3xl bg-white p-6 shadow-xl">
           <PatientAppIcon size="lg" priority />
         </div>
@@ -134,7 +153,7 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
         )}
 
         <div className="mt-10 w-full space-y-4">
-          {deferredPrompt ? (
+          {deferredPrompt && !inConsultorioApp ? (
             <Button
               type="button"
               size="lg"
@@ -151,7 +170,7 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
                 <ol className="list-decimal space-y-3 pl-5">
                   <li>Tocá el botón <strong>Compartir</strong> abajo en Safari</li>
                   <li>Elegí <strong>Agregar a pantalla de inicio</strong></li>
-                  <li>Tocá <strong>Agregar</strong></li>
+                  <li>Tocá <strong>Agregar</strong> — queda el icono <strong>verde</strong></li>
                 </ol>
               ) : (
                 <ol className="list-decimal space-y-3 pl-5">
@@ -162,15 +181,22 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
                     Elegí <strong>Instalar app</strong> o{" "}
                     <strong>Agregar a pantalla de inicio</strong>
                   </li>
-                  <li>Tocá <strong>Instalar</strong></li>
+                  <li>Tocá <strong>Instalar</strong> — icono verde en tu pantalla</li>
                 </ol>
               )}
             </div>
           )}
+
+          <Link
+            href={portalUrl}
+            className="block w-full rounded-xl border border-white/30 py-3 text-center text-sm font-medium text-emerald-100 hover:bg-white/10"
+          >
+            Continuar sin instalar
+          </Link>
         </div>
 
         <p className="mt-8 text-sm text-emerald-200">
-          Una vez instalada, el icono verde queda en tu pantalla de inicio
+          Icono <strong>verde</strong> — distinto al azul del consultorio
         </p>
       </div>
     </div>

@@ -37,7 +37,7 @@ export async function GET(
     clinicName.length > 14 ? `${clinicName.slice(0, 12).trim()}…` : clinicName;
 
   const manifest = {
-    id: `/portal/${slug}`,
+    id: `drflow-patient-${slug}`,
     name: `${clinicName} — DrFlow`,
     short_name: shortName,
     description: "Pedí turnos, recetas y contactá a tu consultorio.",
@@ -49,6 +49,7 @@ export async function GET(
     orientation: "portrait" as const,
     lang: "es-AR",
     icons: getPatientPwaIcons(origin),
+    handle_links: "preferred" as const,
   };
 
   return Response.json(manifest, {

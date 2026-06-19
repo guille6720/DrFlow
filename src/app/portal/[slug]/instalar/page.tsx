@@ -5,8 +5,6 @@ import type { Metadata } from "next";
 import {
   buildPatientAppOgDescription,
   PATIENT_PWA_ICON_512,
-  PATIENT_PWA_METADATA_ICONS,
-  PATIENT_THEME_COLOR,
 } from "@/lib/utils/patient-portal-ready";
 import { resolvePortalDoctorInfo } from "@/lib/utils/portal-doctor-info";
 import { getSiteUrl } from "@/lib/supabase/env";
@@ -30,9 +28,6 @@ export async function generateMetadata({
   return {
     title: `Instalar app — ${doctor.fullName}`,
     description,
-    manifest: `/portal/${slug}/manifest.webmanifest`,
-    themeColor: PATIENT_THEME_COLOR,
-    appleWebApp: { capable: true, title: doctor.clinicName, statusBarStyle: "default" },
     openGraph: {
       type: "website",
       locale: "es_AR",
@@ -55,7 +50,6 @@ export async function generateMetadata({
       description,
       images: [ogImage],
     },
-    icons: PATIENT_PWA_METADATA_ICONS,
   };
 }
 

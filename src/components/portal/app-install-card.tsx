@@ -9,7 +9,7 @@ import { ExternalLink, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import {
   isPatientPortalReady,
-  isStandaloneMode,
+  isPatientStandalone,
   markPatientPortalInstalled,
 } from "@/lib/utils/patient-portal-ready";
 
@@ -88,7 +88,7 @@ export function AppInstallCard({
     queueMicrotask(() => {
       const ready = portalMode && slug ? isPatientPortalReady(slug) : false;
       setPortalReady(ready);
-      setIosHint(isIos() && !isStandaloneMode());
+      setIosHint(isIos() && !isPatientStandalone(slug));
     });
   }, [portalMode, slug]);
 
@@ -102,28 +102,7 @@ export function AppInstallCard({
     return () => window.removeEventListener("beforeinstallprompt", onBeforeInstall);
   }, []);
 
-  useEffect(() => {
-    if (!portalMode || !deferredPrompt || !slug) return;
-    if (isPatientPortalReady(slug)) return;
-
-    let timer: number | undefined;
-    try {
-      const key = `drflow-auto-install-${slug}`;
-      if (sessionStorage.getItem(key)) return;
-      sessionStorage.setItem(key, "1");
-      timer = window.setTimeout(() => {
-        void handleInstall();
-      }, 600);
-    } catch {
-      /* sessionStorage no disponible */
-    }
-
-    return () => {
-      if (timer) window.clearTimeout(timer);
-    };
-  }, [portalMode, deferredPrompt, slug, handleInstall]);
-
-  if (portalMode && (portalReady || isStandaloneMode())) {
+  if (portalMode && slug && (portalReady || isPatientStandalone(slug))) {
     return null;
   }
 

@@ -17,5 +17,7 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: "portrait",
     lang: "es-AR",
     icons: getPwaIcons(origin),
-  };
+    // No capturar links /portal/* en la app azul; el paciente instala la app verde aparte.
+    handle_links: "not-preferred",
+  } as MetadataRoute.Manifest;
 }

@@ -1,12 +1,7 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { PatientPortalView } from "@/components/portal/patient-portal-view";
 import { notFound } from "next/navigation";
-import type { Metadata } from "next";
-
-import {
-  PATIENT_PWA_METADATA_ICONS,
-  PATIENT_THEME_COLOR,
-} from "@/lib/utils/patient-portal-ready";
 
 export async function generateMetadata({
   params,
@@ -17,10 +12,6 @@ export async function generateMetadata({
   return {
     title: `App pacientes — ${slug} | DrFlow`,
     description: "Pedí turno, recetas y contactá a tu consultorio por WhatsApp.",
-    manifest: `/portal/${slug}/manifest.webmanifest`,
-    themeColor: PATIENT_THEME_COLOR,
-    appleWebApp: { capable: true, title: "DrFlow Pacientes", statusBarStyle: "default" },
-    icons: PATIENT_PWA_METADATA_ICONS,
   };
 }
 

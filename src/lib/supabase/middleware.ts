@@ -27,6 +27,7 @@ async function getUserWithTimeout(
 function isPwaAsset(path: string): boolean {
   return (
     path === "/sw.js" ||
+    path === "/sw-portal.js" ||
     path === "/manifest.webmanifest" ||
     path.endsWith("/manifest.webmanifest")
   );
