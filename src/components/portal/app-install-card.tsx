@@ -116,11 +116,11 @@ export function AppInstallCard({
     return (
       <div
         className={cn(
-          "rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-center",
+          "overflow-hidden rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-center",
           className
         )}
       >
-        <DrFlowLogo size="sm" href={null} centered />
+        <DrFlowLogo size="sm" href={null} />
         <p className="mt-2 text-sm font-medium text-emerald-900">
           {isClinic ? "DrFlow instalado en tu celular" : "App instalada en tu celular"}
         </p>
@@ -131,70 +131,92 @@ export function AppInstallCard({
   return (
     <div
       className={cn(
-        "rounded-xl border-2 border-blue-200 bg-gradient-to-b from-blue-50 to-white p-4 shadow-sm",
+        "overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-b from-blue-50 to-white p-4 shadow-sm",
         compact && "p-3",
         className
       )}
     >
-      <div className="flex flex-col items-center text-center sm:flex-row sm:items-start sm:gap-4 sm:text-left">
-        <DrFlowLogo size={compact ? "xs" : "sm"} href={null} centered className="shrink-0" />
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-blue-950">{title}</p>
-          {!compact && <p className="mt-1 text-xs leading-relaxed text-blue-800/80">{subtitle}</p>}
-        </div>
+      <div className="flex justify-center">
+        <DrFlowLogo size={compact ? "xs" : "sm"} href={null} />
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+      {!compact && (
+        <div className="mt-3 space-y-1 text-center">
+          <p className="break-words text-sm font-semibold text-blue-950">{title}</p>
+          <p className="break-words text-xs leading-relaxed text-blue-800/80">{subtitle}</p>
+        </div>
+      )}
+
+      <div className="mt-3 flex flex-col gap-2">
         {deferredPrompt ? (
-          <Button type="button" size="sm" onClick={handleInstall} disabled={installing}>
-            <Smartphone className="h-4 w-4" />
+          <Button
+            type="button"
+            size="sm"
+            className="w-full justify-center"
+            onClick={handleInstall}
+            disabled={installing}
+          >
+            <Smartphone className="h-4 w-4 shrink-0" />
             {installing ? "Instalando…" : "Instalar en celular"}
           </Button>
         ) : (
-          <Button type="button" size="sm" variant="secondary" disabled className="opacity-80">
-            <Smartphone className="h-4 w-4" />
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled
+            className="w-full justify-center opacity-80"
+          >
+            <Smartphone className="h-4 w-4 shrink-0" />
             Instalar en celular
           </Button>
         )}
-        <Button type="button" size="sm" variant="outline" onClick={handleDownloadIcon}>
-          <Download className="h-4 w-4" />
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="w-full justify-center"
+          onClick={handleDownloadIcon}
+        >
+          <Download className="h-4 w-4 shrink-0" />
           Descargar icono
         </Button>
         {!isClinic && slug && (
           <Link
             href={`/portal/${slug}`}
             target="_blank"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 hover:underline"
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-50"
           >
             Abrir portal
-            <ExternalLink className="h-3.5 w-3.5" />
+            <ExternalLink className="h-3.5 w-3.5 shrink-0" />
           </Link>
         )}
         <a
           href="/icon-512.png"
           download="DrFlow-icono.png"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-blue-700"
+          className="inline-flex w-full items-center justify-center gap-1.5 py-1 text-xs font-medium text-slate-500 hover:text-blue-700"
         >
           PNG directo
         </a>
       </div>
 
       {iosHint && (
-        <p className="mt-3 rounded-lg bg-white/80 p-2 text-xs text-blue-900">
-          <strong>iPhone:</strong> Safari → Compartir → Agregar a pantalla de inicio. Podés usar el
-          icono descargado.
+        <p className="mt-3 break-words rounded-lg bg-white/80 p-2 text-xs leading-relaxed text-blue-900">
+          <strong>iPhone:</strong> Safari → Compartir → Agregar a pantalla de inicio.
         </p>
       )}
       {!iosHint && !deferredPrompt && (
-        <p className="mt-3 rounded-lg bg-white/80 p-2 text-xs text-blue-800/90">
+        <p className="mt-3 break-words rounded-lg bg-white/80 p-2 text-xs leading-relaxed text-blue-800/90">
           {isClinic ? (
             <>
-              <strong>Android/Chrome:</strong> menú ⋮ → Instalar app.{" "}
+              <strong>Android/Chrome:</strong> menú → Instalar app.
+              {" "}
               <strong>Desktop:</strong> icono en la barra de direcciones.
             </>
           ) : (
             <>
-              <strong>Android:</strong> menú → Instalar app.{" "}
+              <strong>Android:</strong> menú → Instalar app.
+              {" "}
               <strong>iPhone:</strong> Compartir → Agregar a inicio.
             </>
           )}
