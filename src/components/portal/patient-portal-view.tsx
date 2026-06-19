@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PublicBookingForm } from "@/components/booking/public-booking-form";
+import { PatientRequestsPanel } from "@/components/portal/patient-requests-panel";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,9 +11,13 @@ import { buildPrescriptionRequestMessage } from "@/lib/utils/patient-messages";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import { AppInstallCard } from "@/components/portal/app-install-card";
 import { isPatientPortalReady } from "@/lib/utils/patient-portal-ready";
-import { Calendar, Pill, MessageCircle } from "lucide-react";
+import {
+  addPatientRequest,
+  getStoredDocument,
+} from "@/lib/utils/patient-requests-storage";
+import { Bell, Calendar, Pill, MessageCircle } from "lucide-react";
 
-type Tab = "turno" | "receta" | "whatsapp";
+type Tab = "turno" | "receta" | "whatsapp" | "solicitudes";
 
 interface Professional {
   id: string;
@@ -43,12 +48,24 @@ export function PatientPortalView({
   const [documentNumber, setDocumentNumber] = useState("");
   const [insuranceNumber, setInsuranceNumber] = useState("");
   const [medications, setMedications] = useState("");
+  const [requestsVersion, setRequestsVersion] = useState(0);
 
   useEffect(() => {
     queueMicrotask(() => {
       setPortalReady(isPatientPortalReady(slug));
+      setDocumentNumber(getStoredDocument(slug));
     });
   }, [slug]);
+
+  function logWhatsappRequest(type: "turno" | "receta" | "consulta") {
+    addPatientRequest(slug, {
+      type,
+      channel: "whatsapp",
+      documentNumber: documentNumber.trim() || getStoredDocument(slug) || "—",
+      patientName: patientName.trim() || "Paciente",
+    });
+    setRequestsVersion((v) => v + 1);
+  }
 
   const recetaMessage = buildPrescriptionRequestMessage({
     patientName: patientName || "Paciente",
@@ -61,6 +78,7 @@ export function PatientPortalView({
     { id: "turno", label: "Turno", icon: Calendar },
     { id: "receta", label: "Receta", icon: Pill },
     { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
+    { id: "solicitudes", label: "Mis solicitudes", icon: Bell },
   ];
 
   return (
@@ -92,20 +110,20 @@ export function PatientPortalView({
           <p className="mb-4 text-center text-sm text-slate-500">{clinicAddress}</p>
         )}
 
-        <div className="mb-6 flex rounded-xl border border-slate-200 bg-white p-1">
+        <div className="mb-6 flex rounded-xl border border-slate-200 bg-white p-1 overflow-x-auto">
           {tabs.map((t) => (
             <button
               key={t.id}
               type="button"
               onClick={() => setTab(t.id)}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-medium transition ${
+              className={`flex min-w-[4.5rem] flex-1 items-center justify-center gap-1 rounded-lg py-2.5 text-xs font-medium transition sm:text-sm ${
                 tab === t.id
                   ? "bg-blue-600 text-white shadow-sm"
                   : "text-slate-600 hover:bg-slate-50"
               }`}
             >
-              <t.icon className="h-4 w-4" />
-              {t.label}
+              <t.icon className="h-4 w-4 shrink-0" />
+              <span className="truncate">{t.label}</span>
             </button>
           ))}
         </div>
@@ -121,6 +139,7 @@ export function PatientPortalView({
                 slug={slug}
                 clinicName={clinicName}
                 professionals={professionals}
+                onRequestSaved={() => setRequestsVersion((v) => v + 1)}
               />
             )}
           </div>
@@ -162,6 +181,7 @@ export function PatientPortalView({
                 message={recetaMessage}
                 label="Enviar solicitud por WhatsApp"
                 size="md"
+                onOpen={() => logWhatsappRequest("receta")}
               />
             </div>
           </div>
@@ -175,10 +195,19 @@ export function PatientPortalView({
             </p>
             <PatientWhatsAppButton
               phone={clinicPhone}
-              message={`Hola, soy paciente de ${clinicName}. Quisiera hacer una consulta.`}
-              label="Abrir WhatsApp"
+              message={`Hola, soy paciente de ${clinicName}. Quisiera pedir un turno.`}
+              label="Pedir turno por WhatsApp"
               size="md"
               className="mx-auto"
+              onOpen={() => logWhatsappRequest("turno")}
+            />
+            <PatientWhatsAppButton
+              phone={clinicPhone}
+              message={`Hola, soy paciente de ${clinicName}. Quisiera hacer una consulta.`}
+              label="Consulta general"
+              size="md"
+              className="mx-auto"
+              onOpen={() => logWhatsappRequest("consulta")}
             />
             {!clinicPhone && (
               <p className="text-xs text-amber-700">
@@ -186,6 +215,14 @@ export function PatientPortalView({
               </p>
             )}
           </div>
+        )}
+
+        {tab === "solicitudes" && (
+          <PatientRequestsPanel
+            slug={slug}
+            clinicName={clinicName}
+            refreshTrigger={requestsVersion}
+          />
         )}
 
         {!portalReady && (

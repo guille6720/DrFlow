@@ -1,7 +1,6 @@
 import { Header } from "@/components/layout/header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card } from "@/components/ui/card";
-import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ConsultorioLivePanel } from "@/components/dashboard/consultorio-live-panel";
@@ -28,8 +27,7 @@ import Link from "next/link";
 import { format, startOfDay, endOfDay, startOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
 import { DashboardMobileAppsPanel } from "@/components/dashboard/dashboard-mobile-apps-panel";
-import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
-import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
+import { DashboardUpcomingList } from "@/components/dashboard/dashboard-upcoming-list";
 
 export default async function DashboardPage() {
   const profile = await getProfile();
@@ -101,7 +99,7 @@ export default async function DashboardPage() {
         supabase
           .from("appointments")
           .select(
-            "id, start_at, status, patients(first_name, last_name, phone), professionals(profiles(full_name))"
+            "id, start_at, status, booking_source, notes, patients(first_name, last_name, phone), professionals(profiles(full_name))"
           )
           .eq("clinic_id", clinicId)
           .gte("start_at", now.toISOString())
@@ -239,42 +237,10 @@ export default async function DashboardPage() {
                 }
               />
             ) : (
-              <ul className="divide-y divide-slate-100">
-                {upcoming.map((appt) => {
-                  const statusInfo = appointmentStatusBadge[appt.status];
-                  const patientFullName = appt.patients
-                    ? `${appt.patients.first_name} ${appt.patients.last_name}`
-                    : "Paciente";
-                  return (
-                    <li
-                      key={appt.id}
-                      className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-slate-900">{patientFullName}</p>
-                        <p className="text-sm text-slate-500">
-                          {format(new Date(appt.start_at), "PPp", { locale: es })}
-                          {" · "}
-                          {appt.professionals?.profiles?.full_name ?? "Profesional"}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        <PatientWhatsAppButton
-                          phone={appt.patients?.phone}
-                          message={buildPatientContactMessage(
-                            patientFullName,
-                            appt.professionals?.profiles?.full_name ?? undefined
-                          )}
-                          size="icon"
-                        />
-                        {statusInfo && (
-                          <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
-                        )}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+              <DashboardUpcomingList
+                appointments={upcoming}
+                canManage={hasPermission(role, "manageAppointments", isSuperadmin)}
+              />
             )}
           </Card>
 

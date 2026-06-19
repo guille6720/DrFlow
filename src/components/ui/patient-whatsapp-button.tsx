@@ -10,6 +10,7 @@ interface PatientWhatsAppButtonProps {
   label?: string;
   size?: "sm" | "md" | "icon";
   className?: string;
+  onOpen?: () => void;
 }
 
 /** Abre wa.me con mensaje prearmado. */
@@ -19,6 +20,7 @@ export function PatientWhatsAppButton({
   label = "WhatsApp",
   size = "sm",
   className,
+  onOpen,
 }: PatientWhatsAppButtonProps) {
   const url = phone ? buildWhatsAppUrl(phone, message) : null;
 
@@ -49,7 +51,10 @@ export function PatientWhatsAppButton({
         )}
         title="WhatsApp"
         aria-label={`WhatsApp: ${label}`}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpen?.();
+        }}
       >
         <MessageCircle className="h-5 w-5" />
       </a>
@@ -67,7 +72,10 @@ export function PatientWhatsAppButton({
         "bg-[#25D366] hover:bg-[#20bd5a]",
         className
       )}
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpen?.();
+      }}
     >
       <MessageCircle className={size === "md" ? "h-5 w-5" : "h-4 w-4"} />
       {label}

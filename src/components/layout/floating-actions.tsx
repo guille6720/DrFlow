@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   Plus,
@@ -47,7 +48,12 @@ const actions = [
 ];
 
 export function FloatingActions() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  if (pathname === "/dashboard") {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">

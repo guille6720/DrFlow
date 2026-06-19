@@ -48,7 +48,48 @@ export async function submitPublicBooking(formData: FormData) {
   return {
     success: true,
     appointmentId: (result as { appointment_id?: string })?.appointment_id,
+    startAt: data.start_at,
+    documentNumber: data.document_number,
+    patientName: `${data.first_name} ${data.last_name}`.trim(),
   };
+}
+
+export async function fetchPatientAppointmentStatuses(
+  slug: string,
+  documentNumber: string,
+  appointmentIds: string[]
+) {
+  if (!appointmentIds.length) return { statuses: [] as Array<{
+    appointmentId: string;
+    status: string;
+    startAt: string;
+    bookingSource: string | null;
+  }> };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_patient_appointment_statuses", {
+    p_slug: slug,
+    p_document_number: documentNumber.trim(),
+    p_appointment_ids: appointmentIds,
+  });
+
+  if (error) return { error: "No pudimos consultar el estado", statuses: [] };
+
+  const statuses = (data ?? []).map(
+    (row: {
+      appointment_id: string;
+      status: string;
+      start_at: string;
+      booking_source: string | null;
+    }) => ({
+      appointmentId: row.appointment_id,
+      status: row.status,
+      startAt: row.start_at,
+      bookingSource: row.booking_source,
+    })
+  );
+
+  return { statuses };
 }
 
 export async function loadPublicBookingSlots(
