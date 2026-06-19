@@ -18,8 +18,8 @@ export const metadata: Metadata = {
   description:
     "Agenda, pacientes, historia clínica, recetas y guía farmacológica por síntomas. Diseñado para médicos que quieren fluir, no luchar con el software.",
   icons: {
-    icon: "/drflow-logo.png",
-    apple: "/drflow-logo.png",
+    icon: "/icon-512.png",
+    apple: "/icon-512.png",
   },
 };
 

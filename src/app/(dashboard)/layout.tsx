@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { ClinicalTopNav } from "@/components/layout/clinical-top-nav";
 import { FloatingActions } from "@/components/layout/floating-actions";
 import { RoutePrefetcher } from "@/components/layout/route-prefetcher";
+import { PwaRegister } from "@/components/pwa/pwa-register";
 import { getDashboardShell } from "@/lib/auth/session";
 
 import type { Metadata } from "next";
@@ -14,6 +15,10 @@ export const metadata: Metadata = {
     capable: true,
     title: "DrFlow",
     statusBarStyle: "default",
+  },
+  icons: {
+    icon: [{ url: "/icon-512.png", sizes: "512x512", type: "image/png" }],
+    apple: [{ url: "/icon-512.png", sizes: "512x512", type: "image/png" }],
   },
 };
 
@@ -30,6 +35,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen drflow-mesh">
+      <PwaRegister />
       <RoutePrefetcher />
       <Sidebar
         clinicName={clinic?.name}

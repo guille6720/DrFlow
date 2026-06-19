@@ -15,7 +15,8 @@ export async function generateMetadata({
     manifest: `/portal/${slug}/manifest.webmanifest`,
     appleWebApp: { capable: true, title: "DrFlow Pacientes", statusBarStyle: "default" },
     icons: {
-      apple: [{ url: "/drflow-logo.png", sizes: "512x512", type: "image/png" }],
+      icon: [{ url: "/icon-512.png", sizes: "512x512", type: "image/png" }],
+      apple: [{ url: "/icon-512.png", sizes: "512x512", type: "image/png" }],
     },
   };
 }

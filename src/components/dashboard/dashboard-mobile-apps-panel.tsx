@@ -21,8 +21,7 @@ export function DashboardMobileAppsPanel({
     <div id="apps-moviles" className="grid min-w-0 gap-4 xl:grid-cols-2">
       <Card title="DrFlow en tu celular">
         <p className="mb-4 break-words text-sm text-slate-600">
-          Instalá la app del consultorio con el logo DrFlow. Ideal para revisar agenda y pacientes
-          desde el celular.
+          Agregá DrFlow a la pantalla de inicio de tu celular para acceder al dashboard y la agenda.
         </p>
         <AppInstallCard variant="clinic" compact />
       </Card>

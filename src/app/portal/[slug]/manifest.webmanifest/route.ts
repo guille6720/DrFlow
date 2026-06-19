@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { PWA_ICONS } from "@/lib/utils/patient-portal-ready";
 
 export async function GET(
   _request: Request,
@@ -43,20 +44,7 @@ export async function GET(
     theme_color: "#2563eb",
     orientation: "portrait" as const,
     lang: "es-AR",
-    icons: [
-      {
-        src: "/drflow-logo.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "/icon-512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
-      },
-    ],
+    icons: PWA_ICONS,
   };
 
   return Response.json(manifest, {

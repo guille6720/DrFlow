@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { PWA_ICONS } from "@/lib/utils/patient-portal-ready";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -7,24 +8,12 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Agenda, pacientes e historia clínica en tu celular.",
     start_url: "/dashboard",
     scope: "/",
+    id: "/dashboard",
     display: "standalone",
-  background_color: "#eff6ff",
-  theme_color: "#2563eb",
+    background_color: "#eff6ff",
+    theme_color: "#2563eb",
     orientation: "portrait",
     lang: "es-AR",
-    icons: [
-      {
-        src: "/drflow-logo.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "/icon-512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
-      },
-    ],
+    icons: PWA_ICONS,
   };
 }

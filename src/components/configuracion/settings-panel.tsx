@@ -111,7 +111,7 @@ export function SettingsPanel({
 
       <Card title="DrFlow en tu celular (médico)">
         <p className="mb-4 text-sm text-slate-600">
-          Instalá DrFlow en tu celular para acceder al dashboard y la agenda con el icono oficial.
+          Agregá DrFlow a la pantalla de inicio de tu celular para acceder al dashboard y la agenda.
         </p>
         <AppInstallCard variant="clinic" />
       </Card>
