@@ -11,7 +11,7 @@ interface CardProps {
 
 export function Card({ children, className, title, description, action }: CardProps) {
   return (
-    <div className={cn("min-w-0 overflow-hidden rounded-2xl border border-blue-100/80 bg-white shadow-sm", className)}>
+    <div className={cn("min-w-0 overflow-visible rounded-2xl border border-blue-100/80 bg-white shadow-sm", className)}>
       {(title || action) && (
         <div className="flex min-w-0 items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
           <div className="min-w-0 flex-1">

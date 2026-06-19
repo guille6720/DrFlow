@@ -157,7 +157,7 @@ export function SymptomTypeahead({ selected, onChange, className }: SymptomTypea
         <ul
           id={`${listId}-listbox`}
           role="listbox"
-          className="absolute z-50 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+          className="absolute z-[100] mt-1 max-h-72 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg ring-1 ring-black/5"
         >
           {results.map((s, i) => (
             <li
@@ -167,12 +167,14 @@ export function SymptomTypeahead({ selected, onChange, className }: SymptomTypea
               onMouseEnter={() => setHighlight(i)}
               onClick={() => addSymptom(s)}
               className={cn(
-                "cursor-pointer px-4 py-3 transition-colors",
+                "cursor-pointer px-4 py-2.5 transition-colors",
                 i === highlight ? "bg-violet-50" : "hover:bg-slate-50"
               )}
             >
-              <div className="flex items-start justify-between gap-3">
-                <span className="text-sm font-medium text-slate-900">{s.name}</span>
+              <div className="flex items-center justify-between gap-3">
+                <span className="min-w-0 flex-1 text-sm font-medium leading-snug text-slate-900">
+                  {s.name}
+                </span>
                 {s.category && (
                   <span className="shrink-0 rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
                     {s.category}
@@ -180,7 +182,7 @@ export function SymptomTypeahead({ selected, onChange, className }: SymptomTypea
                 )}
               </div>
               {s.description && (
-                <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">{s.description}</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-500">{s.description}</p>
               )}
             </li>
           ))}
