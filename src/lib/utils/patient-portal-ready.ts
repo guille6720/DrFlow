@@ -31,12 +31,33 @@ export function markPatientPortalInstalled(slug: string): void {
   }
 }
 
-/** Iconos PWA: tamaños reales 192/512 px con fondo sólido (requerido por Android). */
+/** Azul — app del médico / consultorio. */
+export const DOCTOR_THEME_COLOR = "#2563eb";
+
+/** Verde — app del paciente (icono en pantalla de inicio). */
+export const PATIENT_THEME_COLOR = "#059669";
+
+export const DOCTOR_PWA_ICON_192 = "/icon-192.png";
+export const DOCTOR_PWA_ICON_512 = "/icon-512.png";
+export const PATIENT_PWA_ICON_192 = "/icon-patient-192.png";
+export const PATIENT_PWA_ICON_512 = "/icon-patient-512.png";
+
+/** Iconos PWA del consultorio (azul). */
 export function getPwaIcons(origin: string) {
   const base = origin.replace(/\/$/, "");
   return [
-    { src: `${base}/icon-192.png`, sizes: "192x192", type: "image/png", purpose: "any" as const },
-    { src: `${base}/icon-512.png`, sizes: "512x512", type: "image/png", purpose: "any" as const },
+    {
+      src: `${base}${DOCTOR_PWA_ICON_192}`,
+      sizes: "192x192",
+      type: "image/png",
+      purpose: "any" as const,
+    },
+    {
+      src: `${base}${DOCTOR_PWA_ICON_512}`,
+      sizes: "512x512",
+      type: "image/png",
+      purpose: "any" as const,
+    },
     {
       src: `${base}/icon-maskable-512.png`,
       sizes: "512x512",
@@ -46,10 +67,44 @@ export function getPwaIcons(origin: string) {
   ];
 }
 
-/** Rutas relativas para metadata HTML. */
+/** Iconos PWA del portal pacientes (verde). */
+export function getPatientPwaIcons(origin: string) {
+  const base = origin.replace(/\/$/, "");
+  return [
+    {
+      src: `${base}${PATIENT_PWA_ICON_192}`,
+      sizes: "192x192",
+      type: "image/png",
+      purpose: "any" as const,
+    },
+    {
+      src: `${base}${PATIENT_PWA_ICON_512}`,
+      sizes: "512x512",
+      type: "image/png",
+      purpose: "any" as const,
+    },
+    {
+      src: `${base}/icon-patient-maskable-512.png`,
+      sizes: "512x512",
+      type: "image/png",
+      purpose: "maskable" as const,
+    },
+  ];
+}
+
+/** Rutas relativas para metadata HTML del consultorio. */
 export const PWA_ICONS = getPwaIcons("");
 
-export const PWA_APPLE_ICON = "/icon-192.png";
+export const PWA_APPLE_ICON = DOCTOR_PWA_ICON_192;
+export const PATIENT_PWA_APPLE_ICON = PATIENT_PWA_ICON_192;
+
+export const PATIENT_PWA_METADATA_ICONS = {
+  icon: [
+    { url: PATIENT_PWA_ICON_192, sizes: "192x192", type: "image/png" },
+    { url: PATIENT_PWA_ICON_512, sizes: "512x512", type: "image/png" },
+  ],
+  apple: [{ url: PATIENT_PWA_APPLE_ICON, sizes: "192x192", type: "image/png" }],
+};
 
 export function buildPatientAppInstallUrl(origin: string, slug: string): string {
   return `${origin.replace(/\/$/, "")}/portal/${slug}/instalar`;
@@ -78,7 +133,7 @@ export function buildPatientAppShareMessage(
     "Pasos:",
     "1. Tocá el link de arriba",
     '2. Apretá "Agregar a pantalla de inicio"',
-    "3. Listo — queda el icono azul de DrFlow en tu celular",
+    "3. Listo — queda el icono verde de DrFlow en tu celular",
   ]
     .filter((line): line is string => Boolean(line))
     .join("\n");

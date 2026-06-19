@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { PatientAppIcon } from "@/components/brand/patient-app-icon";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -129,19 +130,40 @@ export function AppInstallCard({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-b from-blue-50 to-white p-4 shadow-sm",
+        "overflow-hidden rounded-xl border p-4 shadow-sm",
+        isClinic
+          ? "border-blue-200 bg-gradient-to-b from-blue-50 to-white"
+          : "border-emerald-200 bg-gradient-to-b from-emerald-50 to-white",
         compact && "p-3",
         className
       )}
     >
       <div className="flex justify-center">
-        <DrFlowLogo size={compact ? "xs" : "sm"} href={null} />
+        {isClinic ? (
+          <DrFlowLogo size={compact ? "xs" : "sm"} href={null} />
+        ) : (
+          <PatientAppIcon size={compact ? "sm" : "md"} />
+        )}
       </div>
 
       {!compact && (
         <div className="mt-3 space-y-1 text-center">
-          <p className="break-words text-sm font-semibold text-blue-950">{title}</p>
-          <p className="break-words text-xs leading-relaxed text-blue-800/80">{subtitle}</p>
+          <p
+            className={cn(
+              "break-words text-sm font-semibold",
+              isClinic ? "text-blue-950" : "text-emerald-950"
+            )}
+          >
+            {title}
+          </p>
+          <p
+            className={cn(
+              "break-words text-xs leading-relaxed",
+              isClinic ? "text-blue-800/80" : "text-emerald-800/80"
+            )}
+          >
+            {subtitle}
+          </p>
         </div>
       )}
 
@@ -158,7 +180,12 @@ export function AppInstallCard({
             {installing ? "Instalando…" : "Agregar a pantalla de inicio"}
           </Button>
         ) : (
-          <p className="rounded-lg bg-white/90 p-3 text-center text-xs leading-relaxed text-blue-900">
+          <p
+            className={cn(
+              "rounded-lg bg-white/90 p-3 text-center text-xs leading-relaxed",
+              isClinic ? "text-blue-900" : "text-emerald-900"
+            )}
+          >
             {iosHint ? (
               <>
                 <strong>iPhone:</strong> tocá{" "}
@@ -186,7 +213,7 @@ export function AppInstallCard({
         {!isClinic && slug && !portalMode && (
           <Link
             href={`/portal/${slug}/instalar`}
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-50"
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
           >
             Abrir instalador para pacientes
             <ExternalLink className="h-3.5 w-3.5 shrink-0" />

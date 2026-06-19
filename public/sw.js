@@ -1,6 +1,13 @@
-/* Service worker para instalación PWA (consultorio + portal pacientes). */
-const CACHE = "drflow-pwa-v2";
-const PRECACHE = ["/icon-192.png", "/icon-512.png", "/icon-maskable-512.png"];
+/* Service worker para instalación PWA (consultorio azul + portal pacientes verde). */
+const CACHE = "drflow-pwa-v3";
+const PRECACHE = [
+  "/icon-192.png",
+  "/icon-512.png",
+  "/icon-maskable-512.png",
+  "/icon-patient-192.png",
+  "/icon-patient-512.png",
+  "/icon-patient-maskable-512.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

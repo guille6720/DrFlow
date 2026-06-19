@@ -8,19 +8,34 @@ import {
   SPECIALTY_OTHER_VALUE,
 } from "@/lib/constants/medical-specialties";
 
+export interface DoctorSetupDefaultValues {
+  doctorFirstName?: string;
+  doctorLastName?: string;
+  documentNumber?: string;
+  phone?: string;
+  specialtySelect?: string;
+  specialtyCustom?: string;
+  licenseNational?: string;
+  licenseProvincial?: string;
+}
+
 interface DoctorSetupFieldsProps {
   fieldErrors: Record<string, string>;
   onClearError: (name: string) => void;
   /** En registro incluye email/contraseña arriba; acá solo datos médicos */
   showSectionTitle?: boolean;
+  defaultValues?: DoctorSetupDefaultValues;
 }
 
 export function DoctorSetupFields({
   fieldErrors,
   onClearError,
   showSectionTitle = true,
+  defaultValues,
 }: DoctorSetupFieldsProps) {
-  const [specialtySelect, setSpecialtySelect] = useState("");
+  const [specialtySelect, setSpecialtySelect] = useState(
+    defaultValues?.specialtySelect ?? ""
+  );
 
   return (
     <div className="space-y-4">
@@ -39,6 +54,7 @@ export function DoctorSetupFields({
           label="Nombre"
           placeholder="Guillermo"
           required
+          defaultValue={defaultValues?.doctorFirstName}
           error={fieldErrors.doctorFirstName}
           onChange={() => onClearError("doctorFirstName")}
         />
@@ -47,6 +63,7 @@ export function DoctorSetupFields({
           label="Apellido"
           placeholder="Castro"
           required
+          defaultValue={defaultValues?.doctorLastName}
           error={fieldErrors.doctorLastName}
           onChange={() => onClearError("doctorLastName")}
         />
@@ -58,6 +75,7 @@ export function DoctorSetupFields({
         placeholder="12345678"
         inputMode="numeric"
         required
+        defaultValue={defaultValues?.documentNumber}
         error={fieldErrors.documentNumber}
         onChange={() => onClearError("documentNumber")}
       />
@@ -68,6 +86,7 @@ export function DoctorSetupFields({
         type="tel"
         placeholder="11 1234-5678"
         required
+        defaultValue={defaultValues?.phone}
         error={fieldErrors.phone}
         onChange={() => onClearError("phone")}
       />
@@ -96,6 +115,7 @@ export function DoctorSetupFields({
           label="Especialidad (manual)"
           placeholder="Ej: Medicina del deporte"
           required
+          defaultValue={defaultValues?.specialtyCustom}
           error={fieldErrors.specialtyCustom}
           onChange={() => onClearError("specialtyCustom")}
         />
@@ -107,6 +127,7 @@ export function DoctorSetupFields({
           label="Matrícula nacional"
           placeholder="MN 12345"
           required
+          defaultValue={defaultValues?.licenseNational}
           error={fieldErrors.licenseNational}
           onChange={() => onClearError("licenseNational")}
         />
@@ -114,6 +135,7 @@ export function DoctorSetupFields({
           name="licenseProvincial"
           label="Matrícula provincial (opcional)"
           placeholder="Si no tenés, repetí la nacional"
+          defaultValue={defaultValues?.licenseProvincial}
           error={fieldErrors.licenseProvincial}
           onChange={() => onClearError("licenseProvincial")}
         />

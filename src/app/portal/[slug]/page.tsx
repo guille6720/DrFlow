@@ -3,7 +3,10 @@ import { PatientPortalView } from "@/components/portal/patient-portal-view";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-import { PWA_APPLE_ICON } from "@/lib/utils/patient-portal-ready";
+import {
+  PATIENT_PWA_METADATA_ICONS,
+  PATIENT_THEME_COLOR,
+} from "@/lib/utils/patient-portal-ready";
 
 export async function generateMetadata({
   params,
@@ -15,14 +18,9 @@ export async function generateMetadata({
     title: `App pacientes — ${slug} | DrFlow`,
     description: "Pedí turno, recetas y contactá a tu consultorio por WhatsApp.",
     manifest: `/portal/${slug}/manifest.webmanifest`,
+    themeColor: PATIENT_THEME_COLOR,
     appleWebApp: { capable: true, title: "DrFlow Pacientes", statusBarStyle: "default" },
-    icons: {
-      icon: [
-        { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-        { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
-      ],
-      apple: [{ url: PWA_APPLE_ICON, sizes: "192x192", type: "image/png" }],
-    },
+    icons: PATIENT_PWA_METADATA_ICONS,
   };
 }
 

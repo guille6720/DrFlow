@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getPwaIcons } from "@/lib/utils/patient-portal-ready";
+import { DOCTOR_THEME_COLOR, getPwaIcons } from "@/lib/utils/patient-portal-ready";
 import { getSiteUrl } from "@/lib/supabase/env";
 
 export default function manifest(): MetadataRoute.Manifest {
@@ -12,8 +12,8 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     id: "/dashboard",
     display: "standalone",
-    background_color: "#2563eb",
-    theme_color: "#2563eb",
+    background_color: DOCTOR_THEME_COLOR,
+    theme_color: DOCTOR_THEME_COLOR,
     orientation: "portrait",
     lang: "es-AR",
     icons: getPwaIcons(origin),

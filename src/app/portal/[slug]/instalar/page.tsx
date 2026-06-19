@@ -2,9 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { PatientAppInstallView } from "@/components/portal/patient-app-install-view";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { PWA_APPLE_ICON } from "@/lib/utils/patient-portal-ready";
 import {
   buildPatientAppOgDescription,
+  PATIENT_PWA_ICON_512,
+  PATIENT_PWA_METADATA_ICONS,
+  PATIENT_THEME_COLOR,
 } from "@/lib/utils/patient-portal-ready";
 import { resolvePortalDoctorInfo } from "@/lib/utils/portal-doctor-info";
 import { getSiteUrl } from "@/lib/supabase/env";
@@ -21,7 +23,7 @@ export async function generateMetadata({
   }
 
   const origin = getSiteUrl();
-  const ogImage = `${origin}/icon-512.png`;
+  const ogImage = `${origin}${PATIENT_PWA_ICON_512}`;
   const title = `${doctor.fullName}${doctor.licenseLabel ? ` — ${doctor.licenseLabel}` : ""}`;
   const description = buildPatientAppOgDescription(doctor);
 
@@ -29,6 +31,7 @@ export async function generateMetadata({
     title: `Instalar app — ${doctor.fullName}`,
     description,
     manifest: `/portal/${slug}/manifest.webmanifest`,
+    themeColor: PATIENT_THEME_COLOR,
     appleWebApp: { capable: true, title: doctor.clinicName, statusBarStyle: "default" },
     openGraph: {
       type: "website",
@@ -42,7 +45,7 @@ export async function generateMetadata({
           url: ogImage,
           width: 512,
           height: 512,
-          alt: "DrFlow — App para pacientes",
+          alt: "DrFlow — App verde para pacientes",
         },
       ],
     },
@@ -52,13 +55,7 @@ export async function generateMetadata({
       description,
       images: [ogImage],
     },
-    icons: {
-      icon: [
-        { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-        { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
-      ],
-      apple: [{ url: PWA_APPLE_ICON, sizes: "192x192", type: "image/png" }],
-    },
+    icons: PATIENT_PWA_METADATA_ICONS,
   };
 }
 

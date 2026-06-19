@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Settings } from "lucide-react";
+import { DoctorProfileModal } from "./doctor-profile-modal";
 import { ROLE_LABELS, hasPermission } from "@/lib/permissions/roles";
 import type { Clinic, UserRole } from "@/types/database";
 import { ClinicSelector } from "./clinic-selector";
@@ -26,6 +28,7 @@ export function Header({
   userName,
   isSuperadmin = false,
 }: HeaderProps) {
+  const [profileOpen, setProfileOpen] = useState(false);
   const showSettings = hasPermission(role, "manageSettings", isSuperadmin);
 
   return (
@@ -56,14 +59,26 @@ export function Header({
           {clinics.length > 1 && activeClinicId && (
             <ClinicSelector clinics={clinics} activeClinicId={activeClinicId} />
           )}
-          <div className="rounded-xl border border-blue-100 bg-white px-4 py-2 text-right shadow-sm">
-            <p className="text-sm font-semibold text-slate-900">{userName}</p>
-            {role && (
-              <p className="text-xs font-medium text-blue-700">{ROLE_LABELS[role]}</p>
-            )}
-          </div>
+          {userName && (
+            <button
+              type="button"
+              onClick={() => setProfileOpen(true)}
+              className={cn(
+                "rounded-xl border border-blue-100 bg-white px-4 py-2 text-right shadow-sm transition",
+                "hover:border-blue-300 hover:bg-blue-50/80 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              )}
+              title="Editar mis datos"
+              aria-label="Editar mis datos profesionales"
+            >
+              <p className="text-sm font-semibold text-slate-900">{userName}</p>
+              {role && (
+                <p className="text-xs font-medium text-blue-700">{ROLE_LABELS[role]}</p>
+              )}
+            </button>
+          )}
         </div>
       </div>
+      <DoctorProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </header>
   );
 }

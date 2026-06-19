@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { PatientAppIcon } from "@/components/brand/patient-app-icon";
 import { Button } from "@/components/ui/button";
 import { Smartphone } from "lucide-react";
 import {
@@ -102,33 +102,33 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
 
   if (installed || isStandaloneMode()) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-blue-600 text-white">
+      <div className="flex min-h-screen items-center justify-center bg-emerald-600 text-white">
         <p className="text-lg">Abriendo la app…</p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-blue-600 to-blue-800 px-6 py-10 text-white">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-emerald-600 to-emerald-800 px-6 py-10 text-white">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center text-center">
         <div className="mb-8 rounded-3xl bg-white p-6 shadow-xl">
-          <DrFlowLogo size="lg" href={null} />
+          <PatientAppIcon size="lg" priority />
         </div>
 
         <h1 className="text-2xl font-bold leading-tight sm:text-3xl">
           {doctor?.fullName ?? `App de ${clinicName}`}
         </h1>
         {doctor?.licenseLabel && (
-          <p className="mt-2 text-lg font-medium text-blue-100">{doctor.licenseLabel}</p>
+          <p className="mt-2 text-lg font-medium text-emerald-100">{doctor.licenseLabel}</p>
         )}
         {doctor?.specialty && (
-          <p className="mt-1 text-base text-blue-200">{doctor.specialty}</p>
+          <p className="mt-1 text-base text-emerald-200">{doctor.specialty}</p>
         )}
-        <p className="mt-3 text-lg text-blue-100">
+        <p className="mt-3 text-lg text-emerald-100">
           Pedí turnos y recetas PAMI desde tu celular
         </p>
         {doctor?.phone && (
-          <p className="mt-4 text-sm text-blue-200/90">
+          <p className="mt-4 text-sm text-emerald-200/90">
             Tel. {doctor.phone} — {PATIENT_CONTACT_PHONE_DISCLAIMER}
           </p>
         )}
@@ -138,7 +138,7 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
             <Button
               type="button"
               size="lg"
-              className="h-16 w-full justify-center gap-3 bg-white text-xl font-bold text-blue-700 hover:bg-blue-50"
+              className="h-16 w-full justify-center gap-3 bg-white text-xl font-bold text-emerald-700 hover:bg-emerald-50"
               onClick={handleInstall}
               disabled={installing}
             >
@@ -146,7 +146,7 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
               {installing ? "Instalando…" : "Agregar a mi celular"}
             </Button>
           ) : (
-            <div className="rounded-2xl bg-white/10 p-5 text-left text-base leading-relaxed text-blue-50">
+            <div className="rounded-2xl bg-white/10 p-5 text-left text-base leading-relaxed text-emerald-50">
               {iosHint ? (
                 <ol className="list-decimal space-y-3 pl-5">
                   <li>Tocá el botón <strong>Compartir</strong> abajo en Safari</li>
@@ -169,8 +169,8 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
           )}
         </div>
 
-        <p className="mt-8 text-sm text-blue-200">
-          Una vez instalada, el icono azul queda en tu pantalla de inicio
+        <p className="mt-8 text-sm text-emerald-200">
+          Una vez instalada, el icono verde queda en tu pantalla de inicio
         </p>
       </div>
     </div>

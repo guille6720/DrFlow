@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import { getPwaIcons } from "@/lib/utils/patient-portal-ready";
+import {
+  getPatientPwaIcons,
+  PATIENT_THEME_COLOR,
+} from "@/lib/utils/patient-portal-ready";
 
 export async function GET(
   request: Request,
@@ -41,11 +44,11 @@ export async function GET(
     start_url: `/portal/${slug}`,
     scope: `/portal/${slug}`,
     display: "standalone" as const,
-    background_color: "#2563eb",
-    theme_color: "#2563eb",
+    background_color: PATIENT_THEME_COLOR,
+    theme_color: PATIENT_THEME_COLOR,
     orientation: "portrait" as const,
     lang: "es-AR",
-    icons: getPwaIcons(origin),
+    icons: getPatientPwaIcons(origin),
   };
 
   return Response.json(manifest, {
