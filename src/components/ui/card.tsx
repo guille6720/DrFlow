@@ -11,7 +11,7 @@ interface CardProps {
 
 export function Card({ children, className, title, description, action }: CardProps) {
   return (
-    <div className={cn("rounded-2xl border border-teal-100/80 bg-white shadow-sm", className)}>
+    <div className={cn("rounded-2xl border border-blue-100/80 bg-white shadow-sm", className)}>
       {(title || action) && (
         <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4">
           <div>

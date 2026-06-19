@@ -15,6 +15,7 @@ import {
   Pill,
   MessageCircle,
   ScrollText,
+  ClipboardList,
   CheckCircle2,
   ArrowRight,
 } from "lucide-react";
@@ -36,13 +37,20 @@ const dailyFlow = [
   },
   {
     step: "3",
+    title: "Planillas PAMI",
+    desc: "Internación domiciliaria, geriátrico, insumos, oxígeno.",
+    href: "/pami/planillas",
+    icon: ClipboardList,
+  },
+  {
+    step: "4",
     title: "Estudios o derivación",
     desc: "Chips rápidos: laboratorio, ECG, cardiólogo, kinesio.",
     href: "/historias",
     icon: ScrollText,
   },
   {
-    step: "4",
+    step: "5",
     title: "Receta + WhatsApp",
     desc: "Receta PDF Ley 25.649. Compartir al familiar del paciente.",
     href: "/recetas",
@@ -93,14 +101,14 @@ export default async function GuiaPamiPage() {
               <Link
                 key={item.step}
                 href={item.href}
-                className="group flex gap-4 rounded-xl border border-teal-100 bg-teal-50/30 p-4 transition-all hover:border-teal-200 hover:shadow-sm"
+                className="group flex gap-4 rounded-xl border border-blue-100 bg-blue-50/30 p-4 transition-all hover:border-blue-200 hover:shadow-sm"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-600 text-sm font-bold text-white">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
                   {item.step}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <item.icon className="h-4 w-4 text-teal-700" />
+                    <item.icon className="h-4 w-4 text-blue-700" />
                     <p className="font-semibold text-slate-900">{item.title}</p>
                   </div>
                   <p className="mt-1 text-sm text-slate-600">{item.desc}</p>
@@ -132,7 +140,7 @@ export default async function GuiaPamiPage() {
             <ul className="space-y-2">
               {checklist.map((item) => (
                 <li key={item} className="flex items-start gap-2 text-sm text-slate-700">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal-600" />
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
                   {item}
                 </li>
               ))}
@@ -153,21 +161,21 @@ export default async function GuiaPamiPage() {
         <Card title="Datos que el paciente PAMI debe traer">
           <div className="grid gap-4 sm:grid-cols-3 text-sm text-slate-600">
             <div className="flex items-start gap-2">
-              <Users className="mt-0.5 h-4 w-4 text-teal-600" />
+              <Users className="mt-0.5 h-4 w-4 text-blue-600" />
               DNI + credencial PAMI vigente
             </div>
             <div className="flex items-start gap-2">
-              <Pill className="mt-0.5 h-4 w-4 text-teal-600" />
+              <Pill className="mt-0.5 h-4 w-4 text-blue-600" />
               Medicación actual (cajas o listado)
             </div>
             <div className="flex items-start gap-2">
-              <MessageCircle className="mt-0.5 h-4 w-4 text-teal-600" />
+              <MessageCircle className="mt-0.5 h-4 w-4 text-blue-600" />
               Teléfono del familiar / cuidador
             </div>
           </div>
           <Link
             href="/pacientes/nuevo"
-            className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-teal-700 hover:underline"
+            className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-blue-700 hover:underline"
           >
             Alta de paciente PAMI <ArrowRight className="h-4 w-4" />
           </Link>

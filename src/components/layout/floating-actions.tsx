@@ -36,7 +36,7 @@ const actions = [
     href: "/herramientas/farmacologia",
     label: "Guía farmacológica",
     icon: Pill,
-    color: "bg-teal-600 hover:bg-teal-700",
+    color: "bg-blue-600 hover:bg-blue-700",
   },
   {
     href: "/herramientas/farmacologia?mode=symptoms",

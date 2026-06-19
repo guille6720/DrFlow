@@ -82,7 +82,7 @@ export function PathologyMatchList({
             >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <span className="font-medium text-slate-900">{p.name}</span>
-                <span className="rounded bg-teal-50 px-2 py-0.5 font-mono text-xs font-semibold text-teal-800">
+                <span className="rounded bg-blue-50 px-2 py-0.5 font-mono text-xs font-semibold text-blue-800">
                   {p.cie10_code}
                 </span>
               </div>

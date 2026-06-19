@@ -35,7 +35,7 @@ export function DrugTreatmentList({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
         <p className="mt-3 text-sm text-slate-500">Cargando fármacos asociados...</p>
       </div>
     );
@@ -144,7 +144,7 @@ export function DrugTreatmentList({
                     )}
                   </div>
                   {pd.indication_notes && (
-                    <p className="mt-2 text-xs text-teal-800 bg-teal-50 rounded-md px-3 py-2">
+                    <p className="mt-2 text-xs text-blue-800 bg-blue-50 rounded-md px-3 py-2">
                       {pd.indication_notes}
                     </p>
                   )}

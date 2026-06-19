@@ -14,8 +14,8 @@ import {
   CreditCard,
   BarChart3,
   Settings,
-  Activity,
   ClipboardCheck,
+  ClipboardList,
   LogOut,
   Menu,
   X,
@@ -26,6 +26,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { UserRole } from "@/types/database";
 import { hasPermission } from "@/lib/permissions/roles";
+import { DrFlowLogo } from "@/components/brand/drflow-logo";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: null },
@@ -35,6 +36,7 @@ const navItems = [
   { href: "/recetas", label: "Recetas electrónicas", icon: ScrollText, permission: "issuePrescriptions" as const },
   { href: "/herramientas/farmacologia", label: "Guía farmacológica", icon: Pill, permission: "viewPharmacology" as const },
   { href: "/guia-pami", label: "Guía cabecera PAMI", icon: HeartPulse, permission: null },
+  { href: "/pami/planillas", label: "Planillas PAMI", icon: ClipboardList, permission: "issuePrescriptions" as const },
   { href: "/recordatorios", label: "Recordatorios", icon: Bell, permission: null },
   { href: "/telemedicina", label: "Telemedicina", icon: Video, permission: null },
   { href: "/pagos", label: "Pagos", icon: CreditCard, permission: "managePayments" as const },
@@ -65,15 +67,10 @@ function SidebarNavContent({
   return (
     <>
       <div className="border-b border-white/10 px-4 py-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 text-white shadow-lg shadow-teal-900/40">
-            <Activity className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-lg font-bold tracking-tight text-white">DrFlow</p>
-            <p className="truncate text-xs text-teal-200/70">{clinicName ?? "Sin clínica"}</p>
-          </div>
-        </div>
+        <DrFlowLogo size="xl" href="/dashboard" centered />
+        <p className="mt-3 truncate text-center text-xs text-blue-200/70">
+          {clinicName ?? "Sin clínica"}
+        </p>
       </div>
 
       <nav className="flex-1 space-y-0.5 px-3 py-4">
@@ -90,17 +87,17 @@ function SidebarNavContent({
               className={cn(
                 "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
                 active
-                  ? "bg-teal-600/90 text-white shadow-md shadow-teal-900/30"
+                  ? "bg-blue-600/90 text-white shadow-md shadow-blue-900/30"
                   : "text-slate-300 hover:bg-white/10 hover:text-white"
               )}
             >
               {active && (
-                <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-teal-300" />
+                <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-blue-300" />
               )}
               <item.icon
                 className={cn(
                   "h-5 w-5 shrink-0",
-                  active ? "text-white" : "text-teal-300 group-hover:text-white"
+                  active ? "text-white" : "text-blue-300 group-hover:text-white"
                 )}
               />
               {item.label}
@@ -138,7 +135,7 @@ export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
     <>
       <button
         type="button"
-        className="fixed left-4 top-4 z-50 rounded-xl bg-teal-700 p-2.5 text-white shadow-lg lg:hidden"
+        className="fixed left-4 top-4 z-50 rounded-xl bg-blue-700 p-2.5 text-white shadow-lg lg:hidden"
         onClick={() => setMobileOpen(!mobileOpen)}
         aria-label="Menú"
       >

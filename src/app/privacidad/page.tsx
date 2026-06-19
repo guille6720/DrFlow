@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Activity } from "lucide-react";
+import { DrFlowLogo } from "@/components/brand/drflow-logo";
 
 export default function PrivacidadPage() {
   return (
     <div className="min-h-screen drflow-mesh">
-      <header className="border-b border-teal-100 bg-white/90 px-4 py-4">
-        <div className="mx-auto flex max-w-3xl items-center gap-2 text-teal-900">
-          <Activity className="h-5 w-5" />
-          <span className="font-bold">DrFlow</span>
+      <header className="border-b border-blue-100 bg-white/90 px-4 py-4">
+        <div className="mx-auto flex max-w-3xl justify-center py-2">
+          <DrFlowLogo size="lg" href="/" />
         </div>
       </header>
 

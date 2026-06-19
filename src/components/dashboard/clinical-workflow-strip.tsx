@@ -34,11 +34,11 @@ export function ClinicalWorkflowStrip({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-teal-100/80 bg-white/90 p-4 shadow-sm backdrop-blur-sm",
+        "rounded-2xl border border-blue-100/80 bg-white/90 p-4 shadow-sm backdrop-blur-sm",
         className
       )}
     >
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-teal-700/80">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-blue-700/80">
         Flujo DrFlow — de turno a receta en un solo lugar
       </p>
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
@@ -46,9 +46,9 @@ export function ClinicalWorkflowStrip({ className }: { className?: string }) {
           <Link
             key={step.label}
             href={step.href}
-            className="group flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-3 transition-all hover:border-teal-200 hover:bg-teal-50/60 hover:shadow-sm"
+            className="group flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-3 transition-all hover:border-blue-200 hover:bg-blue-50/60 hover:shadow-sm"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 text-white shadow-sm shadow-teal-600/25">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-sm shadow-blue-600/25">
               <step.icon className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
@@ -56,7 +56,7 @@ export function ClinicalWorkflowStrip({ className }: { className?: string }) {
               <p className="truncate text-xs text-slate-500">{step.desc}</p>
             </div>
             {index < steps.length - 1 && (
-              <ChevronRight className="hidden h-4 w-4 shrink-0 text-teal-300 lg:block" />
+              <ChevronRight className="hidden h-4 w-4 shrink-0 text-blue-300 lg:block" />
             )}
           </Link>
         ))}

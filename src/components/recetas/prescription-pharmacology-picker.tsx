@@ -127,7 +127,7 @@ function DrugSuggestions({
                         {drug.presentation ? ` · ${drug.presentation}` : ""}
                       </p>
                       {pd.dosage_reference && (
-                        <p className="text-xs text-teal-700">{pd.dosage_reference}</p>
+                        <p className="text-xs text-blue-700">{pd.dosage_reference}</p>
                       )}
                       <Badge variant="teal" className="mt-1 font-mono text-[10px]">
                         {drug.atc_code}
@@ -229,24 +229,24 @@ export function PrescriptionPharmacologyPicker({
   }
 
   return (
-    <div className="rounded-xl border border-teal-200 bg-teal-50/40 p-4">
+    <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-4">
       <div className="mb-3 flex items-center gap-2">
-        <Pill className="h-4 w-4 text-teal-700" />
-        <h4 className="text-sm font-semibold text-teal-900">Guía farmacológica</h4>
+        <Pill className="h-4 w-4 text-blue-700" />
+        <h4 className="text-sm font-semibold text-blue-900">Guía farmacológica</h4>
       </div>
-      <p className="mb-3 text-xs text-teal-800">
+      <p className="mb-3 text-xs text-blue-800">
         Buscá por patología, CIE-10 o síntomas para completar diagnóstico y agregar medicamentos.
       </p>
 
-      <div className="mb-3 flex gap-1 rounded-lg border border-teal-200 bg-white p-1">
+      <div className="mb-3 flex gap-1 rounded-lg border border-blue-200 bg-white p-1">
         <button
           type="button"
           onClick={() => switchMode("pathology")}
           className={cn(
             "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-colors",
             mode === "pathology"
-              ? "bg-teal-600 text-white"
-              : "text-teal-800 hover:bg-teal-50"
+              ? "bg-blue-600 text-white"
+              : "text-blue-800 hover:bg-blue-50"
           )}
         >
           <Stethoscope className="h-3.5 w-3.5" />
@@ -258,8 +258,8 @@ export function PrescriptionPharmacologyPicker({
           className={cn(
             "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-colors",
             mode === "symptoms"
-              ? "bg-teal-600 text-white"
-              : "text-teal-800 hover:bg-teal-50"
+              ? "bg-blue-600 text-white"
+              : "text-blue-800 hover:bg-blue-50"
           )}
         >
           <Activity className="h-3.5 w-3.5" />

@@ -7,7 +7,9 @@ const variants = {
   warning: "bg-amber-100 text-amber-800",
   danger: "bg-red-100 text-red-800",
   info: "bg-sky-100 text-sky-800",
-  teal: "bg-teal-100 text-teal-800",
+  brand: "bg-blue-100 text-blue-800",
+  /** @deprecated use brand */
+  teal: "bg-blue-100 text-blue-800",
 };
 
 interface BadgeProps {

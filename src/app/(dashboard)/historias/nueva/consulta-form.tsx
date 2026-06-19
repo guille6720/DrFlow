@@ -143,7 +143,7 @@ export default function NuevaConsultaForm({
               </Link>
               <Link
                 href="/herramientas/farmacologia"
-                className="inline-flex items-center gap-1.5 text-teal-700 hover:underline"
+                className="inline-flex items-center gap-1.5 text-blue-700 hover:underline"
               >
                 <Pill className="h-4 w-4" />
                 Guía farmacológica

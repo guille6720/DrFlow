@@ -6,7 +6,8 @@ import { Suspense, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
-import { Activity, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 
 function RestablecerForm() {
   const router = useRouter();
@@ -92,11 +93,8 @@ function RestablecerForm() {
   return (
     <div className="flex min-h-screen">
       <div className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 p-12 text-white lg:flex">
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 p-3 shadow-lg">
-            <Activity className="h-8 w-8" />
-          </div>
-          <span className="text-2xl font-bold">DrFlow</span>
+        <div className="flex w-full justify-center pt-2">
+          <DrFlowLogo size="xl" href="/" />
         </div>
         <div>
           <h1 className="text-4xl font-bold leading-tight">Nueva contraseña</h1>

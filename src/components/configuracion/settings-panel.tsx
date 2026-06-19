@@ -108,6 +108,47 @@ export function SettingsPanel({
         </form>
       </Card>
 
+      <Card title="App pacientes (PWA)">
+        <p className="mb-3 text-sm text-slate-600">
+          Versión reducida instalable: turnos, solicitud de recetas y WhatsApp. Compartí este link
+          con tus pacientes PAMI.
+        </p>
+        {bookingSlug || clinic.slug ? (
+          <div className="space-y-3">
+            {(() => {
+              const slug = bookingSlug ?? clinic.slug;
+              return (
+                <>
+                  <Link
+                    href={`/portal/${slug}`}
+                    target="_blank"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:underline"
+                  >
+                    /portal/{slug}
+                    <ExternalLink className="h-4 w-4" />
+                  </Link>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const url = `${window.location.origin}/portal/${slug}`;
+                      navigator.clipboard.writeText(url);
+                      setMsg(`Link app pacientes copiado: ${url}`);
+                    }}
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    Copiar link app pacientes
+                  </Button>
+                </>
+              );
+            })()}
+          </div>
+        ) : (
+          <p className="text-sm text-slate-500">Activá la reserva pública para generar el portal.</p>
+        )}
+      </Card>
+
       <Card title="Reserva pública online">
         <p className="mb-3 text-sm text-slate-600">
           Tu página de turnos usa el nombre de la clínica. Compartí el link para que pacientes reserven online.

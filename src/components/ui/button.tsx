@@ -22,12 +22,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const variants = {
       primary:
-        "bg-gradient-to-r from-teal-600 to-teal-700 text-white hover:from-teal-700 hover:to-teal-800 focus:ring-teal-500 shadow-sm shadow-teal-600/20",
+        "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 focus:ring-blue-500 shadow-sm shadow-blue-600/20",
       secondary:
-        "bg-teal-50 text-teal-900 hover:bg-teal-100 focus:ring-teal-400",
+        "bg-blue-50 text-blue-900 hover:bg-blue-100 focus:ring-blue-400",
       outline:
-        "border border-teal-200 bg-white text-teal-800 hover:bg-teal-50 hover:border-teal-300",
-      ghost: "text-slate-700 hover:bg-teal-50 hover:text-teal-800",
+        "border border-blue-200 bg-white text-blue-800 hover:bg-blue-50 hover:border-blue-300",
+      ghost: "text-slate-700 hover:bg-blue-50 hover:text-blue-800",
       danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
     };
 

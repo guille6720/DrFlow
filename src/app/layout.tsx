@@ -17,6 +17,10 @@ export const metadata: Metadata = {
   title: "DrFlow — Gestión clínica para consultorios argentinos",
   description:
     "Agenda, pacientes, historia clínica, recetas y guía farmacológica por síntomas. Diseñado para médicos que quieren fluir, no luchar con el software.",
+  icons: {
+    icon: "/drflow-logo.png",
+    apple: "/drflow-logo.png",
+  },
 };
 
 export default function RootLayout({

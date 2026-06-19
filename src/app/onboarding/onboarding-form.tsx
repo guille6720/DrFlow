@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { setupClinicSchema } from "@/lib/validations/schemas";
 import { normalizeSlug, zodFieldErrors } from "@/lib/validations/form-errors";
-import { Activity, AlertCircle, CheckCircle2 } from "lucide-react";
+import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 interface OnboardingFormProps {
   userEmail: string;
@@ -70,9 +71,8 @@ export function OnboardingForm({ userEmail, userName }: OnboardingFormProps) {
 
   return (
     <div className="mx-auto max-w-lg rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-      <div className="mb-6 flex items-center gap-2 text-teal-800">
-        <Activity className="h-6 w-6" />
-        <span className="text-xl font-bold">DrFlow</span>
+      <div className="mb-6 flex justify-center">
+        <DrFlowLogo size="md" href="/" centered />
       </div>
 
       <div className="mb-6 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">

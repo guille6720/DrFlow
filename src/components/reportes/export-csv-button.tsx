@@ -21,7 +21,7 @@ export function ExportCsvButton({ rows, filename }: Props) {
     <button
       type="button"
       onClick={exportCsv}
-      className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800"
+      className="rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
     >
       Exportar CSV
     </button>

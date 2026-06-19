@@ -124,8 +124,8 @@ export function PublicBookingForm({ slug, clinicName, professionals }: Props) {
                     onClick={() => setStartAt(slot.start_at)}
                     className={`rounded-lg border px-2 py-2 text-xs font-medium transition-colors ${
                       startAt === slot.start_at
-                        ? "border-teal-600 bg-teal-50 text-teal-800"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-teal-300"
+                        ? "border-blue-600 bg-blue-50 text-blue-800"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-blue-300"
                     }`}
                   >
                     {slot.label}

@@ -16,6 +16,8 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ArrowLeft } from "lucide-react";
 import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
+import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
+import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
 import { ExportClinicalPdfButton } from "@/components/historias/export-pdf-button";
 import { MedicalOrderPanel } from "@/components/historias/medical-order-panel";
 import { ConsultationTimer } from "@/components/historias/consultation-timer";
@@ -116,6 +118,15 @@ export default async function HistoriaDetailPage({
             <ConsultationTimer storageKey={record.appointment_id} />
           )}
           <ExportClinicalPdfButton record={record} patient={patient} professional={professional} />
+          <PatientWhatsAppButton
+            phone={patient.phone}
+            message={buildPatientContactMessage(
+              `${patient.first_name} ${patient.last_name}`,
+              professional?.profiles?.full_name ?? profile?.full_name ?? undefined
+            )}
+            label="WhatsApp paciente"
+            size="md"
+          />
           <Link href={`/historias/${id}/editar`}>
             <Button variant="outline" size="sm">Editar consulta</Button>
           </Link>

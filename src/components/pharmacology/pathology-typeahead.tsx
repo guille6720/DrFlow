@@ -98,13 +98,13 @@ export function PathologyTypeahead({
     return (
       <div
         className={cn(
-          "flex items-center justify-between rounded-lg border border-teal-200 bg-teal-50/60 px-4 py-3",
+          "flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50/60 px-4 py-3",
           className
         )}
       >
         <div>
           <p className="font-medium text-slate-900">{selected.name}</p>
-          <p className="text-sm text-teal-700">
+          <p className="text-sm text-blue-700">
             CIE-10: <span className="font-mono font-semibold">{selected.cie10_code}</span>
           </p>
         </div>
@@ -143,10 +143,10 @@ export function PathologyTypeahead({
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
-          className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-10 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+          className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-10 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
         />
         {loading && (
-          <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-teal-600" />
+          <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-blue-600" />
         )}
       </div>
 
@@ -175,12 +175,12 @@ export function PathologyTypeahead({
               onClick={() => handleSelect(p)}
               className={cn(
                 "cursor-pointer px-4 py-3 transition-colors",
-                i === highlight ? "bg-teal-50" : "hover:bg-slate-50"
+                i === highlight ? "bg-blue-50" : "hover:bg-slate-50"
               )}
             >
               <div className="flex items-start justify-between gap-3">
                 <span className="text-sm font-medium text-slate-900">{p.name}</span>
-                <span className="shrink-0 rounded bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-teal-800">
+                <span className="shrink-0 rounded bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-blue-800">
                   {p.cie10_code}
                 </span>
               </div>

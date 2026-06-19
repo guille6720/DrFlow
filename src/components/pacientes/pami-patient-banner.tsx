@@ -25,7 +25,7 @@ export function PamiPatientBanner({ patient }: PamiPatientBannerProps) {
   const isGeriatric = age !== null && age >= 65;
 
   return (
-    <div className="rounded-2xl border border-teal-200/80 bg-gradient-to-r from-teal-50/80 to-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-blue-200/80 bg-gradient-to-r from-blue-50/80 to-white p-4 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">

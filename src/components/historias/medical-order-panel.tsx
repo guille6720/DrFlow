@@ -117,7 +117,7 @@ export function MedicalOrderPanel({
                 key={t.label}
                 type="button"
                 onClick={() => applyTemplate(t.text)}
-                className="rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-medium text-teal-800 hover:bg-teal-100"
+                className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 hover:bg-blue-100"
               >
                 {t.label}
               </button>
@@ -171,7 +171,9 @@ export function MedicalOrderPanel({
                   <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
                     {(order as MedicalOrder & { order_type?: string }).order_type === "referral"
                       ? "Derivación"
-                      : "Estudios"}
+                      : (order as MedicalOrder & { order_type?: string }).order_type === "pami_form"
+                        ? "Planilla PAMI"
+                        : "Estudios"}
                   </span>
                   <p className="text-xs text-slate-500">
                     {format(new Date(order.issued_at), "PPp", { locale: es })}

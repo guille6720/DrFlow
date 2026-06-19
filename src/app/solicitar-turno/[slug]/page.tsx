@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { PublicBookingForm } from "@/components/booking/public-booking-form";
-import { Activity } from "lucide-react";
+import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -39,7 +39,7 @@ export default async function SolicitarTurnoPage({
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:py-12">
       <div className="mx-auto max-w-lg">
         <div className="mb-6 text-center">
-          <Activity className="mx-auto h-10 w-10 text-teal-700" />
+          <DrFlowLogo size="lg" href="/" centered className="mx-auto" />
           <h1 className="mt-4 text-2xl font-bold text-slate-900">
             {clinic?.name ?? "Clínica"}
           </h1>
@@ -66,7 +66,7 @@ export default async function SolicitarTurnoPage({
 
         <p className="mt-6 text-center text-xs text-slate-400">
           Powered by{" "}
-          <Link href="/" className="text-teal-700 hover:underline">
+          <Link href="/" className="text-blue-700 hover:underline">
             DrFlow
           </Link>
         </p>

@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { registerClinicSchema } from "@/lib/validations/schemas";
 import { normalizeSlug, zodFieldErrors } from "@/lib/validations/form-errors";
-import { Activity, AlertCircle } from "lucide-react";
+import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { AlertCircle } from "lucide-react";
 
 const FIELD_ORDER = [
   "clinicName",
@@ -126,9 +127,8 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4">
       <div className="mx-auto max-w-lg">
-        <div className="mb-8 flex items-center justify-center gap-2 text-teal-800">
-          <Activity className="h-7 w-7" />
-          <span className="text-2xl font-bold">DrFlow</span>
+        <div className="mb-8 flex justify-center">
+          <DrFlowLogo size="xl" href="/" />
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
@@ -226,7 +226,7 @@ export default function RegisterPage() {
 
           <p className="mt-4 text-center text-sm text-slate-500">
             ¿Ya tenés cuenta?{" "}
-            <Link href="/login" className="text-teal-700 hover:underline">
+            <Link href="/login" className="text-blue-700 hover:underline">
               Iniciar sesión
             </Link>
           </p>

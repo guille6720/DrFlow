@@ -4,13 +4,15 @@ import { es } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
 import { Clock, Play, Globe, CalendarDays } from "lucide-react";
+import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
+import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
 
 export type LiveAppointment = {
   id: string;
   start_at: string;
   status: string;
   booking_source?: string | null;
-  patients?: { first_name: string; last_name: string } | null;
+  patients?: { first_name: string; last_name: string; phone?: string | null } | null;
   professionals?: { profiles?: { full_name: string } | null } | null;
 };
 
@@ -43,15 +45,15 @@ export function ConsultorioLivePanel({
     : null;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-teal-200/60 bg-gradient-to-br from-teal-950 via-teal-900 to-slate-900 text-white shadow-lg shadow-teal-900/20">
+    <section className="overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white shadow-lg shadow-blue-900/20">
       <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_auto] lg:items-center">
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 px-2.5 py-0.5 text-xs font-medium text-teal-100">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/20 px-2.5 py-0.5 text-xs font-medium text-blue-100">
               <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-emerald-400" />
               Consultorio en vivo
             </span>
-            <span className="text-xs text-teal-200/80">
+            <span className="text-xs text-blue-200/80">
               {format(new Date(), "EEEE d MMMM", { locale: es })}
             </span>
           </div>
@@ -59,38 +61,44 @@ export function ConsultorioLivePanel({
           {next && patientName ? (
             <>
               <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{patientName}</h2>
-              <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-teal-100/90">
+              <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-blue-100/90">
                 <Clock className="h-4 w-4" />
                 {format(new Date(next.start_at), "HH:mm", { locale: es })} hs
-                <span className="text-teal-300">·</span>
+                <span className="text-blue-300">·</span>
                 <span className="font-medium text-amber-200">{formatCountdown(next.start_at)}</span>
                 {next.booking_source === "online" && (
-                  <Badge variant="info" className="border-teal-400/30 bg-teal-500/20 text-teal-50">
+                  <Badge variant="info" className="border-blue-400/30 bg-blue-500/20 text-blue-50">
                     <Globe className="mr-1 h-3 w-3" />
                     Web
                   </Badge>
                 )}
+                <PatientWhatsAppButton
+                  phone={next.patients?.phone}
+                  message={buildPatientContactMessage(patientName ?? "paciente")}
+                  size="icon"
+                  className="ml-1"
+                />
               </p>
             </>
           ) : (
             <>
               <h2 className="text-2xl font-bold tracking-tight">Sin turnos pendientes hoy</h2>
-              <p className="mt-1 text-sm text-teal-100/80">
+              <p className="mt-1 text-sm text-blue-100/80">
                 Programá turnos o cargá datos demo para probar el flujo completo.
               </p>
             </>
           )}
 
           <div className="mt-4 max-w-md">
-            <div className="mb-1 flex justify-between text-xs text-teal-200/90">
+            <div className="mb-1 flex justify-between text-xs text-blue-200/90">
               <span>Progreso del día</span>
               <span>
                 {todayDone}/{todayTotal} turnos
               </span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-teal-950/60">
+            <div className="h-2 overflow-hidden rounded-full bg-blue-950/60">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-300 transition-all duration-500"
+                className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-blue-300 transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -102,22 +110,22 @@ export function ConsultorioLivePanel({
             <Link href={`/agenda?view=day`}>
               <Button
                 size="lg"
-                className="w-full border-0 bg-white text-teal-900 shadow-md hover:bg-teal-50"
+                className="w-full border-0 bg-white text-blue-900 shadow-md hover:bg-blue-50"
               >
-                <Play className="h-4 w-4 fill-teal-900" />
+                <Play className="h-4 w-4 fill-blue-900" />
                 Ir a agenda del día
               </Button>
             </Link>
           ) : (
             <Link href="/agenda?action=new">
-              <Button size="lg" className="w-full border-0 bg-white text-teal-900 hover:bg-teal-50">
+              <Button size="lg" className="w-full border-0 bg-white text-blue-900 hover:bg-blue-50">
                 <CalendarDays className="h-4 w-4" />
                 Nuevo turno
               </Button>
             </Link>
           )}
           <Link href="/agenda?view=day">
-            <Button variant="outline" size="lg" className="w-full border-teal-400/40 text-white hover:bg-teal-800/50">
+            <Button variant="outline" size="lg" className="w-full border-blue-400/40 text-white hover:bg-blue-800/50">
               Ver cola de hoy ({todayQueue.length})
             </Button>
           </Link>
@@ -125,25 +133,34 @@ export function ConsultorioLivePanel({
       </div>
 
       {todayQueue.length > 0 && (
-        <div className="border-t border-teal-800/50 bg-teal-950/40 px-5 py-3 sm:px-6">
+        <div className="border-t border-blue-800/50 bg-blue-950/40 px-5 py-3 sm:px-6">
           <ul className="flex gap-3 overflow-x-auto pb-1 text-sm">
             {todayQueue.slice(0, 6).map((appt) => {
               const status = appointmentStatusBadge[appt.status];
               const name = appt.patients
                 ? `${appt.patients.last_name}, ${appt.patients.first_name}`
                 : "Paciente";
+              const fullName = appt.patients
+                ? `${appt.patients.first_name} ${appt.patients.last_name}`
+                : "paciente";
               return (
                 <li
                   key={appt.id}
-                  className="flex shrink-0 items-center gap-2 rounded-lg bg-teal-900/50 px-3 py-1.5"
+                  className="flex shrink-0 items-center gap-2 rounded-lg bg-blue-900/50 px-3 py-1.5"
                 >
-                  <span className="font-medium text-teal-50">{name}</span>
-                  <span className="text-teal-300/80">
+                  <span className="font-medium text-blue-50">{name}</span>
+                  <span className="text-blue-300/80">
                     {format(new Date(appt.start_at), "HH:mm")}
                   </span>
                   {status && (
-                    <span className="text-xs text-teal-200/70">{status.label}</span>
+                    <span className="text-xs text-blue-200/70">{status.label}</span>
                   )}
+                  <PatientWhatsAppButton
+                    phone={appt.patients?.phone}
+                    message={buildPatientContactMessage(fullName)}
+                    size="icon"
+                    className="h-7 w-7"
+                  />
                 </li>
               );
             })}

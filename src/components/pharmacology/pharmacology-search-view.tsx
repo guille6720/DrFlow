@@ -134,7 +134,7 @@ export function PharmacologySearchView({
             className={cn(
               "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
               mode === "pathology"
-                ? "bg-teal-600 text-white shadow-sm"
+                ? "bg-blue-600 text-white shadow-sm"
                 : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
             )}
           >
@@ -157,7 +157,7 @@ export function PharmacologySearchView({
         </div>
 
         {mode === "pathology" ? (
-          <Card className="border-teal-100">
+          <Card className="border-blue-100">
             <PathologyTypeahead
               selected={selected}
               onSelect={handlePathologySelect}

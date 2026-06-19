@@ -165,7 +165,7 @@ export function ExportPrescriptionPdfButton({
     <button
       type="button"
       onClick={exportPdf}
-      className="inline-flex items-center gap-2 rounded-lg border border-teal-300 bg-teal-50 px-3 py-1.5 text-sm font-medium text-teal-800 hover:bg-teal-100"
+      className="inline-flex items-center gap-2 rounded-lg border border-blue-300 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-800 hover:bg-blue-100"
     >
       Descargar PDF
     </button>

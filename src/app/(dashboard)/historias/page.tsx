@@ -13,6 +13,8 @@ import { createClient } from "@/lib/supabase/server";
 import { FileText, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
+import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
 
 export default async function HistoriasPage() {
   const profile = await getProfile();
@@ -28,7 +30,7 @@ export default async function HistoriasPage() {
   if (clinicId) {
     const { data } = await supabase
       .from("clinical_records")
-      .select("id, diagnosis, chief_complaint, created_at, patients(first_name, last_name), professionals(profiles(full_name))")
+      .select("id, diagnosis, chief_complaint, created_at, patients(first_name, last_name, phone), professionals(profiles(full_name))")
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -78,9 +80,13 @@ export default async function HistoriasPage() {
         ) : (
           <Card>
             <ul className="divide-y divide-slate-100">
-              {records.map((r) => (
-                <li key={r.id} className="flex items-center justify-between py-4">
-                  <div>
+              {records.map((r) => {
+                const patientName = r.patients
+                  ? `${r.patients.first_name} ${r.patients.last_name}`
+                  : "Paciente";
+                return (
+                <li key={r.id} className="flex items-center justify-between gap-3 py-4">
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium text-slate-900">
                       {r.patients
                         ? `${r.patients.last_name}, ${r.patients.first_name}`
@@ -95,11 +101,22 @@ export default async function HistoriasPage() {
                       {r.diagnosis ?? r.chief_complaint ?? "Sin diagnóstico"}
                     </p>
                   </div>
-                  <Link href={`/historias/${r.id}`} className="text-sm text-blue-700 hover:underline">
-                    Ver detalle
-                  </Link>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <PatientWhatsAppButton
+                      phone={r.patients?.phone}
+                      message={buildPatientContactMessage(
+                        patientName,
+                        r.professionals?.profiles?.full_name ?? undefined
+                      )}
+                      size="icon"
+                    />
+                    <Link href={`/historias/${r.id}`} className="text-sm text-blue-700 hover:underline">
+                      Ver detalle
+                    </Link>
+                  </div>
                 </li>
-              ))}
+              );
+              })}
             </ul>
           </Card>
         )}

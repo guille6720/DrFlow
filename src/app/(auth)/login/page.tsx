@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Activity, AlertCircle, CheckCircle2 } from "lucide-react";
+import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 function readPasswordLeakFromUrl(): { email: string; error: string } | null {
   if (typeof window === "undefined") return null;
@@ -76,11 +77,8 @@ function LoginForm() {
   return (
     <div className="flex min-h-screen">
       <div className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 p-12 text-white lg:flex">
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 p-3 shadow-lg">
-            <Activity className="h-8 w-8" />
-          </div>
-          <span className="text-2xl font-bold">DrFlow</span>
+        <div className="flex w-full justify-center pt-2">
+          <DrFlowLogo size="xl" href="/" priority />
         </div>
         <div>
           <h1 className="text-4xl font-bold leading-tight">
@@ -95,11 +93,8 @@ function LoginForm() {
 
       <div className="flex flex-1 items-center justify-center bg-gradient-to-br from-blue-50/50 to-white p-6">
         <div className="w-full max-w-md">
-          <div className="mb-8 lg:hidden">
-            <div className="flex items-center gap-2 text-blue-800">
-              <Activity className="h-6 w-6" />
-              <span className="text-xl font-bold">DrFlow</span>
-            </div>
+          <div className="mb-8 flex justify-center lg:hidden">
+            <DrFlowLogo size="lg" href="/" centered />
           </div>
           <h2 className="text-2xl font-bold text-slate-900">Iniciar sesión</h2>
           <p className="mt-1 text-sm text-slate-500">
