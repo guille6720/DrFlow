@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PublicBookingForm } from "@/components/booking/public-booking-form";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { buildPrescriptionRequestMessage } from "@/lib/utils/patient-messages";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import { AppInstallCard } from "@/components/portal/app-install-card";
+import { isPatientPortalReady } from "@/lib/utils/patient-portal-ready";
 import { Calendar, Pill, MessageCircle } from "lucide-react";
 
 type Tab = "turno" | "receta" | "whatsapp";
@@ -37,10 +38,17 @@ export function PatientPortalView({
   professionals,
 }: Props) {
   const [tab, setTab] = useState<Tab>("turno");
+  const [portalReady, setPortalReady] = useState(false);
   const [patientName, setPatientName] = useState("");
   const [documentNumber, setDocumentNumber] = useState("");
   const [insuranceNumber, setInsuranceNumber] = useState("");
   const [medications, setMedications] = useState("");
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setPortalReady(isPatientPortalReady(slug));
+    });
+  }, [slug]);
 
   const recetaMessage = buildPrescriptionRequestMessage({
     patientName: patientName || "Paciente",
@@ -59,20 +67,26 @@ export function PatientPortalView({
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-slate-50">
       <header className="border-b border-blue-100 bg-white/90 px-4 py-4 backdrop-blur">
         <div className="mx-auto flex max-w-lg flex-col items-center gap-3 pb-2">
-          <DrFlowLogo size="md" href="/" />
+          <DrFlowLogo size={portalReady ? "sm" : "md"} href={portalReady ? null : "/"} />
           <div className="text-center">
             <h1 className="font-bold text-slate-900">{clinicName}</h1>
-            <p className="text-xs text-slate-500">Portal pacientes</p>
+            {!portalReady && (
+              <p className="text-xs text-slate-500">Portal pacientes</p>
+            )}
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-lg px-4 py-6">
-        <AppInstallCard
-          slug={slug}
-          clinicName={clinicName}
-          className="mb-6"
-        />
+        {!portalReady && (
+          <AppInstallCard
+            slug={slug}
+            clinicName={clinicName}
+            portalMode
+            className="mb-6"
+            onPortalReady={() => setPortalReady(true)}
+          />
+        )}
 
         {clinicAddress && (
           <p className="mb-4 text-center text-sm text-slate-500">{clinicAddress}</p>
@@ -174,12 +188,14 @@ export function PatientPortalView({
           </div>
         )}
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          <Link href="/" className="text-blue-700 hover:underline">
-            DrFlow
-          </Link>
-          {" · Portal pacientes"}
-        </p>
+        {!portalReady && (
+          <p className="mt-6 text-center text-xs text-slate-400">
+            <Link href="/" className="text-blue-700 hover:underline">
+              DrFlow
+            </Link>
+            {" · Portal pacientes"}
+          </p>
+        )}
       </main>
     </div>
   );

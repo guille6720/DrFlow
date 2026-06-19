@@ -18,6 +18,8 @@ describe("generateAvailableSlots", () => {
 
     expect(slots.length).toBeGreaterThan(0);
     expect(slots[0].label).toContain("09:00");
+    expect(slots[0].label).toMatch(/hs$/);
+    expect(slots[0].label).not.toMatch(/Mon|Tue|Wed|Thu|Fri|Sat|Sun/);
   });
 
   it("excludes occupied appointment slots", () => {

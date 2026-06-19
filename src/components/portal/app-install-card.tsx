@@ -6,6 +6,11 @@ import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import { Button } from "@/components/ui/button";
 import { Download, ExternalLink, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import {
+  isPatientPortalReady,
+  isStandaloneMode,
+  markPatientPortalReady,
+} from "@/lib/utils/patient-portal-ready";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -17,14 +22,6 @@ export type AppInstallVariant = "clinic" | "patient";
 function isIos(): boolean {
   if (typeof navigator === "undefined") return false;
   return /iPad|iPhone|iPod/.test(navigator.userAgent);
-}
-
-function isStandalone(): boolean {
-  if (typeof window === "undefined") return false;
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone === true
-  );
 }
 
 async function registerServiceWorker(scope: string): Promise<void> {
@@ -42,6 +39,9 @@ interface AppInstallCardProps {
   clinicName?: string;
   compact?: boolean;
   className?: string;
+  /** En portal pacientes: ocultar tras instalar o descargar icono */
+  portalMode?: boolean;
+  onPortalReady?: () => void;
 }
 
 export function AppInstallCard({
@@ -50,12 +50,15 @@ export function AppInstallCard({
   clinicName,
   compact = false,
   className,
+  portalMode = false,
+  onPortalReady,
 }: AppInstallCardProps) {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
   const [iosHint, setIosHint] = useState(false);
   const [installing, setInstalling] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
 
   const isClinic = variant === "clinic";
   const scope = isClinic ? "/" : slug ? `/portal/${slug}/` : "/";
@@ -70,8 +73,10 @@ export function AppInstallCard({
 
   useEffect(() => {
     queueMicrotask(() => {
-      setInstalled(isStandalone());
-      setIosHint(isIos() && !isStandalone());
+      const ready = portalMode && slug ? isPatientPortalReady(slug) : false;
+      setPortalReady(ready);
+      setInstalled(isStandaloneMode());
+      setIosHint(isIos() && !isStandaloneMode());
     });
 
     const path = window.location.pathname;
@@ -90,7 +95,15 @@ export function AppInstallCard({
 
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
     return () => window.removeEventListener("beforeinstallprompt", onBeforeInstall);
-  }, [isClinic, slug, scope]);
+  }, [isClinic, slug, scope, portalMode]);
+
+  const markReady = () => {
+    if (portalMode && slug) {
+      markPatientPortalReady(slug);
+      setPortalReady(true);
+      onPortalReady?.();
+    }
+  };
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
@@ -98,7 +111,10 @@ export function AppInstallCard({
     try {
       await deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") setInstalled(true);
+      if (outcome === "accepted") {
+        setInstalled(true);
+        markReady();
+      }
       setDeferredPrompt(null);
     } finally {
       setInstalling(false);
@@ -110,7 +126,16 @@ export function AppInstallCard({
     anchor.href = "/icon-512.png";
     anchor.download = "DrFlow-icono.png";
     anchor.click();
+    if (portalMode) markReady();
   };
+
+  if (portalMode && portalReady) {
+    return null;
+  }
+
+  if (installed && portalMode) {
+    return null;
+  }
 
   if (installed) {
     return (
@@ -194,6 +219,9 @@ export function AppInstallCard({
         <a
           href="/icon-512.png"
           download="DrFlow-icono.png"
+          onClick={() => {
+            if (portalMode) markReady();
+          }}
           className="inline-flex w-full items-center justify-center gap-1.5 py-1 text-xs font-medium text-slate-500 hover:text-blue-700"
         >
           PNG directo

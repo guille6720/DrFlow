@@ -9,6 +9,7 @@ import {
   setMinutes,
   startOfDay,
 } from "date-fns";
+import { es } from "date-fns/locale";
 
 export interface AvailabilityRule {
   day_of_week: number;
@@ -70,10 +71,11 @@ export function generateAvailableSlots(params: {
             );
 
           if (!busy) {
+            const label = format(cursor, "EEE d 'de' MMM · HH:mm 'hs'", { locale: es });
             slots.push({
               start_at: cursor.toISOString(),
               end_at: slotEnd.toISOString(),
-              label: format(cursor, "EEE d MMM · HH:mm"),
+              label: label.charAt(0).toUpperCase() + label.slice(1),
             });
           }
         }
