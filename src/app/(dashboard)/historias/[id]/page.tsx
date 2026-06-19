@@ -24,6 +24,7 @@ import { ExportClinicalPdfButton } from "@/components/historias/export-pdf-butto
 import { MedicalOrderPanel } from "@/components/historias/medical-order-panel";
 import { ConsultationTimer } from "@/components/historias/consultation-timer";
 import { FinalizeConsultationButton } from "@/components/historias/finalize-consultation-button";
+import { ClinicalDocumentsPanel } from "@/components/historias/clinical-documents-panel";
 
 export default async function HistoriaDetailPage({
   params,
@@ -67,7 +68,7 @@ export default async function HistoriaDetailPage({
   const portalSlug = await getPortalSlugForClinic(clinicId);
   const doctorInfo = portalSlug ? await getDoctorShareInfoForClinic(clinicId) : null;
 
-  const [{ data: audit }, { data: prescriptions }, { data: professionals }, { data: medicalOrders }, { data: appShare }] =
+  const [{ data: audit }, { data: prescriptions }, { data: professionals }, { data: medicalOrders }, { data: appShare }, { data: clinicalDocuments }] =
     await Promise.all([
     supabase
       .from("clinical_record_audit")
@@ -98,6 +99,12 @@ export default async function HistoriaDetailPage({
           .eq("patient_id", patient.id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    supabase
+      .from("patient_attachments")
+      .select("id, file_name, file_size, category, created_at, profiles:uploaded_by(full_name)")
+      .eq("patient_id", patient.id)
+      .eq("clinic_id", clinicId)
+      .order("created_at", { ascending: false }),
   ]);
 
   const shareProfile = appShare?.profiles as { full_name?: string } | null;
@@ -110,6 +117,8 @@ export default async function HistoriaDetailPage({
     : null;
   const professional = record.professionals as unknown as { profiles: { full_name: string } | null };
   const canIssue = hasPermission(role, "issuePrescriptions", isSuperadmin);
+  const canEditClinical = hasPermission(role, "editClinicalRecords", isSuperadmin);
+  const canViewClinical = hasPermission(role, "viewClinicalRecords", isSuperadmin);
   const professionalList = (professionals ?? []) as unknown as Array<{
     id: string;
     display_name?: string | null;
@@ -191,6 +200,14 @@ export default async function HistoriaDetailPage({
           </Card>
 
           <div className="space-y-6">
+            {canViewClinical && (
+              <ClinicalDocumentsPanel
+                patientId={patient.id}
+                documents={clinicalDocuments ?? []}
+                canEdit={canEditClinical}
+              />
+            )}
+
             <Card title="Auditoría">
               {(audit ?? []).length === 0 ? (
                 <p className="text-sm text-slate-500">Sin eventos de auditoría.</p>

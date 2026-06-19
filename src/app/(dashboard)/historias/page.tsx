@@ -15,13 +15,18 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
+import { ImportClinicalPdfPanel } from "@/components/historias/import-clinical-pdf-panel";
+import { hasPermission } from "@/lib/permissions/roles";
 
 export default async function HistoriasPage() {
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role } = await getActiveClinic();
+  const { role, isSuperadmin } = await getActiveClinic();
   const supabase = await createClient();
+  const canImportClinicalPdf =
+    hasPermission(role, "editClinicalRecords", isSuperadmin) ||
+    hasPermission(role, "managePatients", isSuperadmin);
 
   // Supabase join types inferred loosely without generated Database types
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,6 +54,8 @@ export default async function HistoriasPage() {
       />
 
       <div className="space-y-4 p-4 sm:p-6">
+        <ImportClinicalPdfPanel canImport={canImportClinicalPdf} />
+
         <div className="flex justify-end">
           <Link href="/historias/nueva">
             <Button>

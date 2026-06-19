@@ -143,6 +143,20 @@ export interface ClinicalRecord {
   professionals?: Professional;
 }
 
+export interface PatientAttachment {
+  id: string;
+  patient_id: string;
+  clinic_id: string;
+  file_name: string;
+  file_path: string;
+  file_type: string | null;
+  file_size: number | null;
+  category: string | null;
+  uploaded_by: string | null;
+  created_at: string;
+  profiles?: { full_name: string } | null;
+}
+
 export interface ReminderLog {
   id: string;
   clinic_id: string;

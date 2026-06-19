@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
 import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
 import { DeletePatientButton } from "@/components/pacientes/delete-patient-button";
+import { ClinicalDocumentsPanel } from "@/components/historias/clinical-documents-panel";
 import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
 import { formatAgeLabel } from "@/lib/utils/patient-age";
 import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
@@ -45,12 +46,14 @@ export default async function PacienteDetailPage({
   if (!patient) notFound();
 
   const canManagePatients = hasPermission(role, "managePatients", isSuperadmin);
+  const canEditClinical = hasPermission(role, "editClinicalRecords", isSuperadmin);
+  const canViewClinical = hasPermission(role, "viewClinicalRecords", isSuperadmin);
 
   const portalSlug = clinicId ? await getPortalSlugForClinic(clinicId) : null;
   const doctorInfo =
     clinicId && portalSlug ? await getDoctorShareInfoForClinic(clinicId) : null;
 
-  const [{ data: appointments }, { data: records }, { data: appShare }] = await Promise.all([
+  const [{ data: appointments }, { data: records }, { data: appShare }, { data: clinicalDocuments }] = await Promise.all([
     supabase
       .from("appointments")
       .select("id, start_at, status, cancellation_reason, cancelled_by_type, professionals(profiles(full_name))")
@@ -70,6 +73,12 @@ export default async function PacienteDetailPage({
           .eq("patient_id", id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    supabase
+      .from("patient_attachments")
+      .select("id, file_name, file_size, category, created_at, profiles:uploaded_by(full_name)")
+      .eq("patient_id", id)
+      .eq("clinic_id", clinicId)
+      .order("created_at", { ascending: false }),
   ]);
 
   const shareProfile = appShare?.profiles as { full_name?: string } | null;
@@ -143,6 +152,14 @@ export default async function PacienteDetailPage({
             </dl>
           </Card>
         </div>
+
+        {canViewClinical && (
+          <ClinicalDocumentsPanel
+            patientId={patient.id}
+            documents={clinicalDocuments ?? []}
+            canEdit={canEditClinical}
+          />
+        )}
 
         <div className="grid gap-6 lg:grid-cols-2">
           <Card title="Historial de turnos">
