@@ -9,6 +9,8 @@ import { getDashboardShell } from "@/lib/auth/session";
 
 import type { Metadata } from "next";
 
+import { PWA_APPLE_ICON } from "@/lib/utils/patient-portal-ready";
+
 export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
@@ -17,8 +19,11 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
   },
   icons: {
-    icon: [{ url: "/icon-512.png", sizes: "512x512", type: "image/png" }],
-    apple: [{ url: "/icon-512.png", sizes: "512x512", type: "image/png" }],
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: PWA_APPLE_ICON, sizes: "192x192", type: "image/png" }],
   },
 };
 

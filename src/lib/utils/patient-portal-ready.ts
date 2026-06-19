@@ -27,8 +27,16 @@ export function markPatientPortalInstalled(slug: string): void {
   }
 }
 
+/** Iconos PWA: tamaños reales 192/512 px con fondo sólido (requerido por Android). */
 export const PWA_ICONS = [
-  { src: "/icon-512.png", sizes: "192x192", type: "image/png", purpose: "any" as const },
+  { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" as const },
   { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" as const },
-  { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" as const },
+  {
+    src: "/icon-maskable-512.png",
+    sizes: "512x512",
+    type: "image/png",
+    purpose: "maskable" as const,
+  },
 ];
+
+export const PWA_APPLE_ICON = "/icon-192.png";

@@ -97,7 +97,9 @@ await sharp(softened)
   .png({ compressionLevel: 9 })
   .toFile(output);
 
-copyFileSync(output, join(root, "public", "icon-512.png"));
-copyFileSync(output, join(root, "src", "app", "icon.png"));
-
 console.log("OK:", output, "radius=", cornerRadius);
+
+const { spawnSync } = await import("node:child_process");
+spawnSync(process.execPath, [join(__dirname, "generate-pwa-icons.mjs"), output], {
+  stdio: "inherit",
+});

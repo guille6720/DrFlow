@@ -13,13 +13,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import { PWA_APPLE_ICON } from "@/lib/utils/patient-portal-ready";
+
 export const metadata: Metadata = {
   title: "DrFlow — Gestión clínica para consultorios argentinos",
   description:
     "Agenda, pacientes, historia clínica, recetas y guía farmacológica por síntomas. Diseñado para médicos que quieren fluir, no luchar con el software.",
   icons: {
-    icon: "/icon-512.png",
-    apple: "/icon-512.png",
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: PWA_APPLE_ICON, sizes: "192x192", type: "image/png" }],
   },
 };
 
