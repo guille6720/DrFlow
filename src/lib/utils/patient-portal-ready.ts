@@ -1,3 +1,7 @@
+import { PATIENT_CONTACT_PHONE_DISCLAIMER } from "@/lib/constants/medical-specialties";
+import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
+import { buildSharePhoneLine } from "@/lib/utils/doctor-share-info";
+
 const storageKey = (slug: string) => `drflow-portal-instalado-${slug}`;
 
 export function isStandaloneMode(): boolean {
@@ -52,20 +56,42 @@ export function buildPatientAppInstallUrl(origin: string, slug: string): string 
 }
 
 export function buildPatientAppShareMessage(
-  clinicName: string,
+  doctor: DoctorShareInfo,
   installUrl: string,
   patientName?: string
 ): string {
   const greeting = patientName ? `Hola ${patientName}!` : "Hola!";
+  const licenseLine = doctor.licenseLabel ? `\n${doctor.licenseLabel}` : "";
+  const specialtyLine = doctor.specialty ? `\n${doctor.specialty}` : "";
+  const phoneLine = buildSharePhoneLine(doctor.phone);
+
   return [
-    `${greeting} Soy del consultorio ${clinicName}.`,
+    `${greeting}`,
     "",
-    "Instalá la app en tu celular para pedir turnos y recetas PAMI:",
+    `${doctor.fullName}${licenseLine}${specialtyLine}`,
+    "",
+    "Instalá la app para pedir turnos y recetas PAMI:",
     installUrl,
+    "",
+    phoneLine,
     "",
     "Pasos:",
     "1. Tocá el link de arriba",
     '2. Apretá "Agregar a pantalla de inicio"',
-    "3. Listo — queda el icono azul en tu celular",
-  ].join("\n");
+    "3. Listo — queda el icono azul de DrFlow en tu celular",
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
 }
+
+export function buildPatientAppOgDescription(doctor: DoctorShareInfo): string {
+  const parts = [
+    doctor.fullName,
+    doctor.licenseLabel,
+    doctor.specialty,
+    buildSharePhoneLine(doctor.phone),
+  ].filter(Boolean);
+  return parts.join(" · ") || `App de ${doctor.clinicName} para turnos y recetas PAMI.`;
+}
+
+export { PATIENT_CONTACT_PHONE_DISCLAIMER };

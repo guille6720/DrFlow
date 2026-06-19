@@ -8,7 +8,9 @@ import {
   isPatientPortalReady,
   isStandaloneMode,
   markPatientPortalInstalled,
+  PATIENT_CONTACT_PHONE_DISCLAIMER,
 } from "@/lib/utils/patient-portal-ready";
+import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -23,10 +25,11 @@ function isIos(): boolean {
 interface Props {
   slug: string;
   clinicName: string;
+  doctor?: DoctorShareInfo;
 }
 
 /** Pantalla mínima para que pacientes PAMI instalen la app con un solo toque. */
-export function PatientAppInstallView({ slug, clinicName }: Props) {
+export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
@@ -113,11 +116,22 @@ export function PatientAppInstallView({ slug, clinicName }: Props) {
         </div>
 
         <h1 className="text-2xl font-bold leading-tight sm:text-3xl">
-          App de {clinicName}
+          {doctor?.fullName ?? `App de ${clinicName}`}
         </h1>
+        {doctor?.licenseLabel && (
+          <p className="mt-2 text-lg font-medium text-blue-100">{doctor.licenseLabel}</p>
+        )}
+        {doctor?.specialty && (
+          <p className="mt-1 text-base text-blue-200">{doctor.specialty}</p>
+        )}
         <p className="mt-3 text-lg text-blue-100">
           Pedí turnos y recetas PAMI desde tu celular
         </p>
+        {doctor?.phone && (
+          <p className="mt-4 text-sm text-blue-200/90">
+            Tel. {doctor.phone} — {PATIENT_CONTACT_PHONE_DISCLAIMER}
+          </p>
+        )}
 
         <div className="mt-10 w-full space-y-4">
           {deferredPrompt ? (

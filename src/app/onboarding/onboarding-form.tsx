@@ -6,7 +6,9 @@ import { setupClinic } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { setupClinicSchema } from "@/lib/validations/schemas";
+import { parseDoctorSetupFromForm, validateDoctorSetup } from "@/lib/validations/doctor-setup";
 import { normalizeSlug, zodFieldErrors } from "@/lib/validations/form-errors";
+import { DoctorSetupFields } from "@/components/onboarding/doctor-setup-fields";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
@@ -23,6 +25,14 @@ export function OnboardingForm({ userEmail, userName }: OnboardingFormProps) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
+  function clearFieldError(name: string) {
+    setFieldErrors((p) => {
+      const n = { ...p };
+      delete n[name];
+      return n;
+    });
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
@@ -30,15 +40,19 @@ export function OnboardingForm({ userEmail, userName }: OnboardingFormProps) {
     setFormError(null);
     setFieldErrors({});
 
-    const raw = {
+    const clinicParsed = setupClinicSchema.safeParse({
       clinicName: String(new FormData(form).get("clinicName") ?? "").trim(),
       slug: normalizeSlug(slug || String(new FormData(form).get("slug") ?? "")),
-      phone: String(new FormData(form).get("phone") ?? "").trim() || undefined,
-    };
+    });
 
-    const parsed = setupClinicSchema.safeParse(raw);
-    if (!parsed.success) {
-      const errors = zodFieldErrors(parsed.error);
+    const doctorResult = validateDoctorSetup(parseDoctorSetupFromForm(new FormData(form)));
+
+    const errors: Record<string, string> = {};
+    if (!clinicParsed.success) Object.assign(errors, zodFieldErrors(clinicParsed.error));
+    if (doctorResult.fieldErrors) Object.assign(errors, doctorResult.fieldErrors);
+    if (doctorResult.error) Object.assign(errors, zodFieldErrors(doctorResult.error));
+
+    if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       setFormError("Corregí los campos marcados en rojo.");
       setLoading(false);
@@ -47,7 +61,7 @@ export function OnboardingForm({ userEmail, userName }: OnboardingFormProps) {
 
     try {
       const formData = new FormData(form);
-      formData.set("slug", parsed.data.slug);
+      formData.set("slug", clinicParsed.data!.slug);
       const result = await setupClinic(formData);
 
       if (result.fieldErrors) setFieldErrors(result.fieldErrors);
@@ -78,14 +92,14 @@ export function OnboardingForm({ userEmail, userName }: OnboardingFormProps) {
       <div className="mb-6 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
         <span>
-          ¡Sesión iniciada como <strong>{userName ?? userEmail}</strong>! Solo falta
-          crear tu clínica para entrar al panel.
+          ¡Sesión iniciada como <strong>{userName ?? userEmail}</strong>! Completá los datos de
+          tu consultorio para entrar al panel.
         </span>
       </div>
 
       <h1 className="text-2xl font-bold text-slate-900">Completá tu acceso</h1>
       <p className="mt-1 text-sm text-slate-500">
-        Último paso: datos de tu consultorio o centro médico.
+        Datos del consultorio y del médico titular (obligatorios).
       </p>
 
       <form
@@ -107,17 +121,11 @@ export function OnboardingForm({ userEmail, userName }: OnboardingFormProps) {
 
         <Input
           name="clinicName"
-          label="Nombre de la clínica"
+          label="Nombre de la clínica / consultorio"
           placeholder="Consultorio Dr. Castro"
           required
           error={fieldErrors.clinicName}
-          onChange={() =>
-            setFieldErrors((p) => {
-              const n = { ...p };
-              delete n.clinicName;
-              return n;
-            })
-          }
+          onChange={() => clearFieldError("clinicName")}
         />
 
         <Input
@@ -129,23 +137,14 @@ export function OnboardingForm({ userEmail, userName }: OnboardingFormProps) {
           error={fieldErrors.slug}
           onChange={(e) => {
             setSlug(normalizeSlug(e.target.value));
-            setFieldErrors((p) => {
-              const n = { ...p };
-              delete n.slug;
-              return n;
-            });
+            clearFieldError("slug");
           }}
         />
 
-        <Input
-          name="phone"
-          label="Teléfono (opcional)"
-          type="tel"
-          error={fieldErrors.phone}
-        />
+        <DoctorSetupFields fieldErrors={fieldErrors} onClearError={clearFieldError} />
 
         <Button type="submit" className="w-full" loading={loading}>
-          Crear clínica e ingresar
+          Crear consultorio e ingresar
         </Button>
       </form>
     </div>

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
 import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
-import { getPortalSlugForClinic } from "@/lib/actions/patient-app-share";
+import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
 import { formatAgeLabel } from "@/lib/utils/patient-age";
 import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
 import {
@@ -43,6 +43,8 @@ export default async function PacienteDetailPage({
   if (!patient) notFound();
 
   const portalSlug = clinicId ? await getPortalSlugForClinic(clinicId) : null;
+  const doctorInfo =
+    clinicId && portalSlug ? await getDoctorShareInfoForClinic(clinicId) : null;
 
   const [{ data: appointments }, { data: records }, { data: appShare }] = await Promise.all([
     supabase
@@ -98,14 +100,14 @@ export default async function PacienteDetailPage({
 
         <PamiPatientBanner patient={patient} />
 
-        {portalSlug && clinic && (
+        {portalSlug && doctorInfo && (
           <Card title="App para el paciente">
             <PatientAppShareControl
               patientId={patient.id}
               patientName={`${patient.first_name} ${patient.last_name}`}
               patientPhone={patient.phone}
               slug={portalSlug}
-              clinicName={clinic.name}
+              doctor={doctorInfo}
               share={patientShare}
             />
           </Card>

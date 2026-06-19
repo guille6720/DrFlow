@@ -14,7 +14,6 @@ export const setupClinicSchema = z.object({
       /^[a-z0-9-]+$/,
       "Usá solo minúsculas, números y guiones. Ejemplo: mi-clinica-norte"
     ),
-  phone: z.string().optional(),
 });
 
 export const registerClinicSchema = z.object({
@@ -26,10 +25,8 @@ export const registerClinicSchema = z.object({
       /^[a-z0-9-]+$/,
       "Usá solo minúsculas, números y guiones. Ejemplo: mi-clinica-norte"
     ),
-  fullName: z.string().min(2, "Ingresá tu nombre completo"),
   email: z.string().email("Ingresá un email válido"),
   password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
-  phone: z.string().optional(),
 });
 
 export const patientSchema = z.object({

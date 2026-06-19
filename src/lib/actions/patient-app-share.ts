@@ -65,19 +65,3 @@ export async function recordPatientAppShare(
 
   return { success: true, sharedAt: data.shared_at };
 }
-
-export async function getPortalSlugForClinic(clinicId: string): Promise<string | null> {
-  const supabase = await createClient();
-
-  const [{ data: link }, { data: clinic }] = await Promise.all([
-    supabase
-      .from("public_booking_links")
-      .select("slug")
-      .eq("clinic_id", clinicId)
-      .eq("is_active", true)
-      .maybeSingle(),
-    supabase.from("clinics").select("slug").eq("id", clinicId).single(),
-  ]);
-
-  return link?.slug ?? clinic?.slug ?? null;
-}

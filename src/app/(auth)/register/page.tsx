@@ -7,17 +7,25 @@ import { signUpClinic } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { registerClinicSchema } from "@/lib/validations/schemas";
+import { parseDoctorSetupFromForm, validateDoctorSetup } from "@/lib/validations/doctor-setup";
 import { normalizeSlug, zodFieldErrors } from "@/lib/validations/form-errors";
+import { DoctorSetupFields } from "@/components/onboarding/doctor-setup-fields";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import { AlertCircle } from "lucide-react";
 
 const FIELD_ORDER = [
   "clinicName",
   "slug",
-  "fullName",
+  "doctorFirstName",
+  "doctorLastName",
+  "documentNumber",
+  "phone",
+  "specialtySelect",
+  "specialtyCustom",
+  "licenseNational",
+  "licenseProvincial",
   "email",
   "password",
-  "phone",
 ] as const;
 
 export default function RegisterPage() {
@@ -39,20 +47,22 @@ export default function RegisterPage() {
   }
 
   function validateClient(form: HTMLFormElement): Record<string, string> | null {
-    const raw = {
-      clinicName: String(new FormData(form).get("clinicName") ?? "").trim(),
-      slug: normalizeSlug(String(new FormData(form).get("slug") ?? "")),
-      fullName: String(new FormData(form).get("fullName") ?? "").trim(),
-      email: String(new FormData(form).get("email") ?? "").trim(),
-      password: String(new FormData(form).get("password") ?? ""),
-      phone: String(new FormData(form).get("phone") ?? "").trim() || undefined,
-    };
+    const formData = new FormData(form);
+    const accountParsed = registerClinicSchema.safeParse({
+      clinicName: String(formData.get("clinicName") ?? "").trim(),
+      slug: normalizeSlug(String(formData.get("slug") ?? "")),
+      email: String(formData.get("email") ?? "").trim(),
+      password: String(formData.get("password") ?? ""),
+    });
 
-    const parsed = registerClinicSchema.safeParse(raw);
-    if (!parsed.success) {
-      return zodFieldErrors(parsed.error);
-    }
-    return null;
+    const doctorResult = validateDoctorSetup(parseDoctorSetupFromForm(formData));
+
+    const errors: Record<string, string> = {};
+    if (!accountParsed.success) Object.assign(errors, zodFieldErrors(accountParsed.error));
+    if (doctorResult.fieldErrors) Object.assign(errors, doctorResult.fieldErrors);
+    if (doctorResult.error) Object.assign(errors, zodFieldErrors(doctorResult.error));
+
+    return Object.keys(errors).length > 0 ? errors : null;
   }
 
   function handleSlugChange(value: string) {
@@ -178,17 +188,8 @@ export default function RegisterPage() {
             </p>
 
             <Input
-              name="fullName"
-              label="Tu nombre completo"
-              required
-              error={fieldErrors.fullName}
-              aria-invalid={!!fieldErrors.fullName}
-              onChange={() => clearFieldError("fullName")}
-            />
-
-            <Input
               name="email"
-              label="Email"
+              label="Email de acceso"
               type="email"
               required
               autoComplete="email"
@@ -197,13 +198,9 @@ export default function RegisterPage() {
               onChange={() => clearFieldError("email")}
             />
 
-            <Input
-              name="phone"
-              label="Teléfono (opcional)"
-              type="tel"
-              error={fieldErrors.phone}
-              aria-invalid={!!fieldErrors.phone}
-              onChange={() => clearFieldError("phone")}
+            <DoctorSetupFields
+              fieldErrors={fieldErrors}
+              onClearError={clearFieldError}
             />
 
             <Input

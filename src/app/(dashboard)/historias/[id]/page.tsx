@@ -17,7 +17,7 @@ import { es } from "date-fns/locale";
 import { ArrowLeft } from "lucide-react";
 import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
 import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
-import { getPortalSlugForClinic } from "@/lib/actions/patient-app-share";
+import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
 import { ExportClinicalPdfButton } from "@/components/historias/export-pdf-button";
@@ -65,6 +65,7 @@ export default async function HistoriaDetailPage({
   };
 
   const portalSlug = await getPortalSlugForClinic(clinicId);
+  const doctorInfo = portalSlug ? await getDoctorShareInfoForClinic(clinicId) : null;
 
   const [{ data: audit }, { data: prescriptions }, { data: professionals }, { data: medicalOrders }, { data: appShare }] =
     await Promise.all([
@@ -131,14 +132,14 @@ export default async function HistoriaDetailPage({
       <div className="space-y-6 p-4 sm:p-6">
         <PamiPatientBanner patient={patient} />
 
-        {portalSlug && clinic && (
+        {portalSlug && doctorInfo && (
           <Card title="App para el paciente">
             <PatientAppShareControl
               patientId={patient.id}
               patientName={`${patient.first_name} ${patient.last_name}`}
               patientPhone={patient.phone}
               slug={portalSlug}
-              clinicName={clinic.name}
+              doctor={doctorInfo}
               share={patientShare}
             />
           </Card>

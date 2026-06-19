@@ -14,6 +14,8 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils/cn";
 
+import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
+
 export interface PatientAppShareInfo {
   sharedAt: string;
   sharedByName?: string | null;
@@ -25,7 +27,7 @@ interface PatientAppShareControlProps {
   patientName: string;
   patientPhone?: string | null;
   slug: string;
-  clinicName: string;
+  doctor: DoctorShareInfo;
   share?: PatientAppShareInfo | null;
   compact?: boolean;
   className?: string;
@@ -37,7 +39,7 @@ export function PatientAppShareControl({
   patientName,
   patientPhone,
   slug,
-  clinicName,
+  doctor,
   share,
   compact = false,
   className,
@@ -50,14 +52,14 @@ export function PatientAppShareControl({
   const { installUrl, message, whatsappUrl } = useMemo(() => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     const url = buildPatientAppInstallUrl(origin, slug);
-    const text = buildPatientAppShareMessage(clinicName, url, patientName.split(" ")[0]);
+    const text = buildPatientAppShareMessage(doctor, url, patientName.split(" ")[0]);
     const directUrl = patientPhone ? buildWhatsAppUrl(patientPhone, text) : null;
     return {
       installUrl: url,
       message: text,
       whatsappUrl: directUrl ?? buildWhatsAppShareUrl(text),
     };
-  }, [slug, clinicName, patientName, patientPhone]);
+  }, [slug, doctor, patientName, patientPhone]);
 
   const alreadyShared = Boolean(localShare?.sharedAt);
 

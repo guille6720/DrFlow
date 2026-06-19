@@ -29,6 +29,7 @@ export interface Profile {
   email: string;
   full_name: string;
   phone: string | null;
+  document_number?: string | null;
   avatar_url: string | null;
   is_superadmin: boolean;
 }
@@ -94,6 +95,8 @@ export interface Professional {
   specialty_id: string | null;
   location_id: string | null;
   license_number: string | null;
+  license_national?: string | null;
+  license_provincial?: string | null;
   display_name: string | null;
   bio: string | null;
   is_active: boolean;

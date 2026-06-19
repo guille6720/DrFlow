@@ -7,7 +7,6 @@ describe("register validation", () => {
     const result = registerClinicSchema.safeParse({
       clinicName: "Mi Clínica",
       slug: "Mi Clinica",
-      fullName: "Juan Pérez",
       email: "test@email.com",
       password: "12345678",
     });

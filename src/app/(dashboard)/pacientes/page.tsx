@@ -13,7 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatAgeLabel, isPamiPatient } from "@/lib/utils/patient-age";
 import { Badge } from "@/components/ui/badge";
 import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
-import { getPortalSlugForClinic } from "@/lib/actions/patient-app-share";
+import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
 import { Users, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 const PAGE_SIZE = 20;
@@ -43,6 +43,7 @@ export default async function PacientesPage({
   }[] = [];
   let total = 0;
   let portalSlug: string | null = null;
+  let doctorInfo: Awaited<ReturnType<typeof getDoctorShareInfoForClinic>> = null;
   const shareByPatient = new Map<
     string,
     { sharedAt: string; sharedByName?: string | null; channel?: string | null }
@@ -50,6 +51,9 @@ export default async function PacientesPage({
 
   if (clinicId) {
     portalSlug = await getPortalSlugForClinic(clinicId);
+    if (portalSlug) {
+      doctorInfo = await getDoctorShareInfoForClinic(clinicId);
+    }
 
     let query = supabase
       .from("patients")
@@ -170,7 +174,9 @@ export default async function PacientesPage({
                       <th className="pb-3 pr-4 font-medium">Contacto</th>
                       <th className="pb-3 pr-4 font-medium">Edad</th>
                       <th className="pb-3 pr-4 font-medium">Obra social</th>
-                      {portalSlug && <th className="pb-3 pr-4 font-medium">App paciente</th>}
+                      {portalSlug && doctorInfo && (
+                        <th className="pb-3 pr-4 font-medium">App paciente</th>
+                      )}
                       <th className="pb-3 font-medium"></th>
                     </tr>
                   </thead>
@@ -191,14 +197,14 @@ export default async function PacientesPage({
                             )}
                           </span>
                         </td>
-                        {portalSlug && clinic && (
+                        {portalSlug && doctorInfo && (
                           <td className="py-3 pr-4">
                             <PatientAppShareControl
                               patientId={p.id}
                               patientName={`${p.first_name} ${p.last_name}`}
                               patientPhone={p.phone}
                               slug={portalSlug}
-                              clinicName={clinic.name}
+                              doctor={doctorInfo}
                               share={shareByPatient.get(p.id) ?? null}
                               compact
                             />
