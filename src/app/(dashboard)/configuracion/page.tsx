@@ -74,6 +74,7 @@ export default async function ConfiguracionPage() {
         activeClinicId={clinicId}
         role={role}
         userName={profile?.full_name}
+        isSuperadmin={isSuperadmin}
       />
 
       <div className="p-4 sm:p-6">

@@ -6,6 +6,17 @@ import { FloatingActions } from "@/components/layout/floating-actions";
 import { RoutePrefetcher } from "@/components/layout/route-prefetcher";
 import { getDashboardShell } from "@/lib/auth/session";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "DrFlow",
+    statusBarStyle: "default",
+  },
+};
+
 export default async function DashboardLayout({
   children,
 }: {

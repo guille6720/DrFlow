@@ -22,6 +22,7 @@ import type { Clinic } from "@/types/database";
 import { ExternalLink, Plus, Trash2, Copy } from "lucide-react";
 import Link from "next/link";
 import { TeamInvitePanel } from "@/components/configuracion/team-invite-panel";
+import { AppInstallCard } from "@/components/portal/app-install-card";
 
 interface SettingsPanelProps {
   clinic: Clinic | null;
@@ -108,13 +109,20 @@ export function SettingsPanel({
         </form>
       </Card>
 
+      <Card title="DrFlow en tu celular (médico)">
+        <p className="mb-4 text-sm text-slate-600">
+          Instalá DrFlow en tu celular para acceder al dashboard y la agenda con el icono oficial.
+        </p>
+        <AppInstallCard variant="clinic" />
+      </Card>
+
       <Card title="App pacientes (PWA)">
         <p className="mb-3 text-sm text-slate-600">
           Versión reducida instalable: turnos, solicitud de recetas y WhatsApp. Compartí este link
           con tus pacientes PAMI.
         </p>
         {bookingSlug || clinic.slug ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {(() => {
               const slug = bookingSlug ?? clinic.slug;
               return (
@@ -140,12 +148,20 @@ export function SettingsPanel({
                     <Copy className="h-3.5 w-3.5" />
                     Copiar link app pacientes
                   </Button>
+                  <AppInstallCard
+                    variant="patient"
+                    slug={slug}
+                    clinicName={clinic.name}
+                  />
                 </>
               );
             })()}
           </div>
         ) : (
-          <p className="text-sm text-slate-500">Activá la reserva pública para generar el portal.</p>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-500">Activá la reserva pública para generar el portal.</p>
+            <AppInstallCard variant="patient" />
+          </div>
         )}
       </Card>
 

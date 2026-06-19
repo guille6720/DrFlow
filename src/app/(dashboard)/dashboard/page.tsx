@@ -27,6 +27,7 @@ import { hasPermission } from "@/lib/permissions/roles";
 import Link from "next/link";
 import { format, startOfDay, endOfDay, startOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
+import { DashboardMobileAppsPanel } from "@/components/dashboard/dashboard-mobile-apps-panel";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
 
@@ -34,7 +35,7 @@ export default async function DashboardPage() {
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { role, isSuperadmin, clinic } = await getActiveClinic();
   const supabase = await createClient();
 
   const now = new Date();
@@ -57,8 +58,10 @@ export default async function DashboardPage() {
   let todayDone = 0;
   let nextToday: (typeof upcoming)[0] | null = null;
 
+  let portalSlug: string | null = clinic?.slug ?? null;
+
   if (clinicId) {
-    const [today, newPats, attended, cancelled, noShow, monthTotal, upcomingData, todayList] =
+    const [today, newPats, attended, cancelled, noShow, monthTotal, upcomingData, todayList, bookingLink] =
       await Promise.all([
         supabase
           .from("appointments")
@@ -115,6 +118,12 @@ export default async function DashboardPage() {
           .lte("start_at", todayEnd)
           .not("status", "in", '("cancelled")')
           .order("start_at"),
+        supabase
+          .from("public_booking_links")
+          .select("slug")
+          .eq("clinic_id", clinicId)
+          .eq("is_active", true)
+          .maybeSingle(),
       ]);
 
     stats = {
@@ -127,6 +136,7 @@ export default async function DashboardPage() {
     };
     upcoming = upcomingData.data ?? [];
     todayQueue = todayList.data ?? [];
+    portalSlug = bookingLink.data?.slug ?? clinic?.slug ?? null;
     todayDone = todayQueue.filter((a) => a.status === "attended").length;
     const nowIso = now.toISOString();
     nextToday =
@@ -151,9 +161,16 @@ export default async function DashboardPage() {
         activeClinicId={clinicId}
         role={role}
         userName={profile?.full_name}
+        isSuperadmin={isSuperadmin}
       />
 
       <div className="space-y-6 p-4 sm:p-6">
+        <DashboardMobileAppsPanel
+          clinicName={clinic?.name}
+          portalSlug={portalSlug}
+          showSettingsLink={hasPermission(role, "manageSettings", isSuperadmin)}
+        />
+
         <ConsultorioLivePanel
           todayTotal={stats.todayAppointments}
           todayDone={todayDone}
@@ -285,6 +302,12 @@ export default async function DashboardPage() {
                 <Button variant="outline" className="w-full justify-start">
                   <CalendarDays className="h-4 w-4" />
                   Ver reportes
+                </Button>
+              </Link>
+              <Link href="#apps-moviles">
+                <Button variant="outline" className="w-full justify-start">
+                  <Calendar className="h-4 w-4" />
+                  Apps para celular
                 </Button>
               </Link>
               {hasPermission(role, "viewPharmacology", isSuperadmin) && (

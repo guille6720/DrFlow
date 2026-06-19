@@ -1,8 +1,11 @@
 "use client";
 
-import { ROLE_LABELS } from "@/lib/permissions/roles";
+import Link from "next/link";
+import { Settings } from "lucide-react";
+import { ROLE_LABELS, hasPermission } from "@/lib/permissions/roles";
 import type { Clinic, UserRole } from "@/types/database";
 import { ClinicSelector } from "./clinic-selector";
+import { cn } from "@/lib/utils/cn";
 
 interface HeaderProps {
   title: string;
@@ -11,6 +14,7 @@ interface HeaderProps {
   activeClinicId?: string | null;
   role: UserRole | null;
   userName?: string;
+  isSuperadmin?: boolean;
 }
 
 export function Header({
@@ -20,7 +24,10 @@ export function Header({
   activeClinicId,
   role,
   userName,
+  isSuperadmin = false,
 }: HeaderProps) {
+  const showSettings = hasPermission(role, "manageSettings", isSuperadmin);
+
   return (
     <header className="border-b border-blue-100/80 bg-gradient-to-r from-white via-blue-50/20 to-white px-4 py-4 sm:px-6 lg:pl-72">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -33,6 +40,19 @@ export function Header({
           )}
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          {showSettings && (
+            <Link
+              href="/configuracion"
+              className={cn(
+                "inline-flex h-11 w-11 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-700 shadow-sm transition",
+                "hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
+              )}
+              aria-label="Configuración"
+              title="Configuración"
+            >
+              <Settings className="h-5 w-5" />
+            </Link>
+          )}
           {clinics.length > 1 && activeClinicId && (
             <ClinicSelector clinics={clinics} activeClinicId={activeClinicId} />
           )}

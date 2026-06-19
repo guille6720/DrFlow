@@ -2,10 +2,11 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "DrFlow — App para pacientes",
+    name: "DrFlow — Consultorio",
     short_name: "DrFlow",
-    description: "Pedí turnos, recetas y contactá a tu consultorio.",
-    start_url: "/",
+    description: "Agenda, pacientes e historia clínica en tu celular.",
+    start_url: "/dashboard",
+    scope: "/",
     display: "standalone",
   background_color: "#eff6ff",
   theme_color: "#2563eb",

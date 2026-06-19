@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { buildPrescriptionRequestMessage } from "@/lib/utils/patient-messages";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
-import { PatientAppInstallCard } from "@/components/portal/patient-app-install-card";
+import { AppInstallCard } from "@/components/portal/app-install-card";
 import { Calendar, Pill, MessageCircle } from "lucide-react";
 
 type Tab = "turno" | "receta" | "whatsapp";
@@ -68,6 +68,12 @@ export function PatientPortalView({
       </header>
 
       <main className="mx-auto max-w-lg px-4 py-6">
+        <AppInstallCard
+          slug={slug}
+          clinicName={clinicName}
+          className="mb-6"
+        />
+
         {clinicAddress && (
           <p className="mb-4 text-center text-sm text-slate-500">{clinicAddress}</p>
         )}
@@ -167,12 +173,6 @@ export function PatientPortalView({
             )}
           </div>
         )}
-
-        <PatientAppInstallCard
-          slug={slug}
-          clinicName={clinicName}
-          className="mt-8"
-        />
 
         <p className="mt-6 text-center text-xs text-slate-400">
           <Link href="/" className="text-blue-700 hover:underline">
