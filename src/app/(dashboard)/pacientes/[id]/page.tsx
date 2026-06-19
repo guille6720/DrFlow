@@ -5,9 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
 import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
+import { DeletePatientButton } from "@/components/pacientes/delete-patient-button";
 import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
 import { formatAgeLabel } from "@/lib/utils/patient-age";
 import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
+import { hasPermission } from "@/lib/permissions/roles";
 import {
   getActiveClinic,
   getActiveClinicId,
@@ -28,7 +30,7 @@ export default async function PacienteDetailPage({
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role, clinic } = await getActiveClinic();
+  const { role, clinic, isSuperadmin } = await getActiveClinic();
   const supabase = await createClient();
 
   if (!clinicId) notFound();
@@ -41,6 +43,8 @@ export default async function PacienteDetailPage({
     .single();
 
   if (!patient) notFound();
+
+  const canManagePatients = hasPermission(role, "managePatients", isSuperadmin);
 
   const portalSlug = clinicId ? await getPortalSlugForClinic(clinicId) : null;
   const doctorInfo =
@@ -96,6 +100,12 @@ export default async function PacienteDetailPage({
           <Link href={`/pacientes/${id}/editar`}>
             <Button variant="outline" size="sm">Editar ficha</Button>
           </Link>
+          {canManagePatients && (
+            <DeletePatientButton
+              patientId={patient.id}
+              patientName={`${patient.last_name}, ${patient.first_name}`}
+            />
+          )}
         </div>
 
         <PamiPatientBanner patient={patient} />

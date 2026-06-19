@@ -7,8 +7,8 @@ import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PatientFormFields } from "@/components/pacientes/patient-form-fields";
+import { DeletePatientButton } from "@/components/pacientes/delete-patient-button";
 import { updatePatient } from "@/lib/actions/clinic";
-import { deactivatePatient } from "@/lib/actions/settings";
 import type { Clinic, Patient, UserRole } from "@/types/database";
 import { ArrowLeft } from "lucide-react";
 
@@ -35,13 +35,6 @@ export function EditPatientForm({ patient, clinics, clinicId, role, userName }: 
     else router.push(`/pacientes/${patient.id}`);
   }
 
-  async function handleDeactivate() {
-    if (!confirm("¿Desactivar este paciente? No se eliminará del historial.")) return;
-    const result = await deactivatePatient(patient.id);
-    if (result.error) setError(result.error);
-    else router.push("/pacientes");
-  }
-
   return (
     <>
       <Header
@@ -65,9 +58,10 @@ export function EditPatientForm({ patient, clinics, clinicId, role, userName }: 
               <Link href={`/pacientes/${patient.id}`}>
                 <Button type="button" variant="outline">Cancelar</Button>
               </Link>
-              <Button type="button" variant="danger" onClick={handleDeactivate} className="ml-auto">
-                Desactivar paciente
-              </Button>
+              <DeletePatientButton
+                patientId={patient.id}
+                patientName={`${patient.last_name}, ${patient.first_name}`}
+              />
             </div>
           </form>
         </Card>

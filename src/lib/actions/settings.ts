@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getActiveClinic, getActiveClinicId, getSession } from "@/lib/auth/session";
+import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/permissions/roles";
 import { z } from "zod";
 
@@ -234,12 +234,36 @@ export async function deactivatePatient(id: string) {
   }
 
   const supabase = await createClient();
+
+  const { data: patient } = await supabase
+    .from("patients")
+    .select("id, first_name, last_name, is_active")
+    .eq("id", id)
+    .eq("clinic_id", clinicId)
+    .single();
+
+  if (!patient) return { error: "Paciente no encontrado" };
+  if (!patient.is_active) return { error: "El paciente ya fue eliminado" };
+
   const { error } = await supabase
     .from("patients")
     .update({ is_active: false })
     .eq("id", id)
     .eq("clinic_id", clinicId);
   if (error) return { error: error.message };
+
+  await logAudit({
+    clinicId,
+    entityType: "patient",
+    entityId: id,
+    action: "delete",
+    metadata: {
+      name: `${patient.first_name} ${patient.last_name}`,
+      softDelete: true,
+    },
+  });
+
   revalidatePath("/pacientes");
+  revalidatePath(`/pacientes/${id}`);
   return { success: true };
 }

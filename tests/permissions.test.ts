@@ -12,8 +12,9 @@ describe("Role permissions", () => {
     expect(hasPermission("secretary", "manageSettings")).toBe(false);
   });
 
-  it("doctor can edit clinical records", () => {
+  it("doctor can edit clinical records and manage patients", () => {
     expect(hasPermission("doctor", "editClinicalRecords")).toBe(true);
+    expect(hasPermission("doctor", "managePatients")).toBe(true);
     expect(hasPermission("doctor", "managePayments")).toBe(false);
   });
 

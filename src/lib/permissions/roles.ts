@@ -16,7 +16,7 @@ export const PERMISSIONS = {
   viewPharmacology: ["superadmin", "clinic_admin", "doctor"] as UserRole[],
   editClinicalRecords: ["superadmin", "clinic_admin", "doctor"] as UserRole[],
   issuePrescriptions: ["superadmin", "clinic_admin", "doctor"] as UserRole[],
-  managePatients: ["superadmin", "clinic_admin", "secretary"] as UserRole[],
+  managePatients: ["superadmin", "clinic_admin", "secretary", "doctor"] as UserRole[],
   viewReports: ["superadmin", "clinic_admin", "secretary"] as UserRole[],
   managePayments: ["superadmin", "clinic_admin", "secretary"] as UserRole[],
   manageSettings: ["superadmin", "clinic_admin"] as UserRole[],
