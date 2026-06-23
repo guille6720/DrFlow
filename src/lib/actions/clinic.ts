@@ -20,6 +20,8 @@ import { buildPamiReminderMessage } from "@/lib/constants/pami-cabecera";
 import { buildWhatsAppUrl } from "@/lib/utils/whatsapp";
 import { paymentService } from "@/lib/services/payments";
 import { telemedicineService } from "@/lib/services/telemedicine";
+import { parseConsultationModality } from "@/lib/constants/consultation-modality";
+import type { ConsultationModality } from "@/lib/constants/consultation-modality";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -149,13 +151,15 @@ export async function createAppointment(formData: FormData) {
 
   revalidatePath("/agenda");
   revalidatePath("/dashboard");
+  revalidatePath("/atenciones");
   return { data };
 }
 
 export async function updateAppointmentStatus(
   id: string,
   status: string,
-  cancellationReason?: string
+  cancellationReason?: string,
+  consultationModality?: ConsultationModality
 ) {
   const clinicId = await getActiveClinicId();
   const user = await getSession();
@@ -184,6 +188,10 @@ export async function updateAppointmentStatus(
     updatePayload.cancelled_by_type = "clinic";
   }
 
+  if (status === "attended") {
+    updatePayload.consultation_modality = consultationModality ?? "presencial";
+  }
+
   const { error } = await supabase
     .from("appointments")
     .update(updatePayload)
@@ -207,6 +215,7 @@ export async function updateAppointmentStatus(
   revalidatePath("/agenda");
   revalidatePath("/dashboard");
   revalidatePath(`/pacientes/${before?.patient_id}`);
+  revalidatePath("/atenciones");
 
   const patient = before?.patients as
     | { first_name: string; last_name: string; phone: string | null }
@@ -261,13 +270,19 @@ export async function createClinicalRecord(formData: FormData) {
   if (error) return { error: error.message };
 
   if (parsed.data.appointment_id) {
+    const modality = parseConsultationModality(raw.consultation_modality);
     await supabase
       .from("appointments")
-      .update({ status: "attended", updated_at: new Date().toISOString() })
+      .update({
+        status: "attended",
+        consultation_modality: modality,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", parsed.data.appointment_id)
       .eq("clinic_id", clinicId);
     revalidatePath("/agenda");
     revalidatePath("/dashboard");
+    revalidatePath("/atenciones");
   }
 
   await supabase.from("clinical_record_audit").insert({
@@ -322,7 +337,10 @@ export async function startConsultationFromAppointment(appointmentId: string) {
   };
 }
 
-export async function finalizeConsultation(appointmentId: string) {
+export async function finalizeConsultation(
+  appointmentId: string,
+  consultationModality: ConsultationModality = "presencial"
+) {
   const clinicId = await getActiveClinicId();
   const { role, isSuperadmin } = await getActiveClinic();
   if (!clinicId || !hasPermission(role, "editClinicalRecords", isSuperadmin)) {
@@ -332,7 +350,11 @@ export async function finalizeConsultation(appointmentId: string) {
   const supabase = await createClient();
   const { error } = await supabase
     .from("appointments")
-    .update({ status: "attended", updated_at: new Date().toISOString() })
+    .update({
+      status: "attended",
+      consultation_modality: consultationModality,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", appointmentId)
     .eq("clinic_id", clinicId);
 
@@ -340,6 +362,7 @@ export async function finalizeConsultation(appointmentId: string) {
 
   revalidatePath("/agenda");
   revalidatePath("/dashboard");
+  revalidatePath("/atenciones");
   return { success: true };
 }
 
@@ -510,7 +533,14 @@ export async function createTelemedicineSession(appointmentId: string) {
 
   if (error) return { error: error.message };
 
+  await supabase
+    .from("appointments")
+    .update({ consultation_modality: "virtual", updated_at: new Date().toISOString() })
+    .eq("id", appointmentId)
+    .eq("clinic_id", clinicId);
+
   revalidatePath("/telemedicina");
+  revalidatePath("/atenciones");
   return { data };
 }
 

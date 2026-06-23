@@ -230,6 +230,11 @@ export default async function DashboardPage() {
 
           <Card title="Accesos rápidos">
             <div className="grid gap-2">
+              <Link href="/atenciones">
+                <Button variant="outline" className="w-full justify-start">
+                  Registro de atenciones
+                </Button>
+              </Link>
               <Link href="/agenda?action=new">
                 <Button variant="outline" className="w-full justify-start">
                   <Calendar className="h-4 w-4" />

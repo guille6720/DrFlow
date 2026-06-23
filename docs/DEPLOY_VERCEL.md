@@ -91,27 +91,53 @@ npm run deploy:vercel
 
 ---
 
-## Dominio Hostinger (sin vercel.app)
+## Dominio Hostinger — subdominio de `opusorg.com`
 
-DrFlow usa **subdominio** en Hostinger: `https://drflow.opusorg.com` (el dominio raíz `opusorg.com` queda libre para otras apps).
+DrFlow **no es un dominio aparte**. Es un **subdominio** de `opusorg.com`:
+
+```
+drflow.opusorg.com  =  registro CNAME "drflow" dentro de opusorg.com
+```
+
+**No agregues** `drflow.opusorg.com` como “dominio externo” en Hostinger. Eso produce el error **“Dominio no encontrado”**.
+
+El dominio raíz `opusorg.com` y `www` quedan libres para otras apps (ej. homeflow).
 
 ### 1. Vercel — agregar dominio
 
 1. [Vercel → drflow-app → Settings → Domains](https://vercel.com/guillermo-c-bmw/drflow-app/settings/domains)
-2. Escribí tu dominio y **Add**
+2. Escribí **`drflow.opusorg.com`** y **Add**
+3. Vercel mostrará qué registro DNS crear (CNAME → `cname.vercel-dns.com`)
 
-| Opción | Ejemplo DrFlow | DNS en Hostinger |
-|--------|----------------|------------------|
-| **Subdominio** (usar este) | `drflow.opusorg.com` | 1 CNAME |
-| Raíz + www | No usar en DrFlow | — |
+### 2. Hostinger — DNS del dominio padre (paso a paso)
 
-### 2. Hostinger — hPanel → DNS
+Entrá por esta ruta exacta:
 
-**No modifiques `@` ni `www`** si ya los usa otra app.
+1. **hPanel → Dominios → Portfolio de dominios**
+2. Clic en **`opusorg.com`** (el dominio principal, **no** en drflow.opusorg.com)
+3. Menú lateral: **DNS / Nameservers**
+4. Pestaña **Registros DNS** (o “Administrar registros DNS”)
 
-| Tipo | Host | Valor |
-|------|------|--------|
-| CNAME | `drflow` | `cname.vercel-dns.com` |
+Ahí agregás **un solo registro**:
+
+| Tipo | Nombre / Host | Apunta a / Objetivo | TTL |
+|------|---------------|---------------------|-----|
+| **CNAME** | `drflow` | `cname.vercel-dns.com` | 14400 (default) |
+
+**Importante:**
+
+- En **Nombre** escribí solo `drflow` — **no** `drflow.opusorg.com` ni `@`
+- **No** uses “Conectar dominio externo” ni “Agregar dominio” para drflow
+- Si ya existe un registro **A** o **CNAME** para `drflow`, editá o borrá el viejo antes de agregar el CNAME
+- No modifiques `@` ni `www` si ya los usa otra app
+
+Esperá **5–30 min** (a veces hasta 2 h) y probá:
+
+```powershell
+nslookup drflow.opusorg.com
+```
+
+Debería responder apuntando a Vercel.
 
 ### 3. Ocultar vercel.app
 
@@ -171,3 +197,6 @@ node scripts/print-supabase-redirects.mjs https://drflow.opusorg.com
 | **Build: no `pages`/`app` directory** | Repo Git sin código o proyecto equivocado. Usá **`drflow-app`**, no `dr-flow` |
 | Dos proyectos (`dr-flow` y `drflow-app`) | Borrá **`dr-flow`** — duplicado sin código |
 | Push no dispara deploy | Verificar Git conectado en Settings → Git, rama `main` |
+| **“Dominio no encontrado” en Hostinger** | Estás en el lugar equivocado. Entrá a **opusorg.com → DNS**, no agregues drflow como dominio externo. Nombre del registro: solo `drflow` |
+| **drflow.opusorg.com no abre** | Falta CNAME `drflow` → `cname.vercel-dns.com` en DNS de **opusorg.com**. Mientras tanto: https://drflow-app-rho.vercel.app |
+| DNS ok pero login falla | Redirect URLs en Supabase para `https://drflow.opusorg.com/**` |

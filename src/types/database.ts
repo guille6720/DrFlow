@@ -12,6 +12,8 @@ export type AppointmentStatus =
   | "cancelled"
   | "no_show";
 
+export type ConsultationModality = "presencial" | "virtual";
+
 export type PaymentStatus = "pending" | "paid" | "rejected";
 
 export type ReminderChannel = "email" | "whatsapp" | "internal";
@@ -120,6 +122,7 @@ export interface Appointment {
   cancelled_at: string | null;
   cancelled_by: string | null;
   cancelled_by_type: "patient" | "clinic" | null;
+  consultation_modality?: ConsultationModality | null;
   patients?: Patient;
   professionals?: Professional;
   locations?: { name: string };

@@ -20,6 +20,7 @@ import {
   Menu,
   X,
   HeartPulse,
+  ClipboardPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useState } from "react";
@@ -31,6 +32,7 @@ import { DrFlowLogo } from "@/components/brand/drflow-logo";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: null },
   { href: "/agenda", label: "Agenda", icon: Calendar, permission: null },
+  { href: "/atenciones", label: "Atenciones", icon: ClipboardPlus, permission: null },
   { href: "/pacientes", label: "Pacientes", icon: Users, permission: "managePatients" as const },
   { href: "/historias", label: "Historia clínica", icon: FileText, permission: "viewClinicalRecords" as const },
   { href: "/recetas", label: "Recetas electrónicas", icon: ScrollText, permission: "issuePrescriptions" as const },

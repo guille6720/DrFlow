@@ -6,6 +6,7 @@ import { useEffect } from "react";
 const DASHBOARD_ROUTES = [
   "/dashboard",
   "/agenda",
+  "/atenciones",
   "/pacientes",
   "/historias",
   "/recetas",
