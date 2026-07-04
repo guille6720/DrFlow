@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "check:supabase": "node scripts/check-supabase.mjs",
     "migrate:remote": "node scripts/run-migrations.mjs",
+    "migrate:pending": "node scripts/apply-pending.mjs",
     "deploy:vercel": "vercel deploy --prod --yes",
     "deploy:checklist": "node scripts/print-supabase-redirects.mjs"
   },

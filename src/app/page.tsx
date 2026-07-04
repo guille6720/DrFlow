@@ -75,11 +75,16 @@ export default function HomePage() {
           complejidad de un ERP médico ni la limitación de una turnera simple.
         </p>
         <div className="mt-10 flex flex-wrap justify-center gap-4">
-          <Link href="/register">
+          <Link href="/demo">
             <Button size="lg">Probar gratis</Button>
           </Link>
-          <Link href="/login">
+          <Link href="/register">
             <Button size="lg" variant="outline">
+              Registrar consultorio
+            </Button>
+          </Link>
+          <Link href="/login">
+            <Button size="lg" variant="ghost">
               Ya tengo cuenta
             </Button>
           </Link>
