@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useRef, useState } from "react";
 import { signUpClinic } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,8 +30,10 @@ const FIELD_ORDER = [
   "licenseProvincial",
 ] as const;
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isTrial = searchParams.get("trial") === "30";
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState<1 | 2>(1);
   const [formError, setFormError] = useState<string | null>(null);
@@ -180,6 +182,13 @@ export default function RegisterPage() {
             Creá tu cuenta y configurá tu consultorio en dos pasos.
           </p>
 
+          {isTrial && (
+            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
+              Estás entrando con la <strong>prueba gratuita de 30 días</strong>. Sin tarjeta
+              para empezar.
+            </div>
+          )}
+
           <div className="mt-4 flex gap-2 text-xs font-medium">
             <span
               className={cn(
@@ -317,5 +326,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterForm />
+    </Suspense>
   );
 }
