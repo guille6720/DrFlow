@@ -96,8 +96,16 @@ function LoginForm() {
     setResetLoading(true);
     try {
       const supabase = createClient();
-      const origin = window.location.origin.replace(/\/$/, "");
-      const redirectTo = `${origin}/auth/confirm?next=${encodeURIComponent("/login/restablecer")}`;
+      // Nunca mandar el mail a localhost: el link del email no abre en el celular / Gmail.
+      // Preferir SITE_URL de producción; si no, vercel app público.
+      const configured =
+        (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "") ||
+        "https://drflow-app-rho.vercel.app";
+      const browserOrigin = window.location.origin.replace(/\/$/, "");
+      const isLocal =
+        browserOrigin.includes("localhost") || browserOrigin.includes("127.0.0.1");
+      const siteUrl = isLocal ? configured : browserOrigin;
+      const redirectTo = `${siteUrl}/auth/confirm?next=${encodeURIComponent("/login/restablecer")}`;
 
       const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
         redirectTo,
@@ -107,7 +115,7 @@ function LoginForm() {
         const msg = error.message.toLowerCase();
         if (msg.includes("redirect") || msg.includes("url")) {
           setResetError(
-            `URL no autorizada. En Supabase → Authentication → URL Configuration agregá: ${origin}/auth/confirm`
+            `URL no autorizada. En Supabase → Authentication → URL Configuration agregá: ${siteUrl}/auth/confirm`
           );
         } else if (msg.includes("rate")) {
           setResetError("Demasiados intentos. Esperá unos minutos.");
@@ -118,7 +126,7 @@ function LoginForm() {
       }
 
       setResetMessage(
-        `Si ${trimmed} está registrado, te enviamos un link para elegir una nueva contraseña. Revisá la bandeja y spam.`
+        `Te enviamos un link a ${trimmed}. Abrilo en el navegador (el link va a ${siteUrl}). Revisá spam.`
       );
       router.replace(`/login?reset=sent&email=${encodeURIComponent(trimmed)}`);
     } catch (e) {

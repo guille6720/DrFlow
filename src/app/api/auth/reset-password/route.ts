@@ -20,7 +20,12 @@ export async function POST(request: NextRequest) {
   }
 
   const siteUrl = getSiteUrl(request.nextUrl.origin);
-  const recoveryRedirect = `${siteUrl}/auth/callback?next=${encodeURIComponent("/login/restablecer")}`;
+  // Nunca usar localhost en el email de recovery
+  const publicSite =
+    siteUrl.includes("localhost") || siteUrl.includes("127.0.0.1")
+      ? "https://drflow-app-rho.vercel.app"
+      : siteUrl;
+  const recoveryRedirect = `${publicSite}/auth/confirm?next=${encodeURIComponent("/login/restablecer")}`;
 
   const successUrl = new URL("/login", request.url);
   successUrl.searchParams.set("reset", "sent");
@@ -52,7 +57,7 @@ export async function POST(request: NextRequest) {
     if (msg.includes("redirect") || msg.includes("url")) {
       failUrl.searchParams.set(
         "error",
-        `URL de redirección no autorizada. En Supabase → Authentication → URL Configuration agregá: ${siteUrl}/auth/callback`
+        `URL de redirección no autorizada. En Supabase → Authentication → URL Configuration agregá: ${publicSite}/auth/confirm`
       );
     } else if (msg.includes("rate")) {
       failUrl.searchParams.set(

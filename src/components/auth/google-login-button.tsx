@@ -5,11 +5,17 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
 function resolveSiteUrl(): string {
-  if (typeof window !== "undefined" && window.location.origin) {
-    // Preferir el origen actual (localhost vs producción) para que OAuth vuelva al mismo host
-    return window.location.origin.replace(/\/$/, "");
+  const configured = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
+  if (typeof window !== "undefined") {
+    const origin = window.location.origin.replace(/\/$/, "");
+    const isLocal = origin.includes("localhost") || origin.includes("127.0.0.1");
+    // OAuth desde localhost rompe en el email / móvil — usar producción
+    if (isLocal) {
+      return configured || "https://drflow-app-rho.vercel.app";
+    }
+    return origin;
   }
-  return "";
+  return configured || "https://drflow-app-rho.vercel.app";
 }
 
 export function GoogleLoginButton() {
