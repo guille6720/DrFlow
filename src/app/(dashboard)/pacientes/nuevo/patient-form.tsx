@@ -17,9 +17,17 @@ interface Props {
   role: UserRole | null;
   userName?: string;
   defaultInsurance?: string | null;
+  acceptedCoverages?: string[] | null;
 }
 
-export default function NuevoPacienteForm({ clinics, clinicId, role, userName, defaultInsurance }: Props) {
+export default function NuevoPacienteForm({
+  clinics,
+  clinicId,
+  role,
+  userName,
+  defaultInsurance,
+  acceptedCoverages,
+}: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -52,7 +60,10 @@ export default function NuevoPacienteForm({ clinics, clinicId, role, userName, d
         </Link>
         <Card title="Datos del paciente">
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
-            <PatientFormFields defaultInsurance={defaultInsurance} />
+            <PatientFormFields
+              defaultInsurance={defaultInsurance}
+              acceptedCoverages={acceptedCoverages}
+            />
             {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}
             <div className="flex gap-2 sm:col-span-2">
               <Button type="submit" loading={loading}>Guardar paciente</Button>

@@ -18,9 +18,19 @@ interface Props {
   clinicId: string | null;
   role: UserRole | null;
   userName?: string;
+  defaultInsurance?: string | null;
+  acceptedCoverages?: string[] | null;
 }
 
-export function EditPatientForm({ patient, clinics, clinicId, role, userName }: Props) {
+export function EditPatientForm({
+  patient,
+  clinics,
+  clinicId,
+  role,
+  userName,
+  defaultInsurance,
+  acceptedCoverages,
+}: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -51,7 +61,11 @@ export function EditPatientForm({ patient, clinics, clinicId, role, userName }: 
         </Link>
         <Card title="Datos del paciente">
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
-            <PatientFormFields patient={patient} />
+            <PatientFormFields
+              patient={patient}
+              defaultInsurance={defaultInsurance}
+              acceptedCoverages={acceptedCoverages}
+            />
             {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}
             <div className="flex flex-wrap gap-2 sm:col-span-2">
               <Button type="submit" loading={loading}>Guardar cambios</Button>

@@ -1,18 +1,41 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PAMI_INSURANCE } from "@/lib/constants/pami-cabecera";
+import { Select } from "@/components/ui/select";
+import {
+  coverageOptionsForClinic,
+  insuranceNumberLabel,
+  resolveDefaultCoverage,
+} from "@/lib/constants/coverages";
 import type { Patient } from "@/types/database";
 
 interface PatientFormFieldsProps {
   patient?: Patient;
   defaultInsurance?: string | null;
+  acceptedCoverages?: string[] | null;
 }
 
-export function PatientFormFields({ patient, defaultInsurance }: PatientFormFieldsProps) {
-  const insuranceDefault =
-    patient?.insurance_provider ?? defaultInsurance ?? PAMI_INSURANCE;
+export function PatientFormFields({
+  patient,
+  defaultInsurance,
+  acceptedCoverages,
+}: PatientFormFieldsProps) {
+  const options = useMemo(
+    () => coverageOptionsForClinic(acceptedCoverages, patient?.insurance_provider),
+    [acceptedCoverages, patient?.insurance_provider]
+  );
+
+  const initialCoverage = resolveDefaultCoverage(
+    defaultInsurance,
+    acceptedCoverages,
+    patient?.insurance_provider
+  );
+
+  const [coverage, setCoverage] = useState(initialCoverage);
+  const numberLabel = insuranceNumberLabel(coverage);
+  const usingClinicList = (acceptedCoverages?.length ?? 0) > 0;
 
   return (
     <>
@@ -33,18 +56,25 @@ export function PatientFormFields({ patient, defaultInsurance }: PatientFormFiel
         className="sm:col-span-2"
         defaultValue={patient?.address ?? undefined}
       />
-      <Input
+      <Select
         name="insurance_provider"
         label="Cobertura"
-        defaultValue={insuranceDefault}
-        placeholder="PAMI"
+        value={coverage}
+        onChange={(e) => setCoverage(e.target.value)}
+        options={options.map((c) => ({ value: c, label: c }))}
+        placeholder={usingClinicList ? undefined : "Elegí cobertura"}
       />
       <Input
         name="insurance_number"
-        label="N° beneficio PAMI"
+        label={numberLabel}
         defaultValue={patient?.insurance_number ?? undefined}
-        placeholder="Ej: 12-34567890-0"
+        placeholder={coverage.toUpperCase().includes("PAMI") ? "Ej: 12-34567890-0" : "N° de afiliado"}
       />
+      {!usingClinicList && (
+        <p className="text-xs text-slate-500 sm:col-span-2">
+          Tip: en Configuración → Coberturas podés marcar las que atendés para que aparezcan acá.
+        </p>
+      )}
       <Input
         name="emergency_contact_name"
         label="Familiar / cuidador"

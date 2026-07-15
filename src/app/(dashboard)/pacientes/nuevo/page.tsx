@@ -19,6 +19,7 @@ export default async function NuevoPacientePage() {
       role={role}
       userName={profile?.full_name}
       defaultInsurance={clinic?.default_insurance_provider}
+      acceptedCoverages={clinic?.accepted_coverages ?? null}
     />
   );
 }

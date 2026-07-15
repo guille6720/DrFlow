@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { calculateAge, formatAgeLabel, isPamiPatient } from "@/lib/utils/patient-age";
+import { insuranceNumberLabel } from "@/lib/constants/coverages";
 import { AlertTriangle, Pill, Heart } from "lucide-react";
 import type { Patient } from "@/types/database";
 
@@ -23,6 +24,7 @@ export function PamiPatientBanner({ patient }: PamiPatientBannerProps) {
   const ageLabel = formatAgeLabel(patient.birth_date);
   const isPami = isPamiPatient(patient.insurance_provider);
   const isGeriatric = age !== null && age >= 65;
+  const numberLabel = insuranceNumberLabel(patient.insurance_provider);
 
   return (
     <div className="rounded-2xl border border-blue-200/80 bg-gradient-to-r from-blue-50/80 to-white p-4 shadow-sm">
@@ -34,16 +36,16 @@ export function PamiPatientBanner({ patient }: PamiPatientBannerProps) {
                 PAMI
               </Badge>
             )}
-            {ageLabel && (
-              <Badge variant="default">{ageLabel}</Badge>
+            {!isPami && patient.insurance_provider && (
+              <Badge variant="default">{patient.insurance_provider}</Badge>
             )}
-            {isGeriatric && (
-              <Badge variant="warning">Adulto mayor</Badge>
-            )}
+            {ageLabel && <Badge variant="default">{ageLabel}</Badge>}
+            {isGeriatric && <Badge variant="warning">Adulto mayor</Badge>}
           </div>
           {patient.insurance_number && (
             <p className="mt-2 text-sm text-slate-600">
-              N° beneficio: <span className="font-medium text-slate-900">{patient.insurance_number}</span>
+              {numberLabel}:{" "}
+              <span className="font-medium text-slate-900">{patient.insurance_number}</span>
             </p>
           )}
           {(patient.emergency_contact_name || patient.emergency_contact_phone) && (

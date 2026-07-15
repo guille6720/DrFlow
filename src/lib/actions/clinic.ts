@@ -41,7 +41,7 @@ export async function createPatient(formData: FormData) {
   const supabase = await createClient();
   const { data: clinic } = await supabase
     .from("clinics")
-    .select("default_insurance_provider")
+    .select("default_insurance_provider, accepted_coverages")
     .eq("id", clinicId)
     .single();
 

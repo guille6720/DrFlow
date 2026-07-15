@@ -96,7 +96,7 @@ async function main() {
     }
   }
 
-  // RPC pública
+  // RPC pública (404 = no expuesta; 400/500 con mensaje de negocio = existe)
   const rpc = await fetch(`${url}/rest/v1/rpc/submit_public_booking`, {
     method: "POST",
     headers: {
@@ -104,16 +104,30 @@ async function main() {
       Authorization: `Bearer ${anon}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({}),
+    body: JSON.stringify({
+      p_slug: "__drflow_check__",
+      p_professional_id: "00000000-0000-0000-0000-000000000001",
+      p_start_at: new Date(Date.now() + 86_400_000).toISOString(),
+      p_first_name: "Test",
+      p_last_name: "Check",
+      p_document_number: "00000000",
+      p_phone: "0000",
+    }),
   });
   const rpcBody = await rpc.text();
-  if (rpc.status === 404) {
-    console.log("❌ Función submit_public_booking no existe — corré migración 004");
+  if (rpc.status === 404 || rpcBody.includes("PGRST202")) {
+    console.log("❌ Función submit_public_booking no existe — corré 010_repair_demo_and_rpc.sql");
     allOk = false;
-  } else if (rpc.status === 400 || rpcBody.includes("invalid") || rpcBody.includes("Link")) {
+  } else if (
+    rpc.status === 400 ||
+    rpc.status === 500 ||
+    rpcBody.includes("Link") ||
+    rpcBody.includes("inválido") ||
+    rpcBody.includes("invalid")
+  ) {
     console.log("✓ RPC submit_public_booking existe (respondió con error de validación esperado)");
   } else {
-    console.log(`⚠ RPC submit_public_booking: HTTP ${rpc.status}`);
+    console.log(`⚠ RPC submit_public_booking: HTTP ${rpc.status} — ${rpcBody.slice(0, 120)}`);
   }
 
   console.log(allOk ? "\n✅ Supabase listo para DrFlow\n" : "\n⚠ Hay pendientes — revisá migraciones en docs/LOCAL_SETUP.md\n");

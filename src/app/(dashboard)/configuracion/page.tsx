@@ -2,6 +2,7 @@ import { Header } from "@/components/layout/header";
 import { SettingsPanel } from "@/components/configuracion/settings-panel";
 import { DemoDataPanel } from "@/components/configuracion/demo-data-panel";
 import { PamiSetupPanel } from "@/components/configuracion/pami-setup-panel";
+import { CoveragesPanel } from "@/components/configuracion/coverages-panel";
 import {
   getActiveClinic,
   getActiveClinicId,
@@ -78,10 +79,16 @@ export default async function ConfiguracionPage() {
       />
 
       <div className="p-4 sm:p-6">
-        <PamiSetupPanel
-          practiceProfile={clinic?.practice_profile ?? null}
+        <CoveragesPanel
+          acceptedCoverages={clinic?.accepted_coverages ?? null}
           defaultInsurance={clinic?.default_insurance_provider ?? null}
         />
+        <div className="mt-6">
+          <PamiSetupPanel
+            practiceProfile={clinic?.practice_profile ?? null}
+            defaultInsurance={clinic?.default_insurance_provider ?? null}
+          />
+        </div>
         <div className="mt-6">
           <DemoDataPanel patientCount={patientCount.count ?? 0} />
         </div>

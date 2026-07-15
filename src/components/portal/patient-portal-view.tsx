@@ -236,7 +236,7 @@ export function PatientPortalView({
               required
             />
             <Input
-              label="N° afiliado PAMI (opcional)"
+              label="N° afiliado / beneficio (opcional)"
               value={insuranceNumber}
               onChange={(e) => setInsuranceNumber(e.target.value)}
             />

@@ -19,7 +19,7 @@ export default async function EditarPacientePage({
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { role, isSuperadmin, clinic } = await getActiveClinic();
 
   if (!hasPermission(role, "managePatients", isSuperadmin)) {
     redirect("/pacientes");
@@ -44,6 +44,8 @@ export default async function EditarPacientePage({
       clinicId={clinicId}
       role={role}
       userName={profile?.full_name}
+      defaultInsurance={clinic?.default_insurance_provider ?? null}
+      acceptedCoverages={clinic?.accepted_coverages ?? null}
     />
   );
 }

@@ -49,6 +49,7 @@ export interface Clinic {
   is_active: boolean;
   default_insurance_provider?: string | null;
   practice_profile?: string | null;
+  accepted_coverages?: string[] | null;
 }
 
 export interface ClinicMember {

@@ -139,7 +139,7 @@ export default async function PacienteDetailPage({
               <div><dt className="text-slate-500">Email</dt><dd>{patient.email ?? "—"}</dd></div>
               <div><dt className="text-slate-500">Dirección</dt><dd>{patient.address ?? "—"}</dd></div>
               <div><dt className="text-slate-500">Obra social</dt><dd className="flex items-center gap-2">{patient.insurance_provider ?? "—"}{patient.insurance_provider?.toUpperCase().includes("PAMI") && <Badge variant="teal">PAMI</Badge>}</dd></div>
-              <div><dt className="text-slate-500">N° afiliado</dt><dd>{patient.insurance_number ?? "—"}</dd></div>
+              <div><dt className="text-slate-500">{patient.insurance_provider?.toUpperCase().includes("PAMI") ? "N° beneficio PAMI" : "N° afiliado"}</dt><dd>{patient.insurance_number ?? "—"}</dd></div>
               <div><dt className="text-slate-500">Emergencia</dt><dd>{patient.emergency_contact_name ?? "—"} {patient.emergency_contact_phone && `(${patient.emergency_contact_phone})`}</dd></div>
             </dl>
           </Card>
