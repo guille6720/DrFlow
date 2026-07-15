@@ -138,7 +138,12 @@ export default function HomePage() {
       </section>
 
       <footer className="border-t border-blue-100 py-8 text-center text-sm text-slate-500">
-        DrFlow — Gestión clínica con identidad propia. Argentina.
+        <p>DrFlow — Gestión clínica con identidad propia. Argentina.</p>
+        <p className="mt-2">
+          <Link href="/privacidad" className="text-blue-700 hover:underline">
+            Política de privacidad
+          </Link>
+        </p>
       </footer>
     </div>
   );

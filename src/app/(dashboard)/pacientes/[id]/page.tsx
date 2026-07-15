@@ -21,6 +21,8 @@ import { createClient } from "@/lib/supabase/server";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ArrowLeft } from "lucide-react";
+import { RenewMedicationPanel } from "@/components/pacientes/renew-medication-panel";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 export default async function PacienteDetailPage({
   params,
@@ -48,12 +50,13 @@ export default async function PacienteDetailPage({
   const canManagePatients = hasPermission(role, "managePatients", isSuperadmin);
   const canEditClinical = hasPermission(role, "editClinicalRecords", isSuperadmin);
   const canViewClinical = hasPermission(role, "viewClinicalRecords", isSuperadmin);
+  const canIssue = hasPermission(role, "issuePrescriptions", isSuperadmin);
 
   const portalSlug = clinicId ? await getPortalSlugForClinic(clinicId) : null;
   const doctorInfo =
     clinicId && portalSlug ? await getDoctorShareInfoForClinic(clinicId) : null;
 
-  const [{ data: appointments }, { data: records }, { data: appShare }, { data: clinicalDocuments }] = await Promise.all([
+  const [{ data: appointments }, { data: records }, { data: appShare }, { data: clinicalDocuments }, { data: lastRx }, { data: professionals }] = await Promise.all([
     supabase
       .from("appointments")
       .select("id, start_at, status, cancellation_reason, cancelled_by_type, professionals(profiles(full_name))")
@@ -79,7 +82,24 @@ export default async function PacienteDetailPage({
       .eq("patient_id", id)
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("prescription_drafts")
+      .select("medications")
+      .eq("patient_id", id)
+      .eq("clinic_id", clinicId)
+      .eq("status", "issued")
+      .order("issued_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("professionals")
+      .select("id, display_name, license_number, profiles(full_name)")
+      .eq("clinic_id", clinicId)
+      .eq("is_active", true)
+      .order("display_name"),
   ]);
+
+  const lastMedications = (lastRx?.medications as PrescriptionMedication[] | null) ?? null;
 
   const shareProfile = appShare?.profiles as { full_name?: string } | null;
   const patientShare = appShare
@@ -118,6 +138,22 @@ export default async function PacienteDetailPage({
         </div>
 
         <PamiPatientBanner patient={patient} />
+
+        <RenewMedicationPanel
+          patientId={patient.id}
+          patientInsurance={patient.insurance_provider}
+          regularMedication={patient.regular_medication}
+          lastMedications={lastMedications}
+          professionals={(professionals ?? []).map((p) => ({
+            id: p.id,
+            display_name: p.display_name,
+            license_number: p.license_number,
+            profiles: Array.isArray(p.profiles)
+              ? (p.profiles[0] as { full_name: string } | undefined) ?? null
+              : (p.profiles as { full_name: string } | null),
+          }))}
+          canIssue={canIssue}
+        />
 
         {portalSlug && doctorInfo && (
           <Card title="App para el paciente">

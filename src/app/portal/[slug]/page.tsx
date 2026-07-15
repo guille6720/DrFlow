@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PatientPortalView } from "@/components/portal/patient-portal-view";
 import { notFound } from "next/navigation";
 import { resolvePortalDoctorInfo } from "@/lib/utils/portal-doctor-info";
+import { clinicOffersPami } from "@/lib/constants/coverages";
 
 export async function generateMetadata({
   params,
@@ -16,6 +17,17 @@ export async function generateMetadata({
   };
 }
 
+async function loadClinicPamiFlags(clinicId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("clinics")
+    .select("accepted_coverages, practice_profile")
+    .eq("id", clinicId)
+    .maybeSingle();
+
+  return clinicOffersPami(data?.accepted_coverages ?? null, data?.practice_profile ?? null);
+}
+
 export default async function PatientPortalPage({
   params,
 }: {
@@ -27,7 +39,7 @@ export default async function PatientPortalPage({
 
   const { data: link } = await supabase
     .from("public_booking_links")
-    .select("*, clinics(id, name, phone, address, slug)")
+    .select("*, clinics(id, name, phone, address, slug, accepted_coverages, practice_profile)")
     .eq("slug", slug)
     .eq("is_active", true)
     .single();
@@ -35,7 +47,7 @@ export default async function PatientPortalPage({
   if (!link) {
     const { data: clinic } = await supabase
       .from("clinics")
-      .select("id, name, phone, address, slug")
+      .select("id, name, phone, address, slug, accepted_coverages, practice_profile")
       .eq("slug", slug)
       .single();
 
@@ -48,6 +60,11 @@ export default async function PatientPortalPage({
       .eq("is_active", true)
       .order("display_name");
 
+    const offersPami = clinicOffersPami(
+      clinic.accepted_coverages ?? null,
+      clinic.practice_profile ?? null
+    );
+
     return (
       <PatientPortalView
         slug={slug}
@@ -56,6 +73,7 @@ export default async function PatientPortalPage({
         clinicAddress={clinic.address}
         professionals={professionals ?? []}
         doctor={doctor}
+        offersPami={offersPami}
       />
     );
   }
@@ -66,6 +84,8 @@ export default async function PatientPortalPage({
     phone: string | null;
     address: string | null;
     slug: string;
+    accepted_coverages?: string[] | null;
+    practice_profile?: string | null;
   } | null;
 
   const { data: professionals } = await supabase
@@ -75,6 +95,10 @@ export default async function PatientPortalPage({
     .eq("is_active", true)
     .order("display_name");
 
+  const offersPami = clinic
+    ? clinicOffersPami(clinic.accepted_coverages ?? null, clinic.practice_profile ?? null)
+    : await loadClinicPamiFlags(link.clinic_id);
+
   return (
     <PatientPortalView
       slug={slug}
@@ -83,6 +107,7 @@ export default async function PatientPortalPage({
       clinicAddress={clinic?.address ?? null}
       professionals={professionals ?? []}
       doctor={doctor}
+      offersPami={offersPami}
     />
   );
 }

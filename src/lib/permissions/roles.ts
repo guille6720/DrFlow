@@ -37,7 +37,16 @@ export function canAccessRoute(
   route: string,
   isSuperadmin = false
 ): boolean {
-  if (isSuperadmin) return true;
+  if (isSuperadmin || role === "superadmin") return true;
+
+  // Mocks / QA interno: fuera del producto clínico
+  if (
+    route.startsWith("/qa") ||
+    route.startsWith("/pagos") ||
+    route.startsWith("/telemedicina")
+  ) {
+    return false;
+  }
 
   const routePermissions: Record<string, keyof typeof PERMISSIONS> = {
     "/configuracion": "manageSettings",
@@ -45,8 +54,6 @@ export function canAccessRoute(
     "/historias": "viewClinicalRecords",
     "/recetas": "issuePrescriptions",
     "/herramientas": "viewPharmacology",
-    "/pagos": "managePayments",
-    "/qa": "manageSettings",
   };
 
   for (const [prefix, permission] of Object.entries(routePermissions)) {

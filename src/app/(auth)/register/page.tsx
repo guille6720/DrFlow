@@ -10,10 +10,14 @@ import { registerClinicSchema } from "@/lib/validations/schemas";
 import { parseDoctorSetupFromForm, validateDoctorSetup } from "@/lib/validations/doctor-setup";
 import { normalizeSlug, zodFieldErrors } from "@/lib/validations/form-errors";
 import { DoctorSetupFields } from "@/components/onboarding/doctor-setup-fields";
+import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import { AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 
 const FIELD_ORDER = [
+  "email",
+  "password",
   "clinicName",
   "slug",
   "doctorFirstName",
@@ -24,13 +28,12 @@ const FIELD_ORDER = [
   "specialtyCustom",
   "licenseNational",
   "licenseProvincial",
-  "email",
-  "password",
 ] as const;
 
 export default function RegisterPage() {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const [step, setStep] = useState<1 | 2>(1);
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -44,6 +47,18 @@ export default function RegisterPage() {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
       el.focus();
     }
+  }
+
+  function validateStep1(form: HTMLFormElement): Record<string, string> | null {
+    const formData = new FormData(form);
+    const parsed = registerClinicSchema
+      .pick({ email: true, password: true })
+      .safeParse({
+        email: String(formData.get("email") ?? "").trim(),
+        password: String(formData.get("password") ?? ""),
+      });
+    if (!parsed.success) return zodFieldErrors(parsed.error);
+    return null;
   }
 
   function validateClient(form: HTMLFormElement): Record<string, string> | null {
@@ -87,6 +102,22 @@ export default function RegisterPage() {
     if (formError) setFormError(null);
   }
 
+  function handleContinue(e: React.MouseEvent) {
+    e.preventDefault();
+    const form = formRef.current;
+    if (!form) return;
+    setFormError(null);
+    const stepErrors = validateStep1(form);
+    if (stepErrors) {
+      setFieldErrors(stepErrors);
+      setFormError("Completá email y contraseña (mín. 8 caracteres).");
+      scrollToFirstError(stepErrors);
+      return;
+    }
+    setFieldErrors({});
+    setStep(2);
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
@@ -98,6 +129,8 @@ export default function RegisterPage() {
     if (clientErrors) {
       setFieldErrors(clientErrors);
       setFormError("Corregí los campos marcados en rojo antes de continuar.");
+      if (clientErrors.email || clientErrors.password) setStep(1);
+      else setStep(2);
       scrollToFirstError(clientErrors);
       setLoading(false);
       return;
@@ -135,7 +168,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4">
+    <div className="min-h-screen bg-slate-50 px-4 py-12">
       <div className="mx-auto max-w-lg">
         <div className="mb-8 flex justify-center">
           <DrFlowLogo size="xl" href="/" />
@@ -144,14 +177,49 @@ export default function RegisterPage() {
         <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
           <h1 className="text-2xl font-bold text-slate-900">Registrar clínica</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Creá tu cuenta y configurá tu consultorio en minutos.
+            Creá tu cuenta y configurá tu consultorio en dos pasos.
           </p>
+
+          <div className="mt-4 flex gap-2 text-xs font-medium">
+            <span
+              className={cn(
+                "rounded-full px-3 py-1",
+                step === 1 ? "bg-blue-700 text-white" : "bg-slate-100 text-slate-600"
+              )}
+            >
+              1. Cuenta
+            </span>
+            <span
+              className={cn(
+                "rounded-full px-3 py-1",
+                step === 2 ? "bg-blue-700 text-white" : "bg-slate-100 text-slate-600"
+              )}
+            >
+              2. Consultorio
+            </span>
+          </div>
+
+          <div className="mt-6">
+            <GoogleLoginButton />
+            <p className="mt-2 text-center text-xs text-slate-500">
+              Con Google vas a completar el consultorio en el onboarding.
+            </p>
+          </div>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-slate-400">o con email</span>
+            </div>
+          </div>
 
           <form
             ref={formRef}
             method="post"
             onSubmit={handleSubmit}
-            className="mt-6 space-y-4"
+            className="space-y-4"
             noValidate
           >
             {formError && (
@@ -164,61 +232,80 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <Input
-              name="clinicName"
-              label="Nombre de la clínica"
-              required
-              error={fieldErrors.clinicName}
-              aria-invalid={!!fieldErrors.clinicName}
-              onChange={() => clearFieldError("clinicName")}
-            />
+            <div className={cn(step !== 1 && "hidden")}>
+              <Input
+                name="email"
+                label="Email de acceso"
+                type="email"
+                required
+                autoComplete="email"
+                error={fieldErrors.email}
+                aria-invalid={!!fieldErrors.email}
+                onChange={() => clearFieldError("email")}
+              />
+              <Input
+                name="password"
+                label="Contraseña"
+                type="password"
+                required
+                minLength={8}
+                autoComplete="new-password"
+                error={fieldErrors.password}
+                aria-invalid={!!fieldErrors.password}
+                onChange={() => clearFieldError("password")}
+                className="mt-4"
+              />
+              <p className="mt-1 text-xs text-slate-400">Mínimo 8 caracteres.</p>
+              <Button type="button" className="mt-4 w-full" onClick={handleContinue}>
+                Continuar
+              </Button>
+            </div>
 
-            <Input
-              name="slug"
-              label="Identificador URL (slug)"
-              placeholder="mi-clinica-norte"
-              required
-              value={slug}
-              error={fieldErrors.slug}
-              aria-invalid={!!fieldErrors.slug}
-              onChange={(e) => handleSlugChange(e.target.value)}
-            />
-            <p className="-mt-2 text-xs text-slate-400">
-              Solo minúsculas, números y guiones. Se normaliza automáticamente.
-            </p>
+            <div className={cn(step !== 2 && "hidden")}>
+              <Input
+                name="clinicName"
+                label="Nombre de la clínica"
+                required
+                error={fieldErrors.clinicName}
+                aria-invalid={!!fieldErrors.clinicName}
+                onChange={() => clearFieldError("clinicName")}
+              />
+              <Input
+                name="slug"
+                label="Identificador URL (slug)"
+                placeholder="mi-clinica-norte"
+                required
+                value={slug}
+                error={fieldErrors.slug}
+                aria-invalid={!!fieldErrors.slug}
+                onChange={(e) => handleSlugChange(e.target.value)}
+                className="mt-4"
+              />
+              <p className="-mt-2 text-xs text-slate-400">
+                Solo minúsculas, números y guiones. Se normaliza automáticamente.
+              </p>
 
-            <Input
-              name="email"
-              label="Email de acceso"
-              type="email"
-              required
-              autoComplete="email"
-              error={fieldErrors.email}
-              aria-invalid={!!fieldErrors.email}
-              onChange={() => clearFieldError("email")}
-            />
+              <div className="mt-4">
+                <DoctorSetupFields
+                  fieldErrors={fieldErrors}
+                  onClearError={clearFieldError}
+                />
+              </div>
 
-            <DoctorSetupFields
-              fieldErrors={fieldErrors}
-              onClearError={clearFieldError}
-            />
-
-            <Input
-              name="password"
-              label="Contraseña"
-              type="password"
-              required
-              minLength={8}
-              autoComplete="new-password"
-              error={fieldErrors.password}
-              aria-invalid={!!fieldErrors.password}
-              onChange={() => clearFieldError("password")}
-            />
-            <p className="-mt-2 text-xs text-slate-400">Mínimo 8 caracteres.</p>
-
-            <Button type="submit" className="w-full" loading={loading}>
-              Crear cuenta y clínica
-            </Button>
+              <div className="mt-4 flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setStep(1)}
+                >
+                  Atrás
+                </Button>
+                <Button type="submit" className="flex-1" loading={loading}>
+                  Crear cuenta y clínica
+                </Button>
+              </div>
+            </div>
           </form>
 
           <p className="mt-4 text-center text-sm text-slate-500">

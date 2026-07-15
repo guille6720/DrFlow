@@ -1,58 +1,53 @@
-# Roadmap post-MVP — DrFlow
+# Roadmap — DrFlow
 
-## Fase 1 — Estabilización (4-6 semanas)
+## Ya construido (MVP + post-QA)
+
+- [x] Agenda, pacientes, historia clínica, timer de consulta
+- [x] Recetas locales (Ley 25.649) con disclaimer explícito (no REFEPS)
+- [x] Portal paciente PWA + solicitud de turnos pública
+- [x] Coberturas del consultorio (`accepted_coverages`) + copy PAMI condicional
+- [x] Auth: login, registro 2 pasos, Google OAuth, recovery sin localhost
+- [x] Atender ahora (dashboard) + renovación rápida de medicación
+- [x] Atenciones: modalidad + resumen por cobertura + CSV
+- [x] Labs colapsados (pagos mock, telemedicina, recordatorios) — no nav core
+- [x] `/qa` solo superadmin
+
+## Fase 1 — Estabilización
 
 - [ ] CI/CD con GitHub Actions (lint, test, build)
-- [ ] E2E con Playwright (flujos críticos)
+- [ ] E2E con Playwright (auth, atender ahora, booking)
 - [ ] Monitoreo de errores (Sentry)
-- [ ] Completar CRUD en Configuración (especialidades, sedes, horarios)
-- [ ] Reglas de disponibilidad en UI de agenda
-- [ ] Bloqueos de horario desde agenda
-- [ ] Reprogramación de turnos con historial
-- [ ] Activar link público de solicitud de turno end-to-end
+- [ ] Listado/edición/borrado de reglas de disponibilidad
+- [ ] Mis turnos del portal backeados por servidor (hoy: localStorage)
 
-## Fase 2 — Integraciones reales (6-8 semanas)
+## Fase 2 — Integraciones reales
 
-- [ ] **Mercado Pago** — Checkout Pro, webhooks, estados reales
-- [ ] **Email** — SendGrid/Resend para recordatorios transaccionales
-- [ ] **WhatsApp** — Twilio o WhatsApp Business API
-- [ ] **Telemedicina** — Jitsi embed propio o Daily.co
-- [ ] Notificaciones in-app en tiempo real (Supabase Realtime)
+- [ ] **Mercado Pago** — Checkout Pro, webhooks
+- [ ] **Email** — SendGrid/Resend (sacar “simulado”)
+- [ ] **WhatsApp Business API** — envío automático (hoy: abrir chat)
+- [ ] **Telemedicina** — embed propio o Daily.co
+- [ ] **REFEPS / RENaPDiS** — homologación + firma digital
 
-## Fase 3 — Compliance médico (8-12 semanas)
+## Fase 3 — Compliance
 
-- [ ] Consentimiento informado digital con firma
-- [ ] Exportación completa de datos del paciente (GDPR/Habeas Data)
-- [ ] Backup lógico automatizado
+- [ ] Consentimiento informado digital
+- [ ] Exportación completa de datos (Habeas Data)
 - [ ] Retención y políticas de eliminación
 - [ ] Logs de acceso a datos sensibles
-- [ ] Evaluación receta electrónica según jurisdicción
 
-## Fase 4 — Producto avanzado (12+ semanas)
+## Fase 4 — Producto avanzado
 
-- [ ] Portal del paciente (turnos, historial limitado, pagos)
-- [ ] Multi-sede avanzada con stock/inventario
-- [ ] Facturación y obras sociales
-- [ ] API pública para integradores
-- [ ] App mobile (React Native o PWA)
-- [ ] BI avanzado — dashboards por especialidad
-- [ ] IA asistida — resumen de consultas (opt-in, auditado)
+- [ ] Multi-sede avanzada
+- [ ] Facturación y liquidación obras sociales
+- [ ] API pública
+- [ ] BI por especialidad / cobertura
 
-## Fase 5 — Escala SaaS
-
-- [ ] Planes y billing (Stripe)
-- [ ] Onboarding self-service mejorado
-- [ ] White-label por clínica
-- [ ] Multi-región / multi-idioma
-- [ ] SLA y soporte enterprise
-
-## Deuda técnica conocida MVP
+## Deuda técnica conocida
 
 | Item | Prioridad |
 |------|-----------|
 | Tipos generados desde Supabase CLI | Alta |
-| Upload real de adjuntos (Storage) | Alta |
-| Paginación en listados largos | Media |
-| Optimistic updates en agenda | Media |
-| Cache/revalidate granular | Media |
+| Sync multi-dispositivo portal paciente | Alta |
+| Upload adjuntos Storage | Alta |
+| Paginación listados largos | Media |
 | Tests E2E permisos cross-tenant | Alta |

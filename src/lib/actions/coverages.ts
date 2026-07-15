@@ -52,7 +52,7 @@ export async function updateClinicCoverages(formData: FormData): Promise<{
   if (error) {
     if (error.message?.includes("accepted_coverages")) {
       return {
-        error: "Ejecutá la migración 030 en Supabase SQL Editor (030_clinic_accepted_coverages.sql).",
+        error: "No se pudo guardar coberturas. Actualizá la configuración de la clínica o contactá soporte.",
       };
     }
     return { error: error.message || "No se pudieron guardar las coberturas." };

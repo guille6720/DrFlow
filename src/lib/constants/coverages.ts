@@ -15,6 +15,18 @@ export function isPamiCoverage(name: string | null | undefined): boolean {
   return (name ?? "").toUpperCase().includes("PAMI");
 }
 
+/** ¿La clínica ofrece / se posiciona como PAMI? */
+export function clinicOffersPami(
+  accepted: string[] | null | undefined,
+  practiceProfile?: string | null
+): boolean {
+  if (practiceProfile === "cabecera_pami") return true;
+  if (accepted && accepted.length > 0) {
+    return accepted.some((c) => isPamiCoverage(c));
+  }
+  return false;
+}
+
 /** Label del número de afiliado / beneficio según cobertura */
 export function insuranceNumberLabel(coverage: string | null | undefined): string {
   return isPamiCoverage(coverage) ? "N° beneficio PAMI" : "N° afiliado";

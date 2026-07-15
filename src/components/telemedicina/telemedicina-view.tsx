@@ -60,7 +60,7 @@ export function TelemedicinaView({ sessions, appointments, clinics, clinicId, ro
     <>
       <Header
         title="Telemedicina"
-        subtitle="Salas virtuales con Jitsi (integración base)"
+        subtitle="Lab: salas Jitsi de prueba — no es telemedicina clínica homologada"
         clinics={clinics}
         activeClinicId={clinicId}
         role={role}
@@ -68,6 +68,9 @@ export function TelemedicinaView({ sessions, appointments, clinics, clinicId, ro
       />
 
       <div className="space-y-6 p-4 sm:p-6">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          Generá un link de sala virtual de prueba. La integración definitiva queda pendiente.
+        </div>
         <Card title="Crear sala virtual">
           {appointments.length === 0 ? (
             <p className="text-sm text-slate-500">No hay turnos próximos para videoconsulta.</p>

@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { getSiteUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
+import { getPublicSiteUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 /** 303 = forzar GET tras POST (evita HTTP 405 en /login). */
 function redirectGet(url: URL | string) {
@@ -19,12 +19,7 @@ export async function POST(request: NextRequest) {
     return redirectGet(loginUrl);
   }
 
-  const siteUrl = getSiteUrl(request.nextUrl.origin);
-  // Nunca usar localhost en el email de recovery
-  const publicSite =
-    siteUrl.includes("localhost") || siteUrl.includes("127.0.0.1")
-      ? "https://drflow-app-rho.vercel.app"
-      : siteUrl;
+  const publicSite = getPublicSiteUrl(request.nextUrl.origin);
   const recoveryRedirect = `${publicSite}/auth/confirm?next=${encodeURIComponent("/login/restablecer")}`;
 
   const successUrl = new URL("/login", request.url);
@@ -57,7 +52,7 @@ export async function POST(request: NextRequest) {
     if (msg.includes("redirect") || msg.includes("url")) {
       failUrl.searchParams.set(
         "error",
-        `URL de redirección no autorizada. En Supabase → Authentication → URL Configuration agregá: ${publicSite}/auth/confirm`
+        "No pudimos enviar el link de recuperación. Probá de nuevo en unos minutos o contactá soporte."
       );
     } else if (msg.includes("rate")) {
       failUrl.searchParams.set(
@@ -67,7 +62,7 @@ export async function POST(request: NextRequest) {
     } else {
       failUrl.searchParams.set(
         "error",
-        `No pudimos enviar el email (${error.message}). Revisá SMTP en Supabase → Project Settings → Auth, o pedí recovery desde Authentication → Users.`
+        "No pudimos enviar el email. Revisá que el correo sea correcto e intentá de nuevo."
       );
     }
     return redirectGet(failUrl);

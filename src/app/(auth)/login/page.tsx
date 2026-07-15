@@ -54,7 +54,6 @@ function LoginForm() {
       return { formError: bootstrap.passwordLeakError, info: null as string | null };
     }
 
-    const emailParam = searchParams.get("email") ?? "";
     const errorParam = searchParams.get("error");
     const registered = searchParams.get("registered");
 
@@ -62,7 +61,7 @@ function LoginForm() {
 
     if (registered === "pending") {
       infoMessage =
-        "¡Cuenta creada! Confirmá tu email en Supabase (Authentication → Users → Confirm user) y luego ingresá acá.";
+        "¡Cuenta creada! Te enviamos un email de confirmación. Revisá bandeja y spam, y después ingresá acá.";
     } else if (registered === "1") {
       infoMessage = "Registro exitoso. Ingresá con tu email y contraseña.";
     } else if (searchParams.get("invited") === "1") {
@@ -97,14 +96,16 @@ function LoginForm() {
     try {
       const supabase = createClient();
       // Nunca mandar el mail a localhost: el link del email no abre en el celular / Gmail.
-      // Preferir SITE_URL de producción; si no, vercel app público.
-      const configured =
-        (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "") ||
-        "https://drflow-app-rho.vercel.app";
+      const configured = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
       const browserOrigin = window.location.origin.replace(/\/$/, "");
       const isLocal =
         browserOrigin.includes("localhost") || browserOrigin.includes("127.0.0.1");
-      const siteUrl = isLocal ? configured : browserOrigin;
+      const siteUrl =
+        isLocal
+          ? configured && !configured.includes("localhost")
+            ? configured
+            : "https://drflow-app-rho.vercel.app"
+          : browserOrigin;
       const redirectTo = `${siteUrl}/auth/confirm?next=${encodeURIComponent("/login/restablecer")}`;
 
       const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
@@ -115,18 +116,18 @@ function LoginForm() {
         const msg = error.message.toLowerCase();
         if (msg.includes("redirect") || msg.includes("url")) {
           setResetError(
-            `URL no autorizada. En Supabase → Authentication → URL Configuration agregá: ${siteUrl}/auth/confirm`
+            "No pudimos generar el link. Probá de nuevo en unos minutos o contactá soporte."
           );
         } else if (msg.includes("rate")) {
           setResetError("Demasiados intentos. Esperá unos minutos.");
         } else {
-          setResetError(error.message);
+          setResetError("No pudimos enviar el email. Revisá que el correo sea correcto.");
         }
         return;
       }
 
       setResetMessage(
-        `Te enviamos un link a ${trimmed}. Abrilo en el navegador (el link va a ${siteUrl}). Revisá spam.`
+        `Te enviamos un link a ${trimmed}. Abrilo desde tu correo (revisá spam).`
       );
       router.replace(`/login?reset=sent&email=${encodeURIComponent(trimmed)}`);
     } catch (e) {
@@ -213,7 +214,7 @@ function LoginForm() {
               label="Contraseña"
               type="password"
               required
-              minLength={6}
+              minLength={8}
               autoComplete="current-password"
             />
             <Button type="submit" className="w-full" loading={loading}>

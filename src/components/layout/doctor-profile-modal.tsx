@@ -30,11 +30,16 @@ export function DoctorProfileModal({ open, onClose }: DoctorProfileModalProps) {
   useEffect(() => {
     if (!open) return;
 
-    setLoading(true);
-    setFormError(null);
-    setFieldErrors({});
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setLoading(true);
+      setFormError(null);
+      setFieldErrors({});
+    });
 
     loadMyDoctorProfile().then((res) => {
+      if (cancelled) return;
       setLoading(false);
       if (res.error || !res.data) {
         setFormError(res.error ?? "No se pudieron cargar tus datos");
@@ -54,6 +59,10 @@ export function DoctorProfileModal({ open, onClose }: DoctorProfileModalProps) {
       });
       setFormKey((k) => k + 1);
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [open]);
 
   useEffect(() => {

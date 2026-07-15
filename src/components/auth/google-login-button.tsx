@@ -3,19 +3,23 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { PUBLIC_SITE_FALLBACK } from "@/lib/supabase/env";
 
 function resolveSiteUrl(): string {
   const configured = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
   if (typeof window !== "undefined") {
     const origin = window.location.origin.replace(/\/$/, "");
     const isLocal = origin.includes("localhost") || origin.includes("127.0.0.1");
-    // OAuth desde localhost rompe en el email / móvil — usar producción
     if (isLocal) {
-      return configured || "https://drflow-app-rho.vercel.app";
+      return configured && !configured.includes("localhost")
+        ? configured
+        : PUBLIC_SITE_FALLBACK;
     }
     return origin;
   }
-  return configured || "https://drflow-app-rho.vercel.app";
+  return configured && !configured.includes("localhost")
+    ? configured
+    : PUBLIC_SITE_FALLBACK;
 }
 
 export function GoogleLoginButton() {
@@ -40,13 +44,12 @@ export function GoogleLoginButton() {
 
     if (oauthError) {
       setError(
-        oauthError.message.includes("provider")
-          ? "Google no está habilitado. En Supabase → Authentication → Providers → Google, activá el proveedor."
-          : oauthError.message
+        oauthError.message.toLowerCase().includes("provider")
+          ? "Google no está disponible por ahora. Ingresá con email y contraseña."
+          : "No pudimos abrir Google. Probá de nuevo o usá email y contraseña."
       );
       setLoading(false);
     }
-    // Si no hay error, el browser redirige a Google
   }
 
   return (

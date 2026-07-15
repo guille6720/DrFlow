@@ -13,6 +13,7 @@ import {
   ConsultationFlowBar,
   type ConsultationStep,
 } from "@/components/historias/consultation-flow-bar";
+import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
 import { createClinicalRecord, startConsultationFromAppointment } from "@/lib/actions/clinic";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { Clinic, Patient, Professional, UserRole } from "@/types/database";
@@ -128,6 +129,10 @@ export default function NuevaConsultaForm({
             activeStep={activeStep}
             onStepChange={setActiveStep}
           />
+        )}
+
+        {selectedPatient && (
+          <PamiPatientBanner patient={selectedPatient} />
         )}
 
         {templates.length > 0 && (

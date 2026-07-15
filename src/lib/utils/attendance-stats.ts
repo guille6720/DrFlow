@@ -17,7 +17,11 @@ export interface AttendedAppointmentRow {
   start_at: string;
   consultation_modality: ConsultationModality | null;
   patient_id: string;
-  patients?: { first_name: string; last_name: string } | null;
+  patients?: {
+    first_name: string;
+    last_name: string;
+    insurance_provider?: string | null;
+  } | null;
   professionals?: { profiles?: { full_name?: string } | null } | null;
 }
 
@@ -26,6 +30,7 @@ export interface AttendanceSummary {
   presencial: number;
   virtual: number;
   uniquePatients: number;
+  byCoverage: { coverage: string; count: number }[];
 }
 
 export function getAttendancePeriodBounds(
@@ -133,17 +138,26 @@ export function summarizeAttendedAppointments(
   let presencial = 0;
   let virtual = 0;
   const patientIds = new Set<string>();
+  const coverageCounts = new Map<string, number>();
 
   for (const row of rows) {
     patientIds.add(row.patient_id);
     if (row.consultation_modality === "virtual") virtual += 1;
     else presencial += 1;
+
+    const coverage = row.patients?.insurance_provider?.trim() || "Sin cobertura";
+    coverageCounts.set(coverage, (coverageCounts.get(coverage) ?? 0) + 1);
   }
+
+  const byCoverage = [...coverageCounts.entries()]
+    .map(([coverage, count]) => ({ coverage, count }))
+    .sort((a, b) => b.count - a.count);
 
   return {
     total: rows.length,
     presencial,
     virtual,
     uniquePatients: patientIds.size,
+    byCoverage,
   };
 }

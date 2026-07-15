@@ -5,7 +5,6 @@ import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import {
   Activity,
   Calendar,
-  CheckCircle2,
   ClipboardList,
   Globe,
   Smartphone,
@@ -173,35 +172,6 @@ Cualquier duda, avisame.`}
             <strong>App para el paciente</strong>. Podés enviar el link por WhatsApp. Es una PWA
             verde, separada de la app azul del consultorio.
           </p>
-        </section>
-
-        <section className="mt-8 rounded-2xl border border-amber-200 bg-amber-50/60 p-6 text-sm text-amber-950">
-          <h2 className="font-semibold">Para el administrador (DNS + Supabase)</h2>
-          <ul className="mt-3 space-y-2">
-            <li className="flex gap-2">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>
-                <strong>DNS Hostinger:</strong> en la zona DNS de{" "}
-                <code className="rounded bg-amber-100 px-1">opusorg.com</code>, agregá CNAME{" "}
-                <code className="rounded bg-amber-100 px-1">drflow</code> →{" "}
-                <code className="rounded bg-amber-100 px-1">cname.vercel-dns.com</code> (no como
-                dominio externo).
-              </span>
-            </li>
-            <li className="flex gap-2">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>
-                <strong>Supabase pendiente:</strong> ejecutá{" "}
-                <code className="rounded bg-amber-100 px-1">010_repair_demo_and_rpc.sql</code> y{" "}
-                <code className="rounded bg-amber-100 px-1">
-                  029_appointment_consultation_modality.sql
-                </code>{" "}
-                en SQL Editor, o{" "}
-                <code className="rounded bg-amber-100 px-1">npm run migrate:pending</code> con{" "}
-                <code className="rounded bg-amber-100 px-1">DATABASE_URL</code>.
-              </span>
-            </li>
-          </ul>
         </section>
       </main>
 

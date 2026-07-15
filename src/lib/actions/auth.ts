@@ -24,7 +24,7 @@ function mapAuthError(message: string): { error: string; field?: string } {
   if (lower.includes("email not confirmed") || lower.includes("confirm")) {
     return {
       error:
-        "Debés confirmar tu email antes de ingresar. Revisá tu bandeja (y spam), o desactivá 'Confirm email' en Supabase → Authentication → Email.",
+        "Debés confirmar tu email antes de ingresar. Revisá tu bandeja (y spam) o pedí un link nuevo con «Restablecer contraseña».",
       field: "email",
     };
   }

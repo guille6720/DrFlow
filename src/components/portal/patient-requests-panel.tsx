@@ -146,6 +146,10 @@ export function PatientRequestsPanel({
               Acá ves el estado de tus pedidos a {clinicName}. Podés cancelar turnos confirmados o
               pendientes.
             </p>
+            <p className="mt-2 text-xs text-amber-800">
+              Esta lista se guarda en este teléfono/navegador. Si cambiás de dispositivo, no vas a
+              ver los mismos pedidos salvo que vuelvas a sacar turno desde acá con el mismo DNI.
+            </p>
           </div>
         </div>
       </div>

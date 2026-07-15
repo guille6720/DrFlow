@@ -106,7 +106,7 @@ export default async function DashboardPage() {
         supabase
           .from("appointments")
           .select(
-            "id, start_at, status, booking_source, patients(first_name, last_name, phone), professionals(profiles(full_name))"
+            "id, start_at, status, booking_source, patient_id, professional_id, patients(first_name, last_name, phone), professionals(profiles(full_name))"
           )
           .eq("clinic_id", clinicId)
           .gte("start_at", todayStart)

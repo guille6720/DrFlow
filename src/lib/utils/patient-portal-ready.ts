@@ -140,7 +140,7 @@ export function buildPatientAppShareMessage(
     "",
     `${doctor.fullName}${licenseLine}${specialtyLine}`,
     "",
-    "Instalá la app para pedir turnos y recetas PAMI:",
+    "Instalá la app para pedir turnos y recetas:",
     installUrl,
     "",
     phoneLine,
@@ -161,7 +161,7 @@ export function buildPatientAppOgDescription(doctor: DoctorShareInfo): string {
     doctor.specialty,
     buildSharePhoneLine(doctor.phone),
   ].filter(Boolean);
-  return parts.join(" · ") || `App de ${doctor.clinicName} para turnos y recetas PAMI.`;
+  return parts.join(" · ") || `App de ${doctor.clinicName} para pedir turnos y recetas.`;
 }
 
 export { PATIENT_CONTACT_PHONE_DISCLAIMER };

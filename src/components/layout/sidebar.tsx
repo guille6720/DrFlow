@@ -10,11 +10,8 @@ import {
   ScrollText,
   Pill,
   Bell,
-  Video,
-  CreditCard,
   BarChart3,
   Settings,
-  ClipboardCheck,
   ClipboardList,
   LogOut,
   Menu,
@@ -29,22 +26,35 @@ import type { UserRole } from "@/types/database";
 import { hasPermission } from "@/lib/permissions/roles";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
 
-const navItems = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  permission:
+    | "managePatients"
+    | "viewClinicalRecords"
+    | "issuePrescriptions"
+    | "viewPharmacology"
+    | "managePayments"
+    | "viewReports"
+    | "manageSettings"
+    | null;
+};
+
+/** Nav clínico: sin Telemedicina, Pagos ni Checklist QA (mocks / internos). */
+const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: null },
   { href: "/agenda", label: "Agenda", icon: Calendar, permission: null },
   { href: "/atenciones", label: "Atenciones", icon: ClipboardPlus, permission: null },
-  { href: "/pacientes", label: "Pacientes", icon: Users, permission: "managePatients" as const },
-  { href: "/historias", label: "Historia clínica", icon: FileText, permission: "viewClinicalRecords" as const },
-  { href: "/recetas", label: "Recetas electrónicas", icon: ScrollText, permission: "issuePrescriptions" as const },
-  { href: "/herramientas/farmacologia", label: "Guía farmacológica", icon: Pill, permission: "viewPharmacology" as const },
+  { href: "/pacientes", label: "Pacientes", icon: Users, permission: "managePatients" },
+  { href: "/historias", label: "Historia clínica", icon: FileText, permission: "viewClinicalRecords" },
+  { href: "/recetas", label: "Recetas electrónicas", icon: ScrollText, permission: "issuePrescriptions" },
+  { href: "/herramientas/farmacologia", label: "Guía farmacológica", icon: Pill, permission: "viewPharmacology" },
   { href: "/guia-pami", label: "Guía cabecera PAMI", icon: HeartPulse, permission: null },
-  { href: "/pami/planillas", label: "Planillas PAMI", icon: ClipboardList, permission: "issuePrescriptions" as const },
+  { href: "/pami/planillas", label: "Planillas PAMI", icon: ClipboardList, permission: "issuePrescriptions" },
   { href: "/recordatorios", label: "Recordatorios", icon: Bell, permission: null },
-  { href: "/telemedicina", label: "Telemedicina", icon: Video, permission: null },
-  { href: "/pagos", label: "Pagos", icon: CreditCard, permission: "managePayments" as const },
-  { href: "/reportes", label: "Reportes", icon: BarChart3, permission: "viewReports" as const },
-  { href: "/qa", label: "Checklist QA", icon: ClipboardCheck, permission: "manageSettings" as const },
-  { href: "/configuracion", label: "Configuración", icon: Settings, permission: "manageSettings" as const },
+  { href: "/reportes", label: "Reportes", icon: BarChart3, permission: "viewReports" },
+  { href: "/configuracion", label: "Configuración", icon: Settings, permission: "manageSettings" },
 ];
 
 interface SidebarProps {
@@ -61,7 +71,7 @@ function SidebarNavContent({
   onPrefetch,
 }: {
   clinicName?: string;
-  visibleItems: typeof navItems;
+  visibleItems: NavItem[];
   pathname: string;
   onNavigate: () => void;
   onPrefetch: (href: string) => void;
@@ -75,7 +85,7 @@ function SidebarNavContent({
         </p>
       </div>
 
-      <nav className="flex-1 space-y-0.5 px-3 py-4">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
         {visibleItems.map((item) => {
           const active = pathname.startsWith(item.href);
           return (

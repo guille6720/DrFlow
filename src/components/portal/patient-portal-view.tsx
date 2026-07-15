@@ -43,6 +43,8 @@ interface Props {
   clinicAddress: string | null;
   professionals: Professional[];
   doctor?: DoctorShareInfo | null;
+  /** Si la clínica acepta PAMI / es cabecera PAMI */
+  offersPami?: boolean;
 }
 
 const NAV: { id: Screen; label: string; icon: typeof Home }[] = [
@@ -60,6 +62,7 @@ export function PatientPortalView({
   clinicAddress,
   professionals,
   doctor,
+  offersPami = false,
 }: Props) {
   const [screen, setScreen] = useState<Screen>("inicio");
   const [portalReady, setPortalReady] = useState(false);
@@ -91,9 +94,12 @@ export function PatientPortalView({
     documentNumber: documentNumber || "________",
     medications: medications || "________________",
     insuranceNumber: insuranceNumber || undefined,
+    pamiBranding: offersPami,
   });
 
   const doctorName = doctor?.fullName ?? clinicName;
+  const recetaTitle = offersPami ? "Receta PAMI" : "Solicitar receta";
+  const recetaDesc = offersPami ? "Renovar medicación" : "Renovar medicación";
 
   const quickActions = [
     {
@@ -112,8 +118,8 @@ export function PatientPortalView({
     },
     {
       id: "receta" as Screen,
-      title: "Receta PAMI",
-      desc: "Renovar medicación",
+      title: recetaTitle,
+      desc: recetaDesc,
       icon: Pill,
       color: "from-violet-500 to-violet-700",
     },
@@ -221,7 +227,9 @@ export function PatientPortalView({
         {screen === "receta" && (
           <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-600">
-              Completá tus datos y enviá la solicitud de receta PAMI por WhatsApp.
+              {offersPami
+                ? "Completá tus datos y enviá la solicitud de receta PAMI por WhatsApp."
+                : "Completá tus datos y enviá la solicitud de receta por WhatsApp."}
             </p>
             <Input
               label="Nombre y apellido"
@@ -236,7 +244,11 @@ export function PatientPortalView({
               required
             />
             <Input
-              label="N° afiliado / beneficio (opcional)"
+              label={
+                offersPami
+                  ? "N° beneficio PAMI (opcional)"
+                  : "N° afiliado (opcional)"
+              }
               value={insuranceNumber}
               onChange={(e) => setInsuranceNumber(e.target.value)}
             />

@@ -12,10 +12,7 @@ const DASHBOARD_ROUTES = [
   "/recetas",
   "/herramientas/farmacologia",
   "/recordatorios",
-  "/telemedicina",
-  "/pagos",
   "/reportes",
-  "/qa",
   "/guia-pami",
   "/configuracion",
 ] as const;

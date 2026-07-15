@@ -315,6 +315,11 @@ export function SettingsPanel({
       </div>
 
       <Card title="Disponibilidad semanal">
+        <p className="mb-3 text-sm text-slate-600">
+          Estos horarios alimentan los turnos online del portal y de{" "}
+          <code className="rounded bg-slate-100 px-1 text-xs">/solicitar-turno</code>. Si no cargás
+          reglas, el paciente no va a ver horarios disponibles.
+        </p>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -342,6 +347,7 @@ export function SettingsPanel({
               { value: "4", label: "Jueves" },
               { value: "5", label: "Viernes" },
               { value: "6", label: "Sábado" },
+              { value: "0", label: "Domingo" },
             ]}
           />
           <Input name="start_time" label="Desde" type="time" defaultValue="09:00" required />

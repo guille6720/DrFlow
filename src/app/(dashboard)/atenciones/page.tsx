@@ -44,13 +44,14 @@ export default async function AtencionesPage({
     patientName: string;
     professionalName: string;
     patientId: string;
+    coverage: string;
   }[] = [];
 
   if (clinicId) {
     const { data } = await supabase
       .from("appointments")
       .select(
-        "id, start_at, consultation_modality, patient_id, patients(first_name, last_name), professionals(profiles(full_name))"
+        "id, start_at, consultation_modality, patient_id, patients(first_name, last_name, insurance_provider), professionals(profiles(full_name))"
       )
       .eq("clinic_id", clinicId)
       .eq("status", "attended")
@@ -63,7 +64,11 @@ export default async function AtencionesPage({
       start_at: row.start_at,
       consultation_modality: (row.consultation_modality as ConsultationModality | null) ?? "presencial",
       patient_id: row.patient_id,
-      patients: row.patients as unknown as { first_name: string; last_name: string } | null,
+      patients: row.patients as unknown as {
+        first_name: string;
+        last_name: string;
+        insurance_provider?: string | null;
+      } | null,
       professionals: row.professionals as unknown as {
         profiles?: { full_name?: string } | null;
       } | null,
@@ -79,6 +84,7 @@ export default async function AtencionesPage({
         ? `${row.patients.last_name}, ${row.patients.first_name}`
         : "Paciente",
       professionalName: row.professionals?.profiles?.full_name ?? "Profesional",
+      coverage: row.patients?.insurance_provider?.trim() || "Sin cobertura",
     }));
   }
 

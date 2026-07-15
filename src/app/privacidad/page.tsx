@@ -13,7 +13,7 @@ export default function PrivacidadPage() {
 
       <main className="mx-auto max-w-3xl px-4 py-10 prose prose-slate">
         <h1 className="text-2xl font-bold text-slate-900">Política de privacidad (piloto)</h1>
-        <p className="text-sm text-slate-500">Última actualización: junio 2025 · Versión piloto con médico de cabecera PAMI</p>
+        <p className="text-sm text-slate-500">Última actualización: julio 2026 · Versión piloto</p>
 
         <section className="mt-8 space-y-4 text-sm leading-relaxed text-slate-700">
           <p>

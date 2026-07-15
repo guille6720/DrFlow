@@ -13,6 +13,8 @@ export type LiveAppointment = {
   start_at: string;
   status: string;
   booking_source?: string | null;
+  patient_id?: string | null;
+  professional_id?: string | null;
   patients?: { first_name: string; last_name: string; phone?: string | null } | null;
   professionals?: { profiles?: { full_name: string } | null } | null;
 };
@@ -108,28 +110,59 @@ export function ConsultorioLivePanel({
 
         <div className="flex flex-col gap-2 sm:flex-row lg:flex-col">
           {next ? (
-            <Link href={`/agenda?view=day`}>
-              <Button
-                size="lg"
-                className="w-full border-0 bg-white text-blue-900 shadow-md hover:bg-blue-50"
-              >
-                <Play className="h-4 w-4 fill-blue-900" />
-                Ir a agenda del día
-              </Button>
-            </Link>
+            <>
+              {next.patient_id && next.professional_id ? (
+                <Link
+                  href={`/historias/nueva?patient=${next.patient_id}&appointment=${next.id}&professional=${next.professional_id}`}
+                >
+                  <Button
+                    size="lg"
+                    className="w-full border-0 bg-white text-blue-900 shadow-md hover:bg-blue-50"
+                  >
+                    <Play className="h-4 w-4 fill-blue-900" />
+                    Atender ahora
+                  </Button>
+                </Link>
+              ) : (
+                <Link href={`/agenda?view=day`}>
+                  <Button
+                    size="lg"
+                    className="w-full border-0 bg-white text-blue-900 shadow-md hover:bg-blue-50"
+                  >
+                    <Play className="h-4 w-4 fill-blue-900" />
+                    Ir a agenda del día
+                  </Button>
+                </Link>
+              )}
+              <Link href="/agenda?view=day">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full border-blue-400/40 text-white hover:bg-blue-800/50"
+                >
+                  Ver cola de hoy ({todayQueue.length})
+                </Button>
+              </Link>
+            </>
           ) : (
-            <Link href="/agenda?action=new">
-              <Button size="lg" className="w-full border-0 bg-white text-blue-900 hover:bg-blue-50">
-                <CalendarDays className="h-4 w-4" />
-                Nuevo turno
-              </Button>
-            </Link>
+            <>
+              <Link href="/agenda?action=new">
+                <Button size="lg" className="w-full border-0 bg-white text-blue-900 hover:bg-blue-50">
+                  <CalendarDays className="h-4 w-4" />
+                  Nuevo turno
+                </Button>
+              </Link>
+              <Link href="/agenda?view=day">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full border-blue-400/40 text-white hover:bg-blue-800/50"
+                >
+                  Ver cola de hoy ({todayQueue.length})
+                </Button>
+              </Link>
+            </>
           )}
-          <Link href="/agenda?view=day">
-            <Button variant="outline" size="lg" className="w-full border-blue-400/40 text-white hover:bg-blue-800/50">
-              Ver cola de hoy ({todayQueue.length})
-            </Button>
-          </Link>
         </div>
       </div>
 

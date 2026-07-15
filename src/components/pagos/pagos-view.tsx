@@ -47,7 +47,7 @@ export function PagosView({ payments, patients, clinics, clinicId, role, userNam
     <>
       <Header
         title="Pagos"
-        subtitle="Mock Mercado Pago — integración preparada"
+        subtitle="Lab: mock Mercado Pago — aún no es cobro real"
         clinics={clinics}
         activeClinicId={clinicId}
         role={role}
@@ -55,6 +55,9 @@ export function PagosView({ payments, patients, clinics, clinicId, role, userNam
       />
 
       <div className="space-y-6 p-4 sm:p-6">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          Esto es un simulador para probar el flujo. No se conecta a Mercado Pago.
+        </div>
         <Card title="Registrar pago (simulado)">
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-3">
             <Select

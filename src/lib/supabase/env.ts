@@ -23,6 +23,13 @@ export function getSupabaseAnonKey(): string {
   return key;
 }
 
+/** Fallback público si SITE_URL no está o apunta a localhost (emails / OAuth). */
+export const PUBLIC_SITE_FALLBACK = "https://drflow-app-rho.vercel.app";
+
+function isLocalhostUrl(url: string): boolean {
+  return url.includes("localhost") || url.includes("127.0.0.1");
+}
+
 /** URL pública sin barra final (Vercel / dominio propio). */
 export function getSiteUrl(fallbackOrigin?: string): string {
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
@@ -32,4 +39,24 @@ export function getSiteUrl(fallbackOrigin?: string): string {
     return `https://${process.env.VERCEL_URL}`;
   }
   return "http://localhost:3000";
+}
+
+/**
+ * URL segura para emails de recovery y OAuth.
+ * Nunca devuelve localhost (el link del mail no sirve en el celular).
+ */
+export function getPublicSiteUrl(fallbackOrigin?: string): string {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+  if (configured && !isLocalhostUrl(configured)) return configured;
+
+  if (fallbackOrigin) {
+    const origin = fallbackOrigin.replace(/\/$/, "");
+    if (!isLocalhostUrl(origin)) return origin;
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  return PUBLIC_SITE_FALLBACK;
 }

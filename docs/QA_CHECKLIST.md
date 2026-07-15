@@ -3,19 +3,22 @@
 ## Autenticación y roles
 
 - [ ] Login con credenciales válidas redirige a `/dashboard`
-- [ ] Login con credenciales inválidas muestra error humano
-- [ ] Registro de clínica crea `clinics`, `profiles`, `clinic_members`
+- [ ] Login con credenciales inválidas muestra error humano (sin instrucciones de Dashboard)
+- [ ] Google OAuth → `/auth/callback` → `/auth/complete`
+- [ ] Reset password: email con `redirect_to` a dominio público (nunca localhost)
+- [ ] `/auth/confirm` → formulario de nueva contraseña en &lt; 5s o error claro
+- [ ] Registro en 2 pasos + Google en `/register`
 - [ ] Usuario multi-clínica ve selector y cambia clínica activa
 - [ ] Rutas protegidas redirigen a `/login` sin sesión
+- [ ] `/qa` no aparece en sidebar para clinic_admin/doctor
 - [ ] Secretaria no accede a `/configuracion`
-- [ ] Paciente no accede a `/historias` (si aplica rol patient)
-- [ ] Superadmin ve todas las clínicas
+- [ ] Superadmin ve Labs y Checklist QA
 
 ## Dashboard
 
 - [ ] KPIs muestran 0 en estado vacío sin errores
+- [ ] **Atender ahora** abre consulta en 1–2 taps
 - [ ] Próximos turnos listan correctamente
-- [ ] Accesos rápidos navegan a módulos correctos
 - [ ] Responsive en mobile (320px+) y tablet
 
 ## Agenda
@@ -23,61 +26,48 @@
 - [ ] Crear turno con datos válidos
 - [ ] Error al superponer turnos del mismo profesional
 - [ ] Confirmar / atender / cancelar cambia estado
-- [ ] Filtros por médico y especialidad funcionan
-- [ ] Vista semanal muestra turnos por día
+- [ ] Empezar consulta abre historia con banner clínico
 - [ ] Estado vacío con CTA visible
 
-## Pacientes
+## Pacientes y coberturas
 
 - [ ] CRUD: crear, listar, ver ficha
-- [ ] Búsqueda por nombre y DNI
-- [ ] Validación de campos requeridos
-- [ ] Historial de turnos y consultas en ficha
+- [ ] Coberturas del consultorio en Configuración
+- [ ] Renovación rápida de medicación (prefill)
+- [ ] Labels PAMI vs N° afiliado según cobertura
 - [ ] Usuario clínica A no ve pacientes clínica B
 
-## Historia clínica
+## Historia clínica y recetas
 
 - [ ] Crear consulta con plantilla
-- [ ] Auditoría registra creación
-- [ ] Export PDF genera archivo descargable
-- [ ] Aviso legal visible en borrador prescripción
-- [ ] Solo médico/admin edita registros clínicos
+- [ ] Banner: alergias, medicación, cobertura, adulto mayor
+- [ ] Disclaimer REFEPS con checkbox explícito (no auto-aceptado)
+- [ ] Copy “Receta local / borrador — no es homologación REFEPS”
+- [ ] Export PDF + compartir WhatsApp
 
-## Recordatorios
+## Portal paciente
 
-- [ ] Envío simulado email/WhatsApp crea log
-- [ ] Log muestra destinatario, canal, estado, fecha
-- [ ] Error si paciente sin contacto para canal
+- [ ] “Receta PAMI” solo si la clínica acepta PAMI / cabecera
+- [ ] Mis turnos aclara límite por dispositivo (localStorage)
+- [ ] Empty states sin nombres de migraciones SQL
 
-## Telemedicina
+## Recordatorios (Labs)
 
-- [ ] Crear sala genera URL Jitsi
-- [ ] Sesión asociada al turno
-- [ ] Link abre en nueva pestaña
+- [ ] WhatsApp = “Abrir WhatsApp” (no envío automático)
+- [ ] Email = simulado, honestidad en badge
 
-## Pagos
+## Atenciones
 
-- [ ] Mock pago registra transacción con estado `paid`
-- [ ] Historial muestra monto, seña, estado
-- [ ] Solo roles autorizados acceden
-
-## Reportes
-
-- [ ] Métricas del mes actual
-- [ ] Consultas por médico
-- [ ] Export CSV descarga archivo válido
-
-## Configuración
-
-- [ ] Muestra datos de clínica activa
-- [ ] Lista especialidades, sedes, profesionales, usuarios
-- [ ] Solo admin accede
+- [ ] Totales por presencial/virtual
+- [ ] Resumen por cobertura
+- [ ] Export CSV
 
 ## Seguridad transversal
 
-- [ ] RLS bloquea SELECT cross-tenant (probar con 2 usuarios)
-- [ ] Inputs con `<script>` sanitizados
+- [ ] RLS bloquea SELECT cross-tenant
+- [ ] No hay strings Hostinger / Supabase Dashboard / migración 00X en UI paciente/médico
 - [ ] No hay secrets en cliente
+- [ ] `npm test && npm run lint && npm run build` OK
 - [ ] Server actions validan permisos antes de mutar
 
 ## Responsive y UX

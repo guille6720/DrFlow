@@ -51,9 +51,9 @@ export default async function SolicitarTurnoPage({
 
         {(professionals ?? []).length === 0 ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center text-sm text-amber-900">
-            <p>No hay profesionales disponibles para reserva online.</p>
-            <p className="mt-2">
-              Ejecutá la migración <code className="rounded bg-amber-100 px-1">004_demo_professionals_and_public_booking.sql</code> en Supabase.
+            <p>No hay profesionales disponibles para reserva online en este momento.</p>
+            <p className="mt-2 text-amber-800/80">
+              Contactá al consultorio por teléfono o WhatsApp para pedir un turno.
             </p>
           </div>
         ) : (

@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ExportCsvButton } from "@/components/reportes/export-csv-button";
 import {
   consultationModalityLabel,
   type ConsultationModality,
@@ -18,6 +19,7 @@ export interface AttendanceListItem {
   patientName: string;
   professionalName: string;
   patientId: string;
+  coverage?: string;
 }
 
 interface Props {
@@ -39,20 +41,39 @@ export function PatientAttendanceRegister({
   summary,
   items,
 }: Props) {
+  const csvRows = [
+    ["Fecha", "Paciente", "Profesional", "Modalidad", "Cobertura"],
+    ...items.map((item) => [
+      formatClinicDateTime(item.start_at, "PPp"),
+      item.patientName,
+      item.professionalName,
+      consultationModalityLabel(item.consultation_modality),
+      item.coverage ?? "Sin cobertura",
+    ]),
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2">
-        {PERIOD_TABS.map((tab) => (
-          <Link key={tab.id} href={`/atenciones?period=${tab.id}`}>
-            <Button
-              type="button"
-              size="sm"
-              variant={period === tab.id ? "primary" : "outline"}
-            >
-              {tab.label}
-            </Button>
-          </Link>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          {PERIOD_TABS.map((tab) => (
+            <Link key={tab.id} href={`/atenciones?period=${tab.id}`}>
+              <Button
+                type="button"
+                size="sm"
+                variant={period === tab.id ? "primary" : "outline"}
+              >
+                {tab.label}
+              </Button>
+            </Link>
+          ))}
+        </div>
+        {items.length > 0 && (
+          <ExportCsvButton
+            rows={csvRows}
+            filename={`atenciones-${period}-${periodLabel.replace(/\s+/g, "-")}.csv`}
+          />
+        )}
       </div>
 
       <p className="text-sm text-slate-600">
@@ -94,6 +115,20 @@ export function PatientAttendanceRegister({
         />
       </div>
 
+      {summary.byCoverage.length > 0 && (
+        <Card title="Resumen por cobertura">
+          <ul className="flex flex-wrap gap-2">
+            {summary.byCoverage.map((row) => (
+              <li key={row.coverage}>
+                <Badge variant="default">
+                  {row.coverage}: {row.count}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
       <Card title="Detalle de atenciones">
         {items.length === 0 ? (
           <p className="text-sm text-slate-500">
@@ -120,6 +155,7 @@ export function PatientAttendanceRegister({
                       {formatClinicDateTime(item.start_at, "PPp")}
                       {" · "}
                       {item.professionalName}
+                      {item.coverage ? ` · ${item.coverage}` : ""}
                     </p>
                   </div>
                   <Badge variant={isVirtual ? "teal" : "default"}>

@@ -37,6 +37,13 @@ function formatPatientName(
   return p ? `${p.last_name}, ${p.first_name}` : "Paciente";
 }
 
+function statusLabel(log: ReminderLog): string {
+  if (log.status === "simulated") {
+    return log.channel === "whatsapp" ? "WhatsApp abierto" : "Simulado";
+  }
+  return log.status;
+}
+
 export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId, role, userName }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
@@ -55,7 +62,7 @@ export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId
     <>
       <Header
         title="Recordatorios"
-        subtitle="WhatsApp abre con mensaje listo · Email simulado hasta integrar SMTP"
+        subtitle="WhatsApp: abre chat listo (no envío automático) · Email: simulado hasta integrar SMTP"
         clinics={clinics}
         activeClinicId={clinicId}
         role={role}
@@ -63,6 +70,16 @@ export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId
       />
 
       <div className="space-y-6 p-4 sm:p-6">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          <p>
+            <strong>WhatsApp</strong> abre la app con el mensaje cargado: tenés que tocar Enviar.
+            No hay API de WhatsApp Business todavía.
+          </p>
+          <p className="mt-1">
+            <strong>Email</strong> queda registrado como <em>simulado</em> (no sale un correo real).
+          </p>
+        </div>
+
         <Card title="Recordatorios de turnos">
           {pendingAppointments.length === 0 ? (
             <p className="text-sm text-slate-500">No hay turnos pendientes para recordar.</p>
@@ -79,11 +96,21 @@ export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" loading={loading === `${a.id}-email`} onClick={() => handleSend(a.id, "email")}>
-                      <Mail className="h-4 w-4" /> Email
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      loading={loading === `${a.id}-email`}
+                      onClick={() => handleSend(a.id, "email")}
+                    >
+                      <Mail className="h-4 w-4" /> Email (simulado)
                     </Button>
-                    <Button size="sm" variant="outline" loading={loading === `${a.id}-whatsapp`} onClick={() => handleSend(a.id, "whatsapp")}>
-                      <MessageCircle className="h-4 w-4" /> WhatsApp
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      loading={loading === `${a.id}-whatsapp`}
+                      onClick={() => handleSend(a.id, "whatsapp")}
+                    >
+                      <MessageCircle className="h-4 w-4" /> Abrir WhatsApp
                     </Button>
                   </div>
                 </li>
@@ -96,8 +123,8 @@ export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId
           {logs.length === 0 ? (
             <EmptyState
               icon={Bell}
-              title="Sin recordatorios enviados"
-              description="Los envíos simulados quedarán registrados acá con destinatario, canal y estado."
+              title="Sin recordatorios registrados"
+              description="Acá vas a ver WhatsApp abiertos y emails simulados, con destinatario, canal y estado."
             />
           ) : (
             <div className="overflow-x-auto">
@@ -116,7 +143,7 @@ export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId
                       <td className="py-2 pr-4">{log.recipient}</td>
                       <td className="py-2 pr-4">{channelLabels[log.channel]}</td>
                       <td className="py-2 pr-4">
-                        <Badge variant={statusVariant[log.status]}>{log.status}</Badge>
+                        <Badge variant={statusVariant[log.status]}>{statusLabel(log)}</Badge>
                       </td>
                       <td className="py-2">
                         {format(new Date(log.sent_at ?? log.created_at), "PPp", { locale: es })}

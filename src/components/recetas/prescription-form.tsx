@@ -29,6 +29,8 @@ interface Props {
   cie10Default?: string;
   professionals: Professional[];
   defaultProfessionalId?: string;
+  /** Prefill medicamentos (renovación) */
+  initialMedications?: PrescriptionMedication[];
   onSuccess?: () => void;
 }
 
@@ -50,14 +52,20 @@ export function PrescriptionForm({
   cie10Default = "",
   professionals,
   defaultProfessionalId,
+  initialMedications,
   onSuccess,
 }: Props) {
   const router = useRouter();
   const cie10Ref = useRef<HTMLInputElement>(null);
   const diagnosisTextRef = useRef<HTMLInputElement>(null);
-  const [medications, setMedications] = useState<PrescriptionMedication[]>([emptyMed()]);
+  const [medications, setMedications] = useState<PrescriptionMedication[]>(
+    initialMedications && initialMedications.length > 0
+      ? initialMedications
+      : [emptyMed()]
+  );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
 
   const existingGenericNames = medications
     .map((m) => m.generic_name.trim())
@@ -87,6 +95,10 @@ export function PrescriptionForm({
 
   async function handleSubmit(issue: boolean) {
     setError(null);
+    if (!disclaimerAccepted) {
+      setError("Debés aceptar el aviso de receta local / borrador (no homologación REFEPS) para continuar.");
+      return;
+    }
     setLoading(true);
     const form = document.getElementById("prescription-form") as HTMLFormElement;
     const formData = new FormData(form);
@@ -262,15 +274,38 @@ export function PrescriptionForm({
 
       <Textarea name="notes" label="Observaciones" rows={2} placeholder="Indicaciones adicionales para farmacia" />
 
-      <input type="hidden" name="disclaimer_accepted" value="on" />
+      <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-sm text-amber-950">
+        <input
+          type="checkbox"
+          className="mt-1 h-4 w-4 shrink-0 rounded border-amber-400 text-amber-700 focus:ring-amber-500"
+          checked={disclaimerAccepted}
+          onChange={(e) => setDisclaimerAccepted(e.target.checked)}
+          required
+        />
+        <span>
+          Entiendo que esta es una <strong>receta local / borrador</strong> y{" "}
+          <strong>no constituye homologación REFEPS</strong>. Acepto el aviso legal de arriba.
+        </span>
+      </label>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="flex flex-wrap gap-2">
-        <Button type="button" variant="outline" loading={loading} onClick={() => handleSubmit(false)}>
+        <Button
+          type="button"
+          variant="outline"
+          loading={loading}
+          disabled={!disclaimerAccepted}
+          onClick={() => handleSubmit(false)}
+        >
           Guardar borrador
         </Button>
-        <Button type="button" loading={loading} onClick={() => handleSubmit(true)}>
+        <Button
+          type="button"
+          loading={loading}
+          disabled={!disclaimerAccepted}
+          onClick={() => handleSubmit(true)}
+        >
           Emitir receta
         </Button>
       </div>

@@ -15,10 +15,17 @@ export function buildPrescriptionRequestMessage(params: {
   documentNumber: string;
   medications: string;
   insuranceNumber?: string;
+  /** Si true, etiqueta el n° como PAMI; si no, como afiliado genérico */
+  pamiBranding?: boolean;
 }): string {
-  const pami = params.insuranceNumber ? ` | PAMI ${params.insuranceNumber}` : "";
+  let coveragePart = "";
+  if (params.insuranceNumber) {
+    coveragePart = params.pamiBranding
+      ? ` | PAMI ${params.insuranceNumber}`
+      : ` | Afiliado ${params.insuranceNumber}`;
+  }
   return (
-    `Hola, soy ${params.patientName}, DNI ${params.documentNumber}${pami}. ` +
+    `Hola, soy ${params.patientName}, DNI ${params.documentNumber}${coveragePart}. ` +
     `Solicito renovación / receta de: ${params.medications}. ` +
     `Gracias.`
   );

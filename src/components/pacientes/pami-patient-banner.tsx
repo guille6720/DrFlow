@@ -42,12 +42,16 @@ export function PamiPatientBanner({ patient }: PamiPatientBannerProps) {
             {ageLabel && <Badge variant="default">{ageLabel}</Badge>}
             {isGeriatric && <Badge variant="warning">Adulto mayor</Badge>}
           </div>
-          {patient.insurance_number && (
+          {patient.insurance_number ? (
             <p className="mt-2 text-sm text-slate-600">
               {numberLabel}:{" "}
               <span className="font-medium text-slate-900">{patient.insurance_number}</span>
             </p>
-          )}
+          ) : patient.insurance_provider ? (
+            <p className="mt-2 text-sm text-slate-500">
+              {numberLabel}: <span className="italic">Sin Nº</span>
+            </p>
+          ) : null}
           {(patient.emergency_contact_name || patient.emergency_contact_phone) && (
             <p className="mt-1 text-xs text-slate-500">
               Contacto: {patient.emergency_contact_name ?? "—"}

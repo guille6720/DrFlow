@@ -7,7 +7,7 @@ import { hasAdminClient } from "@/lib/supabase/admin";
 function mapAuthError(message: string): string {
   const lower = message.toLowerCase();
   if (lower.includes("email not confirmed") || lower.includes("confirm")) {
-    return "Tu email no está confirmado. En Supabase → Authentication → Users → Confirm user, o usá «Restablecer contraseña» abajo.";
+    return "Tu email no está confirmado. Revisá tu bandeja (y spam) o usá «Restablecer contraseña» abajo.";
   }
   if (lower.includes("invalid login") || lower.includes("invalid credentials")) {
     return "No pudimos iniciar sesión con ese email y contraseña.";
@@ -45,10 +45,10 @@ async function diagnoseLoginFailure(email: string): Promise<string | null> {
 
     const user = data.users[0];
     if (!user.email_confirmed_at) {
-      return "Tu cuenta existe pero el email no está confirmado. En Supabase → Authentication → Users → Confirm user, o restablecé la contraseña abajo.";
+      return "Tu cuenta existe pero el email no está confirmado. Revisá tu bandeja o restablecé la contraseña abajo.";
     }
 
-    return "La contraseña no coincide. Usá «Restablecer contraseña» abajo o Supabase → Users → Send password recovery.";
+    return "La contraseña no coincide. Usá «Restablecer contraseña» abajo.";
   } catch {
     return null;
   }
@@ -94,8 +94,8 @@ export async function POST(request: NextRequest) {
     return redirectToLogin(request, "Email y contraseña son obligatorios.", email);
   }
 
-  if (password.length < 6) {
-    return redirectToLogin(request, "La contraseña debe tener al menos 6 caracteres.", email);
+  if (password.length < 8) {
+    return redirectToLogin(request, "La contraseña debe tener al menos 8 caracteres.", email);
   }
 
   const redirectUrl = new URL("/dashboard", request.url);
