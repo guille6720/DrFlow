@@ -5,6 +5,7 @@ import { ClinicalTopNav } from "@/components/layout/clinical-top-nav";
 import { FloatingActions } from "@/components/layout/floating-actions";
 import { RoutePrefetcher } from "@/components/layout/route-prefetcher";
 import { PwaRegister } from "@/components/pwa/pwa-register";
+import { UpdateBanner } from "@/components/updates/update-banner";
 import { getDashboardShell } from "@/lib/auth/session";
 
 import type { Metadata } from "next";
@@ -42,6 +43,7 @@ export default async function DashboardLayout({
     <div className="min-h-screen drflow-mesh">
       <PwaRegister />
       <RoutePrefetcher />
+      <UpdateBanner />
       <Sidebar
         clinicName={clinic?.name}
         role={role}

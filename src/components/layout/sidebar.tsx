@@ -18,6 +18,7 @@ import {
   X,
   HeartPulse,
   ClipboardPlus,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useState } from "react";
@@ -54,6 +55,7 @@ const navItems: NavItem[] = [
   { href: "/pami/planillas", label: "Planillas PAMI", icon: ClipboardList, permission: "issuePrescriptions" },
   { href: "/recordatorios", label: "Recordatorios", icon: Bell, permission: null },
   { href: "/reportes", label: "Reportes", icon: BarChart3, permission: "viewReports" },
+  { href: "/ayuda", label: "Ayuda / Manual", icon: BookOpen, permission: null },
   { href: "/configuracion", label: "Configuración", icon: Settings, permission: "manageSettings" },
 ];
 
