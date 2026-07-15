@@ -44,7 +44,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
-  if (path.startsWith("/auth/callback")) {
+  if (path.startsWith("/auth/")) {
     return NextResponse.next({ request });
   }
 
@@ -54,7 +54,9 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/portal") ||
     path === "/privacidad" ||
     path === "/" ||
-    path === "/onboarding";
+    path === "/demo" ||
+    path === "/onboarding" ||
+    path.startsWith("/auth/");
 
   if (isFullyPublic && !isAuthRoute) {
     return NextResponse.next({ request });

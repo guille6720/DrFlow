@@ -6,6 +6,7 @@ import { Suspense, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 function readPasswordLeakFromUrl(): { email: string; error: string } | null {
@@ -167,6 +168,17 @@ function LoginForm() {
             </Button>
           </form>
 
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-slate-400">o</span>
+            </div>
+          </div>
+
+          <GoogleLoginButton />
+
           <form action="/api/auth/signout" method="post" className="mt-3 text-center">
             <button
               type="submit"
@@ -182,7 +194,7 @@ function LoginForm() {
             className="mt-4 border-t border-slate-100 pt-4"
           >
             <p className="mb-2 text-xs text-slate-500">
-              ¿Olvidaste tu contraseña o el registro no terminó?
+              ¿Olvidaste tu contraseña? Ingresá tu email arriba y pedí un link para blanquearla.
             </p>
             <input type="hidden" name="email" value={email} />
             <Button type="submit" variant="outline" className="w-full" size="sm">

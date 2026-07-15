@@ -13,17 +13,30 @@ const base = site.replace(/\/$/, "");
 console.log("\n=== Supabase → Authentication → URL Configuration ===\n");
 console.log("Site URL:");
 console.log(`  ${base}\n`);
-console.log("Redirect URLs (agregar todas):");
+console.log("Redirect URLs (agregar TODAS):");
 [
   `${base}/auth/callback`,
+  `${base}/auth/complete`,
   `${base}/login/restablecer`,
   `${base}/login`,
   `${base}/register`,
   `${base}/onboarding`,
+  "https://drflow-app-rho.vercel.app/auth/callback",
+  "https://drflow-app-rho.vercel.app/auth/complete",
+  "https://drflow-app-rho.vercel.app/login/restablecer",
   "http://localhost:3000/auth/callback",
+  "http://localhost:3000/auth/complete",
   "http://localhost:3000/login/restablecer",
 ].forEach((u) => console.log(`  ${u}`));
-console.log("\n=== Vercel → Environment Variables ===\n");
+
+console.log("\n=== Google OAuth (Authentication → Providers → Google) ===\n");
+console.log("1. Activá Google provider");
+console.log("2. Client ID y Client Secret desde Google Cloud Console");
+console.log("3. En Google Cloud → Authorized redirect URIs:");
+console.log("   https://nipqdarduknydqptqzup.supabase.co/auth/v1/callback");
+console.log("   (reemplazá por tu project ref si es otro)\n");
+
+console.log("=== Vercel → Environment Variables ===\n");
 console.log("  NEXT_PUBLIC_SITE_URL=" + base);
 console.log("  NEXT_PUBLIC_SUPABASE_URL=...");
 console.log("  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...");

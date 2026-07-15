@@ -20,47 +20,88 @@ function RestablecerForm() {
 
   useEffect(() => {
     const supabase = createClient();
+    let cancelled = false;
 
     async function establishRecoverySession() {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+        const code = params.get("code");
+        const type = params.get("type") ?? hashParams.get("type");
+        const accessToken = hashParams.get("access_token");
+        const refreshToken = hashParams.get("refresh_token");
 
-      if (code) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-        if (exchangeError) {
+        if (code) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) {
+            if (!cancelled) {
+              setError(
+                "El link expiró o ya fue usado. Pedí un nuevo restablecimiento desde el login."
+              );
+              setLoading(false);
+            }
+            return;
+          }
+        } else if (accessToken && refreshToken) {
+          const { error: setErrorSession } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (setErrorSession) {
+            if (!cancelled) {
+              setError(
+                "No pudimos validar el link. Pedí un nuevo email de recuperación."
+              );
+              setLoading(false);
+            }
+            return;
+          }
+        }
+
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+
+        if (cancelled) return;
+
+        if (sessionError || !session) {
           setError(
-            "El link expiró o ya fue usado. Pedí un nuevo restablecimiento desde el login."
+            type === "recovery" || hashParams.has("type")
+              ? "No pudimos validar el link de recuperación. Pedí uno nuevo desde el login."
+              : "No hay sesión de recuperación. Abrí el link del email (no copies solo la URL a mano) o pedí uno nuevo."
           );
           setLoading(false);
           return;
         }
-      }
 
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-      if (sessionError || !session) {
-        setError(
-          "No pudimos validar el link. Pedí un nuevo email de recuperación e intentá de nuevo."
-        );
+        setReady(true);
         setLoading(false);
-        return;
+        window.history.replaceState({}, "", "/login/restablecer");
+      } catch {
+        if (!cancelled) {
+          setError("Error al validar el link. Intentá de nuevo.");
+          setLoading(false);
+        }
       }
-
-      setReady(true);
-      setLoading(false);
-      window.history.replaceState({}, "", "/login/restablecer");
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         setReady(true);
         setLoading(false);
+        setError(null);
       }
     });
 
     establishRecoverySession();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -82,7 +123,11 @@ function RestablecerForm() {
 
     if (updateError) {
       setSaving(false);
-      setError(updateError.message);
+      setError(
+        updateError.message.toLowerCase().includes("same password")
+          ? "La nueva contraseña debe ser distinta a la anterior."
+          : updateError.message
+      );
       return;
     }
 
