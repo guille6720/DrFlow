@@ -7,7 +7,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import type { EmailOtpType } from "@supabase/supabase-js";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error("TIMEOUT")), ms);
+    promise.then(
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(t);
+        reject(e);
+      }
+    );
+  });
+}
 
 function RestablecerForm() {
   const router = useRouter();
@@ -27,49 +44,50 @@ function RestablecerForm() {
         const params = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
         const code = params.get("code");
-        const type = params.get("type") ?? hashParams.get("type");
+        const tokenHash = params.get("token_hash");
+        const type = (params.get("type") ?? hashParams.get("type")) as EmailOtpType | null;
         const accessToken = hashParams.get("access_token");
         const refreshToken = hashParams.get("refresh_token");
 
-        if (code) {
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-          if (exchangeError) {
-            if (!cancelled) {
-              setError(
-                "El link expiró o ya fue usado. Pedí un nuevo restablecimiento desde el login."
-              );
-              setLoading(false);
-            }
-            return;
+        if (tokenHash && type) {
+          const { data, error: otpError } = await withTimeout(
+            supabase.auth.verifyOtp({ type, token_hash: tokenHash }),
+            12000
+          );
+          if (otpError) throw otpError;
+          if (data.session) {
+            await supabase.auth.setSession({
+              access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token,
+            });
           }
+        } else if (code) {
+          const { error: exchangeError } = await withTimeout(
+            supabase.auth.exchangeCodeForSession(code),
+            12000
+          );
+          if (exchangeError) throw exchangeError;
         } else if (accessToken && refreshToken) {
-          const { error: setErrorSession } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-          if (setErrorSession) {
-            if (!cancelled) {
-              setError(
-                "No pudimos validar el link. Pedí un nuevo email de recuperación."
-              );
-              setLoading(false);
-            }
-            return;
-          }
+          const { error: setErrorSession } = await withTimeout(
+            supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            }),
+            12000
+          );
+          if (setErrorSession) throw setErrorSession;
         }
 
         const {
           data: { session },
           error: sessionError,
-        } = await supabase.auth.getSession();
+        } = await withTimeout(supabase.auth.getSession(), 8000);
 
         if (cancelled) return;
 
         if (sessionError || !session) {
           setError(
-            type === "recovery" || hashParams.has("type")
-              ? "No pudimos validar el link de recuperación. Pedí uno nuevo desde el login."
-              : "No hay sesión de recuperación. Abrí el link del email (no copies solo la URL a mano) o pedí uno nuevo."
+            "No pudimos validar el link. Pedí uno nuevo desde el login e abrilo en el mismo navegador (no en otra app)."
           );
           setLoading(false);
           return;
@@ -78,25 +96,31 @@ function RestablecerForm() {
         setReady(true);
         setLoading(false);
         window.history.replaceState({}, "", "/login/restablecer");
-      } catch {
-        if (!cancelled) {
-          setError("Error al validar el link. Intentá de nuevo.");
-          setLoading(false);
-        }
+      } catch (e) {
+        if (cancelled) return;
+        const msg = e instanceof Error ? e.message : "";
+        setError(
+          msg === "TIMEOUT"
+            ? "La validación tardó demasiado. Pedí un link nuevo e intentá de nuevo."
+            : msg.toLowerCase().includes("expired") || msg.toLowerCase().includes("otp")
+              ? "El link expiró o ya fue usado. Pedí uno nuevo desde el login."
+              : "No pudimos validar el link. Pedí uno nuevo desde el login."
+        );
+        setLoading(false);
       }
     }
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
         setReady(true);
         setLoading(false);
         setError(null);
       }
     });
 
-    establishRecoverySession();
+    void establishRecoverySession();
 
     return () => {
       cancelled = true;
@@ -154,9 +178,14 @@ function RestablecerForm() {
           <h2 className="text-2xl font-bold text-slate-900">Restablecer contraseña</h2>
 
           {loading && (
-            <div className="mt-8 flex items-center gap-2 text-slate-500">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Validando link…
+            <div className="mt-8 space-y-2">
+              <div className="flex items-center gap-2 text-slate-500">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Validando link…
+              </div>
+              <p className="text-xs text-slate-400">
+                Si tarda más de 15 segundos, pedí un link nuevo desde el login.
+              </p>
             </div>
           )}
 
@@ -212,7 +241,14 @@ function RestablecerForm() {
 
 export default function RestablecerPasswordPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center text-slate-500">
+          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+          Cargando…
+        </div>
+      }
+    >
       <RestablecerForm />
     </Suspense>
   );

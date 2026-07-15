@@ -16,15 +16,18 @@ console.log(`  ${base}\n`);
 console.log("Redirect URLs (agregar TODAS):");
 [
   `${base}/auth/callback`,
+  `${base}/auth/confirm`,
   `${base}/auth/complete`,
   `${base}/login/restablecer`,
   `${base}/login`,
   `${base}/register`,
   `${base}/onboarding`,
   "https://drflow-app-rho.vercel.app/auth/callback",
+  "https://drflow-app-rho.vercel.app/auth/confirm",
   "https://drflow-app-rho.vercel.app/auth/complete",
   "https://drflow-app-rho.vercel.app/login/restablecer",
   "http://localhost:3000/auth/callback",
+  "http://localhost:3000/auth/confirm",
   "http://localhost:3000/auth/complete",
   "http://localhost:3000/login/restablecer",
 ].forEach((u) => console.log(`  ${u}`));
