@@ -97,7 +97,7 @@ function LoginForm() {
     try {
       const supabase = createClient();
       const origin = window.location.origin.replace(/\/$/, "");
-      const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent("/login/restablecer")}`;
+      const redirectTo = `${origin}/auth/confirm?next=${encodeURIComponent("/login/restablecer")}`;
 
       const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
         redirectTo,
@@ -107,7 +107,7 @@ function LoginForm() {
         const msg = error.message.toLowerCase();
         if (msg.includes("redirect") || msg.includes("url")) {
           setResetError(
-            `URL no autorizada. En Supabase → Authentication → URL Configuration agregá: ${origin}/auth/callback`
+            `URL no autorizada. En Supabase → Authentication → URL Configuration agregá: ${origin}/auth/confirm`
           );
         } else if (msg.includes("rate")) {
           setResetError("Demasiados intentos. Esperá unos minutos.");
