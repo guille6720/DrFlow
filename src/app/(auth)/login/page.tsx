@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import { GoogleLoginButton } from "@/components/auth/google-login-button";
+import { createClient } from "@/lib/supabase/client";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 function readPasswordLeakFromUrl(): { email: string; error: string } | null {
@@ -26,6 +27,7 @@ function readPasswordLeakFromUrl(): { email: string; error: string } | null {
 }
 
 function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const bootstrap = useMemo(() => {
     const leak = readPasswordLeakFromUrl();
@@ -33,11 +35,19 @@ function LoginForm() {
       email: leak?.email || searchParams.get("email") || "",
       passwordLeakError: leak?.error ?? null,
     };
-    // Solo al montar: limpiar URL con password y fijar email inicial
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [email, setEmail] = useState(bootstrap.email);
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState<string | null>(
+    searchParams.get("reset") === "sent"
+      ? `Si ${searchParams.get("email") || "tu email"} está registrado, te enviamos un link. Revisá bandeja y spam.`
+      : searchParams.get("reset") === "done"
+        ? "Contraseña actualizada. Ingresá con tu nueva contraseña."
+        : null
+  );
+  const [resetError, setResetError] = useState<string | null>(null);
 
   const { formError, info } = useMemo(() => {
     if (bootstrap.passwordLeakError) {
@@ -58,8 +68,6 @@ function LoginForm() {
     } else if (searchParams.get("invited") === "1") {
       infoMessage =
         "¡Bienvenido! Si recibiste invitación, abrí el link del email para elegir tu contraseña.";
-    } else if (searchParams.get("reset") === "sent") {
-      infoMessage = `Si ${emailParam || "tu email"} está registrado, te enviamos un link para restablecer la contraseña. Revisá la bandeja y spam.`;
     } else if (searchParams.get("reset") === "done") {
       infoMessage = "Contraseña actualizada. Ingresá con tu nueva contraseña.";
     }
@@ -74,6 +82,51 @@ function LoginForm() {
       info: infoMessage,
     };
   }, [bootstrap.passwordLeakError, searchParams]);
+
+  async function handleResetPassword() {
+    setResetError(null);
+    setResetMessage(null);
+
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed) {
+      setResetError("Ingresá tu email arriba para poder enviar el link.");
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      const supabase = createClient();
+      const origin = window.location.origin.replace(/\/$/, "");
+      const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent("/login/restablecer")}`;
+
+      const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
+        redirectTo,
+      });
+
+      if (error) {
+        const msg = error.message.toLowerCase();
+        if (msg.includes("redirect") || msg.includes("url")) {
+          setResetError(
+            `URL no autorizada. En Supabase → Authentication → URL Configuration agregá: ${origin}/auth/callback`
+          );
+        } else if (msg.includes("rate")) {
+          setResetError("Demasiados intentos. Esperá unos minutos.");
+        } else {
+          setResetError(error.message);
+        }
+        return;
+      }
+
+      setResetMessage(
+        `Si ${trimmed} está registrado, te enviamos un link para elegir una nueva contraseña. Revisá la bandeja y spam.`
+      );
+      router.replace(`/login?reset=sent&email=${encodeURIComponent(trimmed)}`);
+    } catch (e) {
+      setResetError(e instanceof Error ? e.message : "No se pudo enviar el email.");
+    } finally {
+      setResetLoading(false);
+    }
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -111,37 +164,29 @@ function LoginForm() {
             onSubmit={() => setLoading(true)}
             className="mt-8 space-y-4"
           >
-            {info && (
+            {(info || resetMessage) && (
               <div
                 role="status"
                 className="flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900"
               >
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>{info}</span>
+                <span>{resetMessage ?? info}</span>
               </div>
             )}
-            {formError && (
+            {(formError || resetError) && (
               <div
                 role="alert"
                 className="space-y-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"
               >
                 <div className="flex items-start gap-2">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>{formError}</span>
+                  <span>{resetError ?? formError}</span>
                 </div>
-                {formError.includes("no está registrado") && (
+                {formError?.includes("no está registrado") && (
                   <p className="pl-6 text-xs text-red-700">
                     <Link href="/register" className="font-medium underline">
                       Ir a registrar clínica
                     </Link>
-                  </p>
-                )}
-                {(formError.includes("contraseña") ||
-                  formError.includes("confirmado") ||
-                  formError.includes("No pudimos iniciar sesión")) && (
-                  <p className="pl-6 text-xs text-red-700">
-                    El botón de abajo es opcional: solo si querés recibir un email para elegir una
-                    nueva contraseña.
                   </p>
                 )}
               </div>
@@ -188,19 +233,21 @@ function LoginForm() {
             </button>
           </form>
 
-          <form
-            action="/api/auth/reset-password"
-            method="post"
-            className="mt-4 border-t border-slate-100 pt-4"
-          >
+          <div className="mt-4 border-t border-slate-100 pt-4">
             <p className="mb-2 text-xs text-slate-500">
-              ¿Olvidaste tu contraseña? Ingresá tu email arriba y pedí un link para blanquearla.
+              ¿Olvidaste tu contraseña? Escribí tu email arriba y tocá el botón.
             </p>
-            <input type="hidden" name="email" value={email} />
-            <Button type="submit" variant="outline" className="w-full" size="sm">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              size="sm"
+              loading={resetLoading}
+              onClick={handleResetPassword}
+            >
               Enviar link para restablecer contraseña
             </Button>
-          </form>
+          </div>
         </div>
       </div>
     </div>
