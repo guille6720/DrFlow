@@ -2,6 +2,11 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSiteUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 
+/** 303 = forzar GET tras POST (evita HTTP 405 en /login). */
+function redirectGet(url: URL | string) {
+  return NextResponse.redirect(url, 303);
+}
+
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -11,7 +16,7 @@ export async function POST(request: NextRequest) {
 
   if (!email) {
     loginUrl.searchParams.set("error", "Ingresá tu email para recuperar la contraseña.");
-    return NextResponse.redirect(loginUrl);
+    return redirectGet(loginUrl);
   }
 
   const siteUrl = getSiteUrl(request.nextUrl.origin);
@@ -21,7 +26,7 @@ export async function POST(request: NextRequest) {
   successUrl.searchParams.set("reset", "sent");
   successUrl.searchParams.set("email", email);
 
-  const response = NextResponse.redirect(successUrl);
+  const response = redirectGet(successUrl);
 
   const supabase = createServerClient(getSupabaseUrl(), getSupabaseAnonKey(), {
     cookies: {
@@ -60,7 +65,7 @@ export async function POST(request: NextRequest) {
         `No pudimos enviar el email (${error.message}). Revisá SMTP en Supabase → Project Settings → Auth, o pedí recovery desde Authentication → Users.`
       );
     }
-    return NextResponse.redirect(failUrl);
+    return redirectGet(failUrl);
   }
 
   return response;

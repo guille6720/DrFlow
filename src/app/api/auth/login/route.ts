@@ -60,7 +60,8 @@ function redirectToLogin(request: NextRequest, error: string, email?: string) {
   url.search = "";
   url.searchParams.set("error", error);
   if (email) url.searchParams.set("email", email);
-  return NextResponse.redirect(url);
+  // 303 fuerza GET tras POST (evita HTTP 405 en /login)
+  return NextResponse.redirect(url, 303);
 }
 
 async function ensureProfile(
@@ -98,7 +99,8 @@ export async function POST(request: NextRequest) {
   }
 
   const redirectUrl = new URL("/dashboard", request.url);
-  const response = NextResponse.redirect(redirectUrl);
+  // 303 fuerza GET tras POST (evita 405 al redirigir)
+  const response = NextResponse.redirect(redirectUrl, 303);
 
   const supabase = createServerClient(getSupabaseUrl(), getSupabaseAnonKey(), {
     cookies: {
