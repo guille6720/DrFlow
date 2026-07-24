@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useRef, useState, useEffect } from "react";
 import { signUpClinic } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import { AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { setTrialRegistrationIntent } from "@/lib/actions/auth";
+import { TRIAL_PROMO_DAYS } from "@/lib/trial/clinic-trial";
 
 const FIELD_ORDER = [
   "email",
@@ -40,6 +42,12 @@ function RegisterForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [slug, setSlug] = useState("");
+
+  useEffect(() => {
+    if (isTrial) {
+      void setTrialRegistrationIntent(TRIAL_PROMO_DAYS);
+    }
+  }, [isTrial]);
 
   function scrollToFirstError(errors: Record<string, string>) {
     const first = FIELD_ORDER.find((f) => errors[f]);
@@ -209,7 +217,7 @@ function RegisterForm() {
           </div>
 
           <div className="mt-6">
-            <GoogleLoginButton />
+            <GoogleLoginButton trialDays={isTrial ? TRIAL_PROMO_DAYS : undefined} />
             <p className="mt-2 text-center text-xs text-slate-500">
               Con Google vas a completar el consultorio en el onboarding.
             </p>
@@ -231,6 +239,9 @@ function RegisterForm() {
             className="space-y-4"
             noValidate
           >
+            {isTrial && (
+              <input type="hidden" name="trialDays" value={String(TRIAL_PROMO_DAYS)} />
+            )}
             {formError && (
               <div
                 role="alert"

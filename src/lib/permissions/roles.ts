@@ -48,6 +48,10 @@ export function canAccessRoute(
     return false;
   }
 
+  if (route.startsWith("/historias/nueva") || route.includes("/editar")) {
+    return hasPermission(role, "editClinicalRecords", isSuperadmin);
+  }
+
   const routePermissions: Record<string, keyof typeof PERMISSIONS> = {
     "/configuracion": "manageSettings",
     "/reportes": "viewReports",
@@ -60,10 +64,6 @@ export function canAccessRoute(
     if (route.startsWith(prefix)) {
       return hasPermission(role, permission, isSuperadmin);
     }
-  }
-
-  if (route.startsWith("/historias/nueva") || route.includes("/editar")) {
-    return hasPermission(role, "editClinicalRecords", isSuperadmin);
   }
 
   return true;

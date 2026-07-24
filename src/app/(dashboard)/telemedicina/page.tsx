@@ -6,12 +6,18 @@ import {
   getActiveClinic,
 } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import { canAccessRoute } from "@/lib/permissions/roles";
+import { redirect } from "next/navigation";
 
 export default async function TelemedicinaPage() {
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role } = await getActiveClinic();
+  const { role, isSuperadmin } = await getActiveClinic();
+
+  if (!canAccessRoute(role, "/telemedicina", isSuperadmin)) {
+    redirect("/dashboard");
+  }
   const supabase = await createClient();
 
   const [sessions, appointments] = clinicId

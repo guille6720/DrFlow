@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { Suspense } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { ClinicalTopNav } from "@/components/layout/clinical-top-nav";
@@ -6,7 +7,14 @@ import { FloatingActions } from "@/components/layout/floating-actions";
 import { RoutePrefetcher } from "@/components/layout/route-prefetcher";
 import { PwaRegister } from "@/components/pwa/pwa-register";
 import { UpdateBanner } from "@/components/updates/update-banner";
-import { getDashboardShell } from "@/lib/auth/session";
+import { TrialBanner } from "@/components/trial/trial-banner";
+import { getDashboardShell, logAudit } from "@/lib/auth/session";
+import { canAccessRoute } from "@/lib/permissions/roles";
+import {
+  isClinicTrialExpired,
+  isTrialWhitelistedPath,
+  trialDaysRemaining,
+} from "@/lib/trial/clinic-trial";
 
 import type { Metadata } from "next";
 
@@ -39,11 +47,50 @@ export default async function DashboardLayout({
   if (!profile) redirect("/login");
   if (clinics.length === 0 && !isSuperadmin) redirect("/onboarding");
 
+  const path = (await headers()).get("x-drflow-path") ?? "";
+
+  if (path && !canAccessRoute(role, path, isSuperadmin)) {
+    await logAudit({
+      clinicId: clinicId ?? undefined,
+      entityType: "route_access",
+      action: "view",
+      metadata: { path, reason: "rbac_denied" },
+    });
+    redirect("/dashboard");
+  }
+
+  if (
+    !isSuperadmin &&
+    clinic &&
+    isClinicTrialExpired(clinic) &&
+    path &&
+    !isTrialWhitelistedPath(path)
+  ) {
+    await logAudit({
+      clinicId: clinicId ?? undefined,
+      entityType: "subscription",
+      action: "view",
+      metadata: { path, reason: "trial_expired" },
+    });
+    redirect("/trial-expirado");
+  }
+
+  const daysLeft = clinic?.trial_ends_at ? trialDaysRemaining(clinic.trial_ends_at) : null;
+  const showTrialBanner =
+    !isSuperadmin &&
+    daysLeft !== null &&
+    daysLeft > 0 &&
+    daysLeft <= 7 &&
+    path !== "/trial-expirado";
+
   return (
     <div className="min-h-screen drflow-mesh">
       <PwaRegister />
       <RoutePrefetcher />
       <UpdateBanner />
+      {showTrialBanner && clinic?.trial_ends_at && (
+        <TrialBanner trialEndsAt={clinic.trial_ends_at} daysRemaining={daysLeft} />
+      )}
       <Sidebar
         clinicName={clinic?.name}
         role={role}

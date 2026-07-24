@@ -1,14 +1,19 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { setActiveClinic } from "@/lib/auth/session";
+import { logAudit, setActiveClinic } from "@/lib/auth/session";
 import { loginSchema, registerClinicSchema, setupClinicSchema } from "@/lib/validations/schemas";
 import {
   parseDoctorSetupFromForm,
   validateDoctorSetup,
 } from "@/lib/validations/doctor-setup";
 import { zodFieldErrors } from "@/lib/validations/form-errors";
+import {
+  TRIAL_REGISTRATION_COOKIE,
+  parseTrialDays,
+} from "@/lib/trial/clinic-trial";
 
 export type AuthActionResult = {
   success?: boolean;
@@ -146,6 +151,56 @@ async function runSetupUserClinic(
   return { clinicId: clinicId as string | undefined };
 }
 
+/** Cookie httpOnly para flujo Google/onboarding con ?trial=30 */
+export async function setTrialRegistrationIntent(days: number): Promise<void> {
+  const parsed = parseTrialDays(days);
+  if (!parsed) return;
+
+  const cookieStore = await cookies();
+  cookieStore.set(TRIAL_REGISTRATION_COOKIE, String(parsed), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 7,
+    path: "/",
+  });
+}
+
+async function applyTrialAfterSetup(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  clinicId: string,
+  formData: FormData
+) {
+  const cookieStore = await cookies();
+  const days =
+    parseTrialDays(formData.get("trialDays")) ??
+    parseTrialDays(cookieStore.get(TRIAL_REGISTRATION_COOKIE)?.value);
+
+  cookieStore.delete(TRIAL_REGISTRATION_COOKIE);
+
+  if (!days) return;
+
+  const endsAt = new Date();
+  endsAt.setUTCDate(endsAt.getUTCDate() + days);
+
+  const { error } = await supabase
+    .from("clinics")
+    .update({ trial_ends_at: endsAt.toISOString() })
+    .eq("id", clinicId);
+
+  if (error) {
+    console.error("trial_ends_at update failed:", error.message);
+    return;
+  }
+
+  await logAudit({
+    clinicId,
+    entityType: "subscription",
+    action: "create",
+    metadata: { reason: "trial_started", trial_days: days },
+  });
+}
+
 async function ensureProfile(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
@@ -272,6 +327,7 @@ export async function signUpClinic(formData: FormData): Promise<AuthActionResult
   if (setup.error) return setup.error;
 
   if (setup.clinicId) {
+    await applyTrialAfterSetup(supabase, setup.clinicId, formData);
     await setActiveClinic(setup.clinicId);
   }
 
@@ -310,6 +366,7 @@ export async function setupClinic(formData: FormData): Promise<AuthActionResult>
   if (setup.error) return setup.error;
 
   if (setup.clinicId) {
+    await applyTrialAfterSetup(supabase, setup.clinicId, formData);
     await setActiveClinic(setup.clinicId);
   }
 

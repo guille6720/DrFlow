@@ -10,13 +10,19 @@ import { Header } from "@/components/layout/header";
 import { QaChecklistView } from "@/components/qa/qa-checklist-view";
 import { Button } from "@/components/ui/button";
 import { ClipboardCheck } from "lucide-react";
+import { canAccessRoute } from "@/lib/permissions/roles";
+import { redirect } from "next/navigation";
 
 export default async function QaPage() {
   const profile = await getProfile();
   const user = await getSession();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role } = await getActiveClinic();
+  const { role, isSuperadmin } = await getActiveClinic();
+
+  if (!canAccessRoute(role, "/qa", isSuperadmin)) {
+    redirect("/dashboard");
+  }
 
   return (
     <>

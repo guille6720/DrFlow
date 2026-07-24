@@ -26,4 +26,20 @@ describe("Role permissions", () => {
   it("clinic_admin can access configuration", () => {
     expect(canAccessRoute("clinic_admin", "/configuracion")).toBe(true);
   });
+
+  it("blocks lab routes for non-superadmin roles", () => {
+    expect(canAccessRoute("doctor", "/telemedicina")).toBe(false);
+    expect(canAccessRoute("clinic_admin", "/pagos")).toBe(false);
+    expect(canAccessRoute("doctor", "/qa")).toBe(false);
+  });
+
+  it("allows superadmin lab routes", () => {
+    expect(canAccessRoute("superadmin", "/qa", true)).toBe(true);
+    expect(canAccessRoute(null, "/telemedicina", true)).toBe(true);
+  });
+
+  it("requires edit permission for nueva historia", () => {
+    expect(canAccessRoute("secretary", "/historias/nueva")).toBe(false);
+    expect(canAccessRoute("doctor", "/historias/nueva")).toBe(true);
+  });
 });

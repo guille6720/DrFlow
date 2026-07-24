@@ -15,9 +15,10 @@ import { AlertCircle, CheckCircle2 } from "lucide-react";
 interface OnboardingFormProps {
   userEmail: string;
   userName?: string;
+  trialDays?: number;
 }
 
-export function OnboardingForm({ userEmail, userName }: OnboardingFormProps) {
+export function OnboardingForm({ userEmail, userName, trialDays }: OnboardingFormProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [slug, setSlug] = useState("");
@@ -102,6 +103,12 @@ export function OnboardingForm({ userEmail, userName }: OnboardingFormProps) {
         Datos del consultorio y del médico titular (obligatorios).
       </p>
 
+      {trialDays ? (
+        <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
+          Prueba gratuita de <strong>{trialDays} días</strong> al crear el consultorio.
+        </div>
+      ) : null}
+
       <form
         ref={formRef}
         method="post"
@@ -109,6 +116,9 @@ export function OnboardingForm({ userEmail, userName }: OnboardingFormProps) {
         className="mt-6 space-y-4"
         noValidate
       >
+        {trialDays ? (
+          <input type="hidden" name="trialDays" value={String(trialDays)} />
+        ) : null}
         {formError && (
           <div
             role="alert"

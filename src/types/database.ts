@@ -47,6 +47,7 @@ export interface Clinic {
   default_appointment_duration: number;
   timezone: string;
   is_active: boolean;
+  trial_ends_at?: string | null;
   default_insurance_provider?: string | null;
   practice_profile?: string | null;
   accepted_coverages?: string[] | null;

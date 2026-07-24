@@ -33,6 +33,11 @@ function isPwaAsset(path: string): boolean {
   );
 }
 
+function withRequestPath(response: NextResponse, path: string): NextResponse {
+  response.headers.set("x-drflow-path", path);
+  return response;
+}
+
 export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
@@ -108,8 +113,8 @@ export async function updateSession(request: NextRequest) {
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
+    return withRequestPath(NextResponse.redirect(url), path);
   }
 
-  return supabaseResponse;
+  return withRequestPath(supabaseResponse, path);
 }

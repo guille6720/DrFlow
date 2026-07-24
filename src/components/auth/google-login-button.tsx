@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { PUBLIC_SITE_FALLBACK } from "@/lib/supabase/env";
+import { setTrialRegistrationIntent } from "@/lib/actions/auth";
 
 function resolveSiteUrl(): string {
   const configured = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
@@ -22,13 +23,16 @@ function resolveSiteUrl(): string {
     : PUBLIC_SITE_FALLBACK;
 }
 
-export function GoogleLoginButton() {
+export function GoogleLoginButton({ trialDays }: { trialDays?: number }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleGoogle() {
     setLoading(true);
     setError(null);
+    if (trialDays) {
+      await setTrialRegistrationIntent(trialDays);
+    }
     const supabase = createClient();
     const siteUrl = resolveSiteUrl();
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
