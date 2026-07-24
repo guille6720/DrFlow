@@ -14,6 +14,8 @@
     "check:supabase": "node scripts/check-supabase.mjs",
     "migrate:remote": "node scripts/run-migrations.mjs",
     "migrate:pending": "node scripts/apply-pending.mjs",
+    "migrate:p0": "node scripts/apply-p0-migrations.mjs",
+    "test:rls": "vitest run tests/rls-policies.test.ts tests/cross-tenant-rls.integration.test.ts",
     "deploy:vercel": "vercel deploy --prod --yes",
     "deploy:checklist": "node scripts/print-supabase-redirects.mjs"
   },

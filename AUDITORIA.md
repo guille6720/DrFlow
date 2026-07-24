@@ -353,7 +353,7 @@ No hay rate limiting a nivel app (depende de Supabase/Vercel).
 | Prioridad | Plazo sugerido | Entregable |
 |-----------|----------------|------------|
 | **P0** | 1–2 semanas | Route guards + eliminar acceso lab por URL; trial DB + banner expiración |
-| **P0** | 1–2 semanas | Auditar RLS + tests cross-tenant; aplicar migraciones 030–031 en prod |
+| **P0** | 1–2 semanas | Auditar RLS + tests cross-tenant; aplicar migraciones 030–031 en prod | ✅ Entregado en repo: `docs/RLS_AUDIT.md`, `tests/rls-policies.test.ts`, `npm run migrate:p0`, checks 030–032 |
 | **P1** | 2–4 semanas | Refactor `clinic.ts`; contexto shell en layout; unificar site URL/auth |
 | **P1** | 2–4 semanas | CSP/HSTS; endurecer sanitización campos clínicos |
 | **P2** | 1–2 meses | E2E Playwright; Sentry; paginación listados |

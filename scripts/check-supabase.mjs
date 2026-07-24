@@ -96,6 +96,34 @@ async function main() {
     }
   }
 
+  const schemaKey = service ?? anon;
+  const schemaAuth = service ? `Bearer ${service}` : `Bearer ${anon}`;
+
+  const schemaRes = await fetch(
+    `${url}/rest/v1/clinics?select=id,accepted_coverages,trial_ends_at&limit=1`,
+    {
+      headers: {
+        apikey: schemaKey,
+        Authorization: schemaAuth,
+      },
+    }
+  );
+  const schemaBody = await schemaRes.text();
+  if (schemaRes.status === 400) {
+    if (schemaBody.includes("accepted_coverages")) {
+      console.log("❌ Columna accepted_coverages — migración 030 pendiente");
+      allOk = false;
+    }
+    if (schemaBody.includes("trial_ends_at")) {
+      console.log("❌ Columna trial_ends_at — migración 032 pendiente");
+      allOk = false;
+    }
+  } else if (schemaRes.ok) {
+    console.log("✓ Esquema P0: accepted_coverages + trial_ends_at");
+  } else {
+    console.log(`⚠ Verificación esquema clinics: HTTP ${schemaRes.status}`);
+  }
+
   // RPC pública (404 = no expuesta; 400/500 con mensaje de negocio = existe)
   const rpc = await fetch(`${url}/rest/v1/rpc/submit_public_booking`, {
     method: "POST",

@@ -1,6 +1,9 @@
 /**
- * Aplica solo las migraciones pendientes detectadas por check:supabase.
- * Uso: DATABASE_URL=... npm run migrate:pending
+ * Aplica migraciones P0: 030 (coberturas), 031 (Google name), 032 (trial).
+ *
+ * Uso (PowerShell):
+ *   $env:DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.TU_REF.supabase.co:5432/postgres"
+ *   npm run migrate:p0
  */
 import { resolve } from "path";
 import { spawnSync } from "child_process";
@@ -12,9 +15,9 @@ if (!dbUrl) {
 
 PowerShell:
   $env:DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.nipqdarduknydqptqzup.supabase.co:5432/postgres"
-  npm run migrate:pending
+  npm run migrate:p0
 
-O pegá en Supabase SQL Editor (docs/MIGRATIONS.md):
+Alternativa: pegar en Supabase SQL Editor (ver docs/MIGRATIONS.md):
   supabase/migrations/030_clinic_accepted_coverages.sql
   supabase/migrations/031_google_profile_name.sql
   supabase/migrations/032_clinic_trial.sql
@@ -28,8 +31,7 @@ const pending = [
   "032_clinic_trial.sql",
 ];
 
-console.log(`\n🔧 DrFlow — Reparaciones pendientes (${pending.length} archivos)`);
-console.log("   (Migraciones P0 — ver también: npm run migrate:p0)\n");
+console.log(`\n🔧 DrFlow — Migraciones P0 (${pending.length} archivos)\n`);
 
 for (const file of pending) {
   const filePath = resolve(process.cwd(), "supabase/migrations", file);
@@ -42,9 +44,9 @@ for (const file of pending) {
   );
 
   if (result.status !== 0) {
-    console.error(`\n❌ Error en ${file}. Revisá el mensaje en SQL Editor si hace falta.`);
+    console.error(`\n❌ Error en ${file}. Revisá el mensaje o aplicá el SQL manualmente.`);
     process.exit(1);
   }
 }
 
-console.log("\n✓ Listo. Verificá: npm run check:supabase\n");
+console.log("\n✓ P0 aplicado. Verificá: npm run check:supabase\n");
