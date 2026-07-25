@@ -12,7 +12,14 @@ import {
 import {
   extractTextFromPdfBuffer,
   findOrCreatePatientFromExtract,
+  enrichPatientFromDrAppDemographics,
+  insertDrAppClinicalRecords,
 } from "@/lib/utils/clinical-pdf-import";
+import {
+  isDrAppClinicalExport,
+  parseDrAppDemographics,
+  parseDrAppEvolutions,
+} from "@/lib/utils/drapp-pdf-parse";
 import {
   extractPatientFromFileName,
   extractPatientFromPdfText,
@@ -241,6 +248,10 @@ export type ImportClinicalPdfResult =
       documentNumber: string;
       patientCreated: boolean;
       attachmentId: string;
+      drAppImport?: {
+        clinicalRecordsCreated: number;
+        clinicalRecordsSkipped: number;
+      };
     }
   | {
       success: false;
@@ -357,6 +368,52 @@ export async function importClinicalPdfDocument(
     },
   });
 
+  let drAppImport: { clinicalRecordsCreated: number; clinicalRecordsSkipped: number } | undefined;
+
+  if (pdfText && isDrAppClinicalExport(pdfText)) {
+    const demographics = parseDrAppDemographics(pdfText);
+    await enrichPatientFromDrAppDemographics(
+      supabase,
+      patientResult.patientId,
+      access.clinicId,
+      demographics
+    );
+
+    const evolutions = parseDrAppEvolutions(pdfText);
+    if (evolutions.length > 0) {
+      const insertResult = await insertDrAppClinicalRecords(supabase, {
+        clinicId: access.clinicId,
+        patientId: patientResult.patientId,
+        userId: access.userId,
+        evolutions,
+      });
+
+      if (insertResult.error && insertResult.created === 0) {
+        await supabase.storage.from(BUCKET).remove([filePath]);
+        await supabase.from("patient_attachments").delete().eq("id", attachment.id);
+        return { success: false, fileName: originalName, error: insertResult.error };
+      }
+
+      drAppImport = {
+        clinicalRecordsCreated: insertResult.created,
+        clinicalRecordsSkipped: insertResult.skipped,
+      };
+
+      await logAudit({
+        clinicId: access.clinicId,
+        entityType: "clinical_record",
+        entityId: patientResult.patientId,
+        action: "create",
+        metadata: {
+          type: "drapp_pdf_import",
+          attachmentId: attachment.id,
+          clinicalRecordsCreated: insertResult.created,
+          clinicalRecordsSkipped: insertResult.skipped,
+        },
+      });
+    }
+  }
+
   revalidatePath("/historias");
   revalidatePath("/pacientes");
   revalidatePath(`/pacientes/${patientResult.patientId}`);
@@ -369,5 +426,6 @@ export async function importClinicalPdfDocument(
     documentNumber: extract.document_number,
     patientCreated: patientResult.created,
     attachmentId: attachment.id,
+    drAppImport,
   };
 }

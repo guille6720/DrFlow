@@ -79,8 +79,9 @@ export function ImportClinicalPdfPanel({ canImport }: Props) {
   return (
     <Card title="Importar historias PDF">
       <p className="mb-3 text-sm text-slate-600">
-        Subí historias exportadas desde otra app, de a una o en lote. DrFlow detecta el DNI en el
-        PDF o en el nombre del archivo y crea el paciente automáticamente si no existe.
+        Subí historias exportadas desde otra app (incluye export DrApp), de a una o en lote. DrFlow
+        detecta el DNI, completa datos del paciente y, en PDFs DrApp, crea las evoluciones como
+        consultas en historias clínicas.
       </p>
       <p className="mb-4 text-xs text-slate-500">
         Tip: renombrá los archivos como{" "}
@@ -148,13 +149,30 @@ export function ImportClinicalPdfPanel({ canImport }: Props) {
                       <p className="text-slate-600">
                         {row.patientName} · DNI {row.documentNumber}
                         {row.patientCreated ? " · paciente creado" : " · paciente existente"}
+                        {row.success && row.drAppImport
+                          ? ` · ${row.drAppImport.clinicalRecordsCreated} consulta(s) importada(s)${
+                              row.drAppImport.clinicalRecordsSkipped > 0
+                                ? ` (${row.drAppImport.clinicalRecordsSkipped} ya existían)`
+                                : ""
+                            }`
+                          : ""}
                       </p>
-                      <Link
-                        href={`/pacientes/${row.patientId}`}
-                        className="text-blue-700 hover:underline"
-                      >
-                        Ver ficha del paciente
-                      </Link>
+                      <div className="flex flex-wrap gap-3">
+                        <Link
+                          href={`/pacientes/${row.patientId}`}
+                          className="text-blue-700 hover:underline"
+                        >
+                          Ver ficha del paciente
+                        </Link>
+                        {row.success && row.drAppImport && row.drAppImport.clinicalRecordsCreated > 0 && (
+                          <Link
+                            href={`/pacientes/${row.patientId}`}
+                            className="text-blue-700 hover:underline"
+                          >
+                            Ver consultas en ficha
+                          </Link>
+                        )}
+                      </div>
                     </>
                   ) : (
                     <p className="text-red-700">{row.error}</p>

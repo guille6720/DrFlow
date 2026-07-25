@@ -118,6 +118,7 @@ export function extractPatientFromPdfText(text: string): ExtractedPatientInfo | 
   let document_number: string | null = null;
 
   const dniPatterns = [
+    /DNI\s*\n\s*(\d{1,2}\.?\d{3}\.?\d{3}|\d{7,8})/i,
     /DNI\s*(?:N[°º.]?\s*)?[:\s]*(\d{2}\.?\d{3}\.?\d{3}|\d{7,8})/i,
     /Documento\s*(?:N[°º.]?\s*)?[:\s]*(\d{2}\.?\d{3}\.?\d{3}|\d{7,8})/i,
     /\bN[°º]\s*de\s*documento[:\s]*(\d{7,8})/i,
@@ -141,6 +142,13 @@ export function extractPatientFromPdfText(text: string): ExtractedPatientInfo | 
   let first_name = "";
   let last_name = "";
 
+  const drAppName = normalized.match(/Nombre\s*\n\s*([^\n]{3,80})/i);
+  if (drAppName) {
+    const split = splitFullName(drAppName[1].trim());
+    first_name = split.first_name;
+    last_name = split.last_name;
+  }
+
   const namePatterns = [
     /Apellido\s*y\s*nombre[:\s]*([^\n]{3,80})/i,
     /Paciente[:\s]*([^\n]{3,80})/i,
@@ -150,6 +158,7 @@ export function extractPatientFromPdfText(text: string): ExtractedPatientInfo | 
   ];
 
   for (const pattern of namePatterns) {
+    if (first_name && last_name) break;
     const match = normalized.match(pattern);
     if (!match) continue;
     if (match.length === 2) {

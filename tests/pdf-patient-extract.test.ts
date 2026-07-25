@@ -42,6 +42,13 @@ describe("extractPatientFromPdfText", () => {
     expect(result?.last_name).toBe("Pérez");
     expect(result?.first_name).toBe("María");
   });
+
+  it("extracts DrApp multiline DNI block", () => {
+    const text = "Nombre\nGarcía, Ana\nDNI\n12.345.678\n";
+    const result = extractPatientFromPdfText(text);
+    expect(result?.document_number).toBe("12345678");
+    expect(result?.last_name).toBe("García");
+  });
 });
 
 describe("mergePatientExtract", () => {
