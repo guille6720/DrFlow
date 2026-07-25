@@ -6,7 +6,7 @@ import { getActiveClinic, getActiveClinicId, getSession } from "@/lib/auth/sessi
 import { hasPermission } from "@/lib/permissions/roles";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { getSiteUrl } from "@/lib/supabase/env";
+import { getPublicSiteUrl } from "@/lib/supabase/env";
 import type { UserRole } from "@/types/database";
 
 const inviteSchema = z.object({
@@ -143,7 +143,7 @@ export async function inviteClinicMember(formData: FormData) {
     };
   }
 
-  const siteUrl = getSiteUrl();
+  const siteUrl = getPublicSiteUrl();
   const { error: authErr } = await admin.auth.admin.inviteUserByEmail(email, {
     data: { full_name: parsed.data.full_name },
     redirectTo: `${siteUrl}/auth/callback?next=/login/restablecer`,

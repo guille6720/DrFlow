@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import { AppointmentRow, filterAppointmentsForDay } from "@/components/agenda/appointment-row";
-import { createAppointment } from "@/lib/actions/clinic";
+import { createAppointment } from "@/lib/actions/appointments";
 import { hasPermission } from "@/lib/permissions/roles";
 import type { Appointment, Clinic, Patient, Professional, UserRole } from "@/types/database";
 import { CalendarGrid } from "@/components/agenda/calendar-grid";

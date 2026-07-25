@@ -3,25 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { PUBLIC_SITE_FALLBACK } from "@/lib/supabase/env";
+import { resolveClientPublicSiteUrl } from "@/lib/supabase/client-public-url";
 import { setTrialRegistrationIntent } from "@/lib/actions/auth";
-
-function resolveSiteUrl(): string {
-  const configured = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
-  if (typeof window !== "undefined") {
-    const origin = window.location.origin.replace(/\/$/, "");
-    const isLocal = origin.includes("localhost") || origin.includes("127.0.0.1");
-    if (isLocal) {
-      return configured && !configured.includes("localhost")
-        ? configured
-        : PUBLIC_SITE_FALLBACK;
-    }
-    return origin;
-  }
-  return configured && !configured.includes("localhost")
-    ? configured
-    : PUBLIC_SITE_FALLBACK;
-}
 
 export function GoogleLoginButton({ trialDays }: { trialDays?: number }) {
   const [loading, setLoading] = useState(false);
@@ -34,7 +17,7 @@ export function GoogleLoginButton({ trialDays }: { trialDays?: number }) {
       await setTrialRegistrationIntent(trialDays);
     }
     const supabase = createClient();
-    const siteUrl = resolveSiteUrl();
+    const siteUrl = resolveClientPublicSiteUrl();
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

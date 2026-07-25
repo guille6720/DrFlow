@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PatientFormFields } from "@/components/pacientes/patient-form-fields";
 import { DeletePatientButton } from "@/components/pacientes/delete-patient-button";
-import { updatePatient } from "@/lib/actions/clinic";
+import { updatePatient } from "@/lib/actions/patients";
 import type { Clinic, Patient, UserRole } from "@/types/database";
 import { ArrowLeft } from "lucide-react";
 

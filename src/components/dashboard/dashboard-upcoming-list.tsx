@@ -6,7 +6,7 @@ import { formatClinicDateTime } from "@/lib/utils/clinic-timezone";
 import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
-import { updateAppointmentStatus } from "@/lib/actions/clinic";
+import { updateAppointmentStatus } from "@/lib/actions/appointments";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
 import { isOnlineBooking } from "@/lib/utils/appointment";
 import { CheckCircle2, Globe } from "lucide-react";

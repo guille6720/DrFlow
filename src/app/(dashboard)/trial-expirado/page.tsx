@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { CalendarX2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Header } from "@/components/layout/header";
+import { DashboardPageHeader } from "@/components/layout/dashboard-page-header";
 import { getDashboardShell } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { isClinicTrialExpired } from "@/lib/trial/clinic-trial";
 
 export default async function TrialExpiradoPage() {
-  const { profile, clinics, clinicId, clinic, role, isSuperadmin } =
-    await getDashboardShell();
+  const { profile, clinic, isSuperadmin } = await getDashboardShell();
 
   if (!profile) redirect("/login");
   if (isSuperadmin || !isClinicTrialExpired(clinic)) {
@@ -17,13 +16,9 @@ export default async function TrialExpiradoPage() {
 
   return (
     <>
-      <Header
+      <DashboardPageHeader
         title="Prueba finalizada"
         subtitle="Tu periodo de prueba de DrFlow terminó"
-        clinics={clinics}
-        activeClinicId={clinicId}
-        role={role}
-        userName={profile.full_name}
       />
       <div className="mx-auto max-w-lg space-y-6 p-4 sm:p-6">
         <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">

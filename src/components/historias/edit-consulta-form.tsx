@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { updateClinicalRecord } from "@/lib/actions/clinic";
+import { updateClinicalRecord } from "@/lib/actions/clinical-records";
 import type { Clinic, UserRole } from "@/types/database";
 import { ArrowLeft } from "lucide-react";
 

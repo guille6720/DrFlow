@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { createTelemedicineSession } from "@/lib/actions/clinic";
+import { createTelemedicineSession } from "@/lib/actions/clinic-services";
 import type { Clinic, UserRole } from "@/types/database";
 import { Video, ExternalLink } from "lucide-react";
 import { format } from "date-fns";

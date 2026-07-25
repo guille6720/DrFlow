@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
-import { createMockPayment } from "@/lib/actions/clinic";
+import { createMockPayment } from "@/lib/actions/clinic-services";
 import { formatCurrency } from "@/lib/services/payments";
 import type { Clinic, Payment, Patient, UserRole } from "@/types/database";
 import { CreditCard } from "lucide-react";

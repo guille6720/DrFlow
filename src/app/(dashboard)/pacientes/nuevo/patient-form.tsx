@@ -7,7 +7,7 @@ import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PatientFormFields } from "@/components/pacientes/patient-form-fields";
-import { createPatient } from "@/lib/actions/clinic";
+import { createPatient } from "@/lib/actions/patients";
 import type { Clinic, UserRole } from "@/types/database";
 import { ArrowLeft } from "lucide-react";
 

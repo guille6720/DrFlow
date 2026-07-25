@@ -1,10 +1,7 @@
 import { AgendaView } from "@/components/agenda/agenda-view";
 import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/lib/auth/session";
+  getDashboardPageContext,
+} from "@/lib/auth/dashboard-page";
 import { createClient } from "@/lib/supabase/server";
 import { subDays, addDays } from "date-fns";
 
@@ -15,10 +12,7 @@ async function AgendaContent({
   initialView: "day" | "week" | "month";
   initialShowForm: boolean;
 }) {
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { clinic, role } = await getActiveClinic();
+  const { profile, clinics, clinicId, clinic, role } = await getDashboardPageContext();
   const supabase = await createClient();
 
   const rangeStart = subDays(new Date(), 7).toISOString();

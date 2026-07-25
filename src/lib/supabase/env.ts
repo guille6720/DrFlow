@@ -42,8 +42,8 @@ export function getSiteUrl(fallbackOrigin?: string): string {
 }
 
 /**
- * URL segura para emails de recovery y OAuth.
- * Nunca devuelve localhost (el link del mail no sirve en el celular).
+ * URL segura para emails de recovery y OAuth (cliente o servidor).
+ * En el navegador, pasá `window.location.origin` como fallbackOrigin en dev local.
  */
 export function getPublicSiteUrl(fallbackOrigin?: string): string {
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CancelAppointmentDialog } from "@/components/agenda/cancel-appointment-dialog";
-import { updateAppointmentStatus } from "@/lib/actions/clinic";
+import { updateAppointmentStatus } from "@/lib/actions/appointments";
 import { canStartConsultation, isOnlineBooking } from "@/lib/utils/appointment";
 import {
   buildAppointmentCancellationByClinicMessage,

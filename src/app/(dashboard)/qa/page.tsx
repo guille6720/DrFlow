@@ -1,12 +1,6 @@
 import Link from "next/link";
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getSession,
-  getUserClinics,
-} from "@/lib/auth/session";
-import { Header } from "@/components/layout/header";
+import { getActiveClinic, getSession } from "@/lib/auth/session";
+import { DashboardPageHeader } from "@/components/layout/dashboard-page-header";
 import { QaChecklistView } from "@/components/qa/qa-checklist-view";
 import { Button } from "@/components/ui/button";
 import { ClipboardCheck } from "lucide-react";
@@ -14,10 +8,7 @@ import { canAccessRoute } from "@/lib/permissions/roles";
 import { redirect } from "next/navigation";
 
 export default async function QaPage() {
-  const profile = await getProfile();
   const user = await getSession();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
   const { role, isSuperadmin } = await getActiveClinic();
 
   if (!canAccessRoute(role, "/qa", isSuperadmin)) {
@@ -26,13 +17,9 @@ export default async function QaPage() {
 
   return (
     <>
-      <Header
+      <DashboardPageHeader
         title="Checklist QA"
         subtitle="Verificación manual del MVP antes de producción"
-        clinics={clinics}
-        activeClinicId={clinicId}
-        role={role}
-        userName={profile?.full_name}
       />
       <div className="space-y-4 p-4 sm:p-6">
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-blue-100 bg-blue-50/50 px-4 py-3 text-sm text-blue-900">

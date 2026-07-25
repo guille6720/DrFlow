@@ -14,7 +14,8 @@ import {
   type ConsultationStep,
 } from "@/components/historias/consultation-flow-bar";
 import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
-import { createClinicalRecord, startConsultationFromAppointment } from "@/lib/actions/clinic";
+import { createClinicalRecord } from "@/lib/actions/clinical-records";
+import { startConsultationFromAppointment } from "@/lib/actions/appointments";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { Clinic, Patient, Professional, UserRole } from "@/types/database";
 import { ArrowLeft, AlertTriangle, Pill } from "lucide-react";

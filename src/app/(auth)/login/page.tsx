@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { createClient } from "@/lib/supabase/client";
+import { resolveClientPublicSiteUrl } from "@/lib/supabase/client-public-url";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 function readPasswordLeakFromUrl(): { email: string; error: string } | null {
@@ -95,17 +96,7 @@ function LoginForm() {
     setResetLoading(true);
     try {
       const supabase = createClient();
-      // Nunca mandar el mail a localhost: el link del email no abre en el celular / Gmail.
-      const configured = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
-      const browserOrigin = window.location.origin.replace(/\/$/, "");
-      const isLocal =
-        browserOrigin.includes("localhost") || browserOrigin.includes("127.0.0.1");
-      const siteUrl =
-        isLocal
-          ? configured && !configured.includes("localhost")
-            ? configured
-            : "https://drflow-app-rho.vercel.app"
-          : browserOrigin;
+      const siteUrl = resolveClientPublicSiteUrl();
       const redirectTo = `${siteUrl}/auth/confirm?next=${encodeURIComponent("/login/restablecer")}`;
 
       const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {

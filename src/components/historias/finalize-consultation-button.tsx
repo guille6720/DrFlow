@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
-import { finalizeConsultation } from "@/lib/actions/clinic";
+import { finalizeConsultation } from "@/lib/actions/appointments";
 import { clearConsultationTimer } from "@/components/historias/consultation-timer";
 import { CONSULTATION_MODALITY_OPTIONS } from "@/lib/constants/consultation-modality";
 import type { ConsultationModality } from "@/lib/constants/consultation-modality";

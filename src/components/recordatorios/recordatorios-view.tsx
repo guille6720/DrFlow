@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { sendReminder } from "@/lib/actions/clinic";
+import { sendReminder } from "@/lib/actions/clinic-services";
 import type { Clinic, ReminderLog, UserRole } from "@/types/database";
 import { Bell, Mail, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
