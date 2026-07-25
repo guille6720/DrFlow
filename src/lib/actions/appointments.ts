@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getSession, logAudit } from "@/lib/auth/session";
-import { appointmentSchema } from "@/lib/validations/schemas";
+import { appointmentSchema, sanitizeText } from "@/lib/validations/schemas";
 import { requireClinicPermission } from "@/lib/actions/clinic-guard";
 import type { ConsultationModality } from "@/lib/constants/consultation-modality";
 
@@ -22,12 +22,20 @@ export async function createAppointment(formData: FormData) {
 
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 
+  const payload = {
+    ...parsed.data,
+    notes: parsed.data.notes ? sanitizeText(parsed.data.notes) : parsed.data.notes,
+    cancellation_reason: parsed.data.cancellation_reason
+      ? sanitizeText(parsed.data.cancellation_reason)
+      : parsed.data.cancellation_reason,
+  };
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("appointments")
     .insert({
       clinic_id: clinicId,
-      ...parsed.data,
+      ...payload,
       created_by: user?.id,
     })
     .select()
@@ -75,7 +83,12 @@ export async function updateAppointmentStatus(
 
   const updatePayload: Record<string, unknown> = {
     status,
-    cancellation_reason: status === "cancelled" ? (cancellationReason?.trim() || null) : null,
+    cancellation_reason:
+      status === "cancelled"
+        ? cancellationReason?.trim()
+          ? sanitizeText(cancellationReason)
+          : null
+        : null,
   };
 
   if (status === "cancelled") {

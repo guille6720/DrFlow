@@ -24,5 +24,11 @@ describe("Validation schemas", () => {
 
   it("sanitizes HTML-like characters", () => {
     expect(sanitizeText("<script>alert(1)</script>")).not.toContain("<");
+    expect(sanitizeText("<script>alert(1)</script>")).not.toContain("script");
+  });
+
+  it("strips javascript: URIs and control chars", () => {
+    expect(sanitizeText("javascript:alert(1)")).not.toMatch(/javascript:/i);
+    expect(sanitizeText("hello\u0000world")).toBe("helloworld");
   });
 });

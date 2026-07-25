@@ -104,7 +104,39 @@ export const prescriptionDraftSchema = z.object({
 
 export function sanitizeText(input: string): string {
   return input
-    .replace(/[<>]/g, "")
+    .replace(/\0/g, "")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/javascript:/gi, "")
+    .replace(/data:text\/html/gi, "")
     .trim()
     .slice(0, 10000);
+}
+
+const PATIENT_SANITIZE_KEYS = [
+  "first_name",
+  "last_name",
+  "address",
+  "insurance_provider",
+  "insurance_number",
+  "emergency_contact_name",
+  "emergency_contact_phone",
+  "medical_history",
+  "allergies",
+  "regular_medication",
+  "notes",
+] as const;
+
+/** Sanitiza campos de texto libre del paciente (HC, alergias, notas). */
+export function sanitizePatientFields<T extends Record<string, unknown>>(data: T): T {
+  const out = { ...data };
+  for (const key of PATIENT_SANITIZE_KEYS) {
+    const value = out[key];
+    if (typeof value === "string" && value.length > 0) {
+      (out as Record<string, unknown>)[key] = sanitizeText(value);
+    }
+  }
+  return out;
 }

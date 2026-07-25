@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { logAudit } from "@/lib/auth/session";
-import { patientSchema, sanitizeText } from "@/lib/validations/schemas";
+import { patientSchema, sanitizePatientFields } from "@/lib/validations/schemas";
 import { requireClinicPermission } from "@/lib/actions/clinic-guard";
 
 export async function createPatient(formData: FormData) {
@@ -29,16 +29,16 @@ export async function createPatient(formData: FormData) {
     clinic?.default_insurance_provider ||
     null;
 
+  const sanitized = sanitizePatientFields(parsed.data);
+
   const { data, error } = await supabase
     .from("patients")
     .insert({
       clinic_id: clinicId,
-      ...parsed.data,
+      ...sanitized,
       insurance_provider: insuranceProvider,
-      first_name: sanitizeText(parsed.data.first_name),
-      last_name: sanitizeText(parsed.data.last_name),
-      email: parsed.data.email || null,
-      birth_date: parsed.data.birth_date || null,
+      email: sanitized.email || null,
+      birth_date: sanitized.birth_date || null,
     })
     .select()
     .single();
@@ -65,13 +65,15 @@ export async function updatePatient(id: string, formData: FormData) {
   const parsed = patientSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 
+  const sanitized = sanitizePatientFields(parsed.data);
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("patients")
     .update({
-      ...parsed.data,
-      email: parsed.data.email || null,
-      birth_date: parsed.data.birth_date || null,
+      ...sanitized,
+      email: sanitized.email || null,
+      birth_date: sanitized.birth_date || null,
     })
     .eq("id", id)
     .eq("clinic_id", clinicId);

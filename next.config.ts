@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { SECURITY_RESPONSE_HEADERS } from "./src/lib/security/response-headers";
 
 const nextConfig: NextConfig = {
   turbopack: {
@@ -6,6 +7,14 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "date-fns"],
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [...SECURITY_RESPONSE_HEADERS],
+      },
+    ];
   },
 };
 

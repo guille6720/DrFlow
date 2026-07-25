@@ -339,8 +339,8 @@ No hay rate limiting a nivel app (depende de Supabase/Vercel).
 2. **Trial real:** columnas `trial_ends_at` / plan en `clinics` + middleware de expiración.
 3. **Unificar auth:** una sola vía login; extraer `getPublicSiteUrl()` everywhere.
 4. **Split actions** por bounded context.
-5. **CSP + security headers** en `next.config` / Vercel.
-6. **Tests:** integración RLS (dos tenants), E2E Playwright (login, atender, receta).
+5. **CSP + security headers** en `next.config` / `vercel.json` (ver `src/lib/security/response-headers.ts`).
+6. **Endurecer sanitización** — `sanitizeText` / `sanitizePatientFields` en `schemas.ts`.
 7. **Tipos:** `supabase gen types` en CI.
 8. **Observabilidad:** Sentry + audit log exportable.
 9. **Privacidad:** export/borrado paciente, registro de accesos a HC.
@@ -355,7 +355,7 @@ No hay rate limiting a nivel app (depende de Supabase/Vercel).
 | **P0** | 1–2 semanas | Route guards + eliminar acceso lab por URL; trial DB + banner expiración |
 | **P0** | 1–2 semanas | Auditar RLS + tests cross-tenant; aplicar migraciones 030–031 en prod | ✅ Entregado en repo: `docs/RLS_AUDIT.md`, `tests/rls-policies.test.ts`, `npm run migrate:p0`, checks 030–032 |
 | **P1** | 2–4 semanas | Refactor `clinic.ts`; contexto shell en layout; unificar site URL/auth | ✅ En repo: split actions, `DashboardPageHeader`, `resolveClientPublicSiteUrl` |
-| **P1** | 2–4 semanas | CSP/HSTS; endurecer sanitización campos clínicos |
+| **P1** | 2–4 semanas | CSP/HSTS; endurecer sanitización campos clínicos | ✅ Headers en next.config + vercel; sanitizeText + pacientes/turnos |
 | **P2** | 1–2 meses | E2E Playwright; Sentry; paginación listados |
 | **P2** | 1–2 meses | Portal turnos server-side (token/DNI); quitar localStorage como fuente única |
 | **P3** | 3+ meses | Cola recordatorios reales; Mercado Pago; REFEPS si aplica; multi-región si crece |
