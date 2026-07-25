@@ -251,6 +251,7 @@ export type ImportClinicalPdfResult =
       drAppImport?: {
         clinicalRecordsCreated: number;
         clinicalRecordsSkipped: number;
+        partial?: boolean;
       };
     }
   | {
@@ -370,49 +371,67 @@ export async function importClinicalPdfDocument(
     },
   });
 
-  let drAppImport: { clinicalRecordsCreated: number; clinicalRecordsSkipped: number } | undefined;
-
-  if (pdfText && isDrAppClinicalExport(pdfText)) {
-    const demographics = parseDrAppDemographics(pdfText);
-    await enrichPatientFromDrAppDemographics(
-      supabase,
-      patientResult.patientId,
-      access.clinicId,
-      demographics
-    );
-
-    const evolutions = parseDrAppEvolutions(pdfText);
-    if (evolutions.length > 0) {
-      const insertResult = await insertDrAppClinicalRecords(supabase, {
-        clinicId: access.clinicId,
-        patientId: patientResult.patientId,
-        userId: access.userId,
-        evolutions,
-      });
-
-      if (insertResult.error && insertResult.created === 0) {
-        await supabase.storage.from(BUCKET).remove([filePath]);
-        await supabase.from("patient_attachments").delete().eq("id", attachment.id);
-        return { success: false, fileName: originalName, error: insertResult.error };
+  let drAppImport:
+    | {
+        clinicalRecordsCreated: number;
+        clinicalRecordsSkipped: number;
+        partial?: boolean;
       }
+    | undefined;
 
+  const pdfReadable = Boolean(pdfText?.trim());
+  const looksLikeDrApp =
+    (pdfReadable && isDrAppClinicalExport(pdfText)) || /drapp/i.test(originalName);
+
+  if (looksLikeDrApp) {
+    if (!pdfReadable) {
       drAppImport = {
-        clinicalRecordsCreated: insertResult.created,
-        clinicalRecordsSkipped: insertResult.skipped,
+        clinicalRecordsCreated: 0,
+        clinicalRecordsSkipped: 0,
+        partial: true,
       };
+    } else {
+      const demographics = parseDrAppDemographics(pdfText);
+      await enrichPatientFromDrAppDemographics(
+        supabase,
+        patientResult.patientId,
+        access.clinicId,
+        demographics
+      );
 
-      await logAudit({
-        clinicId: access.clinicId,
-        entityType: "clinical_record",
-        entityId: patientResult.patientId,
-        action: "create",
-        metadata: {
-          type: "drapp_pdf_import",
-          attachmentId: attachment.id,
+      const evolutions = parseDrAppEvolutions(pdfText);
+      if (evolutions.length > 0) {
+        const insertResult = await insertDrAppClinicalRecords(supabase, {
+          clinicId: access.clinicId,
+          patientId: patientResult.patientId,
+          userId: access.userId,
+          evolutions,
+        });
+
+        if (insertResult.error && insertResult.created === 0) {
+          await supabase.storage.from(BUCKET).remove([filePath]);
+          await supabase.from("patient_attachments").delete().eq("id", attachment.id);
+          return { success: false, fileName: originalName, error: insertResult.error };
+        }
+
+        drAppImport = {
           clinicalRecordsCreated: insertResult.created,
           clinicalRecordsSkipped: insertResult.skipped,
-        },
-      });
+        };
+
+        await logAudit({
+          clinicId: access.clinicId,
+          entityType: "clinical_record",
+          entityId: patientResult.patientId,
+          action: "create",
+          metadata: {
+            type: "drapp_pdf_import",
+            attachmentId: attachment.id,
+            clinicalRecordsCreated: insertResult.created,
+            clinicalRecordsSkipped: insertResult.skipped,
+          },
+        });
+      }
     }
   }
 

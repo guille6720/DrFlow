@@ -110,6 +110,21 @@ export function extractPatientFromFileName(fileName: string): ExtractedPatientIn
     }
   }
 
+  const spacedNameDni = base.match(
+    /^([A-Za-zÁÉÍÓÚáéíóúÑñ]+)[\s_-]+([A-Za-zÁÉÍÓÚáéíóúÑñ]+)[\s_-]+(\d{7,8})$/i
+  );
+  if (spacedNameDni) {
+    const dni = normalizeDni(spacedNameDni[3]);
+    if (dni) {
+      return {
+        document_number: dni,
+        last_name: titleCase(spacedNameDni[1]),
+        first_name: titleCase(spacedNameDni[2]),
+        source: "filename",
+      };
+    }
+  }
+
   return null;
 }
 

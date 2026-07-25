@@ -2,18 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { sanitizeText } from "@/lib/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
 
-export async function extractTextFromPdfBuffer(buffer: Buffer): Promise<string> {
-  try {
-    const { PDFParse } = await import("pdf-parse");
-    const parser = new PDFParse({ data: buffer });
-    const result = await parser.getText();
-    await parser.destroy();
-    return result.text ?? "";
-  } catch (err) {
-    console.error("[clinical-pdf-import] pdf-parse failed:", err);
-    return "";
-  }
-}
+export { extractTextFromPdfBuffer } from "@/lib/utils/pdf-text-extract.server";
 
 export async function findOrCreatePatientFromExtract(
   supabase: SupabaseClient,

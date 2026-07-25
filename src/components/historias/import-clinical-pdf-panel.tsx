@@ -149,12 +149,15 @@ export function ImportClinicalPdfPanel({ canImport }: Props) {
                       <p className="text-slate-600">
                         {row.patientName} · DNI {row.documentNumber}
                         {row.patientCreated ? " · paciente creado" : " · paciente existente"}
-                        {row.success && row.drAppImport
+                        {row.success && row.drAppImport && !row.drAppImport.partial
                           ? ` · ${row.drAppImport.clinicalRecordsCreated} consulta(s) importada(s)${
                               row.drAppImport.clinicalRecordsSkipped > 0
                                 ? ` (${row.drAppImport.clinicalRecordsSkipped} ya existían)`
                                 : ""
                             }`
+                          : ""}
+                        {row.success && row.drAppImport?.partial
+                          ? " · PDF adjunto (no se leyó texto para importar evoluciones)"
                           : ""}
                       </p>
                       <div className="flex flex-wrap gap-3">
