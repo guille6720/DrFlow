@@ -133,8 +133,16 @@ export function extractPatientFromPdfText(text: string): ExtractedPatientInfo | 
   }
 
   if (!document_number) {
-    const fallback = normalized.match(/\b(\d{2}\.\d{3}\.\d{3})\b/);
-    if (fallback) document_number = normalizeDni(fallback[1]);
+    const header = normalized.slice(0, 5000);
+    const dotted =
+      header.match(/\b(\d{1,2}\.\d{3}\.\d{3})\b/) ??
+      header.match(/\b(\d{2}\.\d{3}\.\d{3})\b/);
+    if (dotted) document_number = normalizeDni(dotted[1]);
+  }
+
+  if (!document_number) {
+    const bare = normalized.slice(0, 5000).match(/\b(\d{7,8})\b/);
+    if (bare) document_number = normalizeDni(bare[1]);
   }
 
   if (!document_number) return null;

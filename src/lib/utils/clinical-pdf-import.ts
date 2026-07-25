@@ -9,7 +9,8 @@ export async function extractTextFromPdfBuffer(buffer: Buffer): Promise<string> 
     const result = await parser.getText();
     await parser.destroy();
     return result.text ?? "";
-  } catch {
+  } catch (err) {
+    console.error("[clinical-pdf-import] pdf-parse failed:", err);
     return "";
   }
 }

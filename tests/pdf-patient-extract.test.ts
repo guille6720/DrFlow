@@ -49,6 +49,14 @@ describe("extractPatientFromPdfText", () => {
     expect(result?.document_number).toBe("12345678");
     expect(result?.last_name).toBe("García");
   });
+
+  it("extracts 7-digit DNI formatted as 3.736.532 (DrApp)", () => {
+    const text = "Nombre\nLudeña, Delicia\nDNI\n3.736.532\n";
+    const result = extractPatientFromPdfText(text);
+    expect(result?.document_number).toBe("3736532");
+    expect(result?.last_name).toBe("Ludeña");
+    expect(result?.first_name).toBe("Delicia");
+  });
 });
 
 describe("mergePatientExtract", () => {

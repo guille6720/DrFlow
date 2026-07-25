@@ -286,11 +286,13 @@ export async function importClinicalPdfDocument(
   const extract = mergePatientExtract(fromFileName, fromPdf);
 
   if (!extract) {
+    const unreadable = !pdfText?.trim();
     return {
       success: false,
       fileName: originalName,
-      error:
-        "No pudimos detectar el DNI del paciente. Renombrá el archivo como APELLIDO_Nombre_12345678.pdf o usá un PDF con DNI visible.",
+      error: unreadable
+        ? "No pudimos leer texto del PDF (¿escaneo sin OCR?). Exportá de nuevo desde DrApp o renombrá el archivo como APELLIDO_Nombre_12345678.pdf."
+        : "No pudimos detectar el DNI del paciente. Renombrá el archivo como APELLIDO_Nombre_3736532.pdf o usá un PDF DrApp con el DNI en la primera página.",
     };
   }
 
