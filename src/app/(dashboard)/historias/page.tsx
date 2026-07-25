@@ -18,6 +18,8 @@ import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
 import { ImportClinicalPdfPanel } from "@/components/historias/import-clinical-pdf-panel";
 import { hasPermission } from "@/lib/permissions/roles";
 
+export const maxDuration = 120;
+
 export default async function HistoriasPage() {
   const profile = await getProfile();
   const clinics = await getUserClinics();

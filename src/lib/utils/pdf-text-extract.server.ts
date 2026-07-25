@@ -4,6 +4,15 @@ import { access } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
+async function extractWithUnpdf(buffer: Buffer): Promise<string> {
+  const { extractText, getDocumentProxy } = await import("unpdf");
+  const pdf = await getDocumentProxy(new Uint8Array(buffer));
+  const result = await extractText(pdf, { mergePages: true });
+  const text = result.text;
+  if (Array.isArray(text)) return text.join("\n\n");
+  return text;
+}
+
 async function resolvePdfWorkerHref(): Promise<string | undefined> {
   const candidates = [
     join(process.cwd(), "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"),
@@ -80,6 +89,7 @@ async function extractWithPdfJsDirect(buffer: Buffer): Promise<string> {
 /** Extrae texto de un PDF en entorno Node (local / Vercel). */
 export async function extractTextFromPdfBuffer(buffer: Buffer): Promise<string> {
   const attempts: Array<{ name: string; run: () => Promise<string> }> = [
+    { name: "unpdf", run: () => extractWithUnpdf(buffer) },
     { name: "pdf-parse", run: () => extractWithPdfParse(buffer) },
     { name: "pdfjs-direct", run: () => extractWithPdfJsDirect(buffer) },
   ];

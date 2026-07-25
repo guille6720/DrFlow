@@ -8,7 +8,7 @@ export type ClinicalDocumentCategory = (typeof CLINICAL_DOCUMENT_CATEGORIES)[num
 
 export const CLINICAL_DOCUMENT_MAX_BYTES = 10 * 1024 * 1024;
 
-export const CLINICAL_PDF_IMPORT_MAX_FILES = 30;
+export const CLINICAL_PDF_IMPORT_MAX_FILES = 50;
 
 export function clinicalDocumentCategoryLabel(category: string | null | undefined): string {
   return (

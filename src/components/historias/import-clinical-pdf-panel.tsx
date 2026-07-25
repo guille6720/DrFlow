@@ -84,9 +84,8 @@ export function ImportClinicalPdfPanel({ canImport }: Props) {
         consultas en historias clínicas.
       </p>
       <p className="mb-4 text-xs text-slate-500">
-        Tip: renombrá los archivos como{" "}
-        <code className="rounded bg-slate-100 px-1">APELLIDO_Nombre_12345678.pdf</code> si el PDF
-        no trae datos legibles.
+        Tip: no hace falta renombrar exports DrApp; el sistema lee el DNI dentro del PDF. Para lotes
+        grandes (1000+), subí de a {CLINICAL_PDF_IMPORT_MAX_FILES} archivos por tanda.
       </p>
 
       <div className="flex flex-wrap items-center gap-2">
