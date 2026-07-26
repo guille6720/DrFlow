@@ -1,14 +1,14 @@
 import "server-only";
 
 import {
-  isDrAppConsumersHeaderCell,
-  parseDrAppConsumerLines,
-} from "@/lib/utils/drapp-consumers-parse";
+  isConsumersImportHeaderCell,
+  parseConsumerImportLines,
+} from "@/lib/utils/consumers-import-parse";
 
-export async function extractDrAppConsumerLinesFromUpload(
+export async function extractConsumerLinesFromUpload(
   buffer: Buffer,
   fileName: string
-): Promise<{ lines: string[]; format: "drapp-xlsx-embedded" | "drapp-csv" | "unknown" }> {
+): Promise<{ lines: string[]; format: "xlsx-embedded" | "csv" | "unknown" }> {
   const lower = fileName.toLowerCase();
 
   if (lower.endsWith(".xlsx") || lower.endsWith(".xls") || lower.endsWith(".csv.xlsx")) {
@@ -18,8 +18,8 @@ export async function extractDrAppConsumerLinesFromUpload(
   const text = buffer.toString("utf-8").replace(/^\uFEFF/, "");
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   const first = lines[0] ?? "";
-  if (isDrAppConsumersHeaderCell(first) || first.includes("firstName")) {
-    return { lines, format: "drapp-csv" };
+  if (isConsumersImportHeaderCell(first) || first.includes("firstName")) {
+    return { lines, format: "csv" };
   }
 
   return { lines, format: "unknown" };
@@ -27,7 +27,7 @@ export async function extractDrAppConsumerLinesFromUpload(
 
 async function extractFromExcel(buffer: Buffer): Promise<{
   lines: string[];
-  format: "drapp-xlsx-embedded" | "drapp-csv" | "unknown";
+  format: "xlsx-embedded" | "csv" | "unknown";
 }> {
   const XLSX = await import("xlsx");
   const workbook = XLSX.read(buffer, { type: "buffer" });
@@ -39,12 +39,12 @@ async function extractFromExcel(buffer: Buffer): Promise<{
   }
 
   const headerCell = String(matrix[0]?.[0] ?? "");
-  if (isDrAppConsumersHeaderCell(headerCell)) {
+  if (isConsumersImportHeaderCell(headerCell)) {
     const lines = matrix
       .slice(1)
       .map((row) => String(row[0] ?? "").trim())
       .filter(Boolean);
-    return { lines, format: "drapp-xlsx-embedded" };
+    return { lines, format: "xlsx-embedded" };
   }
 
   const json = XLSX.utils.sheet_to_json<Record<string, string>>(sheet, { defval: "" });
@@ -67,34 +67,28 @@ async function extractFromExcel(buffer: Buffer): Promise<{
     return parts.map((p) => `"${String(p).replace(/"/g, '""')}"`).join(",");
   });
 
-  return { lines, format: lines.length > 0 ? "drapp-csv" : "unknown" };
+  return { lines, format: lines.length > 0 ? "csv" : "unknown" };
 }
 
-export async function parseDrAppConsumersUpload(
-  buffer: Buffer,
-  fileName: string,
-  maxRows: number
-) {
+export async function parseConsumersUpload(buffer: Buffer, fileName: string, maxRows: number) {
   try {
-    const extracted = await extractDrAppConsumerLinesFromUpload(buffer, fileName);
+    const extracted = await extractConsumerLinesFromUpload(buffer, fileName);
     if (extracted.format === "unknown" || extracted.lines.length === 0) {
       return {
-        records: [] as ReturnType<typeof parseDrAppConsumerLines>["records"],
-        errors: [
-          "No reconocimos el formato. Usá el export de pacientes DrApp (.xlsx o .csv).",
-        ],
+        records: [] as ReturnType<typeof parseConsumerImportLines>["records"],
+        errors: ["No reconocimos el formato. Usá el export de pacientes (.xlsx o .csv)."],
         format: extracted.format,
       };
     }
 
-    const { records, errors } = parseDrAppConsumerLines(extracted.lines, maxRows);
+    const { records, errors } = parseConsumerImportLines(extracted.lines, maxRows);
     return { records, errors, format: extracted.format };
   } catch (err) {
-    console.error("[drapp-consumers-import] parse failed:", err);
+    console.error("[consumers-import] parse failed:", err);
     return {
-      records: [] as ReturnType<typeof parseDrAppConsumerLines>["records"],
+      records: [] as ReturnType<typeof parseConsumerImportLines>["records"],
       errors: [
-        "No pudimos leer el Excel en el servidor. Reexportá desde DrApp o guardá como .xlsx estándar.",
+        "No pudimos leer el Excel en el servidor. Reexportá el archivo o guardá como .xlsx estándar.",
       ],
       format: "unknown" as const,
     };

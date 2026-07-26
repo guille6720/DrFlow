@@ -60,7 +60,7 @@ export function parseHceExportCsv(content: string, maxRows: number): {
   });
 
   if (col.paciente_id === undefined) {
-    return { rows: [], errors: ["Falta columna paciente_id (export HCE DrApp)."] };
+    return { rows: [], errors: ["Falta columna paciente_id (export HCE)."] };
   }
 
   const rows: HceExportRow[] = [];
@@ -154,7 +154,7 @@ export function hceRowToClinicalRecord(row: HceExportRow): {
   if (row.tipo_registro === "diagnostics" && row.diagnostico) {
     return {
       marker,
-      chief_complaint: `${marker} Diagnóstico DrApp (${row.estado || "registro"})`,
+      chief_complaint: `${marker} Diagnóstico importado (${row.estado || "registro"})`,
       diagnosis: [row.diagnostico, row.cie10 ? `CIE-10: ${row.cie10}` : ""].filter(Boolean).join(" · "),
       evolution: row.notas,
       indications: "",
@@ -165,10 +165,10 @@ export function hceRowToClinicalRecord(row: HceExportRow): {
   if (row.tipo_registro === "treatments") {
     return {
       marker,
-      chief_complaint: `${marker} Tratamiento DrApp (${row.estado || "activo"})`,
+      chief_complaint: `${marker} Tratamiento importado (${row.estado || "activo"})`,
       diagnosis: row.diagnostico,
       evolution: row.notas,
-      indications: row.estado ? `Estado: ${row.estado}` : "Importado desde export HCE DrApp",
+      indications: row.estado ? `Estado: ${row.estado}` : "Importado desde export HCE",
       consultation_date: row.fecha_inicio,
     };
   }
@@ -176,9 +176,9 @@ export function hceRowToClinicalRecord(row: HceExportRow): {
   if (row.tipo_registro === "vitalsigns") {
     return {
       marker,
-      chief_complaint: `${marker} Signos vitales DrApp`,
+      chief_complaint: `${marker} Signos vitales importados`,
       diagnosis: "",
-      evolution: row.notas || "Registro importado desde HCE DrApp",
+      evolution: row.notas || "Registro importado desde HCE",
       indications: "",
       consultation_date: row.fecha_inicio,
     };
@@ -187,7 +187,7 @@ export function hceRowToClinicalRecord(row: HceExportRow): {
   if (row.tipo_registro === "files") {
     return {
       marker,
-      chief_complaint: `${marker} Documento adjunto DrApp (${row.estado || "archivo"})`,
+      chief_complaint: `${marker} Documento adjunto importado (${row.estado || "archivo"})`,
       diagnosis: row.diagnostico,
       evolution: row.notas,
       indications: "",
@@ -198,7 +198,7 @@ export function hceRowToClinicalRecord(row: HceExportRow): {
   if (row.diagnostico || row.notas || row.fecha_inicio) {
     return {
       marker,
-      chief_complaint: `${marker} Registro HCE DrApp (${row.tipo_registro})`,
+      chief_complaint: `${marker} Registro HCE (${row.tipo_registro})`,
       diagnosis: row.diagnostico,
       evolution: row.notas,
       indications: "",

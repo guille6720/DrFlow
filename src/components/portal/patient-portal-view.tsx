@@ -54,7 +54,7 @@ const NAV: { id: Screen; label: string; icon: typeof Home }[] = [
   { id: "receta", label: "Receta", icon: Pill },
 ];
 
-/** App pacientes estilo Crontu/DrApp: inicio con accesos grandes + navegación inferior. */
+/** App pacientes estilo Crontu: inicio con accesos grandes + navegación inferior. */
 export function PatientPortalView({
   slug,
   clinicName,

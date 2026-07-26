@@ -52,7 +52,7 @@ interface PhoneInstallGuideProps {
   step: number;
 }
 
-/** Mockup de celular con pasos visuales (estilo tutoriales DrApp / Crontu). */
+/** Mockup de celular con pasos visuales (estilo tutoriales tipo Crontu). */
 export function PhoneInstallGuide({ platform, step }: PhoneInstallGuideProps) {
   const steps = STEPS[platform];
   const current = steps[step];

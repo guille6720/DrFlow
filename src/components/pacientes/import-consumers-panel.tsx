@@ -4,10 +4,10 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DRAPP_CONSUMERS_MAX_BYTES } from "@/lib/constants/clinical-documents";
+import { CONSUMERS_IMPORT_MAX_BYTES } from "@/lib/constants/clinical-documents";
 import {
-  importDrAppConsumersFile,
-  type ImportDrAppConsumersResult,
+  importConsumersFile,
+  type ImportConsumersResult,
 } from "@/lib/actions/patient-import";
 import { CheckCircle2, FileSpreadsheet, Loader2, Upload, XCircle } from "lucide-react";
 
@@ -26,7 +26,7 @@ type AggregateStats = {
   parseErrors: string[];
 };
 
-export function ImportDrAppConsumersPanel({ canImport }: Props) {
+export function ImportConsumersPanel({ canImport }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
@@ -44,10 +44,10 @@ export function ImportDrAppConsumersPanel({ canImport }: Props) {
       lower.endsWith(".csv") ||
       lower.endsWith(".csv.xlsx");
     if (!ok) {
-      setError("Formato no soportado. Usá el export DrApp (.xlsx o .csv.xlsx).");
+      setError("Formato no soportado. Usá el export de pacientes (.xlsx o .csv.xlsx).");
       return;
     }
-    if (file.size > DRAPP_CONSUMERS_MAX_BYTES) {
+    if (file.size > CONSUMERS_IMPORT_MAX_BYTES) {
       setError("El archivo supera 15 MB.");
       return;
     }
@@ -75,7 +75,7 @@ export function ImportDrAppConsumersPanel({ canImport }: Props) {
         formData.set("file", file);
         formData.set("offset", String(offset));
 
-        const importResult: ImportDrAppConsumersResult = await importDrAppConsumersFile(formData);
+        const importResult: ImportConsumersResult = await importConsumersFile(formData);
 
         if (!importResult.success) {
           setError(importResult.error);
@@ -115,9 +115,9 @@ export function ImportDrAppConsumersPanel({ canImport }: Props) {
   }
 
   return (
-    <Card title="Importar pacientes DrApp (Excel)">
+    <Card title="Importar pacientes (Excel consumers)">
       <p className="mb-3 text-sm text-slate-600">
-        Subí el export de residentes/pacientes de DrApp, por ejemplo{" "}
+        Subí el export de residentes/pacientes, por ejemplo{" "}
         <code className="rounded bg-slate-100 px-1">consumers-*.csv.xlsx</code>. DrFlow lee DNI,
         nombre, fecha de nacimiento, teléfono, email y PAMI desde cada fila.
       </p>
@@ -142,7 +142,7 @@ export function ImportDrAppConsumersPanel({ canImport }: Props) {
         onClick={() => fileInputRef.current?.click()}
       >
         <Upload className="h-4 w-4" />
-        Subir Excel DrApp
+        Subir Excel de pacientes
       </Button>
 
       {importing && (
@@ -192,7 +192,7 @@ export function ImportDrAppConsumersPanel({ canImport }: Props) {
       {!importing && !aggregate && !error && (
         <div className="mt-4 flex items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-6 text-sm text-slate-500">
           <FileSpreadsheet className="h-5 w-5 shrink-0" />
-          Arrastrá o elegí tu archivo consumers de DrApp.
+          Arrastrá o elegí tu archivo consumers.
         </div>
       )}
     </Card>

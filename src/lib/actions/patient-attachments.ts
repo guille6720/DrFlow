@@ -12,14 +12,14 @@ import {
 import {
   extractTextFromPdfBuffer,
   findOrCreatePatientFromExtract,
-  enrichPatientFromDrAppDemographics,
-  insertDrAppClinicalRecords,
+  enrichPatientFromLegacyPdfDemographics,
+  insertLegacyPdfClinicalRecords,
 } from "@/lib/utils/clinical-pdf-import";
 import {
-  isDrAppClinicalExport,
-  parseDrAppDemographics,
-  parseDrAppEvolutions,
-} from "@/lib/utils/drapp-pdf-parse";
+  isLegacyClinicalPdfExport,
+  parseLegacyClinicalDemographics,
+  parseLegacyClinicalEvolutions,
+} from "@/lib/utils/clinical-export-pdf-parse";
 import {
   extractPatientFromFileName,
   extractPatientFromPdfText,
@@ -248,7 +248,7 @@ export type ImportClinicalPdfResult =
       documentNumber: string;
       patientCreated: boolean;
       attachmentId: string;
-      drAppImport?: {
+      legacyPdfImport?: {
         clinicalRecordsCreated: number;
         clinicalRecordsSkipped: number;
         partial?: boolean;
@@ -292,8 +292,8 @@ export async function importClinicalPdfDocument(
       success: false,
       fileName: originalName,
       error: unreadable
-        ? "No pudimos leer texto del PDF (¿escaneo sin OCR?). Exportá de nuevo desde DrApp o renombrá el archivo como APELLIDO_Nombre_12345678.pdf."
-        : "No pudimos detectar el DNI del paciente. Renombrá el archivo como APELLIDO_Nombre_3736532.pdf o usá un PDF DrApp con el DNI en la primera página.",
+        ? "No pudimos leer texto del PDF (¿escaneo sin OCR?). Exportá de nuevo el PDF o renombrá el archivo como APELLIDO_Nombre_12345678.pdf."
+        : "No pudimos detectar el DNI del paciente. Renombrá el archivo como APELLIDO_Nombre_3736532.pdf o usá un PDF de historia clínica con el DNI en la primera página.",
     };
   }
 
@@ -371,7 +371,7 @@ export async function importClinicalPdfDocument(
     },
   });
 
-  let drAppImport:
+  let legacyPdfImport:
     | {
         clinicalRecordsCreated: number;
         clinicalRecordsSkipped: number;
@@ -380,28 +380,29 @@ export async function importClinicalPdfDocument(
     | undefined;
 
   const pdfReadable = Boolean(pdfText?.trim());
-  const looksLikeDrApp =
-    (pdfReadable && isDrAppClinicalExport(pdfText)) || /drapp/i.test(originalName);
+  const looksLikeLegacyClinicalPdf =
+    (pdfReadable && isLegacyClinicalPdfExport(pdfText)) ||
+    /evoluciones/i.test(pdfText ?? "");
 
-  if (looksLikeDrApp) {
+  if (looksLikeLegacyClinicalPdf) {
     if (!pdfReadable) {
-      drAppImport = {
+      legacyPdfImport = {
         clinicalRecordsCreated: 0,
         clinicalRecordsSkipped: 0,
         partial: true,
       };
     } else {
-      const demographics = parseDrAppDemographics(pdfText);
-      await enrichPatientFromDrAppDemographics(
+      const demographics = parseLegacyClinicalDemographics(pdfText);
+      await enrichPatientFromLegacyPdfDemographics(
         supabase,
         patientResult.patientId,
         access.clinicId,
         demographics
       );
 
-      const evolutions = parseDrAppEvolutions(pdfText);
+      const evolutions = parseLegacyClinicalEvolutions(pdfText);
       if (evolutions.length > 0) {
-        const insertResult = await insertDrAppClinicalRecords(supabase, {
+        const insertResult = await insertLegacyPdfClinicalRecords(supabase, {
           clinicId: access.clinicId,
           patientId: patientResult.patientId,
           userId: access.userId,
@@ -414,7 +415,7 @@ export async function importClinicalPdfDocument(
           return { success: false, fileName: originalName, error: insertResult.error };
         }
 
-        drAppImport = {
+        legacyPdfImport = {
           clinicalRecordsCreated: insertResult.created,
           clinicalRecordsSkipped: insertResult.skipped,
         };
@@ -425,7 +426,7 @@ export async function importClinicalPdfDocument(
           entityId: patientResult.patientId,
           action: "create",
           metadata: {
-            type: "drapp_pdf_import",
+            type: "legacy_pdf_import",
             attachmentId: attachment.id,
             clinicalRecordsCreated: insertResult.created,
             clinicalRecordsSkipped: insertResult.skipped,
@@ -447,6 +448,6 @@ export async function importClinicalPdfDocument(
     documentNumber: extract.document_number,
     patientCreated: patientResult.created,
     attachmentId: attachment.id,
-    drAppImport,
+    legacyPdfImport,
   };
 }

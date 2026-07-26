@@ -55,7 +55,7 @@ export async function createMedicalOrder(formData: FormData) {
     if (error.message.includes("medical_orders") || error.message.includes("schema cache")) {
       return {
         error:
-          "Falta la migración 015 en Supabase (supabase/migrations/015_drapp_inspired_features.sql).",
+          "Falta la migración 015 en Supabase (órdenes médicas y turnos online).",
       };
     }
     return { error: error.message };

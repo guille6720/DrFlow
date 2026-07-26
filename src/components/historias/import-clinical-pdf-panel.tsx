@@ -79,12 +79,12 @@ export function ImportClinicalPdfPanel({ canImport }: Props) {
   return (
     <Card title="Importar historias PDF">
       <p className="mb-3 text-sm text-slate-600">
-        Subí historias exportadas desde otra app (incluye export DrApp), de a una o en lote. DrFlow
-        detecta el DNI, completa datos del paciente y, en PDFs DrApp, crea las evoluciones como
-        consultas en historias clínicas.
+        Subí historias exportadas desde otra app, de a una o en lote. DrFlow detecta el DNI,
+        completa datos del paciente y, en PDFs con evoluciones, crea las consultas en historias
+        clínicas.
       </p>
       <p className="mb-4 text-xs text-slate-500">
-        Tip: no hace falta renombrar exports DrApp; el sistema lee el DNI dentro del PDF. Para lotes
+        Tip: no hace falta renombrar los PDFs; el sistema lee el DNI dentro del archivo. Para lotes
         grandes (1000+), subí de a {CLINICAL_PDF_IMPORT_MAX_FILES} archivos por tanda.
       </p>
 
@@ -148,14 +148,14 @@ export function ImportClinicalPdfPanel({ canImport }: Props) {
                       <p className="text-slate-600">
                         {row.patientName} · DNI {row.documentNumber}
                         {row.patientCreated ? " · paciente creado" : " · paciente existente"}
-                        {row.success && row.drAppImport && !row.drAppImport.partial
-                          ? ` · ${row.drAppImport.clinicalRecordsCreated} consulta(s) importada(s)${
-                              row.drAppImport.clinicalRecordsSkipped > 0
-                                ? ` (${row.drAppImport.clinicalRecordsSkipped} ya existían)`
+                        {row.success && row.legacyPdfImport && !row.legacyPdfImport.partial
+                          ? ` · ${row.legacyPdfImport.clinicalRecordsCreated} consulta(s) importada(s)${
+                              row.legacyPdfImport.clinicalRecordsSkipped > 0
+                                ? ` (${row.legacyPdfImport.clinicalRecordsSkipped} ya existían)`
                                 : ""
                             }`
                           : ""}
-                        {row.success && row.drAppImport?.partial
+                        {row.success && row.legacyPdfImport?.partial
                           ? " · PDF adjunto (no se leyó texto para importar evoluciones)"
                           : ""}
                       </p>
@@ -166,7 +166,7 @@ export function ImportClinicalPdfPanel({ canImport }: Props) {
                         >
                           Ver ficha del paciente
                         </Link>
-                        {row.success && row.drAppImport && row.drAppImport.clinicalRecordsCreated > 0 && (
+                        {row.success && row.legacyPdfImport && row.legacyPdfImport.clinicalRecordsCreated > 0 && (
                           <Link
                             href={`/pacientes/${row.patientId}`}
                             className="text-blue-700 hover:underline"

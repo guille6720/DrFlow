@@ -75,7 +75,7 @@ export function ImportClinicalCsvPanel({ canImport }: Props) {
         filas · 8 MB máx. Fechas: <code className="rounded bg-slate-100 px-1">DD/MM/AAAA</code> o{" "}
         <code className="rounded bg-slate-100 px-1">AAAA-MM-DD</code>.
         <span className="mt-2 block text-amber-800">
-          El Excel <code className="rounded bg-amber-100 px-1">consumers-*.csv.xlsx</code> de DrApp
+          El Excel <code className="rounded bg-amber-100 px-1">consumers-*.csv.xlsx</code>
           es solo pacientes →{" "}
           <Link href="/pacientes" className="font-medium text-blue-700 hover:underline">
             importalo en Pacientes
@@ -117,7 +117,7 @@ export function ImportClinicalCsvPanel({ canImport }: Props) {
           <p>{error}</p>
           {(error.includes("Pacientes") || error.includes("consumers")) && (
             <Link href="/pacientes" className="mt-2 inline-block font-medium text-blue-700 hover:underline">
-              Ir a Pacientes → Importar Excel DrApp
+              Ir a Pacientes → Importar Excel de pacientes
             </Link>
           )}
         </div>
@@ -154,7 +154,7 @@ export function ImportClinicalCsvPanel({ canImport }: Props) {
       {!importing && !result && (
         <div className="mt-4 flex items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-6 text-sm text-slate-500">
           <FileSpreadsheet className="h-5 w-5 shrink-0" />
-          Exportá desde Excel o DrApp a CSV y subilo acá.
+          Exportá desde Excel a CSV y subilo acá.
         </div>
       )}
     </Card>

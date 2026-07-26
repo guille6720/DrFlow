@@ -16,7 +16,7 @@ import { PatientAppShareControl } from "@/components/pacientes/patient-app-share
 import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
 import { Users, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { hasPermission } from "@/lib/permissions/roles";
-import { ImportDrAppConsumersPanel } from "@/components/pacientes/import-drapp-consumers-panel";
+import { ImportConsumersPanel } from "@/components/pacientes/import-consumers-panel";
 
 const PAGE_SIZE = 20;
 
@@ -33,7 +33,7 @@ export default async function PacientesPage({
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
   const { role, clinic, isSuperadmin } = await getActiveClinic();
-  const canImportDrApp = hasPermission(role, "managePatients", isSuperadmin);
+  const canImportConsumers = hasPermission(role, "managePatients", isSuperadmin);
   const supabase = await createClient();
 
   let patients: {
@@ -121,7 +121,7 @@ export default async function PacientesPage({
       />
 
       <div className="space-y-4 p-4 sm:p-6">
-        <ImportDrAppConsumersPanel canImport={canImportDrApp} />
+        <ImportConsumersPanel canImport={canImportConsumers} />
 
         <div className="flex flex-wrap items-center gap-3">
           <form className="flex flex-1 gap-2" action="/pacientes">

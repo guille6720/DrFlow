@@ -32,7 +32,7 @@ export function ImportHceExportPanel({ canImport }: Props) {
 
   async function processFile(file: File) {
     if (!file.name.toLowerCase().endsWith(".csv")) {
-      setError("Subí el archivo HCE_export.csv de DrApp.");
+      setError("Subí el archivo HCE_export.csv.");
       return;
     }
     if (file.size > HCE_EXPORT_MAX_BYTES) {
@@ -87,10 +87,10 @@ export function ImportHceExportPanel({ canImport }: Props) {
   }
 
   return (
-    <Card title="Importar export HCE DrApp (CSV)">
+    <Card title="Importar export HCE (CSV)">
       <p className="mb-3 text-sm text-slate-600">
         Subí <code className="rounded bg-slate-100 px-1">HCE_export.csv</code>: crea pacientes si
-        no existen (por ID DrApp o nombre), registra diagnósticos/tratamientos y deja en cada ficha
+        no existen (por ID de importación o nombre), registra diagnósticos/tratamientos y deja en cada ficha
         un CSV descargable con su resumen HCE.
       </p>
       <p className="mb-4 text-xs text-slate-500">
@@ -150,7 +150,7 @@ export function ImportHceExportPanel({ canImport }: Props) {
           <p className="mt-2 text-xs">
             En cada paciente: Documentos clínicos →{" "}
             <Download className="inline h-3 w-3" />{" "}
-            <strong>hce-export-drapp-resumen.csv</strong>
+            <strong>hce-export-resumen.csv</strong>
           </p>
           {summary.parseErrors.length > 0 && (
             <ul className="mt-2 list-inside list-disc text-xs text-amber-900">
@@ -165,7 +165,7 @@ export function ImportHceExportPanel({ canImport }: Props) {
       {!importing && !summary && !error && (
         <div className="mt-4 flex items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-6 text-sm text-slate-500">
           <FileSpreadsheet className="h-5 w-5 shrink-0" />
-          Export HCE desde DrApp → subilo acá.
+          Subí tu export HCE acá.
         </div>
       )}
     </Card>

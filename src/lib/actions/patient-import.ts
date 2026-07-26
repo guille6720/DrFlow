@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/permissions/roles";
-import { DRAPP_CONSUMERS_MAX_BYTES, DRAPP_CONSUMERS_MAX_ROWS } from "@/lib/constants/clinical-documents";
-import { parseDrAppConsumersUpload } from "@/lib/utils/drapp-consumers-import.server";
+import { CONSUMERS_IMPORT_MAX_BYTES, CONSUMERS_IMPORT_MAX_ROWS } from "@/lib/constants/clinical-documents";
+import { parseConsumersUpload } from "@/lib/utils/consumers-import.server";
 import { findOrCreatePatientFromExtract } from "@/lib/utils/clinical-pdf-import";
 import { sanitizeText } from "@/lib/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
@@ -21,7 +21,7 @@ async function requirePatientImportAccess() {
   return { error: null, clinicId, userId: user.id };
 }
 
-function validateDrAppConsumersFile(file: unknown, fileName: string): file is File {
+function validateConsumersImportFile(file: unknown, fileName: string): file is File {
   if (!(file instanceof File) || file.size === 0) return false;
   const lower = fileName.toLowerCase();
   const okExt =
@@ -29,10 +29,10 @@ function validateDrAppConsumersFile(file: unknown, fileName: string): file is Fi
     lower.endsWith(".xls") ||
     lower.endsWith(".csv") ||
     lower.endsWith(".csv.xlsx");
-  return okExt && file.size <= DRAPP_CONSUMERS_MAX_BYTES;
+  return okExt && file.size <= CONSUMERS_IMPORT_MAX_BYTES;
 }
 
-export type ImportDrAppConsumersResult =
+export type ImportConsumersResult =
   | {
       success: true;
       fileName: string;
@@ -64,7 +64,7 @@ async function mergePatientFields(
     insurance_provider: string | null;
     insurance_number: string | null;
     birth_date: string | null;
-    drapp_consumer_id: string | null;
+    external_consumer_id: string | null;
   }
 ) {
   const { data: patient } = await supabase
@@ -87,8 +87,8 @@ async function mergePatientFields(
   }
   if (!patient.birth_date && record.birth_date) updates.birth_date = record.birth_date;
 
-  if (record.drapp_consumer_id && !patient.notes?.includes(record.drapp_consumer_id)) {
-    const note = `DrApp ID: ${record.drapp_consumer_id}`;
+  if (record.external_consumer_id && !patient.notes?.includes(record.external_consumer_id)) {
+    const note = `ID importación: ${record.external_consumer_id}`;
     updates.notes = patient.notes?.trim() ? `${patient.notes.trim()}\n${note}` : note;
     updates.notes = sanitizeText(updates.notes);
   }
@@ -99,13 +99,13 @@ async function mergePatientFields(
   return true;
 }
 
-export async function importDrAppConsumersFile(
+export async function importConsumersFile(
   formData: FormData
-): Promise<ImportDrAppConsumersResult> {
+): Promise<ImportConsumersResult> {
   try {
-    return await importDrAppConsumersFileInner(formData);
+    return await importConsumersFileInner(formData);
   } catch (err) {
-    console.error("[patient-import] drapp consumers failed:", err);
+    console.error("[patient-import] consumers failed:", err);
     const f = formData.get("file");
     const fileName = f instanceof File ? f.name : "archivo";
     return {
@@ -117,9 +117,9 @@ export async function importDrAppConsumersFile(
   }
 }
 
-async function importDrAppConsumersFileInner(
+async function importConsumersFileInner(
   formData: FormData
-): Promise<ImportDrAppConsumersResult> {
+): Promise<ImportConsumersResult> {
   const access = await requirePatientImportAccess();
   if (access.error || !access.clinicId || !access.userId) {
     return { success: false, fileName: "", error: access.error ?? "Sin permisos" };
@@ -128,11 +128,11 @@ async function importDrAppConsumersFileInner(
   const file = formData.get("file");
   const originalName = file instanceof File ? file.name : "consumers.xlsx";
 
-  if (!validateDrAppConsumersFile(file, originalName)) {
+  if (!validateConsumersImportFile(file, originalName)) {
     return {
       success: false,
       fileName: originalName,
-      error: "Archivo inválido. Aceptamos .xlsx, .csv o .csv.xlsx de DrApp (máx. 15 MB).",
+      error: "Archivo inválido. Aceptamos .xlsx, .csv o .csv.xlsx de pacientes (máx. 15 MB).",
     };
   }
 
@@ -143,10 +143,10 @@ async function importDrAppConsumersFileInner(
     Math.max(1, Number(formData.get("limit") ?? IMPORT_BATCH_SIZE) || IMPORT_BATCH_SIZE)
   );
 
-  const { records, errors, format } = await parseDrAppConsumersUpload(
+  const { records, errors, format } = await parseConsumersUpload(
     buffer,
     originalName,
-    DRAPP_CONSUMERS_MAX_ROWS
+    CONSUMERS_IMPORT_MAX_ROWS
   );
 
   if (records.length === 0) {
@@ -191,7 +191,7 @@ async function importDrAppConsumersFileInner(
       access.clinicId,
       extract,
       record.insurance_provider ?? clinic?.default_insurance_provider ?? null,
-      `Import DrApp consumers: ${originalName}`
+      `Import consumers: ${originalName}`
     );
 
     if ("error" in patientResult) {
@@ -224,7 +224,7 @@ async function importDrAppConsumersFileInner(
     entityId: access.clinicId,
     action: "create",
     metadata: {
-      type: "drapp_consumers_import",
+      type: "consumers_import",
       fileName: originalName,
       format,
       patientsCreated,

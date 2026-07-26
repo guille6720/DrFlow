@@ -122,7 +122,7 @@ export default async function GuiaPamiPage() {
           <Card title="Qué trae DrFlow vs otras apps">
             <ul className="space-y-3 text-sm text-slate-700">
               <li>
-                <strong>DrApp / Turnito:</strong> agenda y recordatorios — DrFlow suma plantillas
+                <strong>Turneras:</strong> agenda y recordatorios — DrFlow suma plantillas
                 clínicas PAMI, estudios/derivaciones en 1 clic y guía por síntomas.
               </li>
               <li>

@@ -1,6 +1,6 @@
 import { parseCsvRows } from "@/lib/utils/clinical-csv-parse";
 
-export interface DrAppConsumerRecord {
+export interface ConsumerImportRecord {
   lineNumber: number;
   first_name: string;
   last_name: string;
@@ -10,11 +10,11 @@ export interface DrAppConsumerRecord {
   email: string | null;
   insurance_provider: string | null;
   insurance_number: string | null;
-  drapp_consumer_id: string | null;
+  external_consumer_id: string | null;
 }
 
-const DRAPP_HEADER_MARKER = "firstName";
-const DRAPP_ID_MARKER = "identification";
+const CONSUMER_HEADER_MARKER = "firstName";
+const CONSUMER_ID_MARKER = "identification";
 
 function normalizeDni(raw: string): string | null {
   const digits = raw.replace(/\D/g, "");
@@ -47,43 +47,43 @@ function titleCase(value: string): string {
     .join(" ");
 }
 
-/** Línea export DrApp (comillas escapadas con \\") en una sola celda. */
-export function normalizeDrAppConsumerLine(raw: string): string {
+/** Línea export consumers (comillas escapadas con \\") en una sola celda. */
+export function normalizeConsumerImportLine(raw: string): string {
   return raw.replace(/\\"/g, '"').trim();
 }
 
-export function looksLikeDrAppConsumersExport(text: string): boolean {
+export function looksLikeConsumersExport(text: string): boolean {
   const head = text.replace(/^\uFEFF/, "").slice(0, 8000);
   if (head.includes("firstName") && head.includes("identification")) return true;
   if (head.includes("consumers/") && head.includes("financiers")) return true;
   return /consumers-[a-f0-9]+\.csv/i.test(head);
 }
 
-export function drAppConsumersMisplacedMessage(fileName: string): string | null {
+export function consumersMisplacedMessage(fileName: string): string | null {
   const lower = fileName.toLowerCase();
   if (lower.includes("consumers") && (lower.endsWith(".csv") || lower.endsWith(".xlsx") || lower.endsWith(".csv.xlsx"))) {
-    return "drapp-consumers";
+    return "consumers-import";
   }
   return null;
 }
 
-export function isDrAppConsumersHeaderCell(cell: string): boolean {
-  const normalized = normalizeDrAppConsumerLine(cell);
-  return normalized.includes(DRAPP_HEADER_MARKER) && normalized.includes(DRAPP_ID_MARKER);
+export function isConsumersImportHeaderCell(cell: string): boolean {
+  const normalized = normalizeConsumerImportLine(cell);
+  return normalized.includes(CONSUMER_HEADER_MARKER) && normalized.includes(CONSUMER_ID_MARKER);
 }
 
-export function parseDrAppConsumerLine(
+export function parseConsumerImportLine(
   raw: string,
   lineNumber: number
-): { record: DrAppConsumerRecord } | { error: string } {
-  const normalized = normalizeDrAppConsumerLine(raw);
-  if (isDrAppConsumersHeaderCell(normalized)) {
+): { record: ConsumerImportRecord } | { error: string } {
+  const normalized = normalizeConsumerImportLine(raw);
+  if (isConsumersImportHeaderCell(normalized)) {
     return { error: `Fila ${lineNumber}: encabezado omitido.` };
   }
 
   const row = parseCsvRows(`${normalized}\n`)[0];
   if (!row || row.length < 5) {
-    return { error: `Fila ${lineNumber}: formato DrApp inválido.` };
+    return { error: `Fila ${lineNumber}: formato de importación inválido.` };
   }
 
   const [
@@ -116,30 +116,30 @@ export function parseDrAppConsumerLine(
     record: {
       lineNumber,
       first_name: titleCase(firstName || "Importado"),
-      last_name: titleCase(lastName || "DrApp"),
+      last_name: titleCase(lastName || "Paciente"),
       birth_date,
       document_number,
       phone: (phones ?? "").trim() || null,
       email: (emails ?? "").trim() || null,
       insurance_provider,
       insurance_number,
-      drapp_consumer_id: (consumerId ?? "").trim() || null,
+      external_consumer_id: (consumerId ?? "").trim() || null,
     },
   };
 }
 
-export function parseDrAppConsumerLines(
+export function parseConsumerImportLines(
   lines: string[],
   maxRows: number
-): { records: DrAppConsumerRecord[]; errors: string[] } {
-  const records: DrAppConsumerRecord[] = [];
+): { records: ConsumerImportRecord[]; errors: string[] } {
+  const records: ConsumerImportRecord[] = [];
   const errors: string[] = [];
   let dataLines = 0;
 
   for (let i = 0; i < lines.length; i += 1) {
     const raw = lines[i]?.trim();
     if (!raw) continue;
-    if (isDrAppConsumersHeaderCell(raw)) continue;
+    if (isConsumersImportHeaderCell(raw)) continue;
 
     dataLines += 1;
     if (dataLines > maxRows) {
@@ -147,7 +147,7 @@ export function parseDrAppConsumerLines(
       break;
     }
 
-    const parsed = parseDrAppConsumerLine(raw, i + 1);
+    const parsed = parseConsumerImportLine(raw, i + 1);
     if ("error" in parsed) {
       errors.push(parsed.error);
       continue;

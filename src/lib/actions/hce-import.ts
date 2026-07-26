@@ -10,7 +10,7 @@ import {
   HCE_EXPORT_MAX_ROWS,
   HCE_IMPORT_BATCH_SIZE,
 } from "@/lib/constants/clinical-documents";
-import { findOrCreatePatientFromExtract, resolveDrAppProfessionalId } from "@/lib/utils/clinical-pdf-import";
+import { findOrCreatePatientFromExtract, resolveImportProfessionalId } from "@/lib/utils/clinical-pdf-import";
 import {
   buildPatientHceCsv,
   groupHceRowsByPatient,
@@ -23,7 +23,7 @@ import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
 import type { HceExportRow } from "@/lib/utils/hce-export-parse";
 
 const BUCKET = "clinical-files";
-const HCE_ATTACHMENT_NAME = "hce-export-drapp-resumen.csv";
+const HCE_ATTACHMENT_NAME = "hce-export-resumen.csv";
 
 async function requireHceImportAccess() {
   const clinicId = await getActiveClinicId();
@@ -94,12 +94,12 @@ async function resolvePatientForHceRow(
     clinicId,
     extract,
     defaultInsurance,
-    `${importNote}\nDrApp ${row.paciente_id}`
+    `${importNote}\nImport ${row.paciente_id}`
   );
 
   if ("error" in result) return { error: result.error };
 
-  const noteLine = `DrApp ${row.paciente_id}`;
+  const noteLine = `Import ${row.paciente_id}`;
   const { data: patient } = await supabase
     .from("patients")
     .select("notes")
@@ -221,7 +221,7 @@ async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExp
     .single();
 
   const defaultInsurance = clinic?.default_insurance_provider ?? null;
-  const professionalId = await resolveDrAppProfessionalId(
+  const professionalId = await resolveImportProfessionalId(
     supabase,
     access.clinicId,
     "Profesional"

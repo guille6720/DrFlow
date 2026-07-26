@@ -30,7 +30,7 @@ interface Props {
   doctor?: DoctorShareInfo;
 }
 
-/** Instalador visual estilo DrApp/Crontu — paso a paso con mockup de celular. */
+/** Instalador visual estilo Crontu — paso a paso con mockup de celular. */
 export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);

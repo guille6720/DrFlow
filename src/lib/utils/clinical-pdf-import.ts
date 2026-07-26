@@ -69,7 +69,7 @@ export async function findOrCreatePatientFromExtract(
   };
 }
 
-export async function enrichPatientFromDrAppDemographics(
+export async function enrichPatientFromLegacyPdfDemographics(
   supabase: SupabaseClient,
   patientId: string,
   clinicId: string,
@@ -105,7 +105,7 @@ export async function enrichPatientFromDrAppDemographics(
   }
   if (demographics.chronic_diagnoses.length > 0) {
     const block = demographics.chronic_diagnoses.join("; ");
-    const prefix = "Diagnósticos crónicos (import DrApp): ";
+    const prefix = "Diagnósticos crónicos (importación): ";
     if (!patient.medical_history?.includes(block)) {
       const merged = patient.medical_history?.trim()
         ? `${patient.medical_history.trim()}\n\n${prefix}${block}`
@@ -119,7 +119,7 @@ export async function enrichPatientFromDrAppDemographics(
   await supabase.from("patients").update(updates).eq("id", patientId).eq("clinic_id", clinicId);
 }
 
-export async function resolveDrAppProfessionalId(
+export async function resolveImportProfessionalId(
   supabase: SupabaseClient,
   clinicId: string,
   professionalName: string
@@ -157,7 +157,7 @@ export async function resolveDrAppProfessionalId(
   return professionals[0]?.id ?? null;
 }
 
-export async function insertDrAppClinicalRecords(
+export async function insertLegacyPdfClinicalRecords(
   supabase: SupabaseClient,
   params: {
     clinicId: string;
@@ -191,7 +191,7 @@ export async function insertDrAppClinicalRecords(
       continue;
     }
 
-    const professionalId = await resolveDrAppProfessionalId(
+    const professionalId = await resolveImportProfessionalId(
       supabase,
       params.clinicId,
       entry.professionalName
@@ -231,7 +231,7 @@ export async function insertDrAppClinicalRecords(
       clinic_id: params.clinicId,
       action: "create",
       changed_by: params.userId,
-      new_values: { source: "drapp_pdf_import", marker: entry.marker },
+      new_values: { source: "legacy_pdf_import", marker: entry.marker },
     });
 
     created += 1;

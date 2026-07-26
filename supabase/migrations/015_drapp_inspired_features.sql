@@ -1,4 +1,4 @@
--- Inspirado en flujos DrApp: turnos online, órdenes médicas
+-- Turnos online, órdenes médicas
 
 ALTER TABLE appointments
   ADD COLUMN IF NOT EXISTS booking_source TEXT NOT NULL DEFAULT 'manual';

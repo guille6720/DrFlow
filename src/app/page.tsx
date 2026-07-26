@@ -17,7 +17,7 @@ const differentiators = [
   {
     icon: Pill,
     title: "Guía por síntomas",
-    desc: "Buscá patología por CIE-10 o por lo que cuenta el paciente — algo que DrApp y Turnito no ofrecen así.",
+    desc: "Buscá patología por CIE-10 o por lo que cuenta el paciente — algo que muchas turneras no ofrecen así.",
     accent: "from-violet-500 to-purple-600",
   },
   {
@@ -97,7 +97,7 @@ export default function HomePage() {
             Por qué DrFlow no es otra turnera más
           </h2>
           <p className="mx-auto mt-2 max-w-xl text-center text-sm text-slate-500">
-            Comparado con DrApp, Turnito o Gendu: más clínico. Comparado con MedicAI: más simple
+            Comparado con turneras o suites pesadas: más clínico. Comparado con MedicAI: más simple
             para arrancar.
           </p>
           <div className="mt-10 grid gap-6 sm:grid-cols-2">

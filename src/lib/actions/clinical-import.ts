@@ -10,7 +10,7 @@ import {
 } from "@/lib/constants/clinical-documents";
 import {
   findOrCreatePatientFromExtract,
-  resolveDrAppProfessionalId,
+  resolveImportProfessionalId,
 } from "@/lib/utils/clinical-pdf-import";
 import { parseClinicalCsvContent } from "@/lib/utils/clinical-csv-parse";
 import { sanitizeText } from "@/lib/validations/schemas";
@@ -77,7 +77,7 @@ export async function importClinicalCsv(formData: FormData): Promise<ImportClini
         success: false,
         fileName: originalName,
         error:
-          "Este archivo Excel es el export de pacientes DrApp (consumers). No va acá: andá a Pacientes → Importar pacientes DrApp (Excel).",
+          "Este archivo Excel es el export de pacientes (consumers). No va acá: andá a Pacientes → Importar pacientes (Excel).",
       };
     }
     return {
@@ -94,22 +94,22 @@ export async function importClinicalCsv(formData: FormData): Promise<ImportClini
       success: false,
       fileName: originalName,
       error:
-        "Detectamos HCE_export.csv de DrApp. Usá la tarjeta «Importar export HCE DrApp» justo debajo (no la plantilla de consultas).",
+        "Detectamos HCE_export.csv. Usá la tarjeta «Importar export HCE» justo debajo (no la plantilla de consultas).",
     };
   }
 
-  const { drAppConsumersMisplacedMessage, looksLikeDrAppConsumersExport } = await import(
-    "@/lib/utils/drapp-consumers-parse"
+  const { consumersMisplacedMessage, looksLikeConsumersExport } = await import(
+    "@/lib/utils/consumers-import-parse"
   );
   if (
-    drAppConsumersMisplacedMessage(originalName) ||
-    looksLikeDrAppConsumersExport(content)
+    consumersMisplacedMessage(originalName) ||
+    looksLikeConsumersExport(content)
   ) {
     return {
       success: false,
       fileName: originalName,
       error:
-        "Detectamos el listado DrApp «consumers» (pacientes), no consultas. Subilo en Pacientes → Importar pacientes DrApp (Excel), no en Historias.",
+        "Detectamos el listado «consumers» (pacientes), no consultas. Subilo en Pacientes → Importar pacientes (Excel), no en Historias.",
     };
   }
 
@@ -195,7 +195,7 @@ export async function importClinicalCsv(formData: FormData): Promise<ImportClini
     const proKey = row.professional_name.trim().toLowerCase() || "__default__";
     let professionalId = professionalCache.get(proKey);
     if (professionalId === undefined) {
-      professionalId = await resolveDrAppProfessionalId(
+      professionalId = await resolveImportProfessionalId(
         supabase,
         access.clinicId,
         row.professional_name || "Profesional"

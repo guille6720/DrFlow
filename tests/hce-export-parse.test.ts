@@ -12,7 +12,7 @@ consumers/065ad986,Ludeña,Delicia,,records,,,,,,
 `;
 
 describe("parseHceExportCsv", () => {
-  it("parses DrApp HCE header", () => {
+  it("parses HCE export header", () => {
     const { rows, errors } = parseHceExportCsv(SAMPLE, 100);
     expect(errors).toEqual([]);
     expect(rows).toHaveLength(2);

@@ -29,7 +29,7 @@ const steps = [
   },
 ] as const;
 
-/** Flujo clínico visual: diferenciador vs turneras puras (Turnito/DrApp agenda-only). */
+/** Flujo clínico visual: diferenciador vs turneras puras (solo agenda). */
 export function ClinicalWorkflowStrip({ className }: { className?: string }) {
   return (
     <div

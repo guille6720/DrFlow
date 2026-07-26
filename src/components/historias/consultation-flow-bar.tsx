@@ -22,7 +22,7 @@ interface ConsultationFlowBarProps {
   onStepChange: (step: ConsultationStep) => void;
 }
 
-/** Barra fija estilo DrApp: paciente + timer + pasos + finalizar. */
+/** Barra fija de consulta: paciente + timer + pasos + finalizar. */
 export function ConsultationFlowBar({
   appointmentId,
   patient,
