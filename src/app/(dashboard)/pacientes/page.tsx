@@ -15,8 +15,12 @@ import { Badge } from "@/components/ui/badge";
 import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
 import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
 import { Users, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { hasPermission } from "@/lib/permissions/roles";
+import { ImportDrAppConsumersPanel } from "@/components/pacientes/import-drapp-consumers-panel";
 
 const PAGE_SIZE = 20;
+
+export const maxDuration = 300;
 
 export default async function PacientesPage({
   searchParams,
@@ -28,7 +32,8 @@ export default async function PacientesPage({
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role, clinic } = await getActiveClinic();
+  const { role, clinic, isSuperadmin } = await getActiveClinic();
+  const canImportDrApp = hasPermission(role, "managePatients", isSuperadmin);
   const supabase = await createClient();
 
   let patients: {
@@ -116,6 +121,8 @@ export default async function PacientesPage({
       />
 
       <div className="space-y-4 p-4 sm:p-6">
+        <ImportDrAppConsumersPanel canImport={canImportDrApp} />
+
         <div className="flex flex-wrap items-center gap-3">
           <form className="flex flex-1 gap-2" action="/pacientes">
             {cobertura === "pami" && <input type="hidden" name="cobertura" value="pami" />}
