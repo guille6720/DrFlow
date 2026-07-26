@@ -26,9 +26,15 @@ interface Props {
   canImport: boolean;
   exportPatients: PatientExportRow[];
   exportLabel: string;
+  sidebar?: boolean;
 }
 
-export function PatientsImportExportHub({ canImport, exportPatients, exportLabel }: Props) {
+export function PatientsImportExportHub({
+  canImport,
+  exportPatients,
+  exportLabel,
+  sidebar,
+}: Props) {
   const [importKind, setImportKind] = useState("consumers");
   const [exportKind, setExportKind] = useState("");
 
@@ -41,13 +47,15 @@ export function PatientsImportExportHub({ canImport, exportPatients, exportLabel
     }
   }
 
-  return (
-    <Card title="Importar y exportar pacientes">
-      <p className="mb-4 text-sm text-slate-600">
-        Subí listados masivos o descargá el padrón según tu búsqueda actual ({exportLabel}).
-      </p>
+  const body = (
+    <>
+      {!sidebar && (
+        <p className="mb-4 text-sm text-slate-600">
+          Subí listados masivos o descargá el padrón según tu búsqueda actual ({exportLabel}).
+        </p>
+      )}
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className={sidebar ? "space-y-4" : "grid gap-8 lg:grid-cols-2"}>
         <div className="space-y-3">
           <Select
             label="Importar desde archivo"
@@ -63,14 +71,16 @@ export function PatientsImportExportHub({ canImport, exportPatients, exportLabel
           )}
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3 border-t border-slate-100 pt-4 lg:border-t-0 lg:pt-0">
           <Select
             label="Descargar datos"
             value={exportKind}
             onChange={(e) => setExportKind(e.target.value)}
             options={EXPORT_OPTIONS}
           />
-          <p className="text-xs text-slate-500">{exportPatients.length} paciente(s) incluidos</p>
+          <p className="text-xs text-slate-500">
+            {exportPatients.length} paciente(s) · {exportLabel}
+          </p>
           <Button
             type="button"
             variant="outline"
@@ -82,6 +92,17 @@ export function PatientsImportExportHub({ canImport, exportPatients, exportLabel
           </Button>
         </div>
       </div>
-    </Card>
+    </>
   );
+
+  if (sidebar) {
+    return (
+      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold text-slate-900">Pacientes</h2>
+        {body}
+      </section>
+    );
+  }
+
+  return <Card title="Importar y exportar pacientes">{body}</Card>;
 }

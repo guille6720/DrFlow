@@ -19,6 +19,7 @@ import {
   HeartPulse,
   ClipboardPlus,
   BookOpen,
+  ArrowDownUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useState } from "react";
@@ -49,6 +50,7 @@ const navItems: NavItem[] = [
   { href: "/atenciones", label: "Atenciones", icon: ClipboardPlus, permission: null },
   { href: "/pacientes", label: "Pacientes", icon: Users, permission: "managePatients" },
   { href: "/historias", label: "Historia clínica", icon: FileText, permission: "viewClinicalRecords" },
+  { href: "/datos", label: "Importar / Exportar", icon: ArrowDownUp, permission: null },
   { href: "/recetas", label: "Recetas electrónicas", icon: ScrollText, permission: "issuePrescriptions" },
   { href: "/herramientas/farmacologia", label: "Guía farmacológica", icon: Pill, permission: "viewPharmacology" },
   { href: "/guia-pami", label: "Guía cabecera PAMI", icon: HeartPulse, permission: null },

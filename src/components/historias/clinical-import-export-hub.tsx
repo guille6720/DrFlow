@@ -37,6 +37,7 @@ interface Props {
     last_name: string;
     document_number: string;
   } | null;
+  sidebar?: boolean;
 }
 
 export function ClinicalImportExportHub({
@@ -44,6 +45,7 @@ export function ClinicalImportExportHub({
   exportRecords,
   exportTitle,
   focusedPatient,
+  sidebar,
 }: Props) {
   const [importKind, setImportKind] = useState("pdf");
   const [exportKind, setExportKind] = useState("");
@@ -61,14 +63,16 @@ export function ClinicalImportExportHub({
 
   const historyPdfDisabled = exportKind === "history-pdf" && !focusedPatient;
 
-  return (
-    <Card title="Importar y exportar historias clínicas">
-      <p className="mb-4 text-sm text-slate-600">
-        Cargá archivos desde migraciones o descargá las consultas que ves en pantalla (según el
-        buscador).
-      </p>
+  const body = (
+    <>
+      {!sidebar && (
+        <p className="mb-4 text-sm text-slate-600">
+          Cargá archivos desde migraciones o descargá las consultas que ves en pantalla (según el
+          buscador).
+        </p>
+      )}
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className={sidebar ? "space-y-4" : "grid gap-8 lg:grid-cols-2"}>
         <div className="space-y-3">
           <Select
             label="Importar desde archivo"
@@ -90,7 +94,7 @@ export function ClinicalImportExportHub({
           )}
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3 border-t border-slate-100 pt-4 lg:border-t-0 lg:pt-0">
           <Select
             label="Descargar datos"
             value={exportKind}
@@ -98,9 +102,9 @@ export function ClinicalImportExportHub({
             options={EXPORT_OPTIONS}
           />
           <p className="text-xs text-slate-500">
-            {exportRecords.length} consulta(s) en la vista actual
+            {exportRecords.length} consulta(s) · {exportTitle}
             {focusedPatient
-              ? ` · paciente ${focusedPatient.last_name}, ${focusedPatient.first_name}`
+              ? ` · ${focusedPatient.last_name}, ${focusedPatient.first_name}`
               : ""}
           </p>
           <Button
@@ -112,14 +116,29 @@ export function ClinicalImportExportHub({
             <Download className="h-4 w-4" />
             Descargar
           </Button>
-          {historyPdfDisabled && (
+          {historyPdfDisabled && !sidebar && (
             <p className="text-xs text-amber-800">
-              Para PDF de historia completa, buscá un paciente (nombre o DNI) o abrí su historia
+              Para PDF de historia completa, buscá un paciente en Historia clínica o abrí su ficha
               desde Pacientes.
             </p>
           )}
         </div>
       </div>
+    </>
+  );
+
+  if (sidebar) {
+    return (
+      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold text-slate-900">Historias clínicas</h2>
+        {body}
+      </section>
+    );
+  }
+
+  return (
+    <Card title="Importar y exportar historias clínicas">
+      {body}
     </Card>
   );
 }

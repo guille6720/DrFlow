@@ -3,6 +3,8 @@ import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { SectorHero } from "@/components/ui/sector-hero";
+import { ProminentSearchForm } from "@/components/ui/prominent-search-form";
 import {
   getActiveClinic,
   getActiveClinicId,
@@ -14,13 +16,9 @@ import { formatAgeLabel, isPamiPatient } from "@/lib/utils/patient-age";
 import { Badge } from "@/components/ui/badge";
 import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
 import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
-import { Users, Plus, Search, ChevronLeft, ChevronRight, FileText } from "lucide-react";
-import { hasPermission } from "@/lib/permissions/roles";
-import { PatientsImportExportHub } from "@/components/pacientes/patients-import-export-hub";
-import type { PatientExportRow } from "@/lib/utils/clinical-export-client";
+import { Users, Plus, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 
 const PAGE_SIZE = 20;
-const EXPORT_LIMIT = 5000;
 
 export const maxDuration = 300;
 
@@ -34,8 +32,7 @@ export default async function PacientesPage({
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
-  const canImportConsumers = hasPermission(role, "managePatients", isSuperadmin);
+  const { role } = await getActiveClinic();
   const supabase = await createClient();
 
   let patients: {
@@ -48,7 +45,6 @@ export default async function PacientesPage({
     email: string | null;
     insurance_provider: string | null;
   }[] = [];
-  let exportPatients: PatientExportRow[] = [];
   let total = 0;
   let portalSlug: string | null = null;
   let doctorInfo: Awaited<ReturnType<typeof getDoctorShareInfoForClinic>> = null;
@@ -86,34 +82,6 @@ export default async function PacientesPage({
     patients = data ?? [];
     total = count ?? 0;
 
-    let exportQuery = supabase
-      .from("patients")
-      .select("first_name, last_name, document_number, birth_date, phone, email, insurance_provider")
-      .eq("clinic_id", clinicId)
-      .eq("is_active", true)
-      .order("last_name")
-      .limit(EXPORT_LIMIT);
-
-    if (q) {
-      exportQuery = exportQuery.or(
-        `first_name.ilike.%${q}%,last_name.ilike.%${q}%,document_number.ilike.%${q}%`
-      );
-    }
-    if (cobertura === "pami") {
-      exportQuery = exportQuery.ilike("insurance_provider", "%PAMI%");
-    }
-    const { data: exportData } = await exportQuery;
-    exportPatients =
-      exportData?.map((p) => ({
-        first_name: p.first_name,
-        last_name: p.last_name,
-        document_number: p.document_number,
-        phone: p.phone ?? "",
-        email: p.email ?? "",
-        insurance_provider: p.insurance_provider ?? "",
-        birth_date: p.birth_date ?? "",
-      })) ?? [];
-
     if (patients.length > 0 && portalSlug) {
       const { data: shares } = await supabase
         .from("patient_app_share_log")
@@ -139,11 +107,14 @@ export default async function PacientesPage({
   const pageQuery = (p: number) =>
     `/pacientes?page=${p}${q ? `&q=${encodeURIComponent(q)}` : ""}${cobertura === "pami" ? "&cobertura=pami" : ""}`;
 
-  const exportLabel = q
-    ? `búsqueda “${q}”`
-    : cobertura === "pami"
-      ? "solo PAMI"
-      : "todos los activos";
+  const clearHref =
+    q || cobertura === "pami"
+      ? cobertura === "pami" && !q
+        ? "/pacientes"
+        : q && cobertura === "pami"
+          ? "/pacientes?cobertura=pami"
+          : "/pacientes"
+      : undefined;
 
   return (
     <>
@@ -156,50 +127,38 @@ export default async function PacientesPage({
         userName={profile?.full_name}
       />
 
-      <div className="space-y-4 p-4 sm:p-6">
-        <PatientsImportExportHub
-          canImport={canImportConsumers}
-          exportPatients={exportPatients}
-          exportLabel={exportLabel}
+      <div className="space-y-6 p-4 sm:p-6">
+        <SectorHero
+          icon={Users}
+          title="Pacientes"
+          subtitle={`${total} activos en la clínica. Importá o exportá listados desde Import / Export en el menú lateral.`}
         />
 
-        <Card title="Buscar pacientes">
-          <div className="flex flex-wrap items-center gap-3">
-            <form className="flex flex-1 flex-wrap gap-2" action="/pacientes">
-              {cobertura === "pami" && <input type="hidden" name="cobertura" value="pami" />}
-              <div className="relative min-w-[200px] flex-1 max-w-lg">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input
-                  name="q"
-                  defaultValue={q}
-                  placeholder="Buscar por nombre o DNI…"
-                  className="w-full rounded-xl border border-blue-200 py-2 pl-10 pr-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                />
-              </div>
-              <Button type="submit" variant="secondary">
-                Buscar
-              </Button>
-              {q && (
-                <Link href={cobertura === "pami" ? "/pacientes?cobertura=pami" : "/pacientes"}>
-                  <Button type="button" variant="outline">
-                    Limpiar
-                  </Button>
-                </Link>
-              )}
-            </form>
-            <Link href={cobertura === "pami" ? "/pacientes" : "/pacientes?cobertura=pami"}>
-              <Button variant="outline" size="sm">
-                {cobertura === "pami" ? "Todos" : "Solo PAMI"}
-              </Button>
-            </Link>
-            <Link href="/pacientes/nuevo">
-              <Button>
-                <Plus className="h-4 w-4" />
-                Nuevo paciente
-              </Button>
-            </Link>
-          </div>
-        </Card>
+        <ProminentSearchForm
+          action="/pacientes"
+          placeholder="Buscar por nombre o DNI…"
+          defaultValue={q}
+          submitLabel="Buscar"
+          clearHref={clearHref}
+          hiddenFields={
+            cobertura === "pami" ? <input type="hidden" name="cobertura" value="pami" /> : undefined
+          }
+          trailing={
+            <>
+              <Link href={cobertura === "pami" ? "/pacientes" : "/pacientes?cobertura=pami"}>
+                <Button variant="outline" size="sm" className="border-amber-200 bg-white/90">
+                  {cobertura === "pami" ? "Todos" : "Solo PAMI"}
+                </Button>
+              </Link>
+              <Link href="/pacientes/nuevo">
+                <Button>
+                  <Plus className="h-4 w-4" />
+                  Nuevo paciente
+                </Button>
+              </Link>
+            </>
+          }
+        />
 
         {patients.length === 0 ? (
           <EmptyState
