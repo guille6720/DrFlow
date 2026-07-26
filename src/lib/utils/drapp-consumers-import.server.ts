@@ -75,17 +75,28 @@ export async function parseDrAppConsumersUpload(
   fileName: string,
   maxRows: number
 ) {
-  const extracted = await extractDrAppConsumerLinesFromUpload(buffer, fileName);
-  if (extracted.format === "unknown" || extracted.lines.length === 0) {
+  try {
+    const extracted = await extractDrAppConsumerLinesFromUpload(buffer, fileName);
+    if (extracted.format === "unknown" || extracted.lines.length === 0) {
+      return {
+        records: [] as ReturnType<typeof parseDrAppConsumerLines>["records"],
+        errors: [
+          "No reconocimos el formato. Usá el export de pacientes DrApp (.xlsx o .csv).",
+        ],
+        format: extracted.format,
+      };
+    }
+
+    const { records, errors } = parseDrAppConsumerLines(extracted.lines, maxRows);
+    return { records, errors, format: extracted.format };
+  } catch (err) {
+    console.error("[drapp-consumers-import] parse failed:", err);
     return {
-      records: [],
+      records: [] as ReturnType<typeof parseDrAppConsumerLines>["records"],
       errors: [
-        "No reconocimos el formato. Usá el export de pacientes DrApp (.xlsx o .csv).",
+        "No pudimos leer el Excel en el servidor. Reexportá desde DrApp o guardá como .xlsx estándar.",
       ],
-      format: extracted.format,
+      format: "unknown" as const,
     };
   }
-
-  const { records, errors } = parseDrAppConsumerLines(extracted.lines, maxRows);
-  return { records, errors, format: extracted.format };
 }
