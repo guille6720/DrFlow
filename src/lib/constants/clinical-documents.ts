@@ -16,6 +16,10 @@ export const CLINICAL_CSV_MAX_ROWS = 5000;
 export const DRAPP_CONSUMERS_MAX_BYTES = 15 * 1024 * 1024;
 export const DRAPP_CONSUMERS_MAX_ROWS = 5000;
 
+export const HCE_EXPORT_MAX_BYTES = 15 * 1024 * 1024;
+export const HCE_EXPORT_MAX_ROWS = 15_000;
+export const HCE_IMPORT_BATCH_SIZE = 120;
+
 export function clinicalDocumentCategoryLabel(category: string | null | undefined): string {
   return (
     CLINICAL_DOCUMENT_CATEGORIES.find((item) => item.value === category)?.label ?? "Documento"

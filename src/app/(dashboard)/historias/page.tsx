@@ -17,6 +17,7 @@ import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
 import { ImportClinicalPdfPanel } from "@/components/historias/import-clinical-pdf-panel";
 import { ImportClinicalCsvPanel } from "@/components/historias/import-clinical-csv-panel";
+import { ImportHceExportPanel } from "@/components/historias/import-hce-export-panel";
 import { hasPermission } from "@/lib/permissions/roles";
 
 export const maxDuration = 300;
@@ -59,6 +60,7 @@ export default async function HistoriasPage() {
       <div className="space-y-4 p-4 sm:p-6">
         <ImportClinicalPdfPanel canImport={canImportClinicalPdf} />
         <ImportClinicalCsvPanel canImport={canImportClinicalPdf} />
+        <ImportHceExportPanel canImport={canImportClinicalPdf} />
 
         <div className="flex justify-end">
           <Link href="/historias/nueva">

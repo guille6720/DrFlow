@@ -88,6 +88,16 @@ export async function importClinicalCsv(formData: FormData): Promise<ImportClini
   }
 
   const content = await file.text();
+  const { isHceExportCsv } = await import("@/lib/utils/hce-export-parse");
+  if (isHceExportCsv(content, originalName)) {
+    return {
+      success: false,
+      fileName: originalName,
+      error:
+        "Detectamos HCE_export.csv de DrApp. Usá la tarjeta «Importar export HCE DrApp» justo debajo (no la plantilla de consultas).",
+    };
+  }
+
   const { drAppConsumersMisplacedMessage, looksLikeDrAppConsumersExport } = await import(
     "@/lib/utils/drapp-consumers-parse"
   );
