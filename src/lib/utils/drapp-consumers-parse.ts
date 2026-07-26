@@ -52,6 +52,21 @@ export function normalizeDrAppConsumerLine(raw: string): string {
   return raw.replace(/\\"/g, '"').trim();
 }
 
+export function looksLikeDrAppConsumersExport(text: string): boolean {
+  const head = text.replace(/^\uFEFF/, "").slice(0, 8000);
+  if (head.includes("firstName") && head.includes("identification")) return true;
+  if (head.includes("consumers/") && head.includes("financiers")) return true;
+  return /consumers-[a-f0-9]+\.csv/i.test(head);
+}
+
+export function drAppConsumersMisplacedMessage(fileName: string): string | null {
+  const lower = fileName.toLowerCase();
+  if (lower.includes("consumers") && (lower.endsWith(".csv") || lower.endsWith(".xlsx") || lower.endsWith(".csv.xlsx"))) {
+    return "drapp-consumers";
+  }
+  return null;
+}
+
 export function isDrAppConsumersHeaderCell(cell: string): boolean {
   const normalized = normalizeDrAppConsumerLine(cell);
   return normalized.includes(DRAPP_HEADER_MARKER) && normalized.includes(DRAPP_ID_MARKER);

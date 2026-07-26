@@ -67,6 +67,19 @@ export async function importClinicalCsv(formData: FormData): Promise<ImportClini
   const originalName = file instanceof File ? file.name : "consultas.csv";
 
   if (!validateCsvFile(file)) {
+    const lower = originalName.toLowerCase();
+    if (
+      lower.endsWith(".xlsx") ||
+      lower.endsWith(".xls") ||
+      lower.endsWith(".csv.xlsx")
+    ) {
+      return {
+        success: false,
+        fileName: originalName,
+        error:
+          "Este archivo Excel es el export de pacientes DrApp (consumers). No va acá: andá a Pacientes → Importar pacientes DrApp (Excel).",
+      };
+    }
     return {
       success: false,
       fileName: originalName,
@@ -75,6 +88,21 @@ export async function importClinicalCsv(formData: FormData): Promise<ImportClini
   }
 
   const content = await file.text();
+  const { drAppConsumersMisplacedMessage, looksLikeDrAppConsumersExport } = await import(
+    "@/lib/utils/drapp-consumers-parse"
+  );
+  if (
+    drAppConsumersMisplacedMessage(originalName) ||
+    looksLikeDrAppConsumersExport(content)
+  ) {
+    return {
+      success: false,
+      fileName: originalName,
+      error:
+        "Detectamos el listado DrApp «consumers» (pacientes), no consultas. Subilo en Pacientes → Importar pacientes DrApp (Excel), no en Historias.",
+    };
+  }
+
   const { rows, errors: parseErrors } = parseClinicalCsvContent(content, CLINICAL_CSV_MAX_ROWS);
 
   if (rows.length === 0) {

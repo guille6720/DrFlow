@@ -10,6 +10,7 @@ import {
 } from "@/lib/constants/clinical-documents";
 import { importClinicalCsv, type ImportClinicalCsvResult } from "@/lib/actions/clinical-import";
 import { CLINICAL_CSV_TEMPLATE } from "@/lib/utils/clinical-csv-parse";
+import Link from "next/link";
 import { CheckCircle2, Download, FileSpreadsheet, Loader2, Upload, XCircle } from "lucide-react";
 
 interface Props {
@@ -73,6 +74,14 @@ export function ImportClinicalCsvPanel({ canImport }: Props) {
         <code className="rounded bg-slate-100 px-1">;</code> · hasta {CLINICAL_CSV_MAX_ROWS}{" "}
         filas · 8 MB máx. Fechas: <code className="rounded bg-slate-100 px-1">DD/MM/AAAA</code> o{" "}
         <code className="rounded bg-slate-100 px-1">AAAA-MM-DD</code>.
+        <span className="mt-2 block text-amber-800">
+          El Excel <code className="rounded bg-amber-100 px-1">consumers-*.csv.xlsx</code> de DrApp
+          es solo pacientes →{" "}
+          <Link href="/pacientes" className="font-medium text-blue-700 hover:underline">
+            importalo en Pacientes
+          </Link>
+          , no acá.
+        </span>
       </p>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -104,9 +113,14 @@ export function ImportClinicalCsvPanel({ canImport }: Props) {
       )}
 
       {error && (
-        <p className="mt-3 text-sm text-red-600" role="alert">
-          {error}
-        </p>
+        <div className="mt-3 text-sm text-red-600" role="alert">
+          <p>{error}</p>
+          {(error.includes("Pacientes") || error.includes("consumers")) && (
+            <Link href="/pacientes" className="mt-2 inline-block font-medium text-blue-700 hover:underline">
+              Ir a Pacientes → Importar Excel DrApp
+            </Link>
+          )}
+        </div>
       )}
 
       {result?.success && !importing && (
