@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/ui/card";
+import { PanelShell } from "@/components/ui/panel-shell";
 import { Button } from "@/components/ui/button";
 import {
   CLINICAL_DOCUMENT_MAX_BYTES,
@@ -14,11 +14,12 @@ import { CheckCircle2, FileUp, Loader2, Upload, XCircle } from "lucide-react";
 
 interface Props {
   canImport: boolean;
+  embedded?: boolean;
 }
 
 type ResultRow = ImportClinicalPdfResult & { id: string };
 
-export function ImportClinicalPdfPanel({ canImport }: Props) {
+export function ImportClinicalPdfPanel({ canImport, embedded }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
@@ -77,7 +78,7 @@ export function ImportClinicalPdfPanel({ canImport }: Props) {
   const createdCount = results.filter((row) => row.success && row.patientCreated).length;
 
   return (
-    <Card title="Importar historias PDF">
+    <PanelShell embedded={embedded} title="Importar historias PDF">
       <p className="mb-3 text-sm text-slate-600">
         Subí historias exportadas desde otra app, de a una o en lote. DrFlow detecta el DNI,
         completa datos del paciente y, en PDFs con evoluciones, crea las consultas en historias
@@ -224,6 +225,6 @@ export function ImportClinicalPdfPanel({ canImport }: Props) {
           </Button>
         </div>
       )}
-    </Card>
+    </PanelShell>
   );
 }

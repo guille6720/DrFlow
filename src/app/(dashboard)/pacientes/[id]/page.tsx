@@ -230,6 +230,13 @@ export default async function PacienteDetailPage({
           </Card>
 
           <Card title="Consultas clínicas">
+            <div className="mb-3 flex flex-wrap gap-2">
+              <Link href={`/historias?patient=${id}`}>
+                <Button variant="outline" size="sm">
+                  Ver historia clínica completa
+                </Button>
+              </Link>
+            </div>
             {(records ?? []).length === 0 ? (
               <p className="text-sm text-slate-500">Sin consultas registradas.</p>
             ) : (

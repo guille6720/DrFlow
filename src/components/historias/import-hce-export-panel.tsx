@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/ui/card";
+import { PanelShell } from "@/components/ui/panel-shell";
 import { Button } from "@/components/ui/button";
 import { HCE_EXPORT_MAX_BYTES } from "@/lib/constants/clinical-documents";
 import { importHceExportCsv, type ImportHceExportResult } from "@/lib/actions/hce-import";
@@ -11,9 +11,10 @@ import { CheckCircle2, Download, FileSpreadsheet, Loader2, Upload } from "lucide
 
 interface Props {
   canImport: boolean;
+  embedded?: boolean;
 }
 
-export function ImportHceExportPanel({ canImport }: Props) {
+export function ImportHceExportPanel({ canImport, embedded }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
@@ -87,7 +88,7 @@ export function ImportHceExportPanel({ canImport }: Props) {
   }
 
   return (
-    <Card title="Importar export HCE (CSV)">
+    <PanelShell embedded={embedded} title="Importar export HCE (CSV)">
       <p className="mb-3 text-sm text-slate-600">
         Subí <code className="rounded bg-slate-100 px-1">HCE_export.csv</code>: crea pacientes si
         no existen (por ID de importación o nombre), registra diagnósticos/tratamientos y deja en cada ficha
@@ -168,6 +169,6 @@ export function ImportHceExportPanel({ canImport }: Props) {
           Subí tu export HCE acá.
         </div>
       )}
-    </Card>
+    </PanelShell>
   );
 }

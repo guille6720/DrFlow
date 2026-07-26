@@ -1,0 +1,125 @@
+"use client";
+
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { ImportClinicalPdfPanel } from "@/components/historias/import-clinical-pdf-panel";
+import { ImportClinicalCsvPanel } from "@/components/historias/import-clinical-csv-panel";
+import { ImportHceExportPanel } from "@/components/historias/import-hce-export-panel";
+import {
+  downloadClinicalHistoryPdf,
+  downloadClinicalRecordsCsv,
+  downloadClinicalRecordsListPdf,
+  type ClinicalRecordExportRow,
+} from "@/lib/utils/clinical-export-client";
+import { Download } from "lucide-react";
+
+const IMPORT_OPTIONS = [
+  { value: "pdf", label: "Historias PDF (una o en lote)" },
+  { value: "csv", label: "Consultas CSV (plantilla DrFlow)" },
+  { value: "hce", label: "Export HCE (HCE_export.csv)" },
+];
+
+const EXPORT_OPTIONS = [
+  { value: "", label: "Elegí formato…" },
+  { value: "records-csv", label: "Consultas visibles (CSV)" },
+  { value: "records-pdf", label: "Consultas visibles (PDF)" },
+  { value: "history-pdf", label: "Historia completa del paciente (PDF)" },
+];
+
+interface Props {
+  canImport: boolean;
+  exportRecords: ClinicalRecordExportRow[];
+  exportTitle: string;
+  focusedPatient?: {
+    first_name: string;
+    last_name: string;
+    document_number: string;
+  } | null;
+}
+
+export function ClinicalImportExportHub({
+  canImport,
+  exportRecords,
+  exportTitle,
+  focusedPatient,
+}: Props) {
+  const [importKind, setImportKind] = useState("pdf");
+  const [exportKind, setExportKind] = useState("");
+
+  function handleExport() {
+    if (!exportKind || exportRecords.length === 0) return;
+    if (exportKind === "records-csv") {
+      downloadClinicalRecordsCsv("consultas-clinicas.csv", exportRecords);
+    } else if (exportKind === "records-pdf") {
+      downloadClinicalRecordsListPdf(exportRecords, exportTitle);
+    } else if (exportKind === "history-pdf" && focusedPatient) {
+      downloadClinicalHistoryPdf(focusedPatient, exportRecords);
+    }
+  }
+
+  const historyPdfDisabled = exportKind === "history-pdf" && !focusedPatient;
+
+  return (
+    <Card title="Importar y exportar historias clínicas">
+      <p className="mb-4 text-sm text-slate-600">
+        Cargá archivos desde migraciones o descargá las consultas que ves en pantalla (según el
+        buscador).
+      </p>
+
+      <div className="grid gap-8 lg:grid-cols-2">
+        <div className="space-y-3">
+          <Select
+            label="Importar desde archivo"
+            value={importKind}
+            onChange={(e) => setImportKind(e.target.value)}
+            options={IMPORT_OPTIONS}
+          />
+          {canImport && importKind === "pdf" && (
+            <ImportClinicalPdfPanel embedded canImport={canImport} />
+          )}
+          {canImport && importKind === "csv" && (
+            <ImportClinicalCsvPanel embedded canImport={canImport} />
+          )}
+          {canImport && importKind === "hce" && (
+            <ImportHceExportPanel embedded canImport={canImport} />
+          )}
+          {!canImport && (
+            <p className="text-sm text-slate-500">No tenés permisos para importar historias.</p>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          <Select
+            label="Descargar datos"
+            value={exportKind}
+            onChange={(e) => setExportKind(e.target.value)}
+            options={EXPORT_OPTIONS}
+          />
+          <p className="text-xs text-slate-500">
+            {exportRecords.length} consulta(s) en la vista actual
+            {focusedPatient
+              ? ` · paciente ${focusedPatient.last_name}, ${focusedPatient.first_name}`
+              : ""}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!exportKind || exportRecords.length === 0 || historyPdfDisabled}
+            onClick={handleExport}
+          >
+            <Download className="h-4 w-4" />
+            Descargar
+          </Button>
+          {historyPdfDisabled && (
+            <p className="text-xs text-amber-800">
+              Para PDF de historia completa, buscá un paciente (nombre o DNI) o abrí su historia
+              desde Pacientes.
+            </p>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}

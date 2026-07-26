@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/ui/card";
+import { PanelShell } from "@/components/ui/panel-shell";
 import { Button } from "@/components/ui/button";
 import {
   CLINICAL_CSV_MAX_BYTES,
@@ -15,9 +15,10 @@ import { CheckCircle2, Download, FileSpreadsheet, Loader2, Upload, XCircle } fro
 
 interface Props {
   canImport: boolean;
+  embedded?: boolean;
 }
 
-export function ImportClinicalCsvPanel({ canImport }: Props) {
+export function ImportClinicalCsvPanel({ canImport, embedded }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
@@ -63,7 +64,7 @@ export function ImportClinicalCsvPanel({ canImport }: Props) {
   }
 
   return (
-    <Card title="Importar consultas CSV">
+    <PanelShell embedded={embedded} title="Importar consultas CSV">
       <p className="mb-3 text-sm text-slate-600">
         Ideal para migraciones masivas (1000+ filas): una fila = una consulta. DrFlow crea o
         vincula pacientes por <strong>documento_dni</strong> y registra motivo, evolución,
@@ -157,6 +158,6 @@ export function ImportClinicalCsvPanel({ canImport }: Props) {
           Exportá desde Excel a CSV y subilo acá.
         </div>
       )}
-    </Card>
+    </PanelShell>
   );
 }

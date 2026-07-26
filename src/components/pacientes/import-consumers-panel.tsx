@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/ui/card";
+import { PanelShell } from "@/components/ui/panel-shell";
 import { Button } from "@/components/ui/button";
 import { CONSUMERS_IMPORT_MAX_BYTES } from "@/lib/constants/clinical-documents";
 import {
@@ -13,6 +13,7 @@ import { CheckCircle2, FileSpreadsheet, Loader2, Upload, XCircle } from "lucide-
 
 interface Props {
   canImport: boolean;
+  embedded?: boolean;
 }
 
 const ACCEPT = ".xlsx,.xls,.csv,.csv.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -26,7 +27,7 @@ type AggregateStats = {
   parseErrors: string[];
 };
 
-export function ImportConsumersPanel({ canImport }: Props) {
+export function ImportConsumersPanel({ canImport, embedded }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
@@ -115,7 +116,7 @@ export function ImportConsumersPanel({ canImport }: Props) {
   }
 
   return (
-    <Card title="Importar pacientes (Excel consumers)">
+    <PanelShell embedded={embedded} title="Importar pacientes (Excel consumers)">
       <p className="mb-3 text-sm text-slate-600">
         Subí el export de residentes/pacientes, por ejemplo{" "}
         <code className="rounded bg-slate-100 px-1">consumers-*.csv.xlsx</code>. DrFlow lee DNI,
@@ -195,6 +196,6 @@ export function ImportConsumersPanel({ canImport }: Props) {
           Arrastrá o elegí tu archivo consumers.
         </div>
       )}
-    </Card>
+    </PanelShell>
   );
 }
