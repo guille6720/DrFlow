@@ -10,6 +10,9 @@ export const CLINICAL_DOCUMENT_MAX_BYTES = 10 * 1024 * 1024;
 
 export const CLINICAL_PDF_IMPORT_MAX_FILES = 50;
 
+export const CLINICAL_CSV_MAX_BYTES = 8 * 1024 * 1024;
+export const CLINICAL_CSV_MAX_ROWS = 5000;
+
 export function clinicalDocumentCategoryLabel(category: string | null | undefined): string {
   return (
     CLINICAL_DOCUMENT_CATEGORIES.find((item) => item.value === category)?.label ?? "Documento"

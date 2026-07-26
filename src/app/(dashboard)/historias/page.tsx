@@ -16,9 +16,10 @@ import { es } from "date-fns/locale";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
 import { ImportClinicalPdfPanel } from "@/components/historias/import-clinical-pdf-panel";
+import { ImportClinicalCsvPanel } from "@/components/historias/import-clinical-csv-panel";
 import { hasPermission } from "@/lib/permissions/roles";
 
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 export default async function HistoriasPage() {
   const profile = await getProfile();
@@ -57,6 +58,7 @@ export default async function HistoriasPage() {
 
       <div className="space-y-4 p-4 sm:p-6">
         <ImportClinicalPdfPanel canImport={canImportClinicalPdf} />
+        <ImportClinicalCsvPanel canImport={canImportClinicalPdf} />
 
         <div className="flex justify-end">
           <Link href="/historias/nueva">
