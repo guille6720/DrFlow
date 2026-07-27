@@ -88,9 +88,9 @@ function SidebarNavContent({
 }) {
   return (
     <>
-      <div className="border-b border-slate-100 px-4 py-5">
+      <div className="border-b border-slate-700/80 px-4 py-5">
         <DrFlowLogo size="lg" href="/dashboard" centered />
-        <p className="mt-2 truncate text-center text-xs font-medium text-slate-500">
+        <p className="mt-2 truncate text-center text-xs font-medium text-slate-400">
           {clinicName ?? "Sin clínica"}
         </p>
       </div>
@@ -109,14 +109,14 @@ function SidebarNavContent({
               className={cn(
                 "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all",
                 active
-                  ? "bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-md shadow-cyan-500/25"
-                  : "text-slate-600 hover:bg-cyan-50 hover:text-teal-900"
+                  ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900 shadow-md shadow-teal-500/20"
+                  : "text-slate-300 hover:bg-slate-800/90 hover:text-white"
               )}
             >
               <item.icon
                 className={cn(
                   "h-5 w-5 shrink-0",
-                  active ? "text-white" : "text-teal-600 group-hover:text-teal-800"
+                  active ? "text-slate-900" : "text-teal-400/90"
                 )}
               />
               {item.label}
@@ -125,23 +125,23 @@ function SidebarNavContent({
         })}
       </nav>
 
-      <div className="space-y-1 border-t border-slate-100 p-3">
+      <div className="space-y-1 border-t border-slate-700/80 p-3">
         <button
           type="button"
           onClick={onToggleSidebarHidden}
-          className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+          className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-slate-100"
         >
           {sidebarHidden ? (
-            <PanelLeftOpen className="h-5 w-5 text-teal-600" />
+            <PanelLeftOpen className="h-5 w-5 text-teal-400" />
           ) : (
-            <PanelLeftClose className="h-5 w-5 text-teal-600" />
+            <PanelLeftClose className="h-5 w-5 text-teal-400" />
           )}
           {sidebarHidden ? "Mostrar menú lateral" : "Ocultar menú lateral"}
         </button>
         <form action="/api/auth/signout" method="post">
           <button
             type="submit"
-            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-700"
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-red-950/50 hover:text-red-300"
           >
             <LogOut className="h-5 w-5" />
             Cerrar sesión
@@ -188,7 +188,7 @@ export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200/90 drflow-sidebar-gradient shadow-xl shadow-slate-200/40 transition-transform duration-200 ease-out",
+          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-700/80 drflow-sidebar-gradient shadow-xl shadow-black/30 transition-transform duration-200 ease-out",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           desktopHidden ? "lg:-translate-x-full" : "lg:translate-x-0"
         )}

@@ -141,37 +141,37 @@ export function AppointmentDatetimePicker({
 
   return (
     <div className="space-y-1 sm:col-span-2">
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-slate-300">
         {label}
         {required && <span className="text-red-500"> *</span>}
       </label>
 
       <input type="hidden" name="start_at" value={value} required={required} />
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="rounded-xl border border-slate-600/80 bg-slate-800/95 p-4">
         <div className="flex items-center justify-between">
           <button
             type="button"
             onClick={() => setMonth(subMonths(month, 1))}
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-700"
             aria-label="Mes anterior"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <p className="text-sm font-semibold capitalize text-slate-800">
+          <p className="text-sm font-semibold capitalize text-slate-100">
             {format(month, "MMMM yyyy", { locale: es })}
           </p>
           <button
             type="button"
             onClick={() => setMonth(addMonths(month, 1))}
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-700"
             aria-label="Mes siguiente"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="mt-3 grid grid-cols-7 gap-1 text-center text-xs font-medium text-slate-400">
+        <div className="mt-3 grid grid-cols-7 gap-1 text-center text-xs font-medium text-slate-500">
           {weekDayLabels.map((d) => (
             <div key={d} className="py-1">
               {d}
@@ -192,10 +192,10 @@ export function AppointmentDatetimePicker({
                 onClick={() => selectDate(day)}
                 className={cn(
                   "aspect-square rounded-lg text-sm font-medium transition-colors",
-                  !inMonth && "text-slate-300",
-                  inMonth && !isPast && "text-slate-700 hover:bg-blue-50",
-                  isPast && "cursor-not-allowed text-slate-300",
-                  isSelected && "bg-blue-600 text-white hover:bg-blue-700"
+                  !inMonth && "text-slate-600",
+                  inMonth && !isPast && "text-slate-200 hover:bg-slate-700",
+                  isPast && "cursor-not-allowed text-slate-600",
+                  isSelected && "bg-teal-500 text-slate-900 hover:bg-teal-400"
                 )}
               >
                 {format(day, "d")}
@@ -204,9 +204,9 @@ export function AppointmentDatetimePicker({
           })}
         </div>
 
-        <div className="mt-4 border-t border-slate-100 pt-4">
-          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
-            <Clock className="h-4 w-4 text-blue-600" />
+        <div className="mt-4 border-t border-slate-700/80 pt-4">
+          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-200">
+            <Clock className="h-4 w-4 text-teal-400" />
             Horario — {format(selectedDate, "EEEE d MMM", { locale: es })}
           </div>
           <div className="grid max-h-40 grid-cols-4 gap-2 overflow-y-auto sm:grid-cols-6">
@@ -223,9 +223,11 @@ export function AppointmentDatetimePicker({
                   onClick={() => selectTime(time)}
                   className={cn(
                     "rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors",
-                    active && "border-blue-600 bg-blue-600 text-white",
-                    !active && !disabled && "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50",
-                    disabled && "cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300"
+                    active && "border-teal-500 bg-teal-500 text-slate-900",
+                    !active &&
+                      !disabled &&
+                      "border-slate-600 bg-slate-900/80 text-slate-200 hover:border-teal-500/50 hover:bg-slate-700",
+                    disabled && "cursor-not-allowed border-slate-800 bg-slate-900/40 text-slate-600"
                   )}
                   title={occupied ? "Ocupado" : past ? "Horario pasado" : undefined}
                 >
@@ -237,7 +239,7 @@ export function AppointmentDatetimePicker({
         </div>
 
         {value && (
-          <p className="mt-3 text-sm text-blue-800">
+          <p className="mt-3 text-sm text-teal-300">
             Seleccionado:{" "}
             <strong>
               {format(new Date(value), "EEEE d MMM · HH:mm", { locale: es })}

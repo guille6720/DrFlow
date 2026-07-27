@@ -24,8 +24,15 @@ export function ClinicalTopNav() {
 
   if (!show) return null;
 
+  const dark = pathname.startsWith("/agenda") || pathname.startsWith("/atenciones");
+
   return (
-    <nav className="border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-sm sm:px-6">
+    <nav
+      className={cn(
+        "border-b px-4 backdrop-blur-sm sm:px-6",
+        dark ? "border-slate-700/80 bg-slate-900/90" : "border-slate-200/80 bg-white/90"
+      )}
+    >
       <div className="flex gap-1 overflow-x-auto">
         {tabs.map((tab) => {
           const active = tab.match(pathname, view);
@@ -36,8 +43,12 @@ export function ClinicalTopNav() {
               className={cn(
                 "flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors",
                 active
-                  ? "border-teal-500 text-teal-800"
-                  : "border-transparent text-slate-500 hover:border-teal-200 hover:text-teal-800"
+                  ? dark
+                    ? "border-teal-400 text-teal-300"
+                    : "border-teal-500 text-teal-800"
+                  : dark
+                    ? "border-transparent text-slate-400 hover:border-slate-600 hover:text-slate-200"
+                    : "border-transparent text-slate-500 hover:border-teal-200 hover:text-teal-800"
               )}
             >
               <tab.icon className="h-4 w-4" />

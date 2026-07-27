@@ -15,6 +15,7 @@ import { createAppointment } from "@/lib/actions/appointments";
 import { hasPermission } from "@/lib/permissions/roles";
 import type { Appointment, Clinic, Patient, Professional, UserRole } from "@/types/database";
 import { CalendarGrid } from "@/components/agenda/calendar-grid";
+import { MonthOverviewGrid } from "@/components/agenda/month-overview-grid";
 import { AppointmentDatetimePicker } from "@/components/agenda/appointment-datetime-picker";
 import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import {
@@ -26,6 +27,8 @@ import {
   subWeeks,
   addDays,
   subDays,
+  addMonths,
+  subMonths,
 } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -101,6 +104,16 @@ export function AgendaView({
   const canManage = hasPermission(role, "manageAppointments", false);
   const canStartClinical = hasPermission(role, "editClinicalRecords", false);
 
+  function shiftCalendar(back: boolean) {
+    if (view === "day") {
+      setCurrentDate(back ? subDays(currentDate, 1) : addDays(currentDate, 1));
+    } else if (view === "month") {
+      setCurrentDate(back ? subMonths(currentDate, 1) : addMonths(currentDate, 1));
+    } else {
+      setCurrentDate(back ? subWeeks(currentDate, 1) : addWeeks(currentDate, 1));
+    }
+  }
+
   const dayAppointments =
     view === "day" ? filterAppointmentsForDay(filtered, currentDate) : filtered;
 
@@ -141,14 +154,16 @@ export function AgendaView({
 
       <div className="space-y-4 p-4 sm:p-6">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex rounded-lg border border-slate-200 bg-white p-1">
+          <div className="flex rounded-xl border border-slate-600/80 bg-slate-800/90 p-1 shadow-lg">
             {(["day", "week", "month"] as const).map((v) => (
               <button
                 key={v}
                 type="button"
                 onClick={() => setView(v)}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium capitalize ${
-                  view === v ? "bg-blue-700 text-white" : "text-slate-600 hover:bg-blue-50"
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium capitalize ${
+                  view === v
+                    ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900"
+                    : "text-slate-300 hover:bg-slate-700/80 hover:text-white"
                 }`}
               >
                 {v === "day" ? "Día" : v === "week" ? "Semana" : "Mes"}
@@ -160,15 +175,12 @@ export function AgendaView({
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                setCurrentDate(
-                  view === "day" ? subDays(currentDate, 1) : subWeeks(currentDate, 1)
-                )
-              }
+              className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700"
+              onClick={() => shiftCalendar(true)}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="min-w-[180px] text-center text-sm font-medium text-slate-700">
+            <span className="min-w-[180px] text-center text-sm font-medium capitalize text-slate-200">
               {view === "day"
                 ? format(currentDate, "d 'de' MMMM yyyy", { locale: es })
                 : format(currentDate, "MMMM yyyy", { locale: es })}
@@ -176,11 +188,8 @@ export function AgendaView({
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                setCurrentDate(
-                  view === "day" ? addDays(currentDate, 1) : addWeeks(currentDate, 1)
-                )
-              }
+              className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700"
+              onClick={() => shiftCalendar(false)}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -283,7 +292,7 @@ export function AgendaView({
           </Card>
         )}
 
-        {filtered.length === 0 ? (
+        {filtered.length === 0 && view === "day" ? (
           <EmptyState
             icon={Calendar}
             title="No hay turnos en este período"
@@ -295,20 +304,6 @@ export function AgendaView({
               </Button>
             }
           />
-        ) : view === "day" ? (
-          <Card title={format(currentDate, "EEEE d 'de' MMMM", { locale: es })}>
-            <ul className="divide-y divide-slate-100">
-              {dayAppointments.map((appt) => (
-                <AppointmentRow
-                  key={appt.id}
-                  appointment={appt}
-                  showDate
-                  canManage={canManage}
-                  canStartClinical={canStartClinical}
-                />
-              ))}
-            </ul>
-          </Card>
         ) : view === "week" ? (
           <CalendarGrid
             weekDays={weekDays}
@@ -316,29 +311,45 @@ export function AgendaView({
             blocks={scheduleBlocks}
             onSlotClick={handleSlotClick}
           />
+        ) : view === "month" ? (
+          <MonthOverviewGrid
+            monthDate={currentDate}
+            appointments={filtered}
+            onDayClick={(day) => {
+              setCurrentDate(day);
+              setView("day");
+            }}
+          />
         ) : (
-          <Card>
-            <ul className="divide-y divide-slate-100">
-              {filtered.map((appt) => (
-                <AppointmentRow
-                  key={appt.id}
-                  appointment={appt}
-                  showDate
-                  canManage={canManage}
-                  canStartClinical={canStartClinical}
-                />
-              ))}
-            </ul>
+          <Card
+            title={format(currentDate, "EEEE d 'de' MMMM", { locale: es })}
+            className="border-slate-600/80 bg-slate-800/95 [&_h3]:text-slate-100"
+          >
+            {dayAppointments.length === 0 ? (
+              <p className="text-sm text-slate-400">Sin turnos este día.</p>
+            ) : (
+              <ul className="divide-y divide-slate-700/80">
+                {dayAppointments.map((appt) => (
+                  <AppointmentRow
+                    key={appt.id}
+                    appointment={appt}
+                    showDate
+                    canManage={canManage}
+                    canStartClinical={canStartClinical}
+                  />
+                ))}
+              </ul>
+            )}
           </Card>
         )}
 
         {bookingSlug && (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-400">
             Link público:{" "}
             <Link
               href={`/solicitar-turno/${bookingSlug}`}
               target="_blank"
-              className="font-medium text-blue-700 hover:underline"
+              className="font-medium text-teal-300 hover:underline"
             >
               /solicitar-turno/{bookingSlug}
             </Link>
