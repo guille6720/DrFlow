@@ -13,6 +13,7 @@ import { hasPermission } from "@/lib/permissions/roles";
 import { DataImportExportSidebar } from "@/components/datos/data-import-export-sidebar";
 import { MigrationHealthPanel } from "@/components/datos/migration-health-panel";
 import { ClearClinicalHistoryPanel } from "@/components/datos/clear-clinical-history-panel";
+import { DatosNavigationHelp } from "@/components/datos/datos-navigation-help";
 import { buildMigrationHealthReport, type MigrationHealthReport } from "@/lib/utils/migration-health";
 import type { ClinicalRecordExportRow, PatientExportRow } from "@/lib/utils/clinical-export-client";
 import { ArrowLeftRight, FileText, Users } from "lucide-react";
@@ -149,6 +150,8 @@ export default async function DatosPage() {
         </aside>
 
         <main className="min-w-0 flex-1">
+          <DatosNavigationHelp />
+
           <SectorHero
             icon={ArrowLeftRight}
             title="Importación y exportación"
