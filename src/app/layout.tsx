@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 import { PWA_APPLE_ICON } from "@/lib/utils/patient-portal-ready";
+import { UiThemeBootstrapScript } from "@/components/theme/ui-theme-bootstrap-script";
 
 const siteUrl = getPublicSiteUrl();
 
@@ -68,9 +69,13 @@ export default function RootLayout({
   return (
     <html
       lang="es"
+      data-ui-style="1"
       className={`${jakarta.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <UiThemeBootstrapScript />
+        {children}
+      </body>
     </html>
   );
 }

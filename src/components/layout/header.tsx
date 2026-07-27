@@ -37,10 +37,8 @@ export function Header({
   return (
     <header
       className={cn(
-        "border-b px-4 py-4 backdrop-blur-sm sm:px-6",
-        shellDark
-          ? "border-slate-700/80 bg-slate-900/95"
-          : "border-slate-200/80 bg-white/90",
+        "drflow-ui-header border-b px-4 py-4 backdrop-blur-sm sm:px-6",
+        shellDark ? "drflow-ui-header-dark" : "drflow-ui-header-light",
         sidebarHidden ? "lg:pl-6" : "lg:pl-72"
       )}
     >

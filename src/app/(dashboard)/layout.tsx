@@ -11,6 +11,7 @@ import { RoutePrefetcher } from "@/components/layout/route-prefetcher";
 import { PwaRegister } from "@/components/pwa/pwa-register";
 import { UpdateBanner } from "@/components/updates/update-banner";
 import { TrialBanner } from "@/components/trial/trial-banner";
+import { UiThemeProvider } from "@/components/theme/ui-theme-provider";
 import { getDashboardShell, logAudit } from "@/lib/auth/session";
 import { canAccessRoute } from "@/lib/permissions/roles";
 import {
@@ -95,6 +96,7 @@ export default async function DashboardLayout({
         <TrialBanner trialEndsAt={clinic.trial_ends_at} daysRemaining={daysLeft} />
       )}
       <DashboardSidebarProvider>
+        <UiThemeProvider>
         <Sidebar
           clinicName={clinic?.name}
           role={role}
@@ -107,6 +109,7 @@ export default async function DashboardLayout({
           </Suspense>
           {children}
         </DashboardMain>
+        </UiThemeProvider>
       </DashboardSidebarProvider>
       <FloatingActions />
     </div>

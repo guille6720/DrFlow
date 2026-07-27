@@ -22,6 +22,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ArrowLeft } from "lucide-react";
 import { RenewMedicationPanel } from "@/components/pacientes/renew-medication-panel";
+import { BentoGrid, BentoCell } from "@/components/theme/bento-grid";
 import type { PrescriptionMedication } from "@/types/prescription";
 
 export default async function PacienteDetailPage({
@@ -121,7 +122,9 @@ export default async function PacienteDetailPage({
         userName={profile?.full_name}
       />
 
-      <div className="space-y-6 p-4 sm:p-6">
+      <div className="p-4 sm:p-6">
+        <BentoGrid className="gap-6">
+        <BentoCell span={12}>
         <div className="flex flex-wrap items-center gap-3">
           <Link href="/pacientes" className="drflow-link inline-flex items-center gap-1 text-sm">
             <ArrowLeft className="h-4 w-4" /> Volver al listado
@@ -136,9 +139,13 @@ export default async function PacienteDetailPage({
             />
           )}
         </div>
+        </BentoCell>
 
+        <BentoCell span={12}>
         <PamiPatientBanner patient={patient} />
+        </BentoCell>
 
+        <BentoCell span={12}>
         <RenewMedicationPanel
           patientId={patient.id}
           patientInsurance={patient.insurance_provider}
@@ -154,8 +161,10 @@ export default async function PacienteDetailPage({
           }))}
           canIssue={canIssue}
         />
+        </BentoCell>
 
         {portalSlug && doctorInfo && (
+          <BentoCell span={12}>
           <Card title="App para el paciente">
             <PatientAppShareControl
               patientId={patient.id}
@@ -166,10 +175,11 @@ export default async function PacienteDetailPage({
               share={patientShare}
             />
           </Card>
+          </BentoCell>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card title="Datos personales">
+        <BentoCell span={6}>
+          <Card title="Datos personales" className="h-full">
             <dl className="grid gap-3 text-sm sm:grid-cols-2">
               <div><dt>Teléfono</dt><dd>{patient.phone ?? "—"}</dd></div>
               <div><dt>Email</dt><dd>{patient.email ?? "—"}</dd></div>
@@ -179,26 +189,30 @@ export default async function PacienteDetailPage({
               <div><dt>Emergencia</dt><dd>{patient.emergency_contact_name ?? "—"} {patient.emergency_contact_phone && `(${patient.emergency_contact_phone})`}</dd></div>
             </dl>
           </Card>
+        </BentoCell>
 
-          <Card title="Información clínica">
+        <BentoCell span={6}>
+          <Card title="Información clínica" className="h-full">
             <dl className="space-y-3 text-sm">
               <div><dt>Antecedentes</dt><dd>{patient.medical_history ?? "Sin registrar"}</dd></div>
               <div><dt>Alergias</dt><dd className="text-red-300">{patient.allergies ?? "Sin registrar"}</dd></div>
               <div><dt>Medicación habitual</dt><dd>{patient.regular_medication ?? "Sin registrar"}</dd></div>
             </dl>
           </Card>
-        </div>
+        </BentoCell>
 
         {canViewClinical && (
+          <BentoCell span={12}>
           <ClinicalDocumentsPanel
             patientId={patient.id}
             documents={clinicalDocuments ?? []}
             canEdit={canEditClinical}
           />
+          </BentoCell>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card title="Historial de turnos">
+        <BentoCell span={6}>
+          <Card title="Historial de turnos" className="h-full">
             {(appointments ?? []).length === 0 ? (
               <p className="text-sm text-slate-500">Sin turnos registrados.</p>
             ) : (
@@ -228,8 +242,10 @@ export default async function PacienteDetailPage({
               </ul>
             )}
           </Card>
+        </BentoCell>
 
-          <Card title="Consultas clínicas">
+          <BentoCell span={6}>
+          <Card title="Consultas clínicas" className="h-full">
             <div className="mb-3 flex flex-wrap gap-2">
               <Link href={`/historias/paciente/${id}`}>
                 <Button variant="outline" size="sm">
@@ -255,7 +271,8 @@ export default async function PacienteDetailPage({
               + Nueva consulta
             </Link>
           </Card>
-        </div>
+          </BentoCell>
+        </BentoGrid>
       </div>
     </>
   );

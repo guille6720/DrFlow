@@ -29,8 +29,8 @@ export function ClinicalTopNav() {
   return (
     <nav
       className={cn(
-        "border-b px-4 backdrop-blur-sm sm:px-6",
-        dark ? "border-slate-700/80 bg-slate-900/90" : "border-slate-200/80 bg-white/90"
+        "drflow-ui-topnav border-b px-4 backdrop-blur-sm sm:px-6",
+        dark ? "drflow-ui-topnav-dark" : "drflow-ui-topnav-light"
       )}
     >
       <div className="flex gap-1 overflow-x-auto">

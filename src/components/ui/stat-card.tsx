@@ -19,7 +19,7 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-200/90 bg-white p-5 shadow-md shadow-slate-200/40 transition-shadow hover:shadow-lg hover:shadow-teal-100/40 drflow-card-accent",
+        "rounded-2xl border border-slate-200/90 bg-white p-5 shadow-md shadow-slate-200/40 transition-shadow hover:shadow-lg hover:shadow-teal-100/40 drflow-card-accent drflow-ui-stat",
         className
       )}
     >

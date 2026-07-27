@@ -194,3 +194,245 @@ button {
 .drflow-mesh main .drflow-card-light :is(p, span, li).text-slate-600 {
   color: #64748b;
 }
+
+/* ——— Estilo 1 (default): componentes UI ——— */
+.drflow-ui-card {
+  border-radius: 1rem;
+  border: 1px solid rgb(100 116 139 / 0.6);
+  background: rgb(51 65 85 / 0.95);
+  color: #f1f5f9;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.25);
+}
+
+.drflow-ui-card-header {
+  border-bottom: 1px solid rgb(71 85 105 / 0.8);
+}
+
+.drflow-ui-card-title {
+  color: #f8fafc;
+}
+
+.drflow-ui-card-desc {
+  color: #e2e8f0;
+}
+
+.drflow-ui-header-dark {
+  border-color: rgb(51 65 85 / 0.8);
+  background: rgb(15 23 42 / 0.95);
+}
+
+.drflow-ui-header-light {
+  border-color: rgb(226 232 240 / 0.8);
+  background: rgb(255 255 255 / 0.9);
+}
+
+.drflow-ui-sidebar {
+  border-color: rgb(51 65 85 / 0.8);
+}
+
+/* Bento: Estilo 1 = columna; Estilo 2 = rejilla 12 cols */
+.drflow-bento {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.drflow-bento-cell {
+  min-width: 0;
+}
+
+/* ——— Estilo 2: flat minimalista ——— */
+html[data-ui-style="2"] {
+  --radius: 0.75rem;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) {
+  --background: #eef2f6;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --primary: #0d9488;
+  --primary-light: #14b8a6;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --border: #334155;
+  --muted: #94a3b8;
+  --primary: #2dd4bf;
+}
+
+html[data-ui-style="2"] .drflow-mesh {
+  background-image: none;
+  background-color: var(--background);
+}
+
+html[data-ui-style="2"] .drflow-bento {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 1023px) {
+  html[data-ui-style="2"] .drflow-bento-cell {
+    grid-column: span 12 !important;
+  }
+}
+
+html[data-ui-style="2"] .drflow-bento-span-12 {
+  grid-column: span 12;
+}
+html[data-ui-style="2"] .drflow-bento-span-8 {
+  grid-column: span 12;
+}
+html[data-ui-style="2"] .drflow-bento-span-6 {
+  grid-column: span 12;
+}
+html[data-ui-style="2"] .drflow-bento-span-4 {
+  grid-column: span 12;
+}
+html[data-ui-style="2"] .drflow-bento-span-3 {
+  grid-column: span 12;
+}
+
+@media (min-width: 1024px) {
+  html[data-ui-style="2"] .drflow-bento-span-8 {
+    grid-column: span 8;
+  }
+  html[data-ui-style="2"] .drflow-bento-span-6 {
+    grid-column: span 6;
+  }
+  html[data-ui-style="2"] .drflow-bento-span-4 {
+    grid-column: span 4;
+  }
+  html[data-ui-style="2"] .drflow-bento-span-3 {
+    grid-column: span 3;
+  }
+}
+
+html[data-ui-style="2"] .drflow-bento-stats {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+html[data-ui-style="2"] .drflow-bento-stats > * {
+  grid-column: span 12;
+}
+
+@media (min-width: 640px) {
+  html[data-ui-style="2"] .drflow-bento-stats > * {
+    grid-column: span 6;
+  }
+}
+@media (min-width: 1280px) {
+  html[data-ui-style="2"] .drflow-bento-stats > * {
+    grid-column: span 4;
+  }
+}
+@media (min-width: 1536px) {
+  html[data-ui-style="2"] .drflow-bento-stats > * {
+    grid-column: span 2;
+  }
+  html[data-ui-style="2"] .drflow-bento-stats > *:nth-child(5) {
+    grid-column: span 4;
+  }
+}
+
+/* Estilo 2 — tarjetas planas */
+html[data-ui-style="2"] .drflow-ui-card {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: none;
+}
+
+html[data-ui-style="2"] .drflow-ui-card-header {
+  border-bottom: 1px solid var(--border);
+}
+
+html[data-ui-style="2"] .drflow-ui-card-title {
+  color: var(--foreground);
+}
+
+html[data-ui-style="2"] .drflow-ui-card-desc {
+  color: var(--muted);
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-card-body dt {
+  color: #0d9488;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-card-body dd {
+  color: #0f172a;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-card-body :is(.text-slate-500, .text-slate-600, .text-slate-700) {
+  color: #475569;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-link {
+  color: #0d9488;
+}
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-link:hover {
+  color: #0f766e;
+}
+
+html[data-ui-style="2"] .drflow-ui-header-dark {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
+  background: #ffffff;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-sidebar-gradient {
+  background: #0f172a;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar {
+  border-color: #e2e8f0;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar .text-slate-300,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar .text-slate-400 {
+  color: #64748b;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.text-slate-300 {
+  color: #334155;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r {
+  background: #0d9488 !important;
+  background-image: none !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+html[data-ui-style="2"] .drflow-ui-button[class*="from-cyan"] {
+  background: var(--primary) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+html[data-ui-style="2"] .drflow-ui-topnav-dark {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .rounded-2xl.border-2.border-amber-400 {
+  border-color: #e2e8f0 !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html[data-ui-style="2"] .drflow-ui-stat {
+  box-shadow: none !important;
+  border: 1px solid var(--border) !important;
+  background: var(--card) !important;
+}

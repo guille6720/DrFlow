@@ -1,0 +1,98 @@
+"use client";
+
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  applyUiThemeToDocument,
+  CLINICAL_DARK_STORAGE_KEY,
+  readClinicalDarkFromStorage,
+  readUiStyleFromStorage,
+  UI_STYLE_STORAGE_KEY,
+  type UiStyleId,
+} from "@/lib/theme/ui-theme";
+
+type UiThemeContextValue = {
+  style: UiStyleId;
+  clinicalDark: boolean;
+  setStyle: (style: UiStyleId) => void;
+  setClinicalDark: (on: boolean) => void;
+  isStyle2: boolean;
+};
+
+const UiThemeContext = createContext<UiThemeContextValue | null>(null);
+
+export function UiThemeProvider({ children }: { children: ReactNode }) {
+  const [style, setStyleState] = useState<UiStyleId>("1");
+  const [clinicalDark, setClinicalDarkState] = useState(false);
+
+  const persist = useCallback((nextStyle: UiStyleId, nextDark: boolean) => {
+    applyUiThemeToDocument(nextStyle, nextDark);
+    try {
+      localStorage.setItem(UI_STYLE_STORAGE_KEY, nextStyle);
+      if (nextStyle === "2") {
+        localStorage.setItem(CLINICAL_DARK_STORAGE_KEY, nextDark ? "1" : "0");
+      }
+    } catch {
+      /* private mode */
+    }
+  }, []);
+
+  const setStyle = useCallback(
+    (next: UiStyleId) => {
+      setStyleState(next);
+      const dark = next === "2" ? clinicalDark : false;
+      if (next === "1") setClinicalDarkState(false);
+      persist(next, dark);
+    },
+    [clinicalDark, persist]
+  );
+
+  const setClinicalDark = useCallback(
+    (on: boolean) => {
+      if (style !== "2") return;
+      setClinicalDarkState(on);
+      persist("2", on);
+    },
+    [persist, style]
+  );
+
+  useEffect(() => {
+    const s = readUiStyleFromStorage();
+    const d = readClinicalDarkFromStorage();
+    setStyleState(s);
+    setClinicalDarkState(d);
+    applyUiThemeToDocument(s, d);
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      style,
+      clinicalDark,
+      setStyle,
+      setClinicalDark,
+      isStyle2: style === "2",
+    }),
+    [style, clinicalDark, setStyle, setClinicalDark]
+  );
+
+  return <UiThemeContext.Provider value={value}>{children}</UiThemeContext.Provider>;
+}
+
+export function useUiTheme() {
+  const ctx = useContext(UiThemeContext);
+  if (!ctx) {
+    throw new Error("useUiTheme must be used within UiThemeProvider");
+  }
+  return ctx;
+}
+
+export function useUiThemeOptional() {
+  return useContext(UiThemeContext);
+}

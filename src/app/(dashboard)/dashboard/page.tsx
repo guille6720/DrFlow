@@ -27,6 +27,7 @@ import Link from "next/link";
 import { format, startOfDay, endOfDay, startOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
 import { DashboardUpcomingList } from "@/components/dashboard/dashboard-upcoming-list";
+import { BentoGrid, BentoCell } from "@/components/theme/bento-grid";
 
 export default async function DashboardPage() {
   const profile = await getProfile();
@@ -152,17 +153,23 @@ export default async function DashboardPage() {
         isSuperadmin={isSuperadmin}
       />
 
-      <div className="space-y-6 p-4 sm:p-6">
+      <div className="p-4 sm:p-6">
+        <BentoGrid className="gap-6">
+        <BentoCell span={12}>
         <ConsultorioLivePanel
           todayTotal={stats.todayAppointments}
           todayDone={todayDone}
           next={nextToday}
           todayQueue={todayQueue}
         />
+        </BentoCell>
 
+        <BentoCell span={12}>
         <ClinicalWorkflowStrip />
+        </BentoCell>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+        <BentoCell span={12}>
+        <div className="drflow-bento-stats grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
           <StatCard
             title="Turnos hoy"
             value={stats.todayAppointments}
@@ -193,10 +200,11 @@ export default async function DashboardPage() {
             icon={<UserX className="h-5 w-5" />}
           />
         </div>
+        </BentoCell>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <BentoCell span={8}>
           <Card
-            className="lg:col-span-2"
+            className="h-full"
             title="Próximos turnos"
             action={
               <Link href="/agenda">
@@ -227,8 +235,10 @@ export default async function DashboardPage() {
               />
             )}
           </Card>
+        </BentoCell>
 
-          <Card title="Accesos rápidos">
+          <BentoCell span={4}>
+          <Card title="Accesos rápidos" className="h-full">
             <div className="grid gap-2">
               <Link href="/atenciones">
                 <Button variant="outline" className="w-full justify-start">
@@ -277,7 +287,8 @@ export default async function DashboardPage() {
               )}
             </div>
           </Card>
-        </div>
+          </BentoCell>
+        </BentoGrid>
       </div>
     </>
   );
