@@ -137,6 +137,53 @@ export function buildPatientHceCsv(rows: HceExportRow[]): string {
   return [header, ...body].join("\n");
 }
 
+/** CSV resumen adjunto por paciente (sin columnas de identidad). */
+export function parsePatientHceSummaryCsv(content: string): HceExportRow[] {
+  const table = parseCsvRows(content.replace(/^\uFEFF/, ""));
+  if (table.length < 2) return [];
+
+  const headers = table[0].map((h) => h.trim().toLowerCase());
+  const col: Partial<Record<string, number>> = {};
+  headers.forEach((h, i) => {
+    const key = HEADER_ALIASES[h] ?? (h === "tipo_registro" ? "tipo_registro" : undefined);
+    if (key) col[key] = i;
+    if (h === "tipo_registro") col.tipo_registro = i;
+    if (h === "fecha_inicio") col.fecha_inicio = i;
+    if (h === "fecha_fin") col.fecha_fin = i;
+    if (h === "estado") col.estado = i;
+    if (h === "diagnostico") col.diagnostico = i;
+    if (h === "cie10") col.cie10 = i;
+    if (h === "notas") col.notas = i;
+  });
+
+  const rows: HceExportRow[] = [];
+  for (let i = 0; i < table.length - 1; i += 1) {
+    const line = table[i + 1];
+    const get = (key: keyof Omit<HceExportRow, "lineNumber" | "paciente_id" | "last_name" | "first_name" | "document_number">) => {
+      const idx = col[key];
+      if (idx === undefined) return "";
+      return (line[idx] ?? "").trim();
+    };
+    const tipo = get("tipo_registro").toLowerCase();
+    if (!tipo) continue;
+    rows.push({
+      lineNumber: i + 2,
+      paciente_id: "summary",
+      last_name: "",
+      first_name: "",
+      document_number: null,
+      tipo_registro: tipo,
+      fecha_inicio: parseIsoDate(get("fecha_inicio")),
+      fecha_fin: parseIsoDate(get("fecha_fin")),
+      estado: get("estado"),
+      diagnostico: get("diagnostico"),
+      cie10: get("cie10"),
+      notas: get("notas"),
+    });
+  }
+  return rows;
+}
+
 export function hceRowToClinicalRecord(row: HceExportRow): {
   marker: string;
   chief_complaint: string;
@@ -163,12 +210,14 @@ export function hceRowToClinicalRecord(row: HceExportRow): {
   }
 
   if (row.tipo_registro === "treatments") {
+    const product = row.diagnostico.trim() || row.notas.trim();
+    const notes = row.notas.trim();
     return {
       marker,
       chief_complaint: `${marker} Tratamiento importado (${row.estado || "activo"})`,
-      diagnosis: row.diagnostico,
-      evolution: row.notas,
-      indications: row.estado ? `Estado: ${row.estado}` : "Importado desde export HCE",
+      diagnosis: product,
+      evolution: notes,
+      indications: notes || (row.estado ? `Estado: ${row.estado}` : ""),
       consultation_date: row.fecha_inicio,
     };
   }
@@ -207,6 +256,17 @@ export function hceRowToClinicalRecord(row: HceExportRow): {
   }
 
   return null;
+}
+
+export function isHceStructuralChiefComplaint(chief_complaint: string | null): boolean {
+  const cc = chief_complaint ?? "";
+  return /^\[HCE:[^\]]+\]\s*(Tratamiento|Diagnóstico) importado/i.test(cc);
+}
+
+export function filterRecordsForEhrSupplement<
+  T extends { chief_complaint: string | null },
+>(records: T[]): T[] {
+  return records.filter((r) => !isHceStructuralChiefComplaint(r.chief_complaint));
 }
 
 export function isHceExportCsv(content: string, fileName: string): boolean {

@@ -41,6 +41,8 @@ export type PatientEhrTreatmentRow = {
   recordId: string;
 };
 
+import { isHceStructuralChiefComplaint } from "@/lib/utils/hce-export-parse";
+
 function formatShortDate(iso: string): string {
   const d = new Date(iso);
   const day = d.getDate();
@@ -69,7 +71,9 @@ function parseTreatmentLines(indications: string, recordId: string, dateLabel: s
   const lines = raw.split(/\n+/).map((l) => l.trim()).filter(Boolean);
   if (lines.length === 0) return [];
 
-  return lines.map((line, i) => {
+  return lines
+    .filter((line) => !/^estado\s*:/i.test(line))
+    .map((line, i) => {
     const parts = line.split(/\s*[·|–-]\s*/);
     const product = parts[0]?.slice(0, 80) || line.slice(0, 80);
     return {
@@ -110,16 +114,20 @@ export function buildEhrPayloadFromRecords(
     const category = classifyCategory(chief);
     const dateLabel = formatShortDate(r.created_at);
 
-    consultations.push({
-      id: r.id,
-      created_at: r.created_at,
-      professional_name: r.professional_name,
-      chief_complaint: chief,
-      diagnosis: stripHceMarker(r.diagnosis ?? ""),
-      evolution: r.evolution ?? "",
-      indications: r.indications ?? "",
-      category,
-    });
+    const skipSidebar = isHceStructuralChiefComplaint(r.chief_complaint);
+
+    if (!skipSidebar) {
+      consultations.push({
+        id: r.id,
+        created_at: r.created_at,
+        professional_name: r.professional_name,
+        chief_complaint: chief,
+        diagnosis: stripHceMarker(r.diagnosis ?? ""),
+        evolution: r.evolution ?? "",
+        indications: r.indications ?? "",
+        category,
+      });
+    }
 
     const diagText = stripHceMarker(r.diagnosis ?? "");
     if (diagText && category !== "vitals") {
@@ -137,8 +145,16 @@ export function buildEhrPayloadFromRecords(
     }
 
     if (r.indications?.trim()) {
-      treatmentRows.push(...parseTreatmentLines(r.indications, r.id, dateLabel));
-    } else if (category === "treatment" && diagText) {
+      const parsed = parseTreatmentLines(r.indications, r.id, dateLabel);
+      if (parsed.length > 0) {
+        treatmentRows.push(...parsed);
+      }
+    }
+    if (
+      category === "treatment" &&
+      diagText &&
+      !treatmentRows.some((t) => t.recordId === r.id)
+    ) {
       treatmentRows.push({
         id: `t-${r.id}`,
         dateLabel,

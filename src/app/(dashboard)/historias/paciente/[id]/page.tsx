@@ -12,6 +12,12 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { formatAgeLabel } from "@/lib/utils/patient-age";
 import { buildEhrPayloadFromRecords } from "@/lib/utils/patient-ehr-model";
+import { filterRecordsForEhrSupplement } from "@/lib/utils/hce-export-parse";
+import {
+  buildEhrPayloadFromHceRows,
+  loadPatientHceSummaryRows,
+  mergeEhrPayload,
+} from "@/lib/utils/patient-ehr-from-hce";
 import { ArrowLeft, Plus } from "lucide-react";
 
 const RECORD_LIMIT = 2000;
@@ -87,8 +93,34 @@ export default async function PatientClinicalHistoryPage({
         "Profesional",
     })) ?? [];
 
-  const { consultations, diagnosisRows, treatmentRows } =
-    buildEhrPayloadFromRecords(mappedRecords);
+  const hceRows = await loadPatientHceSummaryRows(supabase, clinicId, patientId);
+  const professionalFallback =
+    mappedRecords.find((r) => r.professional_name !== "Profesional")?.professional_name ??
+    "Importación HCE";
+
+  let consultations;
+  let diagnosisRows;
+  let treatmentRows;
+  let usesHceExport = false;
+
+  if (hceRows) {
+    usesHceExport = true;
+    const fromHce = buildEhrPayloadFromHceRows(hceRows, professionalFallback);
+    const supplement = buildEhrPayloadFromRecords(
+      filterRecordsForEhrSupplement(mappedRecords)
+    );
+    ({ consultations, diagnosisRows, treatmentRows } = mergeEhrPayload(fromHce, supplement));
+  } else {
+    ({ consultations, diagnosisRows, treatmentRows } =
+      buildEhrPayloadFromRecords(mappedRecords));
+  }
+
+  const hasClinicalView =
+    usesHceExport ||
+    (totalRecords ?? 0) > 0 ||
+    consultations.length > 0 ||
+    diagnosisRows.length > 0 ||
+    treatmentRows.length > 0;
 
   const prescriptions =
     rxList?.map((rx) => {
@@ -141,7 +173,7 @@ export default async function PatientClinicalHistoryPage({
         </div>
       </div>
 
-      {(totalRecords ?? 0) === 0 ? (
+      {!hasClinicalView ? (
         <div className="p-8 text-center">
           <p className="text-slate-600">Este paciente aún no tiene consultas registradas.</p>
           <Link href={`/historias/nueva?patient=${patientId}`} className="mt-4 inline-block">
@@ -173,7 +205,12 @@ export default async function PatientClinicalHistoryPage({
             })) ?? []
           }
           prescriptions={prescriptions}
-          totalConsultations={totalRecords ?? consultations.length}
+          totalConsultations={
+            usesHceExport
+              ? diagnosisRows.length + treatmentRows.length + consultations.length
+              : (totalRecords ?? consultations.length)
+          }
+          usesHceExport={usesHceExport}
         />
       )}
     </>

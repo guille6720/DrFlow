@@ -54,6 +54,7 @@ interface Props {
   attachments: PatientEhrAttachment[];
   prescriptions: PatientEhrPrescription[];
   totalConsultations: number;
+  usesHceExport?: boolean;
 }
 
 function formatEvolutionHeader(iso: string, professional: string): string {
@@ -71,6 +72,7 @@ export function PatientEhrView({
   attachments,
   prescriptions,
   totalConsultations,
+  usesHceExport = false,
 }: Props) {
   const sorted = useMemo(
     () =>
@@ -173,6 +175,17 @@ export function PatientEhrView({
           </div>
         </div>
       </div>
+
+      {usesHceExport ? (
+        <div className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-950">
+          Diagnósticos y tratamientos se muestran desde el export HCE original (como en el sistema
+          anterior). Las evoluciones con texto largo suelen venir del{" "}
+          <Link href="/datos" className="font-medium text-blue-700 underline">
+            PDF de historia clínica
+          </Link>
+          ; si el contador de evoluciones está en 0, importalo desde Datos.
+        </div>
+      ) : null}
 
       {/* Toolbar módulos */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-2">
