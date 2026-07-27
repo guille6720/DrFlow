@@ -18,7 +18,7 @@ export function DatosNavigationHelp() {
           del navegador (misma pantalla).
         </li>
         <li>
-          <strong>Panel izquierdo:</strong> subís archivos (Excel consumers, HCE CSV, PDFs).
+          <strong>Panel izquierdo:</strong> subís archivos (Excel consumers, export teams JSONL / HCE CSV, PDFs).
         </li>
         <li>
           <strong>Panel derecho (esta columna):</strong> checklist de migración y, más abajo, la

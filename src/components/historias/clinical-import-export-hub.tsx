@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ImportClinicalPdfPanel } from "@/components/historias/import-clinical-pdf-panel";
 import { ImportClinicalCsvPanel } from "@/components/historias/import-clinical-csv-panel";
 import { ImportHceExportPanel } from "@/components/historias/import-hce-export-panel";
+import { ImportTeamsJsonlPanel } from "@/components/historias/import-teams-jsonl-panel";
 import {
   downloadClinicalHistoryPdf,
   downloadClinicalRecordsCsv,
@@ -19,6 +20,7 @@ const IMPORT_OPTIONS = [
   { value: "pdf", label: "Historias PDF (una o en lote)" },
   { value: "csv", label: "Consultas CSV (plantilla DrFlow)" },
   { value: "hce", label: "Export HCE (HCE_export.csv)" },
+  { value: "jsonl", label: "Export teams (teams-*.jsonl)" },
 ];
 
 const EXPORT_OPTIONS = [
@@ -88,6 +90,9 @@ export function ClinicalImportExportHub({
           )}
           {canImport && importKind === "hce" && (
             <ImportHceExportPanel embedded canImport={canImport} />
+          )}
+          {canImport && importKind === "jsonl" && (
+            <ImportTeamsJsonlPanel embedded canImport={canImport} />
           )}
           {!canImport && (
             <p className="text-sm text-slate-500">No tenés permisos para importar historias.</p>

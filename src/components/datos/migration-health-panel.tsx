@@ -72,7 +72,7 @@ export function MigrationHealthPanel({ report }: Props) {
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-900">Migración segura — estado de la clínica</h2>
       <p className="mt-1 text-sm text-slate-600">
-        Orden recomendado: consumers → HCE_export.csv → PDFs de historia. Revisá pendientes antes de
+        Orden recomendado: consumers → teams-*.jsonl (o HCE_export.csv) → PDFs de historia. Revisá pendientes antes de
         dar por cerrada la migración.
       </p>
 

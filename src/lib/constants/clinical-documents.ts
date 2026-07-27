@@ -20,6 +20,10 @@ export const HCE_EXPORT_MAX_BYTES = 15 * 1024 * 1024;
 export const HCE_EXPORT_MAX_ROWS = 15_000;
 export const HCE_IMPORT_BATCH_SIZE = 120;
 
+export const TEAMS_JSONL_MAX_BYTES = 55 * 1024 * 1024;
+export const TEAMS_JSONL_MAX_ROWS = 20_000;
+export const TEAMS_JSONL_IMPORT_BATCH_SIZE = 150;
+
 export function clinicalDocumentCategoryLabel(category: string | null | undefined): string {
   return (
     CLINICAL_DOCUMENT_CATEGORIES.find((item) => item.value === category)?.label ?? "Documento"
