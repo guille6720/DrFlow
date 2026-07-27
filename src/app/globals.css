@@ -436,3 +436,145 @@ html[data-ui-style="2"] .drflow-ui-stat {
   border: 1px solid var(--border) !important;
   background: var(--card) !important;
 }
+
+/* ——— Campos de formulario (legibles en tarjetas oscuras) ——— */
+.drflow-ui-input {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+.drflow-ui-input::placeholder {
+  color: #94a3b8;
+}
+
+.drflow-card-body .drflow-ui-input,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-ui-input {
+  background-color: #0f172a;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+.drflow-card-body .drflow-ui-input::placeholder,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-ui-input::placeholder {
+  color: #64748b;
+}
+
+.drflow-card-body .drflow-ui-input:focus,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-ui-input:focus {
+  border-color: #2dd4bf;
+}
+
+/* Islas claras: inputs siempre oscuros sobre fondo claro */
+.drflow-card-body .drflow-card-light .drflow-ui-input,
+.drflow-card-body :is(.bg-white, .bg-slate-50, .bg-slate-50\\/80) .drflow-ui-input,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh .drflow-ui-input {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-card-body .drflow-ui-label,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-card-body label.drflow-ui-label {
+  color: #334155;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body .drflow-ui-label,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body label {
+  color: #e2e8f0;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body dt {
+  color: #99f6e4;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body dd {
+  color: #f8fafc;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body :is(.text-slate-500, .text-slate-600, .text-slate-700) {
+  color: #cbd5e1;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-link {
+  color: #5eead4;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(p, span, li).text-slate-500,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(p, span, li).text-slate-600,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(p, span, li).text-slate-700 {
+  color: #cbd5e1;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-stat .text-slate-900 {
+  color: #f8fafc;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-stat .text-slate-500 {
+  color: #94a3b8;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-button.bg-white,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-button.border-slate-200 {
+  border-color: #475569 !important;
+  background-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-button.bg-teal-50 {
+  background-color: #134e4a !important;
+  color: #ccfbf1 !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-button.text-slate-700 {
+  color: #e2e8f0 !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-button.text-slate-800 {
+  color: #f1f5f9 !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar .text-slate-300,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar .text-slate-400,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar .text-slate-500 {
+  color: #94a3b8;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar a:not([class*="from-teal"]):not([class*="from-cyan"]) {
+  color: #cbd5e1;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-header-dark .text-slate-50,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-header-dark h1 {
+  color: #f8fafc;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-header-dark .text-slate-300 {
+  color: #cbd5e1;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .rounded-2xl.border-2.border-amber-400 {
+  border-color: #475569 !important;
+  background: #1e293b !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .rounded-2xl.border-2.border-amber-400 > p {
+  color: #fcd34d !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .rounded-2xl.border-2.border-amber-400 .drflow-ui-input {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #64748b !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] select.drflow-ui-input option {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+/* Header: selector de clínica en modo oscuro */
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-header-dark .drflow-ui-input {
+  background: #1e293b;
+  color: #f1f5f9;
+  border-color: #475569;
+}
