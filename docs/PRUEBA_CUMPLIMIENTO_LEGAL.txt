@@ -1,0 +1,41 @@
+DrFlow — Prueba de cumplimiento legal (v2026-07-27)
+App: https://drflow-app-rho.vercel.app
+
+Páginas públicas (abrí en el celu):
+• Privacidad: https://drflow-app-rho.vercel.app/privacidad
+• Términos consultorio: https://drflow-app-rho.vercel.app/terminos
+• Info al paciente: https://drflow-app-rho.vercel.app/aviso-paciente
+
+——— PRUEBA 1: Alta consultorio ———
+1) Ir a Registro: https://drflow-app-rho.vercel.app/register
+2) Completar datos SIN marcar términos → debe bloquear con error.
+3) Repetir marcando “Acepto términos y privacidad” → debe crear cuenta OK.
+(Avisame si ves el mensaje de error o si deja pasar sin checkbox.)
+
+——— PRUEBA 2: Turno web (paciente) ———
+Necesitás el link de “Reserva online” del consultorio de prueba.
+Formato: https://drflow-app-rho.vercel.app/solicitar-turno/[SLUG]
+(Si no tenés el slug, pedímelo o miralo en Configuración → Reserva online.)
+
+1) Elegir profesional, horario y datos del paciente.
+2) SIN marcar consentimiento de datos → no debe enviar.
+3) Con checkbox marcado → “Solicitud enviada”.
+4) Abrir links “información al paciente” y “privacidad” desde el formulario.
+
+——— PRUEBA 3: Panel legal (logueado como admin consultorio) ———
+Configuración → arriba “Cumplimiento legal”
+• Debe mostrar versión de términos/privacidad y fecha de aceptación.
+• Contador de consentimientos (sube después de turnos web con checkbox).
+
+——— PRUEBA 4: Export ARCO ———
+Pacientes → elegir un paciente → botón exportar datos (ARCO)
+• Debe descargar un archivo .json con datos del paciente.
+
+——— PRUEBA 5: Portal paciente ———
+Entrar al portal del consultorio (link /portal/[slug] con DNI de prueba).
+Al pie: “Información al paciente” y “Privacidad” deben abrir bien.
+
+——— Qué reportar ———
+✓ OK / ✗ falló + captura + paso exacto + navegador (Chrome/Safari) o celu.
+
+Nota: el archivo SQL de base de datos (033) ya está aplicado en prod; no hace falta que lo ejecuten ustedes.
