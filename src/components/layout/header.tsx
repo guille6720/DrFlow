@@ -8,6 +8,7 @@ import { ROLE_LABELS, hasPermission } from "@/lib/permissions/roles";
 import type { Clinic, UserRole } from "@/types/database";
 import { ClinicSelector } from "./clinic-selector";
 import { cn } from "@/lib/utils/cn";
+import { useDashboardSidebar } from "@/components/layout/dashboard-sidebar-context";
 
 interface HeaderProps {
   title: string;
@@ -30,9 +31,15 @@ export function Header({
 }: HeaderProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const showSettings = hasPermission(role, "manageSettings", isSuperadmin);
+  const { hidden: sidebarHidden } = useDashboardSidebar();
 
   return (
-    <header className="border-b border-blue-100/80 bg-gradient-to-r from-white via-blue-50/20 to-white px-4 py-4 sm:px-6 lg:pl-72">
+    <header
+      className={cn(
+        "border-b border-slate-200/80 bg-white/90 px-4 py-4 backdrop-blur-sm sm:px-6",
+        sidebarHidden ? "lg:pl-6" : "lg:pl-72"
+      )}
+    >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="pl-12 lg:pl-0">
           <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
@@ -47,8 +54,8 @@ export function Header({
             <Link
               href="/configuracion"
               className={cn(
-                "inline-flex h-11 w-11 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-700 shadow-sm transition",
-                "hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
+                "inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-teal-700 shadow-sm transition",
+                "hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800"
               )}
               aria-label="Configuración"
               title="Configuración"
@@ -64,15 +71,15 @@ export function Header({
               type="button"
               onClick={() => setProfileOpen(true)}
               className={cn(
-                "rounded-xl border border-blue-100 bg-white px-4 py-2 text-right shadow-sm transition",
-                "hover:border-blue-300 hover:bg-blue-50/80 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                "rounded-2xl border border-slate-200 bg-white px-4 py-2 text-right shadow-sm transition",
+                "hover:border-teal-200 hover:bg-teal-50/80 focus:outline-none focus:ring-2 focus:ring-teal-500/30"
               )}
               title="Editar mis datos"
               aria-label="Editar mis datos profesionales"
             >
               <p className="text-sm font-semibold text-slate-900">{userName}</p>
               {role && (
-                <p className="text-xs font-medium text-blue-700">{ROLE_LABELS[role]}</p>
+                <p className="text-xs font-medium text-teal-700">{ROLE_LABELS[role]}</p>
               )}
             </button>
           )}

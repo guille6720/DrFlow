@@ -16,13 +16,10 @@ import {
   Stethoscope,
   ClipboardList,
   User,
-  PanelLeftClose,
-  PanelLeftOpen,
   List,
 } from "lucide-react";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
-import { useDashboardSidebar } from "@/components/layout/dashboard-sidebar-context";
 import type {
   PatientEhrAttachment,
   PatientEhrConsultation,
@@ -138,8 +135,6 @@ export function PatientEhrView({
   const [summaryTab, setSummaryTab] = useState<SummaryTab>("diagnostics");
   const [mobilePane, setMobilePane] = useState<"list" | "detail">("list");
   const [hideEvolutionList, setHideEvolutionList] = useState(false);
-  const { hidden: navSidebarHidden, toggleHidden: toggleNavSidebar, setHidden: setNavSidebarHidden } =
-    useDashboardSidebar();
 
   const counts: Record<SummaryTab, number> = {
     diagnostics: diagnosisRows.length,
@@ -188,23 +183,10 @@ export function PatientEhrView({
     setMobilePane("detail");
   }
 
-  const focusReading = navSidebarHidden && hideEvolutionList;
+  const focusReading = hideEvolutionList;
 
   const layoutToolbar = (
     <div className="mb-4 flex flex-wrap items-center gap-2 print:hidden">
-      <button
-        type="button"
-        onClick={toggleNavSidebar}
-        className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/90 hover:bg-slate-50"
-        title={navSidebarHidden ? "Mostrar menú de navegación" : "Ocultar menú de navegación"}
-      >
-        {navSidebarHidden ? (
-          <PanelLeftOpen className="h-4 w-4 text-cyan-600" />
-        ) : (
-          <PanelLeftClose className="h-4 w-4 text-cyan-600" />
-        )}
-        {navSidebarHidden ? "Mostrar menú" : "Ocultar menú"}
-      </button>
       <button
         type="button"
         onClick={() => setHideEvolutionList((v) => !v)}
@@ -214,18 +196,6 @@ export function PatientEhrView({
         <List className="h-4 w-4 text-cyan-600" />
         {hideEvolutionList ? "Mostrar listado" : "Ocultar listado"}
       </button>
-      {(navSidebarHidden || hideEvolutionList) && (
-        <button
-          type="button"
-          onClick={() => {
-            setNavSidebarHidden(false);
-            setHideEvolutionList(false);
-          }}
-          className="inline-flex items-center gap-1 rounded-full bg-cyan-50 px-3 py-2 text-xs font-semibold text-cyan-900 ring-1 ring-cyan-200/80 hover:bg-cyan-100"
-        >
-          Restablecer vista
-        </button>
-      )}
     </div>
   );
 
@@ -521,17 +491,7 @@ export function PatientEhrView({
   );
 
   return (
-    <div className="min-h-[calc(100vh-8rem)] bg-[#e8ecef] print:bg-white">
-      {navSidebarHidden && (
-        <button
-          type="button"
-          onClick={() => setNavSidebarHidden(false)}
-          className="fixed left-4 top-20 z-30 hidden items-center gap-2 rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white shadow-lg lg:flex print:hidden"
-        >
-          <PanelLeftOpen className="h-4 w-4" />
-          Menú
-        </button>
-      )}
+    <div className="min-h-[calc(100vh-8rem)] bg-transparent print:bg-white">
       <div
         className={`mx-auto px-4 py-5 sm:px-6 lg:py-8 ${
           focusReading ? "max-w-4xl" : "max-w-6xl"

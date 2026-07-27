@@ -10,7 +10,6 @@ import {
   Users,
   Stethoscope,
   Pill,
-  MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -19,31 +18,31 @@ const actions = [
     href: "/agenda?action=new",
     label: "Nuevo turno",
     icon: Calendar,
-    color: "bg-blue-600 hover:bg-blue-700",
+    color: "bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600",
   },
   {
     href: "/pacientes/nuevo",
     label: "Nuevo paciente",
     icon: Users,
-    color: "bg-indigo-600 hover:bg-indigo-700",
+    color: "bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600",
   },
   {
     href: "/historias/nueva",
     label: "Nueva consulta",
     icon: Stethoscope,
-    color: "bg-sky-600 hover:bg-sky-700",
+    color: "bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700",
   },
   {
     href: "/herramientas/farmacologia",
     label: "Guía farmacológica",
     icon: Pill,
-    color: "bg-blue-600 hover:bg-blue-700",
+    color: "bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600",
   },
   {
     href: "/herramientas/farmacologia?mode=symptoms",
     label: "Buscar por síntomas",
     icon: Pill,
-    color: "bg-violet-600 hover:bg-violet-700",
+    color: "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600",
   },
 ];
 
@@ -82,19 +81,13 @@ export function FloatingActions() {
         onClick={() => setOpen(!open)}
         aria-label={open ? "Cerrar acciones" : "Acciones rápidas"}
         className={cn(
-          "flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-800 text-white shadow-xl shadow-blue-600/30",
-          "hover:scale-105 hover:shadow-2xl hover:shadow-blue-600/40 active:scale-95",
+          "flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-xl shadow-cyan-500/35",
+          "hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/40 active:scale-95",
           open && "rotate-45 bg-gradient-to-br from-slate-600 to-slate-800 shadow-slate-600/30"
         )}
       >
         {open ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
       </button>
-
-      {!open && (
-        <div className="pointer-events-none absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-sky-400 text-[10px] font-bold text-white shadow">
-          <MessageCircle className="h-3 w-3" />
-        </div>
-      )}
     </div>
   );
 }

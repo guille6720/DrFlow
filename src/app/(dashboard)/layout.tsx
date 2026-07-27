@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { DashboardSidebarProvider } from "@/components/layout/dashboard-sidebar-context";
 import { DashboardMain } from "@/components/layout/dashboard-main";
+import { DashboardSidebarReveal } from "@/components/layout/dashboard-sidebar-reveal";
 import { ClinicalTopNav } from "@/components/layout/clinical-top-nav";
 import { FloatingActions } from "@/components/layout/floating-actions";
 import { RoutePrefetcher } from "@/components/layout/route-prefetcher";
@@ -99,6 +100,7 @@ export default async function DashboardLayout({
           role={role}
           isSuperadmin={isSuperadmin}
         />
+        <DashboardSidebarReveal />
         <DashboardMain>
           <Suspense fallback={null}>
             <ClinicalTopNav />

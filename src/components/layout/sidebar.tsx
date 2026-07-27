@@ -20,6 +20,8 @@ import {
   ClipboardPlus,
   BookOpen,
   ArrowDownUp,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useState } from "react";
@@ -44,7 +46,6 @@ type NavItem = {
     | null;
 };
 
-/** Nav clínico: sin Telemedicina, Pagos ni Checklist QA (mocks / internos). */
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: null },
   { href: "/agenda", label: "Agenda", icon: Calendar, permission: null },
@@ -74,23 +75,27 @@ function SidebarNavContent({
   pathname,
   onNavigate,
   onPrefetch,
+  sidebarHidden,
+  onToggleSidebarHidden,
 }: {
   clinicName?: string;
   visibleItems: NavItem[];
   pathname: string;
   onNavigate: () => void;
   onPrefetch: (href: string) => void;
+  sidebarHidden: boolean;
+  onToggleSidebarHidden: () => void;
 }) {
   return (
     <>
-      <div className="border-b border-white/10 px-4 py-6">
-        <DrFlowLogo size="xl" href="/dashboard" centered />
-        <p className="mt-3 truncate text-center text-xs text-blue-200/70">
+      <div className="border-b border-slate-100 px-4 py-5">
+        <DrFlowLogo size="lg" href="/dashboard" centered />
+        <p className="mt-2 truncate text-center text-xs font-medium text-slate-500">
           {clinicName ?? "Sin clínica"}
         </p>
       </div>
 
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {visibleItems.map((item) => {
           const active = pathname.startsWith(item.href);
           return (
@@ -102,19 +107,16 @@ function SidebarNavContent({
               onFocus={() => onPrefetch(item.href)}
               onClick={onNavigate}
               className={cn(
-                "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+                "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all",
                 active
-                  ? "bg-blue-600/90 text-white shadow-md shadow-blue-900/30"
-                  : "text-slate-300 hover:bg-white/10 hover:text-white"
+                  ? "bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-md shadow-cyan-500/25"
+                  : "text-slate-600 hover:bg-cyan-50 hover:text-teal-900"
               )}
             >
-              {active && (
-                <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-blue-300" />
-              )}
               <item.icon
                 className={cn(
                   "h-5 w-5 shrink-0",
-                  active ? "text-white" : "text-blue-300 group-hover:text-white"
+                  active ? "text-white" : "text-teal-600 group-hover:text-teal-800"
                 )}
               />
               {item.label}
@@ -123,11 +125,23 @@ function SidebarNavContent({
         })}
       </nav>
 
-      <div className="border-t border-white/10 p-4">
+      <div className="space-y-1 border-t border-slate-100 p-3">
+        <button
+          type="button"
+          onClick={onToggleSidebarHidden}
+          className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+        >
+          {sidebarHidden ? (
+            <PanelLeftOpen className="h-5 w-5 text-teal-600" />
+          ) : (
+            <PanelLeftClose className="h-5 w-5 text-teal-600" />
+          )}
+          {sidebarHidden ? "Mostrar menú lateral" : "Ocultar menú lateral"}
+        </button>
         <form action="/api/auth/signout" method="post">
           <button
             type="submit"
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 hover:bg-white/10 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-700"
           >
             <LogOut className="h-5 w-5" />
             Cerrar sesión
@@ -142,18 +156,23 @@ export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { hidden: desktopHidden } = useDashboardSidebar();
+  const { hidden: desktopHidden, toggleHidden } = useDashboardSidebar();
 
   const visibleItems = navItems.filter((item) => {
     if (!item.permission) return true;
     return hasPermission(role, item.permission, isSuperadmin);
   });
 
+  function handleToggleSidebarHidden() {
+    toggleHidden();
+    setMobileOpen(false);
+  }
+
   return (
     <>
       <button
         type="button"
-        className="fixed left-4 top-4 z-50 rounded-xl bg-blue-700 p-2.5 text-white shadow-lg lg:hidden"
+        className="fixed left-4 top-4 z-50 rounded-2xl bg-gradient-to-r from-cyan-500 to-teal-500 p-2.5 text-white shadow-lg shadow-cyan-500/30 lg:hidden"
         onClick={() => setMobileOpen(!mobileOpen)}
         aria-label="Menú"
       >
@@ -162,14 +181,14 @@ export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
 
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col drflow-sidebar-gradient transition-transform duration-200 ease-out",
+          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200/90 drflow-sidebar-gradient shadow-xl shadow-slate-200/40 transition-transform duration-200 ease-out",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           desktopHidden ? "lg:-translate-x-full" : "lg:translate-x-0"
         )}
@@ -180,6 +199,8 @@ export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
           pathname={pathname}
           onNavigate={() => setMobileOpen(false)}
           onPrefetch={(href) => router.prefetch(href)}
+          sidebarHidden={desktopHidden}
+          onToggleSidebarHidden={handleToggleSidebarHidden}
         />
       </aside>
     </>

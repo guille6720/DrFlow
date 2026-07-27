@@ -25,7 +25,7 @@ export function ClinicalTopNav() {
   if (!show) return null;
 
   return (
-    <nav className="border-b border-blue-100 bg-white/80 px-4 backdrop-blur-sm sm:px-6">
+    <nav className="border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-sm sm:px-6">
       <div className="flex gap-1 overflow-x-auto">
         {tabs.map((tab) => {
           const active = tab.match(pathname, view);
@@ -36,8 +36,8 @@ export function ClinicalTopNav() {
               className={cn(
                 "flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors",
                 active
-                  ? "border-blue-600 text-blue-700"
-                  : "border-transparent text-slate-500 hover:border-blue-200 hover:text-blue-700"
+                  ? "border-teal-500 text-teal-800"
+                  : "border-transparent text-slate-500 hover:border-teal-200 hover:text-teal-800"
               )}
             >
               <tab.icon className="h-4 w-4" />
