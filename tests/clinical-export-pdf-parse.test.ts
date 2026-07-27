@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   isLegacyClinicalPdfExport,
+  parseDrAppCompactClinicalPdf,
   parseLegacyClinicalDemographics,
   parseLegacyClinicalEvolutions,
   parseLegacyClinicalChronicDiagnoses,
@@ -92,5 +93,44 @@ Tratamientos
       "Otros hipotiroidismos",
       "Diabetes mellitus no insulinodependiente",
     ]);
+  });
+});
+
+const ABALO_COMPACT = `
+Nombre
+abalo, jorge guillermo
+DNI
+12.459.480
+PAMI Teléfono
++54 11 6155 9512
+10-NOV-22 Leonardi, Oscar Angel
+Evoluciones
+9:04:12 Leonardi, Oscar Angel osleonardi@gmail.com
+me comunico via telefonica
+ant iam muerte subita en 5 de junio con colocacion de stent
+control cardiologico lo realizo sept 2022
+control odontologico
+Diagnósticos
+Infarto transmural agudo del miocardio de la pared anterior
+Tratamientos
+GASTEC
+20 mg caps.x 70
+FILTEN
+12.5 mg comp.ran.x 60
+ASPIRINETAS
+comp.x 28
+Diagnósticos
+Fecha Nombre
+`;
+
+describe("parseDrAppCompactClinicalPdf", () => {
+  it("parses Abalo-style compact export", () => {
+    const bundle = parseDrAppCompactClinicalPdf(ABALO_COMPACT);
+    expect(bundle).not.toBeNull();
+    expect(bundle!.evolution.evolution).toContain("me comunico via telefonica");
+    expect(bundle!.evolution.evolution).not.toContain("GASTEC");
+    expect(bundle!.diagnosisName).toContain("Infarto transmural");
+    expect(bundle!.treatments.length).toBeGreaterThanOrEqual(3);
+    expect(bundle!.treatments[0].product).toBe("GASTEC");
   });
 });

@@ -14,12 +14,14 @@ import {
   findOrCreatePatientFromExtract,
   enrichPatientFromLegacyPdfDemographics,
   insertLegacyPdfClinicalRecords,
+  insertDrAppCompactPdfStructuralRecords,
 } from "@/lib/utils/clinical-pdf-import";
 import {
   isLegacyClinicalPdfExport,
   parseLegacyClinicalDemographics,
   parseLegacyClinicalEvolutions,
   parseLegacyClinicalEvolutionsWithFallback,
+  parseDrAppCompactClinicalPdf,
 } from "@/lib/utils/clinical-export-pdf-parse";
 import {
   extractPatientFromFileName,
@@ -401,6 +403,7 @@ export async function importClinicalPdfDocument(
         demographics
       );
 
+      const compactBundle = parseDrAppCompactClinicalPdf(pdfText);
       const evolutions = parseLegacyClinicalEvolutionsWithFallback(pdfText);
       if (evolutions.length > 0) {
         const insertResult = await insertLegacyPdfClinicalRecords(supabase, {
@@ -420,6 +423,20 @@ export async function importClinicalPdfDocument(
           clinicalRecordsCreated: insertResult.created,
           clinicalRecordsSkipped: insertResult.skipped,
         };
+
+        if (compactBundle && compactBundle.treatments.length > 0) {
+          const structural = await insertDrAppCompactPdfStructuralRecords(supabase, {
+            clinicId: access.clinicId,
+            patientId: patientResult.patientId,
+            userId: access.userId,
+            consultationDate: compactBundle.evolution.consultationDate,
+            professionalName: compactBundle.evolution.professionalName,
+            diagnosisName: compactBundle.diagnosisName,
+            treatments: compactBundle.treatments,
+          });
+          legacyPdfImport.clinicalRecordsCreated += structural.created;
+          legacyPdfImport.clinicalRecordsSkipped += structural.skipped;
+        }
 
         await logAudit({
           clinicId: access.clinicId,

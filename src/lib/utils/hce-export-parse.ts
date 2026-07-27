@@ -260,7 +260,10 @@ export function hceRowToClinicalRecord(row: HceExportRow): {
 
 export function isHceStructuralChiefComplaint(chief_complaint: string | null): boolean {
   const cc = chief_complaint ?? "";
-  return /^\[HCE:[^\]]+\]\s*(Tratamiento|Diagnóstico) importado/i.test(cc);
+  return (
+    /^\[HCE:[^\]]+\]\s*(Tratamiento|Diagnóstico) importado/i.test(cc) ||
+    /^\[PDF:[^\]]+\]\s*(Tratamiento|Diagnóstico) importado/i.test(cc)
+  );
 }
 
 export function filterRecordsForEhrSupplement<

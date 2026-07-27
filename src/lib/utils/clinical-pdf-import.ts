@@ -240,3 +240,85 @@ export async function insertLegacyPdfClinicalRecords(
   return { created, skipped };
 }
 
+export async function insertDrAppCompactPdfStructuralRecords(
+  supabase: SupabaseClient,
+  params: {
+    clinicId: string;
+    patientId: string;
+    userId: string;
+    consultationDate: string;
+    professionalName: string;
+    diagnosisName: string | null;
+    treatments: Array<{ product: string; dose: string; notes: string }>;
+  }
+): Promise<{ created: number; skipped: number }> {
+  let created = 0;
+  let skipped = 0;
+  const professionalId = await resolveImportProfessionalId(
+    supabase,
+    params.clinicId,
+    params.professionalName
+  );
+  if (!professionalId) return { created: 0, skipped: 0 };
+
+  const createdAt = `${params.consultationDate}T12:00:00.000Z`;
+
+  if (params.diagnosisName) {
+    const marker = `[PDF:${params.consultationDate}:diagnostics:1]`;
+    const { data: existing } = await supabase
+      .from("clinical_records")
+      .select("id")
+      .eq("clinic_id", params.clinicId)
+      .eq("patient_id", params.patientId)
+      .ilike("chief_complaint", `${marker}%`)
+      .maybeSingle();
+    if (existing) skipped += 1;
+    else {
+      await supabase.from("clinical_records").insert({
+        clinic_id: params.clinicId,
+        patient_id: params.patientId,
+        professional_id: professionalId,
+        chief_complaint: sanitizeText(`${marker} Diagnóstico importado (PDF)`),
+        diagnosis: sanitizeText(params.diagnosisName),
+        evolution: "",
+        indications: "",
+        created_by: params.userId,
+        created_at: createdAt,
+        updated_at: createdAt,
+      });
+      created += 1;
+    }
+  }
+
+  for (let i = 0; i < params.treatments.length; i += 1) {
+    const t = params.treatments[i];
+    const marker = `[PDF:${params.consultationDate}:treatments:${i + 1}]`;
+    const { data: existing } = await supabase
+      .from("clinical_records")
+      .select("id")
+      .eq("clinic_id", params.clinicId)
+      .eq("patient_id", params.patientId)
+      .ilike("chief_complaint", `${marker}%`)
+      .maybeSingle();
+    if (existing) {
+      skipped += 1;
+      continue;
+    }
+    await supabase.from("clinical_records").insert({
+      clinic_id: params.clinicId,
+      patient_id: params.patientId,
+      professional_id: professionalId,
+      chief_complaint: sanitizeText(`${marker} Tratamiento importado (PDF)`),
+      diagnosis: sanitizeText(t.product),
+      evolution: sanitizeText(t.notes),
+      indications: sanitizeText(t.dose),
+      created_by: params.userId,
+      created_at: createdAt,
+      updated_at: createdAt,
+    });
+    created += 1;
+  }
+
+  return { created, skipped };
+}
+

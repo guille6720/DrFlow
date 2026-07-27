@@ -158,10 +158,10 @@ export function buildEhrPayloadFromRecords(
       treatmentRows.push({
         id: `t-${r.id}`,
         dateLabel,
-        product: diagText.slice(0, 60),
-        dose: "—",
+        product: diagText.slice(0, 80),
+        dose: (r.indications ?? "").trim() || "—",
         frequency: "—",
-        notes: chief,
+        notes: (r.evolution ?? "").trim() || "—",
         status: "Actual",
         recordId: r.id,
       });

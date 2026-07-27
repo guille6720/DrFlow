@@ -69,15 +69,17 @@ export function parseLegacyClinicalBirthDate(text: string): string | null {
 export function parseLegacyClinicalDemographics(text: string): LegacyClinicalDemographics {
   const normalized = text.replace(/\r/g, "\n");
   const phones: string[] = [];
-  const phoneRe = /Tel[eé]fono\s*\n\s*(\+?\d[\d\s-]{8,})/gi;
+  const phoneRe = /Tel[eé]fono\s*\n?\s*(\+?\d[\d\s-]{8,24})/gi;
   let phoneMatch: RegExpExecArray | null;
   while ((phoneMatch = phoneRe.exec(normalized)) !== null) {
-    const cleaned = phoneMatch[1].replace(/\s+/g, " ").trim();
-    if (!phones.includes(cleaned)) phones.push(cleaned);
+    let cleaned = phoneMatch[1].replace(/\s+/g, " ").trim();
+    cleaned = cleaned.replace(/\s+\d{2}-[A-ZÁÉÍÓÚÑ]{3}.*$/i, "").trim();
+    if (cleaned.length >= 10 && !phones.includes(cleaned)) phones.push(cleaned);
   }
 
-  const pamiMatch = normalized.match(/PAMI\s*\n\s*#?\s*(\d{10,20})/i);
-  const insurance_number = pamiMatch?.[1]?.trim() ?? null;
+  const pamiHash = normalized.match(/PAMI\s*#?\s*(\d{10,20})/i);
+  const pamiLine = normalized.match(/PAMI\s*\n\s*#?\s*(\d{10,20})/i);
+  const insurance_number = pamiHash?.[1]?.trim() ?? pamiLine?.[1]?.trim() ?? null;
 
   return {
     phone: phones[0] ?? null,
@@ -246,7 +248,7 @@ export function parseLegacyClinicalEvolutions(text: string): LegacyClinicalEvolu
     const timeLabel = timeMatch?.[1] ?? null;
     const marker = `[Import:${dateIso}${timeLabel ? `T${timeLabel}` : ""}]`;
 
-    const cleaned = cleanEvolutionBody(block.body);
+    const cleaned = cleanEvolutionBody(trimEvolutionBody(block.body));
     if (cleaned.length < 20) continue;
 
     const indications = extractSection(cleaned, [
@@ -316,10 +318,96 @@ export function parseLegacyClinicalEvolutionsFallback(
   ];
 }
 
+function trimEvolutionBody(body: string): string {
+  const evoSection = body.match(/\nEvoluciones\s*\n([\s\S]*?)\nDiagn[oó]sticos\s*\n/i);
+  if (evoSection?.[1]) return evoSection[1];
+  const cut = body.match(/^([\s\S]*?)\nDiagn[oó]sticos\s*\n/i);
+  if (cut?.[1]) return cut[1];
+  return body;
+}
+
+export type DrAppCompactPdfBundle = {
+  evolution: LegacyClinicalEvolutionEntry;
+  diagnosisName: string | null;
+  treatments: Array<{ product: string; dose: string; notes: string }>;
+};
+
+/** PDF compacto DrApp: evolución + diag/trat en texto (ej. export 1.pdf Abalo). */
+export function parseDrAppCompactClinicalPdf(text: string): DrAppCompactPdfBundle | null {
+  const normalized = text.replace(/\r/g, "\n");
+  if (!/\nEvoluciones\s*\n/i.test(normalized) || !/\nTratamientos\s*\n/i.test(normalized)) {
+    return null;
+  }
+
+  const headerMatch = normalized.match(
+    /(\d{2}-[A-ZÁÉÍÓÚÑ]{3}-\d{2,4})\s+([^\n]+?)\s*\nEvoluciones/i
+  );
+  const dateToken = headerMatch?.[1] ?? normalized.match(/(\d{2}-[A-ZÁÉÍÓÚÑ]{3}-\d{2,4})/i)?.[1];
+  const dateIso = dateToken ? parseLegacyDateToken(dateToken) : null;
+  if (!dateIso) return null;
+
+  const professionalName = headerMatch?.[2]?.trim() ?? "Profesional";
+  const evoMatch = normalized.match(/\nEvoluciones\s*\n([\s\S]*?)\nDiagn[oó]sticos\s*\n/i);
+  const evolutionText = cleanEvolutionBody(evoMatch?.[1] ?? "");
+  if (evolutionText.length < 15) return null;
+
+  let diagnosisName: string | null = null;
+  const diagMatch = normalized.match(
+    /\nDiagn[oó]sticos\s*\n([^\n]+)\n(?:Tratamientos|\n)/i
+  );
+  if (diagMatch?.[1] && !/^Fecha\s/i.test(diagMatch[1].trim())) {
+    diagnosisName = diagMatch[1].trim();
+  }
+
+  const treatBlock = normalized.match(/\nTratamientos\s*\n([\s\S]*?)\nDiagn[oó]sticos\s*\n/i);
+  const treatments: DrAppCompactPdfBundle["treatments"] = [];
+  if (treatBlock?.[1]) {
+    const lines = treatBlock[1]
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .filter((l) => !/^Laboratorios|^Gador|^Bayer|^Elea|^I-\d/i.test(l));
+    for (let i = 0; i < lines.length; i += 1) {
+      const product = lines[i];
+      if (!product || /^Fecha|Producto|Actual/i.test(product)) continue;
+      const next = lines[i + 1] ?? "";
+      if (next && (/\d+\s*mg|comp\.|caps\./i.test(next) || next.length < 40)) {
+        treatments.push({ product, dose: next, notes: next });
+        i += 1;
+      } else if (/^[A-ZÁÉÍÓÚÑ0-9][A-ZÁÉÍÓÚÑa-záéíóúñ0-9\s.-]{2,}$/.test(product)) {
+        treatments.push({ product, dose: "—", notes: "" });
+      }
+    }
+  }
+
+  const marker = `[Import:${dateIso}]`;
+  const evolution: LegacyClinicalEvolutionEntry = {
+    marker,
+    consultationDate: dateIso,
+    professionalName,
+    timeLabel: normalized.match(/\n(\d{2}:\d{2}:\d{2})\s+/i)?.[1] ?? null,
+    chief_complaint: `${marker} Evolución importada desde PDF`.slice(0, 600),
+    evolution: evolutionText.slice(0, 12000),
+    diagnosis: diagnosisName?.slice(0, 4000) ?? "",
+    indications: "",
+  };
+
+  return { evolution, diagnosisName, treatments };
+}
+
 export function parseLegacyClinicalEvolutionsWithFallback(
   text: string
 ): LegacyClinicalEvolutionEntry[] {
+  const compact = parseDrAppCompactClinicalPdf(text);
+  if (compact) return [compact.evolution];
+
   const entries = parseLegacyClinicalEvolutions(text);
-  if (entries.length > 0) return entries;
+  if (entries.length > 0) {
+    return entries.map((e) =>
+      e.evolution.includes("Tratamientos") || e.evolution.includes("Diagnósticos")
+        ? { ...e, evolution: cleanEvolutionBody(trimEvolutionBody(e.evolution)) }
+        : e
+    );
+  }
   return parseLegacyClinicalEvolutionsFallback(text);
 }
