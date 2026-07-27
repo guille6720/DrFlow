@@ -1,23 +1,24 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   Activity,
-  CalendarDays,
+  ArrowLeft,
   ChevronRight,
+  Clock,
   FileStack,
   Pill,
   Printer,
   Search,
   Stethoscope,
   ClipboardList,
+  User,
 } from "lucide-react";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
-import { Button } from "@/components/ui/button";
 import type {
   PatientEhrAttachment,
   PatientEhrConsultation,
@@ -27,6 +28,9 @@ import type {
 } from "@/lib/utils/patient-ehr-model";
 
 type SummaryTab = "diagnostics" | "treatments" | "vitals" | "files" | "prescriptions";
+
+const TEAL_BTN =
+  "flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-teal-500 py-3.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition hover:from-cyan-600 hover:to-teal-600 active:scale-[0.99]";
 
 const SUMMARY_TABS: { key: SummaryTab; label: string; icon: typeof Stethoscope }[] = [
   { key: "diagnostics", label: "Diagnósticos", icon: Stethoscope },
@@ -59,7 +63,17 @@ interface Props {
   usesHceExport?: boolean;
 }
 
-function listPreview(text: string, max = 72): string {
+function initials(first: string, last: string): string {
+  return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
+}
+
+function ageNumber(age_label: string | null): string | null {
+  if (!age_label) return null;
+  const m = age_label.match(/\d+/);
+  return m ? m[0] : null;
+}
+
+function listPreview(text: string, max = 56): string {
   const t = text.replace(/\s+/g, " ").trim();
   if (!t) return "Sin texto";
   return t.length <= max ? t : `${t.slice(0, max)}…`;
@@ -71,6 +85,15 @@ function evolutionBody(c: PatientEhrConsultation): string {
   const cc = c.chief_complaint?.trim();
   if (cc && !/importado|^\[DRAPP:|^\[HCE:|^\[PDF:/i.test(cc)) return cc;
   return evo || cc || "Sin texto de evolución registrado.";
+}
+
+function InfoRow({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-slate-100 py-3.5 last:border-0">
+      <span className="text-sm font-medium text-slate-500">{label}</span>
+      <span className="text-right text-sm font-semibold text-slate-900">{value}</span>
+    </div>
+  );
 }
 
 export function PatientEhrView({
@@ -109,6 +132,7 @@ export function PatientEhrView({
   );
   const [search, setSearch] = useState("");
   const [summaryTab, setSummaryTab] = useState<SummaryTab>("diagnostics");
+  const [mobilePane, setMobilePane] = useState<"list" | "detail">("list");
 
   const counts: Record<SummaryTab, number> = {
     diagnostics: diagnosisRows.length,
@@ -134,367 +158,313 @@ export function PatientEhrView({
   const selected =
     sorted.find((c) => c.id === selectedId) ?? filteredList[0] ?? sorted[0] ?? null;
 
-  const patientDisplay = `${patient.last_name}, ${patient.first_name}`;
+  const patientDisplay = `${patient.first_name} ${patient.last_name}`;
+  const patientFormal = `${patient.last_name}, ${patient.first_name}`;
   const vitalsRows = sorted.filter((c) => c.category === "vitals");
+  const age = ageNumber(patient.age_label);
+  const dobLabel = (() => {
+    if (!patient.birth_date) return "—";
+    try {
+      const raw = patient.birth_date;
+      const d = raw.includes("T") ? parseISO(raw) : parseISO(`${raw}T12:00:00`);
+      return format(d, "dd/MM/yyyy");
+    } catch {
+      return patient.birth_date;
+    }
+  })();
+  const insuranceLabel = patient.insurance_provider?.includes("PAMI")
+    ? `PAMI ${patient.insurance_number ?? ""}`.trim()
+    : patient.insurance_provider ?? "—";
 
-  return (
-    <div className="flex min-h-[calc(100vh-8rem)] flex-col bg-gradient-to-b from-slate-50 to-slate-100/90 print:bg-white">
-      {/* Paciente */}
-      <div className="border-b border-slate-200/80 bg-white px-4 py-4 shadow-sm sm:px-6">
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
-              {patientDisplay}
-            </h1>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                DNI {patient.document_number}
-              </span>
-              {patient.age_label && (
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                  {patient.age_label}
-                </span>
-              )}
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                {patient.insurance_provider?.includes("PAMI")
-                  ? `PAMI ${patient.insurance_number ?? ""}`.trim()
-                  : patient.insurance_provider ?? "Obra social —"}
-              </span>
-              {patient.phone && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
-                  {patient.phone}
-                  <PatientWhatsAppButton
-                    phone={patient.phone}
-                    message={buildPatientContactMessage(
-                      `${patient.first_name} ${patient.last_name}`
-                    )}
-                    size="icon"
-                  />
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <span>{totalConsultations} registros</span>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="text-slate-600"
-              onClick={() => window.print()}
-            >
-              <Printer className="h-4 w-4" />
-              Imprimir
-            </Button>
-          </div>
+  function pickEvolution(id: string) {
+    setSelectedId(id);
+    setMobilePane("detail");
+  }
+
+  const evolutionCards = (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-lg font-bold text-slate-900">Evoluciones</h2>
+        <span className="text-xs font-medium text-slate-500">{filteredList.length} entradas</span>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar…"
+          className="w-full rounded-2xl border-0 bg-white py-3 pl-11 pr-4 text-sm shadow-md shadow-slate-200/60 ring-1 ring-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-cyan-400/40"
+        />
+      </div>
+
+      {filteredList.length === 0 ? (
+        <div className="rounded-3xl bg-white p-8 text-center text-sm text-slate-500 shadow-md">
+          No hay evoluciones para mostrar.
         </div>
+      ) : (
+        filteredList.map((c) => {
+          const active = c.id === (selected?.id ?? null);
+          const timeStart = format(new Date(c.created_at), "hh:mm a", { locale: es });
+          return (
+            <article
+              key={c.id}
+              className={`rounded-3xl bg-white p-5 shadow-md shadow-slate-200/50 ring-1 transition ${
+                active ? "ring-2 ring-cyan-400/60" : "ring-slate-100"
+              }`}
+            >
+              <p className="text-lg font-bold text-slate-900">
+                {format(new Date(c.created_at), "d MMM yyyy", { locale: es })}
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-slate-600">
+                {age && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <User className="h-4 w-4 text-cyan-600" />
+                    <span className="font-semibold text-slate-800">{age}</span>
+                    <span>años</span>
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="h-4 w-4 text-cyan-600" />
+                  <span className="font-medium">{timeStart}</span>
+                </span>
+              </div>
+              <p className="mt-2 line-clamp-2 text-sm text-slate-500">
+                {c.professional_name} · {listPreview(evolutionBody(c))}
+              </p>
+              <span className="mt-3 inline-block rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-800">
+                Consulta clínica
+              </span>
+              <button type="button" className={`${TEAL_BTN} mt-4`} onClick={() => pickEvolution(c.id)}>
+                Ver evolución
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </article>
+          );
+        })
+      )}
+    </div>
+  );
+
+  const detailPane = (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <button
+        type="button"
+        className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-600 lg:hidden"
+        onClick={() => setMobilePane("list")}
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Volver al listado
+      </button>
+
+      {/* Header tipo app */}
+      <div className="mb-5 flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 text-sm font-bold text-white shadow-md">
+          {initials(patient.first_name, patient.last_name)}
+        </div>
+        <div>
+          <p className="text-xs font-medium text-slate-500">Paciente</p>
+          <p className="text-lg font-bold text-slate-900">{patientDisplay}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="ml-auto rounded-full bg-white p-2.5 text-slate-500 shadow-sm ring-1 ring-slate-100 print:hidden"
+          aria-label="Imprimir"
+        >
+          <Printer className="h-4 w-4" />
+        </button>
       </div>
 
       {usesHceExport ? (
-        <div className="border-b border-sky-200/80 bg-sky-50 px-4 py-2.5 text-sm text-sky-950 sm:px-6">
-          Parte del resumen viene del export HCE. Las evoluciones largas suelen requerir el{" "}
-          <Link href="/datos" className="font-medium text-sky-800 underline underline-offset-2">
-            PDF o el JSONL teams
+        <p className="mb-4 rounded-2xl bg-cyan-50 px-4 py-3 text-xs text-cyan-950">
+          Datos parciales del export HCE. Completá con{" "}
+          <Link href="/datos" className="font-semibold underline">
+            PDF o JSONL
           </Link>
           .
-        </div>
+        </p>
       ) : null}
 
-      <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 p-4 lg:flex-row lg:overflow-hidden lg:p-6">
-        {/* Timeline */}
-        <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm lg:w-80 xl:w-[22rem]">
-          <div className="border-b border-slate-100 p-3">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-              Evoluciones
+      {/* Evolución — bloque principal (estilo “New clinical entry”) */}
+      <section className="mb-4 rounded-3xl bg-white p-5 shadow-md shadow-slate-200/50 ring-1 ring-slate-100">
+        <h3 className="text-base font-bold text-slate-900">Evolución clínica</h3>
+        {selected ? (
+          <>
+            <p className="mt-1 text-xs text-slate-500">
+              {format(new Date(selected.created_at), "EEEE d MMMM yyyy · HH:mm", { locale: es })} ·{" "}
+              {selected.professional_name}
             </p>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar en la historia…"
-                className="w-full rounded-xl border-0 bg-slate-100 py-2.5 pl-9 pr-3 text-sm text-slate-800 ring-1 ring-slate-200/80 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-teal-500/30"
-              />
+            <div className="mt-4 min-h-[200px] rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-sm leading-relaxed text-slate-800">
+              <p className="whitespace-pre-wrap">{evolutionBody(selected)}</p>
             </div>
-          </div>
-
-          <div className="max-h-56 overflow-y-auto lg:max-h-[calc(100vh-18rem)] lg:flex-1">
-            {filteredList.map((c) => {
-              const active = c.id === (selected?.id ?? null);
-              const dateLabel = format(new Date(c.created_at), "d MMM yyyy", { locale: es });
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setSelectedId(c.id)}
-                  className={`flex w-full flex-col gap-0.5 border-b border-slate-50 px-4 py-3 text-left transition ${
-                    active
-                      ? "border-l-[3px] border-l-teal-600 bg-teal-50/80 pl-[calc(1rem-3px)]"
-                      : "border-l-[3px] border-l-transparent hover:bg-slate-50"
-                  }`}
-                >
-                  <span className="text-xs font-medium text-teal-800">{dateLabel}</span>
-                  <span className="text-sm font-semibold text-slate-900">
-                    {c.professional_name}
-                  </span>
-                  <span className="line-clamp-2 text-xs leading-snug text-slate-500">
-                    {listPreview(evolutionBody(c))}
-                  </span>
-                </button>
-              );
-            })}
-            {filteredList.length === 0 && (
-              <p className="p-6 text-center text-sm text-slate-500">
-                No hay evoluciones que coincidan con la búsqueda.
-              </p>
-            )}
-          </div>
-        </aside>
-
-        {/* Contenido principal: evolución + resumen clínico */}
-        <main className="flex min-h-0 flex-1 flex-col gap-4 lg:overflow-hidden">
-          {/* Evolución — panel principal (antes quedaba vacío / solo signos vitales) */}
-          <section className="flex min-h-[280px] flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm print:shadow-none">
-            {selected ? (
-              <>
-                <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-100 text-teal-800">
-                      <CalendarDays className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-lg font-semibold text-slate-900">
-                        {format(new Date(selected.created_at), "EEEE d 'de' MMMM yyyy", {
-                          locale: es,
-                        })}
-                      </p>
-                      <p className="text-sm text-slate-500">
-                        {format(new Date(selected.created_at), "HH:mm", { locale: es })} hs ·{" "}
-                        {selected.professional_name}
-                      </p>
-                    </div>
-                  </div>
-                  <Link href={`/historias/${selected.id}`}>
-                    <Button variant="outline" size="sm" className="gap-1">
-                      Consulta completa
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </header>
-
-                <div className="flex-1 overflow-y-auto px-5 py-5 lg:px-8 lg:py-6">
-                  <article className="prose prose-slate max-w-none prose-p:leading-relaxed prose-p:text-slate-800">
-                    <p className="whitespace-pre-wrap text-base leading-7 text-slate-800">
-                      {evolutionBody(selected)}
-                    </p>
-                  </article>
-
-                  {(selected.diagnosis?.trim() || selected.indications?.trim()) && (
-                    <div className="mt-8 grid gap-4 border-t border-slate-100 pt-6 sm:grid-cols-2">
-                      {selected.diagnosis?.trim() && (
-                        <div className="rounded-xl bg-slate-50 p-4">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                            Diagnóstico en esta consulta
-                          </p>
-                          <p className="mt-1 text-sm text-slate-800">{selected.diagnosis}</p>
-                        </div>
-                      )}
-                      {selected.indications?.trim() && (
-                        <div className="rounded-xl bg-slate-50 p-4">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                            Indicaciones
-                          </p>
-                          <p className="mt-1 whitespace-pre-wrap text-sm text-slate-800">
-                            {selected.indications}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
+            {selected.diagnosis?.trim() && (
+              <div className="mt-3">
+                <label className="text-xs font-semibold text-slate-500">Diagnóstico</label>
+                <div className="mt-1 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800">
+                  {selected.diagnosis}
                 </div>
-              </>
-            ) : (
-              <div className="flex flex-1 flex-col items-center justify-center p-12 text-center">
-                <p className="text-lg font-medium text-slate-700">Sin evoluciones</p>
-                <p className="mt-1 max-w-sm text-sm text-slate-500">
-                  Elegí una entrada del listado o importá la historia desde Datos.
-                </p>
               </div>
             )}
-          </section>
+            {selected.indications?.trim() && (
+              <div className="mt-3">
+                <label className="text-xs font-semibold text-slate-500">Indicaciones</label>
+                <div className="mt-1 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm whitespace-pre-wrap text-slate-800">
+                  {selected.indications}
+                </div>
+              </div>
+            )}
+            <Link href={`/historias/${selected.id}`} className={`${TEAL_BTN} mt-5`}>
+              Abrir consulta completa
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </>
+        ) : (
+          <p className="mt-4 text-sm text-slate-500">Seleccioná una evolución del listado.</p>
+        )}
+      </section>
 
-          {/* Resumen clínico (tabs) */}
-          <section className="shrink-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-            <div className="flex gap-1 overflow-x-auto border-b border-slate-100 p-2">
-              {SUMMARY_TABS.map(({ key, label, icon: Icon }) => {
-                const n = counts[key];
-                const active = summaryTab === key;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setSummaryTab(key)}
-                    className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                      active
-                        ? "bg-slate-900 text-white shadow-sm"
-                        : "text-slate-600 hover:bg-slate-100"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4 opacity-80" />
-                    {label}
-                    <span
-                      className={`rounded-md px-1.5 py-0.5 text-xs ${
-                        active ? "bg-white/20" : "bg-slate-200/80 text-slate-700"
-                      }`}
-                    >
-                      {n}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+      {/* Datos del paciente */}
+      <section className="mb-4 rounded-3xl bg-white px-5 py-2 shadow-md shadow-slate-200/50 ring-1 ring-slate-100">
+        <h3 className="border-b border-slate-100 py-3 text-sm font-bold text-slate-900">
+          Información del paciente
+        </h3>
+        <InfoRow label="Nombre" value={patientFormal} />
+        <InfoRow label="DNI" value={patient.document_number} />
+        <InfoRow label="Edad" value={patient.age_label ?? "—"} />
+        <InfoRow label="Fecha de nacimiento" value={dobLabel} />
+        <InfoRow label="Obra social" value={insuranceLabel} />
+        <InfoRow
+          label="Contacto"
+          value={
+            patient.phone ? (
+              <span className="inline-flex items-center gap-2">
+                {patient.phone}
+                <PatientWhatsAppButton
+                  phone={patient.phone}
+                  message={buildPatientContactMessage(patientDisplay)}
+                  size="icon"
+                />
+              </span>
+            ) : (
+              "—"
+            )
+          }
+        />
+        <InfoRow label="Registros en historia" value={String(totalConsultations)} />
+      </section>
 
-            <div className="max-h-64 overflow-y-auto p-4 sm:max-h-72">
-              {summaryTab === "diagnostics" && (
-                <>
-                  {diagnosisRows.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-slate-500">
-                      Sin diagnósticos registrados.
+      {/* Resumen clínico */}
+      <section className="mb-6 overflow-hidden rounded-3xl bg-white shadow-md shadow-slate-200/50 ring-1 ring-slate-100">
+        <div className="flex gap-1 overflow-x-auto p-2">
+          {SUMMARY_TABS.map(({ key, label, icon: Icon }) => {
+            const n = counts[key];
+            const active = summaryTab === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setSummaryTab(key)}
+                className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                  active
+                    ? "bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-sm"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+                <span className={active ? "opacity-90" : "text-slate-400"}>({n})</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="max-h-56 overflow-y-auto border-t border-slate-100 p-4 text-sm">
+          {summaryTab === "diagnostics" &&
+            (diagnosisRows.length === 0 ? (
+              <p className="py-4 text-center text-slate-500">Sin diagnósticos.</p>
+            ) : (
+              <ul className="space-y-3">
+                {diagnosisRows.map((row) => (
+                  <li key={row.id} className="rounded-xl bg-slate-50 px-3 py-2.5">
+                    <Link href={`/historias/${row.recordId}`} className="font-medium text-slate-900">
+                      {row.name}
+                    </Link>
+                    <p className="text-xs text-slate-500">{row.dateLabel}</p>
+                  </li>
+                ))}
+              </ul>
+            ))}
+          {summaryTab === "treatments" &&
+            (treatmentRows.length === 0 ? (
+              <p className="py-4 text-center text-slate-500">Sin tratamientos.</p>
+            ) : (
+              <ul className="space-y-3">
+                {treatmentRows.map((row) => (
+                  <li key={row.id} className="rounded-xl bg-slate-50 px-3 py-2.5">
+                    <Link href={`/historias/${row.recordId}`} className="font-medium text-slate-900">
+                      {row.product}
+                    </Link>
+                    <p className="text-xs text-slate-500">
+                      {row.dateLabel} · {row.dose}
                     </p>
-                  ) : (
-                    <ul className="divide-y divide-slate-100">
-                      {diagnosisRows.map((row) => (
-                        <li
-                          key={row.id}
-                          className="flex flex-wrap items-center justify-between gap-2 py-3 first:pt-0"
-                        >
-                          <div>
-                            {row.chronic && (
-                              <span className="mr-2 rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-900">
-                                Crónico
-                              </span>
-                            )}
-                            <Link
-                              href={`/historias/${row.recordId}`}
-                              className="font-medium text-slate-900 hover:text-teal-700"
-                            >
-                              {row.name}
-                            </Link>
-                          </div>
-                          <span className="text-xs tabular-nums text-slate-500">{row.dateLabel}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </>
-              )}
-
-              {summaryTab === "treatments" && (
-                <>
-                  {treatmentRows.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-slate-500">
-                      Sin tratamientos registrados.
+                  </li>
+                ))}
+              </ul>
+            ))}
+          {summaryTab === "vitals" &&
+            (vitalsRows.length === 0 ? (
+              <p className="py-4 text-center text-slate-500">Sin signos vitales.</p>
+            ) : (
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {vitalsRows.map((c) => (
+                  <li key={c.id} className="rounded-xl bg-slate-50 px-3 py-2.5">
+                    <p className="text-xs text-slate-500">
+                      {format(new Date(c.created_at), "d MMM yyyy", { locale: es })}
                     </p>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full min-w-[520px] text-sm">
-                        <thead>
-                          <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
-                            <th className="pb-2 pr-3 font-medium">Fecha</th>
-                            <th className="pb-2 pr-3 font-medium">Producto</th>
-                            <th className="pb-2 pr-3 font-medium">Dosis</th>
-                            <th className="pb-2 font-medium">Estado</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                          {treatmentRows.map((row) => (
-                            <tr key={row.id} className="text-slate-800">
-                              <td className="py-2.5 pr-3 whitespace-nowrap text-slate-500">
-                                {row.dateLabel}
-                              </td>
-                              <td className="py-2.5 pr-3 font-medium">
-                                <Link
-                                  href={`/historias/${row.recordId}`}
-                                  className="hover:text-teal-700"
-                                >
-                                  {row.product}
-                                </Link>
-                              </td>
-                              <td className="py-2.5 pr-3 text-slate-600">{row.dose}</td>
-                              <td className="py-2.5 text-emerald-700">{row.status}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </>
-              )}
+                    <p className="text-slate-800">{c.evolution || c.chief_complaint}</p>
+                  </li>
+                ))}
+              </ul>
+            ))}
+          {summaryTab === "files" &&
+            (attachments.length === 0 ? (
+              <p className="py-4 text-center text-slate-500">Sin archivos.</p>
+            ) : (
+              attachments.map((a) => (
+                <p key={a.id} className="border-b border-slate-50 py-2 last:border-0">
+                  {a.file_name}
+                </p>
+              ))
+            ))}
+          {summaryTab === "prescriptions" &&
+            (prescriptions.length === 0 ? (
+              <p className="py-4 text-center text-slate-500">Sin recetas.</p>
+            ) : (
+              prescriptions.map((p) => (
+                <p key={p.id} className="border-b border-slate-50 py-2 last:border-0">
+                  {p.label}
+                </p>
+              ))
+            ))}
+        </div>
+      </section>
 
-              {summaryTab === "vitals" && (
-                <>
-                  {vitalsRows.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-slate-500">
-                      Sin signos vitales registrados.
-                    </p>
-                  ) : (
-                    <ul className="grid gap-2 sm:grid-cols-2">
-                      {vitalsRows.map((c) => (
-                        <li
-                          key={c.id}
-                          className="rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3 text-sm"
-                        >
-                          <p className="text-xs font-medium text-slate-500">
-                            {format(new Date(c.created_at), "d MMM yyyy", { locale: es })}
-                          </p>
-                          <p className="mt-1 text-slate-800">
-                            {c.evolution || c.chief_complaint}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </>
-              )}
+      <Link href={`/historias/nueva?patient=${patient.id}`} className={`${TEAL_BTN} sticky bottom-4 print:hidden`}>
+        Nueva consulta
+      </Link>
+    </div>
+  );
 
-              {summaryTab === "files" && (
-                <>
-                  {attachments.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-slate-500">Sin archivos adjuntos.</p>
-                  ) : (
-                    <ul className="divide-y divide-slate-100 text-sm">
-                      {attachments.map((a) => (
-                        <li key={a.id} className="flex justify-between gap-2 py-2.5">
-                          <span className="font-medium text-slate-800">{a.file_name}</span>
-                          <span className="shrink-0 text-xs text-slate-500">
-                            {format(new Date(a.created_at), "dd/MM/yyyy", { locale: es })}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </>
-              )}
-
-              {summaryTab === "prescriptions" && (
-                <>
-                  {prescriptions.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-slate-500">Sin recetas.</p>
-                  ) : (
-                    <ul className="divide-y divide-slate-100 text-sm">
-                      {prescriptions.map((p) => (
-                        <li key={p.id} className="py-2.5 text-slate-800">
-                          {format(new Date(p.created_at), "dd/MM/yyyy", { locale: es })} — {p.label}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </>
-              )}
-            </div>
-          </section>
-        </main>
+  return (
+    <div className="min-h-[calc(100vh-8rem)] bg-[#e8ecef] print:bg-white">
+      <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 lg:py-8">
+        <div className="lg:grid lg:grid-cols-[minmax(0,340px)_1fr] lg:items-start lg:gap-6">
+          <div className={`${mobilePane === "detail" ? "hidden lg:block" : ""}`}>{evolutionCards}</div>
+          <div className={`${mobilePane === "list" ? "hidden lg:block" : ""} lg:min-h-[70vh]`}>
+            {detailPane}
+          </div>
+        </div>
       </div>
     </div>
   );

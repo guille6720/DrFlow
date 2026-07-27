@@ -18,7 +18,7 @@ import {
   loadPatientHceSummaryRows,
   mergeEhrPayload,
 } from "@/lib/utils/patient-ehr-from-hce";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 const RECORD_LIMIT = 2000;
 
@@ -150,24 +150,18 @@ export default async function PatientClinicalHistoryPage({
         userName={profile?.full_name}
       />
 
-      <div className="border-b border-slate-200 bg-white px-4 py-2">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="border-b border-slate-200/80 bg-[#e8ecef] px-4 py-3">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2">
           <Link
             href="/historias"
-            className="inline-flex items-center gap-1 text-sm text-blue-700 hover:underline"
+            className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200/80"
           >
             <ArrowLeft className="h-4 w-4" />
-            Volver
+            Historias
           </Link>
           <Link href={`/pacientes/${patientId}`}>
-            <Button variant="outline" size="sm">
-              Ficha del paciente
-            </Button>
-          </Link>
-          <Link href={`/historias/nueva?patient=${patientId}`}>
-            <Button size="sm">
-              <Plus className="h-4 w-4" />
-              Nueva consulta
+            <Button variant="outline" size="sm" className="rounded-full border-slate-200">
+              Ficha
             </Button>
           </Link>
         </div>
