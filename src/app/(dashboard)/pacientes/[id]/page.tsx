@@ -123,7 +123,7 @@ export default async function PacienteDetailPage({
 
       <div className="space-y-6 p-4 sm:p-6">
         <div className="flex flex-wrap items-center gap-3">
-          <Link href="/pacientes" className="inline-flex items-center gap-1 text-sm text-blue-700 hover:underline">
+          <Link href="/pacientes" className="drflow-link inline-flex items-center gap-1 text-sm">
             <ArrowLeft className="h-4 w-4" /> Volver al listado
           </Link>
           <Link href={`/pacientes/${id}/editar`}>
@@ -171,20 +171,20 @@ export default async function PacienteDetailPage({
         <div className="grid gap-6 lg:grid-cols-2">
           <Card title="Datos personales">
             <dl className="grid gap-3 text-sm sm:grid-cols-2">
-              <div><dt className="text-slate-500">Teléfono</dt><dd>{patient.phone ?? "—"}</dd></div>
-              <div><dt className="text-slate-500">Email</dt><dd>{patient.email ?? "—"}</dd></div>
-              <div><dt className="text-slate-500">Dirección</dt><dd>{patient.address ?? "—"}</dd></div>
-              <div><dt className="text-slate-500">Obra social</dt><dd className="flex items-center gap-2">{patient.insurance_provider ?? "—"}{patient.insurance_provider?.toUpperCase().includes("PAMI") && <Badge variant="teal">PAMI</Badge>}</dd></div>
-              <div><dt className="text-slate-500">{patient.insurance_provider?.toUpperCase().includes("PAMI") ? "N° beneficio PAMI" : "N° afiliado"}</dt><dd>{patient.insurance_number ?? "—"}</dd></div>
-              <div><dt className="text-slate-500">Emergencia</dt><dd>{patient.emergency_contact_name ?? "—"} {patient.emergency_contact_phone && `(${patient.emergency_contact_phone})`}</dd></div>
+              <div><dt>Teléfono</dt><dd>{patient.phone ?? "—"}</dd></div>
+              <div><dt>Email</dt><dd>{patient.email ?? "—"}</dd></div>
+              <div><dt>Dirección</dt><dd>{patient.address ?? "—"}</dd></div>
+              <div><dt>Obra social</dt><dd className="flex items-center gap-2">{patient.insurance_provider ?? "—"}{patient.insurance_provider?.toUpperCase().includes("PAMI") && <Badge variant="teal">PAMI</Badge>}</dd></div>
+              <div><dt>{patient.insurance_provider?.toUpperCase().includes("PAMI") ? "N° beneficio PAMI" : "N° afiliado"}</dt><dd>{patient.insurance_number ?? "—"}</dd></div>
+              <div><dt>Emergencia</dt><dd>{patient.emergency_contact_name ?? "—"} {patient.emergency_contact_phone && `(${patient.emergency_contact_phone})`}</dd></div>
             </dl>
           </Card>
 
           <Card title="Información clínica">
             <dl className="space-y-3 text-sm">
-              <div><dt className="text-slate-500">Antecedentes</dt><dd>{patient.medical_history ?? "Sin registrar"}</dd></div>
-              <div><dt className="text-slate-500">Alergias</dt><dd className="text-red-700">{patient.allergies ?? "Sin registrar"}</dd></div>
-              <div><dt className="text-slate-500">Medicación habitual</dt><dd>{patient.regular_medication ?? "Sin registrar"}</dd></div>
+              <div><dt>Antecedentes</dt><dd>{patient.medical_history ?? "Sin registrar"}</dd></div>
+              <div><dt>Alergias</dt><dd className="text-red-300">{patient.allergies ?? "Sin registrar"}</dd></div>
+              <div><dt>Medicación habitual</dt><dd>{patient.regular_medication ?? "Sin registrar"}</dd></div>
             </dl>
           </Card>
         </div>
@@ -202,7 +202,7 @@ export default async function PacienteDetailPage({
             {(appointments ?? []).length === 0 ? (
               <p className="text-sm text-slate-500">Sin turnos registrados.</p>
             ) : (
-              <ul className="divide-y divide-slate-100 text-sm">
+              <ul className="divide-y divide-slate-600/60 text-sm">
                 {(appointments ?? []).map((a) => {
                   const statusInfo = appointmentStatusBadge[a.status as string];
                   return (
@@ -213,7 +213,7 @@ export default async function PacienteDetailPage({
                           {(a.professionals as unknown as { profiles?: { full_name?: string } })?.profiles?.full_name}
                         </p>
                         {a.status === "cancelled" && (
-                          <p className="mt-1 text-xs text-red-700">
+                          <p className="mt-1 text-xs text-red-300">
                             {(a as { cancelled_by_type?: string }).cancelled_by_type === "patient"
                               ? "Cancelado por el paciente"
                               : "Cancelado por el consultorio"}
@@ -240,10 +240,10 @@ export default async function PacienteDetailPage({
             {(records ?? []).length === 0 ? (
               <p className="text-sm text-slate-500">Sin consultas registradas.</p>
             ) : (
-              <ul className="divide-y divide-slate-100 text-sm">
+              <ul className="divide-y divide-slate-600/60 text-sm">
                 {(records ?? []).map((r) => (
                   <li key={r.id} className="py-2">
-                    <Link href={`/historias/${r.id}`} className="text-blue-700 hover:underline">
+                    <Link href={`/historias/${r.id}`} className="drflow-link font-medium">
                       {format(new Date(r.created_at), "PP", { locale: es })}
                     </Link>
                     <p className="text-slate-600">{r.diagnosis ?? "Sin diagnóstico"}</p>
@@ -251,7 +251,7 @@ export default async function PacienteDetailPage({
                 ))}
               </ul>
             )}
-            <Link href={`/historias/nueva?patient=${id}`} className="mt-4 inline-block text-sm text-blue-700 hover:underline">
+            <Link href={`/historias/nueva?patient=${id}`} className="drflow-link mt-4 inline-block text-sm">
               + Nueva consulta
             </Link>
           </Card>

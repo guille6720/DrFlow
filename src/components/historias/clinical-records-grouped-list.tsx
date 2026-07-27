@@ -34,7 +34,7 @@ export function ClinicalRecordsGroupedList({ groups, defaultOpenPatientId }: Pro
   if (groups.length === 0) return null;
 
   return (
-    <div className="space-y-3">
+    <div className="drflow-card-light space-y-3">
       {groups.map((group) => {
         const openByDefault =
           groups.length === 1 || group.patientId === defaultOpenPatientId;

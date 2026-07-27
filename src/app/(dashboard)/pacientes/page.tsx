@@ -134,7 +134,7 @@ export default async function PacientesPage({
           subtitle="Buscá por nombre o DNI. Desde cada fila abrís la historia clínica o la ficha. Importación masiva en Importar / Exportar."
         />
 
-        <div className="flex flex-wrap gap-4 rounded-xl border border-slate-600/80 bg-slate-800/90 px-4 py-3 text-sm shadow-lg">
+        <div className="flex flex-wrap gap-4 rounded-xl border border-slate-500/70 bg-slate-700/90 px-4 py-3 text-sm shadow-lg">
           <p>
             <span className="text-2xl font-bold text-teal-300">{total}</span>
             <span className="ml-2 text-slate-300">pacientes activos</span>

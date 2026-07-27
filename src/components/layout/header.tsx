@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Settings } from "lucide-react";
 import { DoctorProfileModal } from "./doctor-profile-modal";
 import { ROLE_LABELS, hasPermission } from "@/lib/permissions/roles";
@@ -33,14 +32,7 @@ export function Header({
   const [profileOpen, setProfileOpen] = useState(false);
   const showSettings = hasPermission(role, "manageSettings", isSuperadmin);
   const { hidden: sidebarHidden } = useDashboardSidebar();
-  const pathname = usePathname();
-  const shellDark =
-    pathname.startsWith("/agenda") ||
-    pathname.startsWith("/atenciones") ||
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/pacientes") ||
-    pathname.startsWith("/historias") ||
-    pathname.startsWith("/datos");
+  const shellDark = true;
 
   return (
     <header
@@ -63,7 +55,7 @@ export function Header({
             {title}
           </h1>
           {subtitle && (
-            <p className={cn("mt-0.5 text-sm", shellDark ? "text-slate-400" : "text-slate-500")}>
+            <p className={cn("mt-0.5 text-sm", shellDark ? "text-slate-300" : "text-slate-500")}>
               {subtitle}
             </p>
           )}

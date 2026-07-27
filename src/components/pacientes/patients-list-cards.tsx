@@ -44,7 +44,7 @@ export function PatientsListCards({
   if (patients.length === 0) return null;
 
   return (
-    <div className="space-y-3 text-slate-900">
+    <div className="drflow-card-light space-y-3 text-slate-900">
       {patients.map((p) => {
         const patientDisplay = `${p.last_name}, ${p.first_name}`;
         const contact = p.phone ?? p.email ?? null;

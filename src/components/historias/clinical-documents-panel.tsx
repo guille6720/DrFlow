@@ -93,13 +93,13 @@ export function ClinicalDocumentsPanel({ patientId, documents, canEdit }: Props)
 
   return (
     <Card title="Documentos PDF">
-      <p className="mb-4 text-sm text-slate-600">
+      <p className="mb-4 text-sm text-slate-200">
         Subí historias clínicas previas o estudios en PDF. Quedan asociados al paciente y
         visibles en todas sus consultas.
       </p>
 
       {canEdit && (
-        <div className="mb-4 space-y-3 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 p-4">
+        <div className="mb-4 space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-slate-900">
           <Select
             label="Tipo de documento"
             value={category}
@@ -149,11 +149,11 @@ export function ClinicalDocumentsPanel({ patientId, documents, canEdit }: Props)
       {documents.length === 0 ? (
         <p className="text-sm text-slate-500">Sin documentos adjuntos.</p>
       ) : (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-slate-600/50">
           {documents.map((doc) => (
             <li key={doc.id} className="flex items-start justify-between gap-3 py-3">
               <div className="min-w-0">
-                <p className="truncate font-medium text-slate-900">{doc.file_name}</p>
+                <p className="truncate font-medium text-slate-50">{doc.file_name}</p>
                 <p className="text-sm text-slate-500">
                   {clinicalDocumentCategoryLabel(doc.category)}
                   {" · "}

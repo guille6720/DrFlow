@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #334155;
-  --foreground: #f1f5f9;
+  --background: #3d5266;
+  --foreground: #f8fafc;
   --primary: #2dd4bf;
   --primary-dark: #14b8a6;
   --primary-light: #5eead4;
@@ -11,9 +11,9 @@
   --sidebar-accent: #2dd4bf;
   --accent-soft: #134e4a;
   --accent-warm: #d97706;
-  --muted: #94a3b8;
-  --border: #475569;
-  --card: #1e293b;
+  --muted: #cbd5e1;
+  --border: #64748b;
+  --card: #475569;
   --success: #34d399;
   --radius: 1rem;
 }
@@ -108,4 +108,89 @@ button {
 .drflow-link:hover {
   color: #99f6e4;
   text-decoration: underline;
+}
+
+/* Legibilidad en tarjetas oscuras del dashboard */
+.drflow-card-body {
+  color: var(--foreground);
+}
+
+.drflow-card-body dt {
+  margin-bottom: 0.125rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #99f6e4;
+}
+
+.drflow-card-body dd {
+  color: #f8fafc;
+}
+
+.drflow-card-body :is(.text-slate-500, .text-slate-600, .text-slate-700) {
+  color: #cbd5e1;
+}
+
+.drflow-card-body .text-red-600,
+.drflow-card-body .text-red-700 {
+  color: #fca5a5;
+}
+
+.drflow-card-body a.text-blue-600,
+.drflow-card-body a.text-blue-700 {
+  color: #5eead4;
+  font-weight: 500;
+}
+
+.drflow-card-body a.text-blue-600:hover,
+.drflow-card-body a.text-blue-700:hover {
+  color: #99f6e4;
+  text-decoration: underline;
+}
+
+.drflow-card-body label {
+  color: #cbd5e1;
+}
+
+/* Islas claras dentro de tarjetas (formularios, listas blancas) */
+.drflow-card-body .drflow-card-light {
+  color: #0f172a;
+}
+
+.drflow-card-body .drflow-card-light :is(.text-slate-500, .text-slate-600) {
+  color: #64748b;
+}
+
+.drflow-card-body .drflow-card-light .text-slate-700,
+.drflow-card-body .drflow-card-light label {
+  color: #334155;
+}
+
+.drflow-card-body .drflow-card-light dd {
+  color: #0f172a;
+}
+
+/* Texto secundario sobre fondo oscuro fuera de islas blancas */
+.drflow-mesh main :is(p, span, li, dd).text-slate-500,
+.drflow-mesh main :is(p, span, li, dd).text-slate-600,
+.drflow-mesh main :is(p, span, li).text-slate-700 {
+  color: #cbd5e1;
+}
+
+.drflow-mesh main a.text-blue-600,
+.drflow-mesh main a.text-blue-700 {
+  color: #5eead4;
+  font-weight: 500;
+}
+
+.drflow-mesh main a.text-blue-600:hover,
+.drflow-mesh main a.text-blue-700:hover {
+  color: #99f6e4;
+  text-decoration: underline;
+}
+
+.drflow-mesh main .drflow-card-light :is(p, span, li, dd).text-slate-500,
+.drflow-mesh main .drflow-card-light :is(p, span, li).text-slate-600 {
+  color: #64748b;
 }
