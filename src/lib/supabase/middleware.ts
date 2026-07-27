@@ -58,6 +58,8 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/solicitar-turno") ||
     path.startsWith("/portal") ||
     path === "/privacidad" ||
+    path === "/terminos" ||
+    path === "/aviso-paciente" ||
     path === "/" ||
     path === "/demo" ||
     path === "/probar" ||

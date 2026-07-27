@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { applyClinicLegalAcceptance } from "@/lib/actions/compliance";
 import { logAudit, setActiveClinic } from "@/lib/auth/session";
 import { loginSchema, registerClinicSchema, setupClinicSchema } from "@/lib/validations/schemas";
 import {
@@ -284,6 +285,13 @@ export async function signUpClinic(formData: FormData): Promise<AuthActionResult
     return { error: "Revisá los datos del médico.", fieldErrors: zodFieldErrors(doctorCheck.error) };
   }
 
+  if (formData.get("legal_accepted") !== "true") {
+    return {
+      error: "Debés aceptar los términos y la política de privacidad.",
+      fieldErrors: { legal_accepted: "Aceptación requerida para crear la cuenta." },
+    };
+  }
+
   const fullName = `${doctorCheck.data!.doctorFirstName} ${doctorCheck.data!.doctorLastName}`;
 
   const supabase = await createClient();
@@ -327,6 +335,9 @@ export async function signUpClinic(formData: FormData): Promise<AuthActionResult
   if (setup.error) return setup.error;
 
   if (setup.clinicId) {
+    if (formData.get("legal_accepted") === "true") {
+      await applyClinicLegalAcceptance(setup.clinicId);
+    }
     await applyTrialAfterSetup(supabase, setup.clinicId, formData);
     await setActiveClinic(setup.clinicId);
   }
@@ -342,6 +353,13 @@ export async function setupClinic(formData: FormData): Promise<AuthActionResult>
 
   if (!user) {
     return { error: "Tenés que iniciar sesión." };
+  }
+
+  if (formData.get("legal_accepted") !== "true") {
+    return {
+      error: "Debés aceptar los términos y la política de privacidad.",
+      fieldErrors: { legal_accepted: "Aceptación requerida." },
+    };
   }
 
   const { data: existingMember } = await supabase
@@ -366,6 +384,9 @@ export async function setupClinic(formData: FormData): Promise<AuthActionResult>
   if (setup.error) return setup.error;
 
   if (setup.clinicId) {
+    if (formData.get("legal_accepted") === "true") {
+      await applyClinicLegalAcceptance(setup.clinicId);
+    }
     await applyTrialAfterSetup(supabase, setup.clinicId, formData);
     await setActiveClinic(setup.clinicId);
   }

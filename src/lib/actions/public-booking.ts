@@ -3,6 +3,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { publicBookingSchema } from "@/lib/validations/public-booking";
 import { sanitizeText } from "@/lib/validations/schemas";
+import {
+  CONSENT_TYPES,
+  LEGAL_PATIENT_NOTICE_VERSION,
+} from "@/lib/legal/documents";
 
 export async function submitPublicBooking(formData: FormData) {
   const parsed = publicBookingSchema.safeParse({
@@ -15,6 +19,7 @@ export async function submitPublicBooking(formData: FormData) {
     phone: formData.get("phone"),
     email: formData.get("email") || "",
     reason: formData.get("reason") || "",
+    privacy_consent: formData.get("privacy_consent"),
   });
 
   if (!parsed.success) {
@@ -45,9 +50,24 @@ export async function submitPublicBooking(formData: FormData) {
     return { error: msg };
   }
 
+  const row = result as {
+    appointment_id?: string;
+    patient_id?: string;
+  };
+
+  if (row.patient_id) {
+    await supabase.rpc("record_patient_data_consent", {
+      p_slug: data.slug,
+      p_document_number: data.document_number,
+      p_consent_type: CONSENT_TYPES.patientDataProcessingBooking,
+      p_document_version: LEGAL_PATIENT_NOTICE_VERSION,
+      p_granted: true,
+    });
+  }
+
   return {
     success: true,
-    appointmentId: (result as { appointment_id?: string })?.appointment_id,
+    appointmentId: row.appointment_id,
     startAt: data.start_at,
     documentNumber: data.document_number,
     patientName: `${data.first_name} ${data.last_name}`.trim(),

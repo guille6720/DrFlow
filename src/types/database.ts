@@ -50,6 +50,9 @@ export interface Clinic {
   trial_ends_at?: string | null;
   default_insurance_provider?: string | null;
   practice_profile?: string | null;
+  legal_terms_version?: string | null;
+  legal_terms_accepted_at?: string | null;
+  legal_privacy_version?: string | null;
   accepted_coverages?: string[] | null;
 }
 

@@ -10,4 +10,7 @@ export const publicBookingSchema = z.object({
   phone: z.string().min(8, "Teléfono requerido"),
   email: z.string().email("Email inválido").optional().or(z.literal("")),
   reason: z.string().optional(),
+  privacy_consent: z.enum(["true"], {
+    error: "Debés aceptar el tratamiento de datos para solicitar el turno.",
+  }),
 });

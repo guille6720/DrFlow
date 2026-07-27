@@ -12,10 +12,11 @@ import { normalizeSlug, zodFieldErrors } from "@/lib/validations/form-errors";
 import { DoctorSetupFields } from "@/components/onboarding/doctor-setup-fields";
 import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { LegalAcceptanceCheckbox } from "@/components/legal/legal-consent-fields";
 import { AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils/cn";
 import { setTrialRegistrationIntent } from "@/lib/actions/auth";
 import { TRIAL_PROMO_DAYS } from "@/lib/trial/clinic-trial";
+import { cn } from "@/lib/utils/cn";
 
 const FIELD_ORDER = [
   "email",
@@ -310,6 +311,13 @@ function RegisterForm() {
                   fieldErrors={fieldErrors}
                   onClearError={clearFieldError}
                 />
+              </div>
+
+              <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+                <LegalAcceptanceCheckbox />
+                {fieldErrors.legal_accepted ? (
+                  <p className="mt-2 text-xs text-red-600">{fieldErrors.legal_accepted}</p>
+                ) : null}
               </div>
 
               <div className="mt-4 flex gap-2">

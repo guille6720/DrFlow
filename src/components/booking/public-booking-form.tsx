@@ -13,6 +13,7 @@ import {
 } from "@/lib/actions/public-booking";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import { addPatientRequest } from "@/lib/utils/patient-requests-storage";
+import { PatientDataConsentCheckbox } from "@/components/legal/legal-consent-fields";
 import { CheckCircle2 } from "lucide-react";
 
 interface Professional {
@@ -167,6 +168,8 @@ export function PublicBookingForm({ slug, clinicName, professionals, onRequestSa
         {error && (
           <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
         )}
+
+        <PatientDataConsentCheckbox slug={slug} />
 
         <Button
           type="submit"

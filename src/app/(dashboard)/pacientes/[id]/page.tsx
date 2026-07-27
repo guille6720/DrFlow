@@ -23,6 +23,7 @@ import { es } from "date-fns/locale";
 import { ArrowLeft } from "lucide-react";
 import { RenewMedicationPanel } from "@/components/pacientes/renew-medication-panel";
 import { BentoGrid, BentoCell } from "@/components/theme/bento-grid";
+import { PatientArcoExportButton } from "@/components/legal/patient-arco-export-button";
 import type { PrescriptionMedication } from "@/types/prescription";
 
 export default async function PacienteDetailPage({
@@ -136,6 +137,12 @@ export default async function PacienteDetailPage({
             <DeletePatientButton
               patientId={patient.id}
               patientName={`${patient.last_name}, ${patient.first_name}`}
+            />
+          )}
+          {canManagePatients && (
+            <PatientArcoExportButton
+              patientId={patient.id}
+              fileLabel={`${patient.document_number}`}
             />
           )}
         </div>

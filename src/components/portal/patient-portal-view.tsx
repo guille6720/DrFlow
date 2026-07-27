@@ -310,6 +310,16 @@ export function PatientPortalView({
         )}
       </main>
 
+      <footer className="mx-auto max-w-lg px-4 pb-24 pt-6 text-center text-[11px] text-slate-500">
+        <Link href={`/aviso-paciente?clinic=${encodeURIComponent(slug)}`} className="underline">
+          Información al paciente
+        </Link>
+        {" · "}
+        <Link href="/privacidad" className="underline">
+          Privacidad
+        </Link>
+      </footer>
+
       {/* Navegación inferior fija (estilo app nativa) */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 px-2 pb-safe backdrop-blur">
         <div className="mx-auto flex max-w-lg justify-around">

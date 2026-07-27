@@ -11,6 +11,7 @@ import { normalizeSlug, zodFieldErrors } from "@/lib/validations/form-errors";
 import { DoctorSetupFields } from "@/components/onboarding/doctor-setup-fields";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { LegalAcceptanceCheckbox } from "@/components/legal/legal-consent-fields";
 
 interface OnboardingFormProps {
   userEmail: string;
@@ -152,6 +153,10 @@ export function OnboardingForm({ userEmail, userName, trialDays }: OnboardingFor
         />
 
         <DoctorSetupFields fieldErrors={fieldErrors} onClearError={clearFieldError} />
+
+        <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+          <LegalAcceptanceCheckbox />
+        </div>
 
         <Button type="submit" className="w-full" loading={loading}>
           Crear consultorio e ingresar

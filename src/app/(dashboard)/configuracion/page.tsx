@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { hasPermission } from "@/lib/permissions/roles";
 import { AppearanceStylePanel } from "@/components/configuracion/appearance-style-panel";
+import { ComplianceLegalPanel } from "@/components/configuracion/compliance-legal-panel";
 
 export default async function ConfiguracionPage() {
   const profile = await getProfile();
@@ -80,7 +81,10 @@ export default async function ConfiguracionPage() {
       />
 
       <div className="p-4 sm:p-6">
-        <AppearanceStylePanel />
+        <ComplianceLegalPanel />
+        <div className="mt-6">
+          <AppearanceStylePanel />
+        </div>
         <div className="mt-6">
         <CoveragesPanel
           acceptedCoverages={clinic?.accepted_coverages ?? null}
