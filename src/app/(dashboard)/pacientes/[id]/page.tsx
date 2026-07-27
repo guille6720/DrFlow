@@ -231,7 +231,7 @@ export default async function PacienteDetailPage({
 
           <Card title="Consultas clínicas">
             <div className="mb-3 flex flex-wrap gap-2">
-              <Link href={`/historias?patient=${id}`}>
+              <Link href={`/historias/paciente/${id}`}>
                 <Button variant="outline" size="sm">
                   Ver historia clínica completa
                 </Button>

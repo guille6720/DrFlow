@@ -235,7 +235,7 @@ export default async function PacientesPage({
                         )}
                         <td className="py-3">
                           <div className="flex flex-wrap items-center gap-2">
-                            <Link href={`/historias?patient=${p.id}`}>
+                            <Link href={`/historias/paciente/${p.id}`}>
                               <Button variant="outline" size="sm">
                                 <FileText className="h-3.5 w-3.5" />
                                 Historia clínica

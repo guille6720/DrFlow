@@ -161,7 +161,7 @@ export default async function HistoriaDetailPage({
           <Link href={`/pacientes/${patient.id}`} className="text-sm text-blue-700 hover:underline">
             Ficha del paciente
           </Link>
-          <Link href={`/historias?patient=${patient.id}`} className="text-sm text-blue-700 hover:underline">
+          <Link href={`/historias/paciente/${patient.id}`} className="text-sm text-blue-700 hover:underline">
             Historia clínica completa
           </Link>
           {record.appointment_id && (

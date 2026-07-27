@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,33 +7,47 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { SectorHero } from "@/components/ui/sector-hero";
 import { ProminentSearchForm } from "@/components/ui/prominent-search-form";
 import {
+  ClinicalRecordsGroupedList,
+  type PatientRecordGroup,
+} from "@/components/historias/clinical-records-grouped-list";
+import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import { FileText, Plus } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
-import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
+import { FileText, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 
 export const maxDuration = 300;
 
-const LIST_LIMIT = 500;
+const PAGE_SIZE = 25;
 
 function sanitizeSearchTerm(raw: string | undefined): string {
   return (raw ?? "").trim().slice(0, 80);
 }
 
+function buildHistoriasUrl(params: { q?: string; page?: number }) {
+  const parts = new URLSearchParams();
+  if (params.q) parts.set("q", params.q);
+  if (params.page && params.page > 1) parts.set("page", String(params.page));
+  const s = parts.toString();
+  return s ? `/historias?${s}` : "/historias";
+}
+
 export default async function HistoriasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; patient?: string }>;
+  searchParams: Promise<{ q?: string; patient?: string; page?: string }>;
 }) {
-  const { q: qRaw, patient: patientIdParam } = await searchParams;
+  const { q: qRaw, patient: patientIdParam, page: pageStr } = await searchParams;
   const q = sanitizeSearchTerm(qRaw);
+  const page = Math.max(1, parseInt(pageStr ?? "1", 10) || 1);
+
+  if (patientIdParam && !q) {
+    redirect(`/historias/paciente/${patientIdParam}`);
+  }
+
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
@@ -41,80 +56,122 @@ export default async function HistoriasPage({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let records: any[] = [];
-  let focusedPatient: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    document_number: string;
-  } | null = null;
   let listTitle = "Consultas recientes";
   let noMatchPatients = false;
+  let totalRecords = 0;
+  let clinicTotalRecords = 0;
 
   if (clinicId) {
+    const { count: clinicCount } = await supabase
+      .from("clinical_records")
+      .select("id", { count: "exact", head: true })
+      .eq("clinic_id", clinicId);
+    clinicTotalRecords = clinicCount ?? 0;
+
     const selectFields =
       "id, patient_id, diagnosis, chief_complaint, created_at, patients(first_name, last_name, phone, document_number), professionals(profiles(full_name))";
 
     let patientIds: string[] | null = null;
 
-    if (patientIdParam) {
-      const { data: patient } = await supabase
-        .from("patients")
-        .select("id, first_name, last_name, document_number")
-        .eq("clinic_id", clinicId)
-        .eq("id", patientIdParam)
-        .maybeSingle();
-      if (patient) {
-        focusedPatient = patient;
-        patientIds = [patient.id];
-        listTitle = `Historia de ${patient.last_name}, ${patient.first_name}`;
-      }
-    } else if (q) {
+    if (q) {
       const { data: matched } = await supabase
         .from("patients")
         .select("id, first_name, last_name, document_number")
         .eq("clinic_id", clinicId)
         .eq("is_active", true)
         .or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%,document_number.ilike.%${q}%`)
-        .limit(30);
+        .limit(50);
 
       if (!matched?.length) {
         noMatchPatients = true;
       } else {
         patientIds = matched.map((p) => p.id);
         if (matched.length === 1) {
-          focusedPatient = matched[0];
-          listTitle = `Historia de ${matched[0].last_name}, ${matched[0].first_name}`;
+          listTitle = `Resultados · ${matched[0].last_name}, ${matched[0].first_name}`;
         } else {
-          listTitle = `Consultas · ${matched.length} pacientes (búsqueda: ${q})`;
+          listTitle = `Resultados · ${matched.length} pacientes (búsqueda: ${q})`;
         }
       }
+    } else {
+      listTitle = "Últimas consultas de la clínica";
     }
 
-    let query = supabase
-      .from("clinical_records")
-      .select(selectFields)
-      .eq("clinic_id", clinicId)
-      .order("created_at", { ascending: false })
-      .limit(LIST_LIMIT);
+    if (!noMatchPatients) {
+      let query = supabase
+        .from("clinical_records")
+        .select(selectFields, { count: "exact" })
+        .eq("clinic_id", clinicId)
+        .order("created_at", { ascending: false });
 
-    if (patientIds) {
-      query = query.in("patient_id", patientIds);
-    } else if (!q && !patientIdParam) {
-      listTitle = "Últimas consultas";
-      query = query.limit(50);
+      if (patientIds) {
+        query = query.in("patient_id", patientIds);
+      }
+
+      const from = (page - 1) * PAGE_SIZE;
+      const { data, count } = await query.range(from, from + PAGE_SIZE - 1);
+      records = data ?? [];
+      totalRecords = count ?? 0;
     }
-
-    const { data } = await query;
-    records = data ?? [];
   }
 
-  const historiasQuery = (params: { q?: string; patient?: string }) => {
-    const parts = new URLSearchParams();
-    if (params.q) parts.set("q", params.q);
-    if (params.patient) parts.set("patient", params.patient);
-    const s = parts.toString();
-    return s ? `/historias?${s}` : "/historias";
-  };
+  const totalPages = Math.max(1, Math.ceil(totalRecords / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+
+  const patientCountCache = new Map<string, number>();
+  const uniquePatientIds = [...new Set(records.map((r) => r.patient_id as string))];
+  await Promise.all(
+    uniquePatientIds.map(async (pid) => {
+      if (!clinicId) return;
+      const { count } = await supabase
+        .from("clinical_records")
+        .select("id", { count: "exact", head: true })
+        .eq("clinic_id", clinicId)
+        .eq("patient_id", pid);
+      patientCountCache.set(pid, count ?? 0);
+    })
+  );
+
+  const groupsMap = new Map<string, PatientRecordGroup>();
+  for (const r of records) {
+    const pid = r.patient_id as string;
+    const p = r.patients as {
+      first_name: string;
+      last_name: string;
+      phone: string | null;
+      document_number: string;
+    } | null;
+    if (!groupsMap.has(pid)) {
+      groupsMap.set(pid, {
+        patientId: pid,
+        firstName: p?.first_name ?? "Paciente",
+        lastName: p?.last_name ?? "",
+        documentNumber: p?.document_number ?? "—",
+        phone: p?.phone ?? null,
+        records: [],
+        totalForPatient: patientCountCache.get(pid) ?? 0,
+      });
+    }
+    groupsMap.get(pid)!.records.push({
+      id: r.id,
+      created_at: r.created_at,
+      diagnosis: r.diagnosis,
+      chief_complaint: r.chief_complaint,
+      professional_name: r.professionals?.profiles?.full_name ?? "Profesional",
+    });
+  }
+
+  const groups = [...groupsMap.values()].sort((a, b) =>
+    `${a.lastName}${a.firstName}`.localeCompare(`${b.lastName}${b.firstName}`, "es")
+  );
+
+  for (const g of groups) {
+    g.records.sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }
+
+  const singlePatientFromSearch =
+    q && groups.length === 1 ? groups[0].patientId : null;
 
   return (
     <>
@@ -131,15 +188,31 @@ export default async function HistoriasPage({
         <SectorHero
           icon={FileText}
           title="Historia clínica"
-          subtitle="Buscá por paciente para ver todas sus consultas. Las importaciones masivas están en Import / Export del menú."
+          subtitle="Buscá por paciente y abrí «Toda su historia» para la línea de tiempo completa. Importación masiva en Importar / Exportar."
         />
+
+        <div className="flex flex-wrap gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">
+          <p>
+            <span className="text-2xl font-bold text-blue-800">{clinicTotalRecords}</span>
+            <span className="ml-2 text-slate-600">consultas en la clínica</span>
+          </p>
+          {q && !noMatchPatients ? (
+            <>
+              <span className="text-slate-300">|</span>
+              <p>
+                <span className="font-bold text-slate-900">{totalRecords}</span>
+                <span className="ml-1 text-slate-600">coinciden con la búsqueda</span>
+              </p>
+            </>
+          ) : null}
+        </div>
 
         <ProminentSearchForm
           action="/historias"
           placeholder="Nombre, apellido o DNI del paciente…"
           defaultValue={q}
           submitLabel="Buscar historia"
-          clearHref={q || patientIdParam ? "/historias" : undefined}
+          clearHref={q ? "/historias" : undefined}
           trailing={
             <Link href="/historias/nueva">
               <Button>
@@ -149,20 +222,6 @@ export default async function HistoriasPage({
             </Link>
           }
         />
-
-        {focusedPatient && (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 text-sm">
-            <p className="font-medium text-slate-900">
-              Historia clínica completa · {focusedPatient.last_name}, {focusedPatient.first_name}{" "}
-              <span className="font-normal text-slate-600">DNI {focusedPatient.document_number}</span>
-            </p>
-            <Link href={`/pacientes/${focusedPatient.id}`}>
-              <Button variant="outline" size="sm">
-                Ficha del paciente
-              </Button>
-            </Link>
-          </div>
-        )}
 
         {noMatchPatients ? (
           <EmptyState
@@ -174,84 +233,51 @@ export default async function HistoriasPage({
           <EmptyState
             icon={FileText}
             title="Sin registros clínicos"
-            description="Las consultas que registres aparecerán acá. Para probar rápido, cargá datos demo desde Configuración."
+            description="Las consultas que registres aparecerán acá."
             action={
-              <div className="flex flex-wrap justify-center gap-2">
-                <Link href="/configuracion#datos-demo">
-                  <Button variant="secondary">Cargar datos demo</Button>
-                </Link>
-                <Link href="/historias/nueva">
-                  <Button>
-                    <Plus className="h-4 w-4" />
-                    Registrar consulta
-                  </Button>
-                </Link>
-              </div>
+              <Link href="/historias/nueva">
+                <Button>
+                  <Plus className="h-4 w-4" />
+                  Registrar consulta
+                </Button>
+              </Link>
             }
           />
         ) : (
-          <Card
-            title={
-              q || patientIdParam ? `${records.length} consulta(s) · ${listTitle}` : listTitle
-            }
-          >
-            <ul className="divide-y divide-slate-100">
-              {records.map((r) => {
-                const patientName = r.patients
-                  ? `${r.patients.first_name} ${r.patients.last_name}`
-                  : "Paciente";
-                const patientId = r.patient_id as string;
-                return (
-                  <li key={r.id} className="flex items-center justify-between gap-3 py-4">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-slate-900">
-                        {r.patients
-                          ? `${r.patients.last_name}, ${r.patients.first_name}`
-                          : "Paciente"}
-                      </p>
-                      <p className="text-sm text-slate-500">
-                        {format(new Date(r.created_at), "PPp", { locale: es })}
-                        {" · "}
-                        {r.professionals?.profiles?.full_name ?? "Profesional"}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {r.diagnosis ?? r.chief_complaint ?? "Sin diagnóstico"}
-                      </p>
-                    </div>
-                    <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                      <PatientWhatsAppButton
-                        phone={r.patients?.phone}
-                        message={buildPatientContactMessage(
-                          patientName,
-                          r.professionals?.profiles?.full_name ?? undefined
-                        )}
-                        size="icon"
-                      />
-                      {patientId && (
-                        <Link
-                          href={historiasQuery({ patient: patientId })}
-                          className="text-sm text-blue-700 hover:underline"
-                        >
-                          Toda su historia
-                        </Link>
-                      )}
-                      {patientId && (
-                        <Link
-                          href={`/pacientes/${patientId}`}
-                          className="text-sm text-slate-600 hover:underline"
-                        >
-                          Paciente
-                        </Link>
-                      )}
-                      <Link href={`/historias/${r.id}`} className="text-sm text-blue-700 hover:underline">
-                        Ver detalle
-                      </Link>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </Card>
+          <>
+            <Card
+              title={`${listTitle} · página ${safePage} de ${totalPages} · ${records.length} filas`}
+            >
+              <ClinicalRecordsGroupedList
+                groups={groups}
+                defaultOpenPatientId={singlePatientFromSearch}
+              />
+            </Card>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4">
+                {safePage > 1 && (
+                  <Link href={buildHistoriasUrl({ q: q || undefined, page: safePage - 1 })}>
+                    <Button variant="outline" size="sm">
+                      <ChevronLeft className="h-4 w-4" />
+                      Anterior
+                    </Button>
+                  </Link>
+                )}
+                <span className="text-sm text-slate-600">
+                  Página {safePage} de {totalPages} ({totalRecords} consultas)
+                </span>
+                {safePage < totalPages && (
+                  <Link href={buildHistoriasUrl({ q: q || undefined, page: safePage + 1 })}>
+                    <Button variant="outline" size="sm">
+                      Siguiente
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </>
