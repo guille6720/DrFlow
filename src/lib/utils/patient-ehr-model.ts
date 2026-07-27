@@ -61,7 +61,12 @@ function classifyCategory(chief_complaint: string): PatientEhrConsultation["cate
 }
 
 function stripHceMarker(text: string): string {
-  return text.replace(/^\[HCE:[^\]]+\]\s*/i, "").replace(/^\[Import:[^\]]+\]\s*/i, "").trim();
+  return text
+    .replace(/^\[HCE:[^\]]+\]\s*/i, "")
+    .replace(/^\[DRAPP:[^\]]+\]\s*/i, "")
+    .replace(/^\[PDF:[^\]]+\]\s*/i, "")
+    .replace(/^\[Import:[^\]]+\]\s*/i, "")
+    .trim();
 }
 
 function parseTreatmentLines(indications: string, recordId: string, dateLabel: string): PatientEhrTreatmentRow[] {
