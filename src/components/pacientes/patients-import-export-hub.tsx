@@ -97,7 +97,10 @@ export function PatientsImportExportHub({
 
   if (sidebar) {
     return (
-      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <section
+        id="import-consumers"
+        className="scroll-mt-24 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+      >
         <h2 className="mb-3 text-sm font-semibold text-slate-900">Pacientes</h2>
         {body}
       </section>

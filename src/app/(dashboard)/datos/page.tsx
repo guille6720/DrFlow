@@ -11,6 +11,8 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { hasPermission } from "@/lib/permissions/roles";
 import { DataImportExportSidebar } from "@/components/datos/data-import-export-sidebar";
+import { MigrationHealthPanel } from "@/components/datos/migration-health-panel";
+import { buildMigrationHealthReport, type MigrationHealthReport } from "@/lib/utils/migration-health";
 import type { ClinicalRecordExportRow, PatientExportRow } from "@/lib/utils/clinical-export-client";
 import { ArrowLeftRight, FileText, Users } from "lucide-react";
 
@@ -18,6 +20,7 @@ export const maxDuration = 300;
 
 const EXPORT_PATIENT_LIMIT = 5000;
 const EXPORT_RECORDS_LIMIT = 2000;
+const MIGRATION_RECORDS_LIMIT = 25_000;
 
 export default async function DatosPage() {
   const profile = await getProfile();
@@ -33,15 +36,51 @@ export default async function DatosPage() {
 
   let exportPatients: PatientExportRow[] = [];
   let exportRecords: ClinicalRecordExportRow[] = [];
+  let migrationReport: MigrationHealthReport | null = null;
 
   if (clinicId) {
-    const { data: patientsData } = await supabase
-      .from("patients")
-      .select("first_name, last_name, document_number, birth_date, phone, email, insurance_provider")
-      .eq("clinic_id", clinicId)
-      .eq("is_active", true)
-      .order("last_name")
-      .limit(EXPORT_PATIENT_LIMIT);
+    const [
+      { data: patientsData },
+      { data: recordsData },
+      { data: migrationPatients },
+      { data: migrationAttachments },
+      { count: migrationRecordCount },
+      { data: migrationRecords },
+    ] = await Promise.all([
+      supabase
+        .from("patients")
+        .select("first_name, last_name, document_number, birth_date, phone, email, insurance_provider")
+        .eq("clinic_id", clinicId)
+        .eq("is_active", true)
+        .order("last_name")
+        .limit(EXPORT_PATIENT_LIMIT),
+      supabase
+        .from("clinical_records")
+        .select(
+          "chief_complaint, diagnosis, evolution, indications, created_at, patients(first_name, last_name, document_number), professionals(profiles(full_name))"
+        )
+        .eq("clinic_id", clinicId)
+        .order("created_at", { ascending: false })
+        .limit(EXPORT_RECORDS_LIMIT),
+      supabase
+        .from("patients")
+        .select("id, first_name, last_name, document_number, notes")
+        .eq("clinic_id", clinicId)
+        .eq("is_active", true),
+      supabase
+        .from("patient_attachments")
+        .select("patient_id, file_name, file_type, category")
+        .eq("clinic_id", clinicId),
+      supabase
+        .from("clinical_records")
+        .select("id", { count: "exact", head: true })
+        .eq("clinic_id", clinicId),
+      supabase
+        .from("clinical_records")
+        .select("patient_id, chief_complaint, evolution")
+        .eq("clinic_id", clinicId)
+        .limit(MIGRATION_RECORDS_LIMIT),
+    ]);
 
     exportPatients =
       patientsData?.map((p) => ({
@@ -53,15 +92,6 @@ export default async function DatosPage() {
         insurance_provider: p.insurance_provider ?? "",
         birth_date: p.birth_date ?? "",
       })) ?? [];
-
-    const { data: recordsData } = await supabase
-      .from("clinical_records")
-      .select(
-        "chief_complaint, diagnosis, evolution, indications, created_at, patients(first_name, last_name, document_number), professionals(profiles(full_name))"
-      )
-      .eq("clinic_id", clinicId)
-      .order("created_at", { ascending: false })
-      .limit(EXPORT_RECORDS_LIMIT);
 
     exportRecords =
       recordsData?.map((r) => {
@@ -86,6 +116,13 @@ export default async function DatosPage() {
           indications: r.indications ?? "",
         };
       }) ?? [];
+
+    migrationReport = buildMigrationHealthReport({
+      patients: migrationPatients ?? [],
+      attachments: migrationAttachments ?? [],
+      records: migrationRecords ?? [],
+      recordsTruncated: (migrationRecordCount ?? 0) > MIGRATION_RECORDS_LIMIT,
+    });
   }
 
   return (
@@ -115,6 +152,12 @@ export default async function DatosPage() {
             title="Importación y exportación"
             subtitle="Subí archivos de migración y descargá respaldos en CSV o PDF. La consulta día a día sigue en Pacientes e Historia clínica."
           />
+
+          {migrationReport && (canImportPatients || canImportClinical) && (
+            <div className="mb-8">
+              <MigrationHealthPanel report={migrationReport} />
+            </div>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Link
