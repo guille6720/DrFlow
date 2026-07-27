@@ -14,7 +14,10 @@ const LEGACY_PDF_MONTHS: Record<string, number> = {
 };
 
 const LEGACY_EVOLUTION_HEADER =
-  /^\d{2}-[A-ZÁÉÍÓÚÑ]{3}-\d{2}\s+[A-Za-zÁÉÍÓÚáéíóúÑñ\s,'.-]+$/m;
+  /^\d{2}-[A-ZÁÉÍÓÚÑ]{3}-\d{2,4}\s+[A-Za-zÁÉÍÓÚáéíóúÑñ\s,'.-]+$/m;
+
+const LEGACY_EVOLUTION_HEADER_ALT =
+  /^\d{1,2}\/\d{1,2}\/\d{2,4}\s+[A-Za-zÁÉÍÓÚáéíóúÑñ\s,'.-]+$/m;
 
 const NOISE_LINE =
   /^(Evoluciones|-- \d+ of \d+ --|\d{2}:\d{2}:\d{2}\s|osleonardi@gmail\.com|\d{6}\s+\d{6}|Roemmers|Pfizer|Richet|Genomma|Montpellier|Bayer|Boehringer|AstraZeneca|Vannier|Leona|45534|osleo)$/i;
@@ -41,8 +44,14 @@ export interface LegacyClinicalEvolutionEntry {
 export function isLegacyClinicalPdfExport(text: string): boolean {
   const normalized = text.replace(/\r/g, "\n");
   if (!/Evoluciones/i.test(normalized)) return false;
-  if (!LEGACY_EVOLUTION_HEADER.test(normalized)) return false;
-  return /\bDNI\s*\n\s*[\d.]{7,11}/i.test(normalized) || /\bNombre\s*\n/i.test(normalized);
+  const hasHeader =
+    LEGACY_EVOLUTION_HEADER.test(normalized) || LEGACY_EVOLUTION_HEADER_ALT.test(normalized);
+  if (!hasHeader && !/\bDiagn[oó]sticos\b/i.test(normalized)) return false;
+  return (
+    /\bDNI\s*\n\s*[\d.]{7,11}/i.test(normalized) ||
+    /\bNombre\s*\n/i.test(normalized) ||
+    /\bTel[eé]fono\s*\n/i.test(normalized)
+  );
 }
 
 export function parseLegacyClinicalBirthDate(text: string): string | null {
@@ -102,15 +111,55 @@ export function parseLegacyClinicalChronicDiagnoses(text: string): string[] {
 }
 
 function parseLegacyDateToken(token: string): string | null {
-  const match = token.match(/^(\d{2})-([A-ZÁÉÍÓÚÑ]{3})-(\d{2})$/i);
-  if (!match) return null;
-  const day = Number(match[1]);
-  const month = LEGACY_PDF_MONTHS[match[2].toUpperCase()];
-  const year = 2000 + Number(match[3]);
-  if (month === undefined) return null;
-  const d = new Date(Date.UTC(year, month, day));
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString().slice(0, 10);
+  let match = token.match(/^(\d{2})-([A-ZÁÉÍÓÚÑ]{3})-(\d{2})$/i);
+  if (match) {
+    const day = Number(match[1]);
+    const month = LEGACY_PDF_MONTHS[match[2].toUpperCase()];
+    const year = 2000 + Number(match[3]);
+    if (month === undefined) return null;
+    const d = new Date(Date.UTC(year, month, day));
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toISOString().slice(0, 10);
+  }
+
+  match = token.match(/^(\d{2})-([A-ZÁÉÍÓÚÑ]{3})-(\d{4})$/i);
+  if (match) {
+    const day = Number(match[1]);
+    const month = LEGACY_PDF_MONTHS[match[2].toUpperCase()];
+    const year = Number(match[3]);
+    if (month === undefined) return null;
+    const d = new Date(Date.UTC(year, month, day));
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toISOString().slice(0, 10);
+  }
+
+  match = token.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (match) {
+    const day = Number(match[1]);
+    const month = Number(match[2]) - 1;
+    let year = Number(match[3]);
+    if (year < 100) year += 2000;
+    if (month < 0 || month > 11) return null;
+    const d = new Date(Date.UTC(year, month, day));
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toISOString().slice(0, 10);
+  }
+
+  return null;
+}
+
+function isEvolutionBlockHeader(trimmed: string): boolean {
+  if (/^\d{2}-[A-ZÁÉÍÓÚÑ]{3}-\d{2,4}\s+[A-Za-zÁÉÍÓÚáéíóúÑñ]/.test(trimmed)) return true;
+  if (/^\d{1,2}\/\d{1,2}\/\d{2,4}\s+[A-Za-zÁÉÍÓÚáéíóúÑñ]/.test(trimmed)) return true;
+  return false;
+}
+
+function parseEvolutionHeader(header: string): { dateToken: string; professionalName: string } | null {
+  const dash = header.match(/^(\d{2}-[A-ZÁÉÍÓÚÑ]{3}-\d{2,4})\s+(.+)$/i);
+  if (dash) return { dateToken: dash[1], professionalName: dash[2].trim() };
+  const slash = header.match(/^(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+)$/i);
+  if (slash) return { dateToken: slash[1], professionalName: slash[2].trim() };
+  return null;
 }
 
 function cleanEvolutionBody(raw: string): string {
@@ -170,7 +219,7 @@ function splitEvolutionBlocks(text: string): Array<{ header: string; body: strin
 
   for (const line of lines) {
     const trimmed = line.trim();
-    if (/^\d{2}-[A-ZÁÉÍÓÚÑ]{3}-\d{2}\s+[A-Za-zÁÉÍÓÚáéíóúÑñ]/.test(trimmed)) {
+    if (isEvolutionBlockHeader(trimmed)) {
       flush();
       currentHeader = trimmed;
       continue;
@@ -186,15 +235,13 @@ export function parseLegacyClinicalEvolutions(text: string): LegacyClinicalEvolu
   const entries: LegacyClinicalEvolutionEntry[] = [];
 
   for (const block of blocks) {
-    const headerMatch = block.header.match(
-      /^(\d{2}-[A-ZÁÉÍÓÚÑ]{3}-\d{2})\s+(.+)$/
-    );
-    if (!headerMatch) continue;
+    const parsedHeader = parseEvolutionHeader(block.header);
+    if (!parsedHeader) continue;
 
-    const dateIso = parseLegacyDateToken(headerMatch[1]);
+    const dateIso = parseLegacyDateToken(parsedHeader.dateToken);
     if (!dateIso) continue;
 
-    const professionalName = headerMatch[2].trim();
+    const professionalName = parsedHeader.professionalName;
     const timeMatch = block.body.match(/\n(\d{2}:\d{2}:\d{2})\s+/);
     const timeLabel = timeMatch?.[1] ?? null;
     const marker = `[Import:${dateIso}${timeLabel ? `T${timeLabel}` : ""}]`;
@@ -231,4 +278,48 @@ export function parseLegacyClinicalEvolutions(text: string): LegacyClinicalEvolu
   }
 
   return entries;
+}
+
+/** Si el PDF no partió en bloques por fecha, importa el cuerpo de Evoluciones como una consulta. */
+export function parseLegacyClinicalEvolutionsFallback(
+  text: string
+): LegacyClinicalEvolutionEntry[] {
+  const normalized = text.replace(/\r/g, "\n");
+  const match = normalized.match(/\nEvoluciones\s*\n([\s\S]+?)(?=\nDiagn[oó]sticos\s*\n|\nTratamientos\s*\n|$)/i);
+  if (!match?.[1]) return [];
+
+  const body = cleanEvolutionBody(match[1]);
+  if (body.length < 40) return [];
+
+  const dateFromText =
+    normalized.match(/(\d{2}-[A-ZÁÉÍÓÚÑ]{3}-\d{2,4})/i)?.[1] ??
+    normalized.match(/(\d{1,2}\/\d{1,2}\/\d{2,4})/)?.[1];
+  const dateIso = dateFromText ? parseLegacyDateToken(dateFromText) : null;
+  const consultationDate = dateIso ?? new Date().toISOString().slice(0, 10);
+  const marker = `[Import:${consultationDate}]`;
+  const professionalName =
+    normalized.match(/\d{2}-[A-ZÁÉÍÓÚÑ]{3}-\d{2,4}\s+([^\n]+)/i)?.[1]?.trim() ?? "Profesional";
+
+  return [
+    {
+      marker,
+      consultationDate,
+      professionalName,
+      timeLabel: null,
+      chief_complaint: `${marker} ${buildChiefComplaint(body, consultationDate)}`.slice(0, 600),
+      evolution: body.slice(0, 12000),
+      diagnosis: "",
+      indications: extractSection(body, [
+        /(?:Conducta(?: Médica)?|Plan(?: Terap[eé]utico)?)[:\s]*([\s\S]{10,4000})/i,
+      ]).slice(0, 4000),
+    },
+  ];
+}
+
+export function parseLegacyClinicalEvolutionsWithFallback(
+  text: string
+): LegacyClinicalEvolutionEntry[] {
+  const entries = parseLegacyClinicalEvolutions(text);
+  if (entries.length > 0) return entries;
+  return parseLegacyClinicalEvolutionsFallback(text);
 }

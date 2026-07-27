@@ -3,6 +3,7 @@ import "server-only";
 import {
   isConsumersImportHeaderCell,
   parseConsumerImportLines,
+  parseConsumersCsvContent,
 } from "@/lib/utils/consumers-import-parse";
 
 export async function extractConsumerLinesFromUpload(
@@ -72,6 +73,16 @@ async function extractFromExcel(buffer: Buffer): Promise<{
 
 export async function parseConsumersUpload(buffer: Buffer, fileName: string, maxRows: number) {
   try {
+    const lower = fileName.toLowerCase();
+    if (lower.endsWith(".csv") && !lower.endsWith(".csv.xlsx")) {
+      const text = buffer.toString("utf-8").replace(/^\uFEFF/, "");
+      const firstLine = text.split(/\r?\n/)[0] ?? "";
+      if (firstLine.includes("firstName") && firstLine.includes("identification")) {
+        const { records, errors } = parseConsumersCsvContent(text, maxRows);
+        return { records, errors, format: "csv" as const };
+      }
+    }
+
     const extracted = await extractConsumerLinesFromUpload(buffer, fileName);
     if (extracted.format === "unknown" || extracted.lines.length === 0) {
       return {

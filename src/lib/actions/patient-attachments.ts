@@ -19,6 +19,7 @@ import {
   isLegacyClinicalPdfExport,
   parseLegacyClinicalDemographics,
   parseLegacyClinicalEvolutions,
+  parseLegacyClinicalEvolutionsWithFallback,
 } from "@/lib/utils/clinical-export-pdf-parse";
 import {
   extractPatientFromFileName,
@@ -400,7 +401,7 @@ export async function importClinicalPdfDocument(
         demographics
       );
 
-      const evolutions = parseLegacyClinicalEvolutions(pdfText);
+      const evolutions = parseLegacyClinicalEvolutionsWithFallback(pdfText);
       if (evolutions.length > 0) {
         const insertResult = await insertLegacyPdfClinicalRecords(supabase, {
           clinicId: access.clinicId,
