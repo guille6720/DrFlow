@@ -17,6 +17,7 @@ import type { Appointment, Clinic, Patient, Professional, UserRole } from "@/typ
 import { CalendarGrid } from "@/components/agenda/calendar-grid";
 import { MonthOverviewGrid } from "@/components/agenda/month-overview-grid";
 import { AppointmentDatetimePicker } from "@/components/agenda/appointment-datetime-picker";
+import { PatientSearchCombobox } from "@/components/pacientes/patient-search-combobox";
 import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import {
   format,
@@ -224,15 +225,14 @@ export function AgendaView({
         {showForm && (
           <Card title="Nuevo turno">
             <form onSubmit={handleCreate} className="grid gap-4 sm:grid-cols-2">
-              <Select
-                name="patient_id"
-                label="Paciente"
-                required
-                options={patients.map((p) => ({
-                  value: p.id,
-                  label: `${p.last_name}, ${p.first_name}`,
+              <PatientSearchCombobox
+                patients={patients.map((p) => ({
+                  id: p.id,
+                  first_name: p.first_name,
+                  last_name: p.last_name,
+                  document_number: p.document_number,
                 }))}
-                placeholder="Seleccionar paciente"
+                required
               />
               <Select
                 name="professional_id"

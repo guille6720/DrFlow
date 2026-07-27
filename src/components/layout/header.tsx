@@ -37,7 +37,10 @@ export function Header({
   const shellDark =
     pathname.startsWith("/agenda") ||
     pathname.startsWith("/atenciones") ||
-    pathname.startsWith("/dashboard");
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/pacientes") ||
+    pathname.startsWith("/historias") ||
+    pathname.startsWith("/datos");
 
   return (
     <header

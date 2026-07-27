@@ -70,7 +70,7 @@ export function ClinicalRecordsGroupedList({ groups, defaultOpenPatientId }: Pro
                 />
                 <Link
                   href={`/historias/paciente/${group.patientId}`}
-                  className="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-800"
+                  className="rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-cyan-700 hover:to-teal-700"
                   onClick={(e) => e.stopPropagation()}
                 >
                   Toda su historia

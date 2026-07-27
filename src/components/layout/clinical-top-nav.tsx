@@ -24,7 +24,11 @@ export function ClinicalTopNav() {
 
   if (!show) return null;
 
-  const dark = pathname.startsWith("/agenda") || pathname.startsWith("/atenciones");
+  const dark =
+    pathname.startsWith("/agenda") ||
+    pathname.startsWith("/atenciones") ||
+    pathname.startsWith("/pacientes") ||
+    pathname.startsWith("/historias");
 
   return (
     <nav

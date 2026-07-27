@@ -17,13 +17,13 @@ export function Card({ children, className, title, description, action }: CardPr
           <div className="min-w-0 flex-1">
             {title && <h3 className="break-words font-semibold text-slate-50">{title}</h3>}
             {description && (
-              <p className="mt-0.5 break-words text-sm text-slate-400">{description}</p>
+              <p className="mt-0.5 break-words text-sm text-slate-300">{description}</p>
             )}
           </div>
           {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
-      <div className="min-w-0 p-5">{children}</div>
+      <div className="min-w-0 p-5 [&>*]:text-slate-900">{children}</div>
     </div>
   );
 }

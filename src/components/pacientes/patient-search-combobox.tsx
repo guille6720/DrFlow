@@ -1,0 +1,139 @@
+"use client";
+
+import { useMemo, useRef, useState } from "react";
+import { Search } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
+
+export type PatientSearchOption = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  document_number: string;
+};
+
+interface Props {
+  patients: PatientSearchOption[];
+  name?: string;
+  label?: string;
+  required?: boolean;
+  placeholder?: string;
+  defaultPatientId?: string;
+}
+
+function normalize(s: string) {
+  return s
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase();
+}
+
+function formatLabel(p: PatientSearchOption) {
+  return `${p.last_name}, ${p.first_name} · DNI ${p.document_number}`;
+}
+
+export function PatientSearchCombobox({
+  patients,
+  name = "patient_id",
+  label = "Paciente",
+  required,
+  placeholder = "Escribí nombre, apellido o DNI…",
+  defaultPatientId,
+}: Props) {
+  const initial = patients.find((p) => p.id === defaultPatientId);
+  const [query, setQuery] = useState(initial ? formatLabel(initial) : "");
+  const [selectedId, setSelectedId] = useState(defaultPatientId ?? "");
+  const [open, setOpen] = useState(false);
+  const blurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const filtered = useMemo(() => {
+    const q = normalize(query.trim());
+    if (!q) return patients.slice(0, 12);
+    const qDigits = q.replace(/\D/g, "");
+    return patients
+      .filter((p) => {
+        const blob = normalize(
+          `${p.first_name} ${p.last_name} ${p.document_number} ${p.last_name}, ${p.first_name}`
+        );
+        if (blob.includes(q)) return true;
+        if (qDigits.length >= 3) {
+          return p.document_number.replace(/\D/g, "").includes(qDigits);
+        }
+        return false;
+      })
+      .slice(0, 12);
+  }, [patients, query]);
+
+  function pick(p: PatientSearchOption) {
+    setSelectedId(p.id);
+    setQuery(formatLabel(p));
+    setOpen(false);
+  }
+
+  function handleBlur() {
+    blurTimeout.current = setTimeout(() => setOpen(false), 150);
+  }
+
+  function handleFocus() {
+    if (blurTimeout.current) clearTimeout(blurTimeout.current);
+    setOpen(true);
+  }
+
+  return (
+    <div className="relative space-y-1">
+      <label className="block text-sm font-medium text-slate-300">
+        {label}
+        {required ? <span className="text-red-400"> *</span> : null}
+      </label>
+      <input type="hidden" name={name} value={selectedId} required={required} />
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-teal-400/80" />
+        <input
+          type="search"
+          autoComplete="off"
+          value={query}
+          placeholder={placeholder}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setSelectedId("");
+            setOpen(true);
+          }}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          className={cn(
+            "w-full rounded-xl border border-slate-600 bg-slate-900/80 py-2.5 pl-10 pr-3 text-sm text-slate-100",
+            "placeholder:text-slate-500 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/30"
+          )}
+        />
+      </div>
+      {open && filtered.length > 0 && (
+        <ul
+          className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-slate-600 bg-slate-900 py-1 shadow-xl shadow-black/40"
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          {filtered.map((p) => (
+            <li key={p.id}>
+              <button
+                type="button"
+                className={cn(
+                  "w-full px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800",
+                  selectedId === p.id && "bg-teal-950/60 text-teal-200"
+                )}
+                onClick={() => pick(p)}
+              >
+                <span className="font-medium">
+                  {p.last_name}, {p.first_name}
+                </span>
+                <span className="ml-2 text-xs text-slate-500">DNI {p.document_number}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {open && query.trim() && filtered.length === 0 && (
+        <p className="absolute z-20 mt-1 w-full rounded-xl border border-slate-600 bg-slate-900 px-3 py-2 text-xs text-slate-400 shadow-lg">
+          Sin coincidencias. Probá otro nombre o DNI.
+        </p>
+      )}
+    </div>
+  );
+}
