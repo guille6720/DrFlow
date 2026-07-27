@@ -27,6 +27,7 @@ import { useRouter } from "next/navigation";
 import type { UserRole } from "@/types/database";
 import { hasPermission } from "@/lib/permissions/roles";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { useDashboardSidebar } from "@/components/layout/dashboard-sidebar-context";
 
 type NavItem = {
   href: string;
@@ -141,6 +142,7 @@ export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { hidden: desktopHidden } = useDashboardSidebar();
 
   const visibleItems = navItems.filter((item) => {
     if (!item.permission) return true;
@@ -167,8 +169,9 @@ export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col drflow-sidebar-gradient transition-transform lg:translate-x-0",
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col drflow-sidebar-gradient transition-transform duration-200 ease-out",
+          mobileOpen ? "translate-x-0" : "-translate-x-full",
+          desktopHidden ? "lg:-translate-x-full" : "lg:translate-x-0"
         )}
       >
         <SidebarNavContent

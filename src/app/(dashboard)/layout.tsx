@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { Suspense } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { DashboardSidebarProvider } from "@/components/layout/dashboard-sidebar-context";
+import { DashboardMain } from "@/components/layout/dashboard-main";
 import { ClinicalTopNav } from "@/components/layout/clinical-top-nav";
 import { FloatingActions } from "@/components/layout/floating-actions";
 import { RoutePrefetcher } from "@/components/layout/route-prefetcher";
@@ -91,17 +93,19 @@ export default async function DashboardLayout({
       {showTrialBanner && clinic?.trial_ends_at && (
         <TrialBanner trialEndsAt={clinic.trial_ends_at} daysRemaining={daysLeft} />
       )}
-      <Sidebar
-        clinicName={clinic?.name}
-        role={role}
-        isSuperadmin={isSuperadmin}
-      />
-      <main className="lg:pl-64">
-        <Suspense fallback={null}>
-          <ClinicalTopNav />
-        </Suspense>
-        {children}
-      </main>
+      <DashboardSidebarProvider>
+        <Sidebar
+          clinicName={clinic?.name}
+          role={role}
+          isSuperadmin={isSuperadmin}
+        />
+        <DashboardMain>
+          <Suspense fallback={null}>
+            <ClinicalTopNav />
+          </Suspense>
+          {children}
+        </DashboardMain>
+      </DashboardSidebarProvider>
       <FloatingActions />
     </div>
   );

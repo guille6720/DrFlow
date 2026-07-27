@@ -16,9 +16,13 @@ import {
   Stethoscope,
   ClipboardList,
   User,
+  PanelLeftClose,
+  PanelLeftOpen,
+  List,
 } from "lucide-react";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
+import { useDashboardSidebar } from "@/components/layout/dashboard-sidebar-context";
 import type {
   PatientEhrAttachment,
   PatientEhrConsultation,
@@ -133,6 +137,9 @@ export function PatientEhrView({
   const [search, setSearch] = useState("");
   const [summaryTab, setSummaryTab] = useState<SummaryTab>("diagnostics");
   const [mobilePane, setMobilePane] = useState<"list" | "detail">("list");
+  const [hideEvolutionList, setHideEvolutionList] = useState(false);
+  const { hidden: navSidebarHidden, toggleHidden: toggleNavSidebar, setHidden: setNavSidebarHidden } =
+    useDashboardSidebar();
 
   const counts: Record<SummaryTab, number> = {
     diagnostics: diagnosisRows.length,
@@ -180,6 +187,47 @@ export function PatientEhrView({
     setSelectedId(id);
     setMobilePane("detail");
   }
+
+  const focusReading = navSidebarHidden && hideEvolutionList;
+
+  const layoutToolbar = (
+    <div className="mb-4 flex flex-wrap items-center gap-2 print:hidden">
+      <button
+        type="button"
+        onClick={toggleNavSidebar}
+        className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/90 hover:bg-slate-50"
+        title={navSidebarHidden ? "Mostrar menú de navegación" : "Ocultar menú de navegación"}
+      >
+        {navSidebarHidden ? (
+          <PanelLeftOpen className="h-4 w-4 text-cyan-600" />
+        ) : (
+          <PanelLeftClose className="h-4 w-4 text-cyan-600" />
+        )}
+        {navSidebarHidden ? "Mostrar menú" : "Ocultar menú"}
+      </button>
+      <button
+        type="button"
+        onClick={() => setHideEvolutionList((v) => !v)}
+        className="hidden items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/90 hover:bg-slate-50 lg:inline-flex"
+        title={hideEvolutionList ? "Mostrar listado de evoluciones" : "Ocultar listado de evoluciones"}
+      >
+        <List className="h-4 w-4 text-cyan-600" />
+        {hideEvolutionList ? "Mostrar listado" : "Ocultar listado"}
+      </button>
+      {(navSidebarHidden || hideEvolutionList) && (
+        <button
+          type="button"
+          onClick={() => {
+            setNavSidebarHidden(false);
+            setHideEvolutionList(false);
+          }}
+          className="inline-flex items-center gap-1 rounded-full bg-cyan-50 px-3 py-2 text-xs font-semibold text-cyan-900 ring-1 ring-cyan-200/80 hover:bg-cyan-100"
+        >
+          Restablecer vista
+        </button>
+      )}
+    </div>
+  );
 
   const evolutionCards = (
     <div className="space-y-4">
@@ -289,7 +337,23 @@ export function PatientEhrView({
 
       {/* Evolución — bloque principal (estilo “New clinical entry”) */}
       <section className="mb-4 rounded-3xl bg-white p-5 shadow-md shadow-slate-200/50 ring-1 ring-slate-100">
-        <h3 className="text-base font-bold text-slate-900">Evolución clínica</h3>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h3 className="text-base font-bold text-slate-900">Evolución clínica</h3>
+          {hideEvolutionList && filteredList.length > 1 && (
+            <select
+              value={selected?.id ?? ""}
+              onChange={(e) => setSelectedId(e.target.value)}
+              className="max-w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-800 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/30"
+            >
+              {filteredList.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {format(new Date(c.created_at), "d MMM yyyy", { locale: es })} —{" "}
+                  {c.professional_name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
         {selected ? (
           <>
             <p className="mt-1 text-xs text-slate-500">
@@ -458,9 +522,36 @@ export function PatientEhrView({
 
   return (
     <div className="min-h-[calc(100vh-8rem)] bg-[#e8ecef] print:bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 lg:py-8">
-        <div className="lg:grid lg:grid-cols-[minmax(0,340px)_1fr] lg:items-start lg:gap-6">
-          <div className={`${mobilePane === "detail" ? "hidden lg:block" : ""}`}>{evolutionCards}</div>
+      {navSidebarHidden && (
+        <button
+          type="button"
+          onClick={() => setNavSidebarHidden(false)}
+          className="fixed left-4 top-20 z-30 hidden items-center gap-2 rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white shadow-lg lg:flex print:hidden"
+        >
+          <PanelLeftOpen className="h-4 w-4" />
+          Menú
+        </button>
+      )}
+      <div
+        className={`mx-auto px-4 py-5 sm:px-6 lg:py-8 ${
+          focusReading ? "max-w-4xl" : "max-w-6xl"
+        }`}
+      >
+        {layoutToolbar}
+        <div
+          className={
+            hideEvolutionList
+              ? "lg:block"
+              : "lg:grid lg:grid-cols-[minmax(0,340px)_1fr] lg:items-start lg:gap-6"
+          }
+        >
+          <div
+            className={`${mobilePane === "detail" ? "hidden lg:block" : ""} ${
+              hideEvolutionList ? "hidden lg:hidden" : ""
+            }`}
+          >
+            {evolutionCards}
+          </div>
           <div className={`${mobilePane === "list" ? "hidden lg:block" : ""} lg:min-h-[70vh]`}>
             {detailPane}
           </div>
