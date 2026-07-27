@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hasPermission } from "@/lib/permissions/roles";
 import { DataImportExportSidebar } from "@/components/datos/data-import-export-sidebar";
 import { MigrationHealthPanel } from "@/components/datos/migration-health-panel";
+import { ClearClinicalHistoryPanel } from "@/components/datos/clear-clinical-history-panel";
 import { buildMigrationHealthReport, type MigrationHealthReport } from "@/lib/utils/migration-health";
 import type { ClinicalRecordExportRow, PatientExportRow } from "@/lib/utils/clinical-export-client";
 import { ArrowLeftRight, FileText, Users } from "lucide-react";
@@ -26,13 +27,14 @@ export default async function DatosPage() {
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { clinic, role, isSuperadmin } = await getActiveClinic();
   const supabase = await createClient();
 
   const canImportPatients = hasPermission(role, "managePatients", isSuperadmin);
   const canImportClinical =
     hasPermission(role, "editClinicalRecords", isSuperadmin) ||
     hasPermission(role, "managePatients", isSuperadmin);
+  const canResetClinicalHistory = hasPermission(role, "manageClinic", isSuperadmin);
 
   let exportPatients: PatientExportRow[] = [];
   let exportRecords: ClinicalRecordExportRow[] = [];
@@ -157,6 +159,10 @@ export default async function DatosPage() {
             <div className="mb-8">
               <MigrationHealthPanel report={migrationReport} />
             </div>
+          )}
+
+          {canResetClinicalHistory && clinic && (
+            <ClearClinicalHistoryPanel clinicName={clinic.name} />
           )}
 
           <div className="grid gap-4 sm:grid-cols-2">
