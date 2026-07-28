@@ -38,7 +38,7 @@ export function DashboardUpcomingList({ appointments, canManage }: Props) {
   }
 
   return (
-    <ul className="divide-y divide-slate-100">
+    <ul className="drflow-appointment-list divide-y">
       {appointments.map((appt) => {
         const statusInfo = appointmentStatusBadge[appt.status as keyof typeof appointmentStatusBadge];
         const patientFullName = appt.patients
@@ -57,7 +57,7 @@ export function DashboardUpcomingList({ appointments, canManage }: Props) {
           >
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-medium text-slate-900">{patientFullName}</p>
+                <p className="font-medium">{patientFullName}</p>
                 {online && (
                   <Badge variant="info" className="gap-1">
                     <Globe className="h-3 w-3" />

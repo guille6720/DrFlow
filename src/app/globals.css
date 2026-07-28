@@ -715,7 +715,143 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar button.
   color: #64748b !important;
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar button.text-slate-400:hover,
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar button.text-slate-500:hover {
-  color: #0f172a !important;
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body .text-slate-900,
+html:not([data-ui-style="2"]) .drflow-card-body .text-slate-900 {
+  color: #f8fafc !important;
 }
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-appointment-list > li + li,
+html:not([data-ui-style="2"]) .drflow-appointment-list > li + li {
+  border-top: 1px solid rgb(71 85 105 / 0.65);
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-appointment-list > li + li {
+  border-top: 1px solid #e2e8f0;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-appointment-list .font-medium,
+html:not([data-ui-style="2"]) .drflow-mesh main .drflow-appointment-list .font-medium {
+  color: #f8fafc;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh main .drflow-appointment-list .font-medium {
+  color: #0f172a;
+}
+
+/* ——— Historia clínica EHR (layout referencia, colores DrFlow) ——— */
+.drflow-ehr-shell {
+  --ehr-bg: #f4f6f8;
+  --ehr-panel: #ffffff;
+  --ehr-text: #0f172a;
+  --ehr-muted: #475569;
+  --ehr-label: #0d9488;
+  --ehr-evolution-bg: #ecfdf5;
+  --ehr-evolution-border: #99f6e4;
+  --ehr-sidebar-active: #ccfbf1;
+  background: var(--ehr-bg);
+  color: var(--ehr-text);
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-shell,
+html:not([data-ui-style="2"]) .drflow-ehr-shell {
+  --ehr-bg: #0f172a;
+  --ehr-panel: #1e293b;
+  --ehr-text: #f1f5f9;
+  --ehr-muted: #94a3b8;
+  --ehr-label: #5eead4;
+  --ehr-evolution-bg: #134e4a;
+  --ehr-evolution-border: #2dd4bf;
+  --ehr-sidebar-active: #115e59;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-shell {
+  --ehr-bg: #eef2f6;
+  --ehr-panel: #ffffff;
+  --ehr-text: #0f172a;
+  --ehr-muted: #64748b;
+  --ehr-label: #0f766e;
+  --ehr-evolution-bg: #ecfdf5;
+  --ehr-evolution-border: #5eead4;
+  --ehr-sidebar-active: #ccfbf1;
+}
+
+.drflow-ehr-demographics,
+.drflow-ehr-filters,
+.drflow-ehr-sidebar,
+.drflow-ehr-main,
+.drflow-ehr-table-panel {
+  background: var(--ehr-panel);
+}
+
+.drflow-ehr-demo-label {
+  color: var(--ehr-label);
+}
+
+.drflow-ehr-demo-value {
+  color: var(--ehr-text);
+}
+
+.drflow-ehr-filter-label {
+  color: var(--ehr-text);
+}
+
+.drflow-ehr-filter-meta,
+.drflow-ehr-muted {
+  color: var(--ehr-muted);
+}
+
+.drflow-ehr-sidebar-item {
+  color: var(--ehr-text);
+  background: transparent;
+}
+
+.drflow-ehr-sidebar-active {
+  background: var(--ehr-sidebar-active);
+  color: var(--ehr-text);
+}
+
+.drflow-ehr-evolution-box {
+  background: var(--ehr-evolution-bg);
+  border-color: var(--ehr-evolution-border);
+}
+
+.drflow-ehr-evolution-text {
+  color: var(--ehr-text);
+}
+
+.drflow-ehr-action-link {
+  color: #0d9488;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-action-link,
+html:not([data-ui-style="2"]) .drflow-ehr-action-link {
+  color: #5eead4;
+}
+
+.drflow-ehr-action-muted {
+  color: var(--ehr-muted);
+}
+
+.drflow-ehr-table-title {
+  color: var(--ehr-text);
+  background: color-mix(in srgb, var(--ehr-panel) 92%, var(--ehr-label) 8%);
+}
+
+.drflow-ehr-table th {
+  color: var(--ehr-label);
+  background: color-mix(in srgb, var(--ehr-panel) 88%, var(--ehr-label) 12%);
+}
+
+.drflow-ehr-table td {
+  color: var(--ehr-text);
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-table a.text-teal-600,
+html:not([data-ui-style="2"]) .drflow-ehr-table a.text-teal-600 {
+  color: #5eead4 !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-table a.text-teal-600 {
+  color: #0d9488 !important;
+}
+

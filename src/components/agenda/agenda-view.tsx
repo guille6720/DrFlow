@@ -323,7 +323,7 @@ export function AgendaView({
         ) : (
           <Card
             title={format(currentDate, "EEEE d 'de' MMMM", { locale: es })}
-            className="border-slate-600/80 bg-slate-800/95 [&_h3]:text-slate-100"
+            className="border-slate-600/80 bg-slate-800/95 [&_h3]:text-slate-100 [&_.font-medium]:text-slate-50"
           >
             {dayAppointments.length === 0 ? (
               <p className="text-sm text-slate-400">Sin turnos este día.</p>

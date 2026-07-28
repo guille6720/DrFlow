@@ -40,7 +40,7 @@ export default async function PatientClinicalHistoryPage({
   const { data: patient } = await supabase
     .from("patients")
     .select(
-      "id, first_name, last_name, document_number, phone, birth_date, insurance_provider, insurance_number"
+      "id, first_name, last_name, document_number, phone, email, birth_date, insurance_provider, insurance_number"
     )
     .eq("id", patientId)
     .eq("clinic_id", clinicId)
@@ -150,8 +150,8 @@ export default async function PatientClinicalHistoryPage({
         userName={profile?.full_name}
       />
 
-      <div className="border-b border-slate-200/80 bg-[#e8ecef] px-4 py-3">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2">
+      <div className="border-b border-[var(--border)] bg-[var(--background)] px-4 py-2">
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-2">
           <Link
             href="/historias"
             className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200/80"
@@ -186,6 +186,7 @@ export default async function PatientClinicalHistoryPage({
             insurance_provider: patient.insurance_provider,
             insurance_number: patient.insurance_number,
             phone: patient.phone,
+            email: patient.email,
           }}
           consultations={consultations}
           diagnosisRows={diagnosisRows}

@@ -86,7 +86,7 @@ export function AppointmentRow({
       <li className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="font-medium text-slate-900">
+            <p className="font-medium">
               {patient ? `${patient.last_name}, ${patient.first_name}` : "Paciente"}
             </p>
             {online && (
