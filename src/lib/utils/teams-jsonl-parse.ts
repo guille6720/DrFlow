@@ -1,7 +1,8 @@
 import type { HceExportRow } from "@/lib/utils/hce-export-parse";
 import { placeholderDniFromConsumerId } from "@/lib/utils/hce-export-parse";
+import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 
-export interface DrAppConsumer {
+export interface TeamsJsonlConsumer {
   id: string;
   lastName?: string;
   firstName?: string;
@@ -61,20 +62,20 @@ function splitLabel(label: string): { last_name: string; first_name: string } {
   if (space.length >= 2) {
     return { last_name: space[0], first_name: space.slice(1).join(" ") };
   }
-  return { last_name: label.trim() || "Importado", first_name: "DrApp" };
+  return { last_name: label.trim() || "Importado", first_name: "Paciente" };
 }
 
-function consumerToNames(c: DrAppConsumer): { last_name: string; first_name: string } {
+function consumerToNames(c: TeamsJsonlConsumer): { last_name: string; first_name: string } {
   const ln = c.lastName?.trim();
   const fn = c.firstName?.trim();
   if (ln || fn) {
-    return { last_name: ln || "Importado", first_name: fn || "DrApp" };
+    return { last_name: ln || "Importado", first_name: fn || "Paciente" };
   }
   if (c.label) return splitLabel(c.label);
-  return { last_name: "Importado", first_name: "DrApp" };
+  return { last_name: "Importado", first_name: "Paciente" };
 }
 
-type DrAppRecord = {
+type TeamsJsonlRecord = {
   id?: string;
   type?: string;
   deleted?: boolean;
@@ -106,10 +107,10 @@ type DrAppRecord = {
   consumers?: { id: string; label?: string }[];
 };
 
-function drappRecordToRow(
-  rec: DrAppRecord,
+function jsonlRecordToRow(
+  rec: TeamsJsonlRecord,
   lineNumber: number,
-  consumers: Map<string, DrAppConsumer>
+  consumers: Map<string, TeamsJsonlConsumer>
 ): HceExportRow | null {
   if (rec.deleted) return null;
   const consumerRef = rec.consumers?.[0]?.id;
@@ -120,7 +121,7 @@ function drappRecordToRow(
     ({
       id: consumerRef,
       label: rec.consumers?.[0]?.label,
-    } satisfies DrAppConsumer);
+    } satisfies TeamsJsonlConsumer);
 
   const { last_name, first_name } = consumerToNames(consumer);
   const document_number =
@@ -143,12 +144,14 @@ function drappRecordToRow(
     diagnostico: "",
     cie10: rec.cie10Code ?? "",
     notas: "",
-    drapp_record_id: rec.id,
+    import_record_id: rec.id,
   };
 
+  const clean = (s: string) => sanitizeClinicalDisplayText(s);
+
   if (tipo === "diagnostics") {
-    base.diagnostico = (rec.dx ?? rec.label ?? "").trim();
-    base.notas = (rec.notes ?? "").trim();
+    base.diagnostico = clean((rec.dx ?? rec.label ?? "").trim());
+    base.notas = clean((rec.notes ?? "").trim());
     base.estado = rec.status ?? "registro";
     return base.diagnostico ? base : null;
   }
@@ -157,9 +160,11 @@ function drappRecordToRow(
     const label = (rec.label ?? "").trim();
     const drugLine = [rec.drug, rec.product, rec.presentation].filter(Boolean).join(" · ");
     base.diagnostico = label || drugLine;
-    base.notas = [rec.dose, rec.frecuency, rec.notes, rec.company ? `Lab: ${rec.company}` : ""]
-      .filter(Boolean)
-      .join(" · ");
+    base.notas = clean(
+      [rec.dose, rec.frecuency, rec.notes, rec.company ? `Lab: ${rec.company}` : ""]
+        .filter(Boolean)
+        .join(" · ")
+    );
     base.estado = rec.status ?? "activo";
     return base.diagnostico || base.notas ? base : null;
   }
@@ -167,7 +172,7 @@ function drappRecordToRow(
   if (tipo === "records") {
     const body = stripHtml(rec.content ?? rec.text ?? "");
     if (!body && !fecha_inicio) return null;
-    base.notas = body;
+    base.notas = clean(body);
     return base;
   }
 
@@ -184,7 +189,7 @@ function drappRecordToRow(
 
   if (tipo === "files") {
     base.diagnostico = (rec.name ?? rec.fileName ?? "Archivo").trim();
-    base.notas = [rec.link, rec.notes].filter(Boolean).join("\n");
+    base.notas = clean([rec.link, rec.notes].filter(Boolean).join("\n"));
     base.estado = rec.classification ?? rec.status ?? "archivo";
     return base;
   }
@@ -192,13 +197,13 @@ function drappRecordToRow(
   const fallback = stripHtml(rec.content ?? rec.text ?? rec.notes ?? "");
   if (!fallback && !rec.label) return null;
   base.diagnostico = (rec.label ?? "").trim();
-  base.notas = fallback;
+  base.notas = clean(fallback);
   return base;
 }
 
 export function parseTeamsJsonlContent(content: string, maxRows = 20_000): TeamsJsonlParseResult {
   const errors: string[] = [];
-  const consumers = new Map<string, DrAppConsumer>();
+  const consumers = new Map<string, TeamsJsonlConsumer>();
   const rows: HceExportRow[] = [];
   let recordsSkipped = 0;
   let lineNumber = 0;
@@ -217,7 +222,7 @@ export function parseTeamsJsonlContent(content: string, maxRows = 20_000): Teams
 
     const id = obj.id ?? "";
     if (id.startsWith("consumers/")) {
-      const c = obj as DrAppConsumer;
+      const c = obj as TeamsJsonlConsumer;
       if (!c.deleted) consumers.set(c.id, c);
       continue;
     }
@@ -229,7 +234,7 @@ export function parseTeamsJsonlContent(content: string, maxRows = 20_000): Teams
       break;
     }
 
-    const row = drappRecordToRow(obj as DrAppRecord, lineNumber, consumers);
+    const row = jsonlRecordToRow(obj as TeamsJsonlRecord, lineNumber, consumers);
     if (row) rows.push(row);
     else recordsSkipped += 1;
   }

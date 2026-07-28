@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   isLegacyClinicalPdfExport,
-  parseDrAppCompactClinicalPdf,
+  parseCompactClinicalPdf,
   parseLegacyClinicalDemographics,
   parseLegacyClinicalEvolutions,
   parseLegacyClinicalChronicDiagnoses,
@@ -123,9 +123,9 @@ Diagnósticos
 Fecha Nombre
 `;
 
-describe("parseDrAppCompactClinicalPdf", () => {
+describe("parseCompactClinicalPdf", () => {
   it("parses Abalo-style compact export", () => {
-    const bundle = parseDrAppCompactClinicalPdf(ABALO_COMPACT);
+    const bundle = parseCompactClinicalPdf(ABALO_COMPACT);
     expect(bundle).not.toBeNull();
     expect(bundle!.evolution.evolution).toContain("me comunico via telefonica");
     expect(bundle!.evolution.evolution).not.toContain("GASTEC");

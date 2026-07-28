@@ -1,3 +1,5 @@
+import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
+
 const LEGACY_PDF_MONTHS: Record<string, number> = {
   ENE: 0,
   FEB: 1,
@@ -165,7 +167,7 @@ function parseEvolutionHeader(header: string): { dateToken: string; professional
 }
 
 function cleanEvolutionBody(raw: string): string {
-  return raw
+  const filtered = raw
     .split("\n")
     .filter((line) => {
       const t = line.trim();
@@ -178,6 +180,7 @@ function cleanEvolutionBody(raw: string): string {
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+  return sanitizeClinicalDisplayText(filtered);
 }
 
 function extractSection(body: string, patterns: RegExp[]): string {
@@ -326,14 +329,14 @@ function trimEvolutionBody(body: string): string {
   return body;
 }
 
-export type DrAppCompactPdfBundle = {
+export type CompactClinicalPdfBundle = {
   evolution: LegacyClinicalEvolutionEntry;
   diagnosisName: string | null;
   treatments: Array<{ product: string; dose: string; notes: string }>;
 };
 
-/** PDF compacto DrApp: evolución + diag/trat en texto (ej. export 1.pdf Abalo). */
-export function parseDrAppCompactClinicalPdf(text: string): DrAppCompactPdfBundle | null {
+/** PDF compacto de export clínico: evolución + diag/trat en texto. */
+export function parseCompactClinicalPdf(text: string): CompactClinicalPdfBundle | null {
   const normalized = text.replace(/\r/g, "\n");
   if (!/\nEvoluciones\s*\n/i.test(normalized) || !/\nTratamientos\s*\n/i.test(normalized)) {
     return null;
@@ -360,7 +363,7 @@ export function parseDrAppCompactClinicalPdf(text: string): DrAppCompactPdfBundl
   }
 
   const treatBlock = normalized.match(/\nTratamientos\s*\n([\s\S]*?)\nDiagn[oó]sticos\s*\n/i);
-  const treatments: DrAppCompactPdfBundle["treatments"] = [];
+  const treatments: CompactClinicalPdfBundle["treatments"] = [];
   if (treatBlock?.[1]) {
     const lines = treatBlock[1]
       .split("\n")
@@ -398,7 +401,7 @@ export function parseDrAppCompactClinicalPdf(text: string): DrAppCompactPdfBundl
 export function parseLegacyClinicalEvolutionsWithFallback(
   text: string
 ): LegacyClinicalEvolutionEntry[] {
-  const compact = parseDrAppCompactClinicalPdf(text);
+  const compact = parseCompactClinicalPdf(text);
   if (compact) return [compact.evolution];
 
   const entries = parseLegacyClinicalEvolutions(text);

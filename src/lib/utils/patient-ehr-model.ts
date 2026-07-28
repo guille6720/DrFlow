@@ -42,6 +42,7 @@ export type PatientEhrTreatmentRow = {
 };
 
 import { isHceStructuralChiefComplaint } from "@/lib/utils/hce-export-parse";
+import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 
 function formatShortDate(iso: string): string {
   const d = new Date(iso);
@@ -61,12 +62,7 @@ function classifyCategory(chief_complaint: string): PatientEhrConsultation["cate
 }
 
 function stripHceMarker(text: string): string {
-  return text
-    .replace(/^\[HCE:[^\]]+\]\s*/i, "")
-    .replace(/^\[DRAPP:[^\]]+\]\s*/i, "")
-    .replace(/^\[PDF:[^\]]+\]\s*/i, "")
-    .replace(/^\[Import:[^\]]+\]\s*/i, "")
-    .trim();
+  return sanitizeClinicalDisplayText(text);
 }
 
 function parseTreatmentLines(indications: string, recordId: string, dateLabel: string): PatientEhrTreatmentRow[] {
@@ -128,8 +124,8 @@ export function buildEhrPayloadFromRecords(
         professional_name: r.professional_name,
         chief_complaint: chief,
         diagnosis: stripHceMarker(r.diagnosis ?? ""),
-        evolution: r.evolution ?? "",
-        indications: r.indications ?? "",
+        evolution: sanitizeClinicalDisplayText(r.evolution ?? ""),
+        indications: sanitizeClinicalDisplayText(r.indications ?? ""),
         category,
       });
     }

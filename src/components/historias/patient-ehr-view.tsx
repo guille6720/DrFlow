@@ -27,6 +27,7 @@ import type {
   PatientEhrPrescription,
   PatientEhrTreatmentRow,
 } from "@/lib/utils/patient-ehr-model";
+import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 
 type SummaryTab = "diagnostics" | "treatments" | "vitals" | "files" | "prescriptions";
 
@@ -75,17 +76,21 @@ function ageNumber(age_label: string | null): string | null {
 }
 
 function listPreview(text: string, max = 56): string {
-  const t = text.replace(/\s+/g, " ").trim();
+  const t = sanitizeClinicalDisplayText(text).replace(/\s+/g, " ").trim();
   if (!t) return "Sin texto";
   return t.length <= max ? t : `${t.slice(0, max)}…`;
 }
 
 function evolutionBody(c: PatientEhrConsultation): string {
-  const evo = c.evolution?.trim();
-  if (evo && evo.length > 0) return evo;
-  const cc = c.chief_complaint?.trim();
-  if (cc && !/importado|^\[DRAPP:|^\[HCE:|^\[PDF:/i.test(cc)) return cc;
-  return evo || cc || "Sin texto de evolución registrado.";
+  const evo = sanitizeClinicalDisplayText(c.evolution);
+  if (evo.length > 0) return evo;
+  const ccRaw = c.chief_complaint?.trim() ?? "";
+  if (/^\[(?:IMPORT|DRAPP|HCE|PDF):/i.test(ccRaw)) {
+    return "Sin texto de evolución registrado.";
+  }
+  const cc = sanitizeClinicalDisplayText(ccRaw);
+  if (cc && !/^importado\b/i.test(cc)) return cc;
+  return cc || "Sin texto de evolución registrado.";
 }
 
 function InfoRow({ label, value }: { label: string; value: ReactNode }) {
@@ -456,7 +461,10 @@ export function PatientEhrView({
                     <p className="text-xs text-slate-500">
                       {format(new Date(c.created_at), "d MMM yyyy", { locale: es })}
                     </p>
-                    <p className="text-slate-800">{c.evolution || c.chief_complaint}</p>
+                    <p className="text-slate-800">
+                      {sanitizeClinicalDisplayText(c.evolution || c.chief_complaint) ||
+                        "Sin texto"}
+                    </p>
                   </li>
                 ))}
               </ul>

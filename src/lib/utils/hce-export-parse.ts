@@ -13,8 +13,8 @@ export interface HceExportRow {
   diagnostico: string;
   cie10: string;
   notas: string;
-  /** Id estable DrApp (`records/…`) para deduplicar import JSONL. */
-  drapp_record_id?: string;
+  /** Id estable del export JSONL (`records/…`) para deduplicar importación. */
+  import_record_id?: string;
 }
 
 const HEADER_ALIASES: Record<string, keyof Omit<HceExportRow, "lineNumber">> = {
@@ -198,8 +198,8 @@ export function hceRowToClinicalRecord(row: HceExportRow): {
     return null;
   }
 
-  const marker = row.drapp_record_id
-    ? `[DRAPP:${row.drapp_record_id}]`
+  const marker = row.import_record_id
+    ? `[IMPORT:${row.import_record_id}]`
     : `[HCE:${row.paciente_id}:${row.tipo_registro}:${row.fecha_inicio ?? "s/f"}:${row.lineNumber}]`;
 
   if (row.tipo_registro === "diagnostics" && row.diagnostico) {

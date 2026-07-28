@@ -6,6 +6,7 @@ import { es } from "date-fns/locale";
 import { ChevronDown } from "lucide-react";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
+import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 
 export type GroupedClinicalRecord = {
   id: string;
@@ -101,7 +102,7 @@ export function ClinicalRecordsGroupedList({ groups, defaultOpenPatientId }: Pro
                     </p>
                     <p className="text-xs text-slate-500">{r.professional_name}</p>
                     <p className="mt-1 text-sm text-slate-600">
-                      {r.diagnosis ?? r.chief_complaint ?? "Sin diagnóstico"}
+                      {sanitizeClinicalDisplayText(r.diagnosis ?? r.chief_complaint) || "Sin diagnóstico"}
                     </p>
                   </div>
                   <Link

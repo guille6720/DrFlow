@@ -3,7 +3,7 @@ import { buildEhrPayloadFromHceRows } from "@/lib/utils/patient-ehr-from-hce";
 import type { HceExportRow } from "@/lib/utils/hce-export-parse";
 
 describe("buildEhrPayloadFromHceRows", () => {
-  it("maps diagnostics and treatments like DrApp export", () => {
+  it("maps diagnostics and treatments from teams JSONL export", () => {
     const rows: HceExportRow[] = [
       {
         lineNumber: 2,

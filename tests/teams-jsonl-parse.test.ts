@@ -44,7 +44,7 @@ describe("parseTeamsJsonlContent", () => {
     const diag = rows.find((r) => r.tipo_registro === "diagnostics");
     expect(diag?.document_number).toBe("12459480");
     const clinical = hceRowToClinicalRecord(diag!);
-    expect(clinical?.marker).toBe("[DRAPP:records/971ddd21]");
+    expect(clinical?.marker).toBe("[IMPORT:records/971ddd21]");
 
     const evo = rows.find((r) => r.tipo_registro === "records");
     expect(evo?.notas).toContain("telefonica");

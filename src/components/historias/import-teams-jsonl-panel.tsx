@@ -40,7 +40,7 @@ export function ImportTeamsJsonlPanel({ canImport, embedded }: Props) {
   async function processFile(file: File) {
     const lower = file.name.toLowerCase();
     if (!lower.endsWith(".jsonl")) {
-      setError("Subí el export teams-*.jsonl de DrApp.");
+      setError("Subí un archivo teams-*.jsonl (export JSONL por línea).");
       return;
     }
     if (file.size > TEAMS_JSONL_MAX_BYTES) {
@@ -57,7 +57,7 @@ export function ImportTeamsJsonlPanel({ canImport, embedded }: Props) {
       const content = await file.text();
       const sample = content.slice(0, 500);
       if (!isTeamsJsonlFile(file.name, sample)) {
-        setError("No parece un export teams de DrApp (JSONL por línea).");
+        setError("No parece un export teams válido (JSONL por línea).");
         setImporting(false);
         return;
       }
@@ -116,7 +116,7 @@ export function ImportTeamsJsonlPanel({ canImport, embedded }: Props) {
   const shell = (
     <div className="space-y-3">
       <p className="text-xs text-slate-600">
-        Export completo DrApp (<code className="text-[11px]">teams-….jsonl</code>): diagnósticos,
+        Export JSONL de equipo (<code className="text-[11px]">teams-….jsonl</code>): diagnósticos,
         tratamientos, evoluciones, signos vitales y referencias a archivos. Parsea en el navegador y
         sube por lotes (no hace falta volver a elegir el archivo).
       </p>
@@ -162,7 +162,7 @@ export function ImportTeamsJsonlPanel({ canImport, embedded }: Props) {
           {summary.stats && <p className="mt-1 text-xs text-emerald-900/90">{summary.stats}</p>}
           <ul className="mt-2 list-inside list-disc text-xs">
             <li>{summary.recordsCreated} consultas nuevas</li>
-            <li>{summary.recordsSkipped} ya existían (mismo id DrApp)</li>
+            <li>{summary.recordsSkipped} ya existían (mismo id de importación)</li>
             <li>{summary.patientsCreated} pacientes creados</li>
           </ul>
           {summary.parseErrors.length > 0 && (
@@ -185,7 +185,7 @@ export function ImportTeamsJsonlPanel({ canImport, embedded }: Props) {
   }
 
   return (
-    <PanelShell title="Import DrApp JSONL">
+    <PanelShell title="Importar teams JSONL">
       {shell}
     </PanelShell>
   );

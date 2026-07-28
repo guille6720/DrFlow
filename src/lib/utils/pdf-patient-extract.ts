@@ -165,9 +165,9 @@ export function extractPatientFromPdfText(text: string): ExtractedPatientInfo | 
   let first_name = "";
   let last_name = "";
 
-  const drAppName = normalized.match(/Nombre\s*\n\s*([^\n]{3,80})/i);
-  if (drAppName) {
-    const split = splitFullName(drAppName[1].trim());
+  const legacyPdfName = normalized.match(/Nombre\s*\n\s*([^\n]{3,80})/i);
+  if (legacyPdfName) {
+    const split = splitFullName(legacyPdfName[1].trim());
     first_name = split.first_name;
     last_name = split.last_name;
   }

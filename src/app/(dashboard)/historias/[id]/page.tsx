@@ -21,6 +21,7 @@ import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
 import { ExportClinicalPdfButton } from "@/components/historias/export-pdf-button";
+import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 import { MedicalOrderPanel } from "@/components/historias/medical-order-panel";
 import { ConsultationTimer } from "@/components/historias/consultation-timer";
 import { FinalizeConsultationButton } from "@/components/historias/finalize-consultation-button";
@@ -195,10 +196,10 @@ export default async function HistoriaDetailPage({
             <dl className="space-y-4 text-sm">
               <div><dt className="font-medium text-slate-500">Fecha</dt><dd>{format(new Date(record.created_at), "PPp", { locale: es })}</dd></div>
               <div><dt className="font-medium text-slate-500">Profesional</dt><dd>{professional?.profiles?.full_name ?? "—"}</dd></div>
-              <div><dt className="font-medium text-slate-500">Motivo</dt><dd className="whitespace-pre-wrap">{record.chief_complaint ?? "—"}</dd></div>
-              <div><dt className="font-medium text-slate-500">Diagnóstico</dt><dd className="whitespace-pre-wrap">{record.diagnosis ?? "—"}</dd></div>
-              <div><dt className="font-medium text-slate-500">Evolución</dt><dd className="whitespace-pre-wrap">{record.evolution ?? "—"}</dd></div>
-              <div><dt className="font-medium text-slate-500">Indicaciones</dt><dd className="whitespace-pre-wrap">{record.indications ?? "—"}</dd></div>
+              <div><dt className="font-medium text-slate-500">Motivo</dt><dd className="whitespace-pre-wrap">{sanitizeClinicalDisplayText(record.chief_complaint) || "—"}</dd></div>
+              <div><dt className="font-medium text-slate-500">Diagnóstico</dt><dd className="whitespace-pre-wrap">{sanitizeClinicalDisplayText(record.diagnosis) || "—"}</dd></div>
+              <div><dt className="font-medium text-slate-500">Evolución</dt><dd className="whitespace-pre-wrap">{sanitizeClinicalDisplayText(record.evolution) || "—"}</dd></div>
+              <div><dt className="font-medium text-slate-500">Indicaciones</dt><dd className="whitespace-pre-wrap">{sanitizeClinicalDisplayText(record.indications) || "—"}</dd></div>
               {record.professional_signature && (
                 <div><dt className="font-medium text-slate-500">Firma</dt><dd>{record.professional_signature}</dd></div>
               )}

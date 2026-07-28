@@ -2,6 +2,8 @@
 
 import { jsPDF } from "jspdf";
 
+import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
+
 interface Props {
   record: {
     chief_complaint: string | null;
@@ -28,10 +30,10 @@ export function ExportClinicalPdfButton({ record, patient, professional }: Props
 
     let y = 70;
     const sections = [
-      ["Motivo de consulta", record.chief_complaint],
-      ["Diagnóstico", record.diagnosis],
-      ["Evolución", record.evolution],
-      ["Indicaciones", record.indications],
+      ["Motivo de consulta", sanitizeClinicalDisplayText(record.chief_complaint)],
+      ["Diagnóstico", sanitizeClinicalDisplayText(record.diagnosis)],
+      ["Evolución", sanitizeClinicalDisplayText(record.evolution)],
+      ["Indicaciones", sanitizeClinicalDisplayText(record.indications)],
     ] as const;
 
     for (const [title, content] of sections) {

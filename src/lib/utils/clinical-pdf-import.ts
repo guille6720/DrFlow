@@ -240,7 +240,7 @@ export async function insertLegacyPdfClinicalRecords(
   return { created, skipped };
 }
 
-export async function insertDrAppCompactPdfStructuralRecords(
+export async function insertCompactClinicalPdfStructuralRecords(
   supabase: SupabaseClient,
   params: {
     clinicId: string;

@@ -188,10 +188,10 @@ async function importTeamsJsonlBatchInner(
         access.clinicId,
         row,
         defaultInsurance,
-        `Import DrApp JSONL: ${fileName}`
+        `Import teams JSONL: ${fileName}`
       );
       if ("error" in resolved) {
-        parseErrors.push(`Registro ${row.drapp_record_id ?? row.lineNumber}: ${resolved.error}`);
+        parseErrors.push(`Registro ${row.import_record_id ?? row.lineNumber}: ${resolved.error}`);
         continue;
       }
       patientId = resolved.patientId;
@@ -201,13 +201,23 @@ async function importTeamsJsonlBatchInner(
 
     const clinical = hceRowToClinicalRecord(row);
     if (clinical) {
-      const { data: existing } = await supabase
+      const importId = row.import_record_id;
+      let existingQuery = supabase
         .from("clinical_records")
         .select("id")
         .eq("clinic_id", access.clinicId)
-        .eq("patient_id", patientId)
-        .ilike("chief_complaint", `${clinical.marker}%`)
-        .maybeSingle();
+        .eq("patient_id", patientId);
+
+      if (importId) {
+        const escaped = importId.replace(/,/g, "");
+        existingQuery = existingQuery.or(
+          `chief_complaint.ilike.[IMPORT:${escaped}]%,chief_complaint.ilike.[DRAPP:${escaped}]%`
+        );
+      } else {
+        existingQuery = existingQuery.ilike("chief_complaint", `${clinical.marker}%`);
+      }
+
+      const { data: existing } = await existingQuery.maybeSingle();
 
       if (existing) {
         recordsSkipped += 1;
@@ -228,7 +238,7 @@ async function importTeamsJsonlBatchInner(
           updated_at: createdAt,
         });
         if (insertError) {
-          parseErrors.push(`Registro ${row.drapp_record_id ?? row.lineNumber}: ${insertError.message}`);
+          parseErrors.push(`Registro ${row.import_record_id ?? row.lineNumber}: ${insertError.message}`);
         } else {
           recordsCreated += 1;
         }

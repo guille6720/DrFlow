@@ -14,14 +14,14 @@ import {
   findOrCreatePatientFromExtract,
   enrichPatientFromLegacyPdfDemographics,
   insertLegacyPdfClinicalRecords,
-  insertDrAppCompactPdfStructuralRecords,
+  insertCompactClinicalPdfStructuralRecords,
 } from "@/lib/utils/clinical-pdf-import";
 import {
   isLegacyClinicalPdfExport,
   parseLegacyClinicalDemographics,
   parseLegacyClinicalEvolutions,
   parseLegacyClinicalEvolutionsWithFallback,
-  parseDrAppCompactClinicalPdf,
+  parseCompactClinicalPdf,
 } from "@/lib/utils/clinical-export-pdf-parse";
 import {
   extractPatientFromFileName,
@@ -403,7 +403,7 @@ export async function importClinicalPdfDocument(
         demographics
       );
 
-      const compactBundle = parseDrAppCompactClinicalPdf(pdfText);
+      const compactBundle = parseCompactClinicalPdf(pdfText);
       const evolutions = parseLegacyClinicalEvolutionsWithFallback(pdfText);
       if (evolutions.length > 0) {
         const insertResult = await insertLegacyPdfClinicalRecords(supabase, {
@@ -425,7 +425,7 @@ export async function importClinicalPdfDocument(
         };
 
         if (compactBundle && compactBundle.treatments.length > 0) {
-          const structural = await insertDrAppCompactPdfStructuralRecords(supabase, {
+          const structural = await insertCompactClinicalPdfStructuralRecords(supabase, {
             clinicId: access.clinicId,
             patientId: patientResult.patientId,
             userId: access.userId,
