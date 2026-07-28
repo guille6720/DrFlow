@@ -156,13 +156,13 @@ export default async function HistoriaDetailPage({
         )}
 
         <div className="flex flex-wrap items-center gap-3">
-          <Link href="/historias" className="inline-flex items-center gap-1 text-sm text-blue-700 hover:underline">
+          <Link href="/historias" className="drflow-link inline-flex items-center gap-1 text-sm">
             <ArrowLeft className="h-4 w-4" /> Volver
           </Link>
-          <Link href={`/pacientes/${patient.id}`} className="text-sm text-blue-700 hover:underline">
+          <Link href={`/pacientes/${patient.id}`} className="drflow-link text-sm">
             Ficha del paciente
           </Link>
-          <Link href={`/historias/paciente/${patient.id}`} className="text-sm text-blue-700 hover:underline">
+          <Link href={`/historias/paciente/${patient.id}`} className="drflow-link text-sm">
             Historia clínica completa
           </Link>
           {record.appointment_id && (
@@ -194,14 +194,14 @@ export default async function HistoriaDetailPage({
         <div className="grid gap-6 lg:grid-cols-2">
           <Card title="Consulta">
             <dl className="space-y-4 text-sm">
-              <div><dt className="font-medium text-slate-500">Fecha</dt><dd>{format(new Date(record.created_at), "PPp", { locale: es })}</dd></div>
-              <div><dt className="font-medium text-slate-500">Profesional</dt><dd>{professional?.profiles?.full_name ?? "—"}</dd></div>
-              <div><dt className="font-medium text-slate-500">Motivo</dt><dd className="whitespace-pre-wrap">{sanitizeClinicalDisplayText(record.chief_complaint) || "—"}</dd></div>
-              <div><dt className="font-medium text-slate-500">Diagnóstico</dt><dd className="whitespace-pre-wrap">{sanitizeClinicalDisplayText(record.diagnosis) || "—"}</dd></div>
-              <div><dt className="font-medium text-slate-500">Evolución</dt><dd className="whitespace-pre-wrap">{sanitizeClinicalDisplayText(record.evolution) || "—"}</dd></div>
-              <div><dt className="font-medium text-slate-500">Indicaciones</dt><dd className="whitespace-pre-wrap">{sanitizeClinicalDisplayText(record.indications) || "—"}</dd></div>
+              <div><dt className="font-medium">Fecha</dt><dd>{format(new Date(record.created_at), "PPp", { locale: es })}</dd></div>
+              <div><dt className="font-medium">Profesional</dt><dd>{professional?.profiles?.full_name ?? "—"}</dd></div>
+              <div><dt className="font-medium">Motivo</dt><dd className="whitespace-pre-wrap">{sanitizeClinicalDisplayText(record.chief_complaint) || "—"}</dd></div>
+              <div><dt className="font-medium">Diagnóstico</dt><dd className="whitespace-pre-wrap">{sanitizeClinicalDisplayText(record.diagnosis) || "—"}</dd></div>
+              <div><dt className="font-medium">Evolución</dt><dd className="whitespace-pre-wrap">{sanitizeClinicalDisplayText(record.evolution) || "—"}</dd></div>
+              <div><dt className="font-medium">Indicaciones</dt><dd className="whitespace-pre-wrap">{sanitizeClinicalDisplayText(record.indications) || "—"}</dd></div>
               {record.professional_signature && (
-                <div><dt className="font-medium text-slate-500">Firma</dt><dd>{record.professional_signature}</dd></div>
+                <div><dt className="font-medium">Firma</dt><dd>{record.professional_signature}</dd></div>
               )}
             </dl>
           </Card>
@@ -221,7 +221,7 @@ export default async function HistoriaDetailPage({
               ) : (
                 <ul className="space-y-2 text-sm">
                   {(audit ?? []).map((a) => (
-                    <li key={a.id} className="rounded-lg bg-slate-50 p-3">
+                    <li key={a.id} className="rounded-lg drflow-surface-inset p-3">
                       <p className="font-medium capitalize">{a.action}</p>
                       <p className="text-slate-500">
                         {(a.profiles as { full_name: string } | null)?.full_name ?? "Usuario"}

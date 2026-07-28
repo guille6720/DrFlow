@@ -4,6 +4,8 @@ import { jsPDF } from "jspdf";
 
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 
+import { Button } from "@/components/ui/button";
+
 interface Props {
   record: {
     chief_complaint: string | null;
@@ -54,12 +56,8 @@ export function ExportClinicalPdfButton({ record, patient, professional }: Props
   }
 
   return (
-    <button
-      type="button"
-      onClick={exportPdf}
-      className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-    >
+    <Button type="button" variant="outline" size="sm" onClick={exportPdf}>
       Exportar PDF
-    </button>
+    </Button>
   );
 }
