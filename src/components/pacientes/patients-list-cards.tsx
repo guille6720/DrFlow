@@ -62,7 +62,7 @@ export function PatientsListCards({
           >
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-slate-900">{patientDisplay}</p>
-              <p className="mt-0.5 text-xs text-slate-600">{metaParts.join(" · ")}</p>
+              <p className="mt-0.5 text-xs text-slate-700">{metaParts.join(" · ")}</p>
               {isPamiPatient(p.insurance_provider) ? (
                 <p className="mt-1.5">
                   <Badge variant="teal">PAMI</Badge>
@@ -96,13 +96,13 @@ export function PatientsListCards({
               </Link>
               <Link
                 href={`/pacientes/${p.id}`}
-                className="text-xs font-medium text-slate-700 hover:text-teal-700 hover:underline"
+                className="text-xs font-semibold text-slate-800 underline-offset-2 hover:text-teal-800 hover:underline"
               >
                 Ficha
               </Link>
               <Link
                 href={`/pacientes/${p.id}/editar`}
-                className="text-xs font-medium text-slate-700 hover:text-teal-700 hover:underline"
+                className="text-xs font-semibold text-slate-800 underline-offset-2 hover:text-teal-800 hover:underline"
               >
                 Editar
               </Link>

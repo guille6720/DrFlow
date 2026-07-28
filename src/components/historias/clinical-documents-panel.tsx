@@ -32,6 +32,7 @@ interface Props {
   patientId: string;
   documents: ClinicalDocumentItem[];
   canEdit: boolean;
+  compact?: boolean;
 }
 
 function formatFileSize(bytes: number | null): string {
@@ -40,7 +41,7 @@ function formatFileSize(bytes: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function ClinicalDocumentsPanel({ patientId, documents, canEdit }: Props) {
+export function ClinicalDocumentsPanel({ patientId, documents, canEdit, compact }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [category, setCategory] = useState("historia_clinica");
@@ -92,16 +93,24 @@ export function ClinicalDocumentsPanel({ patientId, documents, canEdit }: Props)
   }
 
   return (
-    <Card title="Documentos PDF">
-      <p className="mb-4 text-sm">
-        Subí historias clínicas previas o estudios en PDF. Quedan asociados al paciente y
-        visibles en todas sus consultas.
-      </p>
+    <Card title={compact ? "Documentos" : "Documentos PDF"}>
+      {!compact && (
+        <p className="mb-4 text-sm">
+          Subí historias clínicas previas o estudios en PDF. Quedan asociados al paciente y
+          visibles en todas sus consultas.
+        </p>
+      )}
 
       {canEdit && (
-        <div className="mb-4 space-y-3 rounded-xl border border-dashed drflow-surface-inset p-4">
+        <div
+          className={
+            compact
+              ? "mb-3 flex flex-wrap items-end gap-2"
+              : "mb-4 space-y-3 rounded-xl border border-dashed drflow-surface-inset p-4"
+          }
+        >
           <Select
-            label="Tipo de documento"
+            label={compact ? undefined : "Tipo de documento"}
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             options={CLINICAL_DOCUMENT_CATEGORIES.map((item) => ({
@@ -135,7 +144,7 @@ export function ClinicalDocumentsPanel({ patientId, documents, canEdit }: Props)
               <FileUp className="h-4 w-4" />
               Subir PDF
             </Button>
-            <span className="text-xs text-slate-500">Máximo 10 MB · solo PDF</span>
+            <span className="text-xs text-slate-500">{compact ? "PDF · 10 MB" : "Máximo 10 MB · solo PDF"}</span>
           </div>
         </div>
       )}
@@ -149,9 +158,16 @@ export function ClinicalDocumentsPanel({ patientId, documents, canEdit }: Props)
       {documents.length === 0 ? (
         <p className="text-sm text-slate-500">Sin documentos adjuntos.</p>
       ) : (
-        <ul className="divide-y divide-slate-600/50">
+        <ul className={compact ? "grid gap-2 sm:grid-cols-2" : "divide-y divide-slate-600/50"}>
           {documents.map((doc) => (
-            <li key={doc.id} className="flex items-start justify-between gap-3 py-3">
+            <li
+              key={doc.id}
+              className={
+                compact
+                  ? "flex items-start justify-between gap-2 rounded-lg border border-slate-600/40 p-2"
+                  : "flex items-start justify-between gap-3 py-3"
+              }
+            >
               <div className="min-w-0">
                 <p className="truncate font-medium">{doc.file_name}</p>
                 <p className="text-sm text-slate-500">

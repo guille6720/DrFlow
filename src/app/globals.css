@@ -495,6 +495,29 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body :is(.text-slat
   color: #cbd5e1;
 }
 
+/* Islas blancas: texto oscuro legible (lista pacientes, historias, etc.) */
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body .drflow-card-light :is(.text-slate-500, .text-slate-600),
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-card-light :is(.text-slate-500, .text-slate-600) {
+  color: #64748b !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body .drflow-card-light :is(.text-slate-700, .text-slate-800, .text-slate-900),
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-card-light :is(.text-slate-700, .text-slate-800, .text-slate-900),
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body .drflow-card-light a:not([class*="from-cyan"]):not([class*="bg-"]),
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-card-light a:not([class*="from-cyan"]):not([class*="bg-"]) {
+  color: #1e293b !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body .drflow-card-light .font-semibold.text-slate-900,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body .drflow-card-light .text-slate-900 {
+  color: #0f172a !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body .drflow-card-light a:not([class*="from-cyan"]):hover,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-card-light a:not([class*="from-cyan"]):hover {
+  color: #0f766e !important;
+}
+
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-link {
   color: #5eead4;
 }
@@ -855,3 +878,394 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-table a.text-t
   color: #0d9488 !important;
 }
 
+/* Ficha del paciente — layout EMR compacto */
+.drflow-patient-chart {
+  --chart-gap: 0.65rem;
+  max-width: 1400px;
+}
+
+.drflow-patient-chart-sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  margin: 0 0 var(--chart-gap);
+  padding: 0.35rem 0;
+  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--drflow-bg, #0f172a) 88%, transparent);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.drflow-patient-chart-sticky-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.drflow-patient-chart-summary {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.18), rgba(15, 23, 42, 0.6));
+  padding: 0.75rem 1rem;
+  margin-bottom: var(--chart-gap);
+}
+
+.drflow-patient-chart-summary-age {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.drflow-patient-chart-summary-meta {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.drflow-patient-chart-summary-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.drflow-patient-chart-summary-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.5rem 1rem;
+  font-size: 0.8125rem;
+}
+
+.drflow-patient-chart-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.65;
+  margin-bottom: 0.15rem;
+}
+
+.drflow-patient-chart-allergy {
+  color: #fca5a5;
+  font-weight: 600;
+}
+
+.drflow-patient-chart-personal {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.drflow-patient-chart-personal summary {
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.drflow-patient-chart-dl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.35rem 0.75rem;
+  margin-top: 0.35rem;
+}
+
+.drflow-patient-chart-dl-grid dt {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.drflow-patient-chart-alerts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: var(--chart-gap);
+}
+
+.drflow-chart-alert {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.drflow-chart-alert-red {
+  background: rgba(127, 29, 29, 0.45);
+  border-color: #f87171;
+  color: #fecaca;
+}
+
+.drflow-chart-alert-yellow {
+  background: rgba(120, 53, 15, 0.45);
+  border-color: #fbbf24;
+  color: #fde68a;
+}
+
+.drflow-chart-alert-green {
+  background: rgba(6, 78, 59, 0.45);
+  border-color: #34d399;
+  color: #a7f3d0;
+}
+
+.drflow-patient-chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--chart-gap);
+}
+
+@media (max-width: 900px) {
+  .drflow-patient-chart-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.drflow-patient-chart-section {
+  border-radius: 0.65rem;
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  background: rgba(15, 23, 42, 0.55);
+  padding: 0.55rem 0.65rem;
+  min-height: 0;
+}
+
+.drflow-patient-chart-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.drflow-patient-chart-section-head h2 {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+
+.drflow-patient-chart-section-body {
+  font-size: 0.8125rem;
+}
+
+.drflow-patient-chart-span-full {
+  grid-column: 1 / -1;
+}
+
+.drflow-patient-chart-triple {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--chart-gap);
+}
+
+@media (min-width: 901px) {
+  .drflow-patient-chart-triple {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.drflow-patient-chart-muted {
+  opacity: 0.65;
+}
+
+.drflow-patient-chart-link {
+  color: #5eead4;
+  text-decoration: none;
+}
+
+.drflow-patient-chart-link:hover {
+  text-decoration: underline;
+}
+
+.drflow-patient-chart-input {
+  border-radius: 0.4rem;
+  border: 1px solid rgba(100, 116, 139, 0.5);
+  background: rgba(15, 23, 42, 0.8);
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8125rem;
+  color: inherit;
+}
+
+.drflow-patient-chart-problems li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+.drflow-patient-chart-med-list {
+  display: grid;
+  gap: 0.4rem;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.drflow-patient-chart-med-card {
+  border-radius: 0.45rem;
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  padding: 0.4rem 0.5rem;
+  background: rgba(30, 41, 59, 0.45);
+}
+
+.drflow-patient-chart-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.35rem;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  font-size: 0.7rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.drflow-patient-chart-vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.35rem;
+}
+
+.drflow-patient-chart-vitals-grid dt {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.drflow-patient-chart-vitals-grid dd {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.drflow-patient-chart-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-left: 2px solid rgba(45, 212, 191, 0.35);
+  padding-left: 0.65rem;
+}
+
+.drflow-patient-chart-timeline li {
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
+  border-bottom: 1px dashed rgba(100, 116, 139, 0.25);
+}
+
+.drflow-patient-chart-labs li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  font-size: 0.8125rem;
+}
+
+.drflow-lab-normal strong {
+  color: #6ee7b7;
+}
+
+.drflow-lab-high strong,
+.drflow-lab-low strong {
+  color: #f87171;
+}
+
+.drflow-patient-chart-vaccines li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0;
+}
+
+.drflow-patient-chart-habits {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem 0.5rem;
+  font-size: 0.78rem;
+}
+
+.drflow-patient-chart-habits dt {
+  opacity: 0.6;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+
+.drflow-patient-chart-studies li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  font-size: 0.78rem;
+}
+
+.drflow-patient-chart-reminders {
+  margin-bottom: var(--chart-gap);
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: rgba(120, 53, 15, 0.25);
+  font-size: 0.78rem;
+}
+
+.drflow-patient-chart-reminder-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  margin: 0.15rem 0;
+}
+
+.drflow-patient-chart-safety {
+  color: #fecaca;
+  font-weight: 600;
+  margin: 0.15rem 0;
+}
+
+.drflow-patient-chart-profile-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: var(--chart-gap);
+  padding: 0.45rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  background: rgba(15, 118, 110, 0.12);
+  font-size: 0.78rem;
+}
+
+.drflow-patient-chart-kpi-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.drflow-patient-chart-kpi {
+  min-width: 4.5rem;
+  padding: 0.25rem 0.45rem;
+  border-radius: 0.35rem;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(100, 116, 139, 0.35);
+}
+
+.drflow-patient-chart-kpi-label {
+  display: block;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.drflow-patient-chart-kpi-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.drflow-lab-empty strong {
+  opacity: 0.45;
+  font-weight: 500;
+}
+
+.drflow-lab-unknown strong {
+  color: inherit;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-section {
+  background: #fff;
+  border-color: #e2e8f0;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-summary {
+  background: linear-gradient(135deg, #ecfdf5, #f8fafc);
+  border-color: #99f6e4;
+}

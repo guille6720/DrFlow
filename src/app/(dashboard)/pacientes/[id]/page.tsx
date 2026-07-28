@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/header";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
-import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
 import { DeletePatientButton } from "@/components/pacientes/delete-patient-button";
-import { ClinicalDocumentsPanel } from "@/components/historias/clinical-documents-panel";
+import { PatientChartView } from "@/components/pacientes/patient-chart-view";
+import { PatientArcoExportButton } from "@/components/legal/patient-arco-export-button";
 import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
 import { formatAgeLabel } from "@/lib/utils/patient-age";
-import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
+import { buildPatientChartPayload } from "@/lib/utils/patient-chart-model";
 import { hasPermission } from "@/lib/permissions/roles";
 import {
   getActiveClinic,
@@ -18,12 +16,7 @@ import {
   getUserClinics,
 } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { ArrowLeft } from "lucide-react";
-import { RenewMedicationPanel } from "@/components/pacientes/renew-medication-panel";
-import { BentoGrid, BentoCell } from "@/components/theme/bento-grid";
-import { PatientArcoExportButton } from "@/components/legal/patient-arco-export-button";
 import type { PrescriptionMedication } from "@/types/prescription";
 
 export default async function PacienteDetailPage({
@@ -35,7 +28,7 @@ export default async function PacienteDetailPage({
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role, clinic, isSuperadmin } = await getActiveClinic();
+  const { role, isSuperadmin } = await getActiveClinic();
   const supabase = await createClient();
 
   if (!clinicId) notFound();
@@ -58,19 +51,30 @@ export default async function PacienteDetailPage({
   const doctorInfo =
     clinicId && portalSlug ? await getDoctorShareInfoForClinic(clinicId) : null;
 
-  const [{ data: appointments }, { data: records }, { data: appShare }, { data: clinicalDocuments }, { data: lastRx }, { data: professionals }] = await Promise.all([
+  const [
+    { data: appointments },
+    { data: records },
+    { data: appShare },
+    { data: clinicalDocuments },
+    { data: prescriptions },
+    { data: professionals },
+  ] = await Promise.all([
     supabase
       .from("appointments")
       .select("id, start_at, status, cancellation_reason, cancelled_by_type, professionals(profiles(full_name))")
       .eq("patient_id", id)
       .order("start_at", { ascending: false })
       .limit(10),
-    supabase
-      .from("clinical_records")
-      .select("id, diagnosis, created_at, professionals(profiles(full_name))")
-      .eq("patient_id", id)
-      .order("created_at", { ascending: false })
-      .limit(10),
+    canViewClinical
+      ? supabase
+          .from("clinical_records")
+          .select(
+            "id, diagnosis, chief_complaint, evolution, indications, created_at, professionals(profiles(full_name))"
+          )
+          .eq("patient_id", id)
+          .order("created_at", { ascending: false })
+          .limit(15)
+      : Promise.resolve({ data: [] as never[] }),
     portalSlug
       ? supabase
           .from("patient_app_share_log")
@@ -78,21 +82,22 @@ export default async function PacienteDetailPage({
           .eq("patient_id", id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
-    supabase
-      .from("patient_attachments")
-      .select("id, file_name, file_size, category, created_at, profiles:uploaded_by(full_name)")
-      .eq("patient_id", id)
-      .eq("clinic_id", clinicId)
-      .order("created_at", { ascending: false }),
+    canViewClinical
+      ? supabase
+          .from("patient_attachments")
+          .select("id, file_name, file_size, category, created_at, profiles:uploaded_by(full_name)")
+          .eq("patient_id", id)
+          .eq("clinic_id", clinicId)
+          .order("created_at", { ascending: false })
+      : Promise.resolve({ data: [] as never[] }),
     supabase
       .from("prescription_drafts")
-      .select("medications")
+      .select("id, medications, issued_at, created_at")
       .eq("patient_id", id)
       .eq("clinic_id", clinicId)
       .eq("status", "issued")
       .order("issued_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+      .limit(5),
     supabase
       .from("professionals")
       .select("id, display_name, license_number, profiles(full_name)")
@@ -101,6 +106,7 @@ export default async function PacienteDetailPage({
       .order("display_name"),
   ]);
 
+  const lastRx = prescriptions?.[0];
   const lastMedications = (lastRx?.medications as PrescriptionMedication[] | null) ?? null;
 
   const shareProfile = appShare?.profiles as { full_name?: string } | null;
@@ -111,6 +117,45 @@ export default async function PacienteDetailPage({
         channel: appShare.channel,
       }
     : null;
+
+  const mappedRecords = (records ?? []).map((r) => {
+    const pro = r.professionals as unknown as { profiles?: { full_name?: string } } | null;
+    return {
+      id: r.id,
+      created_at: r.created_at,
+      chief_complaint: r.chief_complaint,
+      diagnosis: r.diagnosis,
+      evolution: r.evolution,
+      indications: r.indications,
+      professional_name: pro?.profiles?.full_name ?? "Profesional",
+    };
+  });
+
+  const mappedAttachments = (clinicalDocuments ?? []).map((d) => ({
+    id: d.id,
+    file_name: d.file_name,
+    category: d.category,
+    created_at: d.created_at,
+    uploaded_by: null as string | null,
+  }));
+
+  const chart = buildPatientChartPayload({
+    patient: {
+      birth_date: patient.birth_date,
+      insurance_provider: patient.insurance_provider,
+      medical_history: patient.medical_history,
+      allergies: patient.allergies,
+      regular_medication: patient.regular_medication,
+      notes: patient.notes,
+    },
+    records: mappedRecords,
+    prescriptions: (prescriptions ?? []).map((p) => ({
+      id: p.id,
+      created_at: p.issued_at ?? p.created_at,
+      medications: p.medications,
+    })),
+    attachments: mappedAttachments,
+  });
 
   return (
     <>
@@ -123,15 +168,10 @@ export default async function PacienteDetailPage({
         userName={profile?.full_name}
       />
 
-      <div className="p-4 sm:p-6">
-        <BentoGrid className="gap-6">
-        <BentoCell span={12}>
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="p-3 sm:p-4">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           <Link href="/pacientes" className="drflow-link inline-flex items-center gap-1 text-sm">
-            <ArrowLeft className="h-4 w-4" /> Volver al listado
-          </Link>
-          <Link href={`/pacientes/${id}/editar`}>
-            <Button variant="outline" size="sm">Editar ficha</Button>
+            <ArrowLeft className="h-4 w-4" /> Volver
           </Link>
           {canManagePatients && (
             <DeletePatientButton
@@ -139,25 +179,14 @@ export default async function PacienteDetailPage({
               patientName={`${patient.last_name}, ${patient.first_name}`}
             />
           )}
-          {canManagePatients && (
-            <PatientArcoExportButton
-              patientId={patient.id}
-              fileLabel={`${patient.document_number}`}
-            />
-          )}
         </div>
-        </BentoCell>
 
-        <BentoCell span={12}>
-        <PamiPatientBanner patient={patient} />
-        </BentoCell>
-
-        <BentoCell span={12}>
-        <RenewMedicationPanel
-          patientId={patient.id}
-          patientInsurance={patient.insurance_provider}
-          regularMedication={patient.regular_medication}
-          lastMedications={lastMedications}
+        <PatientChartView
+          patient={patient}
+          patientId={id}
+          chart={chart}
+          canEditClinical={canEditClinical}
+          canIssue={canIssue}
           professionals={(professionals ?? []).map((p) => ({
             id: p.id,
             display_name: p.display_name,
@@ -166,120 +195,22 @@ export default async function PacienteDetailPage({
               ? (p.profiles[0] as { full_name: string } | undefined) ?? null
               : (p.profiles as { full_name: string } | null),
           }))}
-          canIssue={canIssue}
+          lastMedications={lastMedications}
+          regularMedication={patient.regular_medication}
+          clinicalDocuments={clinicalDocuments ?? []}
+          appointments={(appointments ?? []) as import("@/components/pacientes/patient-chart-view").AppointmentRow[]}
+          portalSlug={portalSlug}
+          doctorInfo={doctorInfo}
+          patientShare={patientShare}
+          arcoExport={
+            canManagePatients ? (
+              <PatientArcoExportButton
+                patientId={patient.id}
+                fileLabel={`${patient.document_number}`}
+              />
+            ) : undefined
+          }
         />
-        </BentoCell>
-
-        {portalSlug && doctorInfo && (
-          <BentoCell span={12}>
-          <Card title="App para el paciente">
-            <PatientAppShareControl
-              patientId={patient.id}
-              patientName={`${patient.first_name} ${patient.last_name}`}
-              patientPhone={patient.phone}
-              slug={portalSlug}
-              doctor={doctorInfo}
-              share={patientShare}
-            />
-          </Card>
-          </BentoCell>
-        )}
-
-        <BentoCell span={6}>
-          <Card title="Datos personales" className="h-full">
-            <dl className="grid gap-3 text-sm sm:grid-cols-2">
-              <div><dt>Teléfono</dt><dd>{patient.phone ?? "—"}</dd></div>
-              <div><dt>Email</dt><dd>{patient.email ?? "—"}</dd></div>
-              <div><dt>Dirección</dt><dd>{patient.address ?? "—"}</dd></div>
-              <div><dt>Obra social</dt><dd className="flex items-center gap-2">{patient.insurance_provider ?? "—"}{patient.insurance_provider?.toUpperCase().includes("PAMI") && <Badge variant="teal">PAMI</Badge>}</dd></div>
-              <div><dt>{patient.insurance_provider?.toUpperCase().includes("PAMI") ? "N° beneficio PAMI" : "N° afiliado"}</dt><dd>{patient.insurance_number ?? "—"}</dd></div>
-              <div><dt>Emergencia</dt><dd>{patient.emergency_contact_name ?? "—"} {patient.emergency_contact_phone && `(${patient.emergency_contact_phone})`}</dd></div>
-            </dl>
-          </Card>
-        </BentoCell>
-
-        <BentoCell span={6}>
-          <Card title="Información clínica" className="h-full">
-            <dl className="space-y-3 text-sm">
-              <div><dt>Antecedentes</dt><dd>{patient.medical_history ?? "Sin registrar"}</dd></div>
-              <div><dt>Alergias</dt><dd className="text-red-300">{patient.allergies ?? "Sin registrar"}</dd></div>
-              <div><dt>Medicación habitual</dt><dd>{patient.regular_medication ?? "Sin registrar"}</dd></div>
-            </dl>
-          </Card>
-        </BentoCell>
-
-        {canViewClinical && (
-          <BentoCell span={12}>
-          <ClinicalDocumentsPanel
-            patientId={patient.id}
-            documents={clinicalDocuments ?? []}
-            canEdit={canEditClinical}
-          />
-          </BentoCell>
-        )}
-
-        <BentoCell span={6}>
-          <Card title="Historial de turnos" className="h-full">
-            {(appointments ?? []).length === 0 ? (
-              <p className="text-sm text-slate-500">Sin turnos registrados.</p>
-            ) : (
-              <ul className="divide-y divide-slate-600/60 text-sm">
-                {(appointments ?? []).map((a) => {
-                  const statusInfo = appointmentStatusBadge[a.status as string];
-                  return (
-                    <li key={a.id} className="py-2">
-                      <div>
-                        <p>{format(new Date(a.start_at), "PPp", { locale: es })}</p>
-                        <p className="text-slate-500">
-                          {(a.professionals as unknown as { profiles?: { full_name?: string } })?.profiles?.full_name}
-                        </p>
-                        {a.status === "cancelled" && (
-                          <p className="mt-1 text-xs text-red-300">
-                            {(a as { cancelled_by_type?: string }).cancelled_by_type === "patient"
-                              ? "Cancelado por el paciente"
-                              : "Cancelado por el consultorio"}
-                            {a.cancellation_reason ? ` · ${a.cancellation_reason}` : ""}
-                          </p>
-                        )}
-                      </div>
-                      {statusInfo && <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </Card>
-        </BentoCell>
-
-          <BentoCell span={6}>
-          <Card title="Consultas clínicas" className="h-full">
-            <div className="mb-3 flex flex-wrap gap-2">
-              <Link href={`/historias/paciente/${id}`}>
-                <Button variant="outline" size="sm">
-                  Ver historia clínica completa
-                </Button>
-              </Link>
-            </div>
-            {(records ?? []).length === 0 ? (
-              <p className="text-sm text-slate-500">Sin consultas registradas.</p>
-            ) : (
-              <ul className="divide-y divide-slate-600/60 text-sm">
-                {(records ?? []).map((r) => (
-                  <li key={r.id} className="py-2">
-                    <Link href={`/historias/${r.id}`} className="drflow-link font-medium">
-                      {format(new Date(r.created_at), "PP", { locale: es })}
-                    </Link>
-                    <p className="text-slate-600">{r.diagnosis ?? "Sin diagnóstico"}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <Link href={`/historias/nueva?patient=${id}`} className="drflow-link mt-4 inline-block text-sm">
-              + Nueva consulta
-            </Link>
-          </Card>
-          </BentoCell>
-        </BentoGrid>
       </div>
     </>
   );

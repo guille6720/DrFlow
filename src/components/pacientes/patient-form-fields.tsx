@@ -9,6 +9,7 @@ import {
   insuranceNumberLabel,
   resolveDefaultCoverage,
 } from "@/lib/constants/coverages";
+import { stripChartJsonFromNotes } from "@/lib/utils/patient-chart-notes";
 import type { Patient } from "@/types/database";
 
 interface PatientFormFieldsProps {
@@ -103,6 +104,14 @@ export function PatientFormFields({
         label="Medicación habitual"
         className="sm:col-span-2"
         defaultValue={patient?.regular_medication ?? undefined}
+      />
+      <Textarea
+        name="notes"
+        label="Comentarios u observaciones"
+        className="sm:col-span-2"
+        rows={4}
+        placeholder="Ej.: preferencias de contacto, recordatorios internos, datos administrativos"
+        defaultValue={stripChartJsonFromNotes(patient?.notes) || undefined}
       />
     </>
   );

@@ -22,6 +22,8 @@ interface Props {
   lastMedications?: PrescriptionMedication[] | null;
   professionals: Professional[];
   canIssue: boolean;
+  /** En ficha del paciente: solo botón + formulario colapsado */
+  compact?: boolean;
 }
 
 export function RenewMedicationPanel({
@@ -31,6 +33,7 @@ export function RenewMedicationPanel({
   lastMedications,
   professionals,
   canIssue,
+  compact,
 }: Props) {
   const [open, setOpen] = useState(false);
 
@@ -43,36 +46,49 @@ export function RenewMedicationPanel({
 
   const hasSource = initial.length > 0;
 
+  const body = !open ? (
+    <div className="space-y-3">
+      {!compact && (
+        <p className="text-sm text-slate-600">
+          {hasSource
+            ? "Prefill desde la última receta o la medicación habitual. Revisá, aceptá el aviso legal y emití."
+            : "No hay medicación habitual ni receta previa. Podés abrir el formulario y cargar a mano."}
+        </p>
+      )}
+      {compact && (
+        <p className="drflow-patient-chart-muted text-xs">
+          {hasSource ? "Renovación con prefill desde última receta o habitual." : "Cargá medicación manualmente."}
+        </p>
+      )}
+      {!compact && regularMedication && (
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          <Pill className="mr-1 inline h-4 w-4" />
+          Habitual: {regularMedication}
+        </p>
+      )}
+      <Button type="button" size="sm" onClick={() => setOpen(true)}>
+        <RefreshCw className="h-4 w-4" />
+        Renovar medicación
+      </Button>
+    </div>
+  ) : (
+    <PrescriptionForm
+      patientId={patientId}
+      patientInsurance={patientInsurance}
+      professionals={professionals}
+      defaultProfessionalId={professionals[0]?.id}
+      initialMedications={initial.length > 0 ? initial : undefined}
+      onSuccess={() => setOpen(false)}
+    />
+  );
+
+  if (compact) {
+    return <div className="drflow-patient-chart-renew-compact">{body}</div>;
+  }
+
   return (
     <Card title="Renovación rápida de medicación">
-      {!open ? (
-        <div className="space-y-3">
-          <p className="text-sm text-slate-600">
-            {hasSource
-              ? "Prefill desde la última receta o la medicación habitual. Revisá, aceptá el aviso legal y emití."
-              : "No hay medicación habitual ni receta previa. Podés abrir el formulario y cargar a mano."}
-          </p>
-          {regularMedication && (
-            <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              <Pill className="mr-1 inline h-4 w-4" />
-              Habitual: {regularMedication}
-            </p>
-          )}
-          <Button type="button" size="sm" onClick={() => setOpen(true)}>
-            <RefreshCw className="h-4 w-4" />
-            Renovar medicación
-          </Button>
-        </div>
-      ) : (
-        <PrescriptionForm
-          patientId={patientId}
-          patientInsurance={patientInsurance}
-          professionals={professionals}
-          defaultProfessionalId={professionals[0]?.id}
-          initialMedications={initial.length > 0 ? initial : undefined}
-          onSuccess={() => setOpen(false)}
-        />
-      )}
+      {body}
     </Card>
   );
 }
