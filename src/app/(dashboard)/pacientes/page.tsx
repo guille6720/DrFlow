@@ -187,7 +187,7 @@ export default async function PacientesPage({
             action={
               !q ? (
                 <div className="flex flex-wrap justify-center gap-2">
-                  <Link href="/configuracion#datos-demo">
+                  <Link href="/configuracion?grupo=sistema&seccion=demo">
                     <Button variant="secondary">Cargar pacientes demo</Button>
                   </Link>
                   <Link href="/pacientes/nuevo">

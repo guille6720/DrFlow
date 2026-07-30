@@ -26,7 +26,7 @@ const STEPS = [
     n: 2,
     title: "Cargá datos de ejemplo",
     body: "En Configuración → Cargar pacientes demo. Vas a ver agenda, pacientes, historias y turnos de hoy sin cargar nada a mano.",
-    href: "/configuracion#datos-demo",
+    href: "/configuracion?grupo=sistema&seccion=demo",
     cta: "Ir a Configuración",
     afterLogin: true,
   },

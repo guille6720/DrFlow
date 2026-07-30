@@ -9,6 +9,7 @@ import { Select } from "@/components/ui/select";
 import {
   deactivateClinicMember,
   inviteClinicMember,
+  removeClinicMemberPermanently,
   revokeClinicInvitation,
   updateClinicMemberRole,
 } from "@/lib/actions/invitations";
@@ -146,12 +147,34 @@ export function TeamInvitePanel({ members, invitations }: Props) {
                     type="button"
                     size="sm"
                     variant="outline"
-                    loading={acting === m.id}
+                    loading={acting === `${m.id}-deactivate`}
                     onClick={() =>
-                      runAction(m.id, () => deactivateClinicMember(m.id))
+                      runAction(`${m.id}-deactivate`, () => deactivateClinicMember(m.id))
                     }
                   >
                     Desactivar
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="border-red-200 text-red-700 hover:bg-red-50"
+                    loading={acting === `${m.id}-remove`}
+                    onClick={() => {
+                      const name = m.profiles?.full_name ?? m.profiles?.email ?? "este usuario";
+                      if (
+                        !confirm(
+                          `¿Eliminar permanentemente a ${name}? Se borra la cuenta de acceso y no podrá volver a ingresar. Los registros clínicos históricos se conservan.`
+                        )
+                      ) {
+                        return;
+                      }
+                      runAction(`${m.id}-remove`, () =>
+                        removeClinicMemberPermanently(m.id)
+                      );
+                    }}
+                  >
+                    Eliminar cuenta
                   </Button>
                 </div>
               </li>

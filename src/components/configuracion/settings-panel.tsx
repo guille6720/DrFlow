@@ -25,7 +25,10 @@ import { TeamInvitePanel } from "@/components/configuracion/team-invite-panel";
 import { AppInstallCard } from "@/components/portal/app-install-card";
 import { buildPatientAppInstallUrl } from "@/lib/utils/patient-portal-ready";
 
+export type SettingsSectionId = "clinica" | "apps" | "agenda" | "catalogo" | "equipo";
+
 interface SettingsPanelProps {
+  section?: SettingsSectionId;
   clinic: Clinic | null;
   specialties: { id: string; name: string }[];
   locations: { id: string; name: string; address: string | null }[];
@@ -55,6 +58,7 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({
+  section,
   clinic,
   specialties,
   locations,
@@ -81,11 +85,14 @@ export function SettingsPanel({
 
   if (!clinic) return <p className="text-sm text-slate-500">Sin clínica activa.</p>;
 
+  const show = (part: SettingsSectionId) => !section || section === part;
+
   return (
     <div className="space-y-6">
       {msg && <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{msg}</div>}
       {err && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{err}</div>}
 
+      {show("clinica") && (
       <Card title="Datos de la clínica">
         <form
           onSubmit={(e) => {
@@ -109,7 +116,10 @@ export function SettingsPanel({
           </div>
         </form>
       </Card>
+      )}
 
+      {show("apps") && (
+      <>
       <Card title="DrFlow en tu celular (médico)">
         <p className="mb-4 text-sm text-slate-600">
           Agregá DrFlow a la pantalla de inicio de tu celular para acceder al dashboard y la agenda.
@@ -164,7 +174,11 @@ export function SettingsPanel({
           </div>
         )}
       </Card>
+      </>
+      )}
 
+      {show("agenda") && (
+      <>
       <Card title="Reserva pública online">
         <p className="mb-3 text-sm text-slate-600">
           Tu página de turnos usa el nombre de la clínica. Compartí el link para que pacientes reserven online.
@@ -204,6 +218,79 @@ export function SettingsPanel({
         )}
       </Card>
 
+      <Card title="Disponibilidad semanal">
+        <p className="mb-3 text-sm text-slate-600">
+          Estos horarios alimentan los turnos online del portal y de{" "}
+          <code className="rounded bg-slate-100 px-1 text-xs">/solicitar-turno</code>. Si no cargás
+          reglas, el paciente no va a ver horarios disponibles.
+        </p>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            run(() => createAvailabilityRule(new FormData(e.currentTarget)));
+          }}
+          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          <Select
+            name="professional_id"
+            label="Profesional"
+            required
+            options={professionals.map((p) => ({
+              value: p.id,
+              label: p.display_name ?? p.profiles?.full_name ?? "Profesional",
+            }))}
+          />
+          <Select
+            name="day_of_week"
+            label="Día"
+            required
+            options={[
+              { value: "1", label: "Lunes" },
+              { value: "2", label: "Martes" },
+              { value: "3", label: "Miércoles" },
+              { value: "4", label: "Jueves" },
+              { value: "5", label: "Viernes" },
+              { value: "6", label: "Sábado" },
+              { value: "0", label: "Domingo" },
+            ]}
+          />
+          <Input name="start_time" label="Desde" type="time" defaultValue="09:00" required />
+          <Input name="end_time" label="Hasta" type="time" defaultValue="18:00" required />
+          <Input name="slot_duration" label="Duración slot (min)" type="number" defaultValue="30" />
+          <div className="flex items-end">
+            <Button type="submit">Agregar horario</Button>
+          </div>
+        </form>
+      </Card>
+
+      <Card title="Bloqueo de agenda">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            run(() => createScheduleBlock(new FormData(e.currentTarget)));
+          }}
+          className="grid gap-3 sm:grid-cols-2"
+        >
+          <Select
+            name="professional_id"
+            label="Profesional"
+            required
+            options={professionals.map((p) => ({
+              value: p.id,
+              label: p.display_name ?? p.profiles?.full_name ?? "Profesional",
+            }))}
+          />
+          <Input name="reason" label="Motivo" defaultValue="Bloqueo" />
+          <Input name="start_at" label="Desde" type="datetime-local" required />
+          <Input name="end_at" label="Hasta" type="datetime-local" required />
+          <Button type="submit" className="sm:col-span-2">Crear bloqueo</Button>
+        </form>
+      </Card>
+      </>
+      )}
+
+      {show("equipo") && (
+      <>
       <TeamInvitePanel members={members} invitations={invitations} />
 
       <div className="rounded-xl border border-slate-200 bg-white p-4">
@@ -214,7 +301,10 @@ export function SettingsPanel({
           Abrir checklist QA interactivo →
         </Link>
       </div>
+      </>
+      )}
 
+      {show("catalogo") && (
       <div className="grid gap-6 lg:grid-cols-2">
         <Card title="Especialidades">
           <ul className="mb-4 space-y-2 text-sm">
@@ -313,75 +403,7 @@ export function SettingsPanel({
           </form>
         </Card>
       </div>
-
-      <Card title="Disponibilidad semanal">
-        <p className="mb-3 text-sm text-slate-600">
-          Estos horarios alimentan los turnos online del portal y de{" "}
-          <code className="rounded bg-slate-100 px-1 text-xs">/solicitar-turno</code>. Si no cargás
-          reglas, el paciente no va a ver horarios disponibles.
-        </p>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            run(() => createAvailabilityRule(new FormData(e.currentTarget)));
-          }}
-          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          <Select
-            name="professional_id"
-            label="Profesional"
-            required
-            options={professionals.map((p) => ({
-              value: p.id,
-              label: p.display_name ?? p.profiles?.full_name ?? "Profesional",
-            }))}
-          />
-          <Select
-            name="day_of_week"
-            label="Día"
-            required
-            options={[
-              { value: "1", label: "Lunes" },
-              { value: "2", label: "Martes" },
-              { value: "3", label: "Miércoles" },
-              { value: "4", label: "Jueves" },
-              { value: "5", label: "Viernes" },
-              { value: "6", label: "Sábado" },
-              { value: "0", label: "Domingo" },
-            ]}
-          />
-          <Input name="start_time" label="Desde" type="time" defaultValue="09:00" required />
-          <Input name="end_time" label="Hasta" type="time" defaultValue="18:00" required />
-          <Input name="slot_duration" label="Duración slot (min)" type="number" defaultValue="30" />
-          <div className="flex items-end">
-            <Button type="submit">Agregar horario</Button>
-          </div>
-        </form>
-      </Card>
-
-      <Card title="Bloqueo de agenda">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            run(() => createScheduleBlock(new FormData(e.currentTarget)));
-          }}
-          className="grid gap-3 sm:grid-cols-2"
-        >
-          <Select
-            name="professional_id"
-            label="Profesional"
-            required
-            options={professionals.map((p) => ({
-              value: p.id,
-              label: p.display_name ?? p.profiles?.full_name ?? "Profesional",
-            }))}
-          />
-          <Input name="reason" label="Motivo" defaultValue="Bloqueo" />
-          <Input name="start_at" label="Desde" type="datetime-local" required />
-          <Input name="end_at" label="Hasta" type="datetime-local" required />
-          <Button type="submit" className="sm:col-span-2">Crear bloqueo</Button>
-        </form>
-      </Card>
+      )}
     </div>
   );
 }

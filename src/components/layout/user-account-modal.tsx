@@ -236,7 +236,7 @@ export function UserAccountModal({ open, onClose, role: roleProp }: UserAccountM
                       Podés invitar usuarios como <strong>Médico</strong>,{" "}
                       <strong>Secretaría / Recepción</strong> o <strong>Administrador</strong>.
                     </p>
-                    <Link href="/configuracion" onClick={onClose}>
+                    <Link href="/configuracion?grupo=consultorio&seccion=equipo" onClick={onClose}>
                       <Button type="button" size="sm" variant="outline" className="mt-3">
                         <ExternalLink className="h-4 w-4" />
                         Ir a Configuración → Equipo

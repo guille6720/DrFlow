@@ -240,3 +240,38 @@ export async function deactivateClinicMember(memberId: string) {
   revalidatePath("/configuracion");
   return { success: true };
 }
+
+export async function removeClinicMemberPermanently(memberId: string) {
+  const access = await requireStaffManager();
+  if ("error" in access && access.error) return { error: access.error };
+  const { clinicId, user } = access;
+
+  const supabase = await createClient();
+  const { data: target } = await supabase
+    .from("clinic_members")
+    .select("user_id, profiles(full_name, email)")
+    .eq("id", memberId)
+    .eq("clinic_id", clinicId)
+    .single();
+
+  if (!target?.user_id) return { error: "Miembro no encontrado" };
+  if (target.user_id === user!.id) return { error: "No podés eliminarte a vos mismo." };
+
+  const { error } = await supabase.rpc("remove_clinic_member_user", {
+    p_clinic_id: clinicId,
+    p_user_id: target.user_id,
+  });
+
+  if (error) {
+    if (error.message.includes("remove_clinic_member_user")) {
+      return {
+        error:
+          "Ejecutá la migración 035_remove_clinic_user.sql en Supabase SQL Editor y volvé a intentar.",
+      };
+    }
+    return { error: error.message };
+  }
+
+  revalidatePath("/configuracion");
+  return { success: true };
+}
