@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Children,
-  isValidElement,
-  useEffect,
-  type ReactElement,
-  type ReactNode,
-} from "react";
+import { useEffect, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,33 +16,11 @@ import {
   type ConfiguracionSectionId,
 } from "@/components/configuracion/configuracion-sections";
 
-interface ConfiguracionSectionProps {
-  id: ConfiguracionSectionId;
-  children: ReactNode;
-}
-
-export function ConfiguracionSection({ children }: ConfiguracionSectionProps) {
-  return <>{children}</>;
-}
-
-ConfiguracionSection.displayName = "ConfiguracionSection";
-
 interface ConfiguracionNavigatorProps {
   activeGroup: ConfiguracionGroupId | null;
   activeSection: ConfiguracionSectionId | null;
-  children: ReactNode;
-}
-
-function collectSections(children: ReactNode): Map<ConfiguracionSectionId, ReactNode> {
-  const map = new Map<ConfiguracionSectionId, ReactNode>();
-  Children.forEach(children, (child) => {
-    if (!isValidElement(child)) return;
-    const el = child as ReactElement<ConfiguracionSectionProps>;
-    if (el.type === ConfiguracionSection && el.props.id) {
-      map.set(el.props.id, el.props.children);
-    }
-  });
-  return map;
+  /** Contenido renderizado en el servidor para la sección activa. */
+  sectionContent?: ReactNode;
 }
 
 function SectionCard({
@@ -97,7 +69,7 @@ function SectionCard({
 export function ConfiguracionNavigator({
   activeGroup,
   activeSection,
-  children,
+  sectionContent,
 }: ConfiguracionNavigatorProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -117,8 +89,6 @@ export function ConfiguracionNavigator({
       router.replace(`/configuracion?${params.toString()}`);
     }
   }, [activeSection, activeGroup, router]);
-
-  const sectionContent = collectSections(children);
 
   function openGroup(id: ConfiguracionGroupId) {
     router.push(`/configuracion?grupo=${id}`);
@@ -144,20 +114,18 @@ export function ConfiguracionNavigator({
     }
   }
 
-  // Nivel 3: contenido de una sección
   if (activeSection) {
     const meta = getSectionMeta(activeSection);
-    const content = sectionContent.get(activeSection);
     const groupMeta = resolvedGroup ? getGroupMeta(resolvedGroup) : null;
 
-    if (!meta || !content) {
+    if (!meta || !sectionContent) {
       return (
         <div className="space-y-4">
           <Button type="button" variant="outline" onClick={goToHub}>
             <ArrowLeft className="h-4 w-4" />
             Volver a configuración
           </Button>
-          <p className="text-sm text-slate-600">Sección no encontrada.</p>
+          <p className="text-sm text-slate-400">Sección no encontrada.</p>
         </div>
       );
     }
@@ -187,12 +155,11 @@ export function ConfiguracionNavigator({
           </div>
         </div>
 
-        <div>{content}</div>
+        <div>{sectionContent}</div>
       </div>
     );
   }
 
-  // Nivel 2: subsecciones de un grupo
   if (activeGroup) {
     const group = getGroupMeta(activeGroup);
     if (!group) {
@@ -202,7 +169,7 @@ export function ConfiguracionNavigator({
             <ArrowLeft className="h-4 w-4" />
             Volver a configuración
           </Button>
-          <p className="text-sm text-slate-600">Grupo no encontrado.</p>
+          <p className="text-sm text-slate-400">Grupo no encontrado.</p>
         </div>
       );
     }
@@ -242,7 +209,6 @@ export function ConfiguracionNavigator({
     );
   }
 
-  // Nivel 1: hub principal con grupos
   return (
     <div className="drflow-config-hub space-y-6">
       <div className="drflow-card-light rounded-2xl border border-slate-200 bg-white p-5 text-slate-900 sm:p-6">

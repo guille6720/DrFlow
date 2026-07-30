@@ -15,14 +15,73 @@ import { redirect } from "next/navigation";
 import { hasPermission } from "@/lib/permissions/roles";
 import { AppearanceStylePanel } from "@/components/configuracion/appearance-style-panel";
 import { ComplianceLegalPanel } from "@/components/configuracion/compliance-legal-panel";
+import { ConfiguracionNavigator } from "@/components/configuracion/configuracion-navigator";
 import {
-  ConfiguracionNavigator,
-  ConfiguracionSection,
-} from "@/components/configuracion/configuracion-navigator";
-import { resolveConfiguracionGroup, resolveConfiguracionSection } from "@/components/configuracion/configuracion-sections";
+  resolveConfiguracionGroup,
+  resolveConfiguracionSection,
+  type ConfiguracionSectionId,
+} from "@/components/configuracion/configuracion-sections";
+import type { Clinic } from "@/types/database";
 
 interface PageProps {
   searchParams: Promise<{ seccion?: string; grupo?: string }>;
+}
+
+interface SettingsPanelData {
+  clinic: Clinic | null;
+  specialties: { id: string; name: string }[];
+  locations: { id: string; name: string; address: string | null }[];
+  professionals: never[];
+  members: never[];
+  invitations: never[];
+  reasons: { id: string; name: string }[];
+  bookingSlug: string | null;
+}
+
+function renderSectionContent(
+  sectionId: ConfiguracionSectionId,
+  settingsProps: SettingsPanelData,
+  extras: {
+    patientCount: number;
+    practiceProfile: string | null;
+    defaultInsurance: string | null;
+    acceptedCoverages: string[] | null;
+  }
+) {
+  switch (sectionId) {
+    case "legal":
+      return <ComplianceLegalPanel />;
+    case "apariencia":
+      return <AppearanceStylePanel />;
+    case "coberturas":
+      return (
+        <CoveragesPanel
+          acceptedCoverages={extras.acceptedCoverages}
+          defaultInsurance={extras.defaultInsurance}
+        />
+      );
+    case "pami":
+      return (
+        <PamiSetupPanel
+          practiceProfile={extras.practiceProfile}
+          defaultInsurance={extras.defaultInsurance}
+        />
+      );
+    case "demo":
+      return <DemoDataPanel patientCount={extras.patientCount} />;
+    case "clinica":
+      return <SettingsPanel section="clinica" {...settingsProps} />;
+    case "equipo":
+      return <SettingsPanel section="equipo" {...settingsProps} />;
+    case "catalogo":
+      return <SettingsPanel section="catalogo" {...settingsProps} />;
+    case "agenda":
+      return <SettingsPanel section="agenda" {...settingsProps} />;
+    case "apps":
+      return <SettingsPanel section="apps" {...settingsProps} />;
+    default:
+      return null;
+  }
 }
 
 export default async function ConfiguracionPage({ searchParams }: PageProps) {
@@ -81,7 +140,7 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
         { count: 0 },
       ];
 
-  const settingsProps = {
+  const settingsProps: SettingsPanelData = {
     clinic,
     specialties: specialties.data ?? [],
     locations: locations.data ?? [],
@@ -91,6 +150,15 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
     reasons: reasons.data ?? [],
     bookingSlug: booking.data?.slug ?? null,
   };
+
+  const sectionContent = activeSection
+    ? renderSectionContent(activeSection, settingsProps, {
+        patientCount: patientCount.count ?? 0,
+        practiceProfile: clinic?.practice_profile ?? null,
+        defaultInsurance: clinic?.default_insurance_provider ?? null,
+        acceptedCoverages: clinic?.accepted_coverages ?? null,
+      })
+    : undefined;
 
   return (
     <>
@@ -112,53 +180,11 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
 
       <div className="p-4 sm:p-6">
         <Suspense fallback={<div className="text-sm text-slate-500">Cargando…</div>}>
-          <ConfiguracionNavigator activeGroup={activeGroup} activeSection={activeSection}>
-            <ConfiguracionSection id="legal">
-              <ComplianceLegalPanel />
-            </ConfiguracionSection>
-
-            <ConfiguracionSection id="apariencia">
-              <AppearanceStylePanel />
-            </ConfiguracionSection>
-
-            <ConfiguracionSection id="coberturas">
-              <CoveragesPanel
-                acceptedCoverages={clinic?.accepted_coverages ?? null}
-                defaultInsurance={clinic?.default_insurance_provider ?? null}
-              />
-            </ConfiguracionSection>
-
-            <ConfiguracionSection id="pami">
-              <PamiSetupPanel
-                practiceProfile={clinic?.practice_profile ?? null}
-                defaultInsurance={clinic?.default_insurance_provider ?? null}
-              />
-            </ConfiguracionSection>
-
-            <ConfiguracionSection id="demo">
-              <DemoDataPanel patientCount={patientCount.count ?? 0} />
-            </ConfiguracionSection>
-
-            <ConfiguracionSection id="clinica">
-              <SettingsPanel section="clinica" {...settingsProps} />
-            </ConfiguracionSection>
-
-            <ConfiguracionSection id="equipo">
-              <SettingsPanel section="equipo" {...settingsProps} />
-            </ConfiguracionSection>
-
-            <ConfiguracionSection id="catalogo">
-              <SettingsPanel section="catalogo" {...settingsProps} />
-            </ConfiguracionSection>
-
-            <ConfiguracionSection id="agenda">
-              <SettingsPanel section="agenda" {...settingsProps} />
-            </ConfiguracionSection>
-
-            <ConfiguracionSection id="apps">
-              <SettingsPanel section="apps" {...settingsProps} />
-            </ConfiguracionSection>
-          </ConfiguracionNavigator>
+          <ConfiguracionNavigator
+            activeGroup={activeGroup}
+            activeSection={activeSection}
+            sectionContent={sectionContent}
+          />
         </Suspense>
       </div>
     </>
