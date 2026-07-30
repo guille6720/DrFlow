@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Settings } from "lucide-react";
-import { DoctorProfileModal } from "./doctor-profile-modal";
+import { UserAccountModal } from "./user-account-modal";
 import { ROLE_LABELS, hasPermission } from "@/lib/permissions/roles";
 import type { Clinic, UserRole } from "@/types/database";
 import { ClinicSelector } from "./clinic-selector";
@@ -87,8 +87,8 @@ export function Header({
                   ? "border-slate-600 bg-slate-800 hover:border-teal-500/40 hover:bg-slate-700"
                   : "border-slate-200 bg-white hover:border-teal-200 hover:bg-teal-50/80"
               )}
-              title="Editar mis datos"
-              aria-label="Editar mis datos profesionales"
+              title="Mi cuenta y permisos"
+              aria-label="Abrir mi cuenta"
             >
               <p className={cn("text-sm font-semibold", shellDark ? "text-slate-100" : "text-slate-900")}>
                 {userName}
@@ -100,7 +100,7 @@ export function Header({
           )}
         </div>
       </div>
-      <DoctorProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
+      <UserAccountModal open={profileOpen} onClose={() => setProfileOpen(false)} role={role} />
     </header>
   );
 }

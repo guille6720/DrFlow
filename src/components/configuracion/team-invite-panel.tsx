@@ -78,6 +78,7 @@ export function TeamInvitePanel({ members, invitations }: Props) {
   const activeMembers = members.filter((m) => m.is_active !== false);
 
   return (
+    <div id="equipo">
     <Card title="Equipo e invitaciones">
       <p className="mb-4 text-sm text-slate-600">
         Invitá médicos o secretaría por email. Si ya tienen cuenta en DrFlow, se agregan al instante.
@@ -193,5 +194,6 @@ export function TeamInvitePanel({ members, invitations }: Props) {
         </div>
       )}
     </Card>
+    </div>
   );
 }
