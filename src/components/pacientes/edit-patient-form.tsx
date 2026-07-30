@@ -7,6 +7,7 @@ import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PatientFormFields } from "@/components/pacientes/patient-form-fields";
+import { PatientAdminFormFields } from "@/components/pacientes/patient-admin-form-fields";
 import { PatientClinicalProfileFields } from "@/components/pacientes/patient-clinical-profile-fields";
 import {
   chartExtrasFromFormData,
@@ -40,19 +41,23 @@ export function EditPatientForm({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const adminOnly = role === "secretary";
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     const form = e.currentTarget;
     const fd = new FormData(form);
-    const extras = chartExtrasFromFormData(fd);
-    const freeNotes = fd.get("notes");
-    const mergedNotes = mergeNotesWithChartExtras(
-      typeof freeNotes === "string" ? freeNotes : "",
-      extras
-    );
-    fd.set("notes", mergedNotes ?? "");
+    if (!adminOnly) {
+      const extras = chartExtrasFromFormData(fd);
+      const freeNotes = fd.get("notes");
+      const mergedNotes = mergeNotesWithChartExtras(
+        typeof freeNotes === "string" ? freeNotes : "",
+        extras
+      );
+      fd.set("notes", mergedNotes ?? "");
+    }
     const result = await updatePatient(patient.id, fd);
     setLoading(false);
     if (result.error) setError(result.error);
@@ -75,12 +80,22 @@ export function EditPatientForm({
         </Link>
         <Card title="Datos del paciente">
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
-            <PatientFormFields
-              patient={patient}
-              defaultInsurance={defaultInsurance}
-              acceptedCoverages={acceptedCoverages}
-            />
-            <PatientClinicalProfileFields patient={patient} />
+            {adminOnly ? (
+              <PatientAdminFormFields
+                patient={patient}
+                defaultInsurance={defaultInsurance}
+                acceptedCoverages={acceptedCoverages}
+              />
+            ) : (
+              <>
+                <PatientFormFields
+                  patient={patient}
+                  defaultInsurance={defaultInsurance}
+                  acceptedCoverages={acceptedCoverages}
+                />
+                <PatientClinicalProfileFields patient={patient} />
+              </>
+            )}
             {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}
             <div className="flex flex-wrap gap-2 sm:col-span-2">
               <Button type="submit" loading={loading}>Guardar cambios</Button>

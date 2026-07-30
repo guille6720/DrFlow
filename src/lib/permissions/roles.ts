@@ -12,13 +12,19 @@ export const PERMISSIONS = {
   manageClinic: ["superadmin", "clinic_admin"] as UserRole[],
   manageStaff: ["superadmin", "clinic_admin"] as UserRole[],
   manageAppointments: ["superadmin", "clinic_admin", "secretary", "doctor"] as UserRole[],
-  viewClinicalRecords: ["superadmin", "clinic_admin", "doctor", "secretary"] as UserRole[],
+  /** HC completa: secretaría excluida por normativa operativa */
+  viewClinicalRecords: ["superadmin", "clinic_admin", "doctor"] as UserRole[],
   viewPharmacology: ["superadmin", "clinic_admin", "doctor"] as UserRole[],
   editClinicalRecords: ["superadmin", "clinic_admin", "doctor"] as UserRole[],
   issuePrescriptions: ["superadmin", "clinic_admin", "doctor"] as UserRole[],
   managePatients: ["superadmin", "clinic_admin", "secretary", "doctor"] as UserRole[],
+  /** Solo datos administrativos del paciente */
+  managePatientsAdmin: ["superadmin", "clinic_admin", "secretary"] as UserRole[],
   viewReports: ["superadmin", "clinic_admin", "secretary"] as UserRole[],
   managePayments: ["superadmin", "clinic_admin", "secretary"] as UserRole[],
+  manageCashRegister: ["superadmin", "clinic_admin", "secretary", "doctor"] as UserRole[],
+  manageWaitingRoom: ["superadmin", "clinic_admin", "secretary", "doctor"] as UserRole[],
+  manageAdminDocuments: ["superadmin", "clinic_admin", "secretary"] as UserRole[],
   manageSettings: ["superadmin", "clinic_admin"] as UserRole[],
 };
 
@@ -48,8 +54,14 @@ export function canAccessRoute(
     return false;
   }
 
-  if (route.startsWith("/historias/nueva") || route.includes("/editar")) {
+  if (route.startsWith("/historias/nueva")) {
     return hasPermission(role, "editClinicalRecords", isSuperadmin);
+  }
+  if (route.startsWith("/historias/") && route.includes("/editar")) {
+    return hasPermission(role, "editClinicalRecords", isSuperadmin);
+  }
+  if (route.startsWith("/pacientes/") && route.includes("/editar")) {
+    return hasPermission(role, "managePatients", isSuperadmin);
   }
 
   const routePermissions: Record<string, keyof typeof PERMISSIONS> = {
@@ -58,6 +70,9 @@ export function canAccessRoute(
     "/historias": "viewClinicalRecords",
     "/recetas": "issuePrescriptions",
     "/herramientas": "viewPharmacology",
+    "/caja": "manageCashRegister",
+    "/sala-espera": "manageWaitingRoom",
+    "/secretaria": "manageAdminDocuments",
   };
 
   for (const [prefix, permission] of Object.entries(routePermissions)) {

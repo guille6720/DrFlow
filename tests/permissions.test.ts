@@ -7,15 +7,19 @@ describe("Role permissions", () => {
     expect(hasPermission(null, "manageSettings", true)).toBe(true);
   });
 
-  it("secretary can manage patients but not settings", () => {
+  it("secretary can manage patients but not settings or clinical HC", () => {
     expect(hasPermission("secretary", "managePatients")).toBe(true);
     expect(hasPermission("secretary", "manageSettings")).toBe(false);
+    expect(hasPermission("secretary", "viewClinicalRecords")).toBe(false);
+    expect(hasPermission("secretary", "manageCashRegister")).toBe(true);
+    expect(hasPermission("secretary", "manageWaitingRoom")).toBe(true);
   });
 
-  it("doctor can edit clinical records and manage patients", () => {
+  it("doctor can edit clinical records and access caja if enabled", () => {
     expect(hasPermission("doctor", "editClinicalRecords")).toBe(true);
     expect(hasPermission("doctor", "managePatients")).toBe(true);
     expect(hasPermission("doctor", "managePayments")).toBe(false);
+    expect(hasPermission("doctor", "manageCashRegister")).toBe(true);
   });
 
   it("patient cannot access reports", () => {
@@ -40,6 +44,13 @@ describe("Role permissions", () => {
 
   it("requires edit permission for nueva historia", () => {
     expect(canAccessRoute("secretary", "/historias/nueva")).toBe(false);
+    expect(canAccessRoute("secretary", "/historias")).toBe(false);
+    expect(canAccessRoute("secretary", "/caja")).toBe(true);
+    expect(canAccessRoute("secretary", "/sala-espera")).toBe(true);
     expect(canAccessRoute("doctor", "/historias/nueva")).toBe(true);
+  });
+
+  it("secretary can edit patient admin data", () => {
+    expect(canAccessRoute("secretary", "/pacientes/abc/editar")).toBe(true);
   });
 });

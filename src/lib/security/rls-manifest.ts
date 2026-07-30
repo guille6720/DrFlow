@@ -34,6 +34,13 @@ export const TABLES_REQUIRING_RLS = [
   "medical_orders",
   "clinic_invitations",
   "patient_app_share_log",
+  "cash_charge_types",
+  "cash_payment_methods",
+  "cash_charges",
+  "patient_ledger_entries",
+  "cash_invoices",
+  "cash_daily_closures",
+  "patient_admin_documents",
 ] as const;
 
 /** RPC SECURITY DEFINER que deben acotar tenant (nombre → migración de referencia). */

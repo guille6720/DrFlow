@@ -22,6 +22,9 @@ import {
   ArrowDownUp,
   PanelLeftClose,
   PanelLeftOpen,
+  Banknote,
+  Armchair,
+  FolderOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useState } from "react";
@@ -41,6 +44,9 @@ type NavItem = {
     | "issuePrescriptions"
     | "viewPharmacology"
     | "managePayments"
+    | "manageCashRegister"
+    | "manageWaitingRoom"
+    | "manageAdminDocuments"
     | "viewReports"
     | "manageSettings"
     | null;
@@ -49,8 +55,11 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: null },
   { href: "/agenda", label: "Agenda", icon: Calendar, permission: null },
+  { href: "/sala-espera", label: "Sala de espera", icon: Armchair, permission: "manageWaitingRoom" },
   { href: "/atenciones", label: "Atenciones", icon: ClipboardPlus, permission: null },
   { href: "/pacientes", label: "Pacientes", icon: Users, permission: "managePatients" },
+  { href: "/caja", label: "Caja", icon: Banknote, permission: "manageCashRegister" },
+  { href: "/secretaria/documentos", label: "Docs administrativos", icon: FolderOpen, permission: "manageAdminDocuments" },
   { href: "/historias", label: "Historia clínica", icon: FileText, permission: "viewClinicalRecords" },
   { href: "/datos", label: "Importar / Exportar", icon: ArrowDownUp, permission: null },
   { href: "/recetas", label: "Recetas electrónicas", icon: ScrollText, permission: "issuePrescriptions" },

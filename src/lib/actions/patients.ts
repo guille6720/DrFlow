@@ -4,15 +4,27 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { logAudit } from "@/lib/auth/session";
 import { patientSchema, sanitizePatientFields } from "@/lib/validations/schemas";
+import { patientAdminSchema } from "@/lib/validations/cash-schemas";
 import { requireClinicPermission } from "@/lib/actions/clinic-guard";
+import type { UserRole } from "@/types/database";
+
+const ADMIN_ONLY_ROLES: UserRole[] = ["secretary"];
+
+function isAdminOnlyRole(role: UserRole | null, isSuperadmin: boolean): boolean {
+  if (isSuperadmin) return false;
+  return role != null && ADMIN_ONLY_ROLES.includes(role);
+}
 
 export async function createPatient(formData: FormData) {
   const access = await requireClinicPermission("managePatients");
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
+  const { clinicId, role, isSuperadmin } = access;
 
   const raw = Object.fromEntries(formData.entries());
-  const parsed = patientSchema.safeParse(raw);
+  const adminOnly = isAdminOnlyRole(role, isSuperadmin);
+  const parsed = adminOnly
+    ? patientAdminSchema.safeParse(raw)
+    : patientSchema.safeParse(raw);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message };
   }
@@ -29,19 +41,40 @@ export async function createPatient(formData: FormData) {
     clinic?.default_insurance_provider ||
     null;
 
-  const sanitized = sanitizePatientFields(parsed.data);
+  const sanitized = sanitizePatientFields(parsed.data as Parameters<typeof sanitizePatientFields>[0]);
 
-  const { data, error } = await supabase
-    .from("patients")
-    .insert({
-      clinic_id: clinicId,
-      ...sanitized,
-      insurance_provider: insuranceProvider,
-      email: sanitized.email || null,
-      birth_date: sanitized.birth_date || null,
-    })
-    .select()
-    .single();
+  const { data, error } = adminOnly
+    ? await supabase
+        .from("patients")
+        .insert({
+          clinic_id: clinicId,
+          first_name: sanitized.first_name,
+          last_name: sanitized.last_name,
+          document_number: sanitized.document_number,
+          birth_date: sanitized.birth_date || null,
+          phone: sanitized.phone || null,
+          email: sanitized.email || null,
+          address: sanitized.address || null,
+          insurance_provider: insuranceProvider,
+          insurance_plan: (raw.insurance_plan as string) || null,
+          insurance_number: sanitized.insurance_number || null,
+          emergency_contact_name: sanitized.emergency_contact_name || null,
+          emergency_contact_phone: sanitized.emergency_contact_phone || null,
+        })
+        .select()
+        .single()
+    : await supabase
+        .from("patients")
+        .insert({
+          clinic_id: clinicId,
+          ...sanitized,
+          insurance_provider: insuranceProvider,
+          insurance_plan: (raw.insurance_plan as string) || null,
+          email: sanitized.email || null,
+          birth_date: sanitized.birth_date || null,
+        })
+        .select()
+        .single();
 
   if (error) return { error: error.message };
 
@@ -59,26 +92,52 @@ export async function createPatient(formData: FormData) {
 export async function updatePatient(id: string, formData: FormData) {
   const access = await requireClinicPermission("managePatients");
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
+  const { clinicId, role, isSuperadmin } = access;
 
   const raw = Object.fromEntries(formData.entries());
-  const parsed = patientSchema.safeParse(raw);
+  const adminOnly = isAdminOnlyRole(role, isSuperadmin);
+  const parsed = adminOnly
+    ? patientAdminSchema.safeParse(raw)
+    : patientSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 
-  const sanitized = sanitizePatientFields(parsed.data);
+  const sanitized = sanitizePatientFields(parsed.data as Parameters<typeof sanitizePatientFields>[0]);
 
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("patients")
-    .update({
-      ...sanitized,
-      email: sanitized.email || null,
-      birth_date: sanitized.birth_date || null,
-    })
-    .eq("id", id)
-    .eq("clinic_id", clinicId);
 
-  if (error) return { error: error.message };
+  if (adminOnly) {
+    const { error } = await supabase
+      .from("patients")
+      .update({
+        first_name: sanitized.first_name,
+        last_name: sanitized.last_name,
+        document_number: sanitized.document_number,
+        birth_date: sanitized.birth_date || null,
+        phone: sanitized.phone || null,
+        email: sanitized.email || null,
+        address: sanitized.address || null,
+        insurance_provider: sanitized.insurance_provider || null,
+        insurance_plan: (raw.insurance_plan as string) || null,
+        insurance_number: sanitized.insurance_number || null,
+        emergency_contact_name: sanitized.emergency_contact_name || null,
+        emergency_contact_phone: sanitized.emergency_contact_phone || null,
+      })
+      .eq("id", id)
+      .eq("clinic_id", clinicId);
+    if (error) return { error: error.message };
+  } else {
+    const { error } = await supabase
+      .from("patients")
+      .update({
+        ...sanitized,
+        email: sanitized.email || null,
+        birth_date: sanitized.birth_date || null,
+        insurance_plan: (raw.insurance_plan as string) || null,
+      })
+      .eq("id", id)
+      .eq("clinic_id", clinicId);
+    if (error) return { error: error.message };
+  }
 
   await logAudit({ clinicId, entityType: "patient", entityId: id, action: "update" });
   revalidatePath("/pacientes");

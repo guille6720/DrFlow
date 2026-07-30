@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { DeletePatientButton } from "@/components/pacientes/delete-patient-button";
 import { PatientChartView } from "@/components/pacientes/patient-chart-view";
+import { PatientAdminDetailView } from "@/components/pacientes/patient-admin-detail-view";
 import { PatientArcoExportButton } from "@/components/legal/patient-arco-export-button";
 import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
 import { formatAgeLabel } from "@/lib/utils/patient-age";
@@ -53,9 +54,9 @@ export default async function PacienteDetailPage({
 
   const [
     { data: appointments },
-    { data: records },
+    recordsResult,
     { data: appShare },
-    { data: clinicalDocuments },
+    clinicalDocumentsResult,
     { data: prescriptions },
     { data: professionals },
   ] = await Promise.all([
@@ -74,7 +75,7 @@ export default async function PacienteDetailPage({
           .eq("patient_id", id)
           .order("created_at", { ascending: false })
           .limit(15)
-      : Promise.resolve({ data: [] as never[] }),
+      : Promise.resolve({ data: null }),
     portalSlug
       ? supabase
           .from("patient_app_share_log")
@@ -89,22 +90,29 @@ export default async function PacienteDetailPage({
           .eq("patient_id", id)
           .eq("clinic_id", clinicId)
           .order("created_at", { ascending: false })
-      : Promise.resolve({ data: [] as never[] }),
-    supabase
-      .from("prescription_drafts")
-      .select("id, medications, issued_at, created_at")
-      .eq("patient_id", id)
-      .eq("clinic_id", clinicId)
-      .eq("status", "issued")
-      .order("issued_at", { ascending: false })
-      .limit(5),
-    supabase
-      .from("professionals")
-      .select("id, display_name, license_number, profiles(full_name)")
-      .eq("clinic_id", clinicId)
-      .eq("is_active", true)
-      .order("display_name"),
+      : Promise.resolve({ data: null }),
+    canViewClinical
+      ? supabase
+          .from("prescription_drafts")
+          .select("id, medications, issued_at, created_at")
+          .eq("patient_id", id)
+          .eq("clinic_id", clinicId)
+          .eq("status", "issued")
+          .order("issued_at", { ascending: false })
+          .limit(5)
+      : Promise.resolve({ data: null }),
+    canViewClinical
+      ? supabase
+          .from("professionals")
+          .select("id, display_name, license_number, profiles(full_name)")
+          .eq("clinic_id", clinicId)
+          .eq("is_active", true)
+          .order("display_name")
+      : Promise.resolve({ data: null }),
   ]);
+
+  const records = recordsResult.data;
+  const clinicalDocuments = clinicalDocumentsResult.data;
 
   const lastRx = prescriptions?.[0];
   const lastMedications = (lastRx?.medications as PrescriptionMedication[] | null) ?? null;
@@ -139,23 +147,25 @@ export default async function PacienteDetailPage({
     uploaded_by: null as string | null,
   }));
 
-  const chart = buildPatientChartPayload({
-    patient: {
-      birth_date: patient.birth_date,
-      insurance_provider: patient.insurance_provider,
-      medical_history: patient.medical_history,
-      allergies: patient.allergies,
-      regular_medication: patient.regular_medication,
-      notes: patient.notes,
-    },
-    records: mappedRecords,
-    prescriptions: (prescriptions ?? []).map((p) => ({
-      id: p.id,
-      created_at: p.issued_at ?? p.created_at,
-      medications: p.medications,
-    })),
-    attachments: mappedAttachments,
-  });
+  const chart = canViewClinical
+    ? buildPatientChartPayload({
+        patient: {
+          birth_date: patient.birth_date,
+          insurance_provider: patient.insurance_provider,
+          medical_history: patient.medical_history,
+          allergies: patient.allergies,
+          regular_medication: patient.regular_medication,
+          notes: patient.notes,
+        },
+        records: mappedRecords,
+        prescriptions: (prescriptions ?? []).map((p) => ({
+          id: p.id,
+          created_at: p.issued_at ?? p.created_at,
+          medications: p.medications,
+        })),
+        attachments: mappedAttachments,
+      })
+    : null;
 
   return (
     <>
@@ -181,36 +191,40 @@ export default async function PacienteDetailPage({
           )}
         </div>
 
-        <PatientChartView
-          patient={patient}
-          patientId={id}
-          chart={chart}
-          canEditClinical={canEditClinical}
-          canIssue={canIssue}
-          professionals={(professionals ?? []).map((p) => ({
-            id: p.id,
-            display_name: p.display_name,
-            license_number: p.license_number,
-            profiles: Array.isArray(p.profiles)
-              ? (p.profiles[0] as { full_name: string } | undefined) ?? null
-              : (p.profiles as { full_name: string } | null),
-          }))}
-          lastMedications={lastMedications}
-          regularMedication={patient.regular_medication}
-          clinicalDocuments={clinicalDocuments ?? []}
-          appointments={(appointments ?? []) as import("@/components/pacientes/patient-chart-view").AppointmentRow[]}
-          portalSlug={portalSlug}
-          doctorInfo={doctorInfo}
-          patientShare={patientShare}
-          arcoExport={
-            canManagePatients ? (
-              <PatientArcoExportButton
-                patientId={patient.id}
-                fileLabel={`${patient.document_number}`}
-              />
-            ) : undefined
-          }
-        />
+        {!canViewClinical || !chart ? (
+          <PatientAdminDetailView patient={patient} />
+        ) : (
+          <PatientChartView
+            patient={patient}
+            patientId={id}
+            chart={chart}
+            canEditClinical={canEditClinical}
+            canIssue={canIssue}
+            professionals={(professionals ?? []).map((p) => ({
+              id: p.id,
+              display_name: p.display_name,
+              license_number: p.license_number,
+              profiles: Array.isArray(p.profiles)
+                ? (p.profiles[0] as { full_name: string } | undefined) ?? null
+                : (p.profiles as { full_name: string } | null),
+            }))}
+            lastMedications={lastMedications}
+            regularMedication={patient.regular_medication}
+            clinicalDocuments={clinicalDocuments ?? []}
+            appointments={(appointments ?? []) as import("@/components/pacientes/patient-chart-view").AppointmentRow[]}
+            portalSlug={portalSlug}
+            doctorInfo={doctorInfo}
+            patientShare={patientShare}
+            arcoExport={
+              canManagePatients ? (
+                <PatientArcoExportButton
+                  patientId={patient.id}
+                  fileLabel={`${patient.document_number}`}
+                />
+              ) : undefined
+            }
+          />
+        )}
       </div>
     </>
   );
