@@ -92,7 +92,7 @@ export function CoveragesPanel({
 
   return (
     <Card title="Coberturas que atendés">
-      <p className="mb-4 text-sm text-slate-600">
+      <p className="mb-4 text-sm text-slate-700">
         Marcá las obras sociales / coberturas de tu consultorio. Si no está en la lista,
         agregala abajo. Los pacientes nuevos se eligen desde esta lista.
       </p>
@@ -104,7 +104,7 @@ export function CoveragesPanel({
             return (
               <label
                 key={name}
-                className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm hover:border-blue-200"
+                className="drflow-card-light flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 hover:border-blue-200"
               >
                 <input
                   type="checkbox"

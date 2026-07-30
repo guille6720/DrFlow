@@ -195,6 +195,30 @@ button {
   color: #64748b;
 }
 
+/* Hub de configuración: islas claras siempre legibles en clinical dark */
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-config-hub .drflow-card-light,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-config-hub.drflow-card-light {
+  color: #0f172a;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-config-hub .drflow-card-light :is(.text-slate-500, .text-slate-600, .text-slate-700),
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-config-hub.drflow-card-light :is(.text-slate-500, .text-slate-600, .text-slate-700) {
+  color: #334155 !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-config-hub .drflow-card-light :is(.text-slate-800, .text-slate-900),
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-config-hub.drflow-card-light :is(.text-slate-800, .text-slate-900) {
+  color: #0f172a !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-config-hub .drflow-card-light li {
+  color: #1e293b !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-config-hub .drflow-card-light .text-teal-800 {
+  color: #115e59 !important;
+}
+
 /* ——— Estilo 1 (default): componentes UI ——— */
 .drflow-ui-card {
   border-radius: 1rem;

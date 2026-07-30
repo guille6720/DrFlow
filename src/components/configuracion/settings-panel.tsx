@@ -293,7 +293,7 @@ export function SettingsPanel({
       <>
       <TeamInvitePanel members={members} invitations={invitations} />
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="drflow-card-light rounded-xl border border-slate-200 bg-white p-4">
         <Link
           href="/qa"
           className="text-sm font-medium text-blue-700 hover:underline"
@@ -309,7 +309,7 @@ export function SettingsPanel({
         <Card title="Especialidades">
           <ul className="mb-4 space-y-2 text-sm">
             {specialties.map((s) => (
-              <li key={s.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
+              <li key={s.id} className="drflow-card-light flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-slate-900">
                 {s.name}
                 <button type="button" onClick={() => run(() => deleteSpecialty(s.id))} className="text-red-500">
                   <Trash2 className="h-4 w-4" />
@@ -333,7 +333,7 @@ export function SettingsPanel({
         <Card title="Sedes">
           <ul className="mb-4 space-y-2 text-sm">
             {locations.map((l) => (
-              <li key={l.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
+              <li key={l.id} className="drflow-card-light flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-slate-900">
                 <span>{l.name}{l.address ? ` — ${l.address}` : ""}</span>
                 <button type="button" onClick={() => run(() => deleteLocation(l.id))} className="text-red-500">
                   <Trash2 className="h-4 w-4" />
@@ -360,7 +360,7 @@ export function SettingsPanel({
         <Card title="Profesionales">
           <ul className="mb-4 space-y-2 text-sm">
             {professionals.map((p) => (
-              <li key={p.id} className="rounded-lg bg-slate-50 px-3 py-2">
+              <li key={p.id} className="drflow-card-light rounded-lg bg-slate-50 px-3 py-2 text-slate-900">
                 {p.display_name ?? p.profiles?.full_name ?? "Profesional"}
                 {p.specialties?.name && ` · ${p.specialties.name}`}
               </li>

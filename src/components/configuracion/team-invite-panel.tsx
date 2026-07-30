@@ -81,7 +81,7 @@ export function TeamInvitePanel({ members, invitations }: Props) {
   return (
     <div id="equipo">
     <Card title="Equipo e invitaciones">
-      <p className="mb-4 text-sm text-slate-600">
+      <p className="mb-4 text-sm text-slate-700">
         Invitá médicos o secretaría por email. Si ya tienen cuenta en DrFlow, se agregan al instante.
         Si no, reciben un link para crear contraseña e ingresar.
       </p>
@@ -97,7 +97,7 @@ export function TeamInvitePanel({ members, invitations }: Props) {
         </div>
       )}
 
-      <form onSubmit={handleInvite} className="mb-6 grid gap-3 rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:grid-cols-2">
+      <form onSubmit={handleInvite} className="drflow-card-light mb-6 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2">
         <Input name="full_name" label="Nombre completo" required placeholder="Ej: Dra. Ana Martínez" />
         <Input name="email" label="Email" type="email" required placeholder="usuario@email.com" />
         <Select
@@ -124,13 +124,13 @@ export function TeamInvitePanel({ members, invitations }: Props) {
             {activeMembers.map((m) => (
               <li
                 key={m.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm"
+                className="drflow-card-light flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-900"
               >
                 <div>
                   <p className="font-medium text-slate-900">
                     {m.profiles?.full_name ?? "Usuario"}
                   </p>
-                  <p className="text-xs text-slate-500">{m.profiles?.email}</p>
+                  <p className="text-xs text-slate-600">{m.profiles?.email}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <Select

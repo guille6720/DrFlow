@@ -69,7 +69,7 @@ function SectionCard({
       type="button"
       onClick={() => onOpen(sectionId)}
       className={cn(
-        "group flex w-full flex-col rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition",
+        "drflow-card-light group flex w-full flex-col rounded-2xl border border-slate-200 bg-white text-left text-slate-900 shadow-sm transition",
         "hover:border-teal-300 hover:bg-teal-50/40 hover:shadow-md",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50",
         compact ? "min-h-[5.5rem] p-4" : "min-h-[7rem] p-5"
@@ -78,16 +78,16 @@ function SectionCard({
       <div className="flex items-start justify-between gap-3">
         <div
           className={cn(
-            "flex shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700 group-hover:bg-teal-200/80",
+            "flex shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-800 group-hover:bg-teal-200/80",
             compact ? "h-9 w-9" : "h-11 w-11"
           )}
         >
           <Icon className={compact ? "h-4 w-4" : "h-5 w-5"} aria-hidden />
         </div>
-        <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-slate-300 group-hover:text-teal-500" />
+        <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-slate-400 group-hover:text-teal-600" />
       </div>
       <p className={cn("mt-3 font-semibold text-slate-900", compact && "text-sm")}>{section.title}</p>
-      <p className={cn("mt-1 leading-snug text-slate-600", compact ? "text-xs" : "text-sm")}>
+      <p className={cn("mt-1 leading-snug text-slate-700", compact ? "text-xs" : "text-sm")}>
         {section.description}
       </p>
     </button>
@@ -165,24 +165,24 @@ export function ConfiguracionNavigator({
     const Icon = meta.icon;
 
     return (
-      <div className="space-y-5">
+      <div className="drflow-config-hub space-y-5">
         <div className="flex flex-wrap items-center gap-3">
           <Button type="button" variant="outline" onClick={goToGroup}>
             <ArrowLeft className="h-4 w-4" />
             Volver
           </Button>
-          <div className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-700">
+          <div className="drflow-card-light flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-800">
               <Icon className="h-5 w-5" aria-hidden />
             </div>
             <div className="min-w-0">
               {groupMeta && (
-                <p className="text-xs font-medium uppercase tracking-wide text-teal-700">
+                <p className="text-xs font-medium uppercase tracking-wide text-teal-800">
                   {groupMeta.title}
                 </p>
               )}
               <h2 className="truncate font-semibold text-slate-900">{meta.title}</h2>
-              <p className="truncate text-sm text-slate-600">{meta.description}</p>
+              <p className="truncate text-sm text-slate-700">{meta.description}</p>
             </div>
           </div>
         </div>
@@ -211,19 +211,19 @@ export function ConfiguracionNavigator({
     const sections = getSectionsForGroup(activeGroup);
 
     return (
-      <div className="space-y-5">
+      <div className="drflow-config-hub space-y-5">
         <div className="flex flex-wrap items-center gap-3">
           <Button type="button" variant="outline" onClick={goToHub}>
             <ArrowLeft className="h-4 w-4" />
             Volver
           </Button>
-          <div className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-700">
+          <div className="drflow-card-light flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-800">
               <GroupIcon className="h-5 w-5" aria-hidden />
             </div>
             <div className="min-w-0">
               <h2 className="truncate font-semibold text-slate-900">{group.title}</h2>
-              <p className="truncate text-sm text-slate-600">{group.description}</p>
+              <p className="truncate text-sm text-slate-700">{group.description}</p>
             </div>
           </div>
         </div>
@@ -244,10 +244,10 @@ export function ConfiguracionNavigator({
 
   // Nivel 1: hub principal con grupos
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-teal-50/40 p-5 sm:p-6">
+    <div className="drflow-config-hub space-y-6">
+      <div className="drflow-card-light rounded-2xl border border-slate-200 bg-white p-5 text-slate-900 sm:p-6">
         <h2 className="text-lg font-semibold text-slate-900">¿Qué querés configurar?</h2>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-slate-700">
           Elegí un área. Dentro de cada grupo vas a encontrar las opciones relacionadas, sin tener
           que recorrer toda la configuración de una sola vez.
         </p>
@@ -264,24 +264,24 @@ export function ConfiguracionNavigator({
               type="button"
               onClick={() => openGroup(group.id)}
               className={cn(
-                "group flex min-h-[10rem] flex-col rounded-2xl border border-slate-200 bg-white p-5 text-left",
+                "drflow-card-light group flex min-h-[10rem] flex-col rounded-2xl border border-slate-200 bg-white p-5 text-left text-slate-900",
                 "shadow-sm transition hover:border-teal-300 hover:bg-teal-50/40 hover:shadow-md",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50"
               )}
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700 group-hover:bg-teal-200/80">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-800 group-hover:bg-teal-200/80">
                   <GroupIcon className="h-6 w-6" aria-hidden />
                 </div>
-                <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-slate-300 group-hover:text-teal-500" />
+                <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-slate-400 group-hover:text-teal-600" />
               </div>
               <p className="mt-4 text-base font-semibold text-slate-900">{group.title}</p>
-              <p className="mt-1 text-sm leading-snug text-slate-600">{group.description}</p>
+              <p className="mt-1 text-sm leading-snug text-slate-700">{group.description}</p>
               <ul className="mt-4 flex flex-wrap gap-1.5">
                 {sections.map((section) => (
                   <li
                     key={section.id}
-                    className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 group-hover:bg-teal-100/80 group-hover:text-teal-800"
+                    className="rounded-full bg-slate-200/90 px-2.5 py-0.5 text-xs font-medium text-slate-800 group-hover:bg-teal-100 group-hover:text-teal-900"
                   >
                     {section.title}
                   </li>
