@@ -82,8 +82,8 @@ export function TeamInvitePanel({ members, invitations }: Props) {
     <div id="equipo">
     <Card title="Equipo e invitaciones">
       <p className="mb-4 text-sm text-slate-700">
-        Invitá médicos o secretaría por email. Si ya tienen cuenta en DrFlow, se agregan al instante.
-        Si no, reciben un link para crear contraseña e ingresar.
+        Invitá médicos o secretaría por email. <strong>Desactivar</strong> suspende el acceso (no
+        puede iniciar sesión). <strong>Eliminar cuenta</strong> borra el usuario de Auth.
       </p>
 
       {msg && (
@@ -164,7 +164,7 @@ export function TeamInvitePanel({ members, invitations }: Props) {
                       const name = m.profiles?.full_name ?? m.profiles?.email ?? "este usuario";
                       if (
                         !confirm(
-                          `¿Eliminar permanentemente a ${name}? Se borra la cuenta de acceso y no podrá volver a ingresar. Los registros clínicos históricos se conservan.`
+                          `¿Eliminar permanentemente a ${name}? Se borra la cuenta de acceso. Los registros clínicos históricos se conservan. También podés hacerlo desde Supabase → Authentication después de aplicar la migración 036.`
                         )
                       ) {
                         return;

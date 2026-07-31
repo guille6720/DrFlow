@@ -237,6 +237,19 @@ export async function deactivateClinicMember(memberId: string) {
     .eq("clinic_id", clinicId);
 
   if (error) return { error: error.message };
+
+  if (hasAdminClient()) {
+    const admin = createAdminClient();
+    const { error: banError } = await admin.auth.admin.updateUserById(target.user_id, {
+      ban_duration: "876000h",
+    });
+    if (banError) {
+      return {
+        error: `Usuario desactivado en la clínica, pero no se pudo suspender el login: ${banError.message}`,
+      };
+    }
+  }
+
   revalidatePath("/configuracion");
   return { success: true };
 }
@@ -266,7 +279,7 @@ export async function removeClinicMemberPermanently(memberId: string) {
     if (error.message.includes("remove_clinic_member_user")) {
       return {
         error:
-          "Ejecutá la migración 035_remove_clinic_user.sql en Supabase SQL Editor y volvé a intentar.",
+          "Ejecutá las migraciones 035 y 036 en Supabase SQL Editor y volvé a intentar.",
       };
     }
     return { error: error.message };
