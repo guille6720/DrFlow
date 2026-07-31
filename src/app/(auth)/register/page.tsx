@@ -37,6 +37,7 @@ function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isTrial = searchParams.get("trial") === "30";
+  const accountDeleted = searchParams.get("cuenta") === "eliminada";
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState<1 | 2>(1);
   const [formError, setFormError] = useState<string | null>(null);
@@ -190,6 +191,16 @@ function RegisterForm() {
           <p className="mt-1 text-sm text-slate-500">
             Creá tu cuenta y configurá tu consultorio en dos pasos.
           </p>
+
+          {accountDeleted && (
+            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">
+              Tu cuenta fue eliminada. Podés registrar un nuevo consultorio acá o{" "}
+              <Link href="/" className="font-medium text-teal-700 underline-offset-2 hover:underline">
+                volver al sitio web
+              </Link>
+              .
+            </div>
+          )}
 
           {isTrial && (
             <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">

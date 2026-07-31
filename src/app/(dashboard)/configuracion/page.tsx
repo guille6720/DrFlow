@@ -16,6 +16,7 @@ import { hasPermission } from "@/lib/permissions/roles";
 import { AppearanceStylePanel } from "@/components/configuracion/appearance-style-panel";
 import { ComplianceLegalPanel } from "@/components/configuracion/compliance-legal-panel";
 import { ConfiguracionNavigator } from "@/components/configuracion/configuracion-navigator";
+import { DeleteAccountPanel } from "@/components/configuracion/delete-account-panel";
 import {
   resolveConfiguracionGroup,
   resolveConfiguracionSection,
@@ -160,6 +161,11 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
       })
     : undefined;
 
+  const activeMembers = (members.data ?? []).filter(
+    (m: { is_active?: boolean }) => m.is_active !== false
+  );
+  const isSoleClinicMember = Boolean(clinicId) && activeMembers.length === 1;
+
   return (
     <>
       <Header
@@ -184,6 +190,14 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
             activeGroup={activeGroup}
             activeSection={activeSection}
             sectionContent={sectionContent}
+            deleteAccount={
+              !activeSection && !activeGroup ? (
+                <DeleteAccountPanel
+                  userEmail={profile?.email}
+                  isSoleClinicMember={isSoleClinicMember}
+                />
+              ) : undefined
+            }
           />
         </Suspense>
       </div>

@@ -21,6 +21,7 @@ interface ConfiguracionNavigatorProps {
   activeSection: ConfiguracionSectionId | null;
   /** Contenido renderizado en el servidor para la sección activa. */
   sectionContent?: ReactNode;
+  deleteAccount?: ReactNode;
 }
 
 function SectionCard({
@@ -70,6 +71,7 @@ export function ConfiguracionNavigator({
   activeGroup,
   activeSection,
   sectionContent,
+  deleteAccount,
 }: ConfiguracionNavigatorProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -256,6 +258,7 @@ export function ConfiguracionNavigator({
             </button>
           );
         })}
+        {deleteAccount}
       </div>
     </div>
   );
