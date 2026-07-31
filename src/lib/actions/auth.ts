@@ -14,6 +14,7 @@ import { zodFieldErrors } from "@/lib/validations/form-errors";
 import {
   TRIAL_REGISTRATION_COOKIE,
   parseTrialDays,
+  resolveTrialDays,
 } from "@/lib/trial/clinic-trial";
 
 export type AuthActionResult = {
@@ -152,7 +153,7 @@ async function runSetupUserClinic(
   return { clinicId: clinicId as string | undefined };
 }
 
-/** Cookie httpOnly para flujo Google/onboarding con ?trial=30 */
+/** Cookie httpOnly para flujo Google/onboarding con ?trial=10 */
 export async function setTrialRegistrationIntent(days: number): Promise<void> {
   const parsed = parseTrialDays(days);
   if (!parsed) return;
@@ -173,13 +174,11 @@ async function applyTrialAfterSetup(
   formData: FormData
 ) {
   const cookieStore = await cookies();
-  const days =
-    parseTrialDays(formData.get("trialDays")) ??
-    parseTrialDays(cookieStore.get(TRIAL_REGISTRATION_COOKIE)?.value);
+  const days = resolveTrialDays(
+    formData.get("trialDays") ?? cookieStore.get(TRIAL_REGISTRATION_COOKIE)?.value
+  );
 
   cookieStore.delete(TRIAL_REGISTRATION_COOKIE);
-
-  if (!days) return;
 
   const endsAt = new Date();
   endsAt.setUTCDate(endsAt.getUTCDate() + days);

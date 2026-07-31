@@ -12,11 +12,11 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Probar DrFlow 30 días gratis | Consultorio",
+  title: "Probar DrFlow 10 días gratis | Consultorio",
   description:
-    "Probá DrFlow gratis durante 30 días: agenda, historia clínica, recetas, PAMI y app para pacientes.",
+    "Probá DrFlow gratis durante 10 días: agenda, historia clínica, recetas, PAMI y app para pacientes.",
   openGraph: {
-    title: "Probar DrFlow 30 días gratis",
+    title: "Probar DrFlow 10 días gratis",
     description:
       "Software para consultorios argentinos. Agenda, HC, recetas y app del paciente.",
     url: "https://drflow.opusorg.com/probar",
@@ -34,8 +34,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Probar DrFlow 30 días gratis",
-    description: "Agenda, HC, recetas y app del paciente — 30 días gratis.",
+    title: "Probar DrFlow 10 días gratis",
+    description: "Agenda, HC, recetas y app del paciente — 10 días gratis.",
     images: ["/og-image.png"],
   },
 };
@@ -59,11 +59,11 @@ export default function ProbarPage() {
 
       <main className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
         <p className="text-center text-sm font-semibold uppercase tracking-wide text-blue-700">
-          Invitación · Prueba 30 días
+          Invitación · Prueba 10 días
         </p>
         <h1 className="mt-3 text-center text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
           Probá DrFlow en tu consultorio,{" "}
-          <span className="text-blue-700">gratis por 30 días</span>
+          <span className="text-blue-700">gratis por 10 días</span>
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-center text-base text-slate-600 sm:text-lg">
           Agenda, historia clínica, recetas y app para pacientes — pensado para médicos
@@ -71,7 +71,7 @@ export default function ProbarPage() {
         </p>
 
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <Link href="/register?trial=30&utm_source=whatsapp&utm_medium=invite">
+          <Link href="/register?trial=10&utm_source=whatsapp&utm_medium=invite">
             <Button size="lg" className="w-full min-w-[240px] sm:w-auto">
               Crear mi consultorio gratis
             </Button>
@@ -100,7 +100,7 @@ export default function ProbarPage() {
           <ol className="mt-3 list-decimal space-y-1 pl-5">
             <li>Registrate y creá tu consultorio.</li>
             <li>En Configuración → cargá pacientes demo (opcional).</li>
-            <li>Probá agenda → consulta → receta durante 30 días.</li>
+            <li>Probá agenda → consulta → receta durante 10 días.</li>
           </ol>
         </div>
 

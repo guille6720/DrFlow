@@ -16,7 +16,7 @@ import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import { LegalAcceptanceCheckbox } from "@/components/legal/legal-consent-fields";
 import { AlertCircle } from "lucide-react";
 import { setTrialRegistrationIntent } from "@/lib/actions/auth";
-import { TRIAL_PROMO_DAYS } from "@/lib/trial/clinic-trial";
+import { TRIAL_PROMO_DAYS, parseTrialDays } from "@/lib/trial/clinic-trial";
 import { cn } from "@/lib/utils/cn";
 
 const FIELD_ORDER = [
@@ -37,7 +37,7 @@ const FIELD_ORDER = [
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isTrial = searchParams.get("trial") === "30";
+  const isTrial = parseTrialDays(searchParams.get("trial")) !== null;
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState<1 | 2>(1);
   const [formError, setFormError] = useState<string | null>(null);
@@ -198,7 +198,8 @@ function RegisterForm() {
 
           {isTrial && (
             <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
-              Estás entrando con la <strong>prueba gratuita de 30 días</strong>. Sin tarjeta
+              Estás entrando con la <strong>prueba gratuita de {TRIAL_PROMO_DAYS} días</strong>.
+              Sin tarjeta
               para empezar.
             </div>
           )}

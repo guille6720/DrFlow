@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardPageHeader } from "@/components/layout/dashboard-page-header";
 import { getDashboardShell } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
-import { isClinicTrialExpired } from "@/lib/trial/clinic-trial";
+import { isClinicTrialExpired, TRIAL_PROMO_DAYS } from "@/lib/trial/clinic-trial";
 
 export default async function TrialExpiradoPage() {
   const { profile, clinic, isSuperadmin } = await getDashboardShell();
@@ -26,7 +26,7 @@ export default async function TrialExpiradoPage() {
             <CalendarX2 className="h-12 w-12 text-slate-400" aria-hidden />
           </div>
           <h1 className="text-center text-xl font-bold text-slate-900">
-            Los 30 días de prueba terminaron
+            Los {TRIAL_PROMO_DAYS} días de prueba terminaron
           </h1>
           <p className="mt-3 text-center text-sm text-slate-600">
             Tus datos del consultorio siguen guardados. Para seguir usando agenda, historias

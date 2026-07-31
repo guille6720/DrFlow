@@ -1,7 +1,15 @@
 import type { Clinic } from "@/types/database";
 
 export const TRIAL_REGISTRATION_COOKIE = "drflow_trial_days";
-export const TRIAL_PROMO_DAYS = 30;
+/** Días corridos de prueba gratuita para consultorios nuevos. */
+export const TRIAL_PROMO_DAYS = 10;
+
+/** Resuelve días de trial (máx. promo); sin valor explícito → promo por defecto. */
+export function resolveTrialDays(value: unknown): number {
+  const parsed = parseTrialDays(value);
+  if (parsed !== null) return Math.min(parsed, TRIAL_PROMO_DAYS);
+  return TRIAL_PROMO_DAYS;
+}
 
 /** Rutas permitidas cuando el trial expiró (sin acceso clínico). */
 export const TRIAL_EXPIRED_WHITELIST = [
