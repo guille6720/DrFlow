@@ -46,7 +46,7 @@ export function ClinicalRecordsGroupedList({ groups, defaultOpenPatientId }: Pro
           <details
             key={group.patientId}
             open={openByDefault}
-            className="group rounded-xl border border-slate-200 bg-white shadow-sm open:ring-1 open:ring-blue-100"
+            className="drflow-card-light group rounded-xl border border-slate-200 bg-white text-slate-900 shadow-sm open:ring-1 open:ring-blue-100"
           >
             <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
               <ChevronDown className="h-5 w-5 shrink-0 text-slate-400 transition group-open:rotate-180" />

@@ -34,7 +34,7 @@ export function ClinicalWorkflowStrip({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-200/90 bg-white/90 p-4 shadow-md shadow-slate-200/40 backdrop-blur-sm",
+        "drflow-card-light rounded-2xl border border-slate-200/90 bg-white/90 p-4 text-slate-900 shadow-md shadow-slate-200/40 backdrop-blur-sm",
         className
       )}
     >

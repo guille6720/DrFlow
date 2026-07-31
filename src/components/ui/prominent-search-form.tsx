@@ -25,7 +25,7 @@ export function ProminentSearchForm({
   trailing,
 }: Props) {
   return (
-    <div className="rounded-2xl border-2 border-amber-400/90 bg-gradient-to-br from-amber-50 via-orange-50/40 to-blue-50 p-4 shadow-md shadow-amber-200/40 ring-1 ring-amber-300/50">
+    <div className="drflow-card-light rounded-2xl border-2 border-amber-400/90 bg-gradient-to-br from-amber-50 via-orange-50/40 to-blue-50 p-4 text-slate-900 shadow-md shadow-amber-200/40 ring-1 ring-amber-300/50">
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-amber-900/80">
         Buscador
       </p>

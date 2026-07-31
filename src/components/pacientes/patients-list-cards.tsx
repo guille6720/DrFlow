@@ -58,7 +58,7 @@ export function PatientsListCards({
         return (
           <article
             key={p.id}
-            className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100/80 sm:flex-row sm:items-center sm:gap-4"
+            className="drflow-card-light flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm ring-1 ring-slate-100/80 sm:flex-row sm:items-center sm:gap-4"
           >
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-slate-900">{patientDisplay}</p>
