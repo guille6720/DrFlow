@@ -1,8 +1,12 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { purgeSoleOwnerClinicsForUser } from "@/lib/actions/clinic-purge";
 import { DELETE_ACCOUNT_CONFIRM_PHRASE } from "@/lib/constants/account";
+import { createClient } from "@/lib/supabase/server";
+
+const CLINIC_COOKIE = "drflow_clinic_id";
 
 export async function deleteMyAccount(confirmPhrase: string) {
   const supabase = await createClient();
@@ -20,6 +24,11 @@ export async function deleteMyAccount(confirmPhrase: string) {
     };
   }
 
+  const purge = await purgeSoleOwnerClinicsForUser(user.id);
+  if (purge.error) {
+    return { error: purge.error };
+  }
+
   const { error } = await supabase.rpc("delete_own_account", {
     p_confirm_phrase: confirmPhrase.trim(),
   });
@@ -34,6 +43,9 @@ export async function deleteMyAccount(confirmPhrase: string) {
     return { error: error.message };
   }
 
+  const cookieStore = await cookies();
+  cookieStore.delete(CLINIC_COOKIE);
+
   await supabase.auth.signOut();
-  redirect("/register?cuenta=eliminada");
+  redirect("/?cuenta=eliminada");
 }

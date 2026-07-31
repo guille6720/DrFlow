@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { deleteMyAccount } from "@/lib/actions/account";
 import { DELETE_ACCOUNT_CONFIRM_PHRASE } from "@/lib/constants/account";
+import { clearDrFlowClientStorage } from "@/lib/utils/clear-client-storage";
 import { cn } from "@/lib/utils/cn";
 
 interface DeleteAccountPanelProps {
@@ -45,6 +46,7 @@ export function DeleteAccountPanel({
 
   function handleDelete() {
     setError(null);
+    clearDrFlowClientStorage();
     startTransition(async () => {
       const result = await deleteMyAccount(confirmPhrase);
       if (result?.error) {

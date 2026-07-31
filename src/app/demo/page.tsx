@@ -55,7 +55,7 @@ const MODULES = [
 
 export default function DemoPage() {
   return (
-    <div className="min-h-screen drflow-mesh">
+    <div className="min-h-screen drflow-marketing">
       <header className="border-b border-blue-100/80 bg-white/85 backdrop-blur-md">
         <div className="relative mx-auto flex max-w-4xl items-center justify-between px-4 py-5">
           <DrFlowLogo size="md" href="/" />

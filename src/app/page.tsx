@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
+import { AccountDeletedCleanup } from "@/components/auth/account-deleted-cleanup";
 import { PatientAppLandingSection } from "@/components/landing/patient-app-section";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import {
@@ -42,7 +44,7 @@ const differentiators = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen drflow-mesh">
+    <div className="min-h-screen drflow-marketing">
       <header className="border-b border-blue-100/80 bg-white/85 backdrop-blur-md">
         <div className="relative mx-auto flex max-w-6xl items-center justify-end px-4 py-5">
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -60,6 +62,9 @@ export default function HomePage() {
       </header>
 
       <section className="mx-auto max-w-6xl px-4 py-16 text-center sm:py-24">
+        <Suspense fallback={null}>
+          <AccountDeletedCleanup />
+        </Suspense>
         <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1 text-sm font-medium text-blue-800">
           <Sparkles className="h-3.5 w-3.5" />
           Hecho para médicos argentinos

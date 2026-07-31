@@ -8,7 +8,7 @@ import {
 
 export default function PrivacidadPage() {
   return (
-    <div className="min-h-screen drflow-mesh">
+    <div className="min-h-screen drflow-marketing">
       <header className="border-b border-slate-200 bg-white/90 px-4 py-4">
         <div className="mx-auto flex max-w-3xl justify-center py-2">
           <DrFlowLogo size="lg" href="/" />

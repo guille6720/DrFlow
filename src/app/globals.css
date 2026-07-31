@@ -93,6 +93,42 @@ button {
     radial-gradient(at 100% 100%, rgba(13, 148, 136, 0.15) 0, transparent 50%);
 }
 
+/* Sitio público / marketing: siempre tema claro original */
+.drflow-marketing {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  background-color: #f8fafc;
+  background-image: none;
+  color: #0f172a;
+}
+
+html[data-ui-style="2"] .drflow-marketing,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-marketing {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  background-color: #f8fafc !important;
+  background-image: none !important;
+  color: #0f172a !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-marketing :is(.text-slate-900, .text-slate-800) {
+  color: #0f172a !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-marketing :is(.text-slate-600, .text-slate-700, .text-slate-500) {
+  color: #475569 !important;
+}
+
+.drflow-marketing .drflow-ui-input {
+  border-color: #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.drflow-marketing .drflow-ui-input::placeholder {
+  color: #94a3b8 !important;
+}
+
 .drflow-sidebar-gradient {
   background: linear-gradient(180deg, #0f172a 0%, #1e293b 55%, #0f172a 100%);
 }

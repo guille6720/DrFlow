@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useRef, useState, useEffect } from "react";
 import { signUpClinic } from "@/lib/actions/auth";
+import { AccountDeletedCleanup } from "@/components/auth/account-deleted-cleanup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { registerClinicSchema } from "@/lib/validations/schemas";
@@ -37,7 +38,6 @@ function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isTrial = searchParams.get("trial") === "30";
-  const accountDeleted = searchParams.get("cuenta") === "eliminada";
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState<1 | 2>(1);
   const [formError, setFormError] = useState<string | null>(null);
@@ -192,15 +192,9 @@ function RegisterForm() {
             Creá tu cuenta y configurá tu consultorio en dos pasos.
           </p>
 
-          {accountDeleted && (
-            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">
-              Tu cuenta fue eliminada. Podés registrar un nuevo consultorio acá o{" "}
-              <Link href="/" className="font-medium text-teal-700 underline-offset-2 hover:underline">
-                volver al sitio web
-              </Link>
-              .
-            </div>
-          )}
+          <Suspense fallback={null}>
+            <AccountDeletedCleanup />
+          </Suspense>
 
           {isTrial && (
             <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">

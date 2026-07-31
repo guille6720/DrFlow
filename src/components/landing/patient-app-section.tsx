@@ -7,10 +7,8 @@ import { Input } from "@/components/ui/input";
 import { AppInstallCard } from "@/components/portal/app-install-card";
 import { Smartphone, Calendar, Pill, MessageCircle } from "lucide-react";
 
-const DEMO_SLUG = "drflow";
-
 export function PatientAppLandingSection() {
-  const [slug, setSlug] = useState(DEMO_SLUG);
+  const [slug, setSlug] = useState("");
 
   const normalizedSlug = slug.trim().toLowerCase();
   const portalUrl = normalizedSlug ? `/portal/${normalizedSlug}` : null;
@@ -47,20 +45,26 @@ export function PatientAppLandingSection() {
             </ul>
 
             <div className="mt-8">
-              <AppInstallCard variant="patient" slug={normalizedSlug || DEMO_SLUG} />
+              {normalizedSlug ? (
+                <AppInstallCard variant="patient" slug={normalizedSlug} />
+              ) : (
+                <p className="text-sm text-slate-500">
+                  Ingresá el identificador del consultorio a la derecha para ver la app de pacientes.
+                </p>
+              )}
             </div>
           </div>
 
           <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-lg shadow-blue-900/5">
             <h3 className="font-semibold text-slate-900">Acceder al portal del consultorio</h3>
             <p className="mt-1 text-sm text-slate-500">
-              Ingresá el identificador que te dio tu médico. Demo:{" "}
-              <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{DEMO_SLUG}</code>
+              Ingresá el identificador que te dio tu médico (el slug del portal, ej.{" "}
+              <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">mi-consultorio</code>).
             </p>
             <div className="mt-4">
               <Input
                 label="Identificador del consultorio"
-                placeholder={`ej: ${DEMO_SLUG}`}
+                placeholder="ej: mi-consultorio"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
               />
