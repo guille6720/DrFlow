@@ -491,10 +491,36 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .rounded-2xl.border-2.bord
   box-shadow: none !important;
 }
 
-html[data-ui-style="2"] .drflow-ui-stat {
+html[data-ui-style="2"] .drflow-ui-stat:not(.drflow-card-light):not(.bg-white) {
   box-shadow: none !important;
   border: 1px solid var(--border) !important;
   background: var(--card) !important;
+}
+
+/* Stat cards blancas: nunca heredar fondo oscuro del tema clínico */
+html[data-ui-style="2"] .drflow-ui-stat.drflow-card-light,
+html[data-ui-style="2"] .drflow-ui-stat.bg-white {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow:
+    0 1px 3px 0 rgb(15 23 42 / 0.08),
+    0 1px 2px -1px rgb(15 23 42 / 0.06) !important;
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-stat.drflow-card-light :is(.text-slate-900, .text-slate-800, .text-slate-700, .font-bold, .font-semibold, .font-medium),
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-stat.bg-white :is(.text-slate-900, .text-slate-800, .text-slate-700, .font-bold, .font-semibold, .font-medium),
+html:not([data-ui-style="2"]) .drflow-ui-stat.drflow-card-light :is(.text-slate-900, .text-slate-800, .text-slate-700, .font-bold, .font-semibold, .font-medium) {
+  color: #0f172a !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-stat.drflow-card-light :is(.text-slate-500, .text-slate-600, .text-slate-400),
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-stat.bg-white :is(.text-slate-500, .text-slate-600, .text-slate-400),
+html:not([data-ui-style="2"]) .drflow-ui-stat.drflow-card-light :is(.text-slate-500, .text-slate-600, .text-slate-400) {
+  color: #475569 !important;
 }
 
 /* ——— Campos de formulario (legibles en tarjetas oscuras) ——— */
@@ -588,7 +614,7 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(p, span, l
   color: #cbd5e1;
 }
 
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-stat .text-slate-900 {
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-stat:not(.drflow-card-light):not(.bg-white) .text-slate-900 {
   color: #f8fafc;
 }
 
@@ -602,7 +628,7 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-stat.bg-white .text-s
   color: #64748b !important;
 }
 
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-stat .text-slate-500 {
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-stat:not(.drflow-card-light):not(.bg-white) .text-slate-500 {
   color: #94a3b8;
 }
 
@@ -830,6 +856,15 @@ html:not([data-ui-style="2"]) .drflow-mesh main .drflow-appointment-list .font-m
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh main .drflow-appointment-list .font-medium {
   color: #0f172a;
+}
+
+/* Islas claras: texto nítido sobre fondo blanco (stats, listas, formularios) */
+.drflow-mesh .drflow-card-light,
+.drflow-mesh .drflow-surface-light,
+.drflow-card-body .drflow-card-light {
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
 }
 
 /* ——— Islas claras: legibilidad global (listas pacientes, stats, formularios) ——— */

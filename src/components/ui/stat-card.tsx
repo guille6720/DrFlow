@@ -19,16 +19,16 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "drflow-card-light rounded-2xl border border-slate-200/90 bg-white p-5 text-slate-900 shadow-md shadow-slate-200/40 transition-shadow hover:shadow-lg hover:shadow-teal-100/40 drflow-card-accent drflow-ui-stat",
+        "drflow-card-light rounded-2xl border border-slate-200 bg-white p-5 text-slate-900 shadow-md shadow-slate-200/40 transition-shadow hover:shadow-lg hover:shadow-teal-100/40 drflow-card-accent drflow-ui-stat",
         className
       )}
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-slate-500">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900">{value}</p>
+          <p className="text-sm font-semibold text-slate-600">{title}</p>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{value}</p>
           {subtitle && (
-            <p className="mt-1 text-xs text-slate-400">{subtitle}</p>
+            <p className="mt-1 text-xs font-medium text-slate-600">{subtitle}</p>
           )}
         </div>
         {icon && (
