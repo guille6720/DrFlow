@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { X, UserCircle, Shield, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ interface UserAccountModalProps {
 
 export function UserAccountModal({ open, onClose, role: roleProp }: UserAccountModalProps) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [pending, startTransition] = useTransition();
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -32,6 +34,10 @@ export function UserAccountModal({ open, onClose, role: roleProp }: UserAccountM
   const [account, setAccount] = useState<Awaited<ReturnType<typeof loadMyUserAccount>>["data"]>();
   const [defaults, setDefaults] = useState<DoctorSetupDefaultValues>({});
   const [formKey, setFormKey] = useState(0);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -87,7 +93,7 @@ export function UserAccountModal({ open, onClose, role: roleProp }: UserAccountM
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
   const displayRole = account?.role ?? roleProp;
 
@@ -129,9 +135,9 @@ export function UserAccountModal({ open, onClose, role: roleProp }: UserAccountM
     });
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[200] overflow-y-auto overscroll-contain"
+      className="fixed inset-0 z-[9999] overflow-y-auto overscroll-contain"
       role="dialog"
       aria-modal="true"
       aria-labelledby="user-account-title"
@@ -144,7 +150,7 @@ export function UserAccountModal({ open, onClose, role: roleProp }: UserAccountM
       />
 
       <div className="relative flex min-h-full items-start justify-center p-4 py-8 sm:items-center sm:py-10">
-        <div className="relative z-10 w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl">
+        <div className="drflow-card-light relative z-10 w-full max-w-lg rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl">
           <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
             <div>
               <h2 id="user-account-title" className="text-lg font-semibold text-slate-900">
@@ -284,6 +290,7 @@ export function UserAccountModal({ open, onClose, role: roleProp }: UserAccountM
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
