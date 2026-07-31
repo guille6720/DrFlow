@@ -130,7 +130,7 @@ export function DoctorProfileModal({ open, onClose }: DoctorProfileModalProps) {
         onClick={onClose}
       />
 
-      <div className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-blue-100 bg-white shadow-xl">
+      <div className="drflow-card-light relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-blue-100 bg-white text-slate-900 shadow-xl">
         <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 bg-white px-5 py-4">
           <div>
             <h2 id="doctor-profile-title" className="text-lg font-semibold text-slate-900">
