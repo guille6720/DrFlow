@@ -112,22 +112,22 @@ export function CashClosureView({
       <Card title="Confirmar cierre">
         <form onSubmit={handleClose} className="max-w-md space-y-3">
           <div>
-            <label className="text-sm">Diferencia de caja ($)</label>
+            <label className="drflow-ui-label text-sm">Diferencia de caja ($)</label>
             <input
               type="number"
               step="0.01"
               value={diff}
               onChange={(e) => setDiff(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-600/50 bg-slate-900/40 px-3 py-2"
+              className="drflow-ui-input mt-1 w-full rounded-lg border px-3 py-2"
             />
           </div>
           <div>
-            <label className="text-sm">Observaciones</label>
+            <label className="drflow-ui-label text-sm">Observaciones</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="mt-1 w-full rounded-lg border border-slate-600/50 bg-slate-900/40 px-3 py-2 text-sm"
+              className="drflow-ui-input mt-1 w-full rounded-lg border px-3 py-2 text-sm"
             />
           </div>
           <Button type="submit" loading={pending}>

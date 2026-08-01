@@ -14,7 +14,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="space-y-1">
         {label && (
-          <label htmlFor={selectId} className="drflow-ui-label block text-sm font-medium text-slate-700">
+          <label htmlFor={selectId} className="drflow-ui-label block text-sm font-medium">
             {label}
           </label>
         )}

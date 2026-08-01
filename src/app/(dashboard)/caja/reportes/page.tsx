@@ -70,8 +70,8 @@ export default async function CajaReportesPage({
         </Link>
         <Card title={`Ingresos: $${total.toLocaleString("es-AR")} (${collected.length} cobros)`}>
           <form className="mb-4 flex flex-wrap gap-2">
-            <input type="date" name="from" defaultValue={from} className="rounded-lg border px-2 py-1 text-sm" />
-            <input type="date" name="to" defaultValue={to} className="rounded-lg border px-2 py-1 text-sm" />
+            <input type="date" name="from" defaultValue={from} className="drflow-ui-input rounded-lg border px-2 py-1 text-sm" />
+            <input type="date" name="to" defaultValue={to} className="drflow-ui-input rounded-lg border px-2 py-1 text-sm" />
             <Button type="submit" size="sm">
               Filtrar
             </Button>

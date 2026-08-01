@@ -98,7 +98,7 @@ export function AdminDocumentsPanel({
           placeholder="Título (opcional)"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full rounded-lg border px-3 py-2 text-sm"
+          className="drflow-ui-input w-full rounded-lg border px-3 py-2 text-sm"
         />
         <input
           ref={fileRef}

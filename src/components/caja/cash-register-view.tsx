@@ -92,7 +92,7 @@ export function CashRegisterView({
         </p>
         <form onSubmit={handleCharge} className="grid gap-4 lg:grid-cols-2">
           <div className="lg:col-span-2">
-            <label className="mb-1 block text-sm font-medium">Paciente</label>
+            <label className="drflow-ui-label mb-1 block text-sm font-medium">Paciente</label>
             <div className="relative mb-2">
               <Search className="absolute left-3 top-2.5 h-4 w-4 opacity-40" />
               <input
@@ -100,14 +100,14 @@ export function CashRegisterView({
                 placeholder="Buscar por nombre o DNI…"
                 value={patientSearch}
                 onChange={(e) => setPatientSearch(e.target.value)}
-                className="w-full rounded-xl border border-slate-600/50 bg-slate-900/40 py-2 pl-9 pr-3 text-sm"
+                className="drflow-ui-input w-full rounded-xl border py-2 pl-9 pr-3 text-sm"
               />
             </div>
             <select
               required
               value={patientId}
               onChange={(e) => setPatientId(e.target.value)}
-              className="w-full rounded-xl border border-slate-600/50 bg-slate-900/40 px-3 py-2.5 text-sm"
+              className="drflow-ui-input drflow-ui-select w-full rounded-xl border px-3 py-2.5 text-sm"
               size={Math.min(5, Math.max(3, filteredPatients.length))}
             >
               <option value="">— Elegir paciente —</option>
@@ -151,14 +151,14 @@ export function CashRegisterView({
 
           <input type="hidden" name="motive" value="" />
           <div>
-            <label className="mb-1 block text-sm font-medium">Importe ($)</label>
+            <label className="drflow-ui-label mb-1 block text-sm font-medium">Importe ($)</label>
             <input
               name="amount"
               type="number"
               step="0.01"
               min="0.01"
               required
-              className="w-full rounded-xl border border-slate-600/50 bg-slate-900/40 px-3 py-3 text-lg font-semibold"
+              className="drflow-ui-input w-full rounded-xl border px-3 py-3 text-lg font-semibold"
               placeholder="0,00"
             />
           </div>

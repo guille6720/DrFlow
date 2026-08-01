@@ -94,7 +94,7 @@ export default async function CuentaCorrientePage({
         </Link>
         <Card title="Paciente">
           <form method="get" className="flex flex-wrap gap-2">
-            <select name="patient" defaultValue={patientId ?? ""} className="min-w-[240px] rounded-lg border px-3 py-2 text-sm">
+            <select name="patient" defaultValue={patientId ?? ""} className="drflow-ui-input drflow-ui-select min-w-[240px] rounded-lg border px-3 py-2 text-sm">
               <option value="">— Elegir —</option>
               {(patients ?? []).map((p) => (
                 <option key={p.id} value={p.id}>

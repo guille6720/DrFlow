@@ -80,13 +80,13 @@ export function PatientSearchCombobox({
 
   return (
     <div className="relative space-y-1">
-      <label className="block text-sm font-medium text-slate-300">
+      <label className="drflow-ui-label block text-sm font-medium">
         {label}
         {required ? <span className="text-red-400"> *</span> : null}
       </label>
       <input type="hidden" name={name} value={selectedId} required={required} />
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-teal-400/80" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-teal-500/80" />
         <input
           type="search"
           autoComplete="off"
@@ -99,15 +99,12 @@ export function PatientSearchCombobox({
           }}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          className={cn(
-            "w-full rounded-xl border border-slate-600 bg-slate-900/80 py-2.5 pl-10 pr-3 text-sm text-slate-100",
-            "placeholder:text-slate-500 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/30"
-          )}
+          className="drflow-ui-input w-full rounded-xl border py-2.5 pl-10 pr-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/30"
         />
       </div>
       {open && filtered.length > 0 && (
         <ul
-          className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-slate-600 bg-slate-900 py-1 shadow-xl shadow-black/40"
+          className="drflow-ui-dropdown absolute mt-1 max-h-56 w-full overflow-y-auto rounded-xl py-1"
           onMouseDown={(e) => e.preventDefault()}
         >
           {filtered.map((p) => (
@@ -115,22 +112,23 @@ export function PatientSearchCombobox({
               <button
                 type="button"
                 className={cn(
-                  "w-full px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800",
+                  "drflow-ui-dropdown-item w-full px-3 py-2 text-left text-sm",
                   selectedId === p.id && "bg-teal-950/60 text-teal-200"
                 )}
+                aria-selected={selectedId === p.id}
                 onClick={() => pick(p)}
               >
                 <span className="font-medium">
                   {p.last_name}, {p.first_name}
                 </span>
-                <span className="ml-2 text-xs text-slate-500">DNI {p.document_number}</span>
+                <span className="ml-2 text-xs opacity-70">DNI {p.document_number}</span>
               </button>
             </li>
           ))}
         </ul>
       )}
       {open && query.trim() && filtered.length === 0 && (
-        <p className="absolute z-20 mt-1 w-full rounded-xl border border-slate-600 bg-slate-900 px-3 py-2 text-xs text-slate-400 shadow-lg">
+        <p className="drflow-ui-dropdown absolute mt-1 w-full rounded-xl px-3 py-2 text-xs opacity-80">
           Sin coincidencias. Probá otro nombre o DNI.
         </p>
       )}

@@ -550,19 +550,108 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-ui-input:fo
   border-color: #2dd4bf;
 }
 
-/* Select nativo: el desplegable del SO usa fondo claro; opciones siempre legibles */
-select.drflow-ui-input {
+/* Select nativo + listbox: desplegable del SO siempre legible (Windows/Chrome) */
+.drflow-card-body select,
+.drflow-mesh main select,
+select.drflow-ui-select {
   color-scheme: light;
 }
 
-select.drflow-ui-input option {
+.drflow-card-body select option,
+.drflow-mesh main select option,
+select.drflow-ui-select option,
+.drflow-card-body select optgroup,
+.drflow-mesh main select optgroup,
+select.drflow-ui-select optgroup {
   background-color: #ffffff;
   color: #0f172a;
 }
 
-select.drflow-ui-input option:checked {
+.drflow-card-body select option:checked,
+.drflow-mesh main select option:checked,
+select.drflow-ui-select option:checked {
   background-color: #e0f2fe;
   color: #0f172a;
+}
+
+/* select[size]: listbox visible en tarjeta oscura */
+.drflow-card-body select[size],
+.drflow-mesh main select[size] {
+  color-scheme: dark;
+}
+
+.drflow-card-body select[size] option,
+.drflow-mesh main select[size] option {
+  background-color: #1e293b;
+  color: #f8fafc;
+}
+
+.drflow-card-body select[size] option:checked,
+.drflow-mesh main select[size] option:checked {
+  background-color: #0f766e;
+  color: #f0fdfa;
+}
+
+/* Date/time nativos: calendario legible sobre fondos oscuros */
+.drflow-card-body input[type="date"],
+.drflow-card-body input[type="time"],
+.drflow-card-body input[type="datetime-local"],
+.drflow-card-body input[type="month"],
+.drflow-card-body input[type="week"],
+.drflow-mesh main input[type="date"],
+.drflow-mesh main input[type="time"],
+.drflow-mesh main input[type="datetime-local"],
+.drflow-mesh main input[type="month"],
+.drflow-mesh main input[type="week"] {
+  color-scheme: light;
+}
+
+/* Listas desplegables custom (combobox, autocompletado) */
+.drflow-ui-dropdown {
+  z-index: 30;
+  border: 1px solid #475569;
+  background-color: #0f172a;
+  color: #f8fafc;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.35);
+}
+
+.drflow-ui-dropdown-item {
+  color: #e2e8f0;
+}
+
+.drflow-ui-dropdown-item:hover,
+.drflow-ui-dropdown-item[aria-selected="true"] {
+  background-color: #1e293b;
+  color: #99f6e4;
+}
+
+.drflow-card-light .drflow-ui-dropdown,
+.drflow-card-body .drflow-card-light .drflow-ui-dropdown {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+.drflow-card-light .drflow-ui-dropdown-item {
+  color: #334155;
+}
+
+.drflow-card-light .drflow-ui-dropdown-item:hover,
+.drflow-card-light .drflow-ui-dropdown-item[aria-selected="true"] {
+  background-color: #f0fdfa;
+  color: #0f766e;
+}
+
+/* Etiquetas de formulario en tarjetas oscuras (sin clase explícita) */
+.drflow-card-body label.drflow-ui-label,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body label.drflow-ui-label,
+html:not([data-ui-style="2"]) .drflow-card-body label.drflow-ui-label {
+  color: #e2e8f0;
+}
+
+.drflow-card-body .drflow-card-light label.drflow-ui-label,
+.drflow-card-body :is(.bg-white, .bg-slate-50) label.drflow-ui-label {
+  color: #334155;
 }
 
 /* Islas claras: inputs siempre oscuros sobre fondo claro */
@@ -580,7 +669,7 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-card-body label.dr
 }
 
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body .drflow-ui-label,
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body label {
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body label.drflow-ui-label {
   color: #e2e8f0;
 }
 
