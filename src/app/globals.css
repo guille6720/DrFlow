@@ -550,6 +550,21 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-ui-input:fo
   border-color: #2dd4bf;
 }
 
+/* Select nativo: el desplegable del SO usa fondo claro; opciones siempre legibles */
+select.drflow-ui-input {
+  color-scheme: light;
+}
+
+select.drflow-ui-input option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+select.drflow-ui-input option:checked {
+  background-color: #e0f2fe;
+  color: #0f172a;
+}
+
 /* Islas claras: inputs siempre oscuros sobre fondo claro */
 .drflow-card-body .drflow-card-light .drflow-ui-input,
 .drflow-card-body :is(.bg-white, .bg-slate-50, .bg-slate-50\\/80) .drflow-ui-input,
@@ -684,11 +699,6 @@ html[data-ui-style="2"][data-clinical-dark="1"] .rounded-2xl.border-2.border-amb
   background: #0f172a !important;
   color: #f8fafc !important;
   border-color: #64748b !important;
-}
-
-html[data-ui-style="2"][data-clinical-dark="1"] select.drflow-ui-input option {
-  background: #0f172a;
-  color: #f8fafc;
 }
 
 /* Header: selector de clínica en modo oscuro */
