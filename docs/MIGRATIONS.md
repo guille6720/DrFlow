@@ -17,7 +17,8 @@ En producción existente, aplicar solo archivos **pendientes** (idempotentes cua
 | 026–029 | Cancelaciones, storage, modalidad consulta |
 | **030** | `accepted_coverages` + RPC PAMI |
 | **031** | Google OAuth → `profiles.full_name` |
-| **032** | `trial_ends_at` (prueba 30 días) |
+| **032** | `trial_ends_at` (prueba 10 días) |
+| **041** | `patients.insurance_plan` (plan de cobertura) |
 
 ---
 
@@ -43,6 +44,7 @@ Pegar y ejecutar **en orden**, uno por archivo:
 1. `supabase/migrations/030_clinic_accepted_coverages.sql`
 2. `supabase/migrations/031_google_profile_name.sql`
 3. `supabase/migrations/032_clinic_trial.sql`
+4. `supabase/migrations/041_patients_insurance_plan.sql`
 
 ### Opción C — Todas desde cero en entorno vacío
 

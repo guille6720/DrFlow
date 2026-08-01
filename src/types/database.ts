@@ -76,6 +76,7 @@ export interface Patient {
   email: string | null;
   address: string | null;
   insurance_provider: string | null;
+  insurance_plan: string | null;
   insurance_number: string | null;
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;

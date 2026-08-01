@@ -15,6 +15,13 @@ function isAdminOnlyRole(role: UserRole | null, isSuperadmin: boolean): boolean 
   return role != null && ADMIN_ONLY_ROLES.includes(role);
 }
 
+function mapPatientDbError(message: string): string {
+  if (message.includes("insurance_plan")) {
+    return "Falta actualizar la base de datos (columna insurance_plan). En Supabase → SQL Editor ejecutá supabase/migrations/041_patients_insurance_plan.sql y volvé a intentar.";
+  }
+  return message;
+}
+
 export async function createPatient(formData: FormData) {
   const access = await requireClinicPermission("managePatients");
   if (!access.ok) return { error: access.error };
@@ -76,7 +83,7 @@ export async function createPatient(formData: FormData) {
         .select()
         .single();
 
-  if (error) return { error: error.message };
+  if (error) return { error: mapPatientDbError(error.message) };
 
   await logAudit({
     clinicId,
@@ -124,7 +131,7 @@ export async function updatePatient(id: string, formData: FormData) {
       })
       .eq("id", id)
       .eq("clinic_id", clinicId);
-    if (error) return { error: error.message };
+    if (error) return { error: mapPatientDbError(error.message) };
   } else {
     const { error } = await supabase
       .from("patients")
@@ -136,7 +143,7 @@ export async function updatePatient(id: string, formData: FormData) {
       })
       .eq("id", id)
       .eq("clinic_id", clinicId);
-    if (error) return { error: error.message };
+    if (error) return { error: mapPatientDbError(error.message) };
   }
 
   await logAudit({ clinicId, entityType: "patient", entityId: id, action: "update" });

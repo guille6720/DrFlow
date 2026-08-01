@@ -21,6 +21,7 @@ Alternativa: pegar en Supabase SQL Editor (ver docs/MIGRATIONS.md):
   supabase/migrations/030_clinic_accepted_coverages.sql
   supabase/migrations/031_google_profile_name.sql
   supabase/migrations/032_clinic_trial.sql
+  supabase/migrations/041_patients_insurance_plan.sql
 `);
   process.exit(1);
 }
@@ -29,6 +30,7 @@ const pending = [
   "030_clinic_accepted_coverages.sql",
   "031_google_profile_name.sql",
   "032_clinic_trial.sql",
+  "041_patients_insurance_plan.sql",
 ];
 
 console.log(`\n🔧 DrFlow — Migraciones P0 (${pending.length} archivos)\n`);

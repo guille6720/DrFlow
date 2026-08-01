@@ -124,6 +124,22 @@ async function main() {
     console.log(`⚠ Verificación esquema clinics: HTTP ${schemaRes.status}`);
   }
 
+  const planRes = await fetch(`${url}/rest/v1/patients?select=id,insurance_plan&limit=1`, {
+    headers: {
+      apikey: schemaKey,
+      Authorization: schemaAuth,
+    },
+  });
+  const planBody = await planRes.text();
+  if (planRes.status === 400 && planBody.includes("insurance_plan")) {
+    console.log("❌ Columna patients.insurance_plan — migración 041 pendiente");
+    allOk = false;
+  } else if (planRes.ok) {
+    console.log("✓ Columna patients.insurance_plan");
+  } else {
+    console.log(`⚠ Verificación insurance_plan: HTTP ${planRes.status}`);
+  }
+
   // RPC pública (404 = no expuesta; 400/500 con mensaje de negocio = existe)
   const rpc = await fetch(`${url}/rest/v1/rpc/submit_public_booking`, {
     method: "POST",
