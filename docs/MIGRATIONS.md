@@ -22,7 +22,17 @@ En producción existente, aplicar solo archivos **pendientes** (idempotentes cua
 
 ---
 
-## Producción — P0 pendiente típico (030–032)
+## Producción — pendiente típico (030–041)
+
+Guía paso a paso: **`docs/SUPABASE_PENDIENTE.md`**
+
+```powershell
+npm run migrate:production-pending
+```
+
+---
+
+## Producción — P0 mínimo (030–032 + 041)
 
 Si el deploy menciona migraciones solo hasta 020, faltan **030–032** (y posiblemente 021–029).
 
