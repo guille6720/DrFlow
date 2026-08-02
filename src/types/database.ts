@@ -54,6 +54,7 @@ export interface Clinic {
   legal_terms_accepted_at?: string | null;
   legal_privacy_version?: string | null;
   accepted_coverages?: string[] | null;
+  voice_input_enabled?: boolean;
 }
 
 export interface ClinicMember {
@@ -107,6 +108,14 @@ export interface Professional {
   license_provincial?: string | null;
   display_name: string | null;
   bio: string | null;
+  document_number?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  office_phone?: string | null;
+  office_address?: string | null;
+  accepted_insurances?: string | null;
+  intake_notes?: string | null;
+  intake_completed_at?: string | null;
   is_active: boolean;
   profiles?: Profile;
   specialties?: { name: string };

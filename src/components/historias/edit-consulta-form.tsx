@@ -69,10 +69,10 @@ export function EditConsultaForm({
             {record.appointment_id && (
               <input type="hidden" name="appointment_id" value={record.appointment_id} />
             )}
-            <Textarea name="chief_complaint" label="Motivo de consulta" defaultValue={record.chief_complaint ?? ""} />
-            <Textarea name="diagnosis" label="Diagnóstico" defaultValue={record.diagnosis ?? ""} />
-            <Textarea name="evolution" label="Evolución" defaultValue={record.evolution ?? ""} />
-            <Textarea name="indications" label="Indicaciones" defaultValue={record.indications ?? ""} />
+            <Textarea name="chief_complaint" label="Motivo de consulta" defaultValue={record.chief_complaint ?? ""} voiceInput />
+            <Textarea name="diagnosis" label="Diagnóstico" defaultValue={record.diagnosis ?? ""} voiceInput />
+            <Textarea name="evolution" label="Evolución" defaultValue={record.evolution ?? ""} voiceInput />
+            <Textarea name="indications" label="Indicaciones" defaultValue={record.indications ?? ""} voiceInput />
             <Input name="professional_signature" label="Firma profesional" defaultValue={record.professional_signature ?? ""} />
             {error && <p className="text-sm text-red-600">{error}</p>}
             <Button type="submit" loading={loading}>Guardar cambios</Button>

@@ -23,6 +23,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Banknote,
+  UserPlus,
   Armchair,
   FolderOpen,
 } from "lucide-react";
@@ -47,6 +48,7 @@ type NavItem = {
     | "manageCashRegister"
     | "manageWaitingRoom"
     | "manageAdminDocuments"
+    | "manageStaff"
     | "viewReports"
     | "manageSettings"
     | null;
@@ -60,6 +62,7 @@ const navItems: NavItem[] = [
   { href: "/pacientes", label: "Pacientes", icon: Users, permission: "managePatients" },
   { href: "/caja", label: "Caja", icon: Banknote, permission: "manageCashRegister" },
   { href: "/secretaria/documentos", label: "Docs administrativos", icon: FolderOpen, permission: "manageAdminDocuments" },
+  { href: "/ingreso-profesionales", label: "Ingreso de profesionales", icon: UserPlus, permission: "manageStaff" },
   { href: "/historias", label: "Historia clínica", icon: FileText, permission: "viewClinicalRecords" },
   { href: "/datos", label: "Importar / Exportar", icon: ArrowDownUp, permission: null },
   { href: "/recetas", label: "Recetas electrónicas", icon: ScrollText, permission: "issuePrescriptions" },

@@ -7,7 +7,7 @@ export const SECURITY_RESPONSE_HEADERS: ReadonlyArray<{ key: string; value: stri
   { key: "X-Frame-Options", value: "DENY" },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), payment=()",
+    value: "camera=(), microphone=(self), geolocation=(), payment=()",
   },
   {
     key: "Strict-Transport-Security",

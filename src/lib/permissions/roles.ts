@@ -73,6 +73,7 @@ export function canAccessRoute(
     "/caja": "manageCashRegister",
     "/sala-espera": "manageWaitingRoom",
     "/secretaria": "manageAdminDocuments",
+    "/ingreso-profesionales": "manageStaff",
   };
 
   for (const [prefix, permission] of Object.entries(routePermissions)) {

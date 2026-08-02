@@ -4,11 +4,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useUiTheme } from "@/components/theme/ui-theme-provider";
 import { UI_STYLE_LABELS, type UiStyleId } from "@/lib/theme/ui-theme";
-import { LayoutGrid, Moon, Sun } from "lucide-react";
+import { LayoutGrid, Mic, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { useVoiceInputOptional } from "@/components/voice/voice-input-provider";
 
 export function AppearanceStylePanel() {
   const { style, clinicalDark, setStyle, setClinicalDark } = useUiTheme();
+  const voice = useVoiceInputOptional();
 
   return (
     <Card
@@ -75,6 +77,40 @@ export function AppearanceStylePanel() {
             </div>
           </div>
         )}
+
+        {voice ? (
+          <div className="rounded-xl border border-slate-500/50 bg-slate-800/30 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="flex items-center gap-2 font-semibold text-slate-50">
+                  <Mic className="h-4 w-4 text-teal-300" />
+                  Dictado por voz (historias clínicas)
+                </p>
+                <p className="mt-1 text-xs text-slate-300">
+                  {voice.clinicEnabled
+                    ? voice.userEnabled
+                      ? "Activo en este navegador. Usá el botón Dictar junto a cada campo de texto."
+                      : "Desactivado en este navegador. Podés volver a activarlo cuando quieras."
+                    : "El administrador del consultorio desactivó el dictado por voz."}
+                  {!voice.browserSupported && voice.clinicEnabled ? (
+                    <span className="mt-1 block text-amber-300/90">
+                      Tu navegador no soporta reconocimiento de voz (probá Chrome o Edge).
+                    </span>
+                  ) : null}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant={voice.userEnabled ? "primary" : "outline"}
+                size="sm"
+                disabled={!voice.clinicEnabled || !voice.envEnabled}
+                onClick={() => voice.setUserEnabled(!voice.userEnabled)}
+              >
+                {voice.userEnabled ? "Desactivar dictado" : "Activar dictado"}
+              </Button>
+            </div>
+          </div>
+        ) : null}
 
         <p className="text-xs text-slate-400">
           La preferencia se guarda en este navegador (Estilo 2 + dark mode). Estilo 1 mantiene el

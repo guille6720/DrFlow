@@ -31,12 +31,15 @@ export async function updateClinicSettings(formData: FormData) {
         String(formData.get("default_appointment_duration") ?? "30"),
         10
       ),
+      voice_input_enabled: formData.get("voice_input_enabled") === "on",
     })
     .eq("id", clinicId);
 
   if (error) return { error: error.message };
   revalidatePath("/configuracion");
   revalidatePath("/agenda");
+  revalidatePath("/historias");
+  revalidatePath("/historias/nueva");
   return { success: true };
 }
 

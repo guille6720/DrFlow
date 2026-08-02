@@ -12,6 +12,7 @@ import { PwaRegister } from "@/components/pwa/pwa-register";
 import { UpdateBanner } from "@/components/updates/update-banner";
 import { TrialBanner } from "@/components/trial/trial-banner";
 import { UiThemeProvider } from "@/components/theme/ui-theme-provider";
+import { VoiceInputProvider } from "@/components/voice/voice-input-provider";
 import { getDashboardShell, logAudit } from "@/lib/auth/session";
 import { canAccessRoute } from "@/lib/permissions/roles";
 import {
@@ -97,6 +98,7 @@ export default async function DashboardLayout({
       )}
       <DashboardSidebarProvider>
         <UiThemeProvider>
+        <VoiceInputProvider clinicVoiceInputEnabled={clinic?.voice_input_enabled !== false}>
         <Sidebar
           clinicName={clinic?.name}
           role={role}
@@ -109,6 +111,7 @@ export default async function DashboardLayout({
           </Suspense>
           {children}
         </DashboardMain>
+        </VoiceInputProvider>
         </UiThemeProvider>
       </DashboardSidebarProvider>
       <FloatingActions />

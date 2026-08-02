@@ -161,16 +161,16 @@ export default function NuevaConsultaForm({
                 <input type="hidden" name="patient_id" value={defaultPatient} />
                 <input type="hidden" name="professional_id" value={defaultProfessional} />
                 <div className={cn(activeStep !== "motivo" && "hidden")}>
-                  <Textarea name="chief_complaint" label="Motivo de consulta" required rows={4} />
+                  <Textarea name="chief_complaint" label="Motivo de consulta" required rows={4} voiceInput />
                 </div>
                 <div className={cn(activeStep !== "evolucion" && "hidden")}>
-                  <Textarea name="evolution" label="Evolución / Examen físico" rows={5} />
+                  <Textarea name="evolution" label="Evolución / Examen físico" rows={5} voiceInput />
                 </div>
                 <div className={cn(activeStep !== "diagnostico" && "hidden")}>
-                  <Textarea name="diagnosis" label="Diagnóstico" rows={4} />
+                  <Textarea name="diagnosis" label="Diagnóstico" rows={4} voiceInput />
                 </div>
                 <div className={cn(activeStep !== "indicaciones" && "hidden")}>
-                  <Textarea name="indications" label="Indicaciones / Plan terapéutico" rows={4} />
+                  <Textarea name="indications" label="Indicaciones / Plan terapéutico" rows={4} voiceInput />
                 </div>
               </>
             ) : (
@@ -199,10 +199,10 @@ export default function NuevaConsultaForm({
                     placeholder="Seleccionar"
                   />
                 </div>
-                <Textarea name="chief_complaint" label="Motivo de consulta" required />
-                <Textarea name="diagnosis" label="Diagnóstico" />
-                <Textarea name="evolution" label="Evolución" />
-                <Textarea name="indications" label="Indicaciones" />
+                <Textarea name="chief_complaint" label="Motivo de consulta" required voiceInput />
+                <Textarea name="diagnosis" label="Diagnóstico" voiceInput />
+                <Textarea name="evolution" label="Evolución" voiceInput />
+                <Textarea name="indications" label="Indicaciones" voiceInput />
               </>
             )}
 
