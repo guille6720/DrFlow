@@ -7,14 +7,18 @@ import { es } from "date-fns/locale";
 import {
   Activity,
   ClipboardList,
+  ExternalLink,
   FileStack,
+  Loader2,
   Pill,
   Plus,
   Printer,
   Stethoscope,
 } from "lucide-react";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
+import { getPatientClinicalDocumentUrl } from "@/lib/actions/patient-attachments";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
+import { HCE_SUMMARY_ATTACHMENT_NAME } from "@/lib/utils/patient-ehr-from-hce";
 import type {
   PatientEhrAttachment,
   PatientEhrConsultation,
@@ -132,9 +136,43 @@ export function PatientEhrView({
     vitals: true,
     prescriptions: true,
   });
+  const [openingAttachmentId, setOpeningAttachmentId] = useState<string | null>(null);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
+
+  const visibleAttachments = useMemo(
+    () => attachments.filter((a) => a.file_name !== HCE_SUMMARY_ATTACHMENT_NAME),
+    [attachments]
+  );
+
+  const attachmentByFileName = useMemo(() => {
+    const map = new Map<string, PatientEhrAttachment>();
+    for (const attachment of visibleAttachments) {
+      map.set(attachment.file_name.toLowerCase(), attachment);
+    }
+    return map;
+  }, [visibleAttachments]);
+
+  async function handleOpenAttachment(id: string) {
+    setOpeningAttachmentId(id);
+    setAttachmentError(null);
+    const result = await getPatientClinicalDocumentUrl(id);
+    setOpeningAttachmentId(null);
+    if (result.error || !result.url) {
+      setAttachmentError(result.error ?? "No se pudo abrir el documento");
+      return;
+    }
+    window.open(result.url, "_blank", "noopener,noreferrer");
+  }
 
   const selected =
     sorted.find((c) => c.id === selectedId) ?? evolutionList[0] ?? sorted[0] ?? null;
+
+  const selectedDocumentAttachment = useMemo(() => {
+    if (!selected || selected.category !== "document") return null;
+    const fileName = selected.diagnosis?.trim().toLowerCase();
+    if (!fileName) return null;
+    return attachmentByFileName.get(fileName) ?? null;
+  }, [attachmentByFileName, selected]);
 
   const patientFormal = `${patient.last_name}, ${patient.first_name}`;
   const patientDisplay = `${patient.first_name} ${patient.last_name}`;
@@ -317,14 +355,37 @@ export function PatientEhrView({
                       · {selected.professional_name}
                     </p>
                     <div className="min-h-[180px] whitespace-pre-wrap text-sm leading-relaxed drflow-ehr-evolution-text">
-                      {evolutionBody(selected)}
+                      {selected.category === "document" ? (
+                        <p>
+                          {selected.diagnosis?.trim() || selected.chief_complaint || "Documento adjunto"}
+                        </p>
+                      ) : (
+                        evolutionBody(selected)
+                      )}
                     </div>
-                    <Link
-                      href={withClinicalHistoryReturn(`/historias/${selected.id}`, patient.id)}
-                      className="mt-3 inline-block text-sm font-semibold text-teal-600 hover:underline"
-                    >
-                      Abrir consulta completa →
-                    </Link>
+                    {selectedDocumentAttachment ? (
+                      <button
+                        type="button"
+                        onClick={() => void handleOpenAttachment(selectedDocumentAttachment.id)}
+                        disabled={openingAttachmentId === selectedDocumentAttachment.id}
+                        className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-teal-600 hover:underline disabled:opacity-60"
+                      >
+                        {openingAttachmentId === selectedDocumentAttachment.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <ExternalLink className="h-4 w-4" />
+                        )}
+                        Abrir {selectedDocumentAttachment.file_name}
+                      </button>
+                    ) : null}
+                    {!selected.id.startsWith("hce-") ? (
+                      <Link
+                        href={withClinicalHistoryReturn(`/historias/${selected.id}`, patient.id)}
+                        className="mt-3 inline-block text-sm font-semibold text-teal-600 hover:underline"
+                      >
+                        Abrir consulta completa →
+                      </Link>
+                    ) : null}
                   </>
                 ) : (
                   <p className="text-sm drflow-ehr-muted">Seleccioná una evolución del listado.</p>
@@ -456,15 +517,32 @@ export function PatientEhrView({
               </section>
             )}
 
-            {filters.files && attachments.length > 0 && (
+            {filters.files && visibleAttachments.length > 0 && (
               <section className="mt-4 drflow-ehr-table-panel overflow-hidden rounded-sm border border-[var(--border)]">
                 <h3 className="drflow-ehr-table-title border-b border-[var(--border)] px-3 py-2 text-sm font-bold">
                   Archivos
                 </h3>
+                {attachmentError ? (
+                  <p className="border-b border-[var(--border)] px-3 py-2 text-xs text-red-600">
+                    {attachmentError}
+                  </p>
+                ) : null}
                 <ul className="divide-y divide-[var(--border)] text-xs">
-                  {attachments.map((a) => (
+                  {visibleAttachments.map((a) => (
                     <li key={a.id} className="px-3 py-2">
-                      {a.file_name}
+                      <button
+                        type="button"
+                        onClick={() => void handleOpenAttachment(a.id)}
+                        disabled={openingAttachmentId === a.id}
+                        className="inline-flex items-center gap-2 font-medium text-teal-600 hover:underline disabled:opacity-60"
+                      >
+                        {openingAttachmentId === a.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        )}
+                        {a.file_name}
+                      </button>
                     </li>
                   ))}
                 </ul>

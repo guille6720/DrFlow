@@ -48,4 +48,30 @@ describe("buildEhrPayloadFromHceRows", () => {
     expect(treatmentRows[0].product).not.toMatch(/Estado:/i);
     expect(consultations).toHaveLength(0);
   });
+
+  it("routes imported files into document consultations", () => {
+    const rows: HceExportRow[] = [
+      {
+        lineNumber: 4,
+        paciente_id: "summary",
+        last_name: "",
+        first_name: "",
+        document_number: null,
+        tipo_registro: "files",
+        fecha_inicio: "2026-08-01",
+        fecha_fin: null,
+        estado: "archivo",
+        diagnostico: "ibarra.pdf",
+        cie10: "",
+        notas: "",
+      },
+    ];
+
+    const { diagnosisRows, consultations } = buildEhrPayloadFromHceRows(rows, "Dr. Test");
+
+    expect(diagnosisRows).toHaveLength(0);
+    expect(consultations).toHaveLength(1);
+    expect(consultations[0].category).toBe("document");
+    expect(consultations[0].diagnosis).toBe("ibarra.pdf");
+  });
 });

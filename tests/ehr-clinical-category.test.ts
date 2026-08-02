@@ -1,8 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { looksLikeMedication } from "@/lib/utils/ehr-clinical-category";
+import { looksLikeClinicalFileName, looksLikeMedication } from "@/lib/utils/ehr-clinical-category";
 import { buildEhrPayloadFromHceRows } from "@/lib/utils/patient-ehr-from-hce";
 import { buildEhrPayloadFromRecords, sanitizeEhrPayload } from "@/lib/utils/patient-ehr-model";
 import type { HceExportRow } from "@/lib/utils/hce-export-parse";
+
+describe("looksLikeClinicalFileName", () => {
+  it("detects attached document names", () => {
+    expect(looksLikeClinicalFileName("ibarra.pdf")).toBe(true);
+    expect(looksLikeClinicalFileName("ibarra2.pdf")).toBe(true);
+    expect(looksLikeClinicalFileName("estudio-2024.jpg")).toBe(true);
+  });
+
+  it("does not classify clinical diagnoses as files", () => {
+    expect(looksLikeClinicalFileName("Diabetes mellitus insulinodependiente")).toBe(false);
+    expect(looksLikeClinicalFileName("Hipertensión esencial (primaria)")).toBe(false);
+  });
+});
 
 describe("looksLikeMedication", () => {
   it("detects prescribed drugs", () => {
@@ -25,6 +38,32 @@ describe("looksLikeMedication", () => {
 });
 
 describe("sanitizeEhrPayload", () => {
+  it("removes file names from diagnostics", () => {
+    const result = sanitizeEhrPayload({
+      consultations: [],
+      diagnosisRows: [
+        {
+          id: "d1",
+          dateLabel: "1-AGO-26",
+          name: "ibarra.pdf",
+          chronic: false,
+          recordId: "rec-1",
+        },
+        {
+          id: "d2",
+          dateLabel: "6-SEP-19",
+          name: "Diabetes mellitus insulinodependiente",
+          chronic: true,
+          recordId: "rec-2",
+        },
+      ],
+      treatmentRows: [],
+    });
+
+    expect(result.diagnosisRows).toHaveLength(1);
+    expect(result.diagnosisRows[0].name).toContain("Diabetes");
+  });
+
   it("moves misclassified drugs from diagnostics to treatments", () => {
     const result = sanitizeEhrPayload({
       consultations: [],
@@ -97,6 +136,32 @@ describe("buildEhrPayloadFromHceRows medication reclassification", () => {
 });
 
 describe("buildEhrPayloadFromRecords medication reclassification", () => {
+  it("does not put imported document names into diagnostics table", () => {
+    const { diagnosisRows, consultations } = buildEhrPayloadFromRecords([
+      {
+        id: "doc-1",
+        created_at: "2026-08-01T20:43:00.000Z",
+        chief_complaint: "[HCE:x:files:2026-08-01:1] Documento adjunto importado (archivo)",
+        diagnosis: "ibarra.pdf",
+        evolution: "",
+        indications: "",
+        professional_name: "Guillermo Castro",
+      },
+      {
+        id: "doc-2",
+        created_at: "2026-08-01T20:43:00.000Z",
+        chief_complaint: "[HCE:x:files:2026-08-01:2] Documento adjunto importado (archivo)",
+        diagnosis: "ibarra2.pdf",
+        evolution: "",
+        indications: "",
+        professional_name: "Guillermo Castro",
+      },
+    ]);
+
+    expect(diagnosisRows).toHaveLength(0);
+    expect(consultations.filter((c) => c.category === "document")).toHaveLength(2);
+  });
+
   it("does not put drug names from diagnosis field into diagnostics table", () => {
     const { diagnosisRows, treatmentRows } = buildEhrPayloadFromRecords([
       {

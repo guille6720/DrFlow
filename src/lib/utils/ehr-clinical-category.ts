@@ -1,3 +1,14 @@
+const CLINICAL_FILE_EXTENSIONS =
+  /\.(?:pdf|jpe?g|png|gif|webp|tiff?|bmp|docx?|xlsx?|pptx?|txt|csv|dcm|zip)$/i;
+
+/** Detecta si un texto es un nombre de archivo adjunto y no un diagnóstico clínico. */
+export function looksLikeClinicalFileName(text: string): boolean {
+  const t = text.trim();
+  if (!t) return false;
+  if (/\s/.test(t) && !CLINICAL_FILE_EXTENSIONS.test(t)) return false;
+  return CLINICAL_FILE_EXTENSIONS.test(t);
+}
+
 /** Detecta si un texto corresponde a un fármaco / producto recetado y no a un diagnóstico clínico. */
 export function looksLikeMedication(text: string): boolean {
   const t = text.trim();

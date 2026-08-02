@@ -7,7 +7,7 @@ import type {
   PatientEhrTreatmentRow,
 } from "@/lib/utils/patient-ehr-model";
 import { sanitizeEhrPayload } from "@/lib/utils/patient-ehr-model";
-import { looksLikeMedication } from "@/lib/utils/ehr-clinical-category";
+import { looksLikeClinicalFileName, looksLikeMedication } from "@/lib/utils/ehr-clinical-category";
 
 function formatShortDateFromIso(iso: string | null, fallbackIso: string): string {
   const raw = iso ?? fallbackIso;
@@ -61,7 +61,35 @@ export function buildEhrPayloadFromHceRows(
     const iso = row.fecha_inicio ? `${row.fecha_inicio}T12:00:00.000Z` : new Date().toISOString();
     const dateLabel = formatShortDateFromIso(row.fecha_inicio, iso);
 
+    if (tipo === "files" && row.diagnostico.trim()) {
+      consultations.push({
+        id: recordId,
+        created_at: iso,
+        professional_name: professionalFallback,
+        chief_complaint: "Documento adjunto importado",
+        diagnosis: row.diagnostico.trim(),
+        evolution: row.notas.trim() || "",
+        indications: "",
+        category: "document",
+      });
+      continue;
+    }
+
     if (tipo === "diagnostics" && row.diagnostico.trim()) {
+      if (looksLikeClinicalFileName(row.diagnostico.trim())) {
+        consultations.push({
+          id: recordId,
+          created_at: iso,
+          professional_name: professionalFallback,
+          chief_complaint: "Documento adjunto importado",
+          diagnosis: row.diagnostico.trim(),
+          evolution: row.notas.trim() || "",
+          indications: "",
+          category: "document",
+        });
+        continue;
+      }
+
       if (looksLikeMedication(row.diagnostico.trim())) {
         treatmentRows.push(parseTreatmentFromHceRow(row, recordId));
         continue;

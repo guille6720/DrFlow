@@ -45,6 +45,7 @@ import { isHceStructuralChiefComplaint } from "@/lib/utils/hce-export-parse";
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 import {
   extractMedicationDose,
+  looksLikeClinicalFileName,
   looksLikeMedication,
   stripDiagnosisDecorators,
 } from "@/lib/utils/ehr-clinical-category";
@@ -121,6 +122,9 @@ export function sanitizeEhrPayload(payload: {
 
   for (const row of payload.diagnosisRows) {
     const core = stripDiagnosisDecorators(row.name);
+    if (looksLikeClinicalFileName(core)) {
+      continue;
+    }
     if (looksLikeMedication(core)) {
       const key = core.toLowerCase().slice(0, 120);
       if (!treatKeys.has(key)) {
@@ -176,7 +180,7 @@ export function buildEhrPayloadFromRecords(
     }
 
     const diagText = stripHceMarker(r.diagnosis ?? "");
-    if (diagText && category !== "vitals") {
+    if (diagText && category !== "vitals" && category !== "document" && !looksLikeClinicalFileName(diagText)) {
       const key = diagText.toLowerCase().slice(0, 120);
 
       if (looksLikeMedication(diagText) || category === "treatment") {
