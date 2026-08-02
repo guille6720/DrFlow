@@ -24,10 +24,12 @@ import {
 } from "lucide-react";
 import { hasPermission } from "@/lib/permissions/roles";
 import Link from "next/link";
-import { format, startOfDay, endOfDay, startOfMonth } from "date-fns";
-import { es } from "date-fns/locale";
 import { DashboardUpcomingList } from "@/components/dashboard/dashboard-upcoming-list";
+import { DashboardYearlyPatientsSection } from "@/components/dashboard/dashboard-yearly-patients-section";
 import { BentoGrid, BentoCell } from "@/components/theme/bento-grid";
+import { buildYearlyAttendedPatients } from "@/lib/utils/yearly-attended-patients";
+import { format, startOfDay, endOfDay, startOfMonth, subYears } from "date-fns";
+import { es } from "date-fns/locale";
 
 export default async function DashboardPage() {
   const profile = await getProfile();
@@ -40,6 +42,9 @@ export default async function DashboardPage() {
   const todayStart = startOfDay(now).toISOString();
   const todayEnd = endOfDay(now).toISOString();
   const monthStart = startOfMonth(now).toISOString();
+  const yearStart = subYears(now, 1).toISOString();
+
+  let yearlyAttendedPatients: ReturnType<typeof buildYearlyAttendedPatients> = [];
 
   let stats = {
     todayAppointments: 0,
@@ -57,7 +62,7 @@ export default async function DashboardPage() {
   let nextToday: (typeof upcoming)[0] | null = null;
 
   if (clinicId) {
-    const [today, newPats, attended, cancelled, noShow, monthTotal, upcomingData, todayList] =
+    const [today, newPats, attended, cancelled, noShow, monthTotal, upcomingData, todayList, yearAppointments, yearRecords] =
       await Promise.all([
         supabase
           .from("appointments")
@@ -114,6 +119,21 @@ export default async function DashboardPage() {
           .lte("start_at", todayEnd)
           .not("status", "in", '("cancelled")')
           .order("start_at"),
+        supabase
+          .from("appointments")
+          .select(
+            "patient_id, start_at, patients(id, first_name, last_name, document_number, birth_date, phone, email, insurance_provider)"
+          )
+          .eq("clinic_id", clinicId)
+          .eq("status", "attended")
+          .gte("start_at", yearStart),
+        supabase
+          .from("clinical_records")
+          .select(
+            "patient_id, created_at, patients(id, first_name, last_name, document_number, birth_date, phone, email, insurance_provider)"
+          )
+          .eq("clinic_id", clinicId)
+          .gte("created_at", yearStart),
       ]);
 
     stats = {
@@ -134,6 +154,11 @@ export default async function DashboardPage() {
       ) ??
       todayQueue.find((a) => a.status !== "attended" && a.status !== "no_show") ??
       null;
+
+    yearlyAttendedPatients = buildYearlyAttendedPatients(
+      yearAppointments.data ?? [],
+      yearRecords.data ?? []
+    );
   }
 
   const noShowRate =
@@ -199,6 +224,9 @@ export default async function DashboardPage() {
             subtitle={`${stats.noShowCount} ausencias`}
             icon={<UserX className="h-5 w-5" />}
           />
+        </div>
+        <div className="mt-4">
+          <DashboardYearlyPatientsSection patients={yearlyAttendedPatients} />
         </div>
         </BentoCell>
 

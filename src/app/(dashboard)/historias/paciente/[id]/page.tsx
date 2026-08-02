@@ -116,13 +116,6 @@ export default async function PatientClinicalHistoryPage({
       buildEhrPayloadFromRecords(mappedRecords));
   }
 
-  const hasClinicalView =
-    usesHceExport ||
-    (totalRecords ?? 0) > 0 ||
-    consultations.length > 0 ||
-    diagnosisRows.length > 0 ||
-    treatmentRows.length > 0;
-
   const prescriptions =
     rxList?.map((rx) => {
       const meds = rx.medications as unknown;
@@ -168,47 +161,38 @@ export default async function PatientClinicalHistoryPage({
         </div>
       </div>
 
-      {!hasClinicalView ? (
-        <div className="p-8 text-center">
-          <p className="text-slate-600">Este paciente aún no tiene consultas registradas.</p>
-          <Link href={`/historias/nueva?patient=${patientId}`} className="mt-4 inline-block">
-            <Button>Registrar primera consulta</Button>
-          </Link>
-        </div>
-      ) : (
-        <PatientEhrView
-          patient={{
-            id: patient.id,
-            first_name: patient.first_name,
-            last_name: patient.last_name,
-            document_number: patient.document_number,
-            birth_date: patient.birth_date,
-            age_label: formatAgeLabel(patient.birth_date),
-            insurance_provider: patient.insurance_provider,
-            insurance_number: patient.insurance_number,
-            phone: patient.phone,
-            email: patient.email,
-          }}
-          consultations={consultations}
-          diagnosisRows={diagnosisRows}
-          treatmentRows={treatmentRows}
-          attachments={
-            attachments?.map((a) => ({
-              id: a.id,
-              file_name: a.file_name,
-              created_at: a.created_at,
-              category: a.category,
-            })) ?? []
-          }
-          prescriptions={prescriptions}
-          totalConsultations={
-            usesHceExport
-              ? diagnosisRows.length + treatmentRows.length + consultations.length
-              : (totalRecords ?? consultations.length)
-          }
-          usesHceExport={usesHceExport}
-        />
-      )}
+      <PatientEhrView
+        patient={{
+          id: patient.id,
+          first_name: patient.first_name,
+          last_name: patient.last_name,
+          document_number: patient.document_number,
+          birth_date: patient.birth_date,
+          age_label: formatAgeLabel(patient.birth_date),
+          insurance_provider: patient.insurance_provider,
+          insurance_number: patient.insurance_number,
+          phone: patient.phone,
+          email: patient.email,
+        }}
+        consultations={consultations}
+        diagnosisRows={diagnosisRows}
+        treatmentRows={treatmentRows}
+        attachments={
+          attachments?.map((a) => ({
+            id: a.id,
+            file_name: a.file_name,
+            created_at: a.created_at,
+            category: a.category,
+          })) ?? []
+        }
+        prescriptions={prescriptions}
+        totalConsultations={
+          usesHceExport
+            ? diagnosisRows.length + treatmentRows.length + consultations.length
+            : (totalRecords ?? consultations.length)
+        }
+        usesHceExport={usesHceExport}
+      />
     </>
   );
 }
