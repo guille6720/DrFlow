@@ -6,6 +6,8 @@ import type {
   PatientEhrDiagnosisRow,
   PatientEhrTreatmentRow,
 } from "@/lib/utils/patient-ehr-model";
+import { sanitizeEhrPayload } from "@/lib/utils/patient-ehr-model";
+import { looksLikeMedication } from "@/lib/utils/ehr-clinical-category";
 
 function formatShortDateFromIso(iso: string | null, fallbackIso: string): string {
   const raw = iso ?? fallbackIso;
@@ -60,6 +62,11 @@ export function buildEhrPayloadFromHceRows(
     const dateLabel = formatShortDateFromIso(row.fecha_inicio, iso);
 
     if (tipo === "diagnostics" && row.diagnostico.trim()) {
+      if (looksLikeMedication(row.diagnostico.trim())) {
+        treatmentRows.push(parseTreatmentFromHceRow(row, recordId));
+        continue;
+      }
+
       const chronic = /chronic|cr[oó]nic/i.test(row.estado);
       const name = [
         chronic ? "Crónico" : "",
@@ -111,7 +118,7 @@ export function buildEhrPayloadFromHceRows(
     }
   }
 
-  return { consultations, diagnosisRows, treatmentRows };
+  return sanitizeEhrPayload({ consultations, diagnosisRows, treatmentRows });
 }
 
 export function mergeEhrPayload(
@@ -141,7 +148,7 @@ export function mergeEhrPayload(
     ...primary.treatmentRows,
     ...supplemental.treatmentRows.filter((t) => !treatKeys.has(t.product.toLowerCase())),
   ];
-  return { consultations, diagnosisRows, treatmentRows };
+  return sanitizeEhrPayload({ consultations, diagnosisRows, treatmentRows });
 }
 
 export const HCE_SUMMARY_ATTACHMENT_NAME = "hce-export-resumen.csv";
