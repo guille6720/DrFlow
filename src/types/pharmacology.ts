@@ -46,7 +46,20 @@ export interface PathologyBySymptomResult extends PathologySearchResult {
   matched_symptoms: string[];
 }
 
-export type PharmacologySearchMode = "pathology" | "symptoms";
+export interface PamiVademecumResult {
+  id: string;
+  alfabeta_id: number;
+  active_ingredient: string;
+  brand_name: string;
+  presentation: string;
+  laboratory: string | null;
+  pvp_amount: number | null;
+  coverage_pct: number | null;
+  affiliate_amount: number | null;
+  price_list_date: string | null;
+}
+
+export type PharmacologySearchMode = "pathology" | "symptoms" | "vademecum";
 
 export const TREATMENT_LINE_LABELS: Record<number, string> = {
   1: "Primera línea",

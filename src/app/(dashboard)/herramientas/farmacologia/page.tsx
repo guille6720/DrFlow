@@ -25,7 +25,11 @@ export default async function FarmacologiaPage({
   }
 
   const initialMode: PharmacologySearchMode =
-    params.mode === "symptoms" ? "symptoms" : "pathology";
+    params.mode === "symptoms"
+      ? "symptoms"
+      : params.mode === "vademecum"
+        ? "vademecum"
+        : "pathology";
 
   return (
     <PharmacologySearchView

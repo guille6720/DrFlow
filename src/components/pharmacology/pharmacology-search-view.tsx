@@ -7,6 +7,8 @@ import { PathologyTypeahead } from "@/components/pharmacology/pathology-typeahea
 import { SymptomTypeahead } from "@/components/pharmacology/symptom-typeahead";
 import { PathologyMatchList } from "@/components/pharmacology/pathology-match-list";
 import { DrugTreatmentList } from "@/components/pharmacology/drug-treatment-list";
+import { VademecumTypeahead } from "@/components/pharmacology/vademecum-typeahead";
+import { VademecumResultList } from "@/components/pharmacology/vademecum-result-list";
 import {
   getDrugsByPathology,
   getPathologiesBySymptoms,
@@ -15,12 +17,13 @@ import type {
   PathologyBySymptomResult,
   PathologyDrug,
   PathologySearchResult,
+  PamiVademecumResult,
   PharmacologySearchMode,
   SymptomSearchResult,
 } from "@/types/pharmacology";
 import type { Clinic, UserRole } from "@/types/database";
 import { cn } from "@/lib/utils/cn";
-import { Activity, Stethoscope } from "lucide-react";
+import { Activity, BookOpen, Stethoscope } from "lucide-react";
 
 interface Props {
   clinics: { clinic_id: string; clinic?: Clinic }[];
@@ -46,6 +49,10 @@ export function PharmacologySearchView({
   const [drugs, setDrugs] = useState<PathologyDrug[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [vademecumItems, setVademecumItems] = useState<PamiVademecumResult[]>([]);
+  const [vademecumLoading, setVademecumLoading] = useState(false);
+  const [vademecumError, setVademecumError] = useState<string | null>(null);
+  const [vademecumQueryLength, setVademecumQueryLength] = useState(0);
 
   function fetchPathologyMatches(nextSymptoms: SymptomSearchResult[]) {
     if (nextSymptoms.length === 0) {
@@ -113,13 +120,17 @@ export function PharmacologySearchView({
     setPathologyMatches([]);
     setMatchesError(null);
     setMatchesLoading(false);
+    setVademecumItems([]);
+    setVademecumError(null);
+    setVademecumLoading(false);
+    setVademecumQueryLength(0);
   }
 
   return (
     <>
       <Header
         title="Guía farmacológica"
-        subtitle="Patología CIE-10 o síntomas → fármacos ATC de referencia"
+        subtitle="Patología CIE-10, síntomas o vademécum PAMI"
         clinics={clinics}
         activeClinicId={clinicId}
         role={role}
@@ -154,6 +165,19 @@ export function PharmacologySearchView({
             <Activity className="h-4 w-4" />
             Por síntomas
           </button>
+          <button
+            type="button"
+            onClick={() => switchMode("vademecum")}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+              mode === "vademecum"
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
+            )}
+          >
+            <BookOpen className="h-4 w-4" />
+            Vademécum PAMI
+          </button>
         </div>
 
         {mode === "pathology" ? (
@@ -168,7 +192,7 @@ export function PharmacologySearchView({
               <span className="font-mono">E11</span>) o nombre de enfermedad.
             </p>
           </Card>
-        ) : (
+        ) : mode === "symptoms" ? (
           <div className="space-y-4">
             <Card className="border-violet-100">
               <SymptomTypeahead selected={symptoms} onChange={handleSymptomsChange} />
@@ -187,16 +211,38 @@ export function PharmacologySearchView({
               selectedId={selected?.id}
             />
           </div>
+        ) : (
+          <Card className="border-emerald-100">
+            <VademecumTypeahead
+              onResults={setVademecumItems}
+              onLoading={setVademecumLoading}
+              onError={setVademecumError}
+              onQueryChange={(q) => setVademecumQueryLength(q.trim().length)}
+            />
+            <p className="mt-3 text-xs text-slate-500">
+              Tip: buscá por marca (<span className="font-mono">BETASERC</span>), principio activo (
+              <span className="font-mono">losartán</span>) o código Alfabeta.
+            </p>
+          </Card>
         )}
 
-        <DrugTreatmentList
-          items={selected ? drugs : []}
-          loading={selected ? loading : false}
-          error={selected ? error : null}
-          pathologyName={selected?.name}
-          cie10Code={selected?.cie10_code}
-          searchMode={mode}
-        />
+        {mode === "vademecum" ? (
+          <VademecumResultList
+            items={vademecumItems}
+            loading={vademecumLoading}
+            error={vademecumError}
+            queryLength={vademecumQueryLength}
+          />
+        ) : (
+          <DrugTreatmentList
+            items={selected ? drugs : []}
+            loading={selected ? loading : false}
+            error={selected ? error : null}
+            pathologyName={selected?.name}
+            cie10Code={selected?.cie10_code}
+            searchMode={mode === "symptoms" ? "symptoms" : "pathology"}
+          />
+        )}
       </div>
     </>
   );

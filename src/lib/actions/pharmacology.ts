@@ -7,6 +7,7 @@ import type {
   PathologyBySymptomResult,
   PathologyDrug,
   PathologySearchResult,
+  PamiVademecumResult,
   SymptomSearchResult,
 } from "@/types/pharmacology";
 
@@ -93,6 +94,30 @@ export async function getPathologiesBySymptoms(
   }
 
   return { data: (data ?? []) as PathologyBySymptomResult[] };
+}
+
+export async function searchPamiVademecum(
+  query: string
+): Promise<{ data?: PamiVademecumResult[]; error?: string }> {
+  const access = await assertPharmacologyAccess();
+  if (access.error) return access;
+
+  const trimmed = query.trim();
+  if (trimmed.length < MIN_QUERY_LENGTH) {
+    return { data: [] };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("search_pami_vademecum", {
+    p_query: trimmed,
+    p_limit: 20,
+  });
+
+  if (error) {
+    return { error: "No se pudo buscar el vademécum PAMI. ¿Corriste la migración 042?" };
+  }
+
+  return { data: (data ?? []) as PamiVademecumResult[] };
 }
 
 export async function getDrugsByPathology(

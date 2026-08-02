@@ -11,6 +11,7 @@ export const TABLES_REQUIRING_RLS = [
   "professionals",
   "patients",
   "patient_attachments",
+  "pami_vademecum",
   "availability_rules",
   "schedule_blocks",
   "consultation_reasons",
