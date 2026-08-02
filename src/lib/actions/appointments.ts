@@ -61,6 +61,72 @@ export async function createAppointment(formData: FormData) {
   return { data };
 }
 
+export async function updateAppointment(id: string, formData: FormData) {
+  const access = await requireClinicPermission("manageAppointments");
+  if (!access.ok) return { error: access.error };
+  const { clinicId } = access;
+
+  const supabase = await createClient();
+  const { data: existing } = await supabase
+    .from("appointments")
+    .select("id, status, patient_id")
+    .eq("id", id)
+    .eq("clinic_id", clinicId)
+    .single();
+
+  if (!existing) return { error: "Turno no encontrado" };
+  if (existing.status === "cancelled" || existing.status === "attended") {
+    return { error: "No se puede modificar un turno cancelado o ya atendido." };
+  }
+
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = appointmentSchema.safeParse({
+    ...raw,
+    location_id: raw.location_id || null,
+    specialty_id: raw.specialty_id || null,
+    status: existing.status,
+  });
+
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+
+  const payload = {
+    patient_id: parsed.data.patient_id,
+    professional_id: parsed.data.professional_id,
+    location_id: parsed.data.location_id,
+    specialty_id: parsed.data.specialty_id,
+    start_at: parsed.data.start_at,
+    end_at: parsed.data.end_at,
+    notes: parsed.data.notes ? sanitizeText(parsed.data.notes) : parsed.data.notes,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { error } = await supabase
+    .from("appointments")
+    .update(payload)
+    .eq("id", id)
+    .eq("clinic_id", clinicId);
+
+  if (error) {
+    if (error.message.includes("turno en ese horario")) {
+      return { error: "El profesional ya tiene un turno en ese horario." };
+    }
+    return { error: error.message };
+  }
+
+  await logAudit({
+    clinicId,
+    entityType: "appointment",
+    entityId: id,
+    action: "update",
+  });
+
+  revalidatePath("/agenda");
+  revalidatePath("/dashboard");
+  revalidatePath(`/pacientes/${existing.patient_id}`);
+  revalidatePath("/atenciones");
+  return { success: true };
+}
+
 export async function updateAppointmentStatus(
   id: string,
   status: string,

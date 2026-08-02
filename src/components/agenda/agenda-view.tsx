@@ -17,6 +17,7 @@ import type { Appointment, Clinic, Patient, Professional, UserRole } from "@/typ
 import { CalendarGrid } from "@/components/agenda/calendar-grid";
 import { MonthOverviewGrid } from "@/components/agenda/month-overview-grid";
 import { AppointmentDatetimePicker } from "@/components/agenda/appointment-datetime-picker";
+import { EditAppointmentDialog } from "@/components/agenda/edit-appointment-dialog";
 import { PatientSearchCombobox } from "@/components/pacientes/patient-search-combobox";
 import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import {
@@ -76,6 +77,7 @@ export function AgendaView({
   const [loading, setLoading] = useState(false);
   const [startAt, setStartAt] = useState("");
   const [formProfessionalId, setFormProfessionalId] = useState("");
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
 
   function openNewAppointmentForm(prefill = "") {
     setStartAt(prefill);
@@ -336,6 +338,7 @@ export function AgendaView({
                     showDate
                     canManage={canManage}
                     canStartClinical={canStartClinical}
+                    onEdit={canManage ? setEditingAppointment : undefined}
                   />
                 ))}
               </ul>
@@ -354,6 +357,23 @@ export function AgendaView({
               /solicitar-turno/{bookingSlug}
             </Link>
           </p>
+        )}
+
+        {editingAppointment && (
+          <EditAppointmentDialog
+            key={editingAppointment.id}
+            appointment={editingAppointment}
+            patients={patients}
+            professionals={professionals}
+            locations={locations}
+            specialties={specialties}
+            appointments={initialAppointments}
+            scheduleBlocks={scheduleBlocks}
+            defaultDuration={defaultDuration}
+            open={Boolean(editingAppointment)}
+            onClose={() => setEditingAppointment(null)}
+            onSaved={() => router.refresh()}
+          />
         )}
       </div>
     </>

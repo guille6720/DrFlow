@@ -55,7 +55,7 @@ export function CancelAppointmentDialog({
       <div className="drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Cancelar turno</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Eliminar turno</h2>
             {patientName && (
               <p className="mt-1 text-sm text-slate-500">{patientName}</p>
             )}
@@ -87,7 +87,7 @@ export function CancelAppointmentDialog({
           </p>
           <div className="flex gap-2">
             <Button type="submit" variant="danger" loading={loading}>
-              Confirmar cancelación
+              Confirmar eliminación
             </Button>
             <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
               Volver
