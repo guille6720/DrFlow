@@ -6,6 +6,7 @@ import {
   Activity,
   AlertTriangle,
   CheckCircle2,
+  ClipboardList,
   FileText,
   Pill,
   Plus,
@@ -219,6 +220,12 @@ export function PatientChartView({
             <Button size="sm" type="button">
               <Stethoscope className="h-4 w-4" />
               Nueva consulta
+            </Button>
+          </Link>
+          <Link href={`/historias/paciente/${patientId}`}>
+            <Button size="sm" variant="outline" type="button">
+              <ClipboardList className="h-4 w-4" />
+              Historia clínica completa
             </Button>
           </Link>
           <Link href={`/recetas?patient=${patientId}`}>
