@@ -6,29 +6,40 @@ Importación del Excel de productos PAMI con precios y cobertura.
 
 - `data/pami/gavade_20230829_102140.xlsx` — fuente original (8711 productos)
 - `supabase/migrations/042_pami_vademecum.sql` — tabla + búsqueda
-- `supabase/seeds/pami_vademecum_data.sql` — datos generados
 - `scripts/import-pami-vademecum.mjs` — parser e importador
 
-## Cargar en Supabase (producción)
+## Cargar en Supabase
+
+**No pegues** `pami_vademecum_data.sql` completo en SQL Editor: Supabase lo rechaza por tamaño.
+
+### Opción A — Conexión directa (recomendada)
 
 ```powershell
 $env:DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.nipqdarduknydqptqzup.supabase.co:5432/postgres"
 
-# 1. Migración (solo la 042 si el resto ya está aplicado)
+# Tabla (solo una vez)
 npx supabase db query --db-url $env:DATABASE_URL -f supabase/migrations/042_pami_vademecum.sql
 
-# 2. Datos
+# Datos en lotes de 50 filas
 npm run import:pami-vademecum -- --apply
 ```
 
-Alternativa: pegar `supabase/seeds/pami_vademecum_data.sql` en el SQL Editor de Supabase.
+### Opción B — Service role (sin DATABASE_URL)
 
-## Regenerar SQL desde otro Excel
+Agregá `SUPABASE_SERVICE_ROLE_KEY` en `.env.local` (Settings → API en Supabase), luego:
 
 ```powershell
-npm run import:pami-vademecum -- "C:\ruta\archivo.xlsx" --sql-out supabase/seeds/pami_vademecum_data.sql
+npm run import:pami-vademecum -- --apply-api
 ```
+
+### Opción C — SQL Editor (lotes chicos)
+
+```powershell
+npm run import:pami-vademecum -- --split-dir supabase/seeds/pami_batches
+```
+
+Ejecutá `042_pami_vademecum.sql` y después cada `pami_vademecum_001.sql`, `002.sql`, … (~109 archivos).
 
 ## UI
 
-En **Herramientas → Guía farmacológica → Vademécum PAMI** se busca por marca, principio activo, laboratorio o código Alfabeta.
+**Herramientas → Guía farmacológica → Vademécum PAMI**

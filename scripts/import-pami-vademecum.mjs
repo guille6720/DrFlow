@@ -1,20 +1,25 @@
 /**
  * Importa vademécum PAMI desde Excel Alfabeta/Gavade.
  *
- * Uso:
- *   node scripts/import-pami-vademecum.mjs "C:\Users\...\gavade_20230829_102140.xlsx"
- *   node scripts/import-pami-vademecum.mjs --sql-out supabase/seeds/pami_vademecum_data.sql
- *   DATABASE_URL=... node scripts/import-pami-vademecum.mjs --apply
+ * Uso recomendado (conexión directa, lotes chicos):
+ *   $env:DATABASE_URL="postgresql://postgres:PASS@db.nipqdarduknydqptqzup.supabase.co:5432/postgres"
+ *   npm run import:pami-vademecum -- --apply
+ *
+ * Alternativa SQL Editor (archivos chicos):
+ *   npm run import:pami-vademecum -- --split-dir supabase/seeds/pami_batches
+ *   Ejecutá 042_pami_vademecum.sql y luego cada pami_vademecum_001.sql, 002.sql, ...
+ *
+ * Con service role (sin DATABASE_URL):
+ *   npm run import:pami-vademecum -- --apply-api
  */
-import { readFileSync, writeFileSync, existsSync } from "fs";
-import { resolve, basename } from "path";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync } from "fs";
+import { resolve, basename, join } from "path";
 import { spawnSync } from "child_process";
 import XLSX from "xlsx";
 
-const DEFAULT_XLSX = resolve(
-  process.cwd(),
-  "data/pami/gavade_20230829_102140.xlsx"
-);
+const DEFAULT_XLSX = resolve(process.cwd(), "data/pami/gavade_20230829_102140.xlsx");
+const APPLY_BATCH_SIZE = 50;
+const SPLIT_BATCH_SIZE = 80;
 
 function loadEnv() {
   const path = resolve(process.cwd(), ".env.local");
@@ -34,7 +39,7 @@ function sqlEscape(value) {
 function parseMoney(raw) {
   if (raw == null || raw === "") return null;
   const n = Number(String(raw).replace(/[^\d.,-]/g, "").replace(",", "."));
-  return Number.isFinite(n) ? n.toFixed(2) : null;
+  return Number.isFinite(n) ? Number(n.toFixed(2)) : null;
 }
 
 function parseCoverage(raw) {
@@ -90,6 +95,21 @@ function parseRows(filePath) {
   return parsed;
 }
 
+function rowToDbRecord(r) {
+  return {
+    alfabeta_id: r.alfabetaId,
+    active_ingredient: r.activeIngredient,
+    brand_name: r.brandName,
+    presentation: r.presentation,
+    laboratory: r.laboratory,
+    pvp_amount: r.pvpAmount,
+    coverage_pct: r.coveragePct,
+    affiliate_amount: r.affiliateAmount,
+    price_list_date: r.priceListDate,
+    source_file: r.sourceFile,
+  };
+}
+
 function buildInsertBatch(batch) {
   const values = batch
     .map(
@@ -119,9 +139,93 @@ ON CONFLICT (alfabeta_id, presentation) DO UPDATE SET
   is_active = true;`;
 }
 
-function generateSql(rows) {
+function runSqlFile(dbUrl, sqlPath) {
+  const result = spawnSync(
+    "npx",
+    ["supabase", "db", "query", "--db-url", dbUrl, "-f", sqlPath],
+    { stdio: "inherit", shell: true }
+  );
+  if (result.status !== 0) {
+    throw new Error(`Falló ${sqlPath}. Revisá DATABASE_URL.`);
+  }
+}
+
+function applyBatches(dbUrl, rows, batchSize) {
+  const total = Math.ceil(rows.length / batchSize);
+  const tmpDir = resolve(process.cwd(), "supabase/seeds/.pami_apply_tmp");
+  mkdirSync(tmpDir, { recursive: true });
+
+  console.log(`\n▶ Cargando ${rows.length} productos en ${total} lotes (${batchSize} filas c/u)...\n`);
+
+  for (let i = 0; i < rows.length; i += batchSize) {
+    const batchNum = Math.floor(i / batchSize) + 1;
+    const batch = rows.slice(i, i + batchSize);
+    const tmpPath = join(tmpDir, `batch_${String(batchNum).padStart(3, "0")}.sql`);
+    writeFileSync(tmpPath, buildInsertBatch(batch), "utf8");
+    console.log(`   Lote ${batchNum}/${total}...`);
+    runSqlFile(dbUrl, tmpPath);
+  }
+
+  rmSync(tmpDir, { recursive: true, force: true });
+  console.log("\n✓ Datos cargados en pami_vademecum");
+}
+
+async function applyViaApi(url, serviceKey, rows) {
+  const { createClient } = await import("@supabase/supabase-js");
+  const supabase = createClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  const batchSize = 400;
+  const total = Math.ceil(rows.length / batchSize);
+  console.log(`\n▶ Cargando vía API (${total} lotes)...\n`);
+
+  for (let i = 0; i < rows.length; i += batchSize) {
+    const batchNum = Math.floor(i / batchSize) + 1;
+    const batch = rows.slice(i, i + batchSize).map(rowToDbRecord);
+    const { error } = await supabase
+      .from("pami_vademecum")
+      .upsert(batch, { onConflict: "alfabeta_id,presentation" });
+
+    if (error) {
+      throw new Error(`Lote ${batchNum}: ${error.message}`);
+    }
+    console.log(`   ✓ Lote ${batchNum}/${total} (${Math.min(i + batchSize, rows.length)}/${rows.length})`);
+  }
+
+  console.log("\n✓ Datos cargados en pami_vademecum");
+}
+
+function splitSqlFiles(rows, outDir, batchSize) {
+  rmSync(outDir, { recursive: true, force: true });
+  mkdirSync(outDir, { recursive: true });
+
+  const total = Math.ceil(rows.length / batchSize);
+  for (let i = 0; i < rows.length; i += batchSize) {
+    const n = String(Math.floor(i / batchSize) + 1).padStart(3, "0");
+    const filePath = join(outDir, `pami_vademecum_${n}.sql`);
+    const header = `-- Lote ${n}/${String(total).padStart(3, "0")} · filas ${i + 1}-${Math.min(i + batchSize, rows.length)}\n\n`;
+    writeFileSync(filePath, header + buildInsertBatch(rows.slice(i, i + batchSize)), "utf8");
+  }
+
+  writeFileSync(
+    join(outDir, "README.txt"),
+    [
+      "Ejecutá en Supabase SQL Editor EN ESTE ORDEN:",
+      "1. supabase/migrations/042_pami_vademecum.sql (solo una vez)",
+      "2. pami_vademecum_001.sql, 002.sql, ... hasta el último",
+      "",
+      `Total: ${total} archivos, ${rows.length} productos.`,
+      "No pegues pami_vademecum_data.sql completo: el editor lo rechaza por tamaño.",
+    ].join("\n"),
+    "utf8"
+  );
+
+  console.log(`✓ ${total} archivos en ${outDir}`);
+}
+
+function generateSql(rows, batchSize) {
   const chunks = ["-- Vademécum PAMI generado automáticamente", `-- Registros: ${rows.length}`, ""];
-  const batchSize = 200;
   for (let i = 0; i < rows.length; i += batchSize) {
     chunks.push(buildInsertBatch(rows.slice(i, i + batchSize)));
     chunks.push("");
@@ -129,23 +233,16 @@ function generateSql(rows) {
   return chunks.join("\n");
 }
 
-function applySql(dbUrl, sqlPath) {
-  console.log(`▶ Aplicando ${sqlPath} ...`);
-  const result = spawnSync(
-    "npx",
-    ["supabase", "db", "query", "--db-url", dbUrl, "-f", sqlPath],
-    { stdio: "inherit", shell: true }
-  );
-  if (result.status !== 0) {
-    throw new Error("Falló la carga SQL. Revisá DATABASE_URL o ejecutá el SQL en Supabase.");
-  }
-}
-
 async function main() {
   const args = process.argv.slice(2);
   const sqlOutIdx = args.indexOf("--sql-out");
+  const splitDirIdx = args.indexOf("--split-dir");
   const apply = args.includes("--apply");
-  const fileArg = args.find((a) => !a.startsWith("--") && a !== args[sqlOutIdx + 1]);
+  const applyApi = args.includes("--apply-api");
+  const skipValues = new Set(
+    [sqlOutIdx, sqlOutIdx + 1, splitDirIdx, splitDirIdx + 1].filter((i) => i >= 0)
+  );
+  const fileArg = args.find((a, i) => !a.startsWith("--") && !skipValues.has(i));
   const filePath = resolve(fileArg ?? DEFAULT_XLSX);
 
   if (!existsSync(filePath)) {
@@ -157,39 +254,69 @@ async function main() {
   const rows = parseRows(filePath);
   console.log(`   ${rows.length} productos parseados`);
 
-  const sql = generateSql(rows);
-
-  if (sqlOutIdx >= 0) {
-    const outPath = resolve(args[sqlOutIdx + 1]);
-    writeFileSync(outPath, sql, "utf8");
-    console.log(`✓ SQL generado: ${outPath}`);
-  }
-
   const env = loadEnv();
   const dbUrl = process.env.DATABASE_URL?.trim();
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ?? env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? env.NEXT_PUBLIC_SUPABASE_URL;
 
   if (apply) {
     if (!dbUrl) {
-      console.error("❌ Falta DATABASE_URL para --apply");
+      console.error(`
+❌ Falta DATABASE_URL para --apply
+
+PowerShell:
+  $env:DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.nipqdarduknydqptqzup.supabase.co:5432/postgres"
+  npm run import:pami-vademecum -- --apply
+
+O usá --apply-api con SUPABASE_SERVICE_ROLE_KEY en .env.local
+O generá lotes chicos: npm run import:pami-vademecum -- --split-dir supabase/seeds/pami_batches
+`);
       process.exit(1);
     }
-    const tmpSql = resolve(process.cwd(), "supabase/seeds/.pami_vademecum_import.tmp.sql");
-    writeFileSync(tmpSql, sql, "utf8");
-    applySql(dbUrl, tmpSql);
-    console.log("✓ Datos cargados en pami_vademecum");
-  } else if (!sqlOutIdx) {
-    const defaultOut = resolve(process.cwd(), "supabase/seeds/pami_vademecum_data.sql");
-    writeFileSync(defaultOut, sql, "utf8");
-    console.log(`✓ SQL generado: ${defaultOut}`);
-    console.log("\nPara cargar en Supabase:");
-    console.log("  1. Ejecutá supabase/migrations/042_pami_vademecum.sql");
-    console.log("  2. Pegá supabase/seeds/pami_vademecum_data.sql en SQL Editor");
-    console.log("  O: DATABASE_URL=... node scripts/import-pami-vademecum.mjs --apply");
+    applyBatches(dbUrl, rows, APPLY_BATCH_SIZE);
+    return;
   }
 
-  if (env.NEXT_PUBLIC_SUPABASE_URL) {
-    console.log(`\nSupabase: ${env.NEXT_PUBLIC_SUPABASE_URL}`);
+  if (applyApi) {
+    if (!serviceKey || !supabaseUrl) {
+      console.error("❌ Falta SUPABASE_SERVICE_ROLE_KEY y NEXT_PUBLIC_SUPABASE_URL en .env.local");
+      process.exit(1);
+    }
+    await applyViaApi(supabaseUrl, serviceKey, rows);
+    return;
   }
+
+  if (splitDirIdx >= 0) {
+    const outDir = resolve(args[splitDirIdx + 1] ?? "supabase/seeds/pami_batches");
+    splitSqlFiles(rows, outDir, SPLIT_BATCH_SIZE);
+    console.log("\nEjecutá cada archivo en SQL Editor (ver README.txt en esa carpeta).");
+    return;
+  }
+
+  if (sqlOutIdx >= 0) {
+    const outPath = resolve(args[sqlOutIdx + 1]);
+    writeFileSync(outPath, generateSql(rows, 200), "utf8");
+    console.log(`✓ SQL generado: ${outPath}`);
+    console.log("⚠️  El archivo completo es demasiado grande para SQL Editor. Usá --apply o --split-dir.");
+    return;
+  }
+
+  const defaultOut = resolve(process.cwd(), "supabase/seeds/pami_vademecum_data.sql");
+  writeFileSync(defaultOut, generateSql(rows, 200), "utf8");
+  console.log(`✓ SQL generado: ${defaultOut}`);
+  console.log(`
+Para cargar en Supabase (elegí una opción):
+
+  A) Conexión directa (recomendado):
+     $env:DATABASE_URL="postgresql://postgres:PASS@db.nipqdarduknydqptqzup.supabase.co:5432/postgres"
+     npm run import:pami-vademecum -- --apply
+
+  B) Service role en .env.local:
+     npm run import:pami-vademecum -- --apply-api
+
+  C) SQL Editor (lotes chicos):
+     npm run import:pami-vademecum -- --split-dir supabase/seeds/pami_batches
+`);
 }
 
 main().catch((err) => {
