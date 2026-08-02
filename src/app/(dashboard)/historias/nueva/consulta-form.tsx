@@ -20,6 +20,7 @@ import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { Clinic, Patient, Professional, UserRole } from "@/types/database";
 import { ArrowLeft, AlertTriangle, Pill } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { backHrefFromClinicalSubpage } from "@/lib/utils/clinical-navigation";
 
 interface Props {
   clinics: { clinic_id: string; clinic?: Clinic }[];
@@ -52,6 +53,12 @@ export default function NuevaConsultaForm({
   const defaultPatient = searchParams.get("patient") ?? "";
   const defaultProfessional = searchParams.get("professional") ?? "";
   const appointmentId = searchParams.get("appointment") ?? "";
+  const fromClinical = searchParams.get("from");
+  const backHref = backHrefFromClinicalSubpage(
+    fromClinical,
+    defaultPatient,
+    "/historias"
+  );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPrescription, setShowPrescription] = useState(false);
@@ -115,7 +122,7 @@ export default function NuevaConsultaForm({
         {!fromAppointment && (
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href="/historias"
+              href={backHref}
               className="inline-flex items-center gap-1 text-sm text-blue-700 hover:underline"
             >
               <ArrowLeft className="h-4 w-4" /> Volver

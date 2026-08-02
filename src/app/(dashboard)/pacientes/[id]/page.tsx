@@ -19,13 +19,18 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { ArrowLeft } from "lucide-react";
 import type { PrescriptionMedication } from "@/types/prescription";
+import { backHrefFromClinicalSubpage } from "@/lib/utils/clinical-navigation";
 
 export default async function PacienteDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string; patient?: string }>;
 }) {
   const { id } = await params;
+  const { from, patient: returnPatientId } = await searchParams;
+  const backHref = backHrefFromClinicalSubpage(from, returnPatientId ?? id, "/pacientes");
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
@@ -180,7 +185,7 @@ export default async function PacienteDetailPage({
 
       <div className="p-3 sm:p-4">
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <Link href="/pacientes" className="drflow-link inline-flex items-center gap-1 text-sm">
+          <Link href={backHref} className="drflow-link inline-flex items-center gap-1 text-sm">
             <ArrowLeft className="h-4 w-4" /> Volver
           </Link>
           {canManagePatients && (

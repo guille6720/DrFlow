@@ -26,13 +26,20 @@ import { MedicalOrderPanel } from "@/components/historias/medical-order-panel";
 import { ConsultationTimer } from "@/components/historias/consultation-timer";
 import { FinalizeConsultationButton } from "@/components/historias/finalize-consultation-button";
 import { ClinicalDocumentsPanel } from "@/components/historias/clinical-documents-panel";
+import {
+  backHrefFromClinicalSubpage,
+  withClinicalHistoryReturn,
+} from "@/lib/utils/clinical-navigation";
 
 export default async function HistoriaDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string; patient?: string }>;
 }) {
   const { id } = await params;
+  const { from, patient: returnPatientId } = await searchParams;
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
@@ -127,6 +134,7 @@ export default async function HistoriaDetailPage({
     profiles?: { full_name: string } | null;
     specialties?: { name: string } | { name: string }[] | null;
   }>;
+  const backHref = backHrefFromClinicalSubpage(from, returnPatientId ?? patient.id, "/historias");
 
   return (
     <>
@@ -156,10 +164,13 @@ export default async function HistoriaDetailPage({
         )}
 
         <div className="flex flex-wrap items-center gap-3">
-          <Link href="/historias" className="drflow-link inline-flex items-center gap-1 text-sm">
+          <Link href={backHref} className="drflow-link inline-flex items-center gap-1 text-sm">
             <ArrowLeft className="h-4 w-4" /> Volver
           </Link>
-          <Link href={`/pacientes/${patient.id}`} className="drflow-link text-sm">
+          <Link
+            href={withClinicalHistoryReturn(`/pacientes/${patient.id}`, patient.id)}
+            className="drflow-link text-sm"
+          >
             Ficha del paciente
           </Link>
           <Link href={`/historias/paciente/${patient.id}`} className="drflow-link text-sm">
@@ -178,7 +189,7 @@ export default async function HistoriaDetailPage({
             label="WhatsApp paciente"
             size="md"
           />
-          <Link href={`/historias/${id}/editar`}>
+          <Link href={withClinicalHistoryReturn(`/historias/${id}/editar`, patient.id)}>
             <Button variant="outline" size="sm">Editar consulta</Button>
           </Link>
           {record.appointment_id && hasPermission(role, "editClinicalRecords", isSuperadmin) && (

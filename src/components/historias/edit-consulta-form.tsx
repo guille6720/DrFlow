@@ -30,9 +30,17 @@ interface Props {
   clinicId: string | null;
   role: UserRole | null;
   userName?: string;
+  backHref?: string;
 }
 
-export function EditConsultaForm({ record, clinics, clinicId, role, userName }: Props) {
+export function EditConsultaForm({
+  record,
+  clinics,
+  clinicId,
+  role,
+  userName,
+  backHref = `/historias/${record.id}`,
+}: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -51,7 +59,7 @@ export function EditConsultaForm({ record, clinics, clinicId, role, userName }: 
     <>
       <Header title="Editar consulta" clinics={clinics} activeClinicId={clinicId} role={role} userName={userName} />
       <div className="p-4 sm:p-6">
-        <Link href={`/historias/${record.id}`} className="mb-4 inline-flex items-center gap-1 text-sm text-blue-700 hover:underline">
+        <Link href={backHref} className="mb-4 inline-flex items-center gap-1 text-sm text-blue-700 hover:underline">
           <ArrowLeft className="h-4 w-4" /> Volver
         </Link>
         <Card title="Actualizar consulta">

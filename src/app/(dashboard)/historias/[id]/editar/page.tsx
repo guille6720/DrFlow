@@ -8,13 +8,17 @@ import {
 } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { hasPermission } from "@/lib/permissions/roles";
+import { backHrefFromClinicalSubpage } from "@/lib/utils/clinical-navigation";
 
 export default async function EditarHistoriaPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string; patient?: string }>;
 }) {
   const { id } = await params;
+  const { from, patient: returnPatientId } = await searchParams;
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
@@ -36,6 +40,12 @@ export default async function EditarHistoriaPage({
 
   if (!record) notFound();
 
+  const backHref = backHrefFromClinicalSubpage(
+    from,
+    returnPatientId ?? record.patient_id,
+    `/historias/${id}`
+  );
+
   return (
     <EditConsultaForm
       record={record}
@@ -43,6 +53,7 @@ export default async function EditarHistoriaPage({
       clinicId={clinicId}
       role={role}
       userName={profile?.full_name}
+      backHref={backHref}
     />
   );
 }

@@ -23,6 +23,7 @@ import type {
   PatientEhrTreatmentRow,
 } from "@/lib/utils/patient-ehr-model";
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
+import { withClinicalHistoryReturn } from "@/lib/utils/clinical-navigation";
 import { cn } from "@/lib/utils/cn";
 
 type FilterKey = "evolutions" | "files" | "diagnostics" | "treatments" | "vitals" | "prescriptions";
@@ -159,23 +160,41 @@ export function PatientEhrView({
 
   const actionLinks = (
     <div className="drflow-ehr-actions flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[var(--border)] pb-2 text-sm font-semibold">
-      <Link href={`/pacientes/${patient.id}`} className="drflow-ehr-action-link inline-flex items-center gap-1">
+      <Link
+        href={withClinicalHistoryReturn(`/pacientes/${patient.id}`, patient.id)}
+        className="drflow-ehr-action-link inline-flex items-center gap-1"
+      >
         <Plus className="h-3.5 w-3.5" /> Archivo
       </Link>
-      <Link href={`/historias/nueva?patient=${patient.id}`} className="drflow-ehr-action-link inline-flex items-center gap-1">
+      <Link
+        href={withClinicalHistoryReturn(`/historias/nueva?patient=${patient.id}`, patient.id)}
+        className="drflow-ehr-action-link inline-flex items-center gap-1"
+      >
         <Plus className="h-3.5 w-3.5" /> Diagnóstico
       </Link>
-      <Link href={`/historias/nueva?patient=${patient.id}`} className="drflow-ehr-action-link inline-flex items-center gap-1">
+      <Link
+        href={withClinicalHistoryReturn(`/historias/nueva?patient=${patient.id}`, patient.id)}
+        className="drflow-ehr-action-link inline-flex items-center gap-1"
+      >
         <Plus className="h-3.5 w-3.5" /> Tratamiento
       </Link>
-      <Link href={`/historias/nueva?patient=${patient.id}`} className="drflow-ehr-action-link inline-flex items-center gap-1">
+      <Link
+        href={withClinicalHistoryReturn(`/historias/nueva?patient=${patient.id}`, patient.id)}
+        className="drflow-ehr-action-link inline-flex items-center gap-1"
+      >
         Signos vitales
       </Link>
-      <Link href="/recetas" className="drflow-ehr-action-link inline-flex items-center gap-1">
+      <Link
+        href={withClinicalHistoryReturn(`/recetas?patient=${patient.id}`, patient.id)}
+        className="drflow-ehr-action-link inline-flex items-center gap-1"
+      >
         <Plus className="h-3.5 w-3.5" /> Receta
       </Link>
       {selected ? (
-        <Link href={`/historias/${selected.id}`} className="drflow-ehr-action-link inline-flex items-center gap-1">
+        <Link
+          href={withClinicalHistoryReturn(`/historias/${selected.id}`, patient.id)}
+          className="drflow-ehr-action-link inline-flex items-center gap-1"
+        >
           <Plus className="h-3.5 w-3.5" /> Orden
         </Link>
       ) : null}
@@ -301,7 +320,7 @@ export function PatientEhrView({
                       {evolutionBody(selected)}
                     </div>
                     <Link
-                      href={`/historias/${selected.id}`}
+                      href={withClinicalHistoryReturn(`/historias/${selected.id}`, patient.id)}
                       className="mt-3 inline-block text-sm font-semibold text-teal-600 hover:underline"
                     >
                       Abrir consulta completa →
@@ -341,7 +360,10 @@ export function PatientEhrView({
                               <td className="px-3 py-2 whitespace-nowrap">{row.dateLabel}</td>
                               <td className="px-3 py-2">
                                 <Link
-                                  href={`/historias/${row.recordId}`}
+                                  href={withClinicalHistoryReturn(
+                                    `/historias/${row.recordId}`,
+                                    patient.id
+                                  )}
                                   className="font-medium text-teal-600 hover:underline"
                                 >
                                   {row.name}
@@ -391,7 +413,10 @@ export function PatientEhrView({
                               <td className="px-3 py-2 whitespace-nowrap">{row.dateLabel}</td>
                               <td className="px-3 py-2">
                                 <Link
-                                  href={`/historias/${row.recordId}`}
+                                  href={withClinicalHistoryReturn(
+                                    `/historias/${row.recordId}`,
+                                    patient.id
+                                  )}
                                   className="font-medium text-teal-600 hover:underline"
                                 >
                                   {row.product}
@@ -463,7 +488,7 @@ export function PatientEhrView({
 
             <div className="mt-6 print:hidden">
               <Link
-                href={`/historias/nueva?patient=${patient.id}`}
+                href={withClinicalHistoryReturn(`/historias/nueva?patient=${patient.id}`, patient.id)}
                 className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-teal-500/20 hover:from-cyan-600 hover:to-teal-600"
               >
                 <Plus className="h-4 w-4" /> Nueva consulta

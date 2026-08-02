@@ -19,6 +19,7 @@ import {
   mergeEhrPayload,
 } from "@/lib/utils/patient-ehr-from-hce";
 import { ArrowLeft } from "lucide-react";
+import { withClinicalHistoryReturn } from "@/lib/utils/clinical-navigation";
 
 const RECORD_LIMIT = 2000;
 
@@ -159,7 +160,7 @@ export default async function PatientClinicalHistoryPage({
             <ArrowLeft className="h-4 w-4" />
             Historias
           </Link>
-          <Link href={`/pacientes/${patientId}`}>
+          <Link href={withClinicalHistoryReturn(`/pacientes/${patientId}`, patientId)}>
             <Button variant="outline" size="sm" className="rounded-full border-slate-200">
               Ficha
             </Button>
