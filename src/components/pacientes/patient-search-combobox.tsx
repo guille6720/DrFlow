@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -18,6 +18,7 @@ interface Props {
   required?: boolean;
   placeholder?: string;
   defaultPatientId?: string;
+  onPatientChange?: (patientId: string) => void;
 }
 
 function normalize(s: string) {
@@ -38,12 +39,24 @@ export function PatientSearchCombobox({
   required,
   placeholder = "Escribí nombre, apellido o DNI…",
   defaultPatientId,
+  onPatientChange,
 }: Props) {
   const initial = patients.find((p) => p.id === defaultPatientId);
   const [query, setQuery] = useState(initial ? formatLabel(initial) : "");
   const [selectedId, setSelectedId] = useState(defaultPatientId ?? "");
   const [open, setOpen] = useState(false);
   const blurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const p = patients.find((x) => x.id === defaultPatientId);
+    if (defaultPatientId && p) {
+      setSelectedId(defaultPatientId);
+      setQuery(formatLabel(p));
+    } else if (!defaultPatientId) {
+      setSelectedId("");
+      setQuery("");
+    }
+  }, [defaultPatientId, patients]);
 
   const filtered = useMemo(() => {
     const q = normalize(query.trim());
@@ -67,6 +80,7 @@ export function PatientSearchCombobox({
     setSelectedId(p.id);
     setQuery(formatLabel(p));
     setOpen(false);
+    onPatientChange?.(p.id);
   }
 
   function handleBlur() {
@@ -95,6 +109,7 @@ export function PatientSearchCombobox({
           onChange={(e) => {
             setQuery(e.target.value);
             setSelectedId("");
+            onPatientChange?.("");
             setOpen(true);
           }}
           onFocus={handleFocus}

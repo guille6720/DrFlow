@@ -228,14 +228,12 @@ export function PatientEhrView({
       >
         <Plus className="h-3.5 w-3.5" /> Receta
       </Link>
-      {selected ? (
-        <Link
-          href={withClinicalHistoryReturn(`/historias/${selected.id}`, patient.id)}
-          className="drflow-ehr-action-link inline-flex items-center gap-1"
-        >
-          <Plus className="h-3.5 w-3.5" /> Orden
-        </Link>
-      ) : null}
+      <Link
+        href={withClinicalHistoryReturn(`/recetas?patient=${patient.id}&tipo=orden`, patient.id)}
+        className="drflow-ehr-action-link inline-flex items-center gap-1"
+      >
+        <Plus className="h-3.5 w-3.5" /> Orden
+      </Link>
       <button
         type="button"
         onClick={() => window.print()}

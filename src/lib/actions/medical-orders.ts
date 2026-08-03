@@ -62,6 +62,7 @@ export async function createMedicalOrder(formData: FormData) {
   }
 
   revalidatePath("/historias");
+  revalidatePath("/recetas");
   return { data: data as MedicalOrder };
 }
 
@@ -80,5 +81,6 @@ export async function voidMedicalOrder(id: string) {
   if (error) return { error: error.message };
 
   revalidatePath("/historias");
+  revalidatePath("/recetas");
   return { success: true };
 }

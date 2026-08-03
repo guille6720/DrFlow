@@ -234,6 +234,12 @@ export function PatientChartView({
               Nueva receta
             </Button>
           </Link>
+          <Link href={`/recetas?patient=${patientId}&tipo=orden`}>
+            <Button size="sm" variant="outline" type="button">
+              <ClipboardList className="h-4 w-4" />
+              Nueva orden
+            </Button>
+          </Link>
           <Link href={`/historias/nueva?patient=${patientId}`}>
             <Button size="sm" variant="outline" type="button">
               <FileText className="h-4 w-4" />

@@ -4,15 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Select } from "@/components/ui/select";
-import { createMedicalOrder, voidMedicalOrder } from "@/lib/actions/medical-orders";
-import { PAMI_REFERRAL_TEMPLATES, PAMI_STUDY_TEMPLATES } from "@/lib/constants/pami-cabecera";
-import { getProfessionalDisplayName } from "@/lib/utils/professional";
+import { MedicalOrderForm } from "@/components/recetas/medical-order-form";
+import { voidMedicalOrder } from "@/lib/actions/medical-orders";
 import type { MedicalOrder } from "@/types/medical-order";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { FileText, Plus, Stethoscope } from "lucide-react";
+import { Plus } from "lucide-react";
 
 interface Professional {
   id: string;
@@ -40,35 +37,7 @@ export function MedicalOrderPanel({
 }: Props) {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
-  const [orderType, setOrderType] = useState<"study" | "referral">("study");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [acting, setActing] = useState<string | null>(null);
-
-  const templates = orderType === "study" ? PAMI_STUDY_TEMPLATES : PAMI_REFERRAL_TEMPLATES;
-
-  function applyTemplate(text: string) {
-    const el = document.getElementById("order-text-field") as HTMLTextAreaElement | null;
-    if (el) el.value = text;
-  }
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    const formData = new FormData(e.currentTarget);
-    formData.set("patient_id", patientId);
-    formData.set("clinical_record_id", clinicalRecordId);
-    formData.set("order_type", orderType);
-    const result = await createMedicalOrder(formData);
-    setLoading(false);
-    if (result.error) {
-      setError(result.error);
-      return;
-    }
-    setShowForm(false);
-    router.refresh();
-  }
 
   async function handleVoid(id: string) {
     setActing(id);
@@ -89,75 +58,15 @@ export function MedicalOrderPanel({
       )}
 
       {showForm && canIssue && (
-        <form onSubmit={handleSubmit} className="mb-6 space-y-3 border-b border-slate-100 pb-6">
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant={orderType === "study" ? "primary" : "outline"}
-              onClick={() => setOrderType("study")}
-            >
-              <FileText className="h-4 w-4" />
-              Estudios
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant={orderType === "referral" ? "primary" : "outline"}
-              onClick={() => setOrderType("referral")}
-            >
-              <Stethoscope className="h-4 w-4" />
-              Derivación
-            </Button>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {templates.map((t) => (
-              <button
-                key={t.label}
-                type="button"
-                onClick={() => applyTemplate(t.text)}
-                className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 hover:bg-blue-100"
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
-          <Select
-            name="professional_id"
-            label="Profesional"
-            required
-            defaultValue={defaultProfessionalId}
-            options={professionals.map((p) => ({
-              value: p.id,
-              label: getProfessionalDisplayName(p),
-            }))}
-            placeholder="Seleccionar"
+        <div className="mb-6 border-b border-slate-100 pb-6">
+          <MedicalOrderForm
+            patientId={patientId}
+            clinicalRecordId={clinicalRecordId}
+            professionals={professionals}
+            defaultProfessionalId={defaultProfessionalId}
+            onSuccess={() => setShowForm(false)}
           />
-          <Textarea
-            id="order-text-field"
-            name="order_text"
-            label={orderType === "study" ? "Estudios / análisis" : "Texto de derivación"}
-            required
-            rows={5}
-            placeholder={
-              orderType === "study"
-                ? "Hemograma, glucemia, ECG..."
-                : "Derivación a especialista..."
-            }
-          />
-          <Textarea
-            name="notes"
-            label="Indicaciones para el paciente"
-            rows={2}
-            placeholder="Ayuno, preparación, turno en PAMI..."
-          />
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" loading={loading}>
-            Generar {orderType === "study" ? "orden de estudios" : "derivación"}
-          </Button>
-        </form>
+        </div>
       )}
 
       {orders.length === 0 ? (

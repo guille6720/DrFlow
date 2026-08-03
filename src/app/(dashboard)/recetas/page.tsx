@@ -1,10 +1,9 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Header } from "@/components/layout/header";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExportPrescriptionPdfButton } from "@/components/recetas/export-prescription-pdf";
+import { PrescriptionsOrdersHub } from "@/components/recetas/prescriptions-orders-hub";
 import {
   getActiveClinic,
   getActiveClinicId,
@@ -13,14 +12,18 @@ import {
 } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/permissions/roles";
 import { createClient } from "@/lib/supabase/server";
-import { getProfessionalDisplayName } from "@/lib/utils/professional";
-import { PRESCRIPTION_STATUS_LABELS } from "@/types/prescription";
+import { parseHabitualMedicationText } from "@/lib/utils/parse-habitual-meds";
+import type { PrescriptionMedication } from "@/types/prescription";
 import type { ElectronicPrescription } from "@/types/prescription";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import type { MedicalOrder } from "@/types/medical-order";
 import { Plus } from "lucide-react";
 
-export default async function RecetasPage() {
+export default async function RecetasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ patient?: string; tipo?: string }>;
+}) {
+  const { patient: patientId, tipo } = await searchParams;
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
@@ -32,8 +35,20 @@ export default async function RecetasPage() {
 
   const supabase = await createClient();
 
-  const [prescriptionsRes] = clinicId
+  const [patientsRes, professionalsRes, recentRxRes] = clinicId
     ? await Promise.all([
+        supabase
+          .from("patients")
+          .select("id, first_name, last_name, document_number")
+          .eq("clinic_id", clinicId)
+          .eq("is_active", true)
+          .order("last_name")
+          .limit(500),
+        supabase
+          .from("professionals")
+          .select("*, profiles(full_name), specialties(name)")
+          .eq("clinic_id", clinicId)
+          .eq("is_active", true),
         supabase
           .from("prescription_drafts")
           .select(
@@ -41,31 +56,113 @@ export default async function RecetasPage() {
           )
           .eq("clinic_id", clinicId)
           .order("created_at", { ascending: false })
-          .limit(50),
+          .limit(30),
       ])
-    : [{ data: [] }];
+    : [{ data: [] }, { data: [] }, { data: [] }];
 
-  const prescriptions = (prescriptionsRes.data ?? []) as (ElectronicPrescription & {
-    patients: {
-      first_name: string;
-      last_name: string;
-      document_number: string;
-      birth_date: string | null;
-      insurance_provider: string | null;
-    };
-    professionals: {
+  const patients = patientsRes.data ?? [];
+  const professionals = professionalsRes.data ?? [];
+  const recentPrescriptions = (recentRxRes.data ?? []) as Array<
+    ElectronicPrescription & {
+      patients: {
+        first_name: string;
+        last_name: string;
+        document_number: string;
+        birth_date: string | null;
+        insurance_provider: string | null;
+      };
+      professionals: {
+        display_name: string | null;
+        license_number: string | null;
+        profiles: { full_name: string } | null;
+        specialties: { name: string } | null;
+      };
+    }
+  >;
+
+  let selectedPatient = null;
+  let patientPrescriptions: (ElectronicPrescription & {
+    professionals?: {
       display_name: string | null;
       license_number: string | null;
       profiles: { full_name: string } | null;
       specialties: { name: string } | null;
-    };
-  })[];
+    } | null;
+  })[] = [];
+  let patientOrders: (MedicalOrder & { order_type?: string })[] = [];
+  let prefillDiagnosis = "";
+  let prefillCie10 = "";
+  let initialMedications: PrescriptionMedication[] | undefined;
+
+  if (clinicId && patientId) {
+    const [patientRes, rxRes, ordersRes, lastRecordRes, lastRxRes] = await Promise.all([
+      supabase
+        .from("patients")
+        .select(
+          "id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, email, regular_medication"
+        )
+        .eq("clinic_id", clinicId)
+        .eq("id", patientId)
+        .maybeSingle(),
+      supabase
+        .from("prescription_drafts")
+        .select("*, professionals(display_name, license_number, profiles(full_name), specialties(name))")
+        .eq("clinic_id", clinicId)
+        .eq("patient_id", patientId)
+        .order("created_at", { ascending: false })
+        .limit(20),
+      supabase
+        .from("medical_orders")
+        .select("*")
+        .eq("clinic_id", clinicId)
+        .eq("patient_id", patientId)
+        .order("issued_at", { ascending: false })
+        .limit(20),
+      supabase
+        .from("clinical_records")
+        .select("diagnosis, evolution")
+        .eq("clinic_id", clinicId)
+        .eq("patient_id", patientId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("prescription_drafts")
+        .select("medications")
+        .eq("clinic_id", clinicId)
+        .eq("patient_id", patientId)
+        .neq("status", "void")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+
+    selectedPatient = patientRes.data;
+    patientPrescriptions = (rxRes.data ?? []) as typeof patientPrescriptions;
+    patientOrders = (ordersRes.data ?? []) as typeof patientOrders;
+
+    const lastRecord = lastRecordRes.data;
+    if (lastRecord?.diagnosis) prefillDiagnosis = lastRecord.diagnosis;
+    else if (lastRecord?.evolution) {
+      prefillDiagnosis = lastRecord.evolution.slice(0, 200);
+    }
+
+    const lastMeds = (lastRxRes.data?.medications as PrescriptionMedication[] | null) ?? null;
+    if (lastMeds && lastMeds.length > 0) {
+      initialMedications = lastMeds;
+    } else if (selectedPatient?.regular_medication) {
+      const parsed = parseHabitualMedicationText(selectedPatient.regular_medication);
+      if (parsed.length > 0) initialMedications = parsed;
+    }
+  }
+
+  const defaultTab = tipo === "orden" ? "orden" : "receta";
 
   return (
     <>
       <Header
-        title="Recetas electrónicas"
-        subtitle="Emisión local conforme Ley 25.649 — preparado para REFEPS"
+        title="Recetas y órdenes"
+        subtitle="Generá recetas electrónicas y órdenes médicas por paciente"
         clinics={clinics}
         activeClinicId={clinicId}
         role={role}
@@ -80,73 +177,33 @@ export default async function RecetasPage() {
               Nueva consulta
             </Button>
           </Link>
-          <Link href="/historias">
+          <Link href="/pacientes">
             <Button variant="outline" size="sm">
-              Ver historias clínicas
+              Ver pacientes
             </Button>
           </Link>
         </div>
 
-        <Card title="Recetas emitidas y borradores">
-          {prescriptions.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              Todavía no hay recetas. Creá una desde el detalle de una consulta en Historia clínica.
-            </p>
-          ) : (
-            <ul className="divide-y divide-slate-100">
-              {prescriptions.map((rx) => {
-                const patient = rx.patients;
-                const pro = rx.professionals;
-                return (
-                  <li key={rx.id} className="flex flex-wrap items-start justify-between gap-4 py-4 first:pt-0">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-medium text-slate-900">
-                          {rx.prescription_number ?? rx.id.slice(0, 8)}
-                        </p>
-                        <Badge variant={rx.status === "issued" ? "success" : rx.status === "void" ? "danger" : "warning"}>
-                          {PRESCRIPTION_STATUS_LABELS[rx.status]}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-slate-600">
-                        {patient.last_name}, {patient.first_name} — DNI {patient.document_number}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {getProfessionalDisplayName(pro)} ·{" "}
-                        {format(new Date(rx.issued_at ?? rx.created_at), "PPp", { locale: es })}
-                        {rx.diagnosis_cie10 ? ` · ${rx.diagnosis_cie10}` : ""}
-                      </p>
-                      {rx.clinical_record_id && (
-                        <Link
-                          href={`/historias/${rx.clinical_record_id}`}
-                          className="mt-1 inline-block text-xs text-blue-700 hover:underline"
-                        >
-                          Ver consulta
-                        </Link>
-                      )}
-                    </div>
-                    {rx.status === "issued" && clinic && (
-                      <ExportPrescriptionPdfButton
-                        prescription={rx}
-                        patient={patient}
-                        professional={{
-                          full_name: pro.profiles?.full_name ?? pro.display_name ?? "Profesional",
-                          license_number: pro.license_number,
-                          specialty: pro.specialties?.name,
-                        }}
-                        clinic={{
-                          name: clinic.name,
-                          address: clinic.address,
-                          phone: clinic.phone,
-                        }}
-                      />
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </Card>
+        <Suspense fallback={<p className="text-sm text-slate-500">Cargando…</p>}>
+          <PrescriptionsOrdersHub
+            patients={patients}
+            professionals={professionals}
+            clinic={{
+              name: clinic?.name ?? "Consultorio",
+              address: clinic?.address,
+              phone: clinic?.phone,
+            }}
+            selectedPatient={selectedPatient}
+            patientPrescriptions={patientPrescriptions}
+            patientOrders={patientOrders}
+            recentPrescriptions={recentPrescriptions}
+            prefillDiagnosis={prefillDiagnosis}
+            prefillCie10={prefillCie10}
+            initialMedications={initialMedications}
+            defaultProfessionalId={professionals[0]?.id}
+            defaultTab={defaultTab}
+          />
+        </Suspense>
       </div>
     </>
   );

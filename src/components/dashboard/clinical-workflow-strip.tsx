@@ -16,8 +16,8 @@ const steps = [
     icon: Stethoscope,
   },
   {
-    label: "Receta",
-    desc: "Ley 25.649",
+    label: "Recetas y órdenes",
+    desc: "Por paciente",
     href: "/recetas",
     icon: ScrollText,
   },

@@ -65,7 +65,7 @@ const navItems: NavItem[] = [
   { href: "/ingreso-profesionales", label: "Ingreso de profesionales", icon: UserPlus, permission: "manageStaff" },
   { href: "/historias", label: "Historia clínica", icon: FileText, permission: "viewClinicalRecords" },
   { href: "/datos", label: "Importar / Exportar", icon: ArrowDownUp, permission: null },
-  { href: "/recetas", label: "Recetas electrónicas", icon: ScrollText, permission: "issuePrescriptions" },
+  { href: "/recetas", label: "Recetas y órdenes", icon: ScrollText, permission: "issuePrescriptions" },
   { href: "/herramientas/farmacologia", label: "Guía farmacológica", icon: Pill, permission: "viewPharmacology" },
   { href: "/guia-pami", label: "Guía cabecera PAMI", icon: HeartPulse, permission: null },
   { href: "/pami/planillas", label: "Planillas PAMI", icon: ClipboardList, permission: "issuePrescriptions" },
