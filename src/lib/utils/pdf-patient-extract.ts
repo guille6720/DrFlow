@@ -1,3 +1,5 @@
+import { normalizeDni } from "@/lib/utils/normalize-dni";
+
 export interface ExtractedPatientInfo {
   document_number: string;
   first_name: string;
@@ -12,12 +14,6 @@ function titleCase(value: string): string {
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
-}
-
-function normalizeDni(raw: string): string | null {
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length < 7 || digits.length > 8) return null;
-  return digits;
 }
 
 function splitFullName(full: string): { first_name: string; last_name: string } {

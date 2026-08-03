@@ -1,3 +1,5 @@
+import { normalizeDni } from "@/lib/utils/normalize-dni";
+
 export interface ClinicalCsvRow {
   lineNumber: number;
   document_number: string;
@@ -61,12 +63,6 @@ function normalizeHeader(cell: string): string {
     .normalize("NFD")
     .replace(/\p{M}/gu, "")
     .replace(/\s+/g, "_");
-}
-
-function normalizeDni(raw: string): string | null {
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length < 7 || digits.length > 8) return null;
-  return digits;
 }
 
 function detectDelimiter(line: string): "," | ";" {

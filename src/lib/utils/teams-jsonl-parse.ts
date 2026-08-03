@@ -1,5 +1,6 @@
 import type { HceExportRow } from "@/lib/utils/hce-export-parse";
 import { placeholderDniFromConsumerId } from "@/lib/utils/hce-export-parse";
+import { normalizeDni } from "@/lib/utils/normalize-dni";
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 
 export interface TeamsJsonlConsumer {
@@ -19,13 +20,6 @@ export interface TeamsJsonlParseResult {
     recordsSkipped: number;
     recordsParsed: number;
   };
-}
-
-function normalizeDni(raw: string | undefined): string | null {
-  if (!raw) return null;
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length < 7 || digits.length > 8) return null;
-  return digits;
 }
 
 function parseIsoDate(raw: string | undefined): string | null {

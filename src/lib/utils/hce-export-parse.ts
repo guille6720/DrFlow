@@ -1,4 +1,5 @@
 import { parseCsvRows } from "@/lib/utils/clinical-csv-parse";
+import { normalizeDni } from "@/lib/utils/normalize-dni";
 
 export interface HceExportRow {
   lineNumber: number;
@@ -30,12 +31,6 @@ const HEADER_ALIASES: Record<string, keyof Omit<HceExportRow, "lineNumber">> = {
   cie10: "cie10",
   notas: "notas",
 };
-
-function normalizeDni(raw: string): string | null {
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length < 7 || digits.length > 8) return null;
-  return digits;
-}
 
 export function placeholderDniFromConsumerId(paciente_id: string): string {
   const hex = paciente_id.replace(/^consumers\//i, "").replace(/[^a-f0-9]/gi, "");

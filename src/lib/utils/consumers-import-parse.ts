@@ -1,5 +1,6 @@
 import { parseCsvRows } from "@/lib/utils/clinical-csv-parse";
 import { placeholderDniFromConsumerId } from "@/lib/utils/hce-export-parse";
+import { normalizeDni } from "@/lib/utils/normalize-dni";
 
 export interface ConsumerImportRecord {
   lineNumber: number;
@@ -17,15 +18,8 @@ export interface ConsumerImportRecord {
 const CONSUMER_HEADER_MARKER = "firstName";
 const CONSUMER_ID_MARKER = "identification";
 
-function normalizeDni(raw: string): string | null {
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length >= 7 && digits.length <= 8) return digits;
-  if (digits.length === 9) return digits.slice(-8);
-  return null;
-}
-
 function resolveDocumentNumber(identification: string, consumerId: string | null): string | null {
-  const fromId = normalizeDni(identification ?? "");
+  const fromId = normalizeDni(identification ?? "", { trimNineDigit: true });
   if (fromId) return fromId;
   const ref = (consumerId ?? "").trim();
   if (ref.startsWith("consumers/")) return placeholderDniFromConsumerId(ref);

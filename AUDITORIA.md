@@ -1,8 +1,29 @@
-# Informe de arquitectura — DrFlow
+# Informe de auditoría — DrFlow (producción)
 
 **Alcance:** `c:\dev\DrFlow` (Next.js 16 + Supabase + TypeScript)  
-**Modo:** solo lectura — no se modificó ningún archivo  
-**Versión analizada:** `0.2.0` (`package.json`)
+**Versión:** `0.2.1` · **Fecha:** 2026-08-03  
+**Estado:** correcciones P0 aplicadas · migración `045` pendiente `supabase db push`
+
+## Correcciones P0 aplicadas
+
+| Cambio | Archivos |
+|--------|----------|
+| RLS storage, attachments, RPC booking, audit_logs, índices | `045_security_hardening.sql` |
+| Validación JWT server-side | `session.ts`, `middleware.ts` |
+| Eliminar login enumeration | `api/auth/login/route.ts` |
+| Export ARCO solo clínico | `compliance.ts` |
+| Telemedicina con permiso clínico | `clinic-services.ts` |
+| Slots públicos vía RPC | `public-booking.ts` |
+| DRY normalizeDni | `normalize-dni.ts` + 5 parsers |
+
+**Próximo paso:** `npx supabase db push` en el proyecto DrFlow de producción.
+
+---
+
+# Informe de arquitectura — DrFlow (histórico)
+
+**Alcance:** `c:\dev\DrFlow` (Next.js 16 + Supabase + TypeScript)  
+**Modo original:** solo lectura — versión pre-auditoría `0.2.0`
 
 ---
 
