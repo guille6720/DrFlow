@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -12,6 +13,7 @@ import {
   ScrollText,
   Stethoscope,
   User,
+  ArrowLeft,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +31,16 @@ import { PRESCRIPTION_STATUS_LABELS } from "@/types/prescription";
 import type { ElectronicPrescription, PrescriptionMedication } from "@/types/prescription";
 import type { MedicalOrder } from "@/types/medical-order";
 import { cn } from "@/lib/utils/cn";
+import {
+  buildConsultaHref,
+  consultationDraftKey,
+  parseConsultationDraftContext,
+  readConsultationEvolution,
+} from "@/lib/utils/consultation-draft";
+import {
+  extractEvolutionDiagnosis,
+  parseEvolutionMedications,
+} from "@/lib/utils/parse-evolution-medications";
 
 type DocTab = "receta" | "orden";
 
@@ -120,12 +132,70 @@ export function PrescriptionsOrdersHub({
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const consultationContext = useMemo(
+    () => parseConsultationDraftContext(searchParams),
+    [searchParams]
+  );
+  const draftKey = useMemo(
+    () => (consultationContext ? consultationDraftKey(consultationContext) : null),
+    [consultationContext]
+  );
+  const [consultaDiagnosis, setConsultaDiagnosis] = useState("");
+
+  useEffect(() => {
+    if (draftKey == null) {
+      setConsultaDiagnosis("");
+      return;
+    }
+    const storageKey: string = draftKey;
+    function syncEvolution() {
+      setConsultaDiagnosis(readConsultationEvolution(storageKey));
+    }
+    syncEvolution();
+    document.addEventListener("visibilitychange", syncEvolution);
+    window.addEventListener("focus", syncEvolution);
+    return () => {
+      document.removeEventListener("visibilitychange", syncEvolution);
+      window.removeEventListener("focus", syncEvolution);
+    };
+  }, [draftKey]);
+
+  const consultaMedications = useMemo(() => {
+    if (!consultationContext) return [];
+    return parseEvolutionMedications(consultaDiagnosis);
+  }, [consultationContext, consultaDiagnosis]);
+
+  const diagnosisForForm =
+    consultationContext && consultaDiagnosis.trim()
+      ? extractEvolutionDiagnosis(consultaDiagnosis) || consultaDiagnosis.slice(0, 500)
+      : prefillDiagnosis;
+
+  const medicationsForForm =
+    consultationContext && consultaMedications.length > 0
+      ? consultaMedications
+      : initialMedications;
+
   const activeTab: DocTab = searchParams.get("tipo") === "orden" ? "orden" : defaultTab;
 
-  function navigate(patientId: string | null, tab: DocTab = activeTab) {
+  function buildNavigateParams(patientId: string | null, tab: DocTab) {
     const params = new URLSearchParams();
     if (patientId) params.set("patient", patientId);
     if (tab === "orden") params.set("tipo", "orden");
+    if (consultationContext) {
+      params.set("consulta", "1");
+      if (consultationContext.appointmentId) {
+        params.set("appointment", consultationContext.appointmentId);
+      }
+      params.set("patient", consultationContext.patientId);
+      if (consultationContext.professionalId) {
+        params.set("professional", consultationContext.professionalId);
+      }
+    }
+    return params;
+  }
+
+  function navigate(patientId: string | null, tab: DocTab = activeTab) {
+    const params = buildNavigateParams(patientId, tab);
     const qs = params.toString();
     router.push(qs ? `/recetas?${qs}` : "/recetas");
   }
@@ -134,10 +204,28 @@ export function PrescriptionsOrdersHub({
     navigate(selectedPatient?.id ?? null, tab);
   }
 
-  const defaultPro = defaultProfessionalId ?? professionals[0]?.id;
+  const defaultPro =
+    consultationContext?.professionalId ?? defaultProfessionalId ?? professionals[0]?.id;
 
   return (
     <div className="space-y-4">
+      {consultationContext && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-teal-500/40 bg-teal-950/50 px-4 py-3">
+          <Link
+            href={buildConsultaHref(consultationContext)}
+            className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-teal-500"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Volver a consulta en curso
+          </Link>
+          <p className="text-sm text-teal-100">
+            {consultaMedications.length > 0
+              ? `${consultaMedications.length} medicamento(s) precargado(s) desde la evolución.`
+              : "La evolución de la consulta se usará como diagnóstico si no hay medicación con viñeta."}
+          </p>
+        </div>
+      )}
+
       <Card title="Paciente">
         <PatientSearchCombobox
           patients={patients}
@@ -231,20 +319,32 @@ export function PrescriptionsOrdersHub({
             >
               {activeTab === "receta" ? (
                 <>
-                  {initialMedications && initialMedications.length > 0 && (
+                  {consultationContext && consultaMedications.length > 0 && (
+                    <p className="mb-4 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-900">
+                      <Pill className="mr-1 inline h-4 w-4" />
+                      Medicación importada desde la evolución de la consulta en curso. Revisá posología y
+                      presentación antes de emitir.
+                    </p>
+                  )}
+                  {!consultationContext && initialMedications && initialMedications.length > 0 && (
                     <p className="mb-4 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-900">
                       <Pill className="mr-1 inline h-4 w-4" />
                       Medicación precargada desde la última receta o tratamiento habitual. Revisá antes de emitir.
                     </p>
                   )}
                   <PrescriptionForm
+                    key={
+                      draftKey
+                        ? `consulta-${draftKey}-${consultaMedications.length}-${diagnosisForForm.length}`
+                        : "default"
+                    }
                     patientId={selectedPatient.id}
                     patientInsurance={selectedPatient.insurance_provider}
-                    diagnosisDefault={prefillDiagnosis}
+                    diagnosisDefault={diagnosisForForm}
                     cie10Default={prefillCie10}
                     professionals={professionals}
                     defaultProfessionalId={defaultPro}
-                    initialMedications={initialMedications}
+                    initialMedications={medicationsForForm}
                     onSuccess={() => router.refresh()}
                   />
                 </>

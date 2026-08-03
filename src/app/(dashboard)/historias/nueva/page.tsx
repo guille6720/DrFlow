@@ -45,6 +45,7 @@ export default async function NuevaConsultaPage() {
       patients={patients.data ?? []}
       professionals={professionals.data ?? []}
       templates={templates.data ?? []}
+      canIssuePrescriptions={hasPermission(role, "issuePrescriptions", isSuperadmin)}
     />
   );
 }

@@ -18,10 +18,11 @@ import {
   getProfessionalDisplayName,
 } from "@/lib/utils/professional";
 import type { Clinic, Patient, Professional, UserRole } from "@/types/database";
-import { ArrowLeft, AlertTriangle, Pill } from "lucide-react";
+import { ArrowLeft, Pill, ScrollText } from "lucide-react";
 import { backHrefFromClinicalSubpage } from "@/lib/utils/clinical-navigation";
 import {
   buildPharmacologyHrefFromConsultation,
+  buildRecetasHrefFromConsultation,
   clearConsultationEvolution,
   consultationDraftKey,
   readConsultationEvolution,
@@ -43,6 +44,7 @@ interface Props {
     evolution_template: string | null;
     indications_template: string | null;
   }>;
+  canIssuePrescriptions?: boolean;
 }
 
 export default function NuevaConsultaForm({
@@ -53,6 +55,7 @@ export default function NuevaConsultaForm({
   patients,
   professionals,
   templates,
+  canIssuePrescriptions = false,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -67,7 +70,6 @@ export default function NuevaConsultaForm({
   );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showPrescription, setShowPrescription] = useState(false);
   const [professionalId, setProfessionalId] = useState(defaultProfessional);
   const [professionalSignature, setProfessionalSignature] = useState("");
   const [evolution, setEvolution] = useState("");
@@ -152,6 +154,13 @@ export default function NuevaConsultaForm({
     if (draftKey) saveConsultationEvolution(draftKey, evolution);
   }
 
+  function recetaHref(tab: "receta" | "orden" = "receta") {
+    if (!consultationContext) {
+      return tab === "orden" ? "/recetas?tipo=orden" : "/recetas";
+    }
+    return buildRecetasHrefFromConsultation(consultationContext, tab);
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
@@ -217,6 +226,8 @@ export default function NuevaConsultaForm({
             appointmentId={appointmentId}
             patient={selectedPatient}
             showSteps={false}
+            recetaHref={canIssuePrescriptions && consultationContext ? recetaHref() : undefined}
+            onRecetaClick={flushEvolutionDraft}
           />
         )}
 
@@ -317,13 +328,16 @@ export default function NuevaConsultaForm({
               <Button type="submit" loading={loading}>
                 Guardar consulta
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowPrescription(!showPrescription)}
-              >
-                Borrador de prescripción
-              </Button>
+              {canIssuePrescriptions && consultationContext && (
+                <Link
+                  href={recetaHref()}
+                  onClick={flushEvolutionDraft}
+                  className="inline-flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-4 py-2 text-sm font-medium text-teal-800 hover:bg-teal-100"
+                >
+                  <ScrollText className="h-4 w-4" />
+                  Generar receta
+                </Link>
+              )}
               {fromAppointment && (
                 <Link
                   href="/agenda?view=day"
@@ -335,21 +349,6 @@ export default function NuevaConsultaForm({
             </div>
           </form>
         </Card>
-
-        {showPrescription && (
-          <Card title="Borrador de prescripción">
-            <div className="mb-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              <AlertTriangle className="h-5 w-5 shrink-0" />
-              <p>
-                <strong>Aviso legal:</strong> Este documento no tiene validez como receta
-                electrónica oficial hasta aprobación regulatoria.
-              </p>
-            </div>
-            <p className="text-sm text-slate-500">
-              Tras guardar la consulta podrás emitir la receta desde el detalle de la historia.
-            </p>
-          </Card>
-        )}
       </div>
     </>
   );

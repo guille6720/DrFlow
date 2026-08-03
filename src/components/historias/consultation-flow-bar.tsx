@@ -4,7 +4,8 @@ import { ConsultationTimer, clearConsultationTimer } from "@/components/historia
 import { FinalizeConsultationButton } from "@/components/historias/finalize-consultation-button";
 import { cn } from "@/lib/utils/cn";
 import type { Patient } from "@/types/database";
-import { User, FileText, Stethoscope, ClipboardList, Pill } from "lucide-react";
+import { User, FileText, Stethoscope, ClipboardList, Pill, ScrollText } from "lucide-react";
+import Link from "next/link";
 
 export type ConsultationStep = "motivo" | "evolucion" | "diagnostico" | "indicaciones";
 
@@ -22,6 +23,8 @@ interface ConsultationFlowBarProps {
   onStepChange?: (step: ConsultationStep) => void;
   /** Oculta la barra de pasos cuando el formulario usa un solo campo de evolución. */
   showSteps?: boolean;
+  recetaHref?: string;
+  onRecetaClick?: () => void;
 }
 
 /** Barra fija de consulta: paciente + timer + pasos + finalizar. */
@@ -31,6 +34,8 @@ export function ConsultationFlowBar({
   activeStep = "evolucion",
   onStepChange,
   showSteps = true,
+  recetaHref,
+  onRecetaClick,
 }: ConsultationFlowBarProps) {
   const stepIndex = STEPS.findIndex((s) => s.id === activeStep);
 
@@ -52,6 +57,16 @@ export function ConsultationFlowBar({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ConsultationTimer storageKey={appointmentId} />
+          {recetaHref ? (
+            <Link
+              href={recetaHref}
+              onClick={onRecetaClick}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-sm font-medium text-teal-800 hover:bg-teal-100"
+            >
+              <ScrollText className="h-4 w-4" />
+              Generar receta
+            </Link>
+          ) : null}
           <FinalizeConsultationButton appointmentId={appointmentId} />
         </div>
       </div>

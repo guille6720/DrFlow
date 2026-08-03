@@ -21,9 +21,15 @@ import { Plus } from "lucide-react";
 export default async function RecetasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ patient?: string; tipo?: string }>;
+  searchParams: Promise<{
+    patient?: string;
+    tipo?: string;
+    consulta?: string;
+    appointment?: string;
+    professional?: string;
+  }>;
 }) {
-  const { patient: patientId, tipo } = await searchParams;
+  const { patient: patientId, tipo, professional: professionalParam } = await searchParams;
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
@@ -200,7 +206,7 @@ export default async function RecetasPage({
             prefillDiagnosis={prefillDiagnosis}
             prefillCie10={prefillCie10}
             initialMedications={initialMedications}
-            defaultProfessionalId={professionals[0]?.id}
+            defaultProfessionalId={professionalParam?.trim() || professionals[0]?.id}
             defaultTab={defaultTab}
           />
         </Suspense>

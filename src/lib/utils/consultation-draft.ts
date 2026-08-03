@@ -82,6 +82,19 @@ export function buildPharmacologyHrefFromConsultation(
   return `/herramientas/farmacologia?${params.toString()}`;
 }
 
+export function buildRecetasHrefFromConsultation(
+  ctx: ConsultationDraftContext,
+  tab: "receta" | "orden" = "receta"
+): string {
+  const params = new URLSearchParams();
+  params.set(QUERY_FLAG, "1");
+  params.set("patient", ctx.patientId);
+  if (ctx.appointmentId) params.set("appointment", ctx.appointmentId);
+  if (ctx.professionalId) params.set("professional", ctx.professionalId);
+  if (tab === "orden") params.set("tipo", "orden");
+  return `/recetas?${params.toString()}`;
+}
+
 export function formatGuideDrugForEvolution(input: {
   name: string;
   activeIngredient?: string | null;
