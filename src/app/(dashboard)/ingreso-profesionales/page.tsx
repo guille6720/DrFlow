@@ -1,5 +1,10 @@
 import { redirect } from "next/navigation";
-import { ProfessionalIntakeView } from "@/components/profesionales/professional-intake-view";
+import { Suspense } from "react";
+import {
+  ProfessionalIntakeView,
+  type AvailabilityRuleRow,
+  type ProfessionalIntakeDetail,
+} from "@/components/profesionales/professional-intake-view";
 import {
   getActiveClinic,
   getActiveClinicId,
@@ -8,9 +13,14 @@ import {
 } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { hasPermission } from "@/lib/permissions/roles";
-import type { Professional } from "@/types/database";
 
-export default async function IngresoProfesionalesPage() {
+export default async function IngresoProfesionalesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ id?: string; nuevo?: string }>;
+}) {
+  const params = await searchParams;
+  const { id: selectedId, nuevo } = params;
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
@@ -22,7 +32,7 @@ export default async function IngresoProfesionalesPage() {
 
   const supabase = await createClient();
 
-  const [{ data: locations }, { data: professionals }] = clinicId
+  const [{ data: locations }, { data: professionals }, { data: rules }] = clinicId
     ? await Promise.all([
         supabase
           .from("locations")
@@ -32,22 +42,69 @@ export default async function IngresoProfesionalesPage() {
         supabase
           .from("professionals")
           .select(
-            "id, display_name, license_national, license_provincial, intake_completed_at, specialties(name)"
+            "id, display_name, document_number, email, phone, license_national, license_provincial, office_phone, office_address, accepted_insurances, intake_notes, intake_completed_at, location_id, specialties(name)"
           )
           .eq("clinic_id", clinicId)
           .eq("is_active", true)
           .order("display_name"),
+        supabase
+          .from("availability_rules")
+          .select("id, professional_id, day_of_week, start_time, end_time, slot_duration")
+          .eq("clinic_id", clinicId)
+          .eq("is_active", true),
       ])
-    : [{ data: [] }, { data: [] }];
+    : [{ data: [] }, { data: [] }, { data: [] }];
+
+  const professionalList: ProfessionalIntakeDetail[] = (professionals ?? []).map((p) => {
+    const row = p as Record<string, unknown>;
+    const spec = row.specialties;
+    const specialty =
+      spec && typeof spec === "object" && !Array.isArray(spec) && "name" in spec
+        ? { name: String((spec as { name: string }).name) }
+        : Array.isArray(spec) && spec[0] && typeof spec[0] === "object" && "name" in spec[0]
+          ? { name: String((spec[0] as { name: string }).name) }
+          : null;
+    return {
+      id: String(row.id),
+      display_name: (row.display_name as string | null) ?? null,
+      document_number: row.document_number as string | null | undefined,
+      email: row.email as string | null | undefined,
+      phone: row.phone as string | null | undefined,
+      license_national: row.license_national as string | null | undefined,
+      license_provincial: row.license_provincial as string | null | undefined,
+      office_phone: row.office_phone as string | null | undefined,
+      office_address: row.office_address as string | null | undefined,
+      accepted_insurances: row.accepted_insurances as string | null | undefined,
+      intake_notes: row.intake_notes as string | null | undefined,
+      intake_completed_at: row.intake_completed_at as string | null | undefined,
+      location_id: row.location_id as string | null | undefined,
+      specialties: specialty,
+    };
+  });
+
+  const scheduleByProfessional = ((rules ?? []) as AvailabilityRuleRow[]).reduce<
+    Record<string, AvailabilityRuleRow[]>
+  >((acc, rule) => {
+    if (!acc[rule.professional_id]) acc[rule.professional_id] = [];
+    acc[rule.professional_id].push(rule);
+    return acc;
+  }, {});
+
+  if (!selectedId && !nuevo && professionalList.length > 0) {
+    redirect(`/ingreso-profesionales?id=${professionalList[0].id}`);
+  }
 
   return (
-    <ProfessionalIntakeView
-      clinics={clinics}
-      clinicId={clinicId}
-      role={role}
-      userName={profile?.full_name}
-      locations={locations ?? []}
-      professionals={(professionals ?? []) as Professional[]}
-    />
+    <Suspense fallback={<p className="p-6 text-sm text-slate-500">Cargando…</p>}>
+      <ProfessionalIntakeView
+        clinics={clinics}
+        clinicId={clinicId}
+        role={role}
+        userName={profile?.full_name}
+        locations={locations ?? []}
+        professionals={professionalList}
+        scheduleByProfessional={scheduleByProfessional}
+      />
+    </Suspense>
   );
 }

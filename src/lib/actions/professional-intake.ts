@@ -179,3 +179,151 @@ export async function submitProfessionalIntake(formData: FormData) {
       : "Profesional registrado. Podés cargar la agenda después en Configuración.",
   };
 }
+
+export async function updateProfessionalProfile(professionalId: string, formData: FormData) {
+  const access = await requireStaffManager();
+  if (access.error || !access.clinicId) return { error: access.error };
+
+  const firstName = String(formData.get("doctorFirstName") ?? "").trim();
+  const lastName = String(formData.get("doctorLastName") ?? "").trim();
+  const documentNumber = String(formData.get("documentNumber") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const licenseNational = String(formData.get("licenseNational") ?? "").trim();
+  const licenseProvincial = String(formData.get("licenseProvincial") ?? "").trim();
+  const officeAddress = String(formData.get("officeAddress") ?? "").trim();
+  const officePhone = String(formData.get("officePhone") ?? "").trim();
+  const acceptedInsurances = String(formData.get("acceptedInsurances") ?? "").trim();
+  const intakeNotes = String(formData.get("intakeNotes") ?? "").trim();
+  const locationId = String(formData.get("location_id") ?? "").trim() || null;
+  const specialtyName = resolveSpecialtyName(formData);
+
+  if (!firstName || !lastName) return { error: "Nombre y apellido son obligatorios." };
+  if (!documentNumber) return { error: "DNI es obligatorio." };
+  if (!phone) return { error: "Teléfono de contacto es obligatorio." };
+  if (!licenseNational) return { error: "Matrícula nacional es obligatoria." };
+  if (!specialtyName) return { error: "Seleccioná o escribí la especialidad." };
+
+  const displayName = `${lastName}, ${firstName}`;
+  const licenseProv = licenseProvincial || licenseNational;
+  const supabase = await createClient();
+  const clinicId = access.clinicId;
+
+  let specialtyId: string | null = null;
+  const { data: existingSpec } = await supabase
+    .from("specialties")
+    .select("id")
+    .eq("clinic_id", clinicId)
+    .ilike("name", specialtyName)
+    .maybeSingle();
+
+  if (existingSpec?.id) {
+    specialtyId = existingSpec.id;
+  } else {
+    const { data: createdSpec, error: specErr } = await supabase
+      .from("specialties")
+      .insert({ clinic_id: clinicId, name: specialtyName })
+      .select("id")
+      .single();
+    if (specErr) return { error: specErr.message };
+    specialtyId = createdSpec.id;
+  }
+
+  let resolvedLocationId = locationId;
+  if (!resolvedLocationId && officeAddress) {
+    const { data: loc, error: locErr } = await supabase
+      .from("locations")
+      .insert({
+        clinic_id: clinicId,
+        name: `Consultorio ${lastName}`,
+        address: officeAddress,
+      })
+      .select("id")
+      .single();
+    if (locErr) return { error: locErr.message };
+    resolvedLocationId = loc.id;
+  }
+
+  const { error } = await supabase
+    .from("professionals")
+    .update({
+      specialty_id: specialtyId,
+      location_id: resolvedLocationId,
+      display_name: displayName,
+      license_number: licenseProv,
+      license_national: licenseNational,
+      license_provincial: licenseProv,
+      document_number: documentNumber,
+      email: email || null,
+      phone,
+      office_phone: officePhone || null,
+      office_address: officeAddress || null,
+      accepted_insurances: acceptedInsurances || null,
+      intake_notes: intakeNotes || null,
+      intake_completed_at: new Date().toISOString(),
+    })
+    .eq("id", professionalId)
+    .eq("clinic_id", clinicId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/ingreso-profesionales");
+  revalidatePath("/configuracion");
+  revalidatePath("/agenda");
+
+  return { success: true as const, message: "Datos del profesional actualizados." };
+}
+
+export async function saveProfessionalSchedule(professionalId: string, formData: FormData) {
+  const access = await requireStaffManager();
+  if (access.error || !access.clinicId) return { error: access.error };
+
+  const agendaRules = parseAgendaRules(String(formData.get("agenda_rules_json") ?? ""));
+
+  const supabase = await createClient();
+  const clinicId = access.clinicId;
+
+  const { data: pro } = await supabase
+    .from("professionals")
+    .select("location_id")
+    .eq("id", professionalId)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+
+  if (!pro) return { error: "Profesional no encontrado." };
+
+  const { error: delErr } = await supabase
+    .from("availability_rules")
+    .delete()
+    .eq("professional_id", professionalId)
+    .eq("clinic_id", clinicId);
+
+  if (delErr) return { error: delErr.message };
+
+  if (agendaRules.length > 0) {
+    const rows = agendaRules.map((rule) => ({
+      clinic_id: clinicId,
+      professional_id: professionalId,
+      location_id: pro.location_id,
+      day_of_week: rule.day_of_week,
+      start_time: rule.start_time,
+      end_time: rule.end_time,
+      slot_duration: rule.slot_duration,
+      is_active: true,
+    }));
+
+    const { error: agendaErr } = await supabase.from("availability_rules").insert(rows);
+    if (agendaErr) return { error: agendaErr.message };
+  }
+
+  revalidatePath("/ingreso-profesionales");
+  revalidatePath("/configuracion");
+  revalidatePath("/agenda");
+
+  return {
+    success: true as const,
+    message: agendaRules.length
+      ? "Horarios guardados correctamente."
+      : "Horarios eliminados. El profesional no tendrá turnos hasta cargar rangos.",
+  };
+}
