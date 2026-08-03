@@ -7,6 +7,7 @@ import { DashboardMain } from "@/components/layout/dashboard-main";
 import { DashboardSidebarReveal } from "@/components/layout/dashboard-sidebar-reveal";
 import { ClinicalTopNav } from "@/components/layout/clinical-top-nav";
 import { FloatingActions } from "@/components/layout/floating-actions";
+import { CommandPaletteProvider } from "@/components/command-palette/command-palette-provider";
 import { RoutePrefetcher } from "@/components/layout/route-prefetcher";
 import { PwaRegister } from "@/components/pwa/pwa-register";
 import { UpdateBanner } from "@/components/updates/update-banner";
@@ -97,6 +98,7 @@ export default async function DashboardLayout({
         <TrialBanner trialEndsAt={clinic.trial_ends_at} daysRemaining={daysLeft} />
       )}
       <DashboardSidebarProvider>
+        <CommandPaletteProvider role={role} isSuperadmin={isSuperadmin}>
         <UiThemeProvider>
         <VoiceInputProvider clinicVoiceInputEnabled={clinic?.voice_input_enabled !== false}>
         <Sidebar
@@ -113,6 +115,7 @@ export default async function DashboardLayout({
         </DashboardMain>
         </VoiceInputProvider>
         </UiThemeProvider>
+        </CommandPaletteProvider>
       </DashboardSidebarProvider>
       <FloatingActions />
     </div>

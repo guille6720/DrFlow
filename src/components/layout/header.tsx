@@ -7,6 +7,7 @@ import { UserAccountModal } from "./user-account-modal";
 import { ROLE_LABELS, hasPermission } from "@/lib/permissions/roles";
 import type { Clinic, UserRole } from "@/types/database";
 import { ClinicSelector } from "./clinic-selector";
+import { CommandPaletteTrigger } from "@/components/command-palette/command-palette-trigger";
 import { cn } from "@/lib/utils/cn";
 import { useDashboardSidebar } from "@/components/layout/dashboard-sidebar-context";
 
@@ -59,6 +60,7 @@ export function Header({
           )}
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <CommandPaletteTrigger />
           {showSettings && (
             <Link
               href="/configuracion"
