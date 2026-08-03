@@ -2,7 +2,6 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { acceptPendingInvitations } from "@/lib/actions/invitations";
-import { hasAdminClient } from "@/lib/supabase/admin";
 
 function mapAuthError(message: string): string {
   const lower = message.toLowerCase();
@@ -16,42 +15,6 @@ function mapAuthError(message: string): string {
     return "Demasiados intentos. Esperá unos minutos.";
   }
   return message;
-}
-
-async function diagnoseLoginFailure(email: string): Promise<string | null> {
-  if (!hasAdminClient()) return null;
-
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !service) return null;
-
-  try {
-    const res = await fetch(
-      `${url}/auth/v1/admin/users?email=${encodeURIComponent(email)}`,
-      {
-        headers: {
-          apikey: service,
-          Authorization: `Bearer ${service}`,
-        },
-      }
-    );
-    const data = (await res.json()) as {
-      users?: Array<{ email_confirmed_at?: string | null }>;
-    };
-
-    if (!res.ok || !data.users?.length) {
-      return "Este email no está registrado. Creá tu cuenta en «Registrar clínica».";
-    }
-
-    const user = data.users[0];
-    if (!user.email_confirmed_at) {
-      return "Tu cuenta existe pero el email no está confirmado. Revisá tu bandeja o restablecé la contraseña abajo.";
-    }
-
-    return "La contraseña no coincide. Usá «Restablecer contraseña» abajo.";
-  } catch {
-    return null;
-  }
 }
 
 function redirectToLogin(request: NextRequest, error: string, email?: string) {
@@ -121,13 +84,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (error) {
-    const mapped = mapAuthError(error.message);
-    const lower = error.message.toLowerCase();
-    const detailed =
-      lower.includes("invalid login") || lower.includes("invalid credentials")
-        ? (await diagnoseLoginFailure(email)) ?? mapped
-        : mapped;
-    return redirectToLogin(request, detailed, email);
+    return redirectToLogin(request, mapAuthError(error.message), email);
   }
 
   if (!data.user) {

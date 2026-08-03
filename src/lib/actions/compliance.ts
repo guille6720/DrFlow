@@ -45,8 +45,8 @@ export async function exportPatientArcoBundle(patientId: string) {
   const clinicId = await getActiveClinicId();
   const { role, isSuperadmin } = await getActiveClinic();
 
-  if (!clinicId || !hasPermission(role, "managePatients", isSuperadmin)) {
-    return { error: "Sin permisos para exportar datos del paciente." };
+  if (!clinicId || !hasPermission(role, "viewClinicalRecords", isSuperadmin)) {
+    return { error: "Sin permisos para exportar datos clínicos del paciente." };
   }
 
   const supabase = await createClient();

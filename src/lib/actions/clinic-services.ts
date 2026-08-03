@@ -94,7 +94,7 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
 }
 
 export async function createTelemedicineSession(appointmentId: string) {
-  const access = await requireActiveClinic();
+  const access = await requireClinicPermission("viewClinicalRecords");
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
   const user = await getSession();

@@ -10,9 +10,11 @@ const CLINIC_COOKIE = "drflow_clinic_id";
 export const getSession = cache(async () => {
   const supabase = await createClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  return session?.user ?? null;
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+  if (error || !user) return null;
+  return user;
 });
 
 export const getProfile = cache(async (): Promise<Profile | null> => {

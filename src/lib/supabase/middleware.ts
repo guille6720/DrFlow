@@ -13,12 +13,12 @@ async function getUserWithTimeout(
 ) {
   try {
     const result = await Promise.race([
-      supabase.auth.getSession(),
+      supabase.auth.getUser(),
       new Promise<null>((resolve) => setTimeout(() => resolve(null), AUTH_TIMEOUT_MS)),
     ]);
 
     if (!result) return null;
-    return result.data.session?.user ?? null;
+    return result.data.user ?? null;
   } catch {
     return null;
   }

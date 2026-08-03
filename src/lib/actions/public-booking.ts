@@ -178,20 +178,17 @@ export async function loadPublicBookingSlots(
 
   const { generateAvailableSlots } = await import("@/lib/booking/slots");
 
-  const [rules, appointments, blocks] = await Promise.all([
+  const [rules, occupancy, blocks] = await Promise.all([
     supabase
       .from("availability_rules")
       .select("day_of_week, start_time, end_time, slot_duration")
       .eq("clinic_id", link.clinic_id)
       .eq("professional_id", professionalId)
       .eq("is_active", true),
-    supabase
-      .from("appointments")
-      .select("start_at, end_at")
-      .eq("clinic_id", link.clinic_id)
-      .eq("professional_id", professionalId)
-      .not("status", "eq", "cancelled")
-      .gte("start_at", new Date().toISOString()),
+    supabase.rpc("get_public_booking_occupancy", {
+      p_slug: slug,
+      p_professional_id: professionalId,
+    }),
     supabase
       .from("schedule_blocks")
       .select("start_at, end_at")
@@ -202,7 +199,7 @@ export async function loadPublicBookingSlots(
 
   const slots = generateAvailableSlots({
     rules: rules.data ?? [],
-    appointments: appointments.data ?? [],
+    appointments: occupancy.data ?? [],
     blocks: blocks.data ?? [],
     timeZone,
   });
