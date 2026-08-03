@@ -89,9 +89,7 @@ export function usePatientEhrState(
   }
 
   return {
-    sorted,
     evolutionList,
-    selectedId,
     setSelectedId,
     filters,
     toggleFilter,
