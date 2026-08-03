@@ -15,6 +15,7 @@ import {
 } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { formatAgeLabel, isPamiPatient } from "@/lib/utils/patient-age";
+import { applyPatientSearchFilter, sanitizePatientSearchTerm } from "@/lib/utils/patient-search";
 import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
 import { hasPermission } from "@/lib/permissions/roles";
 import { Users, Plus, ChevronLeft, ChevronRight } from "lucide-react";
@@ -28,7 +29,8 @@ export default async function PacientesPage({
 }: {
   searchParams: Promise<{ q?: string; page?: string; cobertura?: string }>;
 }) {
-  const { q, page: pageStr, cobertura } = await searchParams;
+  const { q: qRaw, page: pageStr, cobertura } = await searchParams;
+  const q = sanitizePatientSearchTerm(qRaw);
   const page = Math.max(1, parseInt(pageStr ?? "1", 10) || 1);
   const profile = await getProfile();
   const clinics = await getUserClinics();
@@ -71,9 +73,7 @@ export default async function PacientesPage({
       .order("last_name");
 
     if (q) {
-      query = query.or(
-        `first_name.ilike.%${q}%,last_name.ilike.%${q}%,document_number.ilike.%${q}%`
-      );
+      query = applyPatientSearchFilter(query, q);
     }
     if (cobertura === "pami") {
       query = query.ilike("insurance_provider", "%PAMI%");

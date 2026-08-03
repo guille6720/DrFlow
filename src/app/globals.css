@@ -657,10 +657,20 @@ html:not([data-ui-style="2"]) .drflow-card-body label.drflow-ui-label {
 /* Islas claras: inputs siempre oscuros sobre fondo claro */
 .drflow-card-body .drflow-card-light .drflow-ui-input,
 .drflow-card-body :is(.bg-white, .bg-slate-50, .bg-slate-50\\/80) .drflow-ui-input,
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh .drflow-ui-input {
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh .drflow-ui-input,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-card-light .drflow-ui-input {
   background-color: #ffffff;
   color: #0f172a;
   border-color: #cbd5e1;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-card-light .drflow-ui-input::placeholder {
+  color: #94a3b8;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-card-light .drflow-ui-input:focus {
+  border-color: #f59e0b;
+  outline: none;
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-card-body .drflow-ui-label,
@@ -784,10 +794,14 @@ html[data-ui-style="2"][data-clinical-dark="1"] .rounded-2xl.border-2.border-amb
   color: #fcd34d !important;
 }
 
-html[data-ui-style="2"][data-clinical-dark="1"] .rounded-2xl.border-2.border-amber-400 .drflow-ui-input {
-  background: #0f172a !important;
-  color: #f8fafc !important;
-  border-color: #64748b !important;
+html[data-ui-style="2"][data-clinical-dark="1"] .rounded-2xl.border-2[class*="border-amber-400"] .drflow-ui-input {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #fbbf24 !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .rounded-2xl.border-2[class*="border-amber-400"] .drflow-ui-input::placeholder {
+  color: #94a3b8 !important;
 }
 
 /* Header: selector de clínica en modo oscuro */

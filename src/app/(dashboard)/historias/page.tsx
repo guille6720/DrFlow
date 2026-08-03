@@ -19,14 +19,11 @@ import {
 } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { FileText, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { applyPatientSearchFilter, sanitizePatientSearchTerm } from "@/lib/utils/patient-search";
 
 export const maxDuration = 300;
 
 const PAGE_SIZE = 25;
-
-function sanitizeSearchTerm(raw: string | undefined): string {
-  return (raw ?? "").trim().slice(0, 80);
-}
 
 function buildHistoriasUrl(params: { q?: string; page?: number }) {
   const parts = new URLSearchParams();
@@ -42,7 +39,7 @@ export default async function HistoriasPage({
   searchParams: Promise<{ q?: string; patient?: string; page?: string }>;
 }) {
   const { q: qRaw, patient: patientIdParam, page: pageStr } = await searchParams;
-  const q = sanitizeSearchTerm(qRaw);
+  const q = sanitizePatientSearchTerm(qRaw);
   const page = Math.max(1, parseInt(pageStr ?? "1", 10) || 1);
 
   if (patientIdParam && !q) {
@@ -75,13 +72,14 @@ export default async function HistoriasPage({
     let patientIds: string[] | null = null;
 
     if (q) {
-      const { data: matched } = await supabase
-        .from("patients")
-        .select("id, first_name, last_name, document_number")
-        .eq("clinic_id", clinicId)
-        .eq("is_active", true)
-        .or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%,document_number.ilike.%${q}%`)
-        .limit(50);
+      const { data: matched } = await applyPatientSearchFilter(
+        supabase
+          .from("patients")
+          .select("id, first_name, last_name, document_number")
+          .eq("clinic_id", clinicId)
+          .eq("is_active", true),
+        q
+      ).limit(50);
 
       if (!matched?.length) {
         noMatchPatients = true;

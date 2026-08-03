@@ -30,15 +30,18 @@ export function ProminentSearchForm({
         Buscador
       </p>
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <form className="flex min-w-0 flex-1 flex-wrap items-center gap-2" action={action}>
+        <form className="flex min-w-0 flex-1 flex-wrap items-center gap-2" action={action} method="get">
           {hiddenFields}
           <div className="relative min-w-[200px] flex-1">
             <Search className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-amber-600" />
             <input
+              key={defaultValue ?? ""}
               name={inputName}
+              type="search"
+              autoComplete="off"
               defaultValue={defaultValue}
               placeholder={placeholder}
-              className="drflow-ui-input w-full rounded-xl border-2 border-amber-300/90 bg-white py-2.5 pl-11 pr-3 text-sm font-medium text-slate-900 shadow-inner placeholder:font-normal placeholder:text-slate-400 focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-400/35"
+              className="drflow-ui-input drflow-prominent-search-input w-full rounded-xl border-2 border-amber-300/90 bg-white py-2.5 pl-11 pr-3 text-sm font-medium text-slate-900 shadow-inner placeholder:font-normal placeholder:text-slate-400 focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-400/35"
             />
           </div>
           <Button
