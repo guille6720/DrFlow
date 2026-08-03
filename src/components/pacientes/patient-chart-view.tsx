@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
 import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
 import { RenewMedicationPanel } from "@/components/pacientes/renew-medication-panel";
+import { PatientIndicatorsCalculator } from "@/components/pacientes/patient-indicators-calculator";
 import { ClinicalDocumentsPanel } from "@/components/historias/clinical-documents-panel";
 import type { ClinicalDocumentItem } from "@/components/historias/clinical-documents-panel";
 import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
@@ -336,8 +337,21 @@ export function PatientChartView({
                 <IndicatorChip label="IMC" value={chart.indicators.bmi ?? "—"} />
                 <IndicatorChip label="TFG" value={chart.indicators.tfg?.split(" ")[0] ?? "—"} />
                 <IndicatorChip label="Riesgo CV" value={chart.cvRisk} />
-                <IndicatorChip label="Paquetes-año" value={chart.indicators.packYears ?? "—"} />
+                <IndicatorChip
+                  label="Creatinina"
+                  value={
+                    chart.indicators.creatinine
+                      ? `${chart.indicators.creatinine} mg/dL`
+                      : "—"
+                  }
+                />
               </div>
+              <PatientIndicatorsCalculator
+                patientId={patientId}
+                ageYears={chart.ageYears}
+                extras={chart.extras}
+                canEdit={canEditClinical}
+              />
             </div>
           </div>
         </div>

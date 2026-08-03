@@ -18,6 +18,11 @@ export type PatientChartExtras = {
   family_history?: { relation: string; conditions: string }[];
   vaccines?: { name: string; status: "ok" | "warn" | "missing"; year?: string }[];
   labs?: { name: string; value: string; unit?: string; status: "normal" | "high" | "low" | "unknown"; date?: string }[];
+  /** Antropometría manual para IMC en ficha. */
+  weight_kg?: number | null;
+  height_cm?: number | null;
+  cigarettes_per_day?: number | null;
+  smoking_years?: number | null;
 };
 
 export type ChartAlert = {
@@ -126,6 +131,7 @@ export type PatientChartPayload = {
     tfg: string | null;
     cvScore: string | null;
     packYears: string | null;
+    creatinine: string | null;
   };
   extras: PatientChartExtras;
 };

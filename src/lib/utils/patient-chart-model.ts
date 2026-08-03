@@ -1,6 +1,7 @@
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { calculateAge, formatAgeLabel } from "@/lib/utils/patient-age";
+import { calculateBmi, estimateTfgCkdEpi, formatTfgLabel } from "@/lib/utils/clinical-indicators";
 import { parseHabitualMedicationText } from "@/lib/utils/parse-habitual-meds";
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 import {
@@ -68,19 +69,14 @@ function parseVitalsFromText(raw: string, id: string, created_at: string): Vital
   };
 }
 
-function estimateTfg(age: number | null, creatinineMgDl?: number): string | null {
+function estimateTfg(
+  age: number | null,
+  creatinineMgDl?: number,
+  sex?: "M" | "F" | null
+): string | null {
   if (age === null || !creatinineMgDl || creatinineMgDl <= 0) return null;
-  // CKD-EPI simplificado (sin sexo → usar coeficiente neutro aproximado)
-  const k = 0.9;
-  const a = -0.411;
-  const minCr = Math.min(creatinineMgDl / k, 1);
-  const maxCr = Math.max(creatinineMgDl / k, 1);
-  const tfg =
-    141 *
-    minCr ** a *
-    maxCr ** -1.209 *
-    0.993 ** age;
-  return `${Math.round(tfg)} ml/min/1.73m² (estimado)`;
+  const value = estimateTfgCkdEpi({ ageYears: age, creatinineMgDl, sex });
+  return formatTfgLabel(value);
 }
 
 function buildAlerts(input: {
@@ -266,12 +262,18 @@ export function buildPatientChartPayload(input: {
   vitals.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const latest = vitals[0];
+  const weightKg = latest?.weightKg ?? extras.weight_kg ?? undefined;
+  const heightCm = latest?.heightCm ?? extras.height_cm ?? undefined;
+  const bmiValue =
+    latest?.bmi ??
+    (weightKg && heightCm ? calculateBmi(weightKg, heightCm) ?? undefined : undefined);
+
   const latestVitals = {
     ta: latest?.systolic ? `${latest.systolic}/${latest.diastolic}` : undefined,
     fc: latest?.heartRate ? `${latest.heartRate} lpm` : undefined,
-    weight: latest?.weightKg ? `${latest.weightKg} kg` : undefined,
-    height: latest?.heightCm ? `${latest.heightCm} cm` : undefined,
-    bmi: latest?.bmi ? String(latest.bmi) : undefined,
+    weight: weightKg != null ? `${weightKg} kg` : undefined,
+    height: heightCm != null ? `${heightCm} cm` : undefined,
+    bmi: bmiValue != null ? String(bmiValue) : undefined,
     temp: latest?.temperature != null ? `${latest.temperature} °C` : undefined,
     spo2: latest?.spo2 != null ? `${latest.spo2}%` : undefined,
     abdominal: latest?.abdominalCm != null ? `${latest.abdominalCm} cm` : undefined,
@@ -374,9 +376,10 @@ export function buildPatientChartPayload(input: {
     safetyWarnings: buildSafetyWarnings(allergies, medications),
     indicators: {
       bmi: latestVitals.bmi ?? null,
-      tfg: estimateTfg(ageYears, creatVal),
+      tfg: estimateTfg(ageYears, creatVal, extras.sex === "M" || extras.sex === "F" ? extras.sex : null),
       cvScore: extras.cardiovascular_risk ? extras.cardiovascular_risk.toUpperCase() : null,
       packYears: extras.pack_years != null ? String(extras.pack_years) : null,
+      creatinine: creatVal != null && Number.isFinite(creatVal) ? String(creatVal) : null,
     },
     extras,
   };
