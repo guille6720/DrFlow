@@ -49,6 +49,7 @@ export const SECURITY_DEFINER_RPC_CHECKS: { name: string; migrationHint: string 
   { name: "setup_user_clinic", migrationHint: "024" },
   { name: "seed_pami_cabecera_for_clinic", migrationHint: "030" },
   { name: "submit_public_booking", migrationHint: "010" },
+  { name: "get_public_booking_occupancy", migrationHint: "045" },
   { name: "get_patient_appointment_statuses", migrationHint: "022" },
   { name: "seed_demo_patients_for_clinic", migrationHint: "019" },
 ];
