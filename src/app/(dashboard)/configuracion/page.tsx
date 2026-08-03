@@ -30,12 +30,9 @@ interface PageProps {
 
 interface SettingsPanelData {
   clinic: Clinic | null;
-  specialties: { id: string; name: string }[];
-  locations: { id: string; name: string; address: string | null }[];
   professionals: never[];
   members: never[];
   invitations: never[];
-  reasons: { id: string; name: string }[];
   bookingSlug: string | null;
 }
 
@@ -74,8 +71,6 @@ function renderSectionContent(
       return <SettingsPanel section="clinica" {...settingsProps} />;
     case "equipo":
       return <SettingsPanel section="equipo" {...settingsProps} />;
-    case "catalogo":
-      return <SettingsPanel section="catalogo" {...settingsProps} />;
     case "agenda":
       return <SettingsPanel section="agenda" {...settingsProps} />;
     case "apps":
@@ -91,6 +86,11 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
   const clinicId = await getActiveClinicId();
   const { clinic, role, isSuperadmin } = await getActiveClinic();
   const { seccion, grupo } = await searchParams;
+
+  if (seccion === "catalogo") {
+    redirect("/ingreso-profesionales");
+  }
+
   const activeSection = resolveConfiguracionSection(seccion);
   const activeGroup = resolveConfiguracionGroup(grupo);
 
@@ -100,10 +100,8 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
 
   const supabase = await createClient();
 
-  const [specialties, locations, professionals, members, invitations, reasons, booking, patientCount] = clinicId
+  const [professionals, members, invitations, booking, patientCount] = clinicId
     ? await Promise.all([
-        supabase.from("specialties").select("id, name").eq("clinic_id", clinicId),
-        supabase.from("locations").select("id, name, address").eq("clinic_id", clinicId),
         supabase
           .from("professionals")
           .select("id, display_name, license_number, profiles(full_name), specialties(name)")
@@ -117,7 +115,6 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
           .select("id, email, full_name, role, status, created_at")
           .eq("clinic_id", clinicId)
           .order("created_at", { ascending: false }),
-        supabase.from("consultation_reasons").select("id, name").eq("clinic_id", clinicId),
         supabase
           .from("public_booking_links")
           .select("slug")
@@ -134,21 +131,15 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
         { data: [] },
         { data: [] },
         { data: [] },
-        { data: [] },
-        { data: [] },
-        { data: [] },
         { data: null },
         { count: 0 },
       ];
 
   const settingsProps: SettingsPanelData = {
     clinic,
-    specialties: specialties.data ?? [],
-    locations: locations.data ?? [],
     professionals: (professionals.data ?? []) as never[],
     members: (members.data ?? []) as never[],
     invitations: (invitations.data ?? []) as never[],
-    reasons: reasons.data ?? [],
     bookingSlug: booking.data?.slug ?? null,
   };
 

@@ -2,7 +2,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   Building2,
   Users,
-  Stethoscope,
   CalendarClock,
   Smartphone,
   Shield,
@@ -18,7 +17,6 @@ import {
 export type ConfiguracionSectionId =
   | "clinica"
   | "equipo"
-  | "catalogo"
   | "agenda"
   | "apps"
   | "coberturas"
@@ -56,12 +54,6 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
     title: "Equipo e invitaciones",
     description: "Invitar médicos, secretaría o administradores.",
     icon: Users,
-  },
-  {
-    id: "catalogo",
-    title: "Profesionales y sedes",
-    description: "Especialidades, sedes, profesionales y motivos de consulta.",
-    icon: Stethoscope,
   },
   {
     id: "agenda",
@@ -111,9 +103,9 @@ export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
   {
     id: "consultorio",
     title: "Consultorio y equipo",
-    description: "Datos del consultorio, profesionales, sedes y usuarios del staff.",
+    description: "Datos del consultorio y usuarios del staff.",
     icon: BriefcaseMedical,
-    sections: ["clinica", "catalogo", "equipo"],
+    sections: ["clinica", "equipo"],
   },
   {
     id: "agenda",

@@ -16,6 +16,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { formatAgeLabel, isPamiPatient } from "@/lib/utils/patient-age";
 import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
+import { hasPermission } from "@/lib/permissions/roles";
 import { Users, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 
 const PAGE_SIZE = 20;
@@ -32,7 +33,8 @@ export default async function PacientesPage({
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role } = await getActiveClinic();
+  const { role, isSuperadmin } = await getActiveClinic();
+  const canIssuePrescriptions = hasPermission(role, "issuePrescriptions", isSuperadmin);
   const supabase = await createClient();
 
   let patients: {
@@ -213,6 +215,7 @@ export default async function PacientesPage({
                 portalSlug={portalSlug}
                 doctorInfo={doctorInfo}
                 shareByPatient={shareByPatient}
+                canIssuePrescriptions={canIssuePrescriptions}
               />
             </Card>
             {(totalPages > 1 || total > 0) && (

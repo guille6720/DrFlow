@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
 import { isPamiPatient } from "@/lib/utils/patient-age";
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
-import { FileText } from "lucide-react";
+import { FileText, ScrollText } from "lucide-react";
 
 export type PatientListRow = {
   id: string;
@@ -32,6 +32,7 @@ interface Props {
   portalSlug?: string | null;
   doctorInfo?: DoctorShareInfo | null;
   shareByPatient?: Map<string, ShareMeta>;
+  canIssuePrescriptions?: boolean;
 }
 
 /** Misma fila blanca que Historia clínica (`ClinicalRecordsGroupedList`). */
@@ -40,6 +41,7 @@ export function PatientsListCards({
   portalSlug,
   doctorInfo,
   shareByPatient,
+  canIssuePrescriptions,
 }: Props) {
   if (patients.length === 0) return null;
 
@@ -94,6 +96,15 @@ export function PatientsListCards({
                 <FileText className="h-3.5 w-3.5" />
                 Historia clínica
               </Link>
+              {canIssuePrescriptions ? (
+                <Link
+                  href={`/recetas?patient=${p.id}`}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800 hover:bg-teal-100"
+                >
+                  <ScrollText className="h-3.5 w-3.5" />
+                  Receta
+                </Link>
+              ) : null}
               <Link
                 href={`/pacientes/${p.id}`}
                 className="text-xs font-semibold text-slate-800 underline-offset-2 hover:text-teal-800 hover:underline"

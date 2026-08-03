@@ -8,30 +8,22 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import {
   updateClinicSettings,
-  createSpecialty,
-  deleteSpecialty,
-  createLocation,
-  deleteLocation,
-  createConsultationReason,
-  createProfessional,
   enablePublicBooking,
   createAvailabilityRule,
   createScheduleBlock,
 } from "@/lib/actions/settings";
 import type { Clinic } from "@/types/database";
-import { ExternalLink, Plus, Trash2, Copy } from "lucide-react";
+import { ExternalLink, Copy } from "lucide-react";
 import Link from "next/link";
 import { TeamInvitePanel } from "@/components/configuracion/team-invite-panel";
 import { AppInstallCard } from "@/components/portal/app-install-card";
 import { buildPatientAppInstallUrl } from "@/lib/utils/patient-portal-ready";
 
-export type SettingsSectionId = "clinica" | "apps" | "agenda" | "catalogo" | "equipo";
+export type SettingsSectionId = "clinica" | "apps" | "agenda" | "equipo";
 
 interface SettingsPanelProps {
   section?: SettingsSectionId;
   clinic: Clinic | null;
-  specialties: { id: string; name: string }[];
-  locations: { id: string; name: string; address: string | null }[];
   professionals: {
     id: string;
     display_name: string | null;
@@ -53,19 +45,15 @@ interface SettingsPanelProps {
     status: string;
     created_at: string;
   }[];
-  reasons: { id: string; name: string }[];
   bookingSlug: string | null;
 }
 
 export function SettingsPanel({
   section,
   clinic,
-  specialties,
-  locations,
   professionals,
   members,
   invitations,
-  reasons,
   bookingSlug,
 }: SettingsPanelProps) {
   const router = useRouter();
@@ -319,106 +307,6 @@ export function SettingsPanel({
       </>
       )}
 
-      {show("catalogo") && (
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card title="Especialidades">
-          <ul className="mb-4 space-y-2 text-sm">
-            {specialties.map((s) => (
-              <li key={s.id} className="drflow-card-light flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-slate-900">
-                {s.name}
-                <button type="button" onClick={() => run(() => deleteSpecialty(s.id))} className="text-red-500">
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </li>
-            ))}
-          </ul>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const name = new FormData(e.currentTarget).get("name") as string;
-              run(() => createSpecialty(name)).then(() => e.currentTarget.reset());
-            }}
-            className="flex gap-2"
-          >
-            <Input name="name" placeholder="Nueva especialidad" required className="flex-1" />
-            <Button type="submit" size="sm"><Plus className="h-4 w-4" /></Button>
-          </form>
-        </Card>
-
-        <Card title="Sedes">
-          <ul className="mb-4 space-y-2 text-sm">
-            {locations.map((l) => (
-              <li key={l.id} className="drflow-card-light flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-slate-900">
-                <span>{l.name}{l.address ? ` — ${l.address}` : ""}</span>
-                <button type="button" onClick={() => run(() => deleteLocation(l.id))} className="text-red-500">
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </li>
-            ))}
-          </ul>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const fd = new FormData(e.currentTarget);
-              run(() => createLocation(fd.get("name") as string, fd.get("address") as string)).then(() =>
-                e.currentTarget.reset()
-              );
-            }}
-            className="space-y-2"
-          >
-            <Input name="name" placeholder="Nombre sede" required />
-            <Input name="address" placeholder="Dirección" />
-            <Button type="submit" size="sm">Agregar sede</Button>
-          </form>
-        </Card>
-
-        <Card title="Profesionales">
-          <ul className="mb-4 space-y-2 text-sm">
-            {professionals.map((p) => (
-              <li key={p.id} className="drflow-card-light rounded-lg bg-slate-50 px-3 py-2 text-slate-900">
-                {p.display_name ?? p.profiles?.full_name ?? "Profesional"}
-                {p.specialties?.name && ` · ${p.specialties.name}`}
-              </li>
-            ))}
-          </ul>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              run(() => createProfessional(new FormData(e.currentTarget))).then(() => e.currentTarget.reset());
-            }}
-            className="space-y-2"
-          >
-            <Input name="display_name" placeholder="Nombre visible" required />
-            <Input name="license_number" placeholder="Matrícula" />
-            <Select
-              name="specialty_id"
-              options={specialties.map((s) => ({ value: s.id, label: s.name }))}
-              placeholder="Especialidad"
-            />
-            <Button type="submit" size="sm">Agregar profesional</Button>
-          </form>
-        </Card>
-
-        <Card title="Motivos de consulta">
-          <ul className="mb-4 space-y-1 text-sm">
-            {reasons.map((r) => (
-              <li key={r.id}>{r.name}</li>
-            ))}
-          </ul>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const name = new FormData(e.currentTarget).get("name") as string;
-              run(() => createConsultationReason(name)).then(() => e.currentTarget.reset());
-            }}
-            className="flex gap-2"
-          >
-            <Input name="name" placeholder="Nuevo motivo" required className="flex-1" />
-            <Button type="submit" size="sm"><Plus className="h-4 w-4" /></Button>
-          </form>
-        </Card>
-      </div>
-      )}
     </div>
   );
 }
