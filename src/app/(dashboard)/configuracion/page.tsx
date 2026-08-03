@@ -18,9 +18,11 @@ import { ComplianceLegalPanel } from "@/components/configuracion/compliance-lega
 import { ClinicPluginsPanel } from "@/components/configuracion/clinic-plugins-panel";
 import { ClinicFeatureFlagsPanel } from "@/components/configuracion/clinic-feature-flags-panel";
 import { ClinicJobsPanel } from "@/components/configuracion/clinic-jobs-panel";
+import { ClinicObservabilityPanel } from "@/components/configuracion/clinic-observability-panel";
 import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
 import { getClinicFeatureFlagSettings } from "@/lib/actions/clinic-feature-flags";
 import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
+import { getClinicObservabilityDashboard } from "@/lib/actions/observability";
 import { DeleteAccountPanel } from "@/components/configuracion/delete-account-panel";
 import {
   resolveConfiguracionGroup,
@@ -74,6 +76,10 @@ function renderSectionContent(
       createdAt: string;
       completedAt: string | null;
     }>;
+    observability?: {
+      snapshot: import("@/lib/server/load-observability").ObservabilitySnapshot;
+      health: import("@/lib/observability/health").HealthStatus;
+    };
   }
 ) {
   switch (sectionId) {
@@ -101,6 +107,13 @@ function renderSectionContent(
       return <ClinicFeatureFlagsPanel flags={extras.flagSettings} />;
     case "jobs":
       return <ClinicJobsPanel jobs={extras.jobSettings} />;
+    case "observabilidad":
+      return extras.observability ? (
+        <ClinicObservabilityPanel
+          snapshot={extras.observability.snapshot}
+          health={extras.observability.health}
+        />
+      ) : null;
     case "demo":
       return <DemoDataPanel patientCount={extras.patientCount} />;
     case "clinica":
@@ -185,6 +198,8 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
   const flagSettings = flagSettingsResult.data ?? [];
   const jobsResult = await getClinicJobsList();
   const jobSettings = jobsResult.data ?? [];
+  const observabilityResult = await getClinicObservabilityDashboard();
+  const observability = observabilityResult.data;
 
   const sectionContent = activeSection
     ? renderSectionContent(activeSection, settingsProps, {
@@ -195,6 +210,7 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
         pluginSettings,
         flagSettings,
         jobSettings,
+        observability,
       })
     : undefined;
 

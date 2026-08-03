@@ -6,6 +6,14 @@
     {
       "path": "/api/jobs/process?limit=20",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/health?persist=1",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/observability/purge",
+      "schedule": "0 4 * * *"
     }
   ],
   "headers": [

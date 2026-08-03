@@ -31,6 +31,7 @@ export const TABLES_REQUIRING_RLS = [
   "clinic_plugins",
   "clinic_feature_flags",
   "clinic_jobs",
+  "clinic_observability_events",
   "pathologies",
   "drugs",
   "pathology_drugs",
@@ -60,4 +61,5 @@ export const SECURITY_DEFINER_RPC_CHECKS: { name: string; migrationHint: string 
   { name: "seed_demo_patients_for_clinic", migrationHint: "019" },
   { name: "claim_clinic_jobs", migrationHint: "051" },
   { name: "complete_clinic_job", migrationHint: "051" },
+  { name: "purge_old_observability_events", migrationHint: "052" },
 ];

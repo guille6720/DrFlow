@@ -15,6 +15,7 @@ import {
   Settings2,
   ToggleLeft,
   ListTodo,
+  Activity,
 } from "lucide-react";
 
 export type ConfiguracionSectionId =
@@ -29,7 +30,8 @@ export type ConfiguracionSectionId =
   | "demo"
   | "plugins"
   | "flags"
-  | "jobs";
+  | "jobs"
+  | "observabilidad";
 
 export type ConfiguracionGroupId = "consultorio" | "agenda" | "coberturas" | "sistema";
 
@@ -116,6 +118,12 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
     icon: ListTodo,
   },
   {
+    id: "observabilidad",
+    title: "Observabilidad",
+    description: "Errores, latencia, jobs lentos y health checks.",
+    icon: Activity,
+  },
+  {
     id: "demo",
     title: "Datos de prueba",
     description: "Pacientes ficticios para probar la agenda y HC.",
@@ -150,7 +158,7 @@ export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
     title: "Sistema y legal",
     description: "Apariencia, cumplimiento normativo y datos de prueba.",
     icon: Settings2,
-    sections: ["apariencia", "legal", "plugins", "flags", "jobs", "demo"],
+    sections: ["apariencia", "legal", "plugins", "flags", "jobs", "observabilidad", "demo"],
   },
 ];
 

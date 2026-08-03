@@ -1,5 +1,6 @@
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { runClinicJobHandler } from "@/lib/jobs/handlers";
+import { recordObservabilityEvent, createTraceId } from "@/lib/observability/record";
 import type { ClinicJobRow } from "@/lib/jobs/types";
 
 export type ProcessJobsResult = {
@@ -24,12 +25,22 @@ export async function processPendingClinicJobs(options?: {
 
   const supabase = createAdminClient();
   const limit = options?.limit ?? 10;
+  const workerTraceId = createTraceId();
+  const workerStart = performance.now();
 
   const { data: claimed, error: claimError } = await supabase.rpc("claim_clinic_jobs", {
     p_limit: limit,
   });
 
   if (claimError) {
+    void recordObservabilityEvent({
+      category: "job",
+      name: "worker_claim_failed",
+      status: "error",
+      traceId: workerTraceId,
+      errorMessage: claimError.message,
+      metadata: { limit },
+    });
     throw new Error(claimError.message);
   }
 
@@ -45,18 +56,30 @@ export async function processPendingClinicJobs(options?: {
   for (const raw of filtered) {
     const job = mapJobRow(raw);
     jobIds.push(job.id);
+    const jobStart = performance.now();
 
     try {
       const result = await runClinicJobHandler(supabase, job);
+      const durationMs = Math.round(performance.now() - jobStart);
       await supabase.rpc("complete_clinic_job", {
         p_job_id: job.id,
         p_status: "completed",
         p_result: result,
         p_error_message: null,
       });
+      void recordObservabilityEvent({
+        clinicId: job.clinic_id,
+        category: "job",
+        name: `job_${job.job_type}`,
+        durationMs,
+        traceId: workerTraceId,
+        metadata: { jobId: job.id, status: "completed" },
+        path: "/api/jobs/process",
+      });
       completed += 1;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Error desconocido";
+      const durationMs = Math.round(performance.now() - jobStart);
       const retry = job.attempts < job.max_attempts;
       await supabase.rpc("complete_clinic_job", {
         p_job_id: job.id,
@@ -64,9 +87,29 @@ export async function processPendingClinicJobs(options?: {
         p_result: null,
         p_error_message: message,
       });
+      void recordObservabilityEvent({
+        clinicId: job.clinic_id,
+        category: "job",
+        name: `job_${job.job_type}`,
+        status: retry ? "warn" : "error",
+        durationMs,
+        traceId: workerTraceId,
+        errorMessage: message,
+        metadata: { jobId: job.id, retry, attempts: job.attempts },
+        path: "/api/jobs/process",
+      });
       failed += retry ? 0 : 1;
     }
   }
+
+  void recordObservabilityEvent({
+    category: "job",
+    name: "worker_batch",
+    durationMs: Math.round(performance.now() - workerStart),
+    traceId: workerTraceId,
+    metadata: { processed: filtered.length, completed, failed },
+    path: "/api/jobs/process",
+  });
 
   return {
     processed: filtered.length,

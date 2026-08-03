@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseAnonKey, getSupabaseUrl } from "./env";
+import { createTraceId } from "@/lib/observability/trace-id";
 
 const AUTH_TIMEOUT_MS = 1200;
 
@@ -33,13 +34,15 @@ function isPwaAsset(path: string): boolean {
   );
 }
 
-function withRequestPath(response: NextResponse, path: string): NextResponse {
+function withRequestPath(response: NextResponse, path: string, traceId: string): NextResponse {
   response.headers.set("x-drflow-path", path);
+  response.headers.set("x-drflow-trace-id", traceId);
   return response;
 }
 
 export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
+  const traceId = request.headers.get("x-drflow-trace-id") ?? createTraceId();
 
   if (isPwaAsset(path)) {
     return NextResponse.next({ request });
@@ -49,7 +52,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
-  if (path === "/api/version") {
+  if (path === "/api/version" || path === "/api/health") {
+    return NextResponse.next({ request });
+  }
+
+  if (path.startsWith("/api/jobs/") || path.startsWith("/api/observability/")) {
     return NextResponse.next({ request });
   }
 
@@ -119,8 +126,8 @@ export async function updateSession(request: NextRequest) {
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return withRequestPath(NextResponse.redirect(url), path);
+    return withRequestPath(NextResponse.redirect(url), path, traceId);
   }
 
-  return withRequestPath(supabaseResponse, path);
+  return withRequestPath(supabaseResponse, path, traceId);
 }

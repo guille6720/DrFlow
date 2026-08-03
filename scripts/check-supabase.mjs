@@ -245,6 +245,27 @@ async function main() {
     console.log(`⚠ Verificación clinic_jobs: HTTP ${jobsRes.status}`);
   }
 
+  const obsRes = await fetch(
+    `${url}/rest/v1/clinic_observability_events?select=clinic_id,category,status&limit=1`,
+    {
+      headers: {
+        apikey: schemaKey,
+        Authorization: schemaAuth,
+      },
+    }
+  );
+  if (obsRes.status === 404 || obsRes.status === 406) {
+    const body = await obsRes.text();
+    if (body.includes("does not exist") || body.includes("relation")) {
+      console.log("❌ Tabla clinic_observability_events — migración 052 pendiente");
+      allOk = false;
+    }
+  } else if (obsRes.ok) {
+    console.log("✓ Observability Phase 16 (clinic_observability_events)");
+  } else {
+    console.log(`⚠ Verificación clinic_observability_events: HTTP ${obsRes.status}`);
+  }
+
   // RPC pública (404 = no expuesta; 400/500 con mensaje de negocio = existe)
   const rpc = await fetch(`${url}/rest/v1/rpc/submit_public_booking`, {
     method: "POST",

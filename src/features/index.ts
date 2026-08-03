@@ -21,5 +21,6 @@ export * as auditoria from "@/features/auditoria";
 export * as plugins from "@/features/plugins";
 export * as flags from "@/features/flags";
 export * as jobs from "@/features/jobs";
+export * as observability from "@/features/observability";
 export * as laboratorio from "@/features/laboratorio";
 export * as imagenes from "@/features/imagenes";
