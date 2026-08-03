@@ -56,7 +56,7 @@ export const PATIENT_WORKSPACE_TABS: PatientWorkspaceTabDef[] = [
   { id: "vacunas", label: "Vacunas", icon: Syringe, ready: true },
   { id: "interconsultas", label: "Interconsultas", icon: Users, ready: false },
   { id: "timeline", label: "Timeline", icon: History, ready: true },
-  { id: "auditoria", label: "Auditoría", icon: Shield, ready: false },
+  { id: "auditoria", label: "Auditoría", icon: Shield, ready: true },
   { id: "ia", label: "IA", icon: Sparkles, ready: true },
 ];
 

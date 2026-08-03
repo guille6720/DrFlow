@@ -4,6 +4,13 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { Clinic, ClinicMember, Profile, UserRole } from "@/types/database";
+import {
+  getAuditRequestContext,
+} from "@/lib/security/audit-context";
+import {
+  sanitizeAuditSnapshot,
+  type AuditAction,
+} from "@/lib/security/audit-types";
 
 const CLINIC_COOKIE = "drflow_clinic_id";
 
@@ -136,19 +143,32 @@ export async function logAudit(params: {
   clinicId?: string;
   entityType: string;
   entityId?: string;
-  action: "create" | "update" | "delete" | "view" | "export";
+  patientId?: string;
+  action: AuditAction;
   metadata?: Record<string, unknown>;
+  oldValues?: Record<string, unknown> | null;
+  newValues?: Record<string, unknown> | null;
 }) {
   const supabase = await createClient();
   const user = await getSession();
   if (!user) return;
+
+  const ctx = await getAuditRequestContext();
+  const patientId =
+    params.patientId ??
+    (params.entityType === "patient" ? params.entityId : undefined);
 
   await supabase.from("audit_logs").insert({
     clinic_id: params.clinicId,
     user_id: user.id,
     entity_type: params.entityType,
     entity_id: params.entityId,
+    patient_id: patientId ?? null,
     action: params.action,
     metadata: params.metadata ?? {},
+    old_values: sanitizeAuditSnapshot(params.oldValues ?? null),
+    new_values: sanitizeAuditSnapshot(params.newValues ?? null),
+    ip_address: ctx.ip_address,
+    user_agent: ctx.user_agent,
   });
 }

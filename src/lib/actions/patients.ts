@@ -111,7 +111,9 @@ export async function createPatient(formData: FormData) {
     clinicId,
     entityType: "patient",
     entityId: data.id,
+    patientId: data.id,
     action: "create",
+    newValues: data as unknown as Record<string, unknown>,
   });
 
   revalidatePath("/pacientes");
@@ -133,6 +135,15 @@ export async function updatePatient(id: string, formData: FormData) {
   const sanitized = sanitizePatientFields(parsed.data as Parameters<typeof sanitizePatientFields>[0]);
 
   const supabase = await createClient();
+
+  const { data: oldPatient } = await supabase
+    .from("patients")
+    .select("*")
+    .eq("id", id)
+    .eq("clinic_id", clinicId)
+    .single();
+
+  if (!oldPatient) return { error: "Paciente no encontrado" };
 
   if (adminOnly) {
     const { error } = await supabase
@@ -184,7 +195,22 @@ export async function updatePatient(id: string, formData: FormData) {
     if (profileResult.error) return { error: profileResult.error };
   }
 
-  await logAudit({ clinicId, entityType: "patient", entityId: id, action: "update" });
+  const { data: updatedPatient } = await supabase
+    .from("patients")
+    .select("*")
+    .eq("id", id)
+    .eq("clinic_id", clinicId)
+    .single();
+
+  await logAudit({
+    clinicId,
+    entityType: "patient",
+    entityId: id,
+    patientId: id,
+    action: "update",
+    oldValues: oldPatient as unknown as Record<string, unknown>,
+    newValues: (updatedPatient ?? oldPatient) as unknown as Record<string, unknown>,
+  });
   revalidatePath("/pacientes");
   revalidatePath(`/pacientes/${id}`);
   return { success: true };

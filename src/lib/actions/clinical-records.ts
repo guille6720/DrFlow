@@ -6,6 +6,7 @@ import { getSession, logAudit } from "@/lib/auth/session";
 import { clinicalRecordSchema, sanitizeText } from "@/lib/validations/schemas";
 import { parseConsultationModality } from "@/lib/constants/consultation-modality";
 import { requireClinicPermission } from "@/lib/actions/clinic-guard";
+import { getAuditRequestContext } from "@/lib/security/audit-context";
 
 export async function createClinicalRecord(formData: FormData) {
   const access = await requireClinicPermission("editClinicalRecords");
@@ -55,19 +56,25 @@ export async function createClinicalRecord(formData: FormData) {
     revalidatePath("/atenciones");
   }
 
+  const ctx = await getAuditRequestContext();
+
   await supabase.from("clinical_record_audit").insert({
     clinical_record_id: data.id,
     clinic_id: clinicId,
     action: "create",
     changed_by: user.id,
     new_values: data,
+    ip_address: ctx.ip_address,
+    user_agent: ctx.user_agent,
   });
 
   await logAudit({
     clinicId,
     entityType: "clinical_record",
     entityId: data.id,
+    patientId: parsed.data.patient_id,
     action: "create",
+    newValues: data as unknown as Record<string, unknown>,
   });
 
   revalidatePath("/historias");
@@ -118,6 +125,8 @@ export async function updateClinicalRecord(id: string, formData: FormData) {
 
   if (error) return { error: error.message };
 
+  const ctx = await getAuditRequestContext();
+
   await supabase.from("clinical_record_audit").insert({
     clinical_record_id: id,
     clinic_id: clinicId,
@@ -125,6 +134,18 @@ export async function updateClinicalRecord(id: string, formData: FormData) {
     changed_by: user.id,
     old_values: old,
     new_values: data,
+    ip_address: ctx.ip_address,
+    user_agent: ctx.user_agent,
+  });
+
+  await logAudit({
+    clinicId,
+    entityType: "clinical_record",
+    entityId: id,
+    patientId: old.patient_id,
+    action: "update",
+    oldValues: old as unknown as Record<string, unknown>,
+    newValues: data as unknown as Record<string, unknown>,
   });
 
   revalidatePath("/historias");

@@ -17,6 +17,14 @@ import { PatientWorkspacePlaceholderPanel } from "@/components/pacientes/patient
 import type { PatientWorkspaceTabId } from "@/lib/constants/patient-workspace-tabs";
 import { usePatientWorkspaceTab } from "@/lib/hooks/use-patient-workspace-tab";
 
+const PatientClinicalAuditPanel = dynamic(
+  () =>
+    import("@/components/pacientes/patient-clinical-audit-panel").then((m) => ({
+      default: m.PatientClinicalAuditPanel,
+    })),
+  { loading: () => <PatientWorkspacePanelSkeleton /> }
+);
+
 const PatientClinicalAssistantPanel = dynamic(
   () =>
     import("@/components/pacientes/patient-clinical-assistant-panel").then((m) => ({
@@ -112,12 +120,7 @@ export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
         ) : null}
 
         {activeTab === "auditoria" ? (
-          <PatientWorkspacePlaceholderPanel
-            tab="auditoria"
-            patientId={chartProps.patientId}
-            title="Auditoría clínica"
-            description="Registro de accesos y cambios sobre la historia clínica (Fase 12 del roadmap enterprise)."
-          />
+          <PatientClinicalAuditPanel patientId={chartProps.patientId} />
         ) : null}
 
         {activeTab === "ia" ? (

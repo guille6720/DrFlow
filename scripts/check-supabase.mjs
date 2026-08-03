@@ -161,6 +161,27 @@ async function main() {
     console.log(`⚠ Verificación patient_clinical_profiles: HTTP ${profileRes.status}`);
   }
 
+  const auditRes = await fetch(
+    `${url}/rest/v1/audit_logs?select=id,patient_id,old_values,new_values&limit=1`,
+    {
+      headers: {
+        apikey: schemaKey,
+        Authorization: schemaAuth,
+      },
+    }
+  );
+  const auditBody = await auditRes.text();
+  if (auditRes.status === 400 && auditBody.includes("patient_id")) {
+    console.log("❌ Columnas audit_logs Phase 12 — migración 048 pendiente");
+    allOk = false;
+  } else if (auditRes.ok) {
+    console.log("✓ Auditoría Phase 12 (audit_logs.patient_id)");
+  } else if (auditRes.status === 404 || auditRes.status === 406) {
+    console.log("⚠ Tabla audit_logs no accesible vía REST");
+  } else {
+    console.log(`⚠ Verificación audit_logs Phase 12: HTTP ${auditRes.status}`);
+  }
+
   // RPC pública (404 = no expuesta; 400/500 con mensaje de negocio = existe)
   const rpc = await fetch(`${url}/rest/v1/rpc/submit_public_booking`, {
     method: "POST",

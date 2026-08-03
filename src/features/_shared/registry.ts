@@ -20,7 +20,8 @@ export type FeatureModuleId =
   | "portal"
   | "voice"
   | "profesionales"
-  | "reportes";
+  | "reportes"
+  | "auditoria";
 
 export type FeatureModuleStatus = "ready" | "lab" | "planned";
 
@@ -179,6 +180,13 @@ export const FEATURE_MODULES: FeatureModuleDef[] = [
     routes: ["/reportes"],
     status: "ready",
     description: "Informes operativos del consultorio.",
+  },
+  {
+    id: "auditoria",
+    label: "Auditoría clínica",
+    routes: [],
+    status: "ready",
+    description: "Trazabilidad inmutable en workspace del paciente.",
   },
 ];
 
