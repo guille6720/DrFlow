@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/header";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { updateClinicalRecord } from "@/lib/actions/clinical-records";
+import { buildUnifiedClinicalEvolution } from "@/lib/utils/unified-clinical-evolution";
 import type { Clinic, UserRole } from "@/types/database";
 import { ArrowLeft } from "lucide-react";
 
@@ -44,12 +45,28 @@ export function EditConsultaForm({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const initialEvolution = useMemo(
+    () =>
+      buildUnifiedClinicalEvolution({
+        chief_complaint: record.chief_complaint,
+        diagnosis: record.diagnosis,
+        evolution: record.evolution,
+        indications: record.indications,
+      }),
+    [record]
+  );
+  const [evolution, setEvolution] = useState(initialEvolution);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const result = await updateClinicalRecord(record.id, new FormData(e.currentTarget));
+    const formData = new FormData(e.currentTarget);
+    formData.set("chief_complaint", "");
+    formData.set("diagnosis", "");
+    formData.set("indications", "");
+    formData.set("evolution", evolution);
+    const result = await updateClinicalRecord(record.id, formData);
     setLoading(false);
     if (result.error) setError(result.error);
     else router.push(`/historias/${record.id}`);
@@ -69,13 +86,24 @@ export function EditConsultaForm({
             {record.appointment_id && (
               <input type="hidden" name="appointment_id" value={record.appointment_id} />
             )}
-            <Textarea name="chief_complaint" label="Motivo de consulta" defaultValue={record.chief_complaint ?? ""} voiceInput />
-            <Textarea name="diagnosis" label="Diagnóstico" defaultValue={record.diagnosis ?? ""} voiceInput />
-            <Textarea name="evolution" label="Evolución" defaultValue={record.evolution ?? ""} voiceInput />
-            <Textarea name="indications" label="Indicaciones" defaultValue={record.indications ?? ""} voiceInput />
-            <Input name="professional_signature" label="Firma profesional" defaultValue={record.professional_signature ?? ""} />
+            <Textarea
+              name="evolution"
+              label="Evolución"
+              required
+              rows={12}
+              voiceInput
+              value={evolution}
+              onChange={(e) => setEvolution(e.target.value)}
+            />
+            <Input
+              name="professional_signature"
+              label="Firma del profesional"
+              defaultValue={record.professional_signature ?? ""}
+            />
             {error && <p className="text-sm text-red-600">{error}</p>}
-            <Button type="submit" loading={loading}>Guardar cambios</Button>
+            <Button type="submit" loading={loading}>
+              Guardar cambios
+            </Button>
           </form>
         </Card>
       </div>
