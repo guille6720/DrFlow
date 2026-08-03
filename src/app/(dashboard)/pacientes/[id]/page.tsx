@@ -216,7 +216,7 @@ export default async function PacienteDetailPage({
             lastMedications={lastMedications}
             regularMedication={patient.regular_medication}
             clinicalDocuments={clinicalDocuments ?? []}
-            appointments={(appointments ?? []) as import("@/components/pacientes/patient-chart-view").AppointmentRow[]}
+            appointments={(appointments ?? []) as import("@/components/pacientes/patient-chart-types").PatientChartAppointment[]}
             portalSlug={portalSlug}
             doctorInfo={doctorInfo}
             patientShare={patientShare}
