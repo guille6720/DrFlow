@@ -11,6 +11,7 @@ import { PatientEhrClinicalTables } from "@/components/historias/patient-ehr-cli
 import { PatientEhrView } from "@/components/historias/patient-ehr-view";
 import type { PatientEhrWorkspaceData } from "@/lib/server/load-patient-ehr-data";
 import { orderTypeLabel } from "@/components/recetas/prescriptions-orders-utils";
+import { PatientClinicalTimeline } from "@/components/pacientes/patient-clinical-timeline";
 import { patientWorkspacePath } from "@/lib/constants/patient-workspace-tabs";
 
 type EhrProps = {
@@ -128,49 +129,5 @@ export function PatientWorkspaceOrdersPanel({ ehr, patientId, canIssue }: EhrPro
 }
 
 export function PatientWorkspaceTimelinePanel({ ehr }: { ehr: PatientEhrWorkspaceData }) {
-  const events = [
-    ...ehr.consultations.map((c) => ({
-      id: `c-${c.id}`,
-      at: c.created_at,
-      kind: "Consulta",
-      title: c.diagnosis?.trim() || c.chief_complaint?.trim() || "Evolución",
-      meta: c.professional_name,
-    })),
-    ...ehr.prescriptions.map((p) => ({
-      id: `rx-${p.id}`,
-      at: p.created_at,
-      kind: "Receta",
-      title: p.label,
-      meta: "",
-    })),
-    ...ehr.orders.map((o) => ({
-      id: `o-${o.id}`,
-      at: o.issued_at,
-      kind: "Orden",
-      title: orderTypeLabel(o.order_type),
-      meta: o.order_text.slice(0, 80),
-    })),
-  ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
-
-  return (
-    <Card title="Timeline clínico">
-      {events.length === 0 ? (
-        <p className="text-sm text-slate-500">Sin eventos clínicos registrados.</p>
-      ) : (
-        <ol className="space-y-3 border-l-2 border-teal-200 pl-4">
-          {events.map((ev) => (
-            <li key={ev.id} className="relative text-sm">
-              <span className="absolute -left-[1.35rem] top-1.5 h-2.5 w-2.5 rounded-full bg-teal-500" />
-              <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">{ev.kind}</p>
-              <p className="font-medium text-slate-900">{ev.title}</p>
-              <p className="text-xs text-slate-500">
-                {format(new Date(ev.at), "PPp", { locale: es })}
-                {ev.meta ? ` · ${ev.meta}` : ""}
-              </p>
-            </li>
-          ))}
-        </ol>
-      )}
-    </Card>
-  );
+  return <PatientClinicalTimeline ehr={ehr} />;
 }

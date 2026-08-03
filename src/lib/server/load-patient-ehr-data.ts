@@ -15,9 +15,16 @@ import type {
   PatientEhrPrescription,
   PatientEhrTreatmentRow,
 } from "@/lib/utils/patient-ehr-model";
+import type { PatientEhrAppointment } from "@/lib/utils/build-clinical-timeline";
 import type { MedicalOrder } from "@/types/medical-order";
 
 const RECORD_LIMIT = 2000;
+const TIMELINE_APPOINTMENT_LIMIT = 80;
+
+export type PatientEhrWorkspacePrescription = PatientEhrPrescription & {
+  issued_at: string | null;
+  status: string;
+};
 
 export type PatientEhrWorkspaceData = {
   patientInfo: PatientEhrPatientInfo;
@@ -25,8 +32,9 @@ export type PatientEhrWorkspaceData = {
   diagnosisRows: PatientEhrDiagnosisRow[];
   treatmentRows: PatientEhrTreatmentRow[];
   attachments: PatientEhrAttachment[];
-  prescriptions: PatientEhrPrescription[];
+  prescriptions: PatientEhrWorkspacePrescription[];
   orders: (MedicalOrder & { order_type?: string })[];
+  appointments: PatientEhrAppointment[];
   totalConsultations: number;
   usesHceExport: boolean;
 };
@@ -66,7 +74,8 @@ export async function loadPatientEhrWorkspaceData(
     .order("created_at", { ascending: true })
     .limit(RECORD_LIMIT);
 
-  const [{ data: attachments }, { data: rxList }, { data: orders }] = await Promise.all([
+  const [{ data: attachments }, { data: rxList }, { data: orders }, { data: appointments }] =
+    await Promise.all([
     supabase
       .from("patient_attachments")
       .select("id, file_name, created_at, category")
@@ -87,6 +96,14 @@ export async function loadPatientEhrWorkspaceData(
       .eq("patient_id", patientId)
       .order("issued_at", { ascending: false })
       .limit(50),
+    supabase
+      .from("appointments")
+      .select("id, start_at, status, professionals(profiles(full_name))")
+      .eq("clinic_id", clinicId)
+      .eq("patient_id", patientId)
+      .in("status", ["attended", "no_show"])
+      .order("start_at", { ascending: false })
+      .limit(TIMELINE_APPOINTMENT_LIMIT),
   ]);
 
   const mappedRecords =
@@ -121,7 +138,7 @@ export async function loadPatientEhrWorkspaceData(
     ({ consultations, diagnosisRows, treatmentRows } = buildEhrPayloadFromRecords(mappedRecords));
   }
 
-  const prescriptions: PatientEhrPrescription[] =
+  const prescriptions: PatientEhrWorkspacePrescription[] =
     rxList?.map((rx) => {
       const meds = rx.medications as unknown;
       let label = "Receta";
@@ -134,9 +151,21 @@ export async function loadPatientEhrWorkspaceData(
       return {
         id: rx.id,
         created_at: rx.created_at,
+        issued_at: rx.issued_at,
+        status: rx.status,
         label,
       };
     }) ?? [];
+
+  const timelineAppointments: PatientEhrAppointment[] =
+    appointments?.map((a) => ({
+      id: a.id,
+      start_at: a.start_at,
+      status: a.status,
+      professional_name:
+        (a.professionals as { profiles?: { full_name?: string } } | null)?.profiles?.full_name ??
+        null,
+    })) ?? [];
 
   return {
     patientInfo: {
@@ -163,6 +192,7 @@ export async function loadPatientEhrWorkspaceData(
       })) ?? [],
     prescriptions,
     orders: (orders ?? []) as (MedicalOrder & { order_type?: string })[],
+    appointments: timelineAppointments,
     totalConsultations: usesHceExport
       ? diagnosisRows.length + treatmentRows.length + consultations.length
       : (totalRecords ?? consultations.length),

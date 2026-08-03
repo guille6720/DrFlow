@@ -1603,3 +1603,155 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-summ
 .drflow-ehr-embedded .drflow-ehr-layout {
   min-height: 420px;
 }
+
+.drflow-clinical-timeline-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.drflow-clinical-timeline-filter {
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  background: rgba(15, 23, 42, 0.02);
+  color: #475569;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.drflow-clinical-timeline-filter:hover {
+  border-color: rgba(20, 184, 166, 0.55);
+  color: #0f766e;
+}
+
+.drflow-clinical-timeline-filter.is-active {
+  border-color: #14b8a6;
+  background: rgba(20, 184, 166, 0.12);
+  color: #0f766e;
+}
+
+.drflow-clinical-timeline-month + .drflow-clinical-timeline-month {
+  margin-top: 1.25rem;
+}
+
+.drflow-clinical-timeline-month-label {
+  margin: 0 0 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.drflow-clinical-timeline-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 0.35rem;
+  border-left: 2px solid rgba(45, 212, 191, 0.35);
+}
+
+.drflow-clinical-timeline-item + .drflow-clinical-timeline-item {
+  margin-top: 0.35rem;
+}
+
+.drflow-clinical-timeline-link {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.65rem;
+  padding: 0.55rem 0.55rem 0.55rem 0.85rem;
+  border-radius: 0.65rem;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s;
+}
+
+a.drflow-clinical-timeline-link:hover {
+  background: rgba(20, 184, 166, 0.08);
+}
+
+.drflow-clinical-timeline-dot {
+  position: absolute;
+  left: -0.47rem;
+  top: 1rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: #14b8a6;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.drflow-clinical-timeline-dot.is-prescription,
+.drflow-clinical-timeline-dot.is-treatment {
+  background: #6366f1;
+}
+
+.drflow-clinical-timeline-dot.is-lab,
+.drflow-clinical-timeline-dot.is-order {
+  background: #0ea5e9;
+}
+
+.drflow-clinical-timeline-dot.is-imaging {
+  background: #8b5cf6;
+}
+
+.drflow-clinical-timeline-dot.is-hospitalization {
+  background: #f97316;
+}
+
+.drflow-clinical-timeline-dot.is-discharge {
+  background: #22c55e;
+}
+
+.drflow-clinical-timeline-dot.is-no_show {
+  background: #ef4444;
+}
+
+.drflow-clinical-timeline-icon {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.45rem;
+  background: rgba(20, 184, 166, 0.12);
+  color: #0f766e;
+  padding-top: 0.25rem;
+}
+
+.drflow-clinical-timeline-body {
+  min-width: 0;
+}
+
+.drflow-clinical-timeline-kind {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+.drflow-clinical-timeline-title {
+  margin: 0.1rem 0 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.drflow-clinical-timeline-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  color: #475569;
+  white-space: pre-wrap;
+}
+
+.drflow-clinical-timeline-meta {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}
