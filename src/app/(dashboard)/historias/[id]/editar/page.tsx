@@ -40,6 +40,15 @@ export default async function EditarHistoriaPage({
 
   if (!record) notFound();
 
+  const [patientRes, templatesRes] = await Promise.all([
+    supabase.from("patients").select("*").eq("id", record.patient_id).maybeSingle(),
+    supabase
+      .from("clinical_templates")
+      .select("*")
+      .eq("clinic_id", clinicId)
+      .eq("is_active", true),
+  ]);
+
   const backHref = backHrefFromClinicalSubpage(
     from,
     returnPatientId ?? record.patient_id,
@@ -49,11 +58,14 @@ export default async function EditarHistoriaPage({
   return (
     <EditConsultaForm
       record={record}
+      patient={patientRes.data}
       clinics={clinics}
       clinicId={clinicId}
       role={role}
       userName={profile?.full_name}
       backHref={backHref}
+      templates={templatesRes.data ?? []}
+      canIssuePrescriptions={hasPermission(role, "issuePrescriptions", isSuperadmin)}
     />
   );
 }

@@ -190,6 +190,9 @@ export function PrescriptionsOrdersHub({
       if (consultationContext.professionalId) {
         params.set("professional", consultationContext.professionalId);
       }
+      if (consultationContext.recordId) {
+        params.set("record", consultationContext.recordId);
+      }
     }
     return params;
   }
@@ -216,7 +219,7 @@ export function PrescriptionsOrdersHub({
             className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-teal-500"
           >
             <ArrowLeft className="h-4 w-4" />
-            Volver a consulta en curso
+            {consultationContext.recordId ? "Volver a editar consulta" : "Volver a consulta en curso"}
           </Link>
           <p className="text-sm text-teal-100">
             {consultaMedications.length > 0
@@ -345,6 +348,7 @@ export function PrescriptionsOrdersHub({
                     professionals={professionals}
                     defaultProfessionalId={defaultPro}
                     initialMedications={medicationsForForm}
+                    clinicalRecordId={consultationContext?.recordId}
                     onSuccess={() => router.refresh()}
                   />
                 </>

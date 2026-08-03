@@ -2,11 +2,16 @@ export type ConsultationDraftContext = {
   patientId: string;
   appointmentId?: string;
   professionalId?: string;
+  /** Consulta existente en edición (vuelve a /historias/[id]/editar). */
+  recordId?: string;
 };
 
 const QUERY_FLAG = "consulta";
 
 export function consultationDraftKey(ctx: ConsultationDraftContext): string {
+  if (ctx.recordId) {
+    return `drflow-consultation-evolution-record-${ctx.recordId}`;
+  }
   if (ctx.appointmentId) {
     return `drflow-consultation-evolution-appt-${ctx.appointmentId}`;
   }
@@ -57,10 +62,14 @@ export function parseConsultationDraftContext(
   if (!patientId) return null;
   const appointmentId = params.get("appointment")?.trim() || undefined;
   const professionalId = params.get("professional")?.trim() || undefined;
-  return { patientId, appointmentId, professionalId };
+  const recordId = params.get("record")?.trim() || undefined;
+  return { patientId, appointmentId, professionalId, recordId };
 }
 
 export function buildConsultaHref(ctx: ConsultationDraftContext): string {
+  if (ctx.recordId) {
+    return `/historias/${ctx.recordId}/editar`;
+  }
   const params = new URLSearchParams();
   if (ctx.appointmentId) params.set("appointment", ctx.appointmentId);
   params.set("patient", ctx.patientId);
@@ -78,6 +87,7 @@ export function buildPharmacologyHrefFromConsultation(
   params.set("patient", ctx.patientId);
   if (ctx.appointmentId) params.set("appointment", ctx.appointmentId);
   if (ctx.professionalId) params.set("professional", ctx.professionalId);
+  if (ctx.recordId) params.set("record", ctx.recordId);
   if (mode && mode !== "pathology") params.set("mode", mode);
   return `/herramientas/farmacologia?${params.toString()}`;
 }
@@ -91,6 +101,7 @@ export function buildRecetasHrefFromConsultation(
   params.set("patient", ctx.patientId);
   if (ctx.appointmentId) params.set("appointment", ctx.appointmentId);
   if (ctx.professionalId) params.set("professional", ctx.professionalId);
+  if (ctx.recordId) params.set("record", ctx.recordId);
   if (tab === "orden") params.set("tipo", "orden");
   return `/recetas?${params.toString()}`;
 }
