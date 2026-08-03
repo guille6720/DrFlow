@@ -24,6 +24,7 @@
 .DS_Store
 *.pem
 supabase/seeds/.pami_apply_tmp/
+supabase/.temp/
 
 # debug
 npm-debug.log*
