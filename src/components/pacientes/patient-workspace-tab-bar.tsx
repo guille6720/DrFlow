@@ -1,6 +1,7 @@
 "use client";
 
 import { PATIENT_WORKSPACE_TABS, type PatientWorkspaceTabId } from "@/lib/constants/patient-workspace-tabs";
+import { usePluginEnabled } from "@/components/plugins/clinic-plugins-provider";
 import { cn } from "@/lib/utils/cn";
 
 type Props = {
@@ -9,13 +10,20 @@ type Props = {
 };
 
 export function PatientWorkspaceTabBar({ activeTab, onTabChange }: Props) {
+  const iaEnabled = usePluginEnabled("ia");
+
+  const tabs = PATIENT_WORKSPACE_TABS.filter((tab) => {
+    if (tab.id === "ia") return iaEnabled;
+    return true;
+  });
+
   return (
     <nav
       className="drflow-patient-workspace-tabs"
       aria-label="Secciones de historia clínica"
     >
       <div className="drflow-patient-workspace-tabs-scroll">
-        {PATIENT_WORKSPACE_TABS.map(({ id, label, icon: Icon, ready }) => (
+        {tabs.map(({ id, label, icon: Icon, ready }) => (
           <button
             key={id}
             type="button"

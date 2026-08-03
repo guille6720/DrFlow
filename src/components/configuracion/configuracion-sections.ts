@@ -11,6 +11,7 @@ import {
   Database,
   BriefcaseMedical,
   Wallet,
+  Puzzle,
   Settings2,
 } from "lucide-react";
 
@@ -23,7 +24,8 @@ export type ConfiguracionSectionId =
   | "pami"
   | "apariencia"
   | "legal"
-  | "demo";
+  | "demo"
+  | "plugins";
 
 export type ConfiguracionGroupId = "consultorio" | "agenda" | "coberturas" | "sistema";
 
@@ -92,6 +94,12 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
     icon: Scale,
   },
   {
+    id: "plugins",
+    title: "Plugins",
+    description: "Activar o desactivar módulos del consultorio sin recompilar.",
+    icon: Puzzle,
+  },
+  {
     id: "demo",
     title: "Datos de prueba",
     description: "Pacientes ficticios para probar la agenda y HC.",
@@ -126,7 +134,7 @@ export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
     title: "Sistema y legal",
     description: "Apariencia, cumplimiento normativo y datos de prueba.",
     icon: Settings2,
-    sections: ["apariencia", "legal", "demo"],
+    sections: ["apariencia", "legal", "plugins", "demo"],
   },
 ];
 

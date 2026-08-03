@@ -18,5 +18,6 @@ export * as voice from "@/features/voice";
 export * as telemedicina from "@/features/telemedicina";
 export * as facturacion from "@/features/facturacion";
 export * as auditoria from "@/features/auditoria";
+export * as plugins from "@/features/plugins";
 export * as laboratorio from "@/features/laboratorio";
 export * as imagenes from "@/features/imagenes";

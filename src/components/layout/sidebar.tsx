@@ -35,6 +35,9 @@ import { hasPermission } from "@/lib/permissions/roles";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import { useDashboardSidebar } from "@/components/layout/dashboard-sidebar-context";
 import { FEATURE_NAV_ITEMS, type FeatureNavItem } from "@/features/_shared/nav";
+import { NAV_PLUGIN_BY_FEATURE } from "@/plugins/registry";
+import { filterNavByPlugins } from "@/plugins/resolve";
+import { useClinicPlugins } from "@/components/plugins/clinic-plugins-provider";
 
 type NavItem = FeatureNavItem & {
   icon: typeof LayoutDashboard;
@@ -160,11 +163,16 @@ export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { hidden: desktopHidden, toggleHidden } = useDashboardSidebar();
+  const clinicPlugins = useClinicPlugins();
 
-  const visibleItems = navItems.filter((item) => {
-    if (!item.permission) return true;
-    return hasPermission(role, item.permission, isSuperadmin);
-  });
+  const visibleItems = filterNavByPlugins(
+    navItems.filter((item) => {
+      if (!item.permission) return true;
+      return hasPermission(role, item.permission, isSuperadmin);
+    }),
+    clinicPlugins,
+    NAV_PLUGIN_BY_FEATURE
+  );
 
   function handleToggleSidebarHidden() {
     toggleHidden();

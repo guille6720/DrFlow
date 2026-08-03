@@ -15,6 +15,8 @@ import { redirect } from "next/navigation";
 import { hasPermission } from "@/lib/permissions/roles";
 import { AppearanceStylePanel } from "@/components/configuracion/appearance-style-panel";
 import { ComplianceLegalPanel } from "@/components/configuracion/compliance-legal-panel";
+import { ClinicPluginsPanel } from "@/components/configuracion/clinic-plugins-panel";
+import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
 import { DeleteAccountPanel } from "@/components/configuracion/delete-account-panel";
 import {
   resolveConfiguracionGroup,
@@ -43,6 +45,13 @@ function renderSectionContent(
     practiceProfile: string | null;
     defaultInsurance: string | null;
     acceptedCoverages: string[] | null;
+    pluginSettings: Array<{
+      id: import("@/plugins/registry").PluginId;
+      label: string;
+      description: string;
+      tier: string;
+      enabled: boolean;
+    }>;
   }
 ) {
   switch (sectionId) {
@@ -64,6 +73,8 @@ function renderSectionContent(
           defaultInsurance={extras.defaultInsurance}
         />
       );
+    case "plugins":
+      return <ClinicPluginsPanel plugins={extras.pluginSettings} />;
     case "demo":
       return <DemoDataPanel patientCount={extras.patientCount} />;
     case "clinica":
@@ -142,12 +153,16 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
     bookingSlug: booking.data?.slug ?? null,
   };
 
+  const pluginSettingsResult = await getClinicPluginSettings();
+  const pluginSettings = pluginSettingsResult.data ?? [];
+
   const sectionContent = activeSection
     ? renderSectionContent(activeSection, settingsProps, {
         patientCount: patientCount.count ?? 0,
         practiceProfile: clinic?.practice_profile ?? null,
         defaultInsurance: clinic?.default_insurance_provider ?? null,
         acceptedCoverages: clinic?.accepted_coverages ?? null,
+        pluginSettings,
       })
     : undefined;
 

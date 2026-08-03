@@ -16,6 +16,10 @@ import { UiThemeProvider } from "@/components/theme/ui-theme-provider";
 import { VoiceInputProvider } from "@/features/voice";
 import { getDashboardShell, logAudit } from "@/lib/auth/session";
 import { canAccessRoute } from "@/lib/permissions/roles";
+import { createClient } from "@/lib/supabase/server";
+import { loadClinicPlugins } from "@/lib/server/load-clinic-plugins";
+import { resolveClinicPlugins, isRouteAllowedByPlugins } from "@/plugins/resolve";
+import { ClinicPluginsProvider } from "@/components/plugins/clinic-plugins-provider";
 import {
   isClinicTrialExpired,
   isTrialWhitelistedPath,
@@ -55,12 +59,27 @@ export default async function DashboardLayout({
 
   const path = (await headers()).get("x-drflow-path") ?? "";
 
+  const supabase = await createClient();
+  const clinicPlugins = clinicId
+    ? await loadClinicPlugins(supabase, clinicId)
+    : resolveClinicPlugins([]);
+
   if (path && !canAccessRoute(role, path, isSuperadmin)) {
     await logAudit({
       clinicId: clinicId ?? undefined,
       entityType: "route_access",
       action: "view",
       metadata: { path, reason: "rbac_denied" },
+    });
+    redirect("/dashboard");
+  }
+
+  if (path && clinicId && !isRouteAllowedByPlugins(path, clinicPlugins)) {
+    await logAudit({
+      clinicId,
+      entityType: "route_access",
+      action: "view",
+      metadata: { path, reason: "plugin_disabled" },
     });
     redirect("/dashboard");
   }
@@ -98,9 +117,14 @@ export default async function DashboardLayout({
         <TrialBanner trialEndsAt={clinic.trial_ends_at} daysRemaining={daysLeft} />
       )}
       <DashboardSidebarProvider>
+        <ClinicPluginsProvider plugins={clinicPlugins}>
         <CommandPaletteProvider role={role} isSuperadmin={isSuperadmin}>
         <UiThemeProvider>
-        <VoiceInputProvider clinicVoiceInputEnabled={clinic?.voice_input_enabled !== false}>
+        <VoiceInputProvider
+          clinicVoiceInputEnabled={
+            clinic?.voice_input_enabled !== false && clinicPlugins.voice
+          }
+        >
         <Sidebar
           clinicName={clinic?.name}
           role={role}
@@ -116,6 +140,7 @@ export default async function DashboardLayout({
         </VoiceInputProvider>
         </UiThemeProvider>
         </CommandPaletteProvider>
+        </ClinicPluginsProvider>
       </DashboardSidebarProvider>
       <FloatingActions />
     </div>

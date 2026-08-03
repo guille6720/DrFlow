@@ -182,6 +182,27 @@ async function main() {
     console.log(`⚠ Verificación audit_logs Phase 12: HTTP ${auditRes.status}`);
   }
 
+  const pluginsRes = await fetch(
+    `${url}/rest/v1/clinic_plugins?select=clinic_id,plugin_id,enabled&limit=1`,
+    {
+      headers: {
+        apikey: schemaKey,
+        Authorization: schemaAuth,
+      },
+    }
+  );
+  if (pluginsRes.status === 404 || pluginsRes.status === 406) {
+    const body = await pluginsRes.text();
+    if (body.includes("does not exist") || body.includes("relation")) {
+      console.log("❌ Tabla clinic_plugins — migración 049 pendiente");
+      allOk = false;
+    }
+  } else if (pluginsRes.ok) {
+    console.log("✓ Plugins Phase 13 (clinic_plugins)");
+  } else {
+    console.log(`⚠ Verificación clinic_plugins: HTTP ${pluginsRes.status}`);
+  }
+
   // RPC pública (404 = no expuesta; 400/500 con mensaje de negocio = existe)
   const rpc = await fetch(`${url}/rest/v1/rpc/submit_public_booking`, {
     method: "POST",

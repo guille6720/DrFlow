@@ -28,6 +28,7 @@ export const TABLES_REQUIRING_RLS = [
   "public_booking_links",
   "consent_records",
   "audit_logs",
+  "clinic_plugins",
   "pathologies",
   "drugs",
   "pathology_drugs",
