@@ -1,10 +1,10 @@
 import { Header } from "@/components/layout/header";
-import { StatCard } from "@/components/ui/stat-card";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ConsultorioLivePanel } from "@/components/dashboard/consultorio-live-panel";
 import { ClinicalWorkflowStrip } from "@/components/dashboard/clinical-workflow-strip";
+import { DashboardStatsSection } from "@/components/dashboard/dashboard-stats-section";
 import {
   getActiveClinic,
   getActiveClinicId,
@@ -12,24 +12,22 @@ import {
   getUserClinics,
 } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import {
-  Calendar,
-  Users,
-  Stethoscope,
-  XCircle,
-  UserX,
-  Plus,
-  CalendarDays,
-  Pill,
-} from "lucide-react";
+import { Plus, CalendarDays, Pill, Users, Stethoscope, Calendar } from "lucide-react";
 import { hasPermission } from "@/lib/permissions/roles";
 import Link from "next/link";
 import { DashboardUpcomingList } from "@/components/dashboard/dashboard-upcoming-list";
 import { DashboardYearlyPatientsSection } from "@/components/dashboard/dashboard-yearly-patients-section";
 import { BentoGrid, BentoCell } from "@/components/theme/bento-grid";
+import { buildDashboardStatsDetail } from "@/lib/utils/build-dashboard-stats-detail";
 import { buildYearlyAttendedPatients } from "@/lib/utils/yearly-attended-patients";
+import { getAttendancePeriodBounds } from "@/lib/utils/attendance-stats";
+import { DEFAULT_CLINIC_TIMEZONE } from "@/lib/utils/clinic-timezone";
+import type { DashboardStatsDetail } from "@/lib/utils/dashboard-stats-types";
 import { format, startOfDay, endOfDay, startOfMonth, subYears } from "date-fns";
 import { es } from "date-fns/locale";
+
+const APPOINTMENT_DETAIL_SELECT =
+  "id, start_at, status, patient_id, cancellation_reason, patients(first_name, last_name, document_number), professionals(profiles(full_name))";
 
 export default async function DashboardPage() {
   const profile = await getProfile();
@@ -45,6 +43,7 @@ export default async function DashboardPage() {
   const yearStart = subYears(now, 1).toISOString();
 
   let yearlyAttendedPatients: ReturnType<typeof buildYearlyAttendedPatients> = [];
+  let dashboardStatsDetail: DashboardStatsDetail | null = null;
 
   let stats = {
     todayAppointments: 0,
@@ -62,7 +61,10 @@ export default async function DashboardPage() {
   let nextToday: (typeof upcoming)[0] | null = null;
 
   if (clinicId) {
-    const [today, newPats, attended, cancelled, noShow, monthTotal, upcomingData, todayList, yearAppointments, yearRecords] =
+    const timeZone = clinic?.timezone ?? DEFAULT_CLINIC_TIMEZONE;
+    const weekBounds = getAttendancePeriodBounds("weekly", now, timeZone);
+
+    const [today, newPats, attended, cancelled, noShow, monthTotal, upcomingData, todayList, yearAppointments, yearRecords, todayDetailRows, newPatientsRows, attendedRows, cancelledRows, noShowRows, weekNoShow, weekTotal] =
       await Promise.all([
         supabase
           .from("appointments")
@@ -134,6 +136,58 @@ export default async function DashboardPage() {
           )
           .eq("clinic_id", clinicId)
           .gte("created_at", yearStart),
+        supabase
+          .from("appointments")
+          .select(APPOINTMENT_DETAIL_SELECT)
+          .eq("clinic_id", clinicId)
+          .gte("start_at", todayStart)
+          .lte("start_at", todayEnd)
+          .order("start_at")
+          .limit(100),
+        supabase
+          .from("patients")
+          .select("id, first_name, last_name, document_number, created_at")
+          .eq("clinic_id", clinicId)
+          .gte("created_at", monthStart)
+          .order("created_at", { ascending: false })
+          .limit(100),
+        supabase
+          .from("appointments")
+          .select(APPOINTMENT_DETAIL_SELECT)
+          .eq("clinic_id", clinicId)
+          .eq("status", "attended")
+          .gte("start_at", monthStart)
+          .order("start_at", { ascending: false })
+          .limit(100),
+        supabase
+          .from("appointments")
+          .select(APPOINTMENT_DETAIL_SELECT)
+          .eq("clinic_id", clinicId)
+          .eq("status", "cancelled")
+          .gte("start_at", monthStart)
+          .order("start_at", { ascending: false })
+          .limit(100),
+        supabase
+          .from("appointments")
+          .select(APPOINTMENT_DETAIL_SELECT)
+          .eq("clinic_id", clinicId)
+          .eq("status", "no_show")
+          .gte("start_at", monthStart)
+          .order("start_at", { ascending: false })
+          .limit(100),
+        supabase
+          .from("appointments")
+          .select("id", { count: "exact", head: true })
+          .eq("clinic_id", clinicId)
+          .eq("status", "no_show")
+          .gte("start_at", weekBounds.start.toISOString())
+          .lt("start_at", weekBounds.end.toISOString()),
+        supabase
+          .from("appointments")
+          .select("id", { count: "exact", head: true })
+          .eq("clinic_id", clinicId)
+          .gte("start_at", weekBounds.start.toISOString())
+          .lt("start_at", weekBounds.end.toISOString()),
       ]);
 
     stats = {
@@ -159,12 +213,20 @@ export default async function DashboardPage() {
       yearAppointments.data ?? [],
       yearRecords.data ?? []
     );
-  }
 
-  const noShowRate =
-    stats.totalMonthAppointments > 0
-      ? Math.round((stats.noShowCount / stats.totalMonthAppointments) * 100)
-      : 0;
+    dashboardStatsDetail = buildDashboardStatsDetail({
+      timeZone,
+      referenceDate: now,
+      todayAppointments: todayDetailRows.data ?? [],
+      newPatients: newPatientsRows.data ?? [],
+      attendedConsultations: attendedRows.data ?? [],
+      cancelledAppointments: cancelledRows.data ?? [],
+      noShowAppointments: noShowRows.data ?? [],
+      weekNoShowCount: weekNoShow.count ?? 0,
+      weekTotalAppointments: weekTotal.count ?? 0,
+      counts: stats,
+    });
+  }
 
   return (
     <>
@@ -194,37 +256,9 @@ export default async function DashboardPage() {
         </BentoCell>
 
         <BentoCell span={12}>
-        <div className="drflow-bento-stats grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
-          <StatCard
-            title="Turnos hoy"
-            value={stats.todayAppointments}
-            icon={<Calendar className="h-5 w-5" />}
-          />
-          <StatCard
-            title="Pacientes nuevos"
-            value={stats.newPatients}
-            subtitle="Este mes"
-            icon={<Users className="h-5 w-5" />}
-          />
-          <StatCard
-            title="Consultas realizadas"
-            value={stats.completedConsultations}
-            subtitle="Este mes"
-            icon={<Stethoscope className="h-5 w-5" />}
-          />
-          <StatCard
-            title="Cancelaciones"
-            value={stats.cancelledAppointments}
-            subtitle="Este mes"
-            icon={<XCircle className="h-5 w-5" />}
-          />
-          <StatCard
-            title="Ausentismo"
-            value={`${noShowRate}%`}
-            subtitle={`${stats.noShowCount} ausencias`}
-            icon={<UserX className="h-5 w-5" />}
-          />
-        </div>
+        {dashboardStatsDetail ? (
+          <DashboardStatsSection detail={dashboardStatsDetail} />
+        ) : null}
         <div className="mt-4">
           <DashboardYearlyPatientsSection patients={yearlyAttendedPatients} />
         </div>
