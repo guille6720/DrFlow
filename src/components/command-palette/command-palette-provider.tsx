@@ -47,9 +47,15 @@ type ProviderProps = {
   children: ReactNode;
   role: UserRole | null;
   isSuperadmin?: boolean;
+  enabled?: boolean;
 };
 
-export function CommandPaletteProvider({ children, role, isSuperadmin = false }: ProviderProps) {
+export function CommandPaletteProvider({
+  children,
+  role,
+  isSuperadmin = false,
+  enabled = true,
+}: ProviderProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -118,6 +124,8 @@ export function CommandPaletteProvider({ children, role, isSuperadmin = false }:
   }, [open, query]);
 
   useEffect(() => {
+    if (!enabled) return;
+
     function onKeyDown(e: KeyboardEvent) {
       if (isEditableTarget(e.target) && !open) return;
 
@@ -165,11 +173,14 @@ export function CommandPaletteProvider({ children, role, isSuperadmin = false }:
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, flatResults, selectedIndex, navigate, router]);
+  }, [enabled, open, flatResults, selectedIndex, navigate, router]);
 
   return (
-    <CommandPaletteContext.Provider value={{ open, setOpen, toggle }}>
+    <CommandPaletteContext.Provider
+      value={{ open: enabled ? open : false, setOpen: enabled ? setOpen : () => {}, toggle: enabled ? toggle : () => {} }}
+    >
       {children}
+      {enabled ? (
       <CommandPaletteDialog
         open={open}
         query={query}
@@ -183,6 +194,7 @@ export function CommandPaletteProvider({ children, role, isSuperadmin = false }:
         onNavigate={navigate}
         flatResults={flatResults}
       />
+      ) : null}
     </CommandPaletteContext.Provider>
   );
 }

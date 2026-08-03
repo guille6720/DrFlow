@@ -1,4 +1,4 @@
-export { ClinicPluginsProvider, useClinicPlugins, usePluginEnabled } from "@/components/plugins/clinic-plugins-provider";
+export { ClinicPluginsProvider, useClinicPlugins, usePluginEnabled, ClinicFeaturesProvider, useClinicFeatures, useFeatureFlag } from "@/components/plugins/clinic-plugins-provider";
 export {
   getPluginDefinition,
   listToggleablePlugins,

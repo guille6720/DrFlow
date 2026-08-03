@@ -16,6 +16,8 @@ import { Calendar, Pill, Users, Stethoscope } from "lucide-react";
 import { hasPermission } from "@/lib/permissions/roles";
 import Link from "next/link";
 import { loadClinicalOperationsData } from "@/lib/server/load-clinical-operations-data";
+import { loadClinicFeatures } from "@/lib/server/load-clinic-feature-flags";
+import { isFeatureFlagEnabled } from "@/lib/features/flags/resolve";
 import { BentoGrid, BentoCell } from "@/components/theme/bento-grid";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { es } from "date-fns/locale";
@@ -38,6 +40,7 @@ export default async function DashboardPage() {
   let todayDone = 0;
   let nextToday: LiveAppointment | null = null;
   let clinicalOps = null;
+  let showClinicalOperations = true;
 
   if (clinicId) {
     const [today, upcomingData, todayList] = await Promise.all([
@@ -87,6 +90,9 @@ export default async function DashboardPage() {
       todayQueue,
       upcoming,
     });
+
+    const features = await loadClinicFeatures(supabase, clinicId);
+    showClinicalOperations = isFeatureFlagEnabled(features, "clinical_operations");
   }
 
   return (
@@ -116,7 +122,7 @@ export default async function DashboardPage() {
             <ClinicalWorkflowStrip />
           </BentoCell>
 
-          {clinicalOps ? (
+          {clinicalOps && showClinicalOperations ? (
             <BentoCell span={12}>
               <ClinicalOperationsCenter
                 ops={clinicalOps}

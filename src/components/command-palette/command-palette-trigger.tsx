@@ -2,6 +2,7 @@
 
 import { Search } from "lucide-react";
 import { useCommandPalette } from "@/components/command-palette/command-palette-provider";
+import { useFeatureFlag } from "@/components/plugins/clinic-plugins-provider";
 import { cn } from "@/lib/utils/cn";
 
 type Props = {
@@ -11,6 +12,9 @@ type Props = {
 
 export function CommandPaletteTrigger({ className, compact = false }: Props) {
   const { setOpen } = useCommandPalette();
+  const enabled = useFeatureFlag("command_palette");
+
+  if (!enabled) return null;
 
   return (
     <button

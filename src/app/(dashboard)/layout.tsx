@@ -17,9 +17,10 @@ import { VoiceInputProvider } from "@/features/voice";
 import { getDashboardShell, logAudit } from "@/lib/auth/session";
 import { canAccessRoute } from "@/lib/permissions/roles";
 import { createClient } from "@/lib/supabase/server";
-import { loadClinicPlugins } from "@/lib/server/load-clinic-plugins";
+import { loadClinicFeatures } from "@/lib/server/load-clinic-feature-flags";
 import { resolveClinicPlugins, isRouteAllowedByPlugins } from "@/plugins/resolve";
-import { ClinicPluginsProvider } from "@/components/plugins/clinic-plugins-provider";
+import { resolveClinicFeatureFlags } from "@/lib/features/flags/resolve";
+import { ClinicFeaturesProvider } from "@/components/plugins/clinic-plugins-provider";
 import {
   isClinicTrialExpired,
   isTrialWhitelistedPath,
@@ -60,9 +61,12 @@ export default async function DashboardLayout({
   const path = (await headers()).get("x-drflow-path") ?? "";
 
   const supabase = await createClient();
-  const clinicPlugins = clinicId
-    ? await loadClinicPlugins(supabase, clinicId)
-    : resolveClinicPlugins([]);
+  const clinicFeatures = clinicId
+    ? await loadClinicFeatures(supabase, clinicId)
+    : {
+        plugins: resolveClinicPlugins([]),
+        flags: resolveClinicFeatureFlags([]),
+      };
 
   if (path && !canAccessRoute(role, path, isSuperadmin)) {
     await logAudit({
@@ -74,7 +78,7 @@ export default async function DashboardLayout({
     redirect("/dashboard");
   }
 
-  if (path && clinicId && !isRouteAllowedByPlugins(path, clinicPlugins)) {
+  if (path && clinicId && !isRouteAllowedByPlugins(path, clinicFeatures.plugins)) {
     await logAudit({
       clinicId,
       entityType: "route_access",
@@ -117,12 +121,19 @@ export default async function DashboardLayout({
         <TrialBanner trialEndsAt={clinic.trial_ends_at} daysRemaining={daysLeft} />
       )}
       <DashboardSidebarProvider>
-        <ClinicPluginsProvider plugins={clinicPlugins}>
-        <CommandPaletteProvider role={role} isSuperadmin={isSuperadmin}>
+        <ClinicFeaturesProvider
+          plugins={clinicFeatures.plugins}
+          flags={clinicFeatures.flags}
+        >
+        <CommandPaletteProvider
+          role={role}
+          isSuperadmin={isSuperadmin}
+          enabled={clinicFeatures.flags.command_palette}
+        >
         <UiThemeProvider>
         <VoiceInputProvider
           clinicVoiceInputEnabled={
-            clinic?.voice_input_enabled !== false && clinicPlugins.voice
+            clinic?.voice_input_enabled !== false && clinicFeatures.plugins.voice
           }
         >
         <Sidebar
@@ -137,12 +148,12 @@ export default async function DashboardLayout({
           </Suspense>
           {children}
         </DashboardMain>
+        <FloatingActions />
         </VoiceInputProvider>
         </UiThemeProvider>
         </CommandPaletteProvider>
-        </ClinicPluginsProvider>
+        </ClinicFeaturesProvider>
       </DashboardSidebarProvider>
-      <FloatingActions />
     </div>
   );
 }

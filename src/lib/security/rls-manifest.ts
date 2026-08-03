@@ -29,6 +29,7 @@ export const TABLES_REQUIRING_RLS = [
   "consent_records",
   "audit_logs",
   "clinic_plugins",
+  "clinic_feature_flags",
   "pathologies",
   "drugs",
   "pathology_drugs",

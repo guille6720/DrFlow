@@ -1,31 +1,56 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 import type { PluginId } from "@/plugins/registry";
 import { isPluginEnabled, type ResolvedClinicPlugins } from "@/plugins/resolve";
+import {
+  buildClinicFeaturesContext,
+  isFeatureFlagEnabled,
+  type ClinicFeaturesContext,
+  type ResolvedClinicFeatureFlags,
+} from "@/lib/features/flags/resolve";
+import type { FeatureFlagId } from "@/lib/features/flags/registry";
 
-const ClinicPluginsContext = createContext<ResolvedClinicPlugins | null>(null);
+const ClinicFeaturesContext = createContext<ClinicFeaturesContext | null>(null);
 
-export function ClinicPluginsProvider({
+export function ClinicFeaturesProvider({
   plugins,
+  flags,
   children,
 }: {
   plugins: ResolvedClinicPlugins;
+  flags: ResolvedClinicFeatureFlags;
   children: ReactNode;
 }) {
+  const value = useMemo(
+    () => buildClinicFeaturesContext(plugins, flags),
+    [plugins, flags]
+  );
+
   return (
-    <ClinicPluginsContext.Provider value={plugins}>{children}</ClinicPluginsContext.Provider>
+    <ClinicFeaturesContext.Provider value={value}>{children}</ClinicFeaturesContext.Provider>
   );
 }
 
-export function useClinicPlugins(): ResolvedClinicPlugins {
-  const ctx = useContext(ClinicPluginsContext);
+/** @deprecated Use ClinicFeaturesProvider */
+export const ClinicPluginsProvider = ClinicFeaturesProvider;
+
+export function useClinicFeatures(): ClinicFeaturesContext {
+  const ctx = useContext(ClinicFeaturesContext);
   if (!ctx) {
-    throw new Error("useClinicPlugins must be used within ClinicPluginsProvider");
+    throw new Error("useClinicFeatures must be used within ClinicFeaturesProvider");
   }
   return ctx;
 }
 
+export function useClinicPlugins(): ResolvedClinicPlugins {
+  return useClinicFeatures().plugins;
+}
+
 export function usePluginEnabled(pluginId: PluginId): boolean {
-  return isPluginEnabled(useClinicPlugins(), pluginId);
+  return isPluginEnabled(useClinicFeatures().plugins, pluginId);
+}
+
+export function useFeatureFlag(flagId: FeatureFlagId): boolean {
+  return isFeatureFlagEnabled(useClinicFeatures(), flagId);
 }

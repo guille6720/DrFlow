@@ -10,6 +10,7 @@ import {
 } from "@/lib/utils/clinical-assistant";
 import { extractEvolutionDiagnosis } from "@/lib/utils/parse-evolution-medications";
 import type { PathologySearchResult } from "@/types/pharmacology";
+import { useFeatureFlag } from "@/components/plugins/clinic-plugins-provider";
 
 type Props = {
   patientId: string;
@@ -26,6 +27,7 @@ export function ConsultationAssistantPanel({
   evolutionText,
   pharmacologyHref,
 }: Props) {
+  const enabled = useFeatureFlag("consultation_assistant");
   const [pathologies, setPathologies] = useState<PathologySearchResult[]>([]);
 
   const warnings = useMemo(
@@ -62,6 +64,7 @@ export function ConsultationAssistantPanel({
 
   const showCie10 = pathologies.length > 0 && pathologyQuery.length >= 3;
 
+  if (!enabled) return null;
   if (warnings.length === 0 && !showCie10) return null;
 
   return (

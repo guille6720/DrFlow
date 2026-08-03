@@ -203,6 +203,27 @@ async function main() {
     console.log(`⚠ Verificación clinic_plugins: HTTP ${pluginsRes.status}`);
   }
 
+  const flagsRes = await fetch(
+    `${url}/rest/v1/clinic_feature_flags?select=clinic_id,flag_id,enabled&limit=1`,
+    {
+      headers: {
+        apikey: schemaKey,
+        Authorization: schemaAuth,
+      },
+    }
+  );
+  if (flagsRes.status === 404 || flagsRes.status === 406) {
+    const body = await flagsRes.text();
+    if (body.includes("does not exist") || body.includes("relation")) {
+      console.log("❌ Tabla clinic_feature_flags — migración 050 pendiente");
+      allOk = false;
+    }
+  } else if (flagsRes.ok) {
+    console.log("✓ Feature flags Phase 14 (clinic_feature_flags)");
+  } else {
+    console.log(`⚠ Verificación clinic_feature_flags: HTTP ${flagsRes.status}`);
+  }
+
   // RPC pública (404 = no expuesta; 400/500 con mensaje de negocio = existe)
   const rpc = await fetch(`${url}/rest/v1/rpc/submit_public_booking`, {
     method: "POST",

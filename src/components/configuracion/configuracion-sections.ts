@@ -13,6 +13,7 @@ import {
   Wallet,
   Puzzle,
   Settings2,
+  ToggleLeft,
 } from "lucide-react";
 
 export type ConfiguracionSectionId =
@@ -25,7 +26,8 @@ export type ConfiguracionSectionId =
   | "apariencia"
   | "legal"
   | "demo"
-  | "plugins";
+  | "plugins"
+  | "flags";
 
 export type ConfiguracionGroupId = "consultorio" | "agenda" | "coberturas" | "sistema";
 
@@ -100,6 +102,12 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
     icon: Puzzle,
   },
   {
+    id: "flags",
+    title: "Feature flags",
+    description: "Funciones granulares dentro de los módulos activos.",
+    icon: ToggleLeft,
+  },
+  {
     id: "demo",
     title: "Datos de prueba",
     description: "Pacientes ficticios para probar la agenda y HC.",
@@ -134,7 +142,7 @@ export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
     title: "Sistema y legal",
     description: "Apariencia, cumplimiento normativo y datos de prueba.",
     icon: Settings2,
-    sections: ["apariencia", "legal", "plugins", "demo"],
+    sections: ["apariencia", "legal", "plugins", "flags", "demo"],
   },
 ];
 

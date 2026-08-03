@@ -16,7 +16,9 @@ import { hasPermission } from "@/lib/permissions/roles";
 import { AppearanceStylePanel } from "@/components/configuracion/appearance-style-panel";
 import { ComplianceLegalPanel } from "@/components/configuracion/compliance-legal-panel";
 import { ClinicPluginsPanel } from "@/components/configuracion/clinic-plugins-panel";
+import { ClinicFeatureFlagsPanel } from "@/components/configuracion/clinic-feature-flags-panel";
 import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
+import { getClinicFeatureFlagSettings } from "@/lib/actions/clinic-feature-flags";
 import { DeleteAccountPanel } from "@/components/configuracion/delete-account-panel";
 import {
   resolveConfiguracionGroup,
@@ -52,6 +54,14 @@ function renderSectionContent(
       tier: string;
       enabled: boolean;
     }>;
+    flagSettings: Array<{
+      id: import("@/lib/features/flags/registry").FeatureFlagId;
+      label: string;
+      description: string;
+      category: string;
+      enabled: boolean;
+      requiresPlugin?: string;
+    }>;
   }
 ) {
   switch (sectionId) {
@@ -75,6 +85,8 @@ function renderSectionContent(
       );
     case "plugins":
       return <ClinicPluginsPanel plugins={extras.pluginSettings} />;
+    case "flags":
+      return <ClinicFeatureFlagsPanel flags={extras.flagSettings} />;
     case "demo":
       return <DemoDataPanel patientCount={extras.patientCount} />;
     case "clinica":
@@ -155,6 +167,8 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
 
   const pluginSettingsResult = await getClinicPluginSettings();
   const pluginSettings = pluginSettingsResult.data ?? [];
+  const flagSettingsResult = await getClinicFeatureFlagSettings();
+  const flagSettings = flagSettingsResult.data ?? [];
 
   const sectionContent = activeSection
     ? renderSectionContent(activeSection, settingsProps, {
@@ -163,6 +177,7 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
         defaultInsurance: clinic?.default_insurance_provider ?? null,
         acceptedCoverages: clinic?.accepted_coverages ?? null,
         pluginSettings,
+        flagSettings,
       })
     : undefined;
 

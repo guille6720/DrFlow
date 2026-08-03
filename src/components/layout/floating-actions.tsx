@@ -12,6 +12,7 @@ import {
   Pill,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { useFeatureFlag } from "@/components/plugins/clinic-plugins-provider";
 
 const actions = [
   {
@@ -49,8 +50,9 @@ const actions = [
 export function FloatingActions() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const enabled = useFeatureFlag("floating_actions");
 
-  if (pathname === "/dashboard") {
+  if (!enabled || pathname === "/dashboard") {
     return null;
   }
 

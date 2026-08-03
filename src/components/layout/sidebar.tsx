@@ -37,7 +37,9 @@ import { useDashboardSidebar } from "@/components/layout/dashboard-sidebar-conte
 import { FEATURE_NAV_ITEMS, type FeatureNavItem } from "@/features/_shared/nav";
 import { NAV_PLUGIN_BY_FEATURE } from "@/plugins/registry";
 import { filterNavByPlugins } from "@/plugins/resolve";
-import { useClinicPlugins } from "@/components/plugins/clinic-plugins-provider";
+import { NAV_FLAG_BY_HREF } from "@/lib/features/flags/registry";
+import { filterNavByFeatureFlags } from "@/lib/features/flags/resolve";
+import { useClinicFeatures } from "@/components/plugins/clinic-plugins-provider";
 
 type NavItem = FeatureNavItem & {
   icon: typeof LayoutDashboard;
@@ -163,15 +165,19 @@ export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { hidden: desktopHidden, toggleHidden } = useDashboardSidebar();
-  const clinicPlugins = useClinicPlugins();
+  const clinicFeatures = useClinicFeatures();
 
-  const visibleItems = filterNavByPlugins(
-    navItems.filter((item) => {
-      if (!item.permission) return true;
-      return hasPermission(role, item.permission, isSuperadmin);
-    }),
-    clinicPlugins,
-    NAV_PLUGIN_BY_FEATURE
+  const visibleItems = filterNavByFeatureFlags(
+    filterNavByPlugins(
+      navItems.filter((item) => {
+        if (!item.permission) return true;
+        return hasPermission(role, item.permission, isSuperadmin);
+      }),
+      clinicFeatures.plugins,
+      NAV_PLUGIN_BY_FEATURE
+    ),
+    clinicFeatures,
+    NAV_FLAG_BY_HREF
   );
 
   function handleToggleSidebarHidden() {
