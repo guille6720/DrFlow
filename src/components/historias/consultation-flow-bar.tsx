@@ -18,16 +18,19 @@ const STEPS: { id: ConsultationStep; label: string; icon: typeof FileText }[] = 
 interface ConsultationFlowBarProps {
   appointmentId: string;
   patient?: Patient | null;
-  activeStep: ConsultationStep;
-  onStepChange: (step: ConsultationStep) => void;
+  activeStep?: ConsultationStep;
+  onStepChange?: (step: ConsultationStep) => void;
+  /** Oculta la barra de pasos cuando el formulario usa un solo campo de evolución. */
+  showSteps?: boolean;
 }
 
 /** Barra fija de consulta: paciente + timer + pasos + finalizar. */
 export function ConsultationFlowBar({
   appointmentId,
   patient,
-  activeStep,
+  activeStep = "evolucion",
   onStepChange,
+  showSteps = true,
 }: ConsultationFlowBarProps) {
   const stepIndex = STEPS.findIndex((s) => s.id === activeStep);
 
@@ -53,38 +56,42 @@ export function ConsultationFlowBar({
         </div>
       </div>
 
-      <div className="mt-3 flex gap-1 overflow-x-auto pb-1">
-        {STEPS.map((step, i) => {
-          const Icon = step.icon;
-          const isActive = step.id === activeStep;
-          const isDone = i < stepIndex;
-          return (
-            <button
-              key={step.id}
-              type="button"
-              onClick={() => onStepChange(step.id)}
-              className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition",
-                isActive
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : isDone
-                    ? "bg-emerald-100 text-emerald-800"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              )}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {step.label}
-            </button>
-          );
-        })}
-      </div>
+      {showSteps && (
+        <>
+          <div className="mt-3 flex gap-1 overflow-x-auto pb-1">
+            {STEPS.map((step, i) => {
+              const Icon = step.icon;
+              const isActive = step.id === activeStep;
+              const isDone = i < stepIndex;
+              return (
+                <button
+                  key={step.id}
+                  type="button"
+                  onClick={() => onStepChange?.(step.id)}
+                  className={cn(
+                    "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition",
+                    isActive
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : isDone
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {step.label}
+                </button>
+              );
+            })}
+          </div>
 
-      <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-100">
-        <div
-          className="h-full rounded-full bg-blue-600 transition-all duration-300"
-          style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }}
-        />
-      </div>
+          <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-100">
+            <div
+              className="h-full rounded-full bg-blue-600 transition-all duration-300"
+              style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -9,17 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import {
-  ConsultationFlowBar,
-  type ConsultationStep,
-} from "@/components/historias/consultation-flow-bar";
+import { ConsultationFlowBar } from "@/components/historias/consultation-flow-bar";
 import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
 import { createClinicalRecord } from "@/lib/actions/clinical-records";
 import { startConsultationFromAppointment } from "@/lib/actions/appointments";
-import { getProfessionalDisplayName } from "@/lib/utils/professional";
+import {
+  buildProfessionalSignature,
+  getProfessionalDisplayName,
+} from "@/lib/utils/professional";
 import type { Clinic, Patient, Professional, UserRole } from "@/types/database";
 import { ArrowLeft, AlertTriangle, Pill } from "lucide-react";
-import { cn } from "@/lib/utils/cn";
 import { backHrefFromClinicalSubpage } from "@/lib/utils/clinical-navigation";
 
 interface Props {
@@ -62,10 +61,16 @@ export default function NuevaConsultaForm({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPrescription, setShowPrescription] = useState(false);
-  const [activeStep, setActiveStep] = useState<ConsultationStep>("motivo");
+  const [professionalId, setProfessionalId] = useState(defaultProfessional);
+  const [professionalSignature, setProfessionalSignature] = useState("");
 
   const selectedPatient = patients.find((p) => p.id === defaultPatient);
   const fromAppointment = Boolean(appointmentId);
+
+  function signatureForProfessionalId(id: string): string {
+    const pro = professionals.find((p) => p.id === id);
+    return pro ? buildProfessionalSignature(pro) : "";
+  }
 
   useEffect(() => {
     if (!appointmentId) return;
@@ -74,12 +79,21 @@ export default function NuevaConsultaForm({
     });
   }, [appointmentId]);
 
+  useEffect(() => {
+    const id = fromAppointment ? defaultProfessional : professionalId;
+    if (id) setProfessionalSignature(signatureForProfessionalId(id));
+  }, [fromAppointment, defaultProfessional, professionalId, professionals]);
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     const formData = new FormData(e.currentTarget);
     if (appointmentId) formData.set("appointment_id", appointmentId);
+    formData.set("chief_complaint", "");
+    formData.set("diagnosis", "");
+    formData.set("indications", "");
+    formData.set("professional_signature", professionalSignature);
     const result = await createClinicalRecord(formData);
     setLoading(false);
     if (result.error) {
@@ -94,14 +108,15 @@ export default function NuevaConsultaForm({
     if (!t) return;
     const form = document.getElementById("clinical-form") as HTMLFormElement;
     if (!form) return;
-    (form.elements.namedItem("chief_complaint") as HTMLTextAreaElement).value =
-      t.chief_complaint_template ?? "";
-    (form.elements.namedItem("diagnosis") as HTMLTextAreaElement).value =
-      t.diagnosis_template ?? "";
-    (form.elements.namedItem("evolution") as HTMLTextAreaElement).value =
-      t.evolution_template ?? "";
-    (form.elements.namedItem("indications") as HTMLTextAreaElement).value =
-      t.indications_template ?? "";
+    const unified = [
+      t.chief_complaint_template,
+      t.diagnosis_template,
+      t.evolution_template,
+      t.indications_template,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+    (form.elements.namedItem("evolution") as HTMLTextAreaElement).value = unified;
   }
 
   return (
@@ -134,8 +149,7 @@ export default function NuevaConsultaForm({
           <ConsultationFlowBar
             appointmentId={appointmentId}
             patient={selectedPatient}
-            activeStep={activeStep}
-            onStepChange={setActiveStep}
+            showSteps={false}
           />
         )}
 
@@ -160,51 +174,40 @@ export default function NuevaConsultaForm({
               <>
                 <input type="hidden" name="patient_id" value={defaultPatient} />
                 <input type="hidden" name="professional_id" value={defaultProfessional} />
-                <div className={cn(activeStep !== "motivo" && "hidden")}>
-                  <Textarea name="chief_complaint" label="Motivo de consulta" required rows={4} voiceInput />
-                </div>
-                <div className={cn(activeStep !== "evolucion" && "hidden")}>
-                  <Textarea name="evolution" label="Evolución / Examen físico" rows={5} voiceInput />
-                </div>
-                <div className={cn(activeStep !== "diagnostico" && "hidden")}>
-                  <Textarea name="diagnosis" label="Diagnóstico" rows={4} voiceInput />
-                </div>
-                <div className={cn(activeStep !== "indicaciones" && "hidden")}>
-                  <Textarea name="indications" label="Indicaciones / Plan terapéutico" rows={4} voiceInput />
-                </div>
               </>
             ) : (
-              <>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Select
-                    name="patient_id"
-                    label="Paciente"
-                    required
-                    defaultValue={defaultPatient}
-                    options={patients.map((p) => ({
-                      value: p.id,
-                      label: `${p.last_name}, ${p.first_name}`,
-                    }))}
-                    placeholder="Seleccionar"
-                  />
-                  <Select
-                    name="professional_id"
-                    label="Profesional"
-                    required
-                    defaultValue={defaultProfessional}
-                    options={professionals.map((p) => ({
-                      value: p.id,
-                      label: getProfessionalDisplayName(p),
-                    }))}
-                    placeholder="Seleccionar"
-                  />
-                </div>
-                <Textarea name="chief_complaint" label="Motivo de consulta" required voiceInput />
-                <Textarea name="diagnosis" label="Diagnóstico" voiceInput />
-                <Textarea name="evolution" label="Evolución" voiceInput />
-                <Textarea name="indications" label="Indicaciones" voiceInput />
-              </>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Select
+                  name="patient_id"
+                  label="Paciente"
+                  required
+                  defaultValue={defaultPatient}
+                  options={patients.map((p) => ({
+                    value: p.id,
+                    label: `${p.last_name}, ${p.first_name}`,
+                  }))}
+                  placeholder="Seleccionar"
+                />
+                <Select
+                  name="professional_id"
+                  label="Profesional"
+                  required
+                  value={professionalId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setProfessionalId(id);
+                    setProfessionalSignature(signatureForProfessionalId(id));
+                  }}
+                  options={professionals.map((p) => ({
+                    value: p.id,
+                    label: getProfessionalDisplayName(p),
+                  }))}
+                  placeholder="Seleccionar"
+                />
+              </div>
             )}
+
+            <Textarea name="evolution" label="Evolución" required rows={10} voiceInput />
 
             <div className="flex flex-wrap gap-3 text-sm">
               <Link
@@ -225,34 +228,18 @@ export default function NuevaConsultaForm({
 
             <Input
               name="professional_signature"
-              label="Firma del profesional (texto)"
+              label="Firma del profesional"
+              value={professionalSignature}
+              onChange={(e) => setProfessionalSignature(e.target.value)}
               placeholder="Dr/a. Nombre Apellido — Mat. XXXXX"
             />
 
             {error && <p className="text-sm text-red-600">{error}</p>}
 
             <div className="flex flex-wrap gap-2">
-              {fromAppointment && activeStep !== "indicaciones" ? (
-                <Button
-                  type="button"
-                  onClick={() => {
-                    const order: ConsultationStep[] = [
-                      "motivo",
-                      "evolucion",
-                      "diagnostico",
-                      "indicaciones",
-                    ];
-                    const i = order.indexOf(activeStep);
-                    if (i < order.length - 1) setActiveStep(order[i + 1]);
-                  }}
-                >
-                  Siguiente paso
-                </Button>
-              ) : (
-                <Button type="submit" loading={loading}>
-                  Guardar consulta
-                </Button>
-              )}
+              <Button type="submit" loading={loading}>
+                Guardar consulta
+              </Button>
               <Button
                 type="button"
                 variant="outline"

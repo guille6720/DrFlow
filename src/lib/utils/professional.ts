@@ -13,6 +13,19 @@ export function formatProfessionalLicenses(professional: {
   return single ? `Mat. ${single}` : null;
 }
 
+export function buildProfessionalSignature(professional: {
+  display_name?: string | null;
+  profiles?: { full_name?: string } | null;
+  license_national?: string | null;
+  license_provincial?: string | null;
+  license_number?: string | null;
+  id?: string;
+}): string {
+  const name = getProfessionalDisplayName(professional);
+  const license = formatProfessionalLicenses(professional);
+  return license ? `Dr/a. ${name} — ${license}` : `Dr/a. ${name}`;
+}
+
 export function getProfessionalDisplayName(professional: {
   display_name?: string | null;
   profiles?: { full_name?: string } | null;
