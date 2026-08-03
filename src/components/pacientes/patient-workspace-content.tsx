@@ -36,14 +36,14 @@ export async function PatientWorkspaceContent({
     <PatientWorkspaceView
       initialTab={initialTab}
       ehr={workspace.ehr}
-      patient={patient}
+      patient={workspace.patient}
       patientId={patientId}
       chart={workspace.chart}
       canEditClinical={canEditClinical}
       canIssue={canIssue}
       professionals={workspace.professionals}
       lastMedications={workspace.lastMedications}
-      regularMedication={patient.regular_medication}
+      regularMedication={workspace.patient.regular_medication}
       clinicalDocuments={workspace.clinicalDocuments}
       appointments={workspace.appointments}
       portalSlug={workspace.portalSlug}

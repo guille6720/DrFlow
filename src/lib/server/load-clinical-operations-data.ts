@@ -36,10 +36,10 @@ export async function loadClinicalOperationsData(
       .limit(8),
     patientIds.length > 0
       ? supabase
-          .from("patients")
-          .select("id, first_name, last_name, document_number, allergies, regular_medication")
+          .from("patient_clinical_profiles")
+          .select("patient_id, allergies, regular_medication, patients(first_name, last_name, document_number)")
           .eq("clinic_id", clinicId)
-          .in("id", patientIds)
+          .in("patient_id", patientIds)
           .or("allergies.not.is.null,regular_medication.not.is.null")
       : Promise.resolve({ data: [] }),
   ]);
@@ -101,19 +101,26 @@ export async function loadClinicalOperationsData(
   }
 
   const criticalPatients = (criticalRows.data ?? [])
-    .map((p) => {
+    .map((row) => {
+      const p = row.patients as
+        | { first_name: string; last_name: string; document_number: string }
+        | { first_name: string; last_name: string; document_number: string }[]
+        | null;
+      const patient = Array.isArray(p) ? p[0] ?? null : p;
+      if (!patient) return null;
+
       const reasons: string[] = [];
-      if (p.allergies?.trim()) reasons.push(`Alergias: ${p.allergies.trim()}`);
-      if (/anticoag|warfarina|acenocumarol|heparina|apixaban|rivaroxaban/i.test(p.regular_medication ?? "")) {
+      if (row.allergies?.trim()) reasons.push(`Alergias: ${row.allergies.trim()}`);
+      if (/anticoag|warfarina|acenocumarol|heparina|apixaban|rivaroxaban/i.test(row.regular_medication ?? "")) {
         reasons.push("Anticoagulación");
       }
       if (reasons.length === 0) return null;
       return {
-        id: p.id,
-        first_name: p.first_name,
-        last_name: p.last_name,
-        document_number: p.document_number,
-        allergies: p.allergies,
+        id: row.patient_id,
+        first_name: patient.first_name,
+        last_name: patient.last_name,
+        document_number: patient.document_number,
+        allergies: row.allergies,
         reason: reasons.join(" · "),
       };
     })

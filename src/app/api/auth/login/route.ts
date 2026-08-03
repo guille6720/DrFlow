@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { acceptPendingInvitations } from "@/lib/actions/invitations";
+import { isSameOriginPost } from "@/lib/security/csrf";
 
 function mapAuthError(message: string): string {
   const lower = message.toLowerCase();
@@ -49,6 +50,10 @@ async function ensureProfile(
 }
 
 export async function POST(request: NextRequest) {
+  if (!isSameOriginPost(request)) {
+    return redirectToLogin(request, "Solicitud no válida. Volvé a intentar desde la página de login.");
+  }
+
   const formData = await request.formData();
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");

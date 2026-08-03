@@ -10,6 +10,7 @@ export const TABLES_REQUIRING_RLS = [
   "locations",
   "professionals",
   "patients",
+  "patient_clinical_profiles",
   "patient_attachments",
   "pami_vademecum",
   "availability_rules",
@@ -50,6 +51,8 @@ export const SECURITY_DEFINER_RPC_CHECKS: { name: string; migrationHint: string 
   { name: "seed_pami_cabecera_for_clinic", migrationHint: "030" },
   { name: "submit_public_booking", migrationHint: "010" },
   { name: "get_public_booking_occupancy", migrationHint: "045" },
+  { name: "clinic_subscription_active", migrationHint: "047" },
+  { name: "can_write_clinical", migrationHint: "047" },
   { name: "get_patient_appointment_statuses", migrationHint: "022" },
   { name: "seed_demo_patients_for_clinic", migrationHint: "019" },
 ];

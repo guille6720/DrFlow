@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getPublicSiteUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
+import { isSameOriginPost } from "@/lib/security/csrf";
 
 /** 303 = forzar GET tras POST (evita HTTP 405 en /login). */
 function redirectGet(url: URL | string) {
@@ -8,11 +9,16 @@ function redirectGet(url: URL | string) {
 }
 
 export async function POST(request: NextRequest) {
-  const formData = await request.formData();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-
   const loginUrl = new URL("/login", request.url);
   loginUrl.search = "";
+
+  if (!isSameOriginPost(request)) {
+    loginUrl.searchParams.set("error", "Solicitud no válida. Volvé a intentar desde la página de login.");
+    return redirectGet(loginUrl);
+  }
+
+  const formData = await request.formData();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
 
   if (!email) {
     loginUrl.searchParams.set("error", "Ingresá tu email para recuperar la contraseña.");

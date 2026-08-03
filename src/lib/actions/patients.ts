@@ -7,6 +7,10 @@ import { patientSchema, sanitizePatientFields } from "@/lib/validations/schemas"
 import { patientAdminSchema } from "@/lib/validations/cash-schemas";
 import { requireClinicPermission } from "@/lib/actions/clinic-guard";
 import type { UserRole } from "@/types/database";
+import {
+  extractClinicalProfileFields,
+  upsertPatientClinicalProfile,
+} from "@/lib/server/patient-clinical-profile";
 
 const ADMIN_ONLY_ROLES: UserRole[] = ["secretary"];
 
@@ -74,16 +78,34 @@ export async function createPatient(formData: FormData) {
         .from("patients")
         .insert({
           clinic_id: clinicId,
-          ...sanitized,
+          first_name: sanitized.first_name,
+          last_name: sanitized.last_name,
+          document_number: sanitized.document_number,
+          birth_date: sanitized.birth_date || null,
+          phone: sanitized.phone || null,
+          email: sanitized.email || null,
+          address: sanitized.address || null,
           insurance_provider: insuranceProvider,
           insurance_plan: (raw.insurance_plan as string) || null,
-          email: sanitized.email || null,
-          birth_date: sanitized.birth_date || null,
+          insurance_number: sanitized.insurance_number || null,
+          emergency_contact_name: sanitized.emergency_contact_name || null,
+          emergency_contact_phone: sanitized.emergency_contact_phone || null,
         })
         .select()
         .single();
 
   if (error) return { error: mapPatientDbError(error.message) };
+
+  if (!adminOnly && data) {
+    const profileFields = extractClinicalProfileFields(sanitized);
+    const profileResult = await upsertPatientClinicalProfile(
+      supabase,
+      data.id,
+      clinicId,
+      profileFields
+    );
+    if (profileResult.error) return { error: profileResult.error };
+  }
 
   await logAudit({
     clinicId,
@@ -136,14 +158,30 @@ export async function updatePatient(id: string, formData: FormData) {
     const { error } = await supabase
       .from("patients")
       .update({
-        ...sanitized,
+        first_name: sanitized.first_name,
+        last_name: sanitized.last_name,
+        document_number: sanitized.document_number,
+        phone: sanitized.phone || null,
         email: sanitized.email || null,
-        birth_date: sanitized.birth_date || null,
+        address: sanitized.address || null,
+        insurance_provider: sanitized.insurance_provider || null,
         insurance_plan: (raw.insurance_plan as string) || null,
+        insurance_number: sanitized.insurance_number || null,
+        emergency_contact_name: sanitized.emergency_contact_name || null,
+        emergency_contact_phone: sanitized.emergency_contact_phone || null,
+        birth_date: sanitized.birth_date || null,
       })
       .eq("id", id)
       .eq("clinic_id", clinicId);
     if (error) return { error: mapPatientDbError(error.message) };
+
+    const profileResult = await upsertPatientClinicalProfile(
+      supabase,
+      id,
+      clinicId,
+      extractClinicalProfileFields(sanitized)
+    );
+    if (profileResult.error) return { error: profileResult.error };
   }
 
   await logAudit({ clinicId, entityType: "patient", entityId: id, action: "update" });

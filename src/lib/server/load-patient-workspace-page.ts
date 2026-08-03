@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ClinicalDocumentItem } from "@/components/historias/clinical-documents-panel";
-import type { PatientChartAppointment } from "@/components/pacientes/patient-chart-types";
+import type { PatientChartAppointment, PatientChartPatient } from "@/components/pacientes/patient-chart-types";
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
 import { buildPatientChartPayload } from "@/lib/utils/patient-chart-model";
 import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
@@ -19,6 +19,11 @@ import {
 } from "@/lib/server/load-patient-ehr-data";
 import { loadPatientHceSummaryRows } from "@/lib/utils/patient-ehr-from-hce";
 import type { MedicalOrder } from "@/types/medical-order";
+import {
+  loadPatientClinicalProfile,
+  mergePatientClinicalFields,
+  type PatientClinicalProfileFields,
+} from "@/lib/server/patient-clinical-profile";
 
 export type PatientWorkspaceProfessional = {
   id: string;
@@ -28,6 +33,7 @@ export type PatientWorkspaceProfessional = {
 };
 
 export type PatientWorkspacePagePayload = {
+  patient: PatientRow;
   ehr: PatientEhrWorkspaceData;
   chart: PatientChartPayload;
   appointments: PatientChartAppointment[];
@@ -43,12 +49,10 @@ export type PatientWorkspacePagePayload = {
   doctorInfo: DoctorShareInfo | null;
 };
 
-type PatientRow = PatientEhrPatientRow & {
-  medical_history: string | null;
-  allergies: string | null;
-  regular_medication: string | null;
-  notes: string | null;
-};
+type PatientRow = PatientChartPatient &
+  PatientClinicalProfileFields & {
+    is_active?: boolean;
+  };
 
 function mapClinicalDocuments(
   rows: Array<{
@@ -116,6 +120,7 @@ export async function loadPatientWorkspacePageData(
     { data: professionals },
     appShareResult,
     hceRows,
+    clinicalProfileResult,
   ] = await Promise.all([
     supabase
       .from("clinical_records")
@@ -182,9 +187,16 @@ export async function loadPatientWorkspacePageData(
           .maybeSingle()
       : Promise.resolve({ data: null }),
     loadPatientHceSummaryRows(supabase, clinicId, patientId),
+    supabase
+      .from("patient_clinical_profiles")
+      .select("medical_history, allergies, regular_medication, notes")
+      .eq("patient_id", patientId)
+      .eq("clinic_id", clinicId)
+      .maybeSingle(),
   ]);
 
   const doctorInfo = portalSlug ? await getDoctorShareInfoForClinic(clinicId) : null;
+  const patientWithClinical = mergePatientClinicalFields(patient, clinicalProfileResult.data);
 
   const mappedRecords = mapClinicalRecordsForEhr(records);
   const clinicalDocuments = mapClinicalDocuments(attachments);
@@ -205,12 +217,12 @@ export async function loadPatientWorkspacePageData(
 
   const chart = buildPatientChartPayload({
     patient: {
-      birth_date: patient.birth_date,
-      insurance_provider: patient.insurance_provider,
-      medical_history: patient.medical_history,
-      allergies: patient.allergies,
-      regular_medication: patient.regular_medication,
-      notes: patient.notes,
+      birth_date: patientWithClinical.birth_date,
+      insurance_provider: patientWithClinical.insurance_provider,
+      medical_history: patientWithClinical.medical_history,
+      allergies: patientWithClinical.allergies,
+      regular_medication: patientWithClinical.regular_medication,
+      notes: patientWithClinical.notes,
     },
     records: mappedRecords,
     prescriptions: issuedPrescriptions.map((p) => ({
@@ -234,6 +246,7 @@ export async function loadPatientWorkspacePageData(
   const shareProfile = appShare?.profiles as { full_name?: string } | null;
 
   return {
+    patient: patientWithClinical,
     ehr,
     chart,
     appointments: mapChartAppointments(chartAppointments),

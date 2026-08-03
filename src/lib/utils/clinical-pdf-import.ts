@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { sanitizeText } from "@/lib/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
+import { upsertPatientClinicalProfile } from "@/lib/server/patient-clinical-profile";
 
 export { extractTextFromPdfBuffer } from "@/lib/utils/pdf-text-extract.server";
 
@@ -37,7 +38,6 @@ export async function findOrCreatePatientFromExtract(
       first_name: sanitizeText(extract.first_name),
       last_name: sanitizeText(extract.last_name),
       insurance_provider: defaultInsurance,
-      notes: importNote,
       is_active: true,
     })
     .select("id, first_name, last_name")
@@ -62,6 +62,10 @@ export async function findOrCreatePatientFromExtract(
     return { error: error.message };
   }
 
+  await upsertPatientClinicalProfile(supabase, data.id, clinicId, {
+    notes: importNote,
+  });
+
   return {
     patientId: data.id,
     created: true,
@@ -81,42 +85,55 @@ export async function enrichPatientFromLegacyPdfDemographics(
     chronic_diagnoses: string[];
   }
 ): Promise<void> {
-  const { data: patient } = await supabase
-    .from("patients")
-    .select("phone, insurance_provider, insurance_number, birth_date, medical_history")
-    .eq("id", patientId)
-    .eq("clinic_id", clinicId)
-    .single();
+  const [{ data: patient }, { data: profile }] = await Promise.all([
+    supabase
+      .from("patients")
+      .select("phone, insurance_provider, insurance_number, birth_date")
+      .eq("id", patientId)
+      .eq("clinic_id", clinicId)
+      .single(),
+    supabase
+      .from("patient_clinical_profiles")
+      .select("medical_history")
+      .eq("patient_id", patientId)
+      .eq("clinic_id", clinicId)
+      .maybeSingle(),
+  ]);
 
   if (!patient) return;
 
-  const updates: Record<string, string> = {};
+  const patientUpdates: Record<string, string> = {};
   if (!patient.phone?.trim() && demographics.phone) {
-    updates.phone = sanitizeText(demographics.phone);
+    patientUpdates.phone = sanitizeText(demographics.phone);
   }
   if (!patient.insurance_number?.trim() && demographics.insurance_number) {
-    updates.insurance_number = sanitizeText(demographics.insurance_number);
+    patientUpdates.insurance_number = sanitizeText(demographics.insurance_number);
   }
   if (!patient.insurance_provider?.trim() && demographics.insurance_provider) {
-    updates.insurance_provider = sanitizeText(demographics.insurance_provider);
+    patientUpdates.insurance_provider = sanitizeText(demographics.insurance_provider);
   }
   if (!patient.birth_date && demographics.birth_date) {
-    updates.birth_date = demographics.birth_date;
-  }
-  if (demographics.chronic_diagnoses.length > 0) {
-    const block = demographics.chronic_diagnoses.join("; ");
-    const prefix = "Diagnósticos crónicos (importación): ";
-    if (!patient.medical_history?.includes(block)) {
-      const merged = patient.medical_history?.trim()
-        ? `${patient.medical_history.trim()}\n\n${prefix}${block}`
-        : `${prefix}${block}`;
-      updates.medical_history = sanitizeText(merged);
-    }
+    patientUpdates.birth_date = demographics.birth_date;
   }
 
-  if (Object.keys(updates).length === 0) return;
+  if (Object.keys(patientUpdates).length > 0) {
+    await supabase.from("patients").update(patientUpdates).eq("id", patientId).eq("clinic_id", clinicId);
+  }
 
-  await supabase.from("patients").update(updates).eq("id", patientId).eq("clinic_id", clinicId);
+  if (demographics.chronic_diagnoses.length === 0) return;
+
+  const block = demographics.chronic_diagnoses.join("; ");
+  const prefix = "Diagnósticos crónicos (importación): ";
+  const currentHistory = profile?.medical_history ?? null;
+  if (currentHistory?.includes(block)) return;
+
+  const merged = currentHistory?.trim()
+    ? `${currentHistory.trim()}\n\n${prefix}${block}`
+    : `${prefix}${block}`;
+
+  await upsertPatientClinicalProfile(supabase, patientId, clinicId, {
+    medical_history: sanitizeText(merged),
+  });
 }
 
 export async function resolveImportProfessionalId(
