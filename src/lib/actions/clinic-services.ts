@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -11,6 +12,8 @@ import { buildWhatsAppUrl } from "@/lib/utils/whatsapp";
 import { paymentService } from "@/lib/services/payments";
 import { telemedicineService } from "@/lib/services/telemedicine";
 import { requireActiveClinic, requireClinicPermission } from "@/lib/actions/clinic-guard";
+import { enqueueClinicJob } from "@/lib/jobs/enqueue";
+import { processPendingClinicJobs } from "@/lib/jobs/process";
 
 export async function sendReminder(appointmentId: string, channel: "email" | "whatsapp" | "internal") {
   const access = await requireActiveClinic();
@@ -64,31 +67,73 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
         )
       : buildAppointmentReminderMessage(patientFullName, dateLabel, profName);
 
-  const result = await reminderService.send({
+  if (channel === "whatsapp") {
+    const result = await reminderService.send({
+      clinicId,
+      appointmentId,
+      recipient,
+      channel,
+      message,
+    });
+
+    await supabase.from("reminder_logs").insert({
+      clinic_id: clinicId,
+      appointment_id: appointmentId,
+      recipient: result.recipient,
+      channel: result.channel,
+      status: result.status,
+      message: result.message,
+      sent_at: result.sent_at,
+    });
+
+    revalidatePath("/recordatorios");
+    return {
+      success: true,
+      whatsappUrl: patient.phone ? buildWhatsAppUrl(patient.phone, message) : undefined,
+      message,
+    };
+  }
+
+  const user = await getSession();
+  const { data: queuedLog } = await supabase
+    .from("reminder_logs")
+    .insert({
+      clinic_id: clinicId,
+      appointment_id: appointmentId,
+      recipient,
+      channel,
+      status: "queued",
+      message,
+    })
+    .select("id")
+    .single();
+
+  const { id: jobId } = await enqueueClinicJob(supabase, {
     clinicId,
-    appointmentId,
-    recipient,
-    channel,
-    message,
+    jobType: "send_reminder",
+    payload: {
+      appointmentId,
+      channel,
+      recipient,
+      message,
+      reminderLogId: queuedLog?.id,
+    },
+    createdBy: user?.id,
   });
 
-  await supabase.from("reminder_logs").insert({
-    clinic_id: clinicId,
-    appointment_id: appointmentId,
-    recipient: result.recipient,
-    channel: result.channel,
-    status: result.status,
-    message: result.message,
-    sent_at: result.sent_at,
+  after(async () => {
+    try {
+      await processPendingClinicJobs({ limit: 3, clinicId });
+    } catch (err) {
+      console.error("[sendReminder] background worker failed", err);
+    }
   });
 
   revalidatePath("/recordatorios");
   return {
     success: true,
-    whatsappUrl:
-      channel === "whatsapp" && patient.phone
-        ? buildWhatsAppUrl(patient.phone, message)
-        : undefined,
+    queued: true,
+    jobId,
     message,
   };
 }

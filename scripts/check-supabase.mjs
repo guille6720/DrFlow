@@ -224,6 +224,27 @@ async function main() {
     console.log(`⚠ Verificación clinic_feature_flags: HTTP ${flagsRes.status}`);
   }
 
+  const jobsRes = await fetch(
+    `${url}/rest/v1/clinic_jobs?select=clinic_id,job_type,status&limit=1`,
+    {
+      headers: {
+        apikey: schemaKey,
+        Authorization: schemaAuth,
+      },
+    }
+  );
+  if (jobsRes.status === 404 || jobsRes.status === 406) {
+    const body = await jobsRes.text();
+    if (body.includes("does not exist") || body.includes("relation")) {
+      console.log("❌ Tabla clinic_jobs — migración 051 pendiente");
+      allOk = false;
+    }
+  } else if (jobsRes.ok) {
+    console.log("✓ Job queue Phase 15 (clinic_jobs)");
+  } else {
+    console.log(`⚠ Verificación clinic_jobs: HTTP ${jobsRes.status}`);
+  }
+
   // RPC pública (404 = no expuesta; 400/500 con mensaje de negocio = existe)
   const rpc = await fetch(`${url}/rest/v1/rpc/submit_public_booking`, {
     method: "POST",

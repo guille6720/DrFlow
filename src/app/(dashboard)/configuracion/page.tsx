@@ -17,8 +17,10 @@ import { AppearanceStylePanel } from "@/components/configuracion/appearance-styl
 import { ComplianceLegalPanel } from "@/components/configuracion/compliance-legal-panel";
 import { ClinicPluginsPanel } from "@/components/configuracion/clinic-plugins-panel";
 import { ClinicFeatureFlagsPanel } from "@/components/configuracion/clinic-feature-flags-panel";
+import { ClinicJobsPanel } from "@/components/configuracion/clinic-jobs-panel";
 import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
 import { getClinicFeatureFlagSettings } from "@/lib/actions/clinic-feature-flags";
+import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
 import { DeleteAccountPanel } from "@/components/configuracion/delete-account-panel";
 import {
   resolveConfiguracionGroup,
@@ -62,6 +64,16 @@ function renderSectionContent(
       enabled: boolean;
       requiresPlugin?: string;
     }>;
+    jobSettings: Array<{
+      id: string;
+      jobType: string;
+      jobLabel: string;
+      status: import("@/lib/jobs/registry").ClinicJobStatus;
+      statusLabel: string;
+      errorMessage: string | null;
+      createdAt: string;
+      completedAt: string | null;
+    }>;
   }
 ) {
   switch (sectionId) {
@@ -87,6 +99,8 @@ function renderSectionContent(
       return <ClinicPluginsPanel plugins={extras.pluginSettings} />;
     case "flags":
       return <ClinicFeatureFlagsPanel flags={extras.flagSettings} />;
+    case "jobs":
+      return <ClinicJobsPanel jobs={extras.jobSettings} />;
     case "demo":
       return <DemoDataPanel patientCount={extras.patientCount} />;
     case "clinica":
@@ -169,6 +183,8 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
   const pluginSettings = pluginSettingsResult.data ?? [];
   const flagSettingsResult = await getClinicFeatureFlagSettings();
   const flagSettings = flagSettingsResult.data ?? [];
+  const jobsResult = await getClinicJobsList();
+  const jobSettings = jobsResult.data ?? [];
 
   const sectionContent = activeSection
     ? renderSectionContent(activeSection, settingsProps, {
@@ -178,6 +194,7 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
         acceptedCoverages: clinic?.accepted_coverages ?? null,
         pluginSettings,
         flagSettings,
+        jobSettings,
       })
     : undefined;
 

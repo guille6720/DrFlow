@@ -38,6 +38,7 @@ function formatPatientName(
 }
 
 function statusLabel(log: ReminderLog): string {
+  if (log.status === "queued") return "En cola";
   if (log.status === "simulated") {
     return log.channel === "whatsapp" ? "WhatsApp abierto" : "Simulado";
   }
@@ -62,7 +63,7 @@ export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId
     <>
       <Header
         title="Recordatorios"
-        subtitle="WhatsApp: abre chat listo (no envío automático) · Email: simulado hasta integrar SMTP"
+        subtitle="WhatsApp: abre chat listo · Email: cola asíncrona (no bloquea la pantalla)"
         clinics={clinics}
         activeClinicId={clinicId}
         role={role}
@@ -76,7 +77,8 @@ export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId
             No hay API de WhatsApp Business todavía.
           </p>
           <p className="mt-1">
-            <strong>Email</strong> queda registrado como <em>simulado</em> (no sale un correo real).
+            <strong>Email</strong> se encola y procesa en segundo plano (estado <em>queued</em> →{" "}
+            <em>simulated</em> hasta integrar SMTP real).
           </p>
         </div>
 
@@ -102,7 +104,7 @@ export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId
                       loading={loading === `${a.id}-email`}
                       onClick={() => handleSend(a.id, "email")}
                     >
-                      <Mail className="h-4 w-4" /> Email (simulado)
+                      <Mail className="h-4 w-4" /> Email (cola)
                     </Button>
                     <Button
                       size="sm"

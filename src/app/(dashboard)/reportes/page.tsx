@@ -13,6 +13,7 @@ import { hasPermission } from "@/lib/permissions/roles";
 import { startOfMonth, endOfMonth, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ExportCsvButton } from "@/components/reportes/export-csv-button";
+import { AsyncReportButton } from "@/components/reportes/async-report-button";
 import { formatCurrency } from "@/lib/services/payments";
 
 export default async function ReportesPage() {
@@ -119,6 +120,7 @@ export default async function ReportesPage() {
               ))}
             </ul>
           )}
+          <AsyncReportButton />
         </Card>
       </div>
     </>

@@ -1,0 +1,62 @@
+import type { ReminderChannel } from "@/types/database";
+import type { ClinicJobStatus, ClinicJobType } from "@/lib/jobs/registry";
+
+export type ClinicJobRow = {
+  id: string;
+  clinic_id: string;
+  job_type: ClinicJobType;
+  status: ClinicJobStatus;
+  payload: Record<string, unknown>;
+  result: Record<string, unknown> | null;
+  error_message: string | null;
+  attempts: number;
+  max_attempts: number;
+  scheduled_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SendReminderJobPayload = {
+  appointmentId: string;
+  channel: ReminderChannel;
+  recipient: string;
+  message: string;
+  reminderLogId?: string;
+};
+
+export type GenerateReportJobPayload = {
+  periodStart: string;
+  periodEnd: string;
+  periodLabel: string;
+};
+
+export type ImportBatchJobPayload = {
+  offset: number;
+  batchSize: number;
+  /** Reference stored server-side or inline token — extend when wiring imports. */
+  importKind: "hce" | "patients" | "teams_jsonl";
+};
+
+export type ImportClinicalPdfJobPayload = {
+  storagePath: string;
+  fileName: string;
+  patientHints?: Record<string, string>;
+};
+
+export type RunAiTaskJobPayload = {
+  task: "clinical_summary" | "soap_draft";
+  patientId: string;
+  context?: Record<string, unknown>;
+};
+
+export type EnqueueClinicJobInput = {
+  clinicId: string;
+  jobType: ClinicJobType;
+  payload: Record<string, unknown>;
+  createdBy?: string;
+  scheduledAt?: string;
+  maxAttempts?: number;
+};

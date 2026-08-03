@@ -20,5 +20,6 @@ export * as facturacion from "@/features/facturacion";
 export * as auditoria from "@/features/auditoria";
 export * as plugins from "@/features/plugins";
 export * as flags from "@/features/flags";
+export * as jobs from "@/features/jobs";
 export * as laboratorio from "@/features/laboratorio";
 export * as imagenes from "@/features/imagenes";

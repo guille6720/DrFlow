@@ -14,6 +14,7 @@ import {
   Puzzle,
   Settings2,
   ToggleLeft,
+  ListTodo,
 } from "lucide-react";
 
 export type ConfiguracionSectionId =
@@ -27,7 +28,8 @@ export type ConfiguracionSectionId =
   | "legal"
   | "demo"
   | "plugins"
-  | "flags";
+  | "flags"
+  | "jobs";
 
 export type ConfiguracionGroupId = "consultorio" | "agenda" | "coberturas" | "sistema";
 
@@ -108,6 +110,12 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
     icon: ToggleLeft,
   },
   {
+    id: "jobs",
+    title: "Cola de trabajos",
+    description: "Emails, reportes, importaciones e IA en segundo plano.",
+    icon: ListTodo,
+  },
+  {
     id: "demo",
     title: "Datos de prueba",
     description: "Pacientes ficticios para probar la agenda y HC.",
@@ -142,7 +150,7 @@ export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
     title: "Sistema y legal",
     description: "Apariencia, cumplimiento normativo y datos de prueba.",
     icon: Settings2,
-    sections: ["apariencia", "legal", "plugins", "flags", "demo"],
+    sections: ["apariencia", "legal", "plugins", "flags", "jobs", "demo"],
   },
 ];
 
