@@ -97,7 +97,7 @@ export default async function RecetasPage({
   })[] = [];
   let patientOrders: (MedicalOrder & { order_type?: string })[] = [];
   let prefillDiagnosis = "";
-  let prefillCie10 = "";
+  const prefillCie10 = "";
   let initialMedications: PrescriptionMedication[] | undefined;
 
   if (clinicId && patientId) {

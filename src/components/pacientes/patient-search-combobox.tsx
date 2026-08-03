@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -46,17 +46,19 @@ export function PatientSearchCombobox({
   const [selectedId, setSelectedId] = useState(defaultPatientId ?? "");
   const [open, setOpen] = useState(false);
   const blurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [prevDefaultPatientId, setPrevDefaultPatientId] = useState(defaultPatientId);
 
-  useEffect(() => {
+  if (defaultPatientId !== prevDefaultPatientId) {
+    setPrevDefaultPatientId(defaultPatientId);
     const p = patients.find((x) => x.id === defaultPatientId);
     if (defaultPatientId && p) {
       setSelectedId(defaultPatientId);
       setQuery(formatLabel(p));
-    } else if (!defaultPatientId) {
+    } else {
       setSelectedId("");
       setQuery("");
     }
-  }, [defaultPatientId, patients]);
+  }
 
   const filtered = useMemo(() => {
     const q = normalize(query.trim());

@@ -36,10 +36,12 @@ export function WaitingRoomView({
   const router = useRouter();
   const [rows, setRows] = useState(initialRows);
   const [pending, startTransition] = useTransition();
+  const [prevInitialRows, setPrevInitialRows] = useState(initialRows);
 
-  useEffect(() => {
+  if (initialRows !== prevInitialRows) {
+    setPrevInitialRows(initialRows);
     setRows(initialRows);
-  }, [initialRows]);
+  }
 
   useEffect(() => {
     const supabase = createClient();

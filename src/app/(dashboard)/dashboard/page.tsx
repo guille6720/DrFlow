@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ConsultorioLivePanel } from "@/components/dashboard/consultorio-live-panel";
+import type { LiveAppointment } from "@/components/dashboard/consultorio-live-panel";
 import { ClinicalWorkflowStrip } from "@/components/dashboard/clinical-workflow-strip";
 import { DashboardStatsSection } from "@/components/dashboard/dashboard-stats-section";
 import {
@@ -53,10 +54,8 @@ export default async function DashboardPage() {
     noShowCount: 0,
     totalMonthAppointments: 0,
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let upcoming: any[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let todayQueue: any[] = [];
+  let upcoming: LiveAppointment[] = [];
+  let todayQueue: LiveAppointment[] = [];
   let todayDone = 0;
   let nextToday: (typeof upcoming)[0] | null = null;
 
@@ -198,8 +197,8 @@ export default async function DashboardPage() {
       noShowCount: noShow.count ?? 0,
       totalMonthAppointments: monthTotal.count ?? 0,
     };
-    upcoming = upcomingData.data ?? [];
-    todayQueue = todayList.data ?? [];
+    upcoming = (upcomingData.data ?? []) as unknown as LiveAppointment[];
+    todayQueue = (todayList.data ?? []) as unknown as LiveAppointment[];
     todayDone = todayQueue.filter((a) => a.status === "attended").length;
     const nowIso = now.toISOString();
     nextToday =

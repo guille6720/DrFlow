@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { AlertTriangle, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { deleteMyAccount } from "@/lib/actions/account";
 import { DELETE_ACCOUNT_CONFIRM_PHRASE } from "@/lib/constants/account";
 import { clearDrFlowClientStorage } from "@/lib/utils/clear-client-storage";
 import { cn } from "@/lib/utils/cn";
+import { useClientMounted } from "@/lib/hooks/use-client-mounted";
 
 interface DeleteAccountPanelProps {
   userEmail?: string | null;
@@ -19,15 +20,11 @@ export function DeleteAccountPanel({
   userEmail,
   isSoleClinicMember = false,
 }: DeleteAccountPanelProps) {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useClientMounted();
   const [open, setOpen] = useState(false);
   const [confirmPhrase, setConfirmPhrase] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const canConfirm = confirmPhrase.trim() === DELETE_ACCOUNT_CONFIRM_PHRASE;
 

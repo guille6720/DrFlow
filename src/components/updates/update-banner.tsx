@@ -71,7 +71,7 @@ export function UpdateBanner() {
   }, []);
 
   useEffect(() => {
-    void check();
+    queueMicrotask(() => void check());
     const onFocus = () => void check();
     const onVisible = () => {
       if (document.visibilityState === "visible") void check();

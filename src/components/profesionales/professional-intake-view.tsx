@@ -119,10 +119,11 @@ export function ProfessionalIntakeView({
   const [agendaRules, setAgendaRules] = useState<AgendaRuleDraft[]>(
     AGENDA_PRESETS[0].rules.map((r) => ({ ...r }))
   );
+  const [prevSelectedId, setPrevSelectedId] = useState<string | null>(selected?.id ?? null);
 
-  useEffect(() => {
-    if (!selected) return;
-    const rows = scheduleByProfessional[selected.id] ?? [];
+  if ((selected?.id ?? null) !== prevSelectedId) {
+    setPrevSelectedId(selected?.id ?? null);
+    const rows = selected ? scheduleByProfessional[selected.id] ?? [] : [];
     setAgendaRules(
       rows.length > 0
         ? normalizeAgendaRules(rows)
@@ -131,7 +132,7 @@ export function ProfessionalIntakeView({
     setDetailTab("perfil");
     setError(null);
     setSuccess(null);
-  }, [selected, scheduleByProfessional]);
+  }
 
   const parsedName = parseDisplayName(selected?.display_name ?? null);
   const specialtyDefault = selected?.specialties?.name ?? "";

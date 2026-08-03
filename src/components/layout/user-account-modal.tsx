@@ -17,6 +17,7 @@ import { parseDoctorSetupFromForm, validateDoctorSetup } from "@/lib/validations
 import { zodFieldErrors } from "@/lib/validations/form-errors";
 import { ROLE_LABELS } from "@/lib/permissions/roles";
 import type { UserRole } from "@/types/database";
+import { useClientMounted } from "@/lib/hooks/use-client-mounted";
 
 interface UserAccountModalProps {
   open: boolean;
@@ -26,7 +27,7 @@ interface UserAccountModalProps {
 
 export function UserAccountModal({ open, onClose, role: roleProp }: UserAccountModalProps) {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useClientMounted();
   const [pending, startTransition] = useTransition();
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -34,10 +35,6 @@ export function UserAccountModal({ open, onClose, role: roleProp }: UserAccountM
   const [account, setAccount] = useState<Awaited<ReturnType<typeof loadMyUserAccount>>["data"]>();
   const [defaults, setDefaults] = useState<DoctorSetupDefaultValues>({});
   const [formKey, setFormKey] = useState(0);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) return;

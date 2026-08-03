@@ -36,13 +36,14 @@ function getSpeechRecognitionCtor():
 
 export function useSpeechToText(lang = "es-AR") {
   const [listening, setListening] = useState(false);
-  const [supported, setSupported] = useState(false);
+  const [supported] = useState(() =>
+    typeof window !== "undefined" ? isSpeechRecognitionSupported() : false
+  );
   const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const onFinalRef = useRef<(text: string) => void>(() => {});
 
   useEffect(() => {
-    setSupported(isSpeechRecognitionSupported());
     return () => {
       recognitionRef.current?.abort();
       recognitionRef.current = null;

@@ -98,13 +98,15 @@ export function EditConsultaForm({
   const draftKey = useMemo(() => consultationDraftKey(consultationContext), [consultationContext]);
 
   useEffect(() => {
-    const saved = readConsultationEvolution(draftKey);
-    if (saved.trim()) {
-      setEvolution(saved);
-    } else {
-      saveConsultationEvolution(draftKey, initialEvolution);
-      setEvolution(initialEvolution);
-    }
+    queueMicrotask(() => {
+      const saved = readConsultationEvolution(draftKey);
+      if (saved.trim()) {
+        setEvolution(saved);
+      } else {
+        saveConsultationEvolution(draftKey, initialEvolution);
+        setEvolution(initialEvolution);
+      }
+    });
   }, [draftKey, initialEvolution]);
 
   useEffect(() => {

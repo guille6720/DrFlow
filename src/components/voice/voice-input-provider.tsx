@@ -39,8 +39,10 @@ export function VoiceInputProvider({
   const [browserSupported, setBrowserSupported] = useState(false);
 
   useEffect(() => {
-    setUserEnabledState(readVoiceInputUserPref());
-    setBrowserSupported(isSpeechRecognitionSupported());
+    queueMicrotask(() => {
+      setUserEnabledState(readVoiceInputUserPref());
+      setBrowserSupported(isSpeechRecognitionSupported());
+    });
   }, []);
 
   const setUserEnabled = useCallback((enabled: boolean) => {

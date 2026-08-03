@@ -141,17 +141,19 @@ export function PrescriptionsOrdersHub({
     [consultationContext]
   );
   const [consultaDiagnosis, setConsultaDiagnosis] = useState("");
+  const [prevDraftKey, setPrevDraftKey] = useState(draftKey);
+
+  if (draftKey !== prevDraftKey) {
+    setPrevDraftKey(draftKey);
+    setConsultaDiagnosis(draftKey ? readConsultationEvolution(draftKey) : "");
+  }
 
   useEffect(() => {
-    if (draftKey == null) {
-      setConsultaDiagnosis("");
-      return;
-    }
+    if (draftKey == null) return;
     const storageKey: string = draftKey;
     function syncEvolution() {
       setConsultaDiagnosis(readConsultationEvolution(storageKey));
     }
-    syncEvolution();
     document.addEventListener("visibilitychange", syncEvolution);
     window.addEventListener("focus", syncEvolution);
     return () => {

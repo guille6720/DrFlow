@@ -24,12 +24,14 @@ export function DashboardSidebarProvider({ children }: { children: ReactNode }) 
   const [hidden, setHiddenState] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem(STORAGE_KEY);
-      if (stored === "1") setHiddenState(true);
-    } catch {
-      /* ignore */
-    }
+    queueMicrotask(() => {
+      try {
+        const stored = sessionStorage.getItem(STORAGE_KEY);
+        if (stored === "1") setHiddenState(true);
+      } catch {
+        /* ignore */
+      }
+    });
   }, []);
 
   const setHidden = useCallback((value: boolean) => {

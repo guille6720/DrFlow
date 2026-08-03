@@ -71,11 +71,28 @@ export default function NuevaConsultaForm({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [professionalId, setProfessionalId] = useState(defaultProfessional);
-  const [professionalSignature, setProfessionalSignature] = useState("");
   const [evolution, setEvolution] = useState("");
 
   const selectedPatient = patients.find((p) => p.id === defaultPatient);
   const fromAppointment = Boolean(appointmentId);
+
+  function signatureForProfessionalId(id: string): string {
+    const pro = professionals.find((p) => p.id === id);
+    return pro ? buildProfessionalSignature(pro) : "";
+  }
+
+  const activeProfessionalId = fromAppointment ? defaultProfessional : professionalId;
+  const [professionalSignature, setProfessionalSignature] = useState(() =>
+    activeProfessionalId ? signatureForProfessionalId(activeProfessionalId) : ""
+  );
+  const [prevActiveProfessionalId, setPrevActiveProfessionalId] = useState(activeProfessionalId);
+
+  if (activeProfessionalId !== prevActiveProfessionalId) {
+    setPrevActiveProfessionalId(activeProfessionalId);
+    setProfessionalSignature(
+      activeProfessionalId ? signatureForProfessionalId(activeProfessionalId) : ""
+    );
+  }
 
   const consultationContext = useMemo(() => {
     if (!defaultPatient) return null;
@@ -98,11 +115,6 @@ export default function NuevaConsultaForm({
     [consultationContext]
   );
 
-  function signatureForProfessionalId(id: string): string {
-    const pro = professionals.find((p) => p.id === id);
-    return pro ? buildProfessionalSignature(pro) : "";
-  }
-
   useEffect(() => {
     if (!appointmentId) return;
     startConsultationFromAppointment(appointmentId).then((result) => {
@@ -111,13 +123,8 @@ export default function NuevaConsultaForm({
   }, [appointmentId]);
 
   useEffect(() => {
-    const id = fromAppointment ? defaultProfessional : professionalId;
-    if (id) setProfessionalSignature(signatureForProfessionalId(id));
-  }, [fromAppointment, defaultProfessional, professionalId, professionals]);
-
-  useEffect(() => {
     if (!draftKey) return;
-    setEvolution(readConsultationEvolution(draftKey));
+    queueMicrotask(() => setEvolution(readConsultationEvolution(draftKey)));
   }, [draftKey]);
 
   useEffect(() => {
@@ -271,11 +278,7 @@ export default function NuevaConsultaForm({
                   label="Profesional"
                   required
                   value={professionalId}
-                  onChange={(e) => {
-                    const id = e.target.value;
-                    setProfessionalId(id);
-                    setProfessionalSignature(signatureForProfessionalId(id));
-                  }}
+                  onChange={(e) => setProfessionalId(e.target.value)}
                   options={professionals.map((p) => ({
                     value: p.id,
                     label: getProfessionalDisplayName(p),

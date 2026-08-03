@@ -64,11 +64,13 @@ export function UiThemeProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    const s = readUiStyleFromStorage();
-    const d = readClinicalDarkFromStorage();
-    setStyleState(s);
-    setClinicalDarkState(d);
-    applyUiThemeToDocument(s, d);
+    queueMicrotask(() => {
+      const s = readUiStyleFromStorage();
+      const d = readClinicalDarkFromStorage();
+      setStyleState(s);
+      setClinicalDarkState(d);
+      applyUiThemeToDocument(s, d);
+    });
   }, []);
 
   const value = useMemo(

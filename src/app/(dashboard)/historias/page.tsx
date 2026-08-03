@@ -20,6 +20,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { FileText, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { applyPatientSearchFilter, sanitizePatientSearchTerm } from "@/lib/utils/patient-search";
+import type { ClinicalRecordListRow } from "@/lib/utils/clinical-record-list-types";
 
 export const maxDuration = 300;
 
@@ -52,8 +53,7 @@ export default async function HistoriasPage({
   const { role } = await getActiveClinic();
   const supabase = await createClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let records: any[] = [];
+  let records: ClinicalRecordListRow[] = [];
   let listTitle = "Consultas recientes";
   let noMatchPatients = false;
   let totalRecords = 0;
@@ -108,7 +108,7 @@ export default async function HistoriasPage({
 
       const from = (page - 1) * PAGE_SIZE;
       const { data, count } = await query.range(from, from + PAGE_SIZE - 1);
-      records = data ?? [];
+      records = (data ?? []) as unknown as ClinicalRecordListRow[];
       totalRecords = count ?? 0;
     }
   }
