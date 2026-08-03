@@ -1755,3 +1755,59 @@ a.drflow-clinical-timeline-link:hover {
   font-size: 0.75rem;
   color: #64748b;
 }
+
+.drflow-patient-workspace-skeleton,
+.drflow-patient-workspace-panel-skeleton {
+  animation: drflow-skeleton-pulse 1.2s ease-in-out infinite;
+}
+
+.drflow-patient-workspace-skeleton-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.drflow-patient-workspace-skeleton-pill {
+  display: block;
+  height: 1.75rem;
+  width: 5.5rem;
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.18);
+}
+
+.drflow-patient-workspace-skeleton-panel,
+.drflow-patient-workspace-panel-skeleton {
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  background: rgba(248, 250, 252, 0.65);
+}
+
+.drflow-patient-workspace-skeleton-line {
+  display: block;
+  height: 0.75rem;
+  border-radius: 0.35rem;
+  background: rgba(100, 116, 139, 0.18);
+  margin-bottom: 0.55rem;
+}
+
+.drflow-patient-workspace-skeleton-line.is-title {
+  width: 42%;
+  height: 1rem;
+}
+
+.drflow-patient-workspace-skeleton-line.is-short {
+  width: 55%;
+  margin-bottom: 0;
+}
+
+@keyframes drflow-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
+}

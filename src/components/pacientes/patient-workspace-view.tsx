@@ -1,7 +1,8 @@
 "use client";
 
-import { PatientChartView } from "@/components/pacientes/patient-chart-view";
+import dynamic from "next/dynamic";
 import { PatientWorkspaceTabBar } from "@/components/pacientes/patient-workspace-tab-bar";
+import { PatientWorkspacePanelSkeleton } from "@/components/pacientes/patient-workspace-panel-skeleton";
 import type { PatientWorkspaceViewProps } from "@/components/pacientes/patient-workspace-types";
 import {
   PatientWorkspaceChartPanel,
@@ -9,14 +10,36 @@ import {
 } from "@/components/pacientes/patient-workspace-chart-panel";
 import {
   PatientWorkspaceDiagnosticsPanel,
-  PatientWorkspaceEhrPanel,
   PatientWorkspaceOrdersPanel,
   PatientWorkspacePrescriptionsPanel,
-  PatientWorkspaceTimelinePanel,
 } from "@/components/pacientes/patient-workspace-ehr-panels";
 import { PatientWorkspacePlaceholderPanel } from "@/components/pacientes/patient-workspace-placeholder-panel";
 import type { PatientWorkspaceTabId } from "@/lib/constants/patient-workspace-tabs";
 import { usePatientWorkspaceTab } from "@/lib/hooks/use-patient-workspace-tab";
+
+const PatientChartView = dynamic(
+  () =>
+    import("@/components/pacientes/patient-chart-view").then((m) => ({
+      default: m.PatientChartView,
+    })),
+  { loading: () => <PatientWorkspacePanelSkeleton /> }
+);
+
+const PatientWorkspaceEhrPanel = dynamic(
+  () =>
+    import("@/components/pacientes/patient-workspace-ehr-panels").then((m) => ({
+      default: m.PatientWorkspaceEhrPanel,
+    })),
+  { loading: () => <PatientWorkspacePanelSkeleton /> }
+);
+
+const PatientWorkspaceTimelinePanel = dynamic(
+  () =>
+    import("@/components/pacientes/patient-workspace-ehr-panels").then((m) => ({
+      default: m.PatientWorkspaceTimelinePanel,
+    })),
+  { loading: () => <PatientWorkspacePanelSkeleton /> }
+);
 
 const CHART_FOCUS_TABS: Partial<Record<PatientWorkspaceTabId, PatientChartFocus>> = {
   problemas: "problemas",
