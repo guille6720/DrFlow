@@ -4,6 +4,7 @@ import Link from "next/link";
 import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PrescriptionsOrdersPatient } from "@/components/recetas/prescriptions-orders-types";
+import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
 
 export function PrescriptionsOrdersPatientHeader({ patient }: { patient: PrescriptionsOrdersPatient }) {
   return (
@@ -22,7 +23,7 @@ export function PrescriptionsOrdersPatientHeader({ patient }: { patient: Prescri
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
-        <Link href={`/historias/paciente/${patient.id}`}>
+        <Link href={patientClinicalHistoryPath(patient.id)}>
           <Button variant="outline" size="sm">
             Historia clínica
           </Button>

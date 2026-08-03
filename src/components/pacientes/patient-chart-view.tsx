@@ -24,12 +24,17 @@ export function PatientChartView({
   patientShare,
   arcoExport,
   regularMedication,
+  workspaceMode = false,
 }: PatientChartViewProps) {
   const { medSearch, setMedSearch, filteredMeds } = usePatientChartMedicationFilter(chart);
 
   return (
     <div className="drflow-patient-chart">
-      <PatientChartStickyBar patientId={patientId} arcoExport={arcoExport} />
+      <PatientChartStickyBar
+        patientId={patientId}
+        arcoExport={arcoExport}
+        workspaceMode={workspaceMode}
+      />
 
       <PatientChartSummary
         patient={patient}

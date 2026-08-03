@@ -22,6 +22,7 @@ import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
 import { ExportClinicalPdfButton } from "@/components/historias/export-pdf-button";
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
+import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
 import { MedicalOrderPanel } from "@/components/historias/medical-order-panel";
 import { ConsultationTimer } from "@/components/historias/consultation-timer";
 import { FinalizeConsultationButton } from "@/components/historias/finalize-consultation-button";
@@ -173,7 +174,7 @@ export default async function HistoriaDetailPage({
           >
             Ficha del paciente
           </Link>
-          <Link href={`/historias/paciente/${patient.id}`} className="drflow-link text-sm">
+          <Link href={patientClinicalHistoryPath(patient.id)} className="drflow-link text-sm">
             Historia clínica completa
           </Link>
           {record.appointment_id && (

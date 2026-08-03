@@ -56,6 +56,8 @@ export type PatientEhrViewProps = {
   prescriptions: PatientEhrPrescription[];
   totalConsultations: number;
   usesHceExport?: boolean;
+  /** Oculta barra demográfica cuando la HC está embebida en el workspace del paciente. */
+  embedded?: boolean;
 };
 
 export type PatientEhrFilters = Record<PatientEhrFilterKey, boolean>;

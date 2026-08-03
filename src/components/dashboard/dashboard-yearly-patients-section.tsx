@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
+import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
 import { isPamiPatient } from "@/lib/utils/patient-age";
 import type { YearlyAttendedPatient } from "@/lib/utils/yearly-attended-patients";
 import { cn } from "@/lib/utils/cn";
@@ -133,7 +134,7 @@ export function DashboardYearlyPatientsSection({ patients }: Props) {
                           message={buildPatientContactMessage(`${p.first_name} ${p.last_name}`)}
                           size="icon"
                         />
-                        <Link href={`/historias/paciente/${p.id}`}>
+                        <Link href={patientClinicalHistoryPath(p.id)}>
                           <Button size="sm" variant="outline" type="button">
                             <ClipboardList className="h-3.5 w-3.5" />
                             Historia

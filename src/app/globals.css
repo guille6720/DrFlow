@@ -1539,3 +1539,67 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-summ
   background: linear-gradient(135deg, #ecfdf5, #f8fafc);
   border-color: #99f6e4;
 }
+
+/* Patient workspace tabs (Fase 4 — HC centrada en el paciente) */
+.drflow-patient-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.drflow-patient-workspace-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: 0 -0.25rem;
+  padding: 0.25rem 0;
+  background: color-mix(in srgb, var(--background) 92%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.drflow-patient-workspace-tabs-scroll {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+  scrollbar-width: thin;
+}
+
+.drflow-patient-workspace-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted-foreground, #64748b);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.drflow-patient-workspace-tab:hover {
+  background: color-mix(in srgb, var(--background) 85%, #14b8a6);
+  color: #0f766e;
+}
+
+.drflow-patient-workspace-tab-active {
+  border-color: #14b8a6;
+  background: linear-gradient(135deg, #14b8a6, #06b6d4);
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgb(20 184 166 / 25%);
+}
+
+.drflow-patient-workspace-tab-soon:not(.drflow-patient-workspace-tab-active) {
+  opacity: 0.85;
+}
+
+.drflow-patient-workspace-panel {
+  min-width: 0;
+}
+
+.drflow-ehr-embedded .drflow-ehr-layout {
+  min-height: 420px;
+}

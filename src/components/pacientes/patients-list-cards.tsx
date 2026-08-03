@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { PatientAppShareControl } from "@/components/pacientes/patient-app-share-control";
 import { isPamiPatient } from "@/lib/utils/patient-age";
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
+import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
 import { FileText, ScrollText } from "lucide-react";
 
 export type PatientListRow = {
@@ -90,7 +91,7 @@ export function PatientsListCards({
                 size="icon"
               />
               <Link
-                href={`/historias/paciente/${p.id}`}
+                href={patientClinicalHistoryPath(p.id)}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-cyan-700 hover:to-teal-700"
               >
                 <FileText className="h-3.5 w-3.5" />

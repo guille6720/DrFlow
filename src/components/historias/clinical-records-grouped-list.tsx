@@ -7,6 +7,7 @@ import { ChevronDown } from "lucide-react";
 import { PatientWhatsAppButton } from "@/components/ui/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/lib/utils/patient-messages";
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
+import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
 
 export type GroupedClinicalRecord = {
   id: string;
@@ -70,7 +71,7 @@ export function ClinicalRecordsGroupedList({ groups, defaultOpenPatientId }: Pro
                   size="icon"
                 />
                 <Link
-                  href={`/historias/paciente/${group.patientId}`}
+                  href={patientClinicalHistoryPath(group.patientId)}
                   className="rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-cyan-700 hover:to-teal-700"
                   onClick={(e) => e.stopPropagation()}
                 >

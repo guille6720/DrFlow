@@ -54,4 +54,6 @@ export type PatientChartViewProps = {
   patientShare: { sharedAt: string; sharedByName: string | null; channel: string } | null;
   arcoExport?: React.ReactNode;
   regularMedication?: string | null;
+  /** Oculta la barra sticky duplicada cuando hay tabs de workspace arriba. */
+  workspaceMode?: boolean;
 };

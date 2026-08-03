@@ -19,6 +19,7 @@ export function PatientEhrView({
   prescriptions,
   totalConsultations,
   usesHceExport = false,
+  embedded = false,
 }: PatientEhrViewProps) {
   const {
     evolutionList,
@@ -35,8 +36,14 @@ export function PatientEhrView({
   } = usePatientEhrState(consultations, attachments);
 
   return (
-    <div className="drflow-ehr-shell min-h-[calc(100vh-10rem)] print:bg-white">
-      <PatientEhrDemographics patient={patient} />
+    <div
+      className={
+        embedded
+          ? "drflow-ehr-shell drflow-ehr-embedded print:bg-white"
+          : "drflow-ehr-shell min-h-[calc(100vh-10rem)] print:bg-white"
+      }
+    >
+      {embedded ? null : <PatientEhrDemographics patient={patient} />}
 
       <PatientEhrFiltersBar
         filters={filters}

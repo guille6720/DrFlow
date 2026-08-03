@@ -21,6 +21,7 @@ import { createClient } from "@/lib/supabase/server";
 import { FileText, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { applyPatientSearchFilter, sanitizePatientSearchTerm } from "@/lib/utils/patient-search";
 import type { ClinicalRecordListRow } from "@/lib/utils/clinical-record-list-types";
+import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
 
 export const maxDuration = 300;
 
@@ -44,7 +45,7 @@ export default async function HistoriasPage({
   const page = Math.max(1, parseInt(pageStr ?? "1", 10) || 1);
 
   if (patientIdParam && !q) {
-    redirect(`/historias/paciente/${patientIdParam}`);
+    redirect(patientClinicalHistoryPath(patientIdParam));
   }
 
   const profile = await getProfile();

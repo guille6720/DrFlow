@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { DeletePatientButton } from "@/components/pacientes/delete-patient-button";
-import { PatientChartView } from "@/components/pacientes/patient-chart-view";
+import { PatientWorkspaceView } from "@/components/pacientes/patient-workspace-view";
 import { PatientAdminDetailView } from "@/components/pacientes/patient-admin-detail-view";
 import { PatientArcoExportButton } from "@/components/legal/patient-arco-export-button";
 import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
@@ -20,16 +20,22 @@ import { createClient } from "@/lib/supabase/server";
 import { ArrowLeft } from "lucide-react";
 import type { PrescriptionMedication } from "@/types/prescription";
 import { backHrefFromClinicalSubpage } from "@/lib/utils/clinical-navigation";
+import { loadPatientEhrWorkspaceData } from "@/lib/server/load-patient-ehr-data";
+import {
+  LEGACY_TAB_ALIASES,
+  parsePatientWorkspaceTab,
+} from "@/lib/constants/patient-workspace-tabs";
 
 export default async function PacienteDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ from?: string; patient?: string }>;
+  searchParams: Promise<{ from?: string; patient?: string; tab?: string }>;
 }) {
   const { id } = await params;
-  const { from, patient: returnPatientId } = await searchParams;
+  const sp = await searchParams;
+  const { from, patient: returnPatientId, tab: tabParam } = sp;
   const backHref = backHrefFromClinicalSubpage(from, returnPatientId ?? id, "/pacientes");
   const profile = await getProfile();
   const clinics = await getUserClinics();
@@ -172,6 +178,25 @@ export default async function PacienteDetailPage({
       })
     : null;
 
+  const initialTab = parsePatientWorkspaceTab(
+    tabParam ? (LEGACY_TAB_ALIASES[tabParam] ?? tabParam) : null
+  );
+
+  const ehr =
+    canViewClinical && chart
+      ? await loadPatientEhrWorkspaceData(supabase, clinicId, {
+          id: patient.id,
+          first_name: patient.first_name,
+          last_name: patient.last_name,
+          document_number: patient.document_number,
+          phone: patient.phone,
+          email: patient.email,
+          birth_date: patient.birth_date,
+          insurance_provider: patient.insurance_provider,
+          insurance_number: patient.insurance_number,
+        })
+      : null;
+
   return (
     <>
       <Header
@@ -196,10 +221,12 @@ export default async function PacienteDetailPage({
           )}
         </div>
 
-        {!canViewClinical || !chart ? (
+        {!canViewClinical || !chart || !ehr ? (
           <PatientAdminDetailView patient={patient} />
         ) : (
-          <PatientChartView
+          <PatientWorkspaceView
+            initialTab={initialTab}
+            ehr={ehr}
             patient={patient}
             patientId={id}
             chart={chart}

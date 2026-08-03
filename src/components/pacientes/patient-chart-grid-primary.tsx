@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CheckCircle2, Plus, Search } from "lucide-react";
 import { RenewMedicationPanel } from "@/components/pacientes/renew-medication-panel";
 import { ChartSection, VitalsSparkline } from "@/components/pacientes/patient-chart-primitives";
+import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
 import type {
   PatientChartPatient,
   PatientChartProfessional,
@@ -209,7 +210,7 @@ export function PatientChartGridPrimary({
             </li>
           ))}
         </ul>
-        <Link href={`/historias/paciente/${patientId}`} className="drflow-patient-chart-link mt-2 inline-block text-xs">
+        <Link href={patientClinicalHistoryPath(patientId)} className="drflow-patient-chart-link mt-2 inline-block text-xs">
           Ver historial clínico completo
         </Link>
       </ChartSection>

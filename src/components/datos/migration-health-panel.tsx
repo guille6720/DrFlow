@@ -6,6 +6,7 @@ import {
   CircleDot,
 } from "lucide-react";
 import type { MigrationHealthReport, MigrationStepStatus } from "@/lib/utils/migration-health";
+import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
 
 function StepIcon({ status }: { status: MigrationStepStatus }) {
   if (status === "done") return <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />;
@@ -49,7 +50,7 @@ function PatientGapTable({
               <span className="text-slate-500">DNI {p.document_number}</span>
             </span>
             <Link
-              href={`/historias/paciente/${p.id}`}
+              href={patientClinicalHistoryPath(p.id)}
               className="text-blue-700 hover:underline"
             >
               Ver HCE

@@ -9,6 +9,7 @@ import { ChartSection, VaccineIcon } from "@/components/pacientes/patient-chart-
 import type { PatientChartAppointment, PatientChartPatient } from "@/components/pacientes/patient-chart-types";
 import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
+import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
 import { appointmentStatusBadge, Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
@@ -40,7 +41,7 @@ export function PatientChartGridSecondary({
       <ChartSection
         title="Últimas consultas"
         action={
-          <Link href={`/historias/paciente/${patientId}`} className="drflow-patient-chart-link text-sm">
+        <Link href={patientClinicalHistoryPath(patientId)} className="drflow-patient-chart-link text-sm">
             Ver historia completa
           </Link>
         }
