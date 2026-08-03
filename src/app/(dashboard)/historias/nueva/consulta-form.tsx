@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ConsultationFlowBar } from "@/components/historias/consultation-flow-bar";
 import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
+import { ConsultationAssistantPanel } from "@/components/historias/consultation-assistant-panel";
 import { createClinicalRecord } from "@/lib/actions/clinical-records";
 import { startConsultationFromAppointment } from "@/lib/actions/appointments";
 import {
@@ -287,6 +288,16 @@ export default function NuevaConsultaForm({
                 />
               </div>
             )}
+
+            {selectedPatient && consultationContext ? (
+              <ConsultationAssistantPanel
+                patientId={selectedPatient.id}
+                allergies={selectedPatient.allergies}
+                regularMedication={selectedPatient.regular_medication}
+                evolutionText={evolution}
+                pharmacologyHref={pharmacologyHref()}
+              />
+            ) : null}
 
             <Textarea
               name="evolution"

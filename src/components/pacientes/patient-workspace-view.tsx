@@ -17,6 +17,14 @@ import { PatientWorkspacePlaceholderPanel } from "@/components/pacientes/patient
 import type { PatientWorkspaceTabId } from "@/lib/constants/patient-workspace-tabs";
 import { usePatientWorkspaceTab } from "@/lib/hooks/use-patient-workspace-tab";
 
+const PatientClinicalAssistantPanel = dynamic(
+  () =>
+    import("@/components/pacientes/patient-clinical-assistant-panel").then((m) => ({
+      default: m.PatientClinicalAssistantPanel,
+    })),
+  { loading: () => <PatientWorkspacePanelSkeleton /> }
+);
+
 const PatientChartView = dynamic(
   () =>
     import("@/components/pacientes/patient-chart-view").then((m) => ({
@@ -113,11 +121,12 @@ export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
         ) : null}
 
         {activeTab === "ia" ? (
-          <PatientWorkspacePlaceholderPanel
-            tab="ia"
+          <PatientClinicalAssistantPanel
+            chart={chartProps.chart}
+            patient={chartProps.patient}
             patientId={chartProps.patientId}
-            title="Asistente IA"
-            description="Sugerencias de evolución, CIE-10 e interacciones integradas en el flujo clínico (Fase 7)."
+            canIssue={chartProps.canIssue}
+            ehr={ehr}
           />
         ) : null}
       </div>

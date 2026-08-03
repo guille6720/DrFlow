@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ConsultationFlowBar } from "@/components/historias/consultation-flow-bar";
 import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
+import { ConsultationAssistantPanel } from "@/components/historias/consultation-assistant-panel";
 import { updateClinicalRecord } from "@/lib/actions/clinical-records";
 import { buildUnifiedClinicalEvolution } from "@/lib/utils/unified-clinical-evolution";
 import {
@@ -222,6 +223,16 @@ export function EditConsultaForm({
             {record.appointment_id && (
               <input type="hidden" name="appointment_id" value={record.appointment_id} />
             )}
+
+            {patient ? (
+              <ConsultationAssistantPanel
+                patientId={record.patient_id}
+                allergies={patient.allergies}
+                regularMedication={patient.regular_medication}
+                evolutionText={evolution}
+                pharmacologyHref={pharmacologyHref()}
+              />
+            ) : null}
 
             <Textarea
               name="evolution"

@@ -11,6 +11,7 @@ import {
   chartProfileCompleteness,
 } from "@/lib/utils/patient-chart-notes";
 import type { PrescriptionMedication } from "@/types/prescription";
+import { buildMedicationSafetyWarnings } from "@/lib/utils/clinical-assistant";
 import type {
   ActiveProblem,
   ChartAlert,
@@ -132,22 +133,8 @@ function buildAlerts(input: {
   });
 }
 
-function buildSafetyWarnings(allergies: string[], meds: MedicationCard[]): string[] {
-  const warnings: string[] = [];
-  const names = meds.map((m) => m.name.toLowerCase()).join(" ");
-  for (const allergy of allergies) {
-    const a = allergy.toLowerCase();
-    if (a.includes("penicil") && names.match(/amoxicilina|ampicilina|penicilina/)) {
-      warnings.push("Posible conflicto: beta-lactámico con alergia a penicilina.");
-    }
-  }
-  const dup = new Set<string>();
-  for (const m of meds) {
-    const key = m.name.toLowerCase();
-    if (dup.has(key)) warnings.push(`Duplicación: ${m.name}`);
-    dup.add(key);
-  }
-  return warnings;
+function buildSafetyWarnings(allergies: string[], meds: MedicationCard[], anticoagulated: boolean): string[] {
+  return buildMedicationSafetyWarnings({ allergies, medications: meds, anticoagulated });
 }
 
 function buildReminders(input: {
@@ -373,7 +360,7 @@ export function buildPatientChartPayload(input: {
     studies,
     documents,
     reminders: buildReminders({ lastConsultMonths, extras, history: historyText }),
-    safetyWarnings: buildSafetyWarnings(allergies, medications),
+    safetyWarnings: buildSafetyWarnings(allergies, medications, alerts.some((a) => a.label === "Anticoagulado")),
     indicators: {
       bmi: latestVitals.bmi ?? null,
       tfg: estimateTfg(ageYears, creatVal, extras.sex === "M" || extras.sex === "F" ? extras.sex : null),

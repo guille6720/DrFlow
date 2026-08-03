@@ -57,7 +57,7 @@ export const PATIENT_WORKSPACE_TABS: PatientWorkspaceTabDef[] = [
   { id: "interconsultas", label: "Interconsultas", icon: Users, ready: false },
   { id: "timeline", label: "Timeline", icon: History, ready: true },
   { id: "auditoria", label: "Auditoría", icon: Shield, ready: false },
-  { id: "ia", label: "IA", icon: Sparkles, ready: false },
+  { id: "ia", label: "IA", icon: Sparkles, ready: true },
 ];
 
 export const DEFAULT_PATIENT_WORKSPACE_TAB: PatientWorkspaceTabId = "resumen";
