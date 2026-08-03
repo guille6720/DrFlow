@@ -20,6 +20,8 @@ describe("clinic job registry", () => {
     expect(ids).toContain("send_reminder");
     expect(ids).toContain("generate_report");
     expect(ids).toContain("import_clinical_pdf");
+    expect(ids).toContain("import_hce_batch");
+    expect(ids).toContain("import_patients_batch");
     expect(ids).toContain("run_ai_task");
   });
 

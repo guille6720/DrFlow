@@ -22,6 +22,7 @@ import { sanitizeText } from "@/lib/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
 import type { HceExportRow } from "@/lib/utils/hce-export-parse";
 import { upsertPatientClinicalProfile } from "@/lib/server/patient-clinical-profile";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const BUCKET = "clinical-files";
 const HCE_ATTACHMENT_NAME = "hce-export-resumen.csv";
@@ -194,6 +195,28 @@ async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExp
 
   const content = await file.text();
   const offset = Math.max(0, Number(formData.get("offset") ?? 0) || 0);
+
+  const supabase = await createClient();
+  return processHceImportBatchFromContent(supabase, {
+    clinicId: access.clinicId,
+    userId: access.userId,
+    content,
+    originalName,
+    offset,
+  });
+}
+
+export async function processHceImportBatchFromContent(
+  supabase: SupabaseClient,
+  params: {
+    clinicId: string;
+    userId: string;
+    content: string;
+    originalName: string;
+    offset: number;
+  }
+): Promise<ImportHceExportResult> {
+  const { clinicId, userId, content, originalName, offset } = params;
   const { rows, errors } = parseHceExportCsv(content, HCE_EXPORT_MAX_ROWS);
 
   if (rows.length === 0) {
@@ -214,17 +237,16 @@ async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExp
     };
   }
 
-  const supabase = await createClient();
   const { data: clinic } = await supabase
     .from("clinics")
     .select("default_insurance_provider")
-    .eq("id", access.clinicId)
+    .eq("id", clinicId)
     .single();
 
   const defaultInsurance = clinic?.default_insurance_provider ?? null;
   const professionalId = await resolveImportProfessionalId(
     supabase,
-    access.clinicId,
+    clinicId,
     "Profesional"
   );
   if (!professionalId) {
@@ -249,7 +271,7 @@ async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExp
     if (!patientId) {
       const resolved = await resolvePatientForHceRow(
         supabase,
-        access.clinicId,
+        clinicId,
         row,
         defaultInsurance,
         `Import HCE: ${originalName}`
@@ -268,7 +290,7 @@ async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExp
       const { data: existing } = await supabase
         .from("clinical_records")
         .select("id")
-        .eq("clinic_id", access.clinicId)
+        .eq("clinic_id", clinicId)
         .eq("patient_id", patientId)
         .ilike("chief_complaint", `${clinical.marker}%`)
         .maybeSingle();
@@ -280,14 +302,14 @@ async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExp
           ? `${clinical.consultation_date}T12:00:00.000Z`
           : new Date().toISOString();
         const { error: insertError } = await supabase.from("clinical_records").insert({
-          clinic_id: access.clinicId,
+          clinic_id: clinicId,
           patient_id: patientId,
           professional_id: professionalId,
           chief_complaint: sanitizeText(clinical.chief_complaint),
           diagnosis: sanitizeText(clinical.diagnosis),
           evolution: sanitizeText(clinical.evolution),
           indications: sanitizeText(clinical.indications),
-          created_by: access.userId,
+          created_by: userId,
           created_at: createdAt,
           updated_at: createdAt,
         });
@@ -306,8 +328,8 @@ async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExp
     const patientRows = grouped.get(consumerRef) ?? [];
     const created = await ensureHceAttachment(
       supabase,
-      access.clinicId,
-      access.userId,
+      clinicId,
+      userId,
       patientId,
       consumerRef,
       patientRows
@@ -319,9 +341,9 @@ async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExp
   const hasMore = processedThrough < rows.length;
 
   await logAudit({
-    clinicId: access.clinicId,
+    clinicId,
     entityType: "clinical_record",
-    entityId: access.clinicId,
+    entityId: clinicId,
     action: "create",
     metadata: {
       type: "hce_export_import",

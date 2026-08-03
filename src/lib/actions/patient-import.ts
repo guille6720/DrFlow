@@ -9,6 +9,7 @@ import { parseConsumersUpload } from "@/lib/utils/consumers-import.server";
 import { findOrCreatePatientFromExtract } from "@/lib/utils/clinical-pdf-import";
 import { sanitizeText } from "@/lib/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 async function requirePatientImportAccess() {
   const clinicId = await getActiveClinicId();
@@ -143,6 +144,31 @@ async function importConsumersFileInner(
     Math.max(1, Number(formData.get("limit") ?? IMPORT_BATCH_SIZE) || IMPORT_BATCH_SIZE)
   );
 
+  const supabase = await createClient();
+  return processConsumersImportBatchFromBuffer(supabase, {
+    clinicId: access.clinicId,
+    userId: access.userId,
+    buffer,
+    originalName,
+    offset,
+    limit,
+  });
+}
+
+export async function processConsumersImportBatchFromBuffer(
+  supabase: SupabaseClient,
+  params: {
+    clinicId: string;
+    userId: string;
+    buffer: Buffer;
+    originalName: string;
+    offset: number;
+    limit?: number;
+  }
+): Promise<ImportConsumersResult> {
+  const { clinicId, userId, buffer, originalName, offset } = params;
+  const limit = params.limit ?? IMPORT_BATCH_SIZE;
+
   const { records, errors, format } = await parseConsumersUpload(
     buffer,
     originalName,
@@ -166,11 +192,10 @@ async function importConsumersFileInner(
     };
   }
 
-  const supabase = await createClient();
   const { data: clinic } = await supabase
     .from("clinics")
     .select("default_insurance_provider")
-    .eq("id", access.clinicId)
+    .eq("id", clinicId)
     .single();
 
   let patientsCreated = 0;
@@ -188,7 +213,7 @@ async function importConsumersFileInner(
 
     const patientResult = await findOrCreatePatientFromExtract(
       supabase,
-      access.clinicId,
+      clinicId,
       extract,
       record.insurance_provider ?? clinic?.default_insurance_provider ?? null,
       `Import consumers: ${originalName}`
@@ -201,13 +226,13 @@ async function importConsumersFileInner(
 
     if (patientResult.created) {
       patientsCreated += 1;
-      await mergePatientFields(supabase, access.clinicId, patientResult.patientId, record);
+      await mergePatientFields(supabase, clinicId, patientResult.patientId, record);
       continue;
     }
 
     const updated = await mergePatientFields(
       supabase,
-      access.clinicId,
+      clinicId,
       patientResult.patientId,
       record
     );
@@ -219,9 +244,9 @@ async function importConsumersFileInner(
   const hasMore = processedThrough < records.length;
 
   await logAudit({
-    clinicId: access.clinicId,
+    clinicId,
     entityType: "patient",
-    entityId: access.clinicId,
+    entityId: clinicId,
     action: "create",
     metadata: {
       type: "consumers_import",

@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { PanelShell } from "@/components/ui/panel-shell";
 import { Button } from "@/components/ui/button";
 import { HCE_EXPORT_MAX_BYTES } from "@/lib/constants/clinical-documents";
-import { importHceExportCsv, type ImportHceExportResult } from "@/lib/actions/hce-import";
-import { CheckCircle2, Download, FileSpreadsheet, Loader2, Upload } from "lucide-react";
+import { enqueueHceImportJob } from "@/lib/actions/import-jobs";
+import { ImportJobsQueuedBanner } from "@/components/datos/import-jobs-queued-banner";
+import { FileSpreadsheet, Loader2, Upload } from "lucide-react";
 
 interface Props {
   canImport: boolean;
@@ -18,15 +19,7 @@ export function ImportHceExportPanel({ canImport, embedded }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
-  const [progress, setProgress] = useState({ done: 0, total: 0 });
-  const [summary, setSummary] = useState<{
-    fileName: string;
-    recordsCreated: number;
-    recordsSkipped: number;
-    patientsCreated: number;
-    attachmentsCreated: number;
-    parseErrors: string[];
-  } | null>(null);
+  const [queued, setQueued] = useState<{ jobId: string; fileName: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (!canImport) return null;
@@ -43,43 +36,19 @@ export function ImportHceExportPanel({ canImport, embedded }: Props) {
 
     setImporting(true);
     setError(null);
-    setSummary(null);
-    setProgress({ done: 0, total: 0 });
-
-    const totals = {
-      fileName: file.name,
-      recordsCreated: 0,
-      recordsSkipped: 0,
-      patientsCreated: 0,
-      attachmentsCreated: 0,
-      parseErrors: [] as string[],
-    };
-
-    let offset = 0;
-    let hasMore = true;
+    setQueued(null);
 
     try {
-      while (hasMore) {
-        const formData = new FormData();
-        formData.set("file", file);
-        formData.set("offset", String(offset));
-        const result: ImportHceExportResult = await importHceExportCsv(formData);
-        if (!result.success) {
-          setError(result.error);
-          break;
-        }
-        totals.recordsCreated += result.recordsCreated;
-        totals.recordsSkipped += result.recordsSkipped;
-        totals.patientsCreated += result.patientsCreated;
-        totals.attachmentsCreated += result.attachmentsCreated;
-        if (offset === 0) totals.parseErrors = result.parseErrors;
-        setProgress({ done: result.processedThrough, total: result.totalRecords });
-        setSummary({ ...totals });
-        hasMore = result.hasMore;
-        offset = result.nextOffset;
+      const formData = new FormData();
+      formData.set("file", file);
+      const result = await enqueueHceImportJob(formData);
+      if (result.error) {
+        setError(result.error);
+      } else if (result.jobId) {
+        setQueued({ jobId: result.jobId, fileName: file.name });
       }
     } catch {
-      setError("Error de conexión durante la importación HCE.");
+      setError("Error de conexión al encolar la importación HCE.");
     }
 
     setImporting(false);
@@ -125,11 +94,13 @@ export function ImportHceExportPanel({ canImport, embedded }: Props) {
       {importing && (
         <p className="mt-3 flex items-center gap-2 text-sm text-slate-600">
           <Loader2 className="h-4 w-4 animate-spin" />
-          {progress.total > 0
-            ? `Procesando ${progress.done} de ${progress.total} filas…`
-            : "Procesando export HCE…"}
+          Encolando importación HCE…
         </p>
       )}
+
+      {queued && !importing ? (
+        <ImportJobsQueuedBanner enqueued={1} jobIds={[queued.jobId]} />
+      ) : null}
 
       {error && (
         <p className="mt-3 text-sm text-red-600" role="alert">
@@ -137,33 +108,7 @@ export function ImportHceExportPanel({ canImport, embedded }: Props) {
         </p>
       )}
 
-      {summary && !importing && !error && (
-        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-900">
-          <p className="flex items-center gap-2 font-medium">
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-            {summary.fileName}
-          </p>
-          <p className="mt-1">
-            {summary.patientsCreated} paciente(s) nuevo(s) · {summary.recordsCreated} registro(s) HCE
-            · {summary.attachmentsCreated} resumen(es) CSV en fichas · {summary.recordsSkipped}{" "}
-            omitidos (duplicados)
-          </p>
-          <p className="mt-2 text-xs">
-            En cada paciente: Documentos clínicos →{" "}
-            <Download className="inline h-3 w-3" />{" "}
-            <strong>hce-export-resumen.csv</strong>
-          </p>
-          {summary.parseErrors.length > 0 && (
-            <ul className="mt-2 list-inside list-disc text-xs text-amber-900">
-              {summary.parseErrors.map((msg) => (
-                <li key={msg}>{msg}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
-      {!importing && !summary && !error && (
+      {!importing && !queued && !error && (
         <div className="mt-4 flex items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-6 text-sm text-slate-500">
           <FileSpreadsheet className="h-5 w-5 shrink-0" />
           Subí tu export HCE acá.

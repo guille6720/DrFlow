@@ -34,15 +34,19 @@ export type GenerateReportJobPayload = {
 };
 
 export type ImportBatchJobPayload = {
+  storagePath: string;
+  fileName: string;
   offset: number;
   batchSize: number;
-  /** Reference stored server-side or inline token — extend when wiring imports. */
   importKind: "hce" | "patients" | "teams_jsonl";
+  userId: string;
 };
 
 export type ImportClinicalPdfJobPayload = {
   storagePath: string;
   fileName: string;
+  fileSize: number;
+  userId: string;
   patientHints?: Record<string, string>;
 };
 

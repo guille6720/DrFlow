@@ -3,43 +3,9 @@ import type { ClinicJobType } from "@/lib/jobs/registry";
 import type { ClinicJobRow } from "@/lib/jobs/types";
 import { handleSendReminderJob } from "@/lib/jobs/handlers/send-reminder";
 import { handleGenerateReportJob } from "@/lib/jobs/handlers/generate-report";
-
-/** Placeholder handlers — wired when imports move fully off the request thread. */
-export async function handleImportBatchJob(
-  _supabase: SupabaseClient,
-  job: ClinicJobRow
-): Promise<Record<string, unknown>> {
-  return {
-    deferred: true,
-    jobType: job.job_type,
-    message: "Import batch handler registered — enqueue from import panels in a follow-up.",
-    payload: job.payload,
-  };
-}
-
-export async function handleImportClinicalPdfJob(
-  _supabase: SupabaseClient,
-  job: ClinicJobRow
-): Promise<Record<string, unknown>> {
-  return {
-    deferred: true,
-    jobType: job.job_type,
-    message: "PDF import handler registered — move extract/parse off UI thread next.",
-    payload: job.payload,
-  };
-}
-
-export async function handleRunAiTaskJob(
-  _supabase: SupabaseClient,
-  job: ClinicJobRow
-): Promise<Record<string, unknown>> {
-  return {
-    deferred: true,
-    jobType: job.job_type,
-    message: "IA async task placeholder — integrate LLM provider without blocking UI.",
-    payload: job.payload,
-  };
-}
+import { handleImportClinicalPdfJob } from "@/lib/jobs/handlers/import-clinical-pdf";
+import { handleImportBatchJob } from "@/lib/jobs/handlers/import-batch";
+import { handleRunAiTaskJob } from "@/lib/jobs/handlers/run-ai-task";
 
 export async function handleSendEmailJob(
   supabase: SupabaseClient,
@@ -73,7 +39,10 @@ export async function runClinicJobHandler(
   supabase: SupabaseClient,
   job: ClinicJobRow
 ): Promise<Record<string, unknown>> {
-  const handlers: Record<ClinicJobType, (s: SupabaseClient, j: ClinicJobRow) => Promise<Record<string, unknown>>> = {
+  const handlers: Record<
+    ClinicJobType,
+    (s: SupabaseClient, j: ClinicJobRow) => Promise<Record<string, unknown>>
+  > = {
     send_reminder: handleSendReminderJob,
     send_email: handleSendEmailJob,
     generate_report: handleGenerateReportJob,

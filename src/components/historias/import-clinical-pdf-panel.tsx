@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PanelShell } from "@/components/ui/panel-shell";
 import { Button } from "@/components/ui/button";
@@ -9,24 +8,22 @@ import {
   CLINICAL_DOCUMENT_MAX_BYTES,
   CLINICAL_PDF_IMPORT_MAX_FILES,
 } from "@/lib/constants/clinical-documents";
-import { importClinicalPdfDocument, type ImportClinicalPdfResult } from "@/lib/actions/patient-attachments";
-import { CheckCircle2, FileUp, Loader2, Upload, XCircle } from "lucide-react";
+import { enqueueClinicalPdfImports } from "@/lib/actions/import-jobs";
+import { ImportJobsQueuedBanner } from "@/components/datos/import-jobs-queued-banner";
+import { FileUp, Loader2, Upload } from "lucide-react";
 
 interface Props {
   canImport: boolean;
   embedded?: boolean;
 }
 
-type ResultRow = ImportClinicalPdfResult & { id: string };
-
 export function ImportClinicalPdfPanel({ canImport, embedded }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
-  const [progress, setProgress] = useState({ current: 0, total: 0 });
-  const [results, setResults] = useState<ResultRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [queued, setQueued] = useState<{ count: number; jobIds: string[] } | null>(null);
 
   if (!canImport) return null;
 
@@ -54,28 +51,23 @@ export function ImportClinicalPdfPanel({ canImport, embedded }: Props) {
 
     setImporting(true);
     setError(null);
-    setResults([]);
-    setProgress({ current: 0, total: list.length });
+    setQueued(null);
 
-    const batchResults: ResultRow[] = [];
+    const formData = new FormData();
+    list.forEach((file) => formData.append("files", file));
 
-    for (let i = 0; i < list.length; i++) {
-      const file = list[i];
-      setProgress({ current: i + 1, total: list.length });
-      const formData = new FormData();
-      formData.set("file", file);
-      const result = await importClinicalPdfDocument(formData);
-      batchResults.push({ ...result, id: `${file.name}-${i}` });
-      setResults([...batchResults]);
+    const result = await enqueueClinicalPdfImports(formData);
+    setImporting(false);
+
+    if (result.error) {
+      setError(result.error);
+      return;
     }
 
-    setImporting(false);
+    setQueued({ count: result.enqueued ?? list.length, jobIds: result.jobIds ?? [] });
     if (fileInputRef.current) fileInputRef.current.value = "";
     router.refresh();
   }
-
-  const successCount = results.filter((row) => row.success).length;
-  const createdCount = results.filter((row) => row.success && row.patientCreated).length;
 
   return (
     <PanelShell embedded={embedded} title="Importar historias PDF">
@@ -85,8 +77,8 @@ export function ImportClinicalPdfPanel({ canImport, embedded }: Props) {
         clínicas.
       </p>
       <p className="mb-4 text-xs text-slate-500">
-        Tip: no hace falta renombrar los PDFs; el sistema lee el DNI dentro del archivo. Para lotes
-        grandes (1000+), subí de a {CLINICAL_PDF_IMPORT_MAX_FILES} archivos por tanda.
+        Los archivos se procesan en cola — la pantalla no se bloquea. Seguí el progreso en
+        Configuración → Cola de trabajos.
       </p>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -118,9 +110,13 @@ export function ImportClinicalPdfPanel({ canImport, embedded }: Props) {
       {importing && (
         <p className="mt-3 flex items-center gap-2 text-sm text-slate-600">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Importando {progress.current} de {progress.total}…
+          Encolando PDFs…
         </p>
       )}
+
+      {queued ? (
+        <ImportJobsQueuedBanner enqueued={queued.count} jobIds={queued.jobIds} />
+      ) : null}
 
       {error && (
         <p className="mt-3 text-sm text-red-600" role="alert">
@@ -128,66 +124,7 @@ export function ImportClinicalPdfPanel({ canImport, embedded }: Props) {
         </p>
       )}
 
-      {results.length > 0 && !importing && (
-        <div className="mt-4 space-y-3">
-          <p className="text-sm font-medium text-slate-800">
-            {successCount} de {results.length} importados
-            {createdCount > 0 ? ` · ${createdCount} paciente(s) nuevo(s)` : ""}
-          </p>
-          <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200">
-            {results.map((row) => (
-              <li key={row.id} className="flex items-start gap-3 px-3 py-3 text-sm">
-                {row.success ? (
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                ) : (
-                  <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-slate-900">{row.fileName}</p>
-                  {row.success ? (
-                    <>
-                      <p className="text-slate-600">
-                        {row.patientName} · DNI {row.documentNumber}
-                        {row.patientCreated ? " · paciente creado" : " · paciente existente"}
-                        {row.success && row.legacyPdfImport && !row.legacyPdfImport.partial
-                          ? ` · ${row.legacyPdfImport.clinicalRecordsCreated} consulta(s) importada(s)${
-                              row.legacyPdfImport.clinicalRecordsSkipped > 0
-                                ? ` (${row.legacyPdfImport.clinicalRecordsSkipped} ya existían)`
-                                : ""
-                            }`
-                          : ""}
-                        {row.success && row.legacyPdfImport?.partial
-                          ? " · PDF adjunto (no se leyó texto para importar evoluciones)"
-                          : ""}
-                      </p>
-                      <div className="flex flex-wrap gap-3">
-                        <Link
-                          href={`/pacientes/${row.patientId}`}
-                          className="text-blue-700 hover:underline"
-                        >
-                          Ver ficha del paciente
-                        </Link>
-                        {row.success && row.legacyPdfImport && row.legacyPdfImport.clinicalRecordsCreated > 0 && (
-                          <Link
-                            href={`/pacientes/${row.patientId}`}
-                            className="text-blue-700 hover:underline"
-                          >
-                            Ver consultas en ficha
-                          </Link>
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-red-700">{row.error}</p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {!importing && results.length === 0 && (
+      {!importing && !queued && (
         <div
           className={`mt-4 flex items-center gap-2 rounded-xl border border-dashed px-4 py-6 text-sm transition-colors ${
             dragging
@@ -210,18 +147,18 @@ export function ImportClinicalPdfPanel({ canImport, embedded }: Props) {
         </div>
       )}
 
-      {!importing && results.length > 0 && (
+      {!importing && queued && (
         <div className="mt-3">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={() => {
-              setResults([]);
+              setQueued(null);
               fileInputRef.current?.click();
             }}
           >
-            Importar más PDFs
+            Encolar más PDFs
           </Button>
         </div>
       )}
