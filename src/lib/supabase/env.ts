@@ -30,10 +30,17 @@ function isLocalhostUrl(url: string): boolean {
   return url.includes("localhost") || url.includes("127.0.0.1");
 }
 
+/** Acepta `https://dominio` o `dominio` (común en env de Vercel). */
+function normalizePublicUrl(url: string): string {
+  const trimmed = url.trim().replace(/\/$/, "");
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
 /** URL pública sin barra final (Vercel / dominio propio). */
 export function getSiteUrl(fallbackOrigin?: string): string {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
-  if (configured) return configured;
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (configured) return normalizePublicUrl(configured);
   if (fallbackOrigin) return fallbackOrigin.replace(/\/$/, "");
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
@@ -46,8 +53,10 @@ export function getSiteUrl(fallbackOrigin?: string): string {
  * En el navegador, pasá `window.location.origin` como fallbackOrigin en dev local.
  */
 export function getPublicSiteUrl(fallbackOrigin?: string): string {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
-  if (configured && !isLocalhostUrl(configured)) return configured;
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (configured && !isLocalhostUrl(configured)) {
+    return normalizePublicUrl(configured);
+  }
 
   if (fallbackOrigin) {
     const origin = fallbackOrigin.replace(/\/$/, "");
