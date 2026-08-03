@@ -1,4 +1,4 @@
-import { TelemedicinaView } from "@/components/telemedicina/telemedicina-view";
+import { TelemedicinaView } from "@/features/telemedicina";
 import {
   getActiveClinicId,
   getProfile,

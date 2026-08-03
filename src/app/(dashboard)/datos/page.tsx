@@ -10,9 +10,9 @@ import {
 } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { hasPermission } from "@/lib/permissions/roles";
-import { DataImportExportSidebar } from "@/components/datos/data-import-export-sidebar";
-import { MigrationHealthPanel } from "@/components/datos/migration-health-panel";
-import { ClearClinicalHistoryPanel } from "@/components/datos/clear-clinical-history-panel";
+import { DataImportExportSidebar } from "@/features/integraciones";
+import { MigrationHealthPanel } from "@/features/integraciones";
+import { ClearClinicalHistoryPanel } from "@/features/integraciones";
 import { DatosNavigationHelp } from "@/components/datos/datos-navigation-help";
 import { buildMigrationHealthReport, type MigrationHealthReport } from "@/lib/utils/migration-health";
 import type { ClinicalRecordExportRow, PatientExportRow } from "@/lib/utils/clinical-export-client";

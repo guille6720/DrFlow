@@ -3,7 +3,7 @@ import Link from "next/link";
 import { startOfDay, endOfDay } from "date-fns";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
-import { WaitingRoomView } from "@/components/secretaria/waiting-room-view";
+import { WaitingRoomView } from "@/features/administracion";
 import {
   getActiveClinic,
   getActiveClinicId,

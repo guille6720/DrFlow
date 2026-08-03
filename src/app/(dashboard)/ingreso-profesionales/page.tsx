@@ -4,7 +4,7 @@ import {
   ProfessionalIntakeView,
   type AvailabilityRuleRow,
   type ProfessionalIntakeDetail,
-} from "@/components/profesionales/professional-intake-view";
+} from "@/features/profesionales";
 import {
   getActiveClinic,
   getActiveClinicId,

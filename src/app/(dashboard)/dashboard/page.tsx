@@ -1,10 +1,10 @@
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ConsultorioLivePanel } from "@/components/dashboard/consultorio-live-panel";
+import { ClinicalOperationsCenter } from "@/features/dashboard";
+import { ConsultorioLivePanel } from "@/features/dashboard";
 import type { LiveAppointment } from "@/components/dashboard/consultorio-live-panel";
-import { ClinicalWorkflowStrip } from "@/components/dashboard/clinical-workflow-strip";
-import { ClinicalOperationsCenter } from "@/components/dashboard/clinical-operations-center";
+import { ClinicalWorkflowStrip } from "@/features/dashboard";
 import {
   getActiveClinic,
   getActiveClinicId,

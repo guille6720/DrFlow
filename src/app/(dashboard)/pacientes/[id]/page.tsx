@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { DeletePatientButton } from "@/components/pacientes/delete-patient-button";
 import { PatientAdminDetailView } from "@/components/pacientes/patient-admin-detail-view";
-import { PatientWorkspaceContent } from "@/components/pacientes/patient-workspace-content";
-import { PatientWorkspaceSkeleton } from "@/components/pacientes/patient-workspace-skeleton";
+import { PatientWorkspaceContent } from "@/features/pacientes";
+import { PatientWorkspaceSkeleton } from "@/features/pacientes";
 import { formatAgeLabel } from "@/lib/utils/patient-age";
 import { hasPermission } from "@/lib/permissions/roles";
 import {

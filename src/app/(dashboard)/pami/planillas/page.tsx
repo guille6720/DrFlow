@@ -1,5 +1,5 @@
 import { Header } from "@/components/layout/header";
-import { PamiPlanillasView } from "@/components/pami/pami-planillas-view";
+import { PamiPlanillasView } from "@/features/pami";
 import {
   getActiveClinic,
   getActiveClinicId,

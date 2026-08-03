@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Header } from "@/components/layout/header";
-import { SettingsPanel } from "@/components/configuracion/settings-panel";
+import { SettingsPanel, ConfiguracionNavigator } from "@/features/configuracion";
 import { DemoDataPanel } from "@/components/configuracion/demo-data-panel";
 import { PamiSetupPanel } from "@/components/configuracion/pami-setup-panel";
 import { CoveragesPanel } from "@/components/configuracion/coverages-panel";
@@ -15,7 +15,6 @@ import { redirect } from "next/navigation";
 import { hasPermission } from "@/lib/permissions/roles";
 import { AppearanceStylePanel } from "@/components/configuracion/appearance-style-panel";
 import { ComplianceLegalPanel } from "@/components/configuracion/compliance-legal-panel";
-import { ConfiguracionNavigator } from "@/components/configuracion/configuracion-navigator";
 import { DeleteAccountPanel } from "@/components/configuracion/delete-account-panel";
 import {
   resolveConfiguracionGroup,

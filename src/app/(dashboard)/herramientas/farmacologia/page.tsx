@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { PharmacologySearchView } from "@/components/pharmacology/pharmacology-search-view";
+import { PharmacologySearchView } from "@/features/pharmacology";
 import {
   getActiveClinic,
   getActiveClinicId,

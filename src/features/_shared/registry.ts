@@ -1,0 +1,195 @@
+/** Feature module identifiers — vertical slices of DrFlow (Phase 3). */
+export type FeatureModuleId =
+  | "core"
+  | "dashboard"
+  | "agenda"
+  | "pacientes"
+  | "historias"
+  | "recetas"
+  | "laboratorio"
+  | "imagenes"
+  | "facturacion"
+  | "caja"
+  | "ia"
+  | "telemedicina"
+  | "configuracion"
+  | "administracion"
+  | "pami"
+  | "integraciones"
+  | "pharmacology"
+  | "portal"
+  | "voice"
+  | "profesionales"
+  | "reportes";
+
+export type FeatureModuleStatus = "ready" | "lab" | "planned";
+
+export type FeatureModuleDef = {
+  id: FeatureModuleId;
+  label: string;
+  routes: string[];
+  status: FeatureModuleStatus;
+  description: string;
+};
+
+export const FEATURE_MODULES: FeatureModuleDef[] = [
+  {
+    id: "core",
+    label: "Core",
+    routes: [],
+    status: "ready",
+    description: "Auth, permisos, tenant scope, guards compartidos.",
+  },
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    routes: ["/dashboard"],
+    status: "ready",
+    description: "Centro de operaciones clínicas.",
+  },
+  {
+    id: "agenda",
+    label: "Agenda",
+    routes: ["/agenda"],
+    status: "ready",
+    description: "Turnos, calendario y flujo consulta.",
+  },
+  {
+    id: "pacientes",
+    label: "Pacientes",
+    routes: ["/pacientes"],
+    status: "ready",
+    description: "Ficha administrativa y workspace clínico.",
+  },
+  {
+    id: "historias",
+    label: "Historia clínica",
+    routes: ["/historias"],
+    status: "ready",
+    description: "Consultas, evoluciones y documentos clínicos.",
+  },
+  {
+    id: "recetas",
+    label: "Recetas y órdenes",
+    routes: ["/recetas"],
+    status: "ready",
+    description: "Prescripciones y órdenes médicas.",
+  },
+  {
+    id: "laboratorio",
+    label: "Laboratorio",
+    routes: [],
+    status: "planned",
+    description: "Integración LIS — pendiente de plugin.",
+  },
+  {
+    id: "imagenes",
+    label: "Imágenes",
+    routes: [],
+    status: "planned",
+    description: "Integración PACS/RIS — pendiente de plugin.",
+  },
+  {
+    id: "facturacion",
+    label: "Facturación",
+    routes: ["/pagos"],
+    status: "lab",
+    description: "Pagos en línea (laboratorio / mock).",
+  },
+  {
+    id: "caja",
+    label: "Caja",
+    routes: ["/caja", "/caja/cierre", "/caja/reportes", "/caja/cuenta-corriente"],
+    status: "ready",
+    description: "Cobranzas, cierre y cuenta corriente.",
+  },
+  {
+    id: "ia",
+    label: "IA clínica",
+    routes: [],
+    status: "ready",
+    description: "Asistente integrado en paciente y consultas.",
+  },
+  {
+    id: "telemedicina",
+    label: "Telemedicina",
+    routes: ["/telemedicina"],
+    status: "lab",
+    description: "Videoconsulta (stub Jitsi).",
+  },
+  {
+    id: "configuracion",
+    label: "Configuración",
+    routes: ["/configuracion"],
+    status: "ready",
+    description: "Ajustes del consultorio y cumplimiento.",
+  },
+  {
+    id: "administracion",
+    label: "Administración",
+    routes: ["/secretaria/documentos", "/sala-espera"],
+    status: "ready",
+    description: "Secretaría, sala de espera y documentos admin.",
+  },
+  {
+    id: "pami",
+    label: "PAMI",
+    routes: ["/guia-pami", "/pami/planillas"],
+    status: "ready",
+    description: "Guía cabecera, planillas y vademécum.",
+  },
+  {
+    id: "integraciones",
+    label: "Integraciones",
+    routes: ["/datos"],
+    status: "ready",
+    description: "Importación, exportación y migraciones.",
+  },
+  {
+    id: "pharmacology",
+    label: "Farmacología",
+    routes: ["/herramientas/farmacologia"],
+    status: "ready",
+    description: "Guía CIE-10, síntomas y vademécum.",
+  },
+  {
+    id: "portal",
+    label: "Portal paciente",
+    routes: ["/portal", "/solicitar-turno"],
+    status: "ready",
+    description: "PWA paciente y reserva pública.",
+  },
+  {
+    id: "voice",
+    label: "Voz",
+    routes: [],
+    status: "ready",
+    description: "Dictado por voz en campos clínicos.",
+  },
+  {
+    id: "profesionales",
+    label: "Profesionales",
+    routes: ["/ingreso-profesionales"],
+    status: "ready",
+    description: "Alta y documentación de profesionales.",
+  },
+  {
+    id: "reportes",
+    label: "Reportes",
+    routes: ["/reportes"],
+    status: "ready",
+    description: "Informes operativos del consultorio.",
+  },
+];
+
+const MODULE_MAP = new Map(FEATURE_MODULES.map((m) => [m.id, m]));
+
+export function getFeatureModule(id: FeatureModuleId): FeatureModuleDef {
+  const mod = MODULE_MAP.get(id);
+  if (!mod) throw new Error(`Unknown feature module: ${id}`);
+  return mod;
+}
+
+export function listReadyFeatureModules(): FeatureModuleDef[] {
+  return FEATURE_MODULES.filter((m) => m.status === "ready");
+}

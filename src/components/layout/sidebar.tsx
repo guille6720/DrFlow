@@ -34,46 +34,37 @@ import type { UserRole } from "@/types/database";
 import { hasPermission } from "@/lib/permissions/roles";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
 import { useDashboardSidebar } from "@/components/layout/dashboard-sidebar-context";
+import { FEATURE_NAV_ITEMS, type FeatureNavItem } from "@/features/_shared/nav";
 
-type NavItem = {
-  href: string;
-  label: string;
+type NavItem = FeatureNavItem & {
   icon: typeof LayoutDashboard;
-  permission:
-    | "managePatients"
-    | "viewClinicalRecords"
-    | "issuePrescriptions"
-    | "viewPharmacology"
-    | "managePayments"
-    | "manageCashRegister"
-    | "manageWaitingRoom"
-    | "manageAdminDocuments"
-    | "manageStaff"
-    | "viewReports"
-    | "manageSettings"
-    | null;
 };
 
-const navItems: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: null },
-  { href: "/agenda", label: "Agenda", icon: Calendar, permission: null },
-  { href: "/sala-espera", label: "Sala de espera", icon: Armchair, permission: "manageWaitingRoom" },
-  { href: "/atenciones", label: "Atenciones", icon: ClipboardPlus, permission: null },
-  { href: "/pacientes", label: "Pacientes", icon: Users, permission: "managePatients" },
-  { href: "/caja", label: "Caja", icon: Banknote, permission: "manageCashRegister" },
-  { href: "/secretaria/documentos", label: "Docs administrativos", icon: FolderOpen, permission: "manageAdminDocuments" },
-  { href: "/ingreso-profesionales", label: "Ingreso de profesionales", icon: UserPlus, permission: "manageStaff" },
-  { href: "/historias", label: "Historia clínica", icon: FileText, permission: "viewClinicalRecords" },
-  { href: "/datos", label: "Importar / Exportar", icon: ArrowDownUp, permission: null },
-  { href: "/recetas", label: "Recetas y órdenes", icon: ScrollText, permission: "issuePrescriptions" },
-  { href: "/herramientas/farmacologia", label: "Guía farmacológica", icon: Pill, permission: "viewPharmacology" },
-  { href: "/guia-pami", label: "Guía cabecera PAMI", icon: HeartPulse, permission: null },
-  { href: "/pami/planillas", label: "Planillas PAMI", icon: ClipboardList, permission: "issuePrescriptions" },
-  { href: "/recordatorios", label: "Recordatorios", icon: Bell, permission: null },
-  { href: "/reportes", label: "Reportes", icon: BarChart3, permission: "viewReports" },
-  { href: "/ayuda", label: "Ayuda / Manual", icon: BookOpen, permission: null },
-  { href: "/configuracion", label: "Configuración", icon: Settings, permission: "manageSettings" },
-];
+const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
+  "/dashboard": LayoutDashboard,
+  "/agenda": Calendar,
+  "/sala-espera": Armchair,
+  "/atenciones": ClipboardPlus,
+  "/pacientes": Users,
+  "/caja": Banknote,
+  "/secretaria/documentos": FolderOpen,
+  "/ingreso-profesionales": UserPlus,
+  "/historias": FileText,
+  "/datos": ArrowDownUp,
+  "/recetas": ScrollText,
+  "/herramientas/farmacologia": Pill,
+  "/guia-pami": HeartPulse,
+  "/pami/planillas": ClipboardList,
+  "/recordatorios": Bell,
+  "/reportes": BarChart3,
+  "/ayuda": BookOpen,
+  "/configuracion": Settings,
+};
+
+const navItems: NavItem[] = FEATURE_NAV_ITEMS.map((item) => ({
+  ...item,
+  icon: NAV_ICONS[item.href] ?? LayoutDashboard,
+}));
 
 interface SidebarProps {
   clinicName?: string;

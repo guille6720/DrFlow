@@ -13,7 +13,7 @@ import { PwaRegister } from "@/components/pwa/pwa-register";
 import { UpdateBanner } from "@/components/updates/update-banner";
 import { TrialBanner } from "@/components/trial/trial-banner";
 import { UiThemeProvider } from "@/components/theme/ui-theme-provider";
-import { VoiceInputProvider } from "@/components/voice/voice-input-provider";
+import { VoiceInputProvider } from "@/features/voice";
 import { getDashboardShell, logAudit } from "@/lib/auth/session";
 import { canAccessRoute } from "@/lib/permissions/roles";
 import {

@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { EditConsultaForm } from "@/components/historias/edit-consulta-form";
+import { EditConsultaForm } from "@/features/historias";
 import {
   getActiveClinic,
   getActiveClinicId,

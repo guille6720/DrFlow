@@ -3,7 +3,7 @@ import Link from "next/link";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
-import { CashClosureView } from "@/components/caja/cash-closure-view";
+import { CashClosureView } from "@/features/caja";
 import {
   getActiveClinic,
   getActiveClinicId,

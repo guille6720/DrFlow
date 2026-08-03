@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
-import { PrescriptionsOrdersHub } from "@/components/recetas/prescriptions-orders-hub";
+import { PrescriptionsOrdersHub } from "@/features/recetas";
 import {
   getActiveClinic,
   getActiveClinicId,

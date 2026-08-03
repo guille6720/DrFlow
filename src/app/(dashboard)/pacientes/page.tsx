@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { SectorHero } from "@/components/ui/sector-hero";
 import { ListPagination, ListPaginationLabel } from "@/components/ui/list-pagination";
 import { ProminentSearchForm } from "@/components/ui/prominent-search-form";
-import { PatientsListCards } from "@/components/pacientes/patients-list-cards";
+import { PatientsListCards } from "@/features/pacientes";
 import {
   getActiveClinic,
   getActiveClinicId,

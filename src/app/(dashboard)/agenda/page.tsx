@@ -1,4 +1,4 @@
-import { AgendaView } from "@/components/agenda/agenda-view";
+import { AgendaView } from "@/features/agenda";
 import {
   getDashboardPageContext,
 } from "@/lib/auth/dashboard-page";

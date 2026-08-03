@@ -7,10 +7,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { SectorHero } from "@/components/ui/sector-hero";
 import { ListPagination, ListPaginationLabel } from "@/components/ui/list-pagination";
 import { ProminentSearchForm } from "@/components/ui/prominent-search-form";
-import {
-  ClinicalRecordsGroupedList,
-  type PatientRecordGroup,
-} from "@/components/historias/clinical-records-grouped-list";
+import { ClinicalRecordsGroupedList } from "@/features/historias";
+import type { PatientRecordGroup } from "@/components/historias/clinical-records-grouped-list";
 import {
   getActiveClinic,
   getActiveClinicId,
