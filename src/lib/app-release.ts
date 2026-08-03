@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.1",
+    date: "2026-08-03",
+    title: "Recetas y órdenes por paciente, ingreso de profesionales y consulta unificada",
+    highlights: [
+      "Hub Recetas y órdenes: buscá paciente, emití receta u orden en un solo lugar",
+      "Ingreso de profesionales con panel lateral, perfil, consultorio y rangos horarios",
+      "Registro de consulta con un solo campo Evolución y firma automática del médico",
+    ],
+  },
+  {
     version: "0.2.0",
     date: "2026-07-15",
     title: "Manual del médico, aviso de actualizaciones y menú clínico limpio",

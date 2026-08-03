@@ -5,7 +5,7 @@ import Link from "next/link";
 import { RefreshCw, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const STORAGE_KEY = "drflow_seen_build";
+const STORAGE_KEY = "drflow_seen_release";
 
 type ReleaseInfo = {
   version: string;
@@ -14,9 +14,30 @@ type ReleaseInfo = {
   highlights: string[];
 };
 
+type StoredRelease = {
+  version: string;
+  buildId: string;
+};
+
+function readStored(): StoredRelease | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredRelease;
+    if (parsed?.version && parsed?.buildId) return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(release: StoredRelease) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(release));
+}
+
 /**
  * Aviso cuando hay una nueva versión (navegador o PWA instalada).
- * Compara /api/version con el buildId guardado en este dispositivo.
+ * Compara /api/version con la versión guardada en este dispositivo.
  */
 export function UpdateBanner() {
   const [release, setRelease] = useState<ReleaseInfo | null>(null);
@@ -26,13 +47,21 @@ export function UpdateBanner() {
     try {
       const res = await fetch(`/api/version?t=${Date.now()}`, { cache: "no-store" });
       if (!res.ok) return;
+      const contentType = res.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) return;
+
       const data = (await res.json()) as ReleaseInfo;
-      const seen = localStorage.getItem(STORAGE_KEY);
-      if (!seen) {
-        localStorage.setItem(STORAGE_KEY, data.buildId);
+      const stored = readStored();
+
+      if (!stored) {
+        writeStored({ version: data.version, buildId: data.buildId });
         return;
       }
-      if (seen !== data.buildId) {
+
+      const changed =
+        stored.buildId !== data.buildId || stored.version !== data.version;
+
+      if (changed) {
         setRelease(data);
         setVisible(true);
       }
@@ -51,7 +80,6 @@ export function UpdateBanner() {
     document.addEventListener("visibilitychange", onVisible);
     const interval = window.setInterval(() => void check(), 5 * 60 * 1000);
 
-    // PWA: nueva SW → hay update
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.addEventListener("controllerchange", () => {
         void check();
@@ -71,12 +99,12 @@ export function UpdateBanner() {
   }, [check]);
 
   function dismiss() {
-    if (release) localStorage.setItem(STORAGE_KEY, release.buildId);
+    if (release) writeStored({ version: release.version, buildId: release.buildId });
     setVisible(false);
   }
 
   function reloadApp() {
-    if (release) localStorage.setItem(STORAGE_KEY, release.buildId);
+    if (release) writeStored({ version: release.version, buildId: release.buildId });
     window.location.reload();
   }
 
