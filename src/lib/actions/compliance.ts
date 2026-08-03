@@ -72,6 +72,7 @@ export async function exportPatientArcoBundle(patientId: string) {
         .from("appointments")
         .select("id, start_at, status, notes, booking_source")
         .eq("patient_id", patientId)
+        .eq("clinic_id", clinicId)
         .order("start_at", { ascending: false }),
       supabase
         .from("consent_records")

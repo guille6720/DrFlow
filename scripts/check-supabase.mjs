@@ -140,6 +140,27 @@ async function main() {
     console.log(`⚠ Verificación insurance_plan: HTTP ${planRes.status}`);
   }
 
+  const profileRes = await fetch(
+    `${url}/rest/v1/patient_clinical_profiles?select=patient_id&limit=1`,
+    {
+      headers: {
+        apikey: schemaKey,
+        Authorization: schemaAuth,
+      },
+    }
+  );
+  if (profileRes.status === 404 || profileRes.status === 406) {
+    const body = await profileRes.text();
+    if (body.includes("does not exist") || body.includes("relation")) {
+      console.log("❌ Tabla patient_clinical_profiles — migración 047 pendiente");
+      allOk = false;
+    }
+  } else if (profileRes.ok) {
+    console.log("✓ Tabla patient_clinical_profiles (Fase 10)");
+  } else {
+    console.log(`⚠ Verificación patient_clinical_profiles: HTTP ${profileRes.status}`);
+  }
+
   // RPC pública (404 = no expuesta; 400/500 con mensaje de negocio = existe)
   const rpc = await fetch(`${url}/rest/v1/rpc/submit_public_booking`, {
     method: "POST",

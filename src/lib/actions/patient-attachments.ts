@@ -194,7 +194,11 @@ export async function deletePatientClinicalDocument(id: string) {
 
   await supabase.storage.from(BUCKET).remove([attachment.file_path]);
 
-  const { error } = await supabase.from("patient_attachments").delete().eq("id", id);
+  const { error } = await supabase
+    .from("patient_attachments")
+    .delete()
+    .eq("id", id)
+    .eq("clinic_id", access.clinicId);
   if (error) return { error: error.message };
 
   await logAudit({
@@ -415,7 +419,11 @@ export async function importClinicalPdfDocument(
 
         if (insertResult.error && insertResult.created === 0) {
           await supabase.storage.from(BUCKET).remove([filePath]);
-          await supabase.from("patient_attachments").delete().eq("id", attachment.id);
+          await supabase
+            .from("patient_attachments")
+            .delete()
+            .eq("id", attachment.id)
+            .eq("clinic_id", access.clinicId);
           return { success: false, fileName: originalName, error: insertResult.error };
         }
 

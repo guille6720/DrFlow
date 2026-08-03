@@ -13,6 +13,7 @@ import {
 } from "@/lib/utils/hce-export-parse";
 import { sanitizeText } from "@/lib/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
+import { upsertPatientClinicalProfile } from "@/lib/server/patient-clinical-profile";
 
 async function requireTeamsJsonlImportAccess() {
   const clinicId = await getActiveClinicId();
@@ -34,12 +35,12 @@ async function findPatientByConsumerRef(
   consumerRef: string
 ) {
   const { data } = await supabase
-    .from("patients")
-    .select("id")
+    .from("patient_clinical_profiles")
+    .select("patient_id")
     .eq("clinic_id", clinicId)
     .ilike("notes", `%${consumerRef}%`)
     .maybeSingle();
-  return data?.id ?? null;
+  return data?.patient_id ?? null;
 }
 
 async function resolvePatientForRow(
@@ -73,19 +74,19 @@ async function resolvePatientForRow(
   if ("error" in result) return { error: result.error };
 
   const noteLine = `Import ${row.paciente_id}`;
-  const { data: patient } = await supabase
-    .from("patients")
+  const { data: profile } = await supabase
+    .from("patient_clinical_profiles")
     .select("notes")
-    .eq("id", result.patientId)
-    .single();
-  if (!patient?.notes?.includes(row.paciente_id)) {
-    const notes = patient?.notes?.trim()
-      ? `${patient.notes.trim()}\n${noteLine}`
+    .eq("patient_id", result.patientId)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+  if (!profile?.notes?.includes(row.paciente_id)) {
+    const notes = profile?.notes?.trim()
+      ? `${profile.notes.trim()}\n${noteLine}`
       : noteLine;
-    await supabase
-      .from("patients")
-      .update({ notes: sanitizeText(notes) })
-      .eq("id", result.patientId);
+    await upsertPatientClinicalProfile(supabase, result.patientId, clinicId, {
+      notes: sanitizeText(notes),
+    });
   }
 
   return { patientId: result.patientId, created: result.created };

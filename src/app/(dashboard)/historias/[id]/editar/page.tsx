@@ -41,7 +41,7 @@ export default async function EditarHistoriaPage({
   if (!record) notFound();
 
   const [patientRes, templatesRes] = await Promise.all([
-    supabase.from("patients").select("*").eq("id", record.patient_id).maybeSingle(),
+    supabase.from("patients").select("*").eq("id", record.patient_id).eq("clinic_id", clinicId).maybeSingle(),
     supabase
       .from("clinical_templates")
       .select("*")

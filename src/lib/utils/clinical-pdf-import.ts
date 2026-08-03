@@ -21,7 +21,7 @@ export async function findOrCreatePatientFromExtract(
 
   if (existing) {
     if (!existing.is_active) {
-      await supabase.from("patients").update({ is_active: true }).eq("id", existing.id);
+      await supabase.from("patients").update({ is_active: true }).eq("id", existing.id).eq("clinic_id", clinicId);
     }
     return {
       patientId: existing.id,
