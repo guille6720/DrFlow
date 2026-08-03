@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { PathologyTypeahead } from "@/components/pharmacology/pathology-typeahead";
@@ -23,7 +25,15 @@ import type {
 } from "@/types/pharmacology";
 import type { Clinic, UserRole } from "@/types/database";
 import { cn } from "@/lib/utils/cn";
-import { Activity, BookOpen, Stethoscope } from "lucide-react";
+import {
+  appendToConsultationEvolution,
+  buildConsultaHref,
+  consultationDraftKey,
+  formatVademecumForEvolution,
+  parseConsultationDraftContext,
+  pathologyDrugToEvolutionLine,
+} from "@/lib/utils/consultation-draft";
+import { Activity, ArrowLeft, BookOpen, Check, Stethoscope } from "lucide-react";
 
 interface Props {
   clinics: { clinic_id: string; clinic?: Clinic }[];
@@ -40,6 +50,16 @@ export function PharmacologySearchView({
   userName,
   initialMode = "pathology",
 }: Props) {
+  const searchParams = useSearchParams();
+  const consultationContext = useMemo(
+    () => parseConsultationDraftContext(searchParams),
+    [searchParams]
+  );
+  const draftKey = useMemo(
+    () => (consultationContext ? consultationDraftKey(consultationContext) : null),
+    [consultationContext]
+  );
+
   const [mode, setMode] = useState<PharmacologySearchMode>(initialMode);
   const [selected, setSelected] = useState<PathologySearchResult | null>(null);
   const [symptoms, setSymptoms] = useState<SymptomSearchResult[]>([]);
@@ -53,6 +73,19 @@ export function PharmacologySearchView({
   const [vademecumLoading, setVademecumLoading] = useState(false);
   const [vademecumError, setVademecumError] = useState<string | null>(null);
   const [vademecumQueryLength, setVademecumQueryLength] = useState(0);
+  const [addedMessage, setAddedMessage] = useState<string | null>(null);
+  const [lastAddedKey, setLastAddedKey] = useState<string | null>(null);
+
+  function handleAddToEvolution(line: string, itemKey: string) {
+    if (!draftKey) return;
+    appendToConsultationEvolution(draftKey, line);
+    setLastAddedKey(itemKey);
+    setAddedMessage("Agregado a la evolución de la consulta");
+    window.setTimeout(() => {
+      setAddedMessage(null);
+      setLastAddedKey(null);
+    }, 2500);
+  }
 
   function fetchPathologyMatches(nextSymptoms: SymptomSearchResult[]) {
     if (nextSymptoms.length === 0) {
@@ -136,6 +169,28 @@ export function PharmacologySearchView({
         role={role}
         userName={userName}
       />
+
+      {consultationContext && (
+        <div className="mx-4 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-teal-500/40 bg-teal-950/50 px-4 py-3 sm:mx-6">
+          <Link
+            href={buildConsultaHref(consultationContext)}
+            className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-teal-500"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Volver a consulta en curso
+          </Link>
+          <p className="text-sm text-teal-100">
+            {addedMessage ? (
+              <span className="inline-flex items-center gap-1.5 font-medium text-teal-200">
+                <Check className="h-4 w-4" />
+                {addedMessage}
+              </span>
+            ) : (
+              "Hacé clic en un medicamento para agregarlo a la evolución."
+            )}
+          </p>
+        </div>
+      )}
 
       <div className="space-y-6 p-4 sm:p-6">
         <div className="flex flex-wrap gap-2">
@@ -232,6 +287,16 @@ export function PharmacologySearchView({
             loading={vademecumLoading}
             error={vademecumError}
             queryLength={vademecumQueryLength}
+            onAddToEvolution={
+              draftKey
+                ? (item) =>
+                    handleAddToEvolution(
+                      formatVademecumForEvolution(item),
+                      `vademecum-${item.id}`
+                    )
+                : undefined
+            }
+            lastAddedKey={lastAddedKey}
           />
         ) : (
           <DrugTreatmentList
@@ -241,6 +306,15 @@ export function PharmacologySearchView({
             pathologyName={selected?.name}
             cie10Code={selected?.cie10_code}
             searchMode={mode === "symptoms" ? "symptoms" : "pathology"}
+            onAddToEvolution={
+              draftKey
+                ? (pd) => {
+                    const line = pathologyDrugToEvolutionLine(pd);
+                    if (line) handleAddToEvolution(line, `drug-${pd.id}`);
+                  }
+                : undefined
+            }
+            lastAddedKey={lastAddedKey}
           />
         )}
       </div>

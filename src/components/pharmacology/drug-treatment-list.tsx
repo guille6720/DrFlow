@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { TREATMENT_LINE_LABELS, type PathologyDrug, type PharmacologySearchMode } from "@/types/pharmacology";
-import { AlertTriangle, Pill, Loader2 } from "lucide-react";
+import { AlertTriangle, Check, Pill, Loader2, Plus } from "lucide-react";
 
 interface DrugTreatmentListProps {
   items: PathologyDrug[];
@@ -12,6 +12,8 @@ interface DrugTreatmentListProps {
   pathologyName?: string;
   cie10Code?: string;
   searchMode?: PharmacologySearchMode;
+  onAddToEvolution?: (item: PathologyDrug) => void;
+  lastAddedKey?: string | null;
 }
 
 function groupByTreatmentLine(items: PathologyDrug[]) {
@@ -31,6 +33,8 @@ export function DrugTreatmentList({
   pathologyName,
   cie10Code,
   searchMode = "pathology",
+  onAddToEvolution,
+  lastAddedKey,
 }: DrugTreatmentListProps) {
   if (loading) {
     return (
@@ -84,6 +88,11 @@ export function DrugTreatmentList({
         <strong>Referencia orientativa:</strong> Esta información no sustituye guías clínicas oficiales,
         formularios institucionales ni el criterio médico. Verificar interacciones, contraindicaciones y
         vademécum local antes de prescribir.
+        {onAddToEvolution ? (
+          <span className="mt-1 block font-medium">
+            Clic en un fármaco para agregarlo a la evolución de la consulta en curso.
+          </span>
+        ) : null}
       </div>
 
       {groups.map(([line, drugs]) => (
@@ -98,16 +107,35 @@ export function DrugTreatmentList({
             {drugs.map((pd) => {
               const drug = Array.isArray(pd.drugs) ? pd.drugs[0] : pd.drugs;
               if (!drug) return null;
-              return (
-                <li key={pd.id} className="px-5 py-4 hover:bg-slate-50/50 transition-colors">
+              const itemKey = `drug-${pd.id}`;
+              const justAdded = lastAddedKey === itemKey;
+              const interactive = Boolean(onAddToEvolution);
+
+              const content = (
+                <>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-slate-900">{drug.name}</p>
                       <p className="text-sm text-slate-600">{drug.active_ingredient}</p>
                     </div>
-                    <Badge variant="teal" className="font-mono text-xs">
-                      {drug.atc_code}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {interactive ? (
+                        justAdded ? (
+                          <span className="inline-flex items-center gap-1 rounded-md bg-teal-100 px-2 py-1 text-xs font-medium text-teal-800">
+                            <Check className="h-3.5 w-3.5" />
+                            Agregado
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-md bg-teal-50 px-2 py-1 text-xs font-medium text-teal-700 ring-1 ring-teal-200">
+                            <Plus className="h-3.5 w-3.5" />
+                            Agregar
+                          </span>
+                        )
+                      ) : null}
+                      <Badge variant="teal" className="font-mono text-xs">
+                        {drug.atc_code}
+                      </Badge>
+                    </div>
                   </div>
                   <div className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
                     {drug.atc_description && (
@@ -148,6 +176,28 @@ export function DrugTreatmentList({
                       {pd.indication_notes}
                     </p>
                   )}
+                </>
+              );
+
+              if (!interactive) {
+                return (
+                  <li key={pd.id} className="px-5 py-4 hover:bg-slate-50/50 transition-colors">
+                    {content}
+                  </li>
+                );
+              }
+
+              return (
+                <li key={pd.id}>
+                  <button
+                    type="button"
+                    onClick={() => onAddToEvolution?.(pd)}
+                    className={`w-full px-5 py-4 text-left transition-colors hover:bg-teal-50/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40 ${
+                      justAdded ? "bg-teal-50" : "hover:bg-slate-50/50"
+                    }`}
+                  >
+                    {content}
+                  </button>
                 </li>
               );
             })}

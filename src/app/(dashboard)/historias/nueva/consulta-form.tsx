@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout/header";
@@ -20,6 +20,13 @@ import {
 import type { Clinic, Patient, Professional, UserRole } from "@/types/database";
 import { ArrowLeft, AlertTriangle, Pill } from "lucide-react";
 import { backHrefFromClinicalSubpage } from "@/lib/utils/clinical-navigation";
+import {
+  buildPharmacologyHrefFromConsultation,
+  clearConsultationEvolution,
+  consultationDraftKey,
+  readConsultationEvolution,
+  saveConsultationEvolution,
+} from "@/lib/utils/consultation-draft";
 
 interface Props {
   clinics: { clinic_id: string; clinic?: Clinic }[];
@@ -63,9 +70,31 @@ export default function NuevaConsultaForm({
   const [showPrescription, setShowPrescription] = useState(false);
   const [professionalId, setProfessionalId] = useState(defaultProfessional);
   const [professionalSignature, setProfessionalSignature] = useState("");
+  const [evolution, setEvolution] = useState("");
 
   const selectedPatient = patients.find((p) => p.id === defaultPatient);
   const fromAppointment = Boolean(appointmentId);
+
+  const consultationContext = useMemo(() => {
+    if (!defaultPatient) return null;
+    const proId = fromAppointment ? defaultProfessional : professionalId;
+    return {
+      patientId: defaultPatient,
+      appointmentId: appointmentId || undefined,
+      professionalId: proId || undefined,
+    };
+  }, [
+    defaultPatient,
+    appointmentId,
+    fromAppointment,
+    defaultProfessional,
+    professionalId,
+  ]);
+
+  const draftKey = useMemo(
+    () => (consultationContext ? consultationDraftKey(consultationContext) : null),
+    [consultationContext]
+  );
 
   function signatureForProfessionalId(id: string): string {
     const pro = professionals.find((p) => p.id === id);
@@ -84,6 +113,45 @@ export default function NuevaConsultaForm({
     if (id) setProfessionalSignature(signatureForProfessionalId(id));
   }, [fromAppointment, defaultProfessional, professionalId, professionals]);
 
+  useEffect(() => {
+    if (!draftKey) return;
+    setEvolution(readConsultationEvolution(draftKey));
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (!draftKey) return;
+    const timer = window.setTimeout(() => saveConsultationEvolution(draftKey, evolution), 300);
+    return () => window.clearTimeout(timer);
+  }, [evolution, draftKey]);
+
+  useEffect(() => {
+    if (draftKey == null) return;
+    const storageKey: string = draftKey;
+    function syncFromStorage() {
+      const saved = readConsultationEvolution(storageKey);
+      setEvolution((prev) => (prev !== saved ? saved : prev));
+    }
+    document.addEventListener("visibilitychange", syncFromStorage);
+    window.addEventListener("focus", syncFromStorage);
+    return () => {
+      document.removeEventListener("visibilitychange", syncFromStorage);
+      window.removeEventListener("focus", syncFromStorage);
+    };
+  }, [draftKey]);
+
+  function pharmacologyHref(mode?: "symptoms" | "pathology" | "vademecum") {
+    if (!consultationContext) {
+      return mode && mode !== "pathology"
+        ? `/herramientas/farmacologia?mode=${mode}`
+        : "/herramientas/farmacologia";
+    }
+    return buildPharmacologyHrefFromConsultation(consultationContext, mode);
+  }
+
+  function flushEvolutionDraft() {
+    if (draftKey) saveConsultationEvolution(draftKey, evolution);
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
@@ -99,6 +167,7 @@ export default function NuevaConsultaForm({
     if (result.error) {
       setError(result.error);
     } else if (result.data) {
+      if (draftKey) clearConsultationEvolution(draftKey);
       router.push(`/historias/${result.data.id}`);
     }
   }
@@ -106,8 +175,6 @@ export default function NuevaConsultaForm({
   function applyTemplate(templateId: string) {
     const t = templates.find((x) => x.id === templateId);
     if (!t) return;
-    const form = document.getElementById("clinical-form") as HTMLFormElement;
-    if (!form) return;
     const unified = [
       t.chief_complaint_template,
       t.diagnosis_template,
@@ -116,7 +183,7 @@ export default function NuevaConsultaForm({
     ]
       .filter(Boolean)
       .join("\n\n");
-    (form.elements.namedItem("evolution") as HTMLTextAreaElement).value = unified;
+    setEvolution(unified);
   }
 
   return (
@@ -207,18 +274,28 @@ export default function NuevaConsultaForm({
               </div>
             )}
 
-            <Textarea name="evolution" label="Evolución" required rows={10} voiceInput />
+            <Textarea
+              name="evolution"
+              label="Evolución"
+              required
+              rows={10}
+              voiceInput
+              value={evolution}
+              onChange={(e) => setEvolution(e.target.value)}
+            />
 
             <div className="flex flex-wrap gap-3 text-sm">
               <Link
-                href="/herramientas/farmacologia?mode=symptoms"
+                href={pharmacologyHref("symptoms")}
+                onClick={flushEvolutionDraft}
                 className="inline-flex items-center gap-1.5 text-violet-700 hover:underline"
               >
                 <Pill className="h-4 w-4" />
                 Buscar por síntomas
               </Link>
               <Link
-                href="/herramientas/farmacologia"
+                href={pharmacologyHref()}
+                onClick={flushEvolutionDraft}
                 className="inline-flex items-center gap-1.5 text-blue-700 hover:underline"
               >
                 <Pill className="h-4 w-4" />
