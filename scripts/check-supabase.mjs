@@ -174,6 +174,26 @@ async function main() {
     console.log(`⚠ RPC submit_public_booking: HTTP ${rpc.status} — ${rpcBody.slice(0, 120)}`);
   }
 
+  const occ = await fetch(`${url}/rest/v1/rpc/get_public_booking_occupancy`, {
+    method: "POST",
+    headers: {
+      apikey: anon,
+      Authorization: `Bearer ${anon}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      p_slug: "__drflow_check__",
+      p_professional_id: "00000000-0000-0000-0000-000000000001",
+    }),
+  });
+  const occBody = await occ.text();
+  if (occ.status === 404 || occBody.includes("PGRST202")) {
+    console.log("❌ Función get_public_booking_occupancy no existe — migración 045 pendiente (npx supabase db push)");
+    allOk = false;
+  } else {
+    console.log("✓ RPC get_public_booking_occupancy existe");
+  }
+
   console.log(allOk ? "\n✅ Supabase listo para DrFlow\n" : "\n⚠ Hay pendientes — revisá migraciones en docs/LOCAL_SETUP.md\n");
   process.exit(allOk ? 0 : 1);
 }

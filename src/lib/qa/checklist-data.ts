@@ -113,7 +113,7 @@ export const QA_CHECKLIST: QaChecklistSection[] = [
       { id: "book-link", label: "Link público activo en Configuración", href: "/configuracion" },
       { id: "book-slots", label: "Paciente ve turnos disponibles (requiere horarios cargados)", href: "/configuracion" },
       { id: "book-submit", label: "Solicitud crea turno pending en agenda" },
-      { id: "book-empty", label: "Empty state sin filtrar migraciones SQL", href: "/solicitar-turno/demo" },
+      { id: "book-empty", label: "Empty state sin filtrar migraciones SQL", href: "/solicitar-turno/centro-medico-norte-turnos" },
     ],
   },
   {
