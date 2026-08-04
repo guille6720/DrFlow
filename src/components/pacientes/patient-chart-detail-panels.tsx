@@ -12,6 +12,7 @@ import type {
 import type { ClinicalDocumentItem } from "@/components/historias/clinical-documents-panel";
 import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
 import type { PrescriptionMedication } from "@/types/prescription";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 
 type BaseProps = {
   patient: PatientChartPatient;
@@ -93,7 +94,7 @@ export function PatientChartVitalsPanel({ chart, patientId, canEditClinical }: B
       title="Signos vitales"
       action={
         canEditClinical ? (
-          <Link href={`/historias/nueva?patient=${patientId}`} className="drflow-patient-chart-link text-sm">
+          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })} className="drflow-patient-chart-link text-sm">
             Registrar
           </Link>
         ) : null

@@ -90,6 +90,7 @@ export default async function PacienteDetailPage({
             <PatientWorkspaceContent
               clinicId={clinicId}
               patient={patient}
+              patientRecord={patient}
               patientId={id}
               initialTab={initialTab}
               canEditClinical={canEditClinical}

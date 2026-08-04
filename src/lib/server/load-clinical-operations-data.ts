@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { LiveAppointment } from "@/components/dashboard/consultorio-live-panel";
 import type { ClinicalOperationsPayload } from "@/lib/utils/clinical-operations-types";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 
 type Params = {
   clinicId: string;
@@ -95,7 +96,11 @@ export async function loadClinicalOperationsData(
       at: appt.start_at,
       patientName: name,
       href: appt.patient_id
-        ? `/historias/nueva?patient=${appt.patient_id}&appointment=${appt.id}`
+        ? buildPatientWorkspaceUrl(appt.patient_id, {
+            tab: "soap",
+            action: "nueva",
+            appointment: appt.id,
+          })
         : "/agenda?view=day",
     });
   }

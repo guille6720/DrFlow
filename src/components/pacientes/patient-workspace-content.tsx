@@ -13,6 +13,7 @@ type Props = {
     regular_medication: string | null;
     notes: string | null;
   };
+  patientRecord: import("@/types/database").Patient;
   patientId: string;
   initialTab: PatientWorkspaceTabId;
   canEditClinical: boolean;
@@ -23,6 +24,7 @@ type Props = {
 export async function PatientWorkspaceContent({
   clinicId,
   patient,
+  patientRecord,
   patientId,
   initialTab,
   canEditClinical,
@@ -49,6 +51,8 @@ export async function PatientWorkspaceContent({
       portalSlug={workspace.portalSlug}
       doctorInfo={workspace.doctorInfo}
       patientShare={workspace.patientShare}
+      templates={workspace.templates}
+      patientRecord={patientRecord}
       arcoExport={
         canManagePatients ? (
           <PatientArcoExportButton

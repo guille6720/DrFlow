@@ -13,8 +13,13 @@ describe("parsePatientWorkspaceTab", () => {
   });
 
   it("accepts valid tab ids", () => {
-    expect(parsePatientWorkspaceTab("evoluciones")).toBe("evoluciones");
+    expect(parsePatientWorkspaceTab("soap")).toBe("soap");
     expect(parsePatientWorkspaceTab("timeline")).toBe("timeline");
+  });
+
+  it("resolves legacy tab aliases", () => {
+    expect(parsePatientWorkspaceTab("evoluciones")).toBe("soap");
+    expect(parsePatientWorkspaceTab("vitales")).toBe("resumen");
   });
 });
 
@@ -29,13 +34,13 @@ describe("patientWorkspacePath", () => {
 });
 
 describe("patientClinicalHistoryPath", () => {
-  it("points to evoluciones workspace tab", () => {
-    expect(patientClinicalHistoryPath("xyz")).toBe("/pacientes/xyz?tab=evoluciones");
+  it("points to soap workspace tab", () => {
+    expect(patientClinicalHistoryPath("xyz")).toBe("/pacientes/xyz?tab=soap");
   });
 });
 
 describe("LEGACY_TAB_ALIASES", () => {
-  it("maps historia to evoluciones", () => {
-    expect(LEGACY_TAB_ALIASES.historia).toBe("evoluciones");
+  it("maps historia to soap", () => {
+    expect(LEGACY_TAB_ALIASES.historia).toBe("soap");
   });
 });

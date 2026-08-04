@@ -150,11 +150,11 @@ describe("buildClinicalTimeline", () => {
     expect(consult?.href).toBe("/historias/rec-1");
   });
 
-  it("maps referral orders to interconsultas tab", () => {
+  it("maps referral orders to ordenes tab", () => {
     const events = buildClinicalTimeline(baseInput);
     const referral = events.find((e) => e.id === "o-ord-2");
     expect(referral?.type).toBe("referral");
-    expect(referral?.href).toBe("/pacientes/pat-1?tab=interconsultas");
+    expect(referral?.href).toBe("/pacientes/pat-1?tab=ordenes");
   });
 });
 

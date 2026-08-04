@@ -10,6 +10,7 @@ import type {
 import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
 import type { MedicationCard } from "@/lib/utils/patient-chart-types";
 import type { PrescriptionMedication } from "@/types/prescription";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 
 type Props = {
   patient: PatientChartPatient;
@@ -44,7 +45,7 @@ export function PatientChartGridPrimary({
         title="Problemas activos"
         action={
           canEditClinical ? (
-            <Link href={`/historias/nueva?patient=${patientId}`} className="drflow-patient-chart-link text-sm">
+            <Link href={buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })} className="drflow-patient-chart-link text-sm">
               <Plus className="h-3.5 w-3.5" /> Agregar
             </Link>
           ) : null

@@ -87,6 +87,6 @@ export async function savePatientClinicalIndicators(
   if (error) return { error: error.message };
 
   revalidatePath(`/pacientes/${patientId}`);
-  revalidatePath(`/pacientes/${patientId}?tab=evoluciones`);
+  revalidatePath(`/pacientes/${patientId}?tab=soap`);
   return {};
 }

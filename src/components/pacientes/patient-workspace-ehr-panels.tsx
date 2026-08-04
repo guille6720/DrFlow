@@ -13,6 +13,7 @@ import type { PatientEhrWorkspaceData } from "@/lib/server/load-patient-ehr-data
 import { orderTypeLabel } from "@/components/recetas/prescriptions-orders-utils";
 import { PatientClinicalTimeline } from "@/components/pacientes/patient-clinical-timeline";
 import { patientWorkspacePath } from "@/lib/constants/patient-workspace-tabs";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 
 type EhrProps = {
   ehr: PatientEhrWorkspaceData;
@@ -45,8 +46,8 @@ export function PatientWorkspaceDiagnosticsPanel({ ehr, patientId }: EhrProps) {
         showDiagnostics
         showTreatments={false}
       />
-      <Link href={patientWorkspacePath(patientId, "evoluciones")} className="mt-4 inline-block text-sm text-teal-700 hover:underline">
-        Ver evoluciones completas →
+      <Link href={patientWorkspacePath(patientId, "soap")} className="mt-4 inline-block text-sm text-teal-700 hover:underline">
+        Ver consultas SOAP →
       </Link>
     </Card>
   );
@@ -60,7 +61,7 @@ export function PatientWorkspacePrescriptionsPanel({ ehr, patientId, canIssue }:
       title="Recetas"
       action={
         canIssue ? (
-          <Link href={`/recetas?patient=${patientId}`}>
+          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}>
             <Button size="sm" type="button">
               <Plus className="h-4 w-4" />
               Nueva receta
@@ -93,7 +94,7 @@ export function PatientWorkspaceOrdersPanel({ ehr, patientId, canIssue }: EhrPro
       title="Órdenes médicas"
       action={
         canIssue ? (
-          <Link href={`/recetas?patient=${patientId}&tipo=orden`}>
+          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "ordenes", action: "nueva" })}>
             <Button size="sm" type="button">
               <Plus className="h-4 w-4" />
               Nueva orden

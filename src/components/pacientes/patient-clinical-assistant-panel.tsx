@@ -9,6 +9,7 @@ import type { PatientChartViewProps } from "@/components/pacientes/patient-chart
 import type { PatientEhrWorkspaceData } from "@/lib/server/load-patient-ehr-data";
 import { usePatientClinicalAssistant } from "@/lib/hooks/use-patient-clinical-assistant";
 import { patientWorkspacePath } from "@/lib/constants/patient-workspace-tabs";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 
 type Props = Pick<PatientChartViewProps, "chart" | "patient" | "patientId" | "canIssue"> & {
   ehr: PatientEhrWorkspaceData;
@@ -134,7 +135,7 @@ export function PatientClinicalAssistantPanel({ chart, patient, patientId, ehr, 
 
       <Card title="Acciones rápidas">
         <div className="flex flex-wrap gap-2">
-          <Link href={`/historias/nueva?patient=${patientId}`}>
+          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })}>
             <Button type="button" size="sm" variant="outline">
               <Stethoscope className="h-4 w-4" />
               Nueva consulta
@@ -147,7 +148,7 @@ export function PatientClinicalAssistantPanel({ chart, patient, patientId, ehr, 
             </Button>
           </Link>
           {canIssue ? (
-            <Link href={`/recetas?patient=${patientId}`}>
+            <Link href={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}>
               <Button type="button" size="sm" variant="outline">
                 <ScrollText className="h-4 w-4" />
                 Nueva receta

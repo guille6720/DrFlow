@@ -8,6 +8,7 @@ import {
   Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 import { patientWorkspacePath } from "@/lib/constants/patient-workspace-tabs";
 
 type Props = {
@@ -17,13 +18,16 @@ type Props = {
 };
 
 export function PatientChartStickyBar({ patientId, arcoExport, workspaceMode = false }: Props) {
-  const hcHref = patientWorkspacePath(patientId, "evoluciones");
+  const soapHref = patientWorkspacePath(patientId, "soap");
   const recetaHref = workspaceMode
-    ? patientWorkspacePath(patientId, "recetas")
+    ? buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })
     : `/recetas?patient=${patientId}`;
   const ordenHref = workspaceMode
-    ? patientWorkspacePath(patientId, "ordenes")
+    ? buildPatientWorkspaceUrl(patientId, { tab: "ordenes", action: "nueva" })
     : `/recetas?patient=${patientId}&tipo=orden`;
+  const nuevaConsultaHref = workspaceMode
+    ? buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })
+    : `/historias/nueva?patient=${patientId}`;
   const estudiosHref = workspaceMode
     ? patientWorkspacePath(patientId, "estudios")
     : `#chart-estudios`;
@@ -34,16 +38,16 @@ export function PatientChartStickyBar({ patientId, arcoExport, workspaceMode = f
   return (
     <div className="drflow-patient-chart-sticky-bar">
       <div className="drflow-patient-chart-sticky-inner">
-        <Link href={`/historias/nueva?patient=${patientId}`}>
+        <Link href={nuevaConsultaHref}>
           <Button size="sm" type="button">
             <Stethoscope className="h-4 w-4" />
             Nueva consulta
           </Button>
         </Link>
-        <Link href={hcHref}>
+        <Link href={soapHref}>
           <Button size="sm" variant="outline" type="button">
             <ClipboardList className="h-4 w-4" />
-            Evoluciones
+            SOAP
           </Button>
         </Link>
         <Link href={recetaHref}>
@@ -58,7 +62,7 @@ export function PatientChartStickyBar({ patientId, arcoExport, workspaceMode = f
             Órdenes
           </Button>
         </Link>
-        <Link href={`/historias/nueva?patient=${patientId}`}>
+        <Link href={nuevaConsultaHref}>
           <Button size="sm" variant="outline" type="button">
             <FileText className="h-4 w-4" />
             Certificado

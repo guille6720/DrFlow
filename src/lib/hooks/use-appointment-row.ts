@@ -8,6 +8,7 @@ import {
   buildAppointmentConfirmationMessage,
 } from "@/lib/utils/appointment-messages";
 import { buildWhatsAppUrl } from "@/lib/utils/whatsapp";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 import type { Appointment } from "@/types/database";
 
 export function useAppointmentRow(appointment: Appointment) {
@@ -51,7 +52,12 @@ export function useAppointmentRow(appointment: Appointment) {
     setCancelOpen(false);
   }
 
-  const startHref = `/historias/nueva?patient=${appointment.patient_id}&appointment=${appointment.id}&professional=${appointment.professional_id}`;
+  const startHref = buildPatientWorkspaceUrl(appointment.patient_id, {
+    tab: "soap",
+    action: "nueva",
+    appointment: appointment.id,
+    professional: appointment.professional_id,
+  });
 
   const cancelledByLabel =
     appointment.status === "cancelled"

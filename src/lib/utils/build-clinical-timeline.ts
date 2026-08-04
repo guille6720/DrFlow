@@ -1,5 +1,6 @@
 import { orderTypeLabel } from "@/components/recetas/prescriptions-orders-utils";
 import { patientWorkspacePath } from "@/lib/constants/patient-workspace-tabs";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 import type {
   ClinicalTimelineEvent,
   ClinicalTimelineEventType,
@@ -145,7 +146,7 @@ export function buildClinicalTimeline(input: ClinicalTimelineInput): ClinicalTim
       type: "prescription",
       at: rx.issued_at ?? rx.created_at,
       title: rx.label,
-      href: `/recetas?patient=${patientId}`,
+      href: buildPatientWorkspaceUrl(patientId, { tab: "recetas" }),
     });
   }
 
@@ -160,8 +161,8 @@ export function buildClinicalTimeline(input: ClinicalTimelineInput): ClinicalTim
       subtitle: order.order_text.trim().slice(0, 120) || undefined,
       href:
         type === "referral"
-          ? patientWorkspacePath(patientId, "interconsultas")
-          : `/recetas?patient=${patientId}&tipo=orden`,
+          ? patientWorkspacePath(patientId, "ordenes")
+          : buildPatientWorkspaceUrl(patientId, { tab: "ordenes" }),
       recordId: order.clinical_record_id ?? undefined,
     });
   }

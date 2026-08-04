@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { PatientWorkspaceTabBar } from "@/components/pacientes/patient-workspace-tab-bar";
 import { PatientWorkspacePanelSkeleton } from "@/components/pacientes/patient-workspace-panel-skeleton";
+import { PatientWorkspaceSheets } from "@/components/pacientes/workspace/patient-workspace-sheets";
 import type { PatientWorkspaceViewProps } from "@/components/pacientes/patient-workspace-types";
 import {
   PatientWorkspaceChartPanel,
@@ -13,7 +14,6 @@ import {
   PatientWorkspaceOrdersPanel,
   PatientWorkspacePrescriptionsPanel,
 } from "@/components/pacientes/patient-workspace-ehr-panels";
-import { PatientWorkspacePlaceholderPanel } from "@/components/pacientes/patient-workspace-placeholder-panel";
 import type { PatientWorkspaceTabId } from "@/lib/constants/patient-workspace-tabs";
 import { usePatientWorkspaceTab } from "@/lib/hooks/use-patient-workspace-tab";
 
@@ -61,14 +61,13 @@ const CHART_FOCUS_TABS: Partial<Record<PatientWorkspaceTabId, PatientChartFocus>
   problemas: "problemas",
   medicacion: "medicacion",
   alergias: "alergias",
-  vitales: "vitales",
   estudios: "estudios",
   archivos: "archivos",
   vacunas: "vacunas",
 };
 
 export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
-  const { ehr, initialTab, ...chartProps } = props;
+  const { ehr, initialTab, templates, patientRecord, ...chartProps } = props;
   const { activeTab, setTab } = usePatientWorkspaceTab(chartProps.patientId, initialTab);
 
   const chartFocus = CHART_FOCUS_TABS[activeTab];
@@ -80,7 +79,7 @@ export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
       <div className="drflow-patient-workspace-panel">
         {activeTab === "resumen" ? <PatientChartView {...chartProps} workspaceMode /> : null}
 
-        {activeTab === "evoluciones" ? (
+        {activeTab === "soap" ? (
           <PatientWorkspaceEhrPanel ehr={ehr} patientId={chartProps.patientId} />
         ) : null}
 
@@ -110,15 +109,6 @@ export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
 
         {activeTab === "timeline" ? <PatientWorkspaceTimelinePanel ehr={ehr} /> : null}
 
-        {activeTab === "interconsultas" ? (
-          <PatientWorkspacePlaceholderPanel
-            tab="interconsultas"
-            patientId={chartProps.patientId}
-            title="Interconsultas"
-            description="Derivaciones y respuestas de otros especialistas, centralizadas en el expediente del paciente."
-          />
-        ) : null}
-
         {activeTab === "auditoria" ? (
           <PatientClinicalAuditPanel patientId={chartProps.patientId} />
         ) : null}
@@ -133,6 +123,18 @@ export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
           />
         ) : null}
       </div>
+
+      <PatientWorkspaceSheets
+        activeTab={activeTab}
+        patient={chartProps.patient}
+        patientId={chartProps.patientId}
+        patientRecord={patientRecord}
+        ehr={ehr}
+        professionals={chartProps.professionals}
+        lastMedications={chartProps.lastMedications}
+        templates={templates}
+        canIssue={chartProps.canIssue}
+      />
     </div>
   );
 }

@@ -24,6 +24,7 @@ import {
   mergePatientClinicalFields,
   type PatientClinicalProfileFields,
 } from "@/lib/server/patient-clinical-profile";
+import type { ClinicalTemplateRow } from "@/components/pacientes/patient-workspace-types";
 
 export type PatientWorkspaceProfessional = {
   id: string;
@@ -40,6 +41,7 @@ export type PatientWorkspacePagePayload = {
   clinicalDocuments: ClinicalDocumentItem[];
   professionals: PatientWorkspaceProfessional[];
   lastMedications: PrescriptionMedication[] | null;
+  templates: ClinicalTemplateRow[];
   patientShare: {
     sharedAt: string;
     sharedByName: string | null;
@@ -121,6 +123,7 @@ export async function loadPatientWorkspacePageData(
     appShareResult,
     hceRows,
     clinicalProfileResult,
+    { data: templates },
   ] = await Promise.all([
     supabase
       .from("clinical_records")
@@ -193,6 +196,14 @@ export async function loadPatientWorkspacePageData(
       .eq("patient_id", patientId)
       .eq("clinic_id", clinicId)
       .maybeSingle(),
+    supabase
+      .from("clinical_templates")
+      .select(
+        "id, name, chief_complaint_template, diagnosis_template, evolution_template, indications_template"
+      )
+      .eq("clinic_id", clinicId)
+      .eq("is_active", true)
+      .order("name"),
   ]);
 
   const doctorInfo = portalSlug ? await getDoctorShareInfoForClinic(clinicId) : null;
@@ -253,6 +264,7 @@ export async function loadPatientWorkspacePageData(
     clinicalDocuments,
     professionals: mapProfessionals(professionals),
     lastMedications,
+    templates: (templates ?? []) as ClinicalTemplateRow[],
     patientShare: appShare
       ? {
           sharedAt: appShare.shared_at,

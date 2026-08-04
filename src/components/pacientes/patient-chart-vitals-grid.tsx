@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChartSection, VitalsSparkline } from "@/components/pacientes/patient-chart-primitives";
 import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
 
 export function PatientChartVitalsGrid({
@@ -17,7 +18,7 @@ export function PatientChartVitalsGrid({
       title="Signos vitales"
       action={
         canEditClinical ? (
-          <Link href={`/historias/nueva?patient=${patientId}`} className="drflow-patient-chart-link text-sm">
+          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })} className="drflow-patient-chart-link text-sm">
             Cargar nuevos signos
           </Link>
         ) : null

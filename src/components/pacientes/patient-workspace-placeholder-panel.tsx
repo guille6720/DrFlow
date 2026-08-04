@@ -4,16 +4,15 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { PatientWorkspaceTabId } from "@/lib/constants/patient-workspace-tabs";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 
 type Props = {
-  tab: PatientWorkspaceTabId;
   patientId: string;
   title: string;
   description: string;
 };
 
-export function PatientWorkspacePlaceholderPanel({ tab, patientId, title, description }: Props) {
+export function PatientWorkspacePlaceholderPanel({ patientId, title, description }: Props) {
   return (
     <Card title={title}>
       <p className="text-sm text-slate-600">{description}</p>
@@ -21,14 +20,15 @@ export function PatientWorkspacePlaceholderPanel({ tab, patientId, title, descri
         Disponible en una próxima etapa del roadmap enterprise. Mientras tanto, usá las pestañas
         activas del paciente.
       </p>
-      {tab === "interconsultas" ? (
-        <Link href={`/historias/nueva?patient=${patientId}`} className="mt-4 inline-block">
-          <Button type="button" size="sm" variant="outline">
-            <Plus className="h-4 w-4" />
-            Nueva consulta
-          </Button>
-        </Link>
-      ) : null}
+      <Link
+        href={buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })}
+        className="mt-4 inline-block"
+      >
+        <Button type="button" size="sm" variant="outline">
+          <Plus className="h-4 w-4" />
+          Nueva consulta
+        </Button>
+      </Link>
     </Card>
   );
 }

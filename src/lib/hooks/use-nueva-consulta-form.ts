@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClinicalRecord } from "@/lib/actions/clinical-records";
 import { startConsultationFromAppointment } from "@/lib/actions/appointments";
 import { buildProfessionalSignature } from "@/lib/utils/professional";
-import type { Patient, Professional } from "@/types/database";
+import type { Patient } from "@/types/database";
 import { backHrefFromClinicalSubpage } from "@/lib/utils/clinical-navigation";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 import {
   buildPharmacologyHrefFromConsultation,
   buildRecetasHrefFromConsultation,
@@ -25,20 +26,39 @@ type Template = {
   indications_template: string | null;
 };
 
-type Options = {
-  patients: Patient[];
-  professionals: Professional[];
-  templates: Template[];
+export type NuevaConsultaWorkspaceConfig = {
+  patientId: string;
+  appointmentId?: string;
+  professionalId?: string;
+  onSaved: (recordId: string) => void;
+  onClose: () => void;
 };
 
-export function useNuevaConsultaForm({ patients, professionals, templates }: Options) {
+type ConsultFormProfessional = {
+  id: string;
+  display_name?: string | null;
+  license_number?: string | null;
+  profiles?: { full_name?: string } | null;
+};
+
+type Options = {
+  patients: Patient[];
+  professionals: ConsultFormProfessional[];
+  templates: Template[];
+  workspace?: NuevaConsultaWorkspaceConfig;
+};
+
+export function useNuevaConsultaForm({ patients, professionals, templates, workspace }: Options) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const defaultPatient = searchParams.get("patient") ?? "";
-  const defaultProfessional = searchParams.get("professional") ?? "";
-  const appointmentId = searchParams.get("appointment") ?? "";
-  const fromClinical = searchParams.get("from");
-  const backHref = backHrefFromClinicalSubpage(fromClinical, defaultPatient, "/historias");
+  const defaultPatient = workspace?.patientId ?? searchParams.get("patient") ?? "";
+  const defaultProfessional =
+    workspace?.professionalId ?? searchParams.get("professional") ?? "";
+  const appointmentId = workspace?.appointmentId ?? searchParams.get("appointment") ?? "";
+  const fromClinical = workspace ? null : searchParams.get("from");
+  const backHref = workspace
+    ? buildPatientWorkspaceUrl(workspace.patientId, { tab: "soap" })
+    : backHrefFromClinicalSubpage(fromClinical, defaultPatient, "/historias");
   const fromAppointment = Boolean(appointmentId);
 
   const [error, setError] = useState<string | null>(null);
@@ -128,6 +148,14 @@ export function useNuevaConsultaForm({ patients, professionals, templates }: Opt
   }
 
   function recetaHref(tab: "receta" | "orden" = "receta") {
+    if (workspace && consultationContext) {
+      return buildPatientWorkspaceUrl(workspace.patientId, {
+        tab: tab === "orden" ? "ordenes" : "recetas",
+        action: "nueva",
+        appointment: consultationContext.appointmentId,
+        professional: consultationContext.professionalId,
+      });
+    }
     if (!consultationContext) {
       return tab === "orden" ? "/recetas?tipo=orden" : "/recetas";
     }
@@ -150,7 +178,11 @@ export function useNuevaConsultaForm({ patients, professionals, templates }: Opt
       setError(result.error);
     } else if (result.data) {
       if (draftKey) clearConsultationEvolution(draftKey);
-      router.push(`/historias/${result.data.id}`);
+      if (workspace) {
+        workspace.onSaved(result.data.id);
+      } else {
+        router.push(`/historias/${result.data.id}`);
+      }
     }
   }
 

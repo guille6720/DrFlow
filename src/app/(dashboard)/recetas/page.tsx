@@ -13,6 +13,7 @@ import {
 import { hasPermission } from "@/lib/permissions/roles";
 import { createClient } from "@/lib/supabase/server";
 import { loadRecetasPageData } from "@/lib/server/load-recetas-page";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 import { Plus } from "lucide-react";
 
 export default async function RecetasPage({
@@ -26,7 +27,19 @@ export default async function RecetasPage({
     professional?: string;
   }>;
 }) {
-  const { patient: patientId, tipo, professional: professionalParam } = await searchParams;
+  const { patient: patientId, tipo, professional: professionalParam, consulta } = await searchParams;
+
+  if (patientId) {
+    redirect(
+      buildPatientWorkspaceUrl(patientId, {
+        tab: tipo === "orden" ? "ordenes" : "recetas",
+        action: "nueva",
+        professional: professionalParam,
+        consulta,
+      })
+    );
+  }
+
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();

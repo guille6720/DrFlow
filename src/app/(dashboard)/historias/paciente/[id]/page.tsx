@@ -23,5 +23,5 @@ export default async function PatientClinicalHistoryRedirectPage({
     if (!patient) redirect("/historias");
   }
 
-  redirect(patientWorkspacePath(patientId, "evoluciones"));
+  redirect(patientWorkspacePath(patientId, "soap"));
 }

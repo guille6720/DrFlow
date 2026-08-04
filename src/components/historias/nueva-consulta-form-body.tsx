@@ -7,15 +7,23 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ConsultationAssistantPanel } from "@/components/historias/consultation-assistant-panel";
-import { getProfessionalDisplayName } from "@/lib/utils/professional";
-import type { Patient, Professional } from "@/types/database";
 import type { NuevaConsultaFormState } from "@/lib/hooks/use-nueva-consulta-form";
+import { getProfessionalDisplayName } from "@/lib/utils/professional";
+import type { Patient } from "@/types/database";
+
 import { Pill, ScrollText } from "lucide-react";
+
+type FormProfessional = {
+  id: string;
+  display_name?: string | null;
+  license_number?: string | null;
+  profiles?: { full_name?: string } | null;
+};
 
 type Props = {
   form: NuevaConsultaFormState;
   patients: Patient[];
-  professionals: Professional[];
+  professionals: FormProfessional[];
   templates: Array<{ id: string; name: string }>;
   canIssuePrescriptions: boolean;
 };

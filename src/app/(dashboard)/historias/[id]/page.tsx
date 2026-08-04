@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { HistoriaDetailContent } from "@/components/historias/historia-detail-content";
 import {
@@ -10,16 +10,17 @@ import {
 import { hasPermission } from "@/lib/permissions/roles";
 import { createClient } from "@/lib/supabase/server";
 import { loadHistoriaDetailPageData } from "@/lib/server/load-historia-detail-page";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 
 export default async function HistoriaDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ from?: string; patient?: string }>;
+  searchParams: Promise<{ from?: string; patient?: string; embed?: string }>;
 }) {
   const { id } = await params;
-  const { from, patient: returnPatientId } = await searchParams;
+  const { from, patient: returnPatientId, embed } = await searchParams;
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
@@ -30,6 +31,16 @@ export default async function HistoriaDetailPage({
 
   const data = await loadHistoriaDetailPageData(supabase, id, clinicId);
   if (!data) notFound();
+
+  if (embed !== "1") {
+    redirect(
+      buildPatientWorkspaceUrl(data.patient.id, {
+        tab: "soap",
+        record: id,
+        mode: "view",
+      })
+    );
+  }
 
   const canIssue = hasPermission(role, "issuePrescriptions", isSuperadmin);
   const canEditClinical = hasPermission(role, "editClinicalRecords", isSuperadmin);

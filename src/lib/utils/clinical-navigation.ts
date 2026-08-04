@@ -3,7 +3,7 @@ export const FROM_CLINICAL_HISTORY = "historia";
 
 /** Ruta canónica de HC del paciente (workspace con tabs). */
 export function patientClinicalHistoryPath(patientId: string): string {
-  return `/pacientes/${patientId}?tab=evoluciones`;
+  return `/pacientes/${patientId}?tab=soap`;
 }
 
 /** Agrega ?from=historia para que «Volver» regrese a la HC del paciente. */

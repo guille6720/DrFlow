@@ -7,6 +7,7 @@ import { DashboardUpcomingList } from "@/components/dashboard/dashboard-upcoming
 import { ClinicalOpsEmpty } from "@/components/dashboard/clinical-ops-empty";
 import type { LiveAppointment } from "@/components/dashboard/consultorio-live-panel";
 import type { ClinicalOperationsPayload } from "@/lib/utils/clinical-operations-types";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
 import { formatClinicDateTime } from "@/lib/utils/clinic-timezone";
 
@@ -90,7 +91,11 @@ export function ClinicalOpsOverdueCard({ overdue }: { overdue: ClinicalOperation
               </p>
               {row.patient_id ? (
                 <Link
-                  href={`/historias/nueva?patient=${row.patient_id}&appointment=${row.id}`}
+                  href={buildPatientWorkspaceUrl(row.patient_id, {
+                    tab: "soap",
+                    action: "nueva",
+                    appointment: row.id,
+                  })}
                   className="mt-1 inline-block text-xs font-semibold text-amber-900 hover:underline"
                 >
                   Atender ahora →

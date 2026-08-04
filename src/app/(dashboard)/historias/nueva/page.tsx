@@ -7,9 +7,31 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { hasPermission } from "@/lib/permissions/roles";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 import NuevaConsultaForm from "./consulta-form";
 
-export default async function NuevaConsultaPage() {
+export default async function NuevaConsultaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    patient?: string;
+    appointment?: string;
+    professional?: string;
+  }>;
+}) {
+  const { patient, appointment, professional } = await searchParams;
+
+  if (patient) {
+    redirect(
+      buildPatientWorkspaceUrl(patient, {
+        tab: "soap",
+        action: "nueva",
+        appointment,
+        professional,
+      })
+    );
+  }
+
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
