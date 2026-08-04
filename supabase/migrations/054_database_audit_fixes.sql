@@ -28,11 +28,18 @@ CREATE INDEX IF NOT EXISTS idx_public_booking_links_clinic_active
   ON public_booking_links (clinic_id)
   WHERE is_active = true;
 
-CREATE INDEX IF NOT EXISTS idx_cash_charge_types_clinic
-  ON cash_charge_types (clinic_id);
-
-CREATE INDEX IF NOT EXISTS idx_cash_payment_methods_clinic
-  ON cash_payment_methods (clinic_id);
+-- Caja module (034) may not be applied on all environments.
+DO $$
+BEGIN
+  IF to_regclass('public.cash_charge_types') IS NOT NULL THEN
+    EXECUTE
+      'CREATE INDEX IF NOT EXISTS idx_cash_charge_types_clinic ON cash_charge_types (clinic_id)';
+  END IF;
+  IF to_regclass('public.cash_payment_methods') IS NOT NULL THEN
+    EXECUTE
+      'CREATE INDEX IF NOT EXISTS idx_cash_payment_methods_clinic ON cash_payment_methods (clinic_id)';
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_clinical_templates_clinic_active
   ON clinical_templates (clinic_id)
@@ -76,5 +83,12 @@ COMMENT ON COLUMN patients.regular_medication IS
 COMMENT ON COLUMN patients.notes IS
   'DEPRECATED (047): canonical PHI in patient_clinical_profiles.notes.';
 
-COMMENT ON TABLE clinical_record_attachments IS
-  'Legacy per-consultation attachments. Application uses patient_attachments; table kept for RLS parity.';
+DO $$
+BEGIN
+  IF to_regclass('public.clinical_record_attachments') IS NOT NULL THEN
+    EXECUTE $comment$
+      COMMENT ON TABLE clinical_record_attachments IS
+        'Legacy per-consultation attachments. Application uses patient_attachments; table kept for RLS parity.'
+    $comment$;
+  END IF;
+END $$;

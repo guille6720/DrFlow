@@ -17,6 +17,11 @@ describe("054_database_audit_fixes migration", () => {
     expect(sql).toMatch(/idx_payments_clinic_status_created/);
   });
 
+  it("guards caja indexes when 034 tables are missing", () => {
+    expect(sql).toMatch(/to_regclass\('public\.cash_charge_types'\)/);
+    expect(sql).toMatch(/to_regclass\('public\.cash_payment_methods'\)/);
+  });
+
   it("fixes appointment FKs to ON DELETE SET NULL", () => {
     expect(sql).toMatch(/clinical_records_appointment_id_fkey[\s\S]*ON DELETE SET NULL/);
     expect(sql).toMatch(/reminder_logs_appointment_id_fkey[\s\S]*ON DELETE SET NULL/);
