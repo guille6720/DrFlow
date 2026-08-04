@@ -164,9 +164,10 @@ npm run quality:gate
 
 1. Author completes [PR checklist](../.github/pull_request_template.md)
 2. CI `quality-gate` must pass
-3. Reviewer checks: architecture, security, clinical safety, a11y
-4. DB changes: second reviewer for migrations
-5. Merge to `main` → Vercel deploy
+3. If [architecture triggers](./ARCHITECTURE_REVIEW.md) fire → add ADR under `docs/architecture-reviews/`
+4. Reviewer checks: architecture, security, clinical safety, a11y
+5. DB changes: second reviewer for migrations
+6. Merge to `main` → Vercel deploy
 
 ---
 
@@ -179,6 +180,8 @@ npm run quality:gate
 | `npm run code-quality:gate` | TODO, console.log, any, eslint-disable |
 | `npm run security:gate` | XSS, secrets, RLS manifest, npm audit |
 | `npm run architecture:gate` | Component size, UI/service separation |
+| `npm run architecture:review` | Report mandatory review triggers (local) |
+| `npm run architecture:review:strict` | Fail if triggers without ADR note |
 | `npm run performance:gate` | Benchmarks + component metrics |
 | `npm run quality:gate` | Full enterprise gate |
 

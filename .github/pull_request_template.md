@@ -38,7 +38,8 @@
 - [ ] Business logic not in UI components (hooks / actions / utils)
 - [ ] SOLID / DRY / feature-based structure followed
 - [ ] Components ≤ 350 lines (target ≤ 250)
-- [ ] Architecture reviewed
+- [ ] [Architecture review checklist](../docs/ARCHITECTURE_REVIEW.md) completed when triggers fire
+- [ ] ADR note added under `docs/architecture-reviews/` if CI reports triggers (`npm run architecture:review:strict`)
 
 ### Tests
 

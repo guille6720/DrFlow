@@ -16,6 +16,8 @@
     "code-quality:gate": "node scripts/code-quality-gate.mjs",
     "security:gate": "node scripts/security-gate.mjs",
     "architecture:gate": "node scripts/architecture-gate.mjs",
+    "architecture:review": "node scripts/architecture-review.mjs",
+    "architecture:review:strict": "node scripts/architecture-review.mjs --strict",
     "performance:gate": "node scripts/performance-gate.mjs",
     "check:critical-coverage": "node scripts/check-critical-coverage.mjs",
     "test": "vitest run",

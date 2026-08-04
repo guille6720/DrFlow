@@ -27,6 +27,20 @@ function scanComponents() {
     if (/export async function/.test(content) && /^["']use client["']/.test(content.trimStart())) {
       violations.push(`${r} — async server function in client UI component file`);
     }
+
+    const isClient = /^["']use client["']/.test(content.trimStart());
+    if (isClient) {
+      if (/@\/lib\/supabase\/server/.test(content)) {
+        violations.push(`${r} — server Supabase client imported in client component`);
+      }
+      if (/createAdminClient\s*\(/.test(content)) {
+        violations.push(`${r} — admin client in client UI (move to lib/actions or lib/server)`);
+      }
+    }
+
+    if (r.startsWith("src/components/") && /\.from\s*\([^)]+\)\s*\.\s*(insert|update|delete|upsert)\s*\(/.test(content)) {
+      violations.push(`${r} — Supabase mutation in UI component (use server action)`);
+    }
   }
 
   return { violations, warnings };
@@ -42,7 +56,7 @@ function scanBusinessLogicInUi() {
       const r = rel(filePath);
       const content = readSource(filePath);
 
-      if (/createAdminClient\s*\(/.test(content)) {
+      if (/createAdminClient\s*\(/.test(content) && !/^["']use client["']/.test(content.trimStart())) {
         violations.push(`${r} — admin client in UI (move to lib/actions or lib/server)`);
       }
 
@@ -55,12 +69,35 @@ function scanBusinessLogicInUi() {
   return violations;
 }
 
+function scanHooks() {
+  const violations = [];
+  const hooksDir = `${SRC_ROOT}/lib/hooks`;
+
+  for (const filePath of walkDir(hooksDir)) {
+    if (!filePath.endsWith(".ts")) continue;
+    const r = rel(filePath);
+    const content = readSource(filePath);
+    const lines = lineCount(filePath);
+
+    if (lines > 280) {
+      violations.push(`${r} — ${lines} lines (hook max 280 — split by concern)`);
+    }
+
+    if (/@\/lib\/supabase\/server/.test(content)) {
+      violations.push(`${r} — server Supabase client in client hook`);
+    }
+  }
+
+  return violations;
+}
+
 function main() {
   console.log("\n🏗 DrFlow — Architecture gate\n");
 
   const { violations: sizeViolations, warnings } = scanComponents();
   const logicViolations = scanBusinessLogicInUi();
-  const violations = [...sizeViolations, ...logicViolations];
+  const hookViolations = scanHooks();
+  const violations = [...sizeViolations, ...logicViolations, ...hookViolations];
 
   if (warnings.length) {
     console.log("⚠ Large components (refactor recommended):");
@@ -74,6 +111,7 @@ function main() {
 
   passGate("Architecture gate OK", [
     `Component max ${MAX_COMPONENT_LINES} lines enforced`,
+    `Hook max 280 lines enforced`,
     `${warnings.length} component(s) above ${WARN_COMPONENT_LINES} lines (warning only)`,
   ]);
 }
