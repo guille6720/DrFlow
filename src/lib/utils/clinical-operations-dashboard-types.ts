@@ -1,5 +1,12 @@
 import type { LiveAppointment } from "@/lib/utils/clinical-operations-types";
-import type { ClinicalOperationsPayload } from "@/lib/utils/clinical-operations-types";
+import type {
+  ClinicalOpsActionableAlert,
+  ClinicalOpsActivityMetrics,
+  ClinicalOpsEnrichedWaitingRow,
+  ClinicalOpsLabResult,
+  ClinicalOpsPendingOrder,
+  ClinicalOperationsPayload,
+} from "@/lib/utils/clinical-operations-types";
 
 export type ClinicalOpsTask = {
   id: string;
@@ -19,4 +26,10 @@ export type ClinicalOpsTask = {
 export type ClinicalOperationsDashboardPayload = ClinicalOperationsPayload & {
   todayAppointments: LiveAppointment[];
   tasks: ClinicalOpsTask[];
+  activity: ClinicalOpsActivityMetrics;
+  enrichedWaiting: ClinicalOpsEnrichedWaitingRow[];
+  actionableAlerts: ClinicalOpsActionableAlert[];
+  pendingOrders: ClinicalOpsPendingOrder[];
+  recentLabs: ClinicalOpsLabResult[];
+  urgentPatients: ClinicalOpsEnrichedWaitingRow[];
 };

@@ -6,11 +6,18 @@ import type {
   ClinicalOperationsDashboardPayload,
   ClinicalOpsTask,
 } from "@/lib/utils/clinical-operations-dashboard-types";
+import {
+  buildActionableAlerts,
+  computeActivityMetrics,
+  enrichWaitingRows,
+  prioritizeLabResults,
+  summarizeMedications,
+} from "@/lib/utils/clinical-ops-metrics";
 import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 import { patientWorkspacePath } from "@/lib/constants/patient-workspace-tabs";
 
 const APPOINTMENT_SELECT =
-  "id, start_at, status, booking_source, notes, patient_id, professional_id, waiting_room_status, patients(first_name, last_name, phone, document_number), professionals(profiles(full_name))";
+  "id, start_at, status, booking_source, notes, patient_id, professional_id, waiting_room_status, patients(first_name, last_name, phone, document_number, birth_date), professionals(profiles(full_name))";
 
 const LIST_LIMIT = 8;
 
@@ -133,7 +140,8 @@ export async function loadClinicalOperationsDashboard(
   const todayEnd = endOfDay(now).toISOString();
   const studiesSince = new Date(Date.now() - 7 * 86400000).toISOString();
 
-  const [todayResult, upcomingResult, draftRx, pendingStudies, queuedReminders] = await Promise.all([
+  const [todayResult, upcomingResult, draftRx, pendingStudies, queuedReminders, pendingOrdersResult] =
+    await Promise.all([
     supabase
       .from("appointments")
       .select(APPOINTMENT_SELECT)
@@ -152,7 +160,7 @@ export async function loadClinicalOperationsDashboard(
       .limit(LIST_LIMIT),
     supabase
       .from("prescription_drafts")
-      .select("id, created_at, patient_id, patients(first_name, last_name, document_number)")
+      .select("id, created_at, patient_id, status, medications, patients(first_name, last_name, document_number)")
       .eq("clinic_id", clinicId)
       .eq("status", "draft")
       .order("created_at", { ascending: false })
@@ -174,6 +182,13 @@ export async function loadClinicalOperationsDashboard(
       .gte("created_at", todayStart)
       .order("created_at", { ascending: false })
       .limit(LIST_LIMIT),
+    supabase
+      .from("medical_orders")
+      .select("id, order_text, status, created_at, patient_id, patients(first_name, last_name)")
+      .eq("clinic_id", clinicId)
+      .eq("status", "draft")
+      .order("created_at", { ascending: false })
+      .limit(LIST_LIMIT),
   ]);
 
   const todayAppointments = (todayResult.data ?? []) as unknown as LiveAppointment[];
@@ -182,17 +197,44 @@ export async function loadClinicalOperationsDashboard(
     ...new Set(todayAppointments.map((a) => a.patient_id).filter((id): id is string => Boolean(id))),
   ];
 
+  const waitingPatientIds = [
+    ...new Set(
+      todayAppointments
+        .filter(
+          (a) =>
+            a.status !== "attended" &&
+            a.status !== "cancelled" &&
+            a.status !== "no_show" &&
+            (a.waiting_room_status === "waiting" ||
+              a.waiting_room_status === "called" ||
+              !a.waiting_room_status)
+        )
+        .map((a) => a.patient_id)
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+
+  const allergyPatientIds = [...new Set([...patientIds, ...waitingPatientIds])];
+
   const criticalRows =
-    patientIds.length > 0
+    allergyPatientIds.length > 0
       ? await supabase
           .from("patient_clinical_profiles")
           .select(
             "patient_id, allergies, regular_medication, patients(first_name, last_name, document_number)"
           )
           .eq("clinic_id", clinicId)
-          .in("patient_id", patientIds)
+          .in("patient_id", allergyPatientIds)
           .or("allergies.not.is.null,regular_medication.not.is.null")
       : { data: [] };
+
+  const allergiesByPatient = new Map<string, string | null>();
+  for (const row of criticalRows.data ?? []) {
+    allergiesByPatient.set(row.patient_id, row.allergies ?? null);
+  }
+  for (const pid of waitingPatientIds) {
+    if (!allergiesByPatient.has(pid)) allergiesByPatient.set(pid, null);
+  }
 
   const waiting = todayAppointments.filter(
     (a) =>
@@ -295,6 +337,8 @@ export async function loadClinicalOperationsDashboard(
         id: String(row.id),
         created_at: String(row.created_at),
         patient_id: String(row.patient_id),
+        status: String((row as { status?: string }).status ?? "draft"),
+        medicationsSummary: summarizeMedications((row as { medications?: unknown }).medications),
         patients: patient,
       };
     }
@@ -345,6 +389,44 @@ export async function loadClinicalOperationsDashboard(
     queuedReminders: queuedRemindersMapped,
   });
 
+  const enrichedWaiting = enrichWaitingRows({
+    waiting: waiting as LiveAppointment[],
+    allergiesByPatient,
+    now,
+  });
+
+  const activity = computeActivityMetrics({
+    todayAppointments,
+    waiting: waiting as LiveAppointment[],
+    now,
+  });
+
+  const actionableAlerts = buildActionableAlerts({
+    criticalPatients,
+    overdue: overdue as LiveAppointment[],
+    enrichedWaiting,
+  });
+
+  const pendingOrders = (pendingOrdersResult.data ?? []).map((row) => {
+    const patient = mapPatient(row.patients as
+      | { first_name: string; last_name: string }
+      | { first_name: string; last_name: string }[]
+      | null);
+    return {
+      id: String(row.id),
+      order_text: String(row.order_text),
+      status: String(row.status),
+      created_at: String(row.created_at),
+      patient_id: String(row.patient_id),
+      patients: patient,
+    };
+  });
+
+  const recentLabs = prioritizeLabResults(pendingStudiesMapped, now);
+  const urgentPatients = enrichedWaiting.filter(
+    (row) => row.priority === "urgent" || row.priority === "high"
+  );
+
   return {
     waiting,
     upcoming,
@@ -355,5 +437,11 @@ export async function loadClinicalOperationsDashboard(
     notifications: notifications.slice(0, LIST_LIMIT),
     todayAppointments,
     tasks,
+    activity,
+    enrichedWaiting,
+    actionableAlerts,
+    pendingOrders,
+    recentLabs,
+    urgentPatients,
   };
 }

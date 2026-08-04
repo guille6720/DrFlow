@@ -16,7 +16,7 @@ export default async function DashboardPage() {
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { clinic, role, isSuperadmin } = await getActiveClinic();
   const supabase = await createClient();
   const now = new Date();
 
@@ -25,7 +25,7 @@ export default async function DashboardPage() {
   return (
     <>
       <Header
-        title="Operaciones clínicas"
+        title="Centro de operaciones clínicas"
         subtitle={format(now, "EEEE d MMMM", { locale: es })}
         clinics={clinics}
         activeClinicId={clinicId}
@@ -35,8 +35,11 @@ export default async function DashboardPage() {
       />
 
       <div className="p-4 sm:p-6">
-        {ops ? (
+        {ops && clinicId ? (
           <ClinicalOperationsDashboard
+            clinicId={clinicId}
+            clinicName={clinic?.name ?? "Consultorio"}
+            professionalName={profile?.full_name}
             ops={ops}
             canManageAppointments={hasPermission(role, "manageAppointments", isSuperadmin)}
             canManageCash={hasPermission(role, "manageCashRegister", isSuperadmin)}
