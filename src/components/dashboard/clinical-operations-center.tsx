@@ -10,7 +10,6 @@ import {
   ClinicalOpsNotificationsCard,
   ClinicalOpsOverdueCard,
   ClinicalOpsPendingStudiesCard,
-  ClinicalOpsSummaryBadges,
   ClinicalOpsUpcomingCard,
   ClinicalOpsWaitingCard,
 } from "@/components/dashboard/clinical-ops-cards";
@@ -45,8 +44,6 @@ export function ClinicalOperationsCenter({ ops, canManageAppointments }: Props) 
         <ClinicalOpsPendingStudiesCard pendingStudies={ops.pendingStudies} />
         <ClinicalOpsNotificationsCard notifications={ops.notifications} />
       </div>
-
-      <ClinicalOpsSummaryBadges ops={ops} />
     </section>
   );
 }

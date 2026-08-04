@@ -15,6 +15,7 @@ export type LiveAppointment = {
   booking_source?: string | null;
   patient_id?: string | null;
   professional_id?: string | null;
+  waiting_room_status?: string | null;
   patients?: { first_name: string; last_name: string; phone?: string | null } | null;
   professionals?: { profiles?: { full_name: string } | null } | null;
 };

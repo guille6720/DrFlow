@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ClinicalOpsEmpty } from "@/components/dashboard/clinical-ops-empty";
 import type { ClinicalOperationsPayload } from "@/lib/utils/clinical-operations-types";
 import { patientWorkspacePath } from "@/lib/constants/patient-workspace-tabs";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 
 export function ClinicalOpsDraftPrescriptionsCard({
   draftPrescriptions,
@@ -33,7 +34,10 @@ export function ClinicalOpsDraftPrescriptionsCard({
                   {format(new Date(rx.created_at), "d MMM HH:mm", { locale: es })}
                 </p>
               </div>
-              <Link href={`/recetas?patient=${rx.patient_id}`} className="text-xs font-semibold text-teal-700 hover:underline">
+              <Link
+                href={buildPatientWorkspaceUrl(rx.patient_id, { tab: "recetas", action: "nueva" })}
+                className="text-xs font-semibold text-teal-700 hover:underline"
+              >
                 Emitir
               </Link>
             </li>
@@ -50,7 +54,7 @@ export function ClinicalOpsPendingStudiesCard({
   pendingStudies: ClinicalOperationsPayload["pendingStudies"];
 }) {
   return (
-    <Card title="Estudios recientes (7 días)" className="h-full">
+    <Card title="Estudios pendientes" className="h-full">
       {pendingStudies.length === 0 ? (
         <ClinicalOpsEmpty message="Sin archivos clínicos recientes." />
       ) : (

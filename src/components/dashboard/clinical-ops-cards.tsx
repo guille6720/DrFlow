@@ -1,5 +1,6 @@
 export {
   ClinicalOpsWaitingCard,
+  ClinicalOpsTodayAppointmentsCard,
   ClinicalOpsUpcomingCard,
   ClinicalOpsOverdueCard,
   ClinicalOpsCriticalPatientsCard,
@@ -9,5 +10,9 @@ export {
   ClinicalOpsDraftPrescriptionsCard,
   ClinicalOpsPendingStudiesCard,
   ClinicalOpsNotificationsCard,
-  ClinicalOpsSummaryBadges,
 } from "@/components/dashboard/clinical-ops-action-cards";
+
+export {
+  ClinicalOpsTasksCard,
+  ClinicalOpsCriticalAlertsCard,
+} from "@/components/dashboard/clinical-ops-tasks-cards";
