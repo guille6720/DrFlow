@@ -21,6 +21,7 @@ import {
   Users,
 } from "lucide-react";
 import type { PERMISSIONS } from "@/lib/permissions/roles";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 
 export type CommandPaletteGroup = "acciones" | "navegacion" | "pacientes";
 
@@ -186,8 +187,54 @@ export const COMMAND_PALETTE_NAV: CommandPaletteItemDef[] = [
 
 export const COMMAND_PALETTE_SHORTCUTS = [
   { keys: "Ctrl+K", label: "Buscar / comandos" },
-  { keys: "Ctrl+Shift+N", label: "Nueva consulta" },
+  { keys: "Ctrl+Shift+N", label: "Nueva SOAP (paciente actual)" },
+  { keys: "Ctrl+Shift+R", label: "Nueva receta (paciente actual)" },
+  { keys: "Ctrl+Shift+O", label: "Nueva orden (paciente actual)" },
+  { keys: "Ctrl+Shift+Enter", label: "Cerrar consulta activa" },
   { keys: "↑ ↓", label: "Navegar resultados" },
   { keys: "Enter", label: "Ejecutar" },
   { keys: "Esc", label: "Cerrar" },
 ] as const;
+
+/** 1-click actions for the patient currently open in the workspace. */
+export function buildPatientContextPaletteActions(patientId: string): CommandPaletteItemDef[] {
+  return [
+    {
+      id: "ctx-soap",
+      label: "Nueva SOAP (este paciente)",
+      description: "Abrir editor SOAP en panel",
+      href: buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" }),
+      group: "acciones",
+      icon: Stethoscope,
+      keywords: ["soap", "evolucion", "consulta"],
+      permission: "editClinicalRecords",
+    },
+    {
+      id: "ctx-rx",
+      label: "Nueva receta (este paciente)",
+      href: buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" }),
+      group: "acciones",
+      icon: ScrollText,
+      keywords: ["receta"],
+      permission: "issuePrescriptions",
+    },
+    {
+      id: "ctx-order",
+      label: "Nueva orden (este paciente)",
+      href: buildPatientWorkspaceUrl(patientId, { tab: "ordenes", action: "nueva" }),
+      group: "acciones",
+      icon: ClipboardList,
+      keywords: ["orden"],
+      permission: "issuePrescriptions",
+    },
+    {
+      id: "ctx-chart",
+      label: "Ficha del paciente",
+      href: `/pacientes/${patientId}`,
+      group: "acciones",
+      icon: HeartPulse,
+      keywords: ["ficha", "resumen"],
+      permission: "viewClinicalRecords",
+    },
+  ];
+}

@@ -1,4 +1,4 @@
-import type { LiveAppointment } from "@/components/dashboard/consultorio-live-panel";
+import type { LiveAppointment } from "@/lib/utils/clinical-operations-types";
 import type { ClinicalOperationsPayload } from "@/lib/utils/clinical-operations-types";
 
 export type ClinicalOpsTask = {

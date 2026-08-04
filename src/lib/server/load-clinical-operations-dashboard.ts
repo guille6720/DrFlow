@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { endOfDay, startOfDay } from "date-fns";
-import type { LiveAppointment } from "@/components/dashboard/consultorio-live-panel";
+import type { LiveAppointment } from "@/lib/utils/clinical-operations-types";
 import type { ClinicalOperationsPayload } from "@/lib/utils/clinical-operations-types";
 import type {
   ClinicalOperationsDashboardPayload,

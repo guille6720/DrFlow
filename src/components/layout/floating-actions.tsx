@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { useState } from "react";
 import {
   Plus,
@@ -10,11 +10,23 @@ import {
   Users,
   Stethoscope,
   Pill,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useFeatureFlag } from "@/components/plugins/clinic-plugins-provider";
+import {
+  parsePatientIdFromPath,
+  patientWorkflowHref,
+} from "@/lib/utils/clinical-workflow-context";
 
-const actions = [
+type FabAction = {
+  href: string;
+  label: string;
+  icon: typeof Calendar;
+  color: string;
+};
+
+const globalActions: FabAction[] = [
   {
     href: "/agenda?action=new",
     label: "Nuevo turno",
@@ -39,18 +51,37 @@ const actions = [
     icon: Pill,
     color: "bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600",
   },
-  {
-    href: "/herramientas/farmacologia?mode=symptoms",
-    label: "Buscar por síntomas",
-    icon: Pill,
-    color: "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600",
-  },
 ];
+
+function patientActions(patientId: string): FabAction[] {
+  return [
+    {
+      href: patientWorkflowHref(patientId, "soap"),
+      label: "Nueva SOAP",
+      icon: Stethoscope,
+      color: "bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700",
+    },
+    {
+      href: patientWorkflowHref(patientId, "prescription"),
+      label: "Nueva receta",
+      icon: Pill,
+      color: "bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600",
+    },
+    {
+      href: patientWorkflowHref(patientId, "order"),
+      label: "Nueva orden",
+      icon: ClipboardList,
+      color: "bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600",
+    },
+  ];
+}
 
 export function FloatingActions() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const enabled = useFeatureFlag("floating_actions");
+  const patientId = parsePatientIdFromPath(pathname);
+  const actions = patientId ? patientActions(patientId) : globalActions;
 
   if (!enabled || pathname === "/dashboard") {
     return null;

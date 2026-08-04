@@ -14,26 +14,11 @@ import { patientWorkspacePath } from "@/lib/constants/patient-workspace-tabs";
 type Props = {
   patientId: string;
   arcoExport?: React.ReactNode;
-  workspaceMode?: boolean;
 };
 
-export function PatientChartStickyBar({ patientId, arcoExport, workspaceMode = false }: Props) {
-  const soapHref = patientWorkspacePath(patientId, "soap");
-  const recetaHref = workspaceMode
-    ? buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })
-    : `/recetas?patient=${patientId}`;
-  const ordenHref = workspaceMode
-    ? buildPatientWorkspaceUrl(patientId, { tab: "ordenes", action: "nueva" })
-    : `/recetas?patient=${patientId}&tipo=orden`;
-  const nuevaConsultaHref = workspaceMode
-    ? buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })
-    : `/historias/nueva?patient=${patientId}`;
-  const estudiosHref = workspaceMode
-    ? patientWorkspacePath(patientId, "estudios")
-    : `#chart-estudios`;
-  const archivosHref = workspaceMode
-    ? patientWorkspacePath(patientId, "archivos")
-    : `#chart-documentos`;
+/** Sticky actions for legacy chart views (outside patient workspace tabs). */
+export function PatientChartStickyBar({ patientId, arcoExport }: Props) {
+  const nuevaConsultaHref = buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" });
 
   return (
     <div className="drflow-patient-chart-sticky-bar">
@@ -44,19 +29,19 @@ export function PatientChartStickyBar({ patientId, arcoExport, workspaceMode = f
             Nueva consulta
           </Button>
         </Link>
-        <Link href={soapHref}>
+        <Link href={patientWorkspacePath(patientId, "soap")}>
           <Button size="sm" variant="outline" type="button">
             <ClipboardList className="h-4 w-4" />
             SOAP
           </Button>
         </Link>
-        <Link href={recetaHref}>
+        <Link href={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}>
           <Button size="sm" variant="outline" type="button">
             <Pill className="h-4 w-4" />
             Recetas
           </Button>
         </Link>
-        <Link href={ordenHref}>
+        <Link href={buildPatientWorkspaceUrl(patientId, { tab: "ordenes", action: "nueva" })}>
           <Button size="sm" variant="outline" type="button">
             <ClipboardList className="h-4 w-4" />
             Órdenes
@@ -68,36 +53,18 @@ export function PatientChartStickyBar({ patientId, arcoExport, workspaceMode = f
             Certificado
           </Button>
         </Link>
-        {workspaceMode ? (
-          <Link href={estudiosHref}>
-            <Button size="sm" variant="outline" type="button">
-              <Activity className="h-4 w-4" />
-              Estudios
-            </Button>
-          </Link>
-        ) : (
-          <a href={estudiosHref}>
-            <Button size="sm" variant="outline" type="button">
-              <Activity className="h-4 w-4" />
-              Estudios
-            </Button>
-          </a>
-        )}
-        {workspaceMode ? (
-          <Link href={archivosHref}>
-            <Button size="sm" variant="outline" type="button">
-              <Upload className="h-4 w-4" />
-              Archivos
-            </Button>
-          </Link>
-        ) : (
-          <a href={archivosHref}>
-            <Button size="sm" variant="outline" type="button">
-              <Upload className="h-4 w-4" />
-              Subir PDF
-            </Button>
-          </a>
-        )}
+        <a href="#chart-estudios">
+          <Button size="sm" variant="outline" type="button">
+            <Activity className="h-4 w-4" />
+            Estudios
+          </Button>
+        </a>
+        <a href="#chart-documentos">
+          <Button size="sm" variant="outline" type="button">
+            <Upload className="h-4 w-4" />
+            Subir PDF
+          </Button>
+        </a>
         {arcoExport}
         <Link href={`/pacientes/${patientId}/editar`}>
           <Button size="sm" variant="outline" type="button">

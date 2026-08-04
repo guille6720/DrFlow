@@ -10,9 +10,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { UserRole } from "@/types/database";
 import {
+  buildPatientContextPaletteActions,
   COMMAND_PALETTE_ACTIONS,
   COMMAND_PALETTE_NAV,
 } from "@/lib/constants/command-palette-items";
@@ -21,6 +22,7 @@ import {
   isEditableTarget,
   type CommandPalettePatientHit,
 } from "@/lib/utils/command-palette-search";
+import { parsePatientIdFromPath } from "@/lib/utils/clinical-workflow-context";
 import { CommandPaletteDialog } from "@/components/command-palette/command-palette-dialog";
 
 type CommandPaletteContextValue = {
@@ -57,6 +59,8 @@ export function CommandPaletteProvider({
   enabled = true,
 }: ProviderProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const activePatientId = parsePatientIdFromPath(pathname);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [patientHits, setPatientHits] = useState<CommandPalettePatientHit[]>([]);
@@ -65,10 +69,18 @@ export function CommandPaletteProvider({
   const fetchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const staticItems = useMemo(() => {
+    const ctx = activePatientId
+      ? filterCommandPaletteItems(
+          buildPatientContextPaletteActions(activePatientId),
+          query,
+          role,
+          isSuperadmin
+        )
+      : [];
     const actions = filterCommandPaletteItems(COMMAND_PALETTE_ACTIONS, query, role, isSuperadmin);
     const nav = filterCommandPaletteItems(COMMAND_PALETTE_NAV, query, role, isSuperadmin);
-    return [...actions, ...nav];
-  }, [query, role, isSuperadmin]);
+    return [...ctx, ...actions, ...nav];
+  }, [activePatientId, query, role, isSuperadmin]);
 
   const flatResults = useMemo(
     () => [
@@ -140,9 +152,9 @@ export function CommandPaletteProvider({
         return;
       }
 
-      if (mod && e.shiftKey && e.key.toLowerCase() === "n") {
+      if (mod && e.shiftKey && e.key.toLowerCase() === "n" && !activePatientId) {
         e.preventDefault();
-        router.push("/historias/nueva");
+        setOpen(true);
         return;
       }
 
@@ -177,7 +189,7 @@ export function CommandPaletteProvider({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [enabled, open, flatResults, selectedIndex, navigate, router]);
+  }, [enabled, open, flatResults, selectedIndex, navigate, activePatientId]);
 
   return (
     <CommandPaletteContext.Provider

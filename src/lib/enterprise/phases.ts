@@ -68,8 +68,8 @@ export const ENTERPRISE_PHASES: EnterprisePhase[] = [
     status: "completed",
     commits: ["2f06295"],
     keyPaths: [
-      "src/components/dashboard/clinical-operations-center.tsx",
-      "src/components/dashboard/consultorio-live-panel.tsx",
+      "src/components/dashboard/clinical-operations-dashboard.tsx",
+      "src/lib/server/load-clinical-operations-dashboard.ts",
     ],
   },
   {
@@ -81,7 +81,10 @@ export const ENTERPRISE_PHASES: EnterprisePhase[] = [
     commits: ["560156a"],
     keyPaths: [
       "src/components/command-palette/",
+      "src/components/clinical-workflow/",
       "src/lib/constants/command-palette-items.ts",
+      "src/lib/utils/clinical-workflow-context.ts",
+      "docs/WORKFLOW_OPTIMIZATION.md",
     ],
   },
   {

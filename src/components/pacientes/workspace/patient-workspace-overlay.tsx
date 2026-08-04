@@ -11,6 +11,7 @@ type Props = {
   children: React.ReactNode;
   wide?: boolean;
   closeDisabled?: boolean;
+  headerActions?: React.ReactNode;
 };
 
 export function PatientWorkspaceOverlay({
@@ -21,6 +22,7 @@ export function PatientWorkspaceOverlay({
   children,
   wide = false,
   closeDisabled = false,
+  headerActions,
 }: Props) {
   if (!open) return null;
 
@@ -47,12 +49,15 @@ export function PatientWorkspaceOverlay({
         aria-labelledby="patient-workspace-overlay-title"
       >
         <div className="flex shrink-0 items-start justify-between gap-3 border-b border-slate-200 px-4 py-4 sm:px-6">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h2 id="patient-workspace-overlay-title" className="text-lg font-semibold text-slate-900">
               {title}
             </h2>
             {subtitle ? <p className="mt-1 text-sm text-slate-500">{subtitle}</p> : null}
           </div>
+          {headerActions ? (
+            <div className="flex shrink-0 items-center gap-2">{headerActions}</div>
+          ) : null}
           <button
             type="button"
             onClick={handleClose}

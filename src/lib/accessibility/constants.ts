@@ -77,8 +77,11 @@ export type KeyboardShortcut = {
 export const APP_KEYBOARD_SHORTCUTS: KeyboardShortcut[] = [
   { keys: "Tab / Shift+Tab", action: "Navegar entre controles", context: "Global" },
   { keys: "Enter / Espacio", action: "Activar botón o enlace", context: "Global" },
-  { keys: "Ctrl+K", action: "Paleta de comandos", context: "Dashboard" },
-  { keys: "Ctrl+Shift+N", action: "Nueva consulta", context: "Dashboard" },
+  { keys: "Ctrl+K", action: "Paleta de comandos / búsqueda global", context: "Dashboard" },
+  { keys: "Ctrl+Shift+N", action: "Nueva SOAP (paciente actual) o abrir paleta", context: "Dashboard" },
+  { keys: "Ctrl+Shift+R", action: "Nueva receta (paciente actual)", context: "Ficha paciente" },
+  { keys: "Ctrl+Shift+O", action: "Nueva orden (paciente actual)", context: "Ficha paciente" },
+  { keys: "Ctrl+Shift+Enter", action: "Cerrar consulta (turno activo)", context: "Consulta en curso" },
   { keys: "↑ / ↓", action: "Navegar resultados", context: "Paleta de comandos" },
   { keys: "Esc", action: "Cerrar diálogo o menú", context: "Modales" },
 ];

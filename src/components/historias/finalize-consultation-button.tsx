@@ -12,9 +12,10 @@ import { CheckCircle2 } from "lucide-react";
 
 interface Props {
   appointmentId: string;
+  returnHref?: string;
 }
 
-export function FinalizeConsultationButton({ appointmentId }: Props) {
+export function FinalizeConsultationButton({ appointmentId, returnHref }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [modality, setModality] = useState<ConsultationModality>("presencial");
@@ -25,7 +26,7 @@ export function FinalizeConsultationButton({ appointmentId }: Props) {
     setLoading(false);
     if (!result.error) {
       clearConsultationTimer(appointmentId);
-      router.push("/agenda?view=day");
+      router.push(returnHref ?? "/agenda?view=day");
       router.refresh();
     }
   }

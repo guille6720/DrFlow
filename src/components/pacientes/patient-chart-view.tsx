@@ -30,11 +30,9 @@ export function PatientChartView({
 
   return (
     <div className="drflow-patient-chart">
-      <PatientChartStickyBar
-        patientId={patientId}
-        arcoExport={arcoExport}
-        workspaceMode={workspaceMode}
-      />
+      {!workspaceMode ? (
+        <PatientChartStickyBar patientId={patientId} arcoExport={arcoExport} />
+      ) : null}
 
       <PatientChartSummary
         patient={patient}

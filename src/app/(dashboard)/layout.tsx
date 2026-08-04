@@ -25,6 +25,10 @@ import { SkipToContent } from "@/components/accessibility/skip-to-content";
 import { AccessibilityProvider } from "@/components/accessibility/accessibility-provider";
 import { RouteAnnouncer } from "@/components/accessibility/route-announcer";
 import {
+  ClinicalContextMenuHost,
+  ClinicalWorkflowShortcuts,
+} from "@/components/clinical-workflow";
+import {
   isClinicTrialExpired,
   isTrialWhitelistedPath,
   trialDaysRemaining,
@@ -142,6 +146,10 @@ export default async function DashboardLayout({
         >
         <SkipToContent />
         <RouteAnnouncer />
+        <ClinicalContextMenuHost />
+        <Suspense fallback={null}>
+          <ClinicalWorkflowShortcuts />
+        </Suspense>
         <Sidebar
           clinicName={clinic?.name}
           role={role}

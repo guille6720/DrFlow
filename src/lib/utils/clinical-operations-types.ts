@@ -1,4 +1,14 @@
-import type { LiveAppointment } from "@/components/dashboard/consultorio-live-panel";
+export type LiveAppointment = {
+  id: string;
+  start_at: string;
+  status: string;
+  booking_source?: string | null;
+  patient_id?: string | null;
+  professional_id?: string | null;
+  waiting_room_status?: string | null;
+  patients?: { first_name: string; last_name: string; phone?: string | null } | null;
+  professionals?: { profiles?: { full_name: string } | null } | null;
+};
 
 export type ClinicalOpsWaitingRow = {
   id: string;

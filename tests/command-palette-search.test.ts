@@ -26,12 +26,15 @@ describe("filterCommandPaletteItems", () => {
 });
 
 describe("mapPatientHits", () => {
-  it("builds patient command rows", () => {
+  it("builds patient command rows with workflow deep links", () => {
     const hits = mapPatientHits([
       { id: "1", first_name: "Ana", last_name: "García", document_number: "12345678" },
     ]);
     expect(hits[0]?.label).toBe("García, Ana");
     expect(hits[0]?.href).toBe("/pacientes/1");
+    expect(hits[0]?.soapHref).toContain("/pacientes/1");
+    expect(hits[0]?.soapHref).toContain("action=nueva");
+    expect(hits[0]?.rxHref).toContain("tab=recetas");
   });
 });
 

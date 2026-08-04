@@ -16,6 +16,7 @@ import {
 } from "@/components/pacientes/patient-workspace-ehr-panels";
 import type { PatientWorkspaceTabId } from "@/lib/constants/patient-workspace-tabs";
 import { usePatientWorkspaceTab } from "@/lib/hooks/use-patient-workspace-tab";
+import { PatientWorkflowActionBarHost } from "@/components/clinical-workflow/patient-workflow-action-bar-host";
 
 const PatientClinicalAuditPanel = dynamic(
   () =>
@@ -74,6 +75,11 @@ export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
 
   return (
     <div className="drflow-patient-workspace">
+      <PatientWorkflowActionBarHost
+        patientId={chartProps.patientId}
+        canEditClinical={chartProps.canEditClinical}
+        canIssue={chartProps.canIssue}
+      />
       <PatientWorkspaceTabBar activeTab={activeTab} onTabChange={setTab} />
 
       <div className="drflow-patient-workspace-panel">

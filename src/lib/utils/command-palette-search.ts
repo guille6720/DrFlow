@@ -1,6 +1,7 @@
 import type { CommandPaletteItemDef } from "@/lib/constants/command-palette-items";
 import { hasPermission } from "@/lib/permissions/roles";
 import type { UserRole } from "@/types/database";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 
 function normalize(value: string): string {
   return value
@@ -41,6 +42,8 @@ export type CommandPalettePatientHit = {
   label: string;
   description: string;
   href: string;
+  soapHref: string;
+  rxHref: string;
 };
 
 export function mapPatientHits(
@@ -51,6 +54,8 @@ export function mapPatientHits(
     label: `${p.last_name}, ${p.first_name}`,
     description: `DNI ${p.document_number}`,
     href: `/pacientes/${p.id}`,
+    soapHref: buildPatientWorkspaceUrl(p.id, { tab: "soap", action: "nueva" }),
+    rxHref: buildPatientWorkspaceUrl(p.id, { tab: "recetas", action: "nueva" }),
   }));
 }
 

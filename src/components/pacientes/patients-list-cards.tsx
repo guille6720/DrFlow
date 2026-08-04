@@ -8,6 +8,11 @@ import { PatientAppShareControl } from "@/components/pacientes/patient-app-share
 import { isPamiPatient } from "@/lib/utils/patient-age";
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
 import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
+import {
+  buildPatientContextMenuItems,
+  openClinicalContextMenu,
+} from "@/components/clinical-workflow/clinical-context-menu";
 import { FileText, ScrollText } from "lucide-react";
 
 export type PatientListRow = {
@@ -62,6 +67,12 @@ export function PatientsListCards({
           <article
             key={p.id}
             className="drflow-card-light flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm ring-1 ring-slate-100/80 sm:flex-row sm:items-center sm:gap-4"
+            onContextMenu={(e) =>
+              openClinicalContextMenu(
+                e,
+                buildPatientContextMenuItems(p.id, { canIssue: canIssuePrescriptions })
+              )
+            }
           >
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-slate-900">{patientDisplay}</p>
@@ -99,7 +110,7 @@ export function PatientsListCards({
               </Link>
               {canIssuePrescriptions ? (
                 <Link
-                  href={`/recetas?patient=${p.id}`}
+                  href={buildPatientWorkspaceUrl(p.id, { tab: "recetas", action: "nueva" })}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800 hover:bg-teal-100"
                 >
                   <ScrollText className="h-3.5 w-3.5" />

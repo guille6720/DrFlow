@@ -150,22 +150,37 @@ export function CommandPaletteDialog({
                       const index = patientStartIndex + i;
                       const active = selectedIndex === index;
                       return (
-                        <button
+                        <div
                           key={patient.id}
-                          type="button"
-                          onMouseEnter={() => onSelectIndex(index)}
-                          onClick={() => onNavigate(patient.href)}
                           className={cn(
-                            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition",
+                            "flex items-center gap-2 rounded-xl px-2 py-1 transition",
                             active ? "bg-teal-600/20 ring-1 ring-teal-500/40" : "hover:bg-slate-800"
                           )}
+                          onMouseEnter={() => onSelectIndex(index)}
                         >
-                          <Search className="h-4 w-4 shrink-0 text-cyan-400" />
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-sm font-medium text-slate-100">{patient.label}</span>
-                            <span className="block text-xs text-slate-400">{patient.description}</span>
-                          </span>
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => onNavigate(patient.href)}
+                            className="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-1 py-1.5 text-left"
+                          >
+                            <Search className="h-4 w-4 shrink-0 text-cyan-400" />
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-sm font-medium text-slate-100">{patient.label}</span>
+                              <span className="block text-xs text-slate-400">{patient.description}</span>
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            title="Nueva SOAP (1 clic)"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onNavigate(patient.soapHref);
+                            }}
+                            className="shrink-0 rounded-lg border border-teal-500/40 px-2 py-1 text-[11px] font-semibold text-teal-300 hover:bg-teal-600/20"
+                          >
+                            SOAP
+                          </button>
+                        </div>
                       );
                     })}
                   </div>

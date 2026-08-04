@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { LiveAppointment } from "@/components/dashboard/consultorio-live-panel";
+import type { LiveAppointment } from "@/lib/utils/clinical-operations-types";
 
 function filterOverdue(queue: LiveAppointment[], nowIso: string): LiveAppointment[] {
   return queue.filter(
