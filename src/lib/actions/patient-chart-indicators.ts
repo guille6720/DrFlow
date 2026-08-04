@@ -4,46 +4,11 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireClinicPermission } from "@/lib/actions/clinic-guard";
 import {
-  loadPatientClinicalProfile,
-  upsertPatientClinicalProfile,
-} from "@/lib/server/patient-clinical-profile";
-import { calculatePackYears } from "@/lib/utils/clinical-indicators";
-import {
-  mergeNotesWithChartExtras,
-  parsePatientChartExtras,
-  stripChartJsonFromNotes,
-} from "@/lib/utils/patient-chart-notes";
-import type { PatientChartExtras } from "@/lib/utils/patient-chart-types";
+  saveClinicalIndicators,
+  type ClinicalIndicatorsInput,
+} from "@/lib/services/patient-chart-indicators.service";
 
-export type ClinicalIndicatorsInput = {
-  weightKg?: number | null;
-  heightCm?: number | null;
-  creatinineMgDl?: number | null;
-  cigarettesPerDay?: number | null;
-  smokingYears?: number | null;
-  cardiovascularRisk?: "low" | "moderate" | "high" | null;
-};
-
-function upsertCreatinineLab(
-  labs: PatientChartExtras["labs"],
-  value: number | null | undefined
-): PatientChartExtras["labs"] {
-  const list = [...(labs ?? [])];
-  const idx = list.findIndex((l) => l.name.toLowerCase().includes("creatinina"));
-  if (value == null || !Number.isFinite(value) || value <= 0) {
-    if (idx >= 0) list.splice(idx, 1);
-    return list.length ? list : undefined;
-  }
-  const entry = {
-    name: "Creatinina",
-    value: String(value),
-    unit: "mg/dL",
-    status: "unknown" as const,
-  };
-  if (idx >= 0) list[idx] = { ...list[idx], ...entry };
-  else list.push(entry);
-  return list;
-}
+export type { ClinicalIndicatorsInput };
 
 export async function savePatientClinicalIndicators(
   patientId: string,
@@ -51,40 +16,10 @@ export async function savePatientClinicalIndicators(
 ): Promise<{ error?: string }> {
   const access = await requireClinicPermission("editClinicalRecords");
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
 
   const supabase = await createClient();
-  const { data: exists } = await supabase
-    .from("patients")
-    .select("id")
-    .eq("id", patientId)
-    .eq("clinic_id", clinicId)
-    .maybeSingle();
-
-  if (!exists) return { error: "Paciente no encontrado" };
-
-  const profile = await loadPatientClinicalProfile(supabase, patientId, clinicId);
-  const current = parsePatientChartExtras(profile?.notes);
-  const packYears =
-    input.cigarettesPerDay != null && input.smokingYears != null
-      ? calculatePackYears(input.cigarettesPerDay, input.smokingYears)
-      : current.pack_years ?? null;
-
-  const merged: PatientChartExtras = {
-    ...current,
-    weight_kg: input.weightKg ?? null,
-    height_cm: input.heightCm ?? null,
-    cigarettes_per_day: input.cigarettesPerDay ?? null,
-    smoking_years: input.smokingYears ?? null,
-    pack_years: packYears,
-    cardiovascular_risk: input.cardiovascularRisk ?? current.cardiovascular_risk ?? null,
-    labs: upsertCreatinineLab(current.labs, input.creatinineMgDl),
-  };
-
-  const notes = mergeNotesWithChartExtras(stripChartJsonFromNotes(profile?.notes), merged);
-  const { error } = await upsertPatientClinicalProfile(supabase, patientId, clinicId, { notes });
-
-  if (error) return { error };
+  const result = await saveClinicalIndicators(supabase, patientId, access.clinicId, input);
+  if (!result.ok) return { error: result.error };
 
   revalidatePath(`/pacientes/${patientId}`);
   revalidatePath(`/pacientes/${patientId}?tab=soap`);
