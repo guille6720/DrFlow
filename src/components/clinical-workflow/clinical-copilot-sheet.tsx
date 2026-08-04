@@ -10,9 +10,10 @@ import { useFeatureFlag } from "@/components/plugins/clinic-plugins-provider";
 import {
   buildCopilotSuggestedPrompts,
   runClinicalCopilotQuery,
-  type CopilotResponse,
+  type OrchestratedCopilotResponse,
 } from "@/lib/utils/clinical-copilot";
 import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
+import { CLINICAL_AI_AGENT_LABELS } from "@/lib/utils/clinical-ai-orchestrator";
 import { PHYSICIAN_ASSIST_DISCLAIMER } from "@/lib/utils/physician-assist-types";
 
 type Props = {
@@ -24,7 +25,7 @@ type Props = {
 type ChatTurn = {
   role: "user" | "assistant";
   text: string;
-  response?: CopilotResponse;
+  response?: OrchestratedCopilotResponse;
 };
 
 /** Conversational clinical copilot — rule-based, confirm before acting (Phase E). */
@@ -111,6 +112,12 @@ export function ClinicalCopilotSheet({ open, onClose, context }: Props) {
                     <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-violet-700">
                       {turn.response.title}
                     </p>
+                    {turn.response.agentId ? (
+                      <p className="mb-1 text-[10px] text-violet-600">
+                        Agente: {CLINICAL_AI_AGENT_LABELS[turn.response.agentId]}
+                        {turn.response.engine === "llm_enhanced" ? " · LLM" : " · rule-based"}
+                      </p>
+                    ) : null}
                     <pre className="whitespace-pre-wrap font-sans">{turn.response.body}</pre>
                     {turn.response.actions.length > 0 ? (
                       <div className="mt-2 flex flex-wrap gap-2">

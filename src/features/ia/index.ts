@@ -58,6 +58,18 @@ export {
   buildCopilotSuggestedPrompts,
 } from "@/lib/utils/clinical-copilot";
 export type { ClinicalCopilotContext, CopilotResponse } from "@/lib/utils/clinical-copilot";
+export {
+  runClinicalAiOrchestrator,
+  listClinicalAiAgents,
+  resolveAgentForTask,
+  CLINICAL_AI_AGENT_LABELS,
+} from "@/lib/utils/clinical-ai-orchestrator";
+export type {
+  ClinicalAiAgentId,
+  ClinicalAiTask,
+  ClinicalAiOrchestratorResult,
+  ClinicalAiEngine,
+} from "@/lib/utils/clinical-ai-orchestrator";
 export type {
   PhysicianAssistContext,
   PhysicianAssistItem,

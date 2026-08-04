@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { buildLightweightPatientWarnings } from "@/lib/utils/clinical-assistant";
+import { runClinicalAiOrchestrator } from "@/lib/utils/clinical-ai-orchestrator";
+import { enhanceClinicalAiBodyIfConfigured } from "@/lib/utils/clinical-ai-llm-provider.server";
 import type { ClinicJobRow, RunAiTaskJobPayload } from "@/lib/jobs/types";
+import type { PhysicianAssistContext } from "@/lib/utils/physician-assist-types";
 
 export async function handleRunAiTaskJob(
   supabase: SupabaseClient,
@@ -11,7 +13,7 @@ export async function handleRunAiTaskJob(
   const { data: patient } = await supabase
     .from("patients")
     .select(
-      "id, first_name, last_name, birth_date, sex, insurance_provider, allergies, regular_medication, medical_history"
+      "id, first_name, last_name, birth_date, sex, insurance_provider, insurance_plan, allergies, regular_medication, medical_history"
     )
     .eq("id", payload.patientId)
     .eq("clinic_id", job.clinic_id)
@@ -29,40 +31,63 @@ export async function handleRunAiTaskJob(
     .order("created_at", { ascending: false })
     .limit(5);
 
-  const lastEvolution = records?.[0]?.evolution ?? "";
-  const warnings = buildLightweightPatientWarnings({
+  const lastRecord = records?.[0];
+  const patientName = `${patient.last_name}, ${patient.first_name}`;
+
+  const assistContext: PhysicianAssistContext = {
+    patientName,
     allergies: patient.allergies,
     regularMedication: patient.regular_medication,
-    evolutionText: lastEvolution,
+    medicalHistory: patient.medical_history,
+    lastEvolution: lastRecord?.evolution ?? null,
+    lastDiagnosis: lastRecord?.diagnosis ?? null,
+    evolutionText: lastRecord?.evolution ?? undefined,
+    diagnosis: lastRecord?.diagnosis ?? null,
+    chiefComplaint: lastRecord?.chief_complaint ?? null,
+    insurance: patient.insurance_provider ?? undefined,
+    insurancePlan: patient.insurance_plan ?? undefined,
+    activeProblems: (records ?? [])
+      .map((r) => r.diagnosis?.trim())
+      .filter((d): d is string => Boolean(d && d.length > 2))
+      .slice(0, 8),
+  };
+
+  const taskMap = {
+    clinical_summary: "clinical_summary" as const,
+    soap_draft: "soap_draft" as const,
+    proactive_followup: "proactive_followup" as const,
+    close_encounter: "close_encounter" as const,
+  };
+
+  const orchestratorTask = taskMap[payload.task] ?? "clinical_summary";
+
+  let result = runClinicalAiOrchestrator({
+    task: orchestratorTask,
+    patientId: payload.patientId,
+    patientName,
+    lastConsultAt: lastRecord?.created_at ?? null,
+    assistContext,
+    labSourceText: payload.labSourceText,
   });
 
-  const activeProblems = (records ?? [])
-    .map((r) => r.diagnosis?.trim())
-    .filter((d): d is string => Boolean(d && d.length > 2))
-    .slice(0, 8);
-
-  if (payload.task === "clinical_summary") {
-    return {
-      task: payload.task,
-      patientId: payload.patientId,
-      patientName: `${patient.last_name}, ${patient.first_name}`,
-      warnings,
-      activeProblems,
-      lastEvolutionPreview: lastEvolution.slice(0, 400),
-      disclaimer: "Resumen rule-based — no reemplaza criterio médico.",
-    };
+  if (payload.enhanceWithLlm) {
+    const enhanced = await enhanceClinicalAiBodyIfConfigured({
+      agentId: result.agentId,
+      body: result.body,
+      contextSummary: patientName,
+    });
+    result = { ...result, body: enhanced.body, engine: enhanced.engine };
   }
 
   return {
     task: payload.task,
     patientId: payload.patientId,
-    warnings,
-    soapDraft: {
-      subjective: lastEvolution.slice(0, 500) || "Sin evolución reciente.",
-      objective: patient.medical_history?.slice(0, 300) ?? "",
-      assessment: records?.[0]?.diagnosis ?? "",
-      plan: patient.regular_medication ?? "",
-    },
-    disclaimer: "Borrador SOAP rule-based — revisar antes de usar.",
+    patientName,
+    agentId: result.agentId,
+    engine: result.engine,
+    title: result.title,
+    body: result.body,
+    itemCount: result.items.length,
+    disclaimer: result.disclaimer,
   };
 }

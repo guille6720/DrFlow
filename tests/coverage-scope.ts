@@ -35,6 +35,8 @@ export const COVERAGE_INCLUDE = [
   "src/lib/utils/close-encounter-assist.ts",
   "src/lib/utils/proactive-follow-up.ts",
   "src/lib/utils/clinical-copilot.ts",
+  "src/lib/utils/clinical-copilot-responses.ts",
+  "src/lib/utils/clinical-ai-orchestrator.ts",
   "src/lib/utils/clinical-csv-parse.ts",
   "src/lib/utils/build-clinical-timeline.ts",
   "src/lib/utils/command-palette-search.ts",

@@ -48,6 +48,8 @@ export const CRITICAL_COVERAGE = [
       filePath.includes("src/lib/utils/close-encounter-assist.ts") ||
       filePath.includes("src/lib/utils/proactive-follow-up.ts") ||
       filePath.includes("src/lib/utils/clinical-copilot.ts") ||
+      filePath.includes("src/lib/utils/clinical-copilot-responses.ts") ||
+      filePath.includes("src/lib/utils/clinical-ai-orchestrator.ts") ||
       filePath.includes("src/lib/utils/parse-evolution-medications.ts") ||
       filePath.includes("src/lib/utils/sanitize-clinical-display.ts"),
   },

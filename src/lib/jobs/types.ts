@@ -51,8 +51,10 @@ export type ImportClinicalPdfJobPayload = {
 };
 
 export type RunAiTaskJobPayload = {
-  task: "clinical_summary" | "soap_draft";
+  task: "clinical_summary" | "soap_draft" | "proactive_followup" | "close_encounter";
   patientId: string;
+  labSourceText?: string;
+  enhanceWithLlm?: boolean;
   context?: Record<string, unknown>;
 };
 
