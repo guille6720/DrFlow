@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Search } from "lucide-react";
-import type { CommandPaletteItemDef, CommandPaletteGroup } from "@/lib/constants/command-palette-items";
+import type { CommandPaletteItemDef } from "@/lib/constants/command-palette-items";
 import { COMMAND_PALETTE_SHORTCUTS } from "@/lib/constants/command-palette-items";
 import type { CommandPalettePatientHit } from "@/lib/utils/command-palette-search";
+import { buildStaticPaletteSections } from "@/lib/utils/command-palette-layout";
 import { cn } from "@/lib/utils/cn";
 
-const GROUP_LABELS: Record<CommandPaletteGroup, string> = {
+const GROUP_LABELS = {
   acciones: "Acciones rápidas",
   navegacion: "Ir a…",
   pacientes: "Pacientes",
-};
+} as const;
 
 type FlatResult =
   | { kind: "static"; item: CommandPaletteItemDef }
@@ -48,58 +49,27 @@ export function CommandPaletteDialog({
 
   useEffect(() => {
     if (open) {
-      const t = setTimeout(() => inputRef.current?.focus(), 0);
-      return () => clearTimeout(t);
+      const focusTimer = setTimeout(() => inputRef.current?.focus(), 0);
+      return () => clearTimeout(focusTimer);
     }
-    onQueryChange("");
+    const resetTimer = setTimeout(() => onQueryChange(""), 0);
+    return () => clearTimeout(resetTimer);
   }, [open, onQueryChange]);
 
+  const actionItems = useMemo(
+    () => staticItems.filter((item) => item.group === "acciones"),
+    [staticItems]
+  );
+  const navItems = useMemo(
+    () => staticItems.filter((item) => item.group === "navegacion"),
+    [staticItems]
+  );
+  const { sections, patientStartIndex } = useMemo(
+    () => buildStaticPaletteSections(actionItems, navItems),
+    [actionItems, navItems]
+  );
+
   if (!open) return null;
-
-  let runningIndex = 0;
-
-  function renderStaticGroup(group: CommandPaletteGroup, items: CommandPaletteItemDef[]) {
-    if (items.length === 0) return null;
-    const startIndex = runningIndex;
-    const section = items.map((item, i) => {
-      const index = startIndex + i;
-      runningIndex = index + 1;
-      const Icon = item.icon;
-      const active = selectedIndex === index;
-      return (
-        <button
-          key={item.id}
-          type="button"
-          onMouseEnter={() => onSelectIndex(index)}
-          onClick={() => onNavigate(item.href)}
-          className={cn(
-            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition",
-            active ? "bg-teal-600/20 ring-1 ring-teal-500/40" : "hover:bg-slate-800"
-          )}
-        >
-          <Icon className="h-4 w-4 shrink-0 text-teal-400" />
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-medium text-slate-100">{item.label}</span>
-            {item.description ? (
-              <span className="block truncate text-xs text-slate-400">{item.description}</span>
-            ) : null}
-          </span>
-        </button>
-      );
-    });
-    return (
-      <div key={group} className="px-2 py-2">
-        <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-          {GROUP_LABELS[group]}
-        </p>
-        <div className="space-y-0.5">{section}</div>
-      </div>
-    );
-  }
-
-  const actionItems = staticItems.filter((i) => i.group === "acciones");
-  const navItems = staticItems.filter((i) => i.group === "navegacion");
-  runningIndex = 0;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center bg-slate-950/60 p-4 pt-[12vh] backdrop-blur-sm">
@@ -136,8 +106,39 @@ export function CommandPaletteDialog({
             </p>
           ) : (
             <>
-              {renderStaticGroup("acciones", actionItems)}
-              {renderStaticGroup("navegacion", navItems)}
+              {sections.map(({ group, rows }) => (
+                <div key={group} className="px-2 py-2">
+                  <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    {GROUP_LABELS[group]}
+                  </p>
+                  <div className="space-y-0.5">
+                    {rows.map(({ item, index }) => {
+                      const Icon = item.icon;
+                      const active = selectedIndex === index;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onMouseEnter={() => onSelectIndex(index)}
+                          onClick={() => onNavigate(item.href)}
+                          className={cn(
+                            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition",
+                            active ? "bg-teal-600/20 ring-1 ring-teal-500/40" : "hover:bg-slate-800"
+                          )}
+                        >
+                          <Icon className="h-4 w-4 shrink-0 text-teal-400" />
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-medium text-slate-100">{item.label}</span>
+                            {item.description ? (
+                              <span className="block truncate text-xs text-slate-400">{item.description}</span>
+                            ) : null}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
               {patientHits.length > 0 ? (
                 <div className="px-2 py-2">
                   <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
@@ -146,7 +147,7 @@ export function CommandPaletteDialog({
                   </p>
                   <div className="space-y-0.5">
                     {patientHits.map((patient, i) => {
-                      const index = actionItems.length + navItems.length + i;
+                      const index = patientStartIndex + i;
                       const active = selectedIndex === index;
                       return (
                         <button
@@ -161,9 +162,7 @@ export function CommandPaletteDialog({
                         >
                           <Search className="h-4 w-4 shrink-0 text-cyan-400" />
                           <span className="min-w-0 flex-1">
-                            <span className="block text-sm font-medium text-slate-100">
-                              {patient.label}
-                            </span>
+                            <span className="block text-sm font-medium text-slate-100">{patient.label}</span>
                             <span className="block text-xs text-slate-400">{patient.description}</span>
                           </span>
                         </button>

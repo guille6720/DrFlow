@@ -9,7 +9,9 @@ export function RouteAnnouncer() {
 
   useEffect(() => {
     const title = document.title?.trim();
-    setAnnouncement(title || pathname);
+    const next = title || pathname;
+    const frame = requestAnimationFrame(() => setAnnouncement(next));
+    return () => cancelAnimationFrame(frame);
   }, [pathname]);
 
   return (

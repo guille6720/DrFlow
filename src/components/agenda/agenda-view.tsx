@@ -1,38 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { Calendar, Plus } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import { AppointmentRow, filterAppointmentsForDay } from "@/components/agenda/appointment-row";
-import { createAppointment } from "@/lib/actions/appointments";
-import { hasPermission } from "@/lib/permissions/roles";
-import type { Appointment, Clinic, Patient, Professional, UserRole } from "@/types/database";
 import { CalendarGrid } from "@/components/agenda/calendar-grid";
 import { MonthOverviewGrid } from "@/components/agenda/month-overview-grid";
-import { AppointmentDatetimePicker } from "@/components/agenda/appointment-datetime-picker";
 import { EditAppointmentDialog } from "@/components/agenda/edit-appointment-dialog";
-import { PatientSearchCombobox } from "@/components/pacientes/patient-search-combobox";
-import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import {
-  format,
-  startOfWeek,
-  endOfWeek,
-  eachDayOfInterval,
-  addWeeks,
-  subWeeks,
-  addDays,
-  subDays,
-  addMonths,
-  subMonths,
-} from "date-fns";
-import { es } from "date-fns/locale";
+import { AgendaToolbar } from "@/components/agenda/agenda-toolbar";
+import { AgendaCreateForm } from "@/components/agenda/agenda-create-form";
+import { useAgendaView } from "@/lib/hooks/use-agenda-view";
+import { hasPermission } from "@/lib/permissions/roles";
+import type { Appointment, Clinic, Patient, Professional, UserRole } from "@/types/database";
 
 interface AgendaPageProps {
   initialView?: "day" | "week" | "month";
@@ -54,7 +39,7 @@ interface AgendaPageProps {
 export function AgendaView({
   initialView = "week",
   initialShowForm = false,
-  appointments: initialAppointments,
+  appointments,
   patients,
   professionals,
   locations,
@@ -68,81 +53,17 @@ export function AgendaView({
   bookingSlug,
 }: AgendaPageProps) {
   const router = useRouter();
-  const [view, setView] = useState<"day" | "week" | "month">(initialView);
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [showForm, setShowForm] = useState(initialShowForm);
-  const [filterProfessional, setFilterProfessional] = useState("");
-  const [filterSpecialty, setFilterSpecialty] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [startAt, setStartAt] = useState("");
-  const [formProfessionalId, setFormProfessionalId] = useState("");
-  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
-
-  function openNewAppointmentForm(prefill = "") {
-    setStartAt(prefill);
-    setShowForm(true);
-  }
-
-  function handleSlotClick(day: Date, time: string) {
-    const [h, m] = time.split(":").map(Number);
-    const d = new Date(day);
-    d.setHours(h, m, 0, 0);
-    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-      .toISOString()
-      .slice(0, 16);
-    openNewAppointmentForm(local);
-  }
-
-  const filtered = initialAppointments.filter((a) => {
-    if (filterProfessional && a.professional_id !== filterProfessional) return false;
-    if (filterSpecialty && a.specialty_id !== filterSpecialty) return false;
-    return true;
+  const agenda = useAgendaView({
+    initialView,
+    initialShowForm,
+    appointments,
+    defaultDuration,
   });
-
-  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
   const canManage = hasPermission(role, "manageAppointments", false);
   const canStartClinical = hasPermission(role, "editClinicalRecords", false);
-
-  function shiftCalendar(back: boolean) {
-    if (view === "day") {
-      setCurrentDate(back ? subDays(currentDate, 1) : addDays(currentDate, 1));
-    } else if (view === "month") {
-      setCurrentDate(back ? subMonths(currentDate, 1) : addMonths(currentDate, 1));
-    } else {
-      setCurrentDate(back ? subWeeks(currentDate, 1) : addWeeks(currentDate, 1));
-    }
-  }
-
   const dayAppointments =
-    view === "day" ? filterAppointmentsForDay(filtered, currentDate) : filtered;
-
-  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    const formData = new FormData(e.currentTarget);
-    const startAt = formData.get("start_at") as string;
-    const duration = parseInt(formData.get("duration") as string) || defaultDuration;
-    const start = new Date(startAt);
-    const end = new Date(start.getTime() + duration * 60000);
-    formData.set("end_at", end.toISOString());
-    formData.set("status", "pending");
-
-    const result = await createAppointment(formData);
-    setLoading(false);
-    if (result.error) {
-      setError(result.error);
-    } else {
-      setShowForm(false);
-      setStartAt("");
-      setFormProfessionalId("");
-      router.refresh();
-    }
-  }
+    agenda.view === "day" ? filterAppointmentsForDay(agenda.filtered, agenda.currentDate) : agenda.filtered;
 
   return (
     <>
@@ -156,175 +77,52 @@ export function AgendaView({
       />
 
       <div className="space-y-4 p-4 sm:p-6">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex rounded-xl border border-slate-600/80 bg-slate-800/90 p-1 shadow-lg">
-            {(["day", "week", "month"] as const).map((v) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => setView(v)}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium capitalize ${
-                  view === v
-                    ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900"
-                    : "text-slate-300 hover:bg-slate-700/80 hover:text-white"
-                }`}
-              >
-                {v === "day" ? "Día" : v === "week" ? "Semana" : "Mes"}
-              </button>
-            ))}
-          </div>
+        <AgendaToolbar agenda={agenda} professionals={professionals} specialties={specialties} />
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700"
-              onClick={() => shiftCalendar(true)}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="min-w-[180px] text-center text-sm font-medium capitalize text-slate-200">
-              {view === "day"
-                ? format(currentDate, "d 'de' MMMM yyyy", { locale: es })
-                : format(currentDate, "MMMM yyyy", { locale: es })}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700"
-              onClick={() => shiftCalendar(false)}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <Select
-            options={[{ value: "", label: "Todos los médicos" }, ...professionals.map((p) => ({
-              value: p.id,
-              label: getProfessionalDisplayName(p),
-            }))]}
-            value={filterProfessional}
-            onChange={(e) => setFilterProfessional(e.target.value)}
-            className="w-48"
+        {agenda.showForm ? (
+          <AgendaCreateForm
+            agenda={agenda}
+            patients={patients}
+            professionals={professionals}
+            locations={locations}
+            specialties={specialties}
+            appointments={appointments}
+            scheduleBlocks={scheduleBlocks}
+            defaultDuration={defaultDuration}
           />
+        ) : null}
 
-          <Select
-            options={[{ value: "", label: "Todas las especialidades" }, ...specialties.map((s) => ({
-              value: s.id,
-              label: s.name,
-            }))]}
-            value={filterSpecialty}
-            onChange={(e) => setFilterSpecialty(e.target.value)}
-            className="w-48"
-          />
-
-          <Button onClick={() => openNewAppointmentForm()} className="ml-auto">
-            <Plus className="h-4 w-4" />
-            Nuevo turno
-          </Button>
-        </div>
-
-        {showForm && (
-          <Card title="Nuevo turno">
-            <form onSubmit={handleCreate} className="grid gap-4 sm:grid-cols-2">
-              <PatientSearchCombobox
-                patients={patients.map((p) => ({
-                  id: p.id,
-                  first_name: p.first_name,
-                  last_name: p.last_name,
-                  document_number: p.document_number,
-                }))}
-                required
-              />
-              <Select
-                name="professional_id"
-                label="Profesional"
-                required
-                value={formProfessionalId}
-                onChange={(e) => setFormProfessionalId(e.target.value)}
-                options={professionals.map((p) => ({
-                  value: p.id,
-                  label: getProfessionalDisplayName(p),
-                }))}
-                placeholder="Seleccionar profesional"
-              />
-              <Select
-                name="location_id"
-                label="Sede"
-                options={locations.map((l) => ({ value: l.id, label: l.name }))}
-                placeholder="Opcional"
-              />
-              <Select
-                name="specialty_id"
-                label="Especialidad"
-                options={specialties.map((s) => ({ value: s.id, label: s.name }))}
-                placeholder="Opcional"
-              />
-              <AppointmentDatetimePicker
-                key={startAt || "new"}
-                value={startAt}
-                onChange={setStartAt}
-                appointments={initialAppointments}
-                scheduleBlocks={scheduleBlocks}
-                professionalId={formProfessionalId || undefined}
-                required
-              />
-              <Input
-                name="duration"
-                label="Duración (min)"
-                type="number"
-                defaultValue={defaultDuration}
-                required
-              />
-              <div className="sm:col-span-2">
-                <Input name="notes" label="Notas" />
-              </div>
-              {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}
-              <div className="flex gap-2 sm:col-span-2">
-                <Button type="submit" loading={loading}>Guardar turno</Button>
-                <Button type="button" variant="outline" onClick={() => {
-                setShowForm(false);
-                setStartAt("");
-                setFormProfessionalId("");
-              }}>
-                  Cancelar
-                </Button>
-              </div>
-            </form>
-          </Card>
-        )}
-
-        {filtered.length === 0 && view === "day" ? (
+        {agenda.filtered.length === 0 && agenda.view === "day" ? (
           <EmptyState
             icon={Calendar}
             title="No hay turnos en este período"
             description="Creá un turno o ajustá los filtros para ver más resultados."
             action={
-              <Button onClick={() => openNewAppointmentForm()}>
+              <Button onClick={() => agenda.openNewAppointmentForm()}>
                 <Plus className="h-4 w-4" />
                 Nuevo turno
               </Button>
             }
           />
-        ) : view === "week" ? (
+        ) : agenda.view === "week" ? (
           <CalendarGrid
-            weekDays={weekDays}
-            appointments={filtered}
+            weekDays={agenda.weekDays}
+            appointments={agenda.filtered}
             blocks={scheduleBlocks}
-            onSlotClick={handleSlotClick}
+            onSlotClick={agenda.handleSlotClick}
           />
-        ) : view === "month" ? (
+        ) : agenda.view === "month" ? (
           <MonthOverviewGrid
-            monthDate={currentDate}
-            appointments={filtered}
+            monthDate={agenda.currentDate}
+            appointments={agenda.filtered}
             onDayClick={(day) => {
-              setCurrentDate(day);
-              setView("day");
+              agenda.setCurrentDate(day);
+              agenda.setView("day");
             }}
           />
         ) : (
           <Card
-            title={format(currentDate, "EEEE d 'de' MMMM", { locale: es })}
+            title={format(agenda.currentDate, "EEEE d 'de' MMMM", { locale: es })}
             className="border-slate-600/80 bg-slate-800/95 [&_h3]:text-slate-100 [&_.font-medium]:text-slate-50"
           >
             {dayAppointments.length === 0 ? (
@@ -338,7 +136,7 @@ export function AgendaView({
                     showDate
                     canManage={canManage}
                     canStartClinical={canStartClinical}
-                    onEdit={canManage ? setEditingAppointment : undefined}
+                    onEdit={canManage ? agenda.setEditingAppointment : undefined}
                   />
                 ))}
               </ul>
@@ -346,7 +144,7 @@ export function AgendaView({
           </Card>
         )}
 
-        {bookingSlug && (
+        {bookingSlug ? (
           <p className="text-sm text-slate-400">
             Link público:{" "}
             <Link
@@ -357,24 +155,24 @@ export function AgendaView({
               /solicitar-turno/{bookingSlug}
             </Link>
           </p>
-        )}
+        ) : null}
 
-        {editingAppointment && (
+        {agenda.editingAppointment ? (
           <EditAppointmentDialog
-            key={editingAppointment.id}
-            appointment={editingAppointment}
+            key={agenda.editingAppointment.id}
+            appointment={agenda.editingAppointment}
             patients={patients}
             professionals={professionals}
             locations={locations}
             specialties={specialties}
-            appointments={initialAppointments}
+            appointments={appointments}
             scheduleBlocks={scheduleBlocks}
             defaultDuration={defaultDuration}
-            open={Boolean(editingAppointment)}
-            onClose={() => setEditingAppointment(null)}
+            open
+            onClose={() => agenda.setEditingAppointment(null)}
             onSaved={() => router.refresh()}
           />
-        )}
+        ) : null}
       </div>
     </>
   );

@@ -1,8 +1,4 @@
-import {
-  CLINICAL_DARK_STORAGE_KEY,
-  UI_STYLE_STORAGE_KEY,
-  applyUiThemeToDocument,
-} from "@/lib/theme/ui-theme";
+import { applyUiThemeToDocument } from "@/lib/theme/ui-theme";
 
 /** Limpia datos locales de DrFlow (tema, portal, QA, etc.). */
 export function clearDrFlowClientStorage(): void {

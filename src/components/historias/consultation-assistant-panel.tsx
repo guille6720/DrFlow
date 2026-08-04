@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { AlertTriangle, Sparkles } from "lucide-react";
-import { searchPathologies } from "@/lib/actions/pharmacology";
 import {
   buildLightweightPatientWarnings,
-  extractPathologySearchQuery,
 } from "@/lib/utils/clinical-assistant";
-import { extractEvolutionDiagnosis } from "@/lib/utils/parse-evolution-medications";
-import type { PathologySearchResult } from "@/types/pharmacology";
+import { resolveConsultationPathologyQuery } from "@/lib/utils/consultation-pathology-query";
+import { useDeferredPathologySearch } from "@/lib/hooks/use-deferred-pathology-search";
 import { useFeatureFlag } from "@/components/plugins/clinic-plugins-provider";
 
 type Props = {
@@ -28,7 +26,15 @@ export function ConsultationAssistantPanel({
   pharmacologyHref,
 }: Props) {
   const enabled = useFeatureFlag("consultation_assistant");
-  const [pathologies, setPathologies] = useState<PathologySearchResult[]>([]);
+  const pathologyQuery = useMemo(
+    () => resolveConsultationPathologyQuery(evolutionText),
+    [evolutionText]
+  );
+  const { pathologies } = useDeferredPathologySearch({
+    query: pathologyQuery,
+    minLength: 3,
+    debounceMs: 500,
+  });
 
   const warnings = useMemo(
     () =>
@@ -39,28 +45,6 @@ export function ConsultationAssistantPanel({
       }),
     [allergies, regularMedication, evolutionText]
   );
-
-  const pathologyQuery = useMemo(() => {
-    const fromEvolution = extractEvolutionDiagnosis(evolutionText);
-    if (fromEvolution.length >= 3) return fromEvolution.slice(0, 80);
-    return extractPathologySearchQuery({ lastEvolution: evolutionText });
-  }, [evolutionText]);
-
-  useEffect(() => {
-    if (pathologyQuery.length < 3) {
-      setPathologies([]);
-      return;
-    }
-    let cancelled = false;
-    const timer = window.setTimeout(async () => {
-      const { data } = await searchPathologies(pathologyQuery);
-      if (!cancelled) setPathologies(data ?? []);
-    }, 500);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [pathologyQuery]);
 
   const showCie10 = pathologies.length > 0 && pathologyQuery.length >= 3;
 

@@ -2,22 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import {
-  updateClinicSettings,
-  enablePublicBooking,
-  createAvailabilityRule,
-  createScheduleBlock,
-} from "@/lib/actions/settings";
-import type { Clinic } from "@/types/database";
-import { ExternalLink, Copy } from "lucide-react";
 import Link from "next/link";
+import type { Clinic } from "@/types/database";
 import { TeamInvitePanel } from "@/components/configuracion/team-invite-panel";
-import { AppInstallCard } from "@/components/portal/app-install-card";
-import { buildPatientAppInstallUrl } from "@/lib/utils/patient-portal-ready";
+import { SettingsClinicSection } from "@/components/configuracion/settings-clinic-section";
+import { SettingsAppsSection } from "@/components/configuracion/settings-apps-section";
+import { SettingsAgendaSection } from "@/components/configuracion/settings-agenda-section";
 
 export type SettingsSectionId = "clinica" | "apps" | "agenda" | "equipo";
 
@@ -77,236 +67,39 @@ export function SettingsPanel({
 
   return (
     <div className="space-y-6">
-      {msg && <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{msg}</div>}
-      {err && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{err}</div>}
+      {msg ? (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{msg}</div>
+      ) : null}
+      {err ? (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{err}</div>
+      ) : null}
 
-      {show("clinica") && (
-      <Card title="Datos de la clínica">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            run(() => updateClinicSettings(new FormData(e.currentTarget)));
-          }}
-          className="grid gap-4 sm:grid-cols-2"
-        >
-          <Input name="name" label="Nombre" defaultValue={clinic.name} required />
-          <Input name="email" label="Email" type="email" defaultValue={clinic.email ?? ""} />
-          <Input name="phone" label="Teléfono" defaultValue={clinic.phone ?? ""} />
-          <Input name="address" label="Dirección" defaultValue={clinic.address ?? ""} />
-          <Input
-            name="default_appointment_duration"
-            label="Duración turno (min)"
-            type="number"
-            defaultValue={clinic.default_appointment_duration}
-          />
-          <label className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 p-3 sm:col-span-2">
-            <input
-              type="checkbox"
-              name="voice_input_enabled"
-              defaultChecked={clinic.voice_input_enabled !== false}
-              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-            />
-            <span className="text-sm">
-              <span className="font-medium text-slate-900">Dictado por voz en historias clínicas</span>
-              <span className="mt-0.5 block text-slate-600">
-                Muestra el botón &quot;Dictar&quot; en motivo, evolución, diagnóstico e indicaciones.
-                Cada médico puede desactivarlo también en Configuración → Apariencia.
-              </span>
-            </span>
-          </label>
-          <div className="sm:col-span-2">
-            <Button type="submit">Guardar clínica</Button>
+      {show("clinica") ? <SettingsClinicSection clinic={clinic} onResult={run} /> : null}
+
+      {show("apps") ? (
+        <SettingsAppsSection clinic={clinic} bookingSlug={bookingSlug} onMessage={setMsg} />
+      ) : null}
+
+      {show("agenda") ? (
+        <SettingsAgendaSection
+          clinic={clinic}
+          bookingSlug={bookingSlug}
+          professionals={professionals}
+          onResult={run}
+          onMessage={setMsg}
+        />
+      ) : null}
+
+      {show("equipo") ? (
+        <>
+          <TeamInvitePanel members={members} invitations={invitations} />
+          <div className="drflow-card-light rounded-xl border border-slate-200 bg-white p-4">
+            <Link href="/qa" className="text-sm font-medium text-blue-700 hover:underline">
+              Abrir checklist QA interactivo →
+            </Link>
           </div>
-        </form>
-      </Card>
-      )}
-
-      {show("apps") && (
-      <>
-      <Card title="DrFlow en tu celular (médico)">
-        <p className="mb-4 text-sm text-slate-600">
-          Agregá DrFlow a la pantalla de inicio de tu celular para acceder al dashboard y la agenda.
-        </p>
-        <AppInstallCard variant="clinic" />
-      </Card>
-
-      <Card title="App pacientes (PWA)">
-        <p className="mb-3 text-sm text-slate-600">
-          Compartí la app de turnos y recetas desde la ficha de cada paciente en{" "}
-          <Link href="/pacientes" className="font-medium text-blue-700 hover:underline">
-            Pacientes
-          </Link>
-          . El sistema registra el envío para no repetir con el mismo paciente.
-        </p>
-        {bookingSlug || clinic.slug ? (
-          <div className="space-y-4">
-            {(() => {
-              const slug = bookingSlug ?? clinic.slug;
-              return (
-                <>
-                  <Link
-                    href={`/portal/${slug}/instalar`}
-                    target="_blank"
-                    className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:underline"
-                  >
-                    /portal/{slug}/instalar
-                    <ExternalLink className="h-4 w-4" />
-                  </Link>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      const url = buildPatientAppInstallUrl(window.location.origin, slug);
-                      navigator.clipboard.writeText(url);
-                      setMsg(`Link de instalación copiado: ${url}`);
-                    }}
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                    Copiar link de instalación
-                  </Button>
-                  <AppInstallCard variant="patient" slug={slug} clinicName={clinic.name} />
-                </>
-              );
-            })()}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <p className="text-sm text-slate-500">Activá la reserva pública para generar el portal.</p>
-            <AppInstallCard variant="patient" />
-          </div>
-        )}
-      </Card>
-      </>
-      )}
-
-      {show("agenda") && (
-      <>
-      <Card title="Reserva pública online">
-        <p className="mb-3 text-sm text-slate-600">
-          Tu página de turnos usa el nombre de la clínica. Compartí el link para que pacientes reserven online.
-        </p>
-        {bookingSlug ? (
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-slate-800">{clinic.name}</p>
-            <div className="flex flex-wrap items-center gap-2">
-              <Link
-                href={`/solicitar-turno/${bookingSlug}`}
-                target="_blank"
-                className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:underline"
-              >
-                /solicitar-turno/{bookingSlug}
-                <ExternalLink className="h-4 w-4" />
-              </Link>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  const url = `${window.location.origin}/solicitar-turno/${bookingSlug}`;
-                  navigator.clipboard.writeText(url);
-                  setMsg(`Link copiado: ${url}`);
-                }}
-              >
-                <Copy className="h-3.5 w-3.5" />
-                Copiar link
-              </Button>
-            </div>
-            <p className="text-xs text-slate-500">
-              Los turnos tomados por la web aparecen en la agenda con el ícono 🌐 Web.
-            </p>
-          </div>
-        ) : (
-          <Button onClick={() => run(enablePublicBooking)}>Activar reserva pública</Button>
-        )}
-      </Card>
-
-      <Card title="Disponibilidad semanal">
-        <p className="mb-3 text-sm text-slate-600">
-          Estos horarios alimentan los turnos online del portal y de{" "}
-          <code className="rounded bg-slate-100 px-1 text-xs">/solicitar-turno</code>. Si no cargás
-          reglas, el paciente no va a ver horarios disponibles.
-        </p>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            run(() => createAvailabilityRule(new FormData(e.currentTarget)));
-          }}
-          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          <Select
-            name="professional_id"
-            label="Profesional"
-            required
-            options={professionals.map((p) => ({
-              value: p.id,
-              label: p.display_name ?? p.profiles?.full_name ?? "Profesional",
-            }))}
-          />
-          <Select
-            name="day_of_week"
-            label="Día"
-            required
-            options={[
-              { value: "1", label: "Lunes" },
-              { value: "2", label: "Martes" },
-              { value: "3", label: "Miércoles" },
-              { value: "4", label: "Jueves" },
-              { value: "5", label: "Viernes" },
-              { value: "6", label: "Sábado" },
-              { value: "0", label: "Domingo" },
-            ]}
-          />
-          <Input name="start_time" label="Desde" type="time" defaultValue="09:00" required />
-          <Input name="end_time" label="Hasta" type="time" defaultValue="18:00" required />
-          <Input name="slot_duration" label="Duración slot (min)" type="number" defaultValue="30" />
-          <div className="flex items-end">
-            <Button type="submit">Agregar horario</Button>
-          </div>
-        </form>
-      </Card>
-
-      <Card title="Bloqueo de agenda">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            run(() => createScheduleBlock(new FormData(e.currentTarget)));
-          }}
-          className="grid gap-3 sm:grid-cols-2"
-        >
-          <Select
-            name="professional_id"
-            label="Profesional"
-            required
-            options={professionals.map((p) => ({
-              value: p.id,
-              label: p.display_name ?? p.profiles?.full_name ?? "Profesional",
-            }))}
-          />
-          <Input name="reason" label="Motivo" defaultValue="Bloqueo" />
-          <Input name="start_at" label="Desde" type="datetime-local" required />
-          <Input name="end_at" label="Hasta" type="datetime-local" required />
-          <Button type="submit" className="sm:col-span-2">Crear bloqueo</Button>
-        </form>
-      </Card>
-      </>
-      )}
-
-      {show("equipo") && (
-      <>
-      <TeamInvitePanel members={members} invitations={invitations} />
-
-      <div className="drflow-card-light rounded-xl border border-slate-200 bg-white p-4">
-        <Link
-          href="/qa"
-          className="text-sm font-medium text-blue-700 hover:underline"
-        >
-          Abrir checklist QA interactivo →
-        </Link>
-      </div>
-      </>
-      )}
-
+        </>
+      ) : null}
     </div>
   );
 }

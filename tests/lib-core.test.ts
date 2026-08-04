@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { cn } from "@/lib/utils/cn";
 import {
   backHrefFromClinicalSubpage,

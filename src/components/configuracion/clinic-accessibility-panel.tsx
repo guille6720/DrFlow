@@ -10,6 +10,7 @@ import {
   WCAG_AA_FEATURES,
   type WcagFeatureStatus,
 } from "@/lib/accessibility/constants";
+import { readReducedMotionPreference } from "@/lib/accessibility/read-reduced-motion";
 
 const STATUS_LABEL: Record<WcagFeatureStatus, string> = {
   done: "Implementado",
@@ -24,13 +25,11 @@ const STATUS_VARIANT: Record<WcagFeatureStatus, "success" | "warning" | "info"> 
 };
 
 export function ClinicAccessibilityPanel() {
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(readReducedMotionPreference);
 
   useEffect(() => {
-    const stored = localStorage.getItem(REDUCED_MOTION_STORAGE_KEY);
-    const prefersReduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setReducedMotion(stored === "true" || (stored !== "false" && prefersReduce));
-  }, []);
+    document.documentElement.dataset.motion = reducedMotion ? "reduce" : "normal";
+  }, [reducedMotion]);
 
   function toggleReducedMotion(enabled: boolean) {
     localStorage.setItem(REDUCED_MOTION_STORAGE_KEY, enabled ? "true" : "false");

@@ -14,7 +14,7 @@ export interface TelemedicineService {
 class JitsiTelemedicineService implements TelemedicineService {
   async createRoom(
     appointmentId: string,
-    patientName: string
+    _patientName: string
   ): Promise<TelemedicineRoom> {
     const roomName = `drflow-${appointmentId.slice(0, 8)}-${Date.now()}`;
     const roomUrl = `https://meet.jit.si/${roomName}`;

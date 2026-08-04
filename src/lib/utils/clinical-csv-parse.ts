@@ -74,6 +74,8 @@ function detectDelimiter(line: string): "," | ";" {
 /** Parser CSV mínimo (campos entre comillas y separador , o ;). */
 export function parseCsvRows(content: string): string[][] {
   const text = content.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const firstLine = text.split("\n")[0] ?? "";
+  const delimiter = detectDelimiter(firstLine);
   const rows: string[][] = [];
   let row: string[] = [];
   let cell = "";
@@ -100,7 +102,7 @@ export function parseCsvRows(content: string): string[][] {
       continue;
     }
 
-    if (ch === "," || ch === ";") {
+    if (ch === delimiter) {
       row.push(cell);
       cell = "";
       continue;

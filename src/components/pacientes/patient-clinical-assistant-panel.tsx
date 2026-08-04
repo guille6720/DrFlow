@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { PatientChartViewProps } from "@/components/pacientes/patient-chart-types";
 import type { PatientEhrWorkspaceData } from "@/lib/server/load-patient-ehr-data";
-import { searchPathologies, getDrugsByPathology } from "@/lib/actions/pharmacology";
+import { getDrugsByPathology } from "@/lib/actions/pharmacology";
+import { useDeferredPathologySearch } from "@/lib/hooks/use-deferred-pathology-search";
 import { patientWorkspacePath } from "@/lib/constants/patient-workspace-tabs";
 import {
   buildClinicalSummary,
@@ -23,10 +24,8 @@ type Props = Pick<PatientChartViewProps, "chart" | "patient" | "patientId" | "ca
 };
 
 export function PatientClinicalAssistantPanel({ chart, patient, patientId, ehr, canIssue }: Props) {
-  const [pathologies, setPathologies] = useState<PathologySearchResult[]>([]);
   const [selectedPathology, setSelectedPathology] = useState<PathologySearchResult | null>(null);
   const [drugs, setDrugs] = useState<PathologyDrug[]>([]);
-  const [loadingPathologies, setLoadingPathologies] = useState(false);
 
   const lastConsultLabel = ehr.consultations[0]?.created_at
     ? format(new Date(ehr.consultations[0].created_at), "dd/MM/yyyy", { locale: es })
@@ -57,30 +56,16 @@ export function PatientClinicalAssistantPanel({ chart, patient, patientId, ehr, 
     [ehr, chart.activeProblemsText]
   );
 
-  useEffect(() => {
-    if (pathologyQuery.length < 2) {
-      setPathologies([]);
-      return;
-    }
-    let cancelled = false;
-    const timer = window.setTimeout(async () => {
-      setLoadingPathologies(true);
-      const { data } = await searchPathologies(pathologyQuery);
-      if (!cancelled) {
-        setPathologies(data ?? []);
-        setLoadingPathologies(false);
-      }
-    }, 350);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [pathologyQuery]);
+  const { pathologies, loading: loadingPathologies } = useDeferredPathologySearch({
+    query: pathologyQuery,
+    minLength: 2,
+    debounceMs: 350,
+  });
 
   useEffect(() => {
     if (!selectedPathology?.id) {
-      setDrugs([]);
-      return;
+      const resetTimer = window.setTimeout(() => setDrugs([]), 0);
+      return () => window.clearTimeout(resetTimer);
     }
     let cancelled = false;
     getDrugsByPathology(selectedPathology.id).then(({ data }) => {

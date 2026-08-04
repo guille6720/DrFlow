@@ -93,7 +93,8 @@ export function CommandPaletteProvider({
 
   useEffect(() => {
     if (!open) return;
-    setSelectedIndex(0);
+    const frame = requestAnimationFrame(() => setSelectedIndex(0));
+    return () => cancelAnimationFrame(frame);
   }, [open, query, patientHits.length, staticItems.length]);
 
   useEffect(() => {
@@ -101,13 +102,15 @@ export function CommandPaletteProvider({
 
     const q = query.trim();
     if (q.length < 2) {
-      setPatientHits([]);
-      setLoadingPatients(false);
-      return;
+      const resetTimer = setTimeout(() => {
+        setPatientHits([]);
+        setLoadingPatients(false);
+      }, 0);
+      return () => clearTimeout(resetTimer);
     }
 
     if (fetchRef.current) clearTimeout(fetchRef.current);
-    setLoadingPatients(true);
+    const loadingTimer = window.setTimeout(() => setLoadingPatients(true), 0);
     fetchRef.current = setTimeout(() => {
       void fetch(`/api/command-palette/patients?q=${encodeURIComponent(q)}`)
         .then((res) => (res.ok ? res.json() : { patients: [] }))
@@ -120,6 +123,7 @@ export function CommandPaletteProvider({
 
     return () => {
       if (fetchRef.current) clearTimeout(fetchRef.current);
+      window.clearTimeout(loadingTimer);
     };
   }, [open, query]);
 
