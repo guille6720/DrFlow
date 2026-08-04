@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useConsultationFollowUp } from "@/lib/hooks/use-consultation-follow-up";
+import { FollowUpPhysicianAssist } from "@/components/clinical-workflow/follow-up-physician-assist";
+import type { PhysicianAssistContext } from "@/lib/utils/physician-assist-types";
 
 type Props = {
   patientId: string;
   professionalId?: string;
+  assistContext: PhysicianAssistContext;
   onScheduled: () => void;
   onSkip: () => void;
 };
@@ -18,10 +21,16 @@ type Props = {
 export function ConsultationJourneyFollowUpStep({
   patientId,
   professionalId,
+  assistContext,
   onScheduled,
   onSkip,
 }: Props) {
   const followUp = useConsultationFollowUp({ patientId, professionalId, onScheduled });
+
+  function applySuggestion(text: string) {
+    const merged = followUp.notes.trim() ? `${followUp.notes.trim()}\n${text}` : text;
+    followUp.setNotes(merged);
+  }
 
   return (
     <Card title="Próximo turno">
@@ -29,6 +38,14 @@ export function ConsultationJourneyFollowUpStep({
         Agendá el control de seguimiento sin salir de la consulta. Podés omitir este paso si no
         corresponde.
       </p>
+
+      <FollowUpPhysicianAssist
+        context={{
+          ...assistContext,
+          evolutionText: assistContext.evolutionText ?? assistContext.lastEvolution ?? undefined,
+        }}
+        onApplyNotes={applySuggestion}
+      />
 
       {!professionalId ? (
         <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">

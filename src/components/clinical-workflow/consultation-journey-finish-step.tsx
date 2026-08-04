@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, Circle, MinusCircle } from "lucide-react";
+import { CloseEncounterWizardPanel } from "@/components/clinical-workflow/close-encounter-wizard-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type {
@@ -8,11 +9,13 @@ import type {
   ConsultationJourneyStepMeta,
   ConsultationJourneyStepStatus,
 } from "@/lib/utils/consultation-journey";
+import type { PhysicianAssistContext } from "@/lib/utils/physician-assist-types";
 
 type Props = {
   steps: ConsultationJourneyStepMeta[];
   stepStatus: Partial<Record<ConsultationJourneyStepId, ConsultationJourneyStepStatus>>;
   patientName: string;
+  assistContext: PhysicianAssistContext;
   finalizing: boolean;
   onFinalize: () => void;
   onBack: () => void;
@@ -38,6 +41,7 @@ export function ConsultationJourneyFinishStep({
   steps,
   stepStatus,
   patientName,
+  assistContext,
   finalizing,
   onFinalize,
   onBack,
@@ -45,29 +49,38 @@ export function ConsultationJourneyFinishStep({
   const actionableSteps = steps.filter((step) => step.id !== "finish");
 
   return (
-    <Card title="Cerrar consulta">
-      <p className="mb-4 text-sm text-slate-600">
-        Revisá el resumen de la atención de <strong>{patientName}</strong> y cerrá el turno cuando
-        esté todo listo.
-      </p>
+    <div className="space-y-4">
+      <Card title="Resumen del journey">
+        <p className="mb-4 text-sm text-slate-600">
+          Revisá los pasos completados de <strong>{patientName}</strong> antes de cerrar el turno.
+        </p>
 
-      <ul className="mb-6 space-y-2">
-        {actionableSteps.map((step) => {
-          const status = stepStatus[step.id];
-          return (
-            <li
-              key={step.id}
-              className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2 text-sm"
-            >
-              <span className="flex items-center gap-2 font-medium text-slate-800">
-                <StatusIcon status={status} />
-                {step.label}
-              </span>
-              <span className="text-xs text-slate-500">{statusLabel(status)}</span>
-            </li>
-          );
-        })}
-      </ul>
+        <ul className="space-y-2">
+          {actionableSteps.map((step) => {
+            const status = stepStatus[step.id];
+            return (
+              <li
+                key={step.id}
+                className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2 text-sm"
+              >
+                <span className="flex items-center gap-2 font-medium text-slate-800">
+                  <StatusIcon status={status} />
+                  {step.label}
+                </span>
+                <span className="text-xs text-slate-500">{statusLabel(status)}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </Card>
+
+      <Card title="Asistente de cierre">
+        <CloseEncounterWizardPanel
+          patientName={patientName}
+          context={assistContext}
+          compact
+        />
+      </Card>
 
       <div className="flex flex-wrap gap-2">
         <Button
@@ -83,6 +96,6 @@ export function ConsultationJourneyFinishStep({
           Volver al flujo
         </Button>
       </div>
-    </Card>
+    </div>
   );
 }

@@ -31,6 +31,8 @@ export {
 export { OrderSuggestionPanel } from "@/components/clinical-workflow/order-suggestion-panel";
 export { LabInterpretationPanel } from "@/components/clinical-workflow/lab-interpretation-panel";
 export { CloseEncounterWizardSheet } from "@/components/clinical-workflow/close-encounter-wizard-sheet";
+export { CloseEncounterWizardPanel } from "@/components/clinical-workflow/close-encounter-wizard-panel";
+export { FollowUpPhysicianAssist } from "@/components/clinical-workflow/follow-up-physician-assist";
 export {
   parseLabValuesFromText,
   compareLabsWithHistory,

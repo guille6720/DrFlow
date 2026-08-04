@@ -41,3 +41,4 @@ What problem / feature drove this change?
 | ADR | Topic |
 |-----|-------|
 | 001 | Consultation journey + layer split (Phase I) — see commit `35f8fca` |
+| 002 | Embedded AI in journey finish + follow-up (Phase J) |

@@ -105,6 +105,11 @@ export function ConsultationJourneyStepContent({
         <ConsultationJourneyFollowUpStep
           patientId={patient.id}
           professionalId={activeProfessionalId ?? undefined}
+          assistContext={{
+            ...assistBase,
+            evolutionText: form.evolution || assistBase.evolutionText,
+            lastEvolution: form.evolution || assistBase.lastEvolution,
+          }}
           onScheduled={() => onStepCompleted("follow_up")}
           onSkip={() => journey.skipStep("follow_up")}
         />
@@ -115,6 +120,11 @@ export function ConsultationJourneyStepContent({
           steps={journey.steps}
           stepStatus={journey.stepStatus}
           patientName={patientName}
+          assistContext={{
+            ...assistBase,
+            evolutionText: form.evolution || assistBase.evolutionText,
+            lastEvolution: form.evolution || assistBase.lastEvolution,
+          }}
           finalizing={finalizing}
           onFinalize={() => void onFinalizeConsult()}
           onBack={() => journey.goToStep("follow_up")}
