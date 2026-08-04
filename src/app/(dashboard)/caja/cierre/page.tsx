@@ -12,6 +12,8 @@ import {
 } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/permissions/roles";
 import { createClient } from "@/lib/supabase/server";
+import { loadRevenueSnapshot } from "@/lib/server/load-revenue-snapshot";
+import { AdminOpsAnalyticsBridge } from "@/components/admin-ops/admin-ops-analytics-bridge";
 
 export default async function CajaCierrePage() {
   const profile = await getProfile();
@@ -26,12 +28,15 @@ export default async function CajaCierrePage() {
   const date = format(new Date(), "yyyy-MM-dd");
   const supabase = await createClient();
 
-  const { data: closure } = await supabase
-    .from("cash_daily_closures")
-    .select("*")
-    .eq("clinic_id", clinicId)
-    .eq("closure_date", date)
-    .maybeSingle();
+  const [{ data: closure }, analytics] = await Promise.all([
+    supabase
+      .from("cash_daily_closures")
+      .select("*")
+      .eq("clinic_id", clinicId)
+      .eq("closure_date", date)
+      .maybeSingle(),
+    loadRevenueSnapshot(supabase, clinicId),
+  ]);
 
   let totals: Record<string, number> = (closure?.totals as Record<string, number>) ?? {};
   let patientCount = closure?.patient_count ?? 0;
@@ -79,6 +84,7 @@ export default async function CajaCierrePage() {
         userName={profile?.full_name}
       />
       <div className="p-4 sm:p-6">
+        <AdminOpsAnalyticsBridge analytics={analytics} page="caja" canManageCash />
         <Link href="/caja" className="mb-4 inline-block">
           <Button variant="outline" size="sm">
             Volver a caja

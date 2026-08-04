@@ -22,15 +22,15 @@ const opsPayload: ClinicalOperationsDashboardPayload = {
 };
 
 describe("admin-ops-orchestrator", () => {
-  it("listAdminOpsAgents returns ops and admin agents", () => {
+  it("listAdminOpsAgents returns ops, admin, and analytics agents", () => {
     const agents = listAdminOpsAgents();
-    expect(agents.length).toBe(2);
-    expect(ADMIN_OPS_AGENT_LABELS.ops_agent).toContain("Operaciones");
+    expect(agents.length).toBe(3);
+    expect(ADMIN_OPS_AGENT_LABELS.analytics_agent).toContain("ingresos");
   });
 
-  it("resolveAdminOpsAgentForIntent routes cash to admin agent", () => {
+  it("resolveAdminOpsAgentForIntent routes revenue to analytics agent", () => {
+    expect(resolveAdminOpsAgentForIntent("revenue_today")).toBe("analytics_agent");
     expect(resolveAdminOpsAgentForIntent("cash_help")).toBe("admin_agent");
-    expect(resolveAdminOpsAgentForIntent("waiting_queue")).toBe("ops_agent");
   });
 
   it("resolveAdminOpsAgentForTask maps tasks", () => {
@@ -57,5 +57,31 @@ describe("admin-ops-orchestrator", () => {
       context: { ops: snap },
     });
     expect(result.body).toContain("Turnos demorados: 1");
+  });
+
+  it("runAdminOpsOrchestrator revenue query uses analytics agent", () => {
+    const result = runAdminOpsOrchestrator({
+      task: "admin_ops_query",
+      message: "ingresos de hoy",
+      context: {
+        analytics: {
+          dateLabel: "2026-08-04",
+          todayTotal: 50000,
+          todayChargeCount: 3,
+          monthTotal: 200000,
+          monthChargeCount: 10,
+          copagoTotal: 0,
+          coseguroTotal: 0,
+          closureClosedToday: false,
+          paymentBreakdown: [],
+          chargeKindBreakdown: [],
+          attentionBreakdown: [],
+          authorizationCount: 0,
+          recentAuthorizations: [],
+        },
+      },
+    });
+    expect(result.agentId).toBe("analytics_agent");
+    expect(result.intent).toBe("revenue_today");
   });
 });

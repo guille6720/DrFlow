@@ -40,6 +40,7 @@ export const COVERAGE_INCLUDE = [
   "src/lib/utils/admin-ops-types.ts",
   "src/lib/utils/admin-ops-assistant.ts",
   "src/lib/utils/admin-ops-orchestrator.ts",
+  "src/lib/utils/admin-analytics-types.ts",
   "src/lib/utils/clinical-csv-parse.ts",
   "src/lib/utils/build-clinical-timeline.ts",
   "src/lib/utils/command-palette-search.ts",

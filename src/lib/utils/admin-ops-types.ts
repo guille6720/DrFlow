@@ -1,7 +1,15 @@
 import type { ClinicalOperationsDashboardPayload } from "@/lib/utils/clinical-operations-dashboard-types";
+import type { AdminAnalyticsSnapshot } from "@/lib/utils/admin-analytics-types";
 import { formatClinicDateTime } from "@/lib/utils/clinic-timezone";
 
-export type AdminOpsPageHint = "dashboard" | "caja" | "waiting_room" | "agenda" | "settings";
+export type AdminOpsPageHint =
+  | "dashboard"
+  | "caja"
+  | "caja_reportes"
+  | "waiting_room"
+  | "agenda"
+  | "settings"
+  | "documentos";
 
 export type AdminOpsWaitingRow = {
   name: string;
@@ -40,9 +48,11 @@ export type AdminOpsSnapshot = {
 export type AdminOpsContext = {
   page?: AdminOpsPageHint;
   ops?: AdminOpsSnapshot;
+  analytics?: AdminAnalyticsSnapshot;
   canManageCash?: boolean;
   canManageWaitingRoom?: boolean;
   canManageSettings?: boolean;
+  canViewReports?: boolean;
 };
 
 export function buildAdminOpsSnapshotFromDashboard(

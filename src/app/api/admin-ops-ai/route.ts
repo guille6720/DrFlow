@@ -13,6 +13,9 @@ const TASK_VALUES = [
   "waiting_queue",
   "cash_help",
   "admin_help",
+  "revenue_today",
+  "revenue_month",
+  "authorizations_list",
   "admin_ops_query",
 ] as const satisfies readonly AdminOpsTask[];
 
@@ -21,15 +24,18 @@ const bodySchema = z.object({
   message: z.string().optional(),
   context: z
     .object({
-      page: z.enum(["dashboard", "caja", "waiting_room", "agenda", "settings"]).optional(),
+      page: z
+        .enum(["dashboard", "caja", "caja_reportes", "waiting_room", "agenda", "settings", "documentos"])
+        .optional(),
       canManageCash: z.boolean().optional(),
       canManageWaitingRoom: z.boolean().optional(),
       canManageSettings: z.boolean().optional(),
+      canViewReports: z.boolean().optional(),
     })
     .optional(),
 });
 
-/** POST /api/admin-ops-ai — admin/ops orchestrator (Phase G). */
+/** POST /api/admin-ops-ai — admin/ops orchestrator (Phase G/H). */
 export async function POST(request: Request) {
   const clinicId = await getActiveClinicId();
   const { role, isSuperadmin } = await getActiveClinic();

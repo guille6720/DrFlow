@@ -1,4 +1,9 @@
 import type { AdminOpsContext, AdminOpsSnapshot } from "@/lib/utils/admin-ops-types";
+import {
+  formatBreakdownLines,
+  formatCurrencyAr,
+  type AdminAnalyticsSnapshot,
+} from "@/lib/utils/admin-analytics-types";
 
 export type AdminOpsIntentId =
   | "daily_ops_summary"
@@ -8,6 +13,12 @@ export type AdminOpsIntentId =
   | "pending_studies"
   | "tasks_list"
   | "notifications"
+  | "revenue_today"
+  | "revenue_month"
+  | "payment_breakdown"
+  | "closure_status"
+  | "authorizations_list"
+  | "copago_summary"
   | "open_waiting_room"
   | "open_agenda"
   | "open_caja"
@@ -58,11 +69,40 @@ const INTENT_RULES: IntentRule[] = [
   },
   {
     id: "tasks_list",
-    patterns: [/tareas?\s+pend/i, /pendientes?\s+del\s+d[ií]a/i, /qu[eé]\s+hacer/i, /to-?do/i],
+    patterns: [/tareas?\s+pend/i, /pendientes?\s+del\s+d[ií]a/i, /qu[eé]\s+hacer/i, /^todo\b/i],
   },
   {
     id: "notifications",
     patterns: [/notificaciones?/i, /alertas?\s+operativ/i, /ausentes?/i, /cancelad/i],
+  },
+  {
+    id: "revenue_today",
+    patterns: [
+      /ingresos?\s+(de\s+)?hoy/i,
+      /cu[aá]nto\s+cobr/i,
+      /cobros?\s+(de\s+)?hoy/i,
+      /facturaci[oó]n\s+de\s+hoy/i,
+    ],
+  },
+  {
+    id: "revenue_month",
+    patterns: [/ingresos?\s+del\s+mes/i, /facturaci[oó]n\s+mensual/i, /total\s+del\s+mes/i],
+  },
+  {
+    id: "payment_breakdown",
+    patterns: [/m[eé]todo\s+de\s+pago/i, /desglose/i, /por\s+forma\s+de\s+pago/i, /efectivo\s+y\s+transfer/i],
+  },
+  {
+    id: "closure_status",
+    patterns: [/estado\s+(del\s+)?cierre/i, /caja\s+cerrada/i, /cierre\s+realizado/i],
+  },
+  {
+    id: "authorizations_list",
+    patterns: [/autorizaciones?/i, /documentos?\s+de\s+autoriz/i, /copago\s+autorizado/i],
+  },
+  {
+    id: "copago_summary",
+    patterns: [/copagos?/i, /coseguros?/i, /obra\s+social\s+cobr/i],
   },
   {
     id: "open_waiting_room",
@@ -74,11 +114,11 @@ const INTENT_RULES: IntentRule[] = [
   },
   {
     id: "open_caja",
-    patterns: [/abrir\s+caja/i, /ir\s+a\s+caja/i, /cobros?\s+de\s+hoy/i],
+    patterns: [/abrir\s+caja/i, /ir\s+a\s+caja/i],
   },
   {
     id: "cash_help",
-    patterns: [/cerrar\s+caja/i, /cuenta\s+corriente/i, /cobro/i, /factura/i, /ledger/i],
+    patterns: [/cerrar\s+caja/i, /cuenta\s+corriente/i, /registrar\s+cobro/i, /factura/i, /ledger/i],
   },
   {
     id: "admin_help",
@@ -132,62 +172,176 @@ function formatNotificationsBody(ops: AdminOpsSnapshot): string {
   return ops.notifications.map((n) => `• ${n.label} — ${n.patientName}`).join("\n");
 }
 
-function buildDailySummary(ops: AdminOpsSnapshot): string {
-  const lines = [
-    `Cola de espera: ${ops.waitingCount} paciente(s)`,
-    `Turnos demorados: ${ops.overdueCount}`,
-    `Recetas borrador: ${ops.draftPrescriptionsCount}`,
-    `Estudios por revisar: ${ops.pendingStudiesCount}`,
-    `Tareas pendientes: ${ops.tasksCount} (${ops.highPriorityTasksCount} urgentes)`,
-    `Notificaciones: ${ops.notificationsCount}`,
-  ];
-  if (ops.criticalPatientsCount > 0) {
-    lines.push(`Pacientes con alerta crítica: ${ops.criticalPatientsCount}`);
+function requireAnalytics(ctx: AdminOpsContext): AdminOpsResponse | null {
+  if (ctx.analytics) return null;
+  return {
+    intent: "admin_help",
+    title: "Sin datos de caja",
+    body: "Abrí Caja o Reportes de caja para cargar ingresos y autorizaciones del período.",
+    actions: [
+      { label: "Ir a caja", href: "/caja" },
+      { label: "Reportes de caja", href: "/caja/reportes" },
+    ],
+  };
+}
+
+function formatAuthorizationsBody(analytics: AdminAnalyticsSnapshot): string {
+  if (analytics.authorizationCount === 0) {
+    return "No hay documentos de autorización registrados.";
   }
+  const header = `${analytics.authorizationCount} autorización(es) en el consultorio.\n\nRecientes:`;
+  const rows = analytics.recentAuthorizations
+    .map((a) => `• ${a.patientName} — ${a.title}`)
+    .join("\n");
+  return rows ? `${header}\n${rows}` : header;
+}
+
+function buildDailySummary(ops?: AdminOpsSnapshot, analytics?: AdminAnalyticsSnapshot): string {
+  const lines: string[] = [];
+  if (ops) {
+    lines.push(
+      `Cola de espera: ${ops.waitingCount} paciente(s)`,
+      `Turnos demorados: ${ops.overdueCount}`,
+      `Recetas borrador: ${ops.draftPrescriptionsCount}`,
+      `Estudios por revisar: ${ops.pendingStudiesCount}`,
+      `Tareas pendientes: ${ops.tasksCount} (${ops.highPriorityTasksCount} urgentes)`,
+      `Notificaciones: ${ops.notificationsCount}`
+    );
+    if (ops.criticalPatientsCount > 0) {
+      lines.push(`Pacientes con alerta crítica: ${ops.criticalPatientsCount}`);
+    }
+  }
+  if (analytics) {
+    lines.push(
+      `Ingresos hoy: ${formatCurrencyAr(analytics.todayTotal)} (${analytics.todayChargeCount} cobros)`,
+      `Ingresos del mes: ${formatCurrencyAr(analytics.monthTotal)}`,
+      `Cierre de caja: ${analytics.closureClosedToday ? "realizado" : "pendiente"}`
+    );
+  }
+  if (lines.length === 0) return "Sin datos operativos ni de caja disponibles.";
   return lines.join("\n");
 }
 
 /** Context-aware suggested prompts for empty admin ops copilot. */
 export function buildAdminOpsSuggestedPrompts(ctx: AdminOpsContext): string[] {
-  if (!ctx.ops) {
-    return ["Resumen del día", "Ir a sala de espera", "Ayuda de caja"];
+  const prompts: string[] = [];
+  if (ctx.analytics) {
+    prompts.push("Ingresos de hoy", "Desglose por método de pago", "Autorizaciones");
   }
-  return [
-    "Resumen del día",
-    "¿Quién está en espera?",
-    "Turnos demorados",
-    "Tareas pendientes",
-    "Recetas borrador",
-  ];
+  if (ctx.ops) {
+    prompts.push("Resumen del día", "¿Quién está en espera?", "Tareas pendientes");
+  }
+  if (prompts.length === 0) {
+    return ["Resumen del día", "Ingresos de hoy", "Ayuda de caja"];
+  }
+  return prompts.slice(0, 5);
 }
 
-/** Build admin/ops response for matched intent (Phase G — rule-based). */
+/** Build admin/ops response for matched intent (Phase G/H — rule-based). */
 export function buildAdminOpsResponse(intent: AdminOpsIntentId, ctx: AdminOpsContext): AdminOpsResponse {
-  const opsMissing = requireOps(ctx);
-  const needsOps =
-    intent !== "admin_help" &&
-    intent !== "open_waiting_room" &&
-    intent !== "open_agenda" &&
-    intent !== "open_caja" &&
-    intent !== "cash_help";
+  const ANALYTICS_INTENTS: AdminOpsIntentId[] = [
+    "revenue_today",
+    "revenue_month",
+    "payment_breakdown",
+    "closure_status",
+    "authorizations_list",
+    "copago_summary",
+  ];
 
-  if (needsOps && opsMissing) return opsMissing;
+  const OPS_INTENTS: AdminOpsIntentId[] = [
+    "waiting_queue",
+    "overdue_appointments",
+    "pending_prescriptions",
+    "pending_studies",
+    "tasks_list",
+    "notifications",
+  ];
 
-  const ops = ctx.ops!;
+  if (intent === "daily_ops_summary" && !ctx.ops && !ctx.analytics) {
+    return requireOps(ctx)!;
+  }
+
+  if (ANALYTICS_INTENTS.includes(intent)) {
+    const missing = requireAnalytics(ctx);
+    if (missing) return missing;
+  }
+
+  if (OPS_INTENTS.includes(intent)) {
+    const missing = requireOps(ctx);
+    if (missing) return missing;
+  }
 
   switch (intent) {
     case "daily_ops_summary":
       return {
         intent,
         title: "Resumen operativo del día",
-        body: buildDailySummary(ops),
+        body: buildDailySummary(ctx.ops, ctx.analytics),
         actions: [
-          { label: "Ver tareas", copyText: "tareas pendientes" },
+          ...(ctx.ops ? [{ label: "Ver tareas", copyText: "tareas pendientes" }] : []),
           { label: "Sala de espera", href: "/sala-espera" },
+          ...(ctx.analytics ? [{ label: "Reportes caja", href: "/caja/reportes" }] : []),
         ],
       };
 
-    case "waiting_queue":
+    case "revenue_today":
+      return {
+        intent,
+        title: "Ingresos de hoy",
+        body: `Total cobrado: ${formatCurrencyAr(ctx.analytics!.todayTotal)}\nCobros registrados: ${ctx.analytics!.todayChargeCount}\nCopagos: ${formatCurrencyAr(ctx.analytics!.copagoTotal)}\nCoseguros: ${formatCurrencyAr(ctx.analytics!.coseguroTotal)}`,
+        actions: [
+          { label: "Ver reportes", href: "/caja/reportes" },
+          { label: "Copiar total", copyText: formatCurrencyAr(ctx.analytics!.todayTotal) },
+        ],
+      };
+
+    case "revenue_month":
+      return {
+        intent,
+        title: "Ingresos del mes",
+        body: `Total del mes: ${formatCurrencyAr(ctx.analytics!.monthTotal)}\nCobros del mes: ${ctx.analytics!.monthChargeCount}`,
+        actions: [{ label: "Reportes de caja", href: "/caja/reportes" }],
+      };
+
+    case "payment_breakdown":
+      return {
+        intent,
+        title: "Desglose por método de pago (hoy)",
+        body: formatBreakdownLines(ctx.analytics!.paymentBreakdown),
+        actions: [{ label: "Caja", href: "/caja" }],
+      };
+
+    case "closure_status":
+      return {
+        intent,
+        title: "Estado del cierre de caja",
+        body: ctx.analytics!.closureClosedToday
+          ? `La caja del ${ctx.analytics!.dateLabel} ya fue cerrada.`
+          : `La caja del ${ctx.analytics!.dateLabel} aún está abierta.\nIngresos del día: ${formatCurrencyAr(ctx.analytics!.todayTotal)}`,
+        actions: [{ label: "Ir a cierre", href: "/caja/cierre" }],
+      };
+
+    case "authorizations_list":
+      return {
+        intent,
+        title: "Autorizaciones",
+        body: formatAuthorizationsBody(ctx.analytics!),
+        actions: [
+          { label: "Documentos admin.", href: "/secretaria/documentos" },
+          { label: "Caja", href: "/caja" },
+        ],
+      };
+
+    case "copago_summary":
+      return {
+        intent,
+        title: "Copagos y coseguros (hoy)",
+        body: `Copagos autorizados: ${formatCurrencyAr(ctx.analytics!.copagoTotal)}\nCoseguros autorizados: ${formatCurrencyAr(ctx.analytics!.coseguroTotal)}\n\nPor tipo de atención:\n${formatBreakdownLines(ctx.analytics!.attentionBreakdown)}`,
+        actions: [{ label: "Registrar cobro", href: "/caja" }],
+      };
+
+    case "waiting_queue": {
+      const ops = ctx.ops!;
       return {
         intent,
         title: "Cola de espera",
@@ -197,8 +351,10 @@ export function buildAdminOpsResponse(intent: AdminOpsIntentId, ctx: AdminOpsCon
           { label: "Copiar lista", copyText: formatWaitingBody(ops) },
         ],
       };
+    }
 
-    case "overdue_appointments":
+    case "overdue_appointments": {
+      const ops = ctx.ops!;
       return {
         intent,
         title: "Turnos demorados",
@@ -213,8 +369,10 @@ export function buildAdminOpsResponse(intent: AdminOpsIntentId, ctx: AdminOpsCon
             : []),
         ],
       };
+    }
 
-    case "pending_prescriptions":
+    case "pending_prescriptions": {
+      const ops = ctx.ops!;
       return {
         intent,
         title: "Recetas borrador",
@@ -224,8 +382,10 @@ export function buildAdminOpsResponse(intent: AdminOpsIntentId, ctx: AdminOpsCon
             : "No hay recetas borrador pendientes.",
         actions: [{ label: "Dashboard", href: "/dashboard" }],
       };
+    }
 
-    case "pending_studies":
+    case "pending_studies": {
+      const ops = ctx.ops!;
       return {
         intent,
         title: "Estudios pendientes",
@@ -235,16 +395,20 @@ export function buildAdminOpsResponse(intent: AdminOpsIntentId, ctx: AdminOpsCon
             : "No hay estudios pendientes de revisión.",
         actions: [{ label: "Dashboard", href: "/dashboard" }],
       };
+    }
 
-    case "tasks_list":
+    case "tasks_list": {
+      const ops = ctx.ops!;
       return {
         intent,
         title: "Tareas del día",
         body: formatTasksBody(ops),
         actions: ops.tasks.slice(0, 3).map((t) => ({ label: t.label, href: t.href })),
       };
+    }
 
-    case "notifications":
+    case "notifications": {
+      const ops = ctx.ops!;
       return {
         intent,
         title: "Notificaciones operativas",
@@ -254,6 +418,7 @@ export function buildAdminOpsResponse(intent: AdminOpsIntentId, ctx: AdminOpsCon
           href: n.href,
         })),
       };
+    }
 
     case "open_waiting_room":
       return {

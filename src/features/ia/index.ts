@@ -86,6 +86,8 @@ export {
   buildAdminOpsResponse,
 } from "@/lib/utils/admin-ops-assistant";
 export type { AdminOpsContext, AdminOpsSnapshot } from "@/lib/utils/admin-ops-types";
+export type { AdminAnalyticsSnapshot } from "@/lib/utils/admin-analytics-types";
+export { formatCurrencyAr, formatBreakdownLines } from "@/lib/utils/admin-analytics-types";
 export { AdminOpsCopilotHost } from "@/components/admin-ops/admin-ops-copilot-host";
 export { AdminOpsCopilotSheet } from "@/components/admin-ops/admin-ops-copilot-sheet";
 export type {

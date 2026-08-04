@@ -13,6 +13,8 @@ import {
 import { hasPermission } from "@/lib/permissions/roles";
 import { createClient } from "@/lib/supabase/server";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
+import { loadRevenueSnapshot } from "@/lib/server/load-revenue-snapshot";
+import { AdminOpsAnalyticsBridge } from "@/components/admin-ops/admin-ops-analytics-bridge";
 
 export default async function CajaPage() {
   const profile = await getProfile();
@@ -42,7 +44,8 @@ export default async function CajaPage() {
   const todayStart = startOfDay(new Date()).toISOString();
   const todayEnd = endOfDay(new Date()).toISOString();
 
-  const [{ data: patients }, { data: professionals }, { data: charges }] = await Promise.all([
+  const [{ data: patients }, { data: professionals }, { data: charges }, analytics] =
+    await Promise.all([
     supabase
       .from("patients")
       .select("id, first_name, last_name, document_number")
@@ -63,6 +66,7 @@ export default async function CajaPage() {
       .lte("charged_at", todayEnd)
       .order("charged_at", { ascending: false })
       .limit(50),
+    loadRevenueSnapshot(supabase, clinicId),
   ]);
 
   return (
@@ -76,6 +80,12 @@ export default async function CajaPage() {
         userName={profile?.full_name}
       />
       <div className="p-4 sm:p-6">
+        <AdminOpsAnalyticsBridge
+          analytics={analytics}
+          page="caja"
+          canManageCash
+          canViewReports={hasPermission(role, "viewReports", isSuperadmin)}
+        />
         <div className="mb-4 flex flex-wrap gap-2">
           <Link href="/caja/cierre">
             <Button variant="outline" size="sm">

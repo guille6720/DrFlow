@@ -7,14 +7,17 @@ import {
 import { ADMIN_OPS_DISCLAIMER } from "@/lib/utils/admin-ops-assistant";
 import type { AdminOpsContext } from "@/lib/utils/admin-ops-types";
 
-/** Admin/ops AI agents (Phase G). */
-export type AdminOpsAgentId = "ops_agent" | "admin_agent";
+/** Admin/ops AI agents (Phase G/H). */
+export type AdminOpsAgentId = "ops_agent" | "admin_agent" | "analytics_agent";
 
 export type AdminOpsTask =
   | "daily_ops_summary"
   | "waiting_queue"
   | "cash_help"
   | "admin_help"
+  | "revenue_today"
+  | "revenue_month"
+  | "authorizations_list"
   | "admin_ops_query";
 
 export type AdminOpsEngine = "rule_based";
@@ -39,17 +42,31 @@ export type AdminOpsOrchestratorResult = {
 export const ADMIN_OPS_AGENT_LABELS: Record<AdminOpsAgentId, string> = {
   ops_agent: "Operaciones del día",
   admin_agent: "Asistente administrativo",
+  analytics_agent: "Analytics e ingresos",
 };
 
 const ADMIN_INTENTS: AdminOpsIntentId[] = ["open_caja", "cash_help", "admin_help"];
 
+const ANALYTICS_INTENTS: AdminOpsIntentId[] = [
+  "revenue_today",
+  "revenue_month",
+  "payment_breakdown",
+  "closure_status",
+  "authorizations_list",
+  "copago_summary",
+];
+
 export function resolveAdminOpsAgentForIntent(intent: AdminOpsIntentId): AdminOpsAgentId {
+  if (ANALYTICS_INTENTS.includes(intent)) return "analytics_agent";
   if (ADMIN_INTENTS.includes(intent)) return "admin_agent";
   return "ops_agent";
 }
 
 export function resolveAdminOpsAgentForTask(task: AdminOpsTask): AdminOpsAgentId {
   if (task === "cash_help" || task === "admin_help") return "admin_agent";
+  if (task === "revenue_today" || task === "revenue_month" || task === "authorizations_list") {
+    return "analytics_agent";
+  }
   return "ops_agent";
 }
 
@@ -86,6 +103,9 @@ export function runAdminOpsOrchestrator(
     waiting_queue: "waiting_queue",
     cash_help: "cash_help",
     admin_help: "admin_help",
+    revenue_today: "revenue_today",
+    revenue_month: "revenue_month",
+    authorizations_list: "authorizations_list",
   };
   const intent = intentMap[input.task];
   const agentId = resolveAdminOpsAgentForTask(input.task);

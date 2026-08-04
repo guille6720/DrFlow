@@ -18,6 +18,8 @@ import {
   labelForChargeKind,
   labelForPaymentMethod,
 } from "@/lib/constants/cash-register";
+import { loadRevenueSnapshot } from "@/lib/server/load-revenue-snapshot";
+import { AdminOpsAnalyticsBridge } from "@/components/admin-ops/admin-ops-analytics-bridge";
 
 export default async function CajaReportesPage({
   searchParams,
@@ -38,7 +40,8 @@ export default async function CajaReportesPage({
   const to = sp.to ?? format(new Date(), "yyyy-MM-dd");
 
   const supabase = await createClient();
-  const { data: charges } = await supabase
+  const [{ data: charges }, analytics] = await Promise.all([
+    supabase
     .from("cash_charges")
     .select(
       "id, charged_at, amount, charge_kind, attention_type, payment_method, status, patients(last_name, first_name), professionals(display_name, profiles(full_name))"
@@ -47,7 +50,9 @@ export default async function CajaReportesPage({
     .gte("charged_at", `${from}T00:00:00.000Z`)
     .lte("charged_at", `${to}T23:59:59.999Z`)
     .order("charged_at", { ascending: false })
-    .limit(500);
+    .limit(500),
+    loadRevenueSnapshot(supabase, clinicId),
+  ]);
 
   const collected = (charges ?? []).filter((c) => c.status === "collected");
   const total = collected.reduce((s, c) => s + Number(c.amount), 0);
@@ -63,6 +68,12 @@ export default async function CajaReportesPage({
         userName={profile?.full_name}
       />
       <div className="p-4 sm:p-6">
+        <AdminOpsAnalyticsBridge
+          analytics={analytics}
+          page="caja_reportes"
+          canManageCash
+          canViewReports={hasPermission(role, "viewReports", isSuperadmin)}
+        />
         <Link href="/caja">
           <Button variant="outline" size="sm" className="mb-4">
             Volver
