@@ -37,8 +37,10 @@ Copiá `.env.example` → `.env.local`.
 
 ### Endpoints
 
+- `GET /api/health/live` — liveness (proceso activo)
+- `GET /api/health/ready` — readiness (Supabase, memoria, env prod)
 - `GET /api/health` — latencia Supabase, memoria, service role configurado
-- `GET /api/health?persist=1` — igual + evento en `clinic_observability_events` (cron horario)
+- `GET /api/health?persist=1` — igual + evento en `clinic_observability_events` (cron horario, requiere `CRON_SECRET`)
 - `GET /api/version` — versión y changelog para PWA
 
 ### Script local / ops
@@ -92,7 +94,7 @@ npm run docker:run
 
 La base de datos **no** corre en Docker: apuntá las mismas variables Supabase en `.env.local`.
 
-Healthcheck del contenedor: `GET /api/health` cada 60s.
+Healthcheck del contenedor: `GET /api/health/ready` cada 60s.
 
 ---
 

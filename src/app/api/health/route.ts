@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getHealthStatus, recordHealthCheckEvent } from "@/lib/observability/health";
+import { authorizeCronRequest } from "@/lib/observability/cron-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -7,6 +8,10 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const persist = url.searchParams.get("persist") === "1";
+
+  if (persist && !authorizeCronRequest(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const status = persist ? await recordHealthCheckEvent() : await getHealthStatus();
 

@@ -52,7 +52,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
-  if (path === "/api/version" || path === "/api/health") {
+  if (path === "/api/version" || path === "/api/health" || path.startsWith("/api/health/")) {
     return NextResponse.next({ request });
   }
 

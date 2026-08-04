@@ -19,6 +19,8 @@
     "enterprise:status": "node scripts/enterprise-status.mjs",
     "check:supabase": "node scripts/check-supabase.mjs",
     "check:health": "node scripts/check-health.mjs",
+    "validate:env": "node scripts/validate-env.mjs",
+    "validate:env:production": "node scripts/validate-env.mjs --production",
     "backup:db": "node scripts/backup-supabase.mjs",
     "docker:build": "docker build -t drflow-app .",
     "docker:run": "docker compose up --build",
