@@ -63,10 +63,11 @@ export function useNuevaConsultaForm({ patients, professionals, templates, works
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [patientId, setPatientId] = useState(defaultPatient);
   const [professionalId, setProfessionalId] = useState(defaultProfessional);
   const [evolution, setEvolution] = useState("");
 
-  const selectedPatient = patients.find((p) => p.id === defaultPatient);
+  const selectedPatient = patients.find((p) => p.id === patientId);
   const activeProfessionalId = fromAppointment ? defaultProfessional : professionalId;
 
   function signatureForProfessionalId(id: string): string {
@@ -87,14 +88,14 @@ export function useNuevaConsultaForm({ patients, professionals, templates, works
   }
 
   const consultationContext = useMemo(() => {
-    if (!defaultPatient) return null;
+    if (!patientId) return null;
     const proId = fromAppointment ? defaultProfessional : professionalId;
     return {
-      patientId: defaultPatient,
+      patientId,
       appointmentId: appointmentId || undefined,
       professionalId: proId || undefined,
     };
-  }, [defaultPatient, appointmentId, fromAppointment, defaultProfessional, professionalId]);
+  }, [patientId, appointmentId, fromAppointment, defaultProfessional, professionalId]);
 
   const draftKey = useMemo(
     () => (consultationContext ? consultationDraftKey(consultationContext) : null),
@@ -206,6 +207,8 @@ export function useNuevaConsultaForm({ patients, professionals, templates, works
     appointmentId,
     defaultPatient,
     defaultProfessional,
+    patientId,
+    setPatientId,
     selectedPatient,
     consultationContext,
     error,

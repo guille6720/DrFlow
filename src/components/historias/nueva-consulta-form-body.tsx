@@ -40,6 +40,8 @@ export function NuevaConsultaFormBody({
     appointmentId,
     defaultPatient,
     defaultProfessional,
+    patientId,
+    setPatientId,
     selectedPatient,
     consultationContext,
     error,
@@ -83,7 +85,8 @@ export function NuevaConsultaFormBody({
                 name="patient_id"
                 label="Paciente"
                 required
-                defaultValue={defaultPatient}
+                value={patientId}
+                onChange={(e) => setPatientId(e.target.value)}
                 options={patients.map((p) => ({
                   value: p.id,
                   label: `${p.last_name}, ${p.first_name}`,
