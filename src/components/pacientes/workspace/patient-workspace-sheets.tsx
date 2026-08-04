@@ -1,6 +1,7 @@
 "use client";
 
 import { PatientConsultSheet } from "@/components/pacientes/workspace/patient-consult-sheet";
+import { PatientDocumentAssistSheet } from "@/components/pacientes/workspace/patient-document-assist-sheet";
 import { PatientOrderSheet } from "@/components/pacientes/workspace/patient-order-sheet";
 import { PatientPrescriptionSheet } from "@/components/pacientes/workspace/patient-prescription-sheet";
 import { PatientRecordSheet } from "@/components/pacientes/workspace/patient-record-sheet";
@@ -36,6 +37,16 @@ export function PatientWorkspaceSheets({
 }: Props) {
   const actions = usePatientWorkspaceActions(patientId, activeTab);
   const patientName = `${patient.last_name}, ${patient.first_name}`;
+  const lastConsult = ehr.consultations[0];
+  const assistBase = {
+    patientName,
+    allergies: patientRecord.allergies,
+    regularMedication: patientRecord.regular_medication,
+    medicalHistory: patientRecord.medical_history,
+    lastEvolution: lastConsult?.evolution ?? null,
+    lastDiagnosis: lastConsult?.diagnosis ?? ehr.diagnosisRows[0]?.name ?? null,
+    activeProblems: ehr.diagnosisRows.map((d) => d.name).slice(0, 6),
+  };
 
   const selectedRecord = actions.record
     ? ehr.consultations.find((c) => c.id === actions.record) ?? null
@@ -61,6 +72,8 @@ export function PatientWorkspaceSheets({
         patientId={patientId}
         patientInsurance={patient.insurance_provider}
         patientName={patientName}
+        patientAllergies={patientRecord.allergies}
+        patientRegularMedication={patientRecord.regular_medication}
         professionals={professionals}
         defaultProfessionalId={actions.professional ?? undefined}
         clinicalRecordId={actions.consulta ?? undefined}
@@ -73,6 +86,10 @@ export function PatientWorkspaceSheets({
         open={actions.orderSheetOpen && canIssue}
         patientId={patientId}
         patientName={patientName}
+        patientAllergies={patientRecord.allergies}
+        patientRegularMedication={patientRecord.regular_medication}
+        lastDiagnosis={assistBase.lastDiagnosis}
+        lastEvolution={assistBase.lastEvolution}
         professionals={professionals}
         defaultProfessionalId={actions.professional ?? undefined}
         clinicalRecordId={actions.consulta ?? undefined}
@@ -85,6 +102,24 @@ export function PatientWorkspaceSheets({
         patientId={patientId}
         record={selectedRecord}
         mode={actions.mode}
+        onClose={actions.closeSheet}
+      />
+
+      <PatientDocumentAssistSheet
+        open={actions.dischargeSheetOpen}
+        kind="discharge_summary"
+        title="Resumen de alta"
+        patientName={patientName}
+        context={assistBase}
+        onClose={actions.closeSheet}
+      />
+
+      <PatientDocumentAssistSheet
+        open={actions.certificateSheetOpen}
+        kind="medical_certificate"
+        title="Certificado médico"
+        patientName={patientName}
+        context={assistBase}
         onClose={actions.closeSheet}
       />
     </>

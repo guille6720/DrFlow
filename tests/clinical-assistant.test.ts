@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   buildClinicalSummary,
+  buildDifferentialDiagnosisSuggestions,
   buildLightweightPatientWarnings,
   buildMedicationSafetyWarnings,
+  buildPhysicianAssistItems,
+  buildSoapDraftSuggestion,
   extractPathologySearchQuery,
 } from "@/lib/utils/clinical-assistant";
 
@@ -83,5 +86,32 @@ describe("clinical-assistant", () => {
       evolutionText: "Control HTA\n• Enalapril 10 mg",
     });
     expect(warnings.some((w) => w.includes("IECA"))).toBe(true);
+  });
+
+  it("buildSoapDraftSuggestion returns structured SOAP", () => {
+    const item = buildSoapDraftSuggestion({
+      evolutionText: "Paciente con cefalea",
+      diagnosis: "Cefalea tensional",
+    });
+    expect(item?.body).toContain("S (Subjetivo)");
+    expect(item?.body).toContain("A (Análisis)");
+  });
+
+  it("buildDifferentialDiagnosisSuggestions matches symptom keywords", () => {
+    const items = buildDifferentialDiagnosisSuggestions({
+      evolutionText: "fiebre tos disnea",
+    });
+    expect(items.length).toBeGreaterThan(0);
+    expect(items[0].body).toContain("Neumonía");
+  });
+
+  it("buildPhysicianAssistItems filters by kind", () => {
+    const items = buildPhysicianAssistItems(
+      { evolutionText: "dolor torácico opresivo", allergies: "Penicilina" },
+      ["interaction_alert", "differential"]
+    );
+    expect(items.every((i) => i.kind === "interaction_alert" || i.kind === "differential")).toBe(
+      true
+    );
   });
 });

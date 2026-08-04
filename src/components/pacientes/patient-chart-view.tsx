@@ -1,5 +1,6 @@
 "use client";
 
+import { ClinicalSummaryPhysicianAssist } from "@/components/clinical-workflow/clinical-summary-physician-assist";
 import { PatientChartGridPrimary } from "@/components/pacientes/patient-chart-grid-primary";
 import { PatientChartGridSecondary } from "@/components/pacientes/patient-chart-grid-secondary";
 import { PatientChartStickyBar } from "@/components/pacientes/patient-chart-sticky-bar";
@@ -25,7 +26,12 @@ export function PatientChartView({
   arcoExport,
   regularMedication,
   workspaceMode = false,
-}: PatientChartViewProps) {
+  lastEvolution,
+  lastDiagnosis,
+}: PatientChartViewProps & {
+  lastEvolution?: string | null;
+  lastDiagnosis?: string | null;
+}) {
   const { medSearch, setMedSearch, filteredMeds } = usePatientChartMedicationFilter(chart);
 
   return (
@@ -40,6 +46,15 @@ export function PatientChartView({
         patientId={patientId}
         canEditClinical={canEditClinical}
       />
+
+      {workspaceMode ? (
+        <ClinicalSummaryPhysicianAssist
+          chart={chart}
+          patientName={`${patient.last_name}, ${patient.first_name}`}
+          lastEvolution={lastEvolution}
+          lastDiagnosis={lastDiagnosis}
+        />
+      ) : null}
 
       <div className="drflow-patient-chart-grid">
         <PatientChartGridPrimary

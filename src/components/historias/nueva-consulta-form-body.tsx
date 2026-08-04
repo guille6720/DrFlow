@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { ConsultationAssistantPanel } from "@/components/historias/consultation-assistant-panel";
+import { ConsultationPhysicianAssist } from "@/components/clinical-workflow/consultation-physician-assist";
 import type { NuevaConsultaFormState } from "@/lib/hooks/use-nueva-consulta-form";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { Patient } from "@/types/database";
@@ -106,11 +106,16 @@ export function NuevaConsultaFormBody({
           )}
 
           {selectedPatient && consultationContext ? (
-            <ConsultationAssistantPanel
+            <ConsultationPhysicianAssist
               patientId={selectedPatient.id}
-              allergies={selectedPatient.allergies}
-              regularMedication={selectedPatient.regular_medication}
+              context={{
+                patientName: `${selectedPatient.last_name}, ${selectedPatient.first_name}`,
+                allergies: selectedPatient.allergies,
+                regularMedication: selectedPatient.regular_medication,
+                medicalHistory: selectedPatient.medical_history,
+              }}
               evolutionText={evolution}
+              onApplyToEvolution={setEvolution}
               pharmacologyHref={pharmacologyHref()}
             />
           ) : null}

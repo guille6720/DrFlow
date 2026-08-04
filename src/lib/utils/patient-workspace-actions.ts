@@ -3,7 +3,7 @@ import {
   type PatientWorkspaceTabId,
 } from "@/lib/constants/patient-workspace-tabs";
 
-export type PatientWorkspaceAction = "nueva" | "upload";
+export type PatientWorkspaceAction = "nueva" | "upload" | "alta" | "certificado";
 export type PatientWorkspaceMode = "edit" | "view";
 
 export type PatientWorkspaceUrlOptions = {
@@ -57,6 +57,8 @@ export type ParsedPatientWorkspaceActions = {
   prescriptionSheetOpen: boolean;
   orderSheetOpen: boolean;
   recordSheetOpen: boolean;
+  dischargeSheetOpen: boolean;
+  certificateSheetOpen: boolean;
 };
 
 export function parsePatientWorkspaceActions(
@@ -81,5 +83,7 @@ export function parsePatientWorkspaceActions(
     prescriptionSheetOpen: action === "nueva" && tab === "recetas",
     orderSheetOpen: action === "nueva" && tab === "ordenes",
     recordSheetOpen: Boolean(record && tab === "soap" && action !== "nueva"),
+    dischargeSheetOpen: action === "alta",
+    certificateSheetOpen: action === "certificado",
   };
 }

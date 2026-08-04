@@ -1,13 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { PrescriptionPharmacologyPicker } from "@/components/recetas/prescription-pharmacology-picker";
 import { PrescriptionMedicationsSection } from "@/components/recetas/prescription-medications-section";
+import { PrescriptionPhysicianAssist } from "@/components/clinical-workflow/prescription-physician-assist";
 import { usePrescriptionForm } from "@/lib/hooks/use-prescription-form";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
+import type { PhysicianAssistContext } from "@/lib/utils/physician-assist-types";
 import type { PrescriptionMedication } from "@/types/prescription";
 import { ARGENTINA_PRESCRIPTION_DISCLAIMER } from "@/types/prescription";
 
@@ -28,6 +31,7 @@ interface Props {
   defaultProfessionalId?: string;
   initialMedications?: PrescriptionMedication[];
   onSuccess?: () => void;
+  assistContext?: PhysicianAssistContext;
 }
 
 export function PrescriptionForm({
@@ -40,7 +44,11 @@ export function PrescriptionForm({
   defaultProfessionalId,
   initialMedications,
   onSuccess,
+  assistContext,
 }: Props) {
+  const [notes, setNotes] = useState("");
+  const [alertsReady, setAlertsReady] = useState(true);
+
   const {
     cie10Ref,
     diagnosisTextRef,
@@ -73,6 +81,19 @@ export function PrescriptionForm({
         onAddMedications={addMedicationsFromGuide}
         existingGenericNames={existingGenericNames}
       />
+
+      {assistContext ? (
+        <PrescriptionPhysicianAssist
+          context={assistContext}
+          medicationNames={medications
+            .map((m) => m.generic_name || m.brand_name || "")
+            .filter(Boolean)}
+          onApplyPrescriptionNotes={(text) =>
+            setNotes((prev) => (prev.trim() ? `${prev.trim()}\n\n${text}` : text))
+          }
+          onAlertGateChange={setAlertsReady}
+        />
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Select
@@ -130,7 +151,20 @@ export function PrescriptionForm({
         updateMed={updateMed}
       />
 
-      <Textarea name="notes" label="Observaciones" rows={2} placeholder="Indicaciones adicionales para farmacia" />
+      <Textarea
+        name="notes"
+        label="Observaciones"
+        rows={2}
+        placeholder="Indicaciones adicionales para farmacia"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+      />
+
+      {!alertsReady ? (
+        <p className="text-sm text-amber-800">
+          Revisá y confirmá las alertas medicamentosas antes de emitir la receta.
+        </p>
+      ) : null}
 
       <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-sm text-amber-950">
         <input
@@ -153,7 +187,7 @@ export function PrescriptionForm({
           type="button"
           variant="outline"
           loading={loading}
-          disabled={!disclaimerAccepted}
+          disabled={!disclaimerAccepted || !alertsReady}
           onClick={() => handleSubmit(false)}
         >
           Guardar borrador
@@ -161,7 +195,7 @@ export function PrescriptionForm({
         <Button
           type="button"
           loading={loading}
-          disabled={!disclaimerAccepted}
+          disabled={!disclaimerAccepted || !alertsReady}
           onClick={() => handleSubmit(true)}
         >
           Emitir receta

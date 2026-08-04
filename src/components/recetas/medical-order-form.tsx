@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { OrderPhysicianAssist } from "@/components/clinical-workflow/order-physician-assist";
 import { createMedicalOrder } from "@/lib/actions/medical-orders";
 import { PAMI_REFERRAL_TEMPLATES, PAMI_STUDY_TEMPLATES } from "@/lib/constants/pami-cabecera";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
+import type { PhysicianAssistContext } from "@/lib/utils/physician-assist-types";
 import { FileText, Stethoscope } from "lucide-react";
 
 interface Professional {
@@ -23,6 +25,7 @@ interface Props {
   professionals: Professional[];
   defaultProfessionalId?: string;
   onSuccess?: () => void;
+  assistContext?: PhysicianAssistContext;
 }
 
 export function MedicalOrderForm({
@@ -31,17 +34,18 @@ export function MedicalOrderForm({
   professionals,
   defaultProfessionalId,
   onSuccess,
+  assistContext,
 }: Props) {
   const router = useRouter();
   const [orderType, setOrderType] = useState<"study" | "referral">("study");
+  const [orderText, setOrderText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const templates = orderType === "study" ? PAMI_STUDY_TEMPLATES : PAMI_REFERRAL_TEMPLATES;
 
   function applyTemplate(text: string) {
-    const el = document.getElementById("order-text-field") as HTMLTextAreaElement | null;
-    if (el) el.value = text;
+    setOrderText(text);
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -98,6 +102,15 @@ export function MedicalOrderForm({
         ))}
       </div>
 
+      {assistContext ? (
+        <OrderPhysicianAssist
+          context={assistContext}
+          onApplyOrderText={(text) =>
+            setOrderText((prev) => (prev.trim() ? `${prev.trim()}\n\n${text}` : text))
+          }
+        />
+      ) : null}
+
       <Select
         name="professional_id"
         label="Profesional"
@@ -116,6 +129,8 @@ export function MedicalOrderForm({
         required
         rows={6}
         voiceInput
+        value={orderText}
+        onChange={(e) => setOrderText(e.target.value)}
         placeholder={
           orderType === "study"
             ? "Hemograma, glucemia, ECG..."

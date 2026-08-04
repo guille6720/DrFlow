@@ -47,7 +47,7 @@ export function PatientChartStickyBar({ patientId, arcoExport }: Props) {
             Órdenes
           </Button>
         </Link>
-        <Link href={nuevaConsultaHref}>
+        <Link href={buildPatientWorkspaceUrl(patientId, { action: "certificado" })}>
           <Button size="sm" variant="outline" type="button">
             <FileText className="h-4 w-4" />
             Certificado

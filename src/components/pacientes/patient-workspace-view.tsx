@@ -26,14 +26,6 @@ const PatientClinicalAuditPanel = dynamic(
   { loading: () => <PatientWorkspacePanelSkeleton /> }
 );
 
-const PatientClinicalAssistantPanel = dynamic(
-  () =>
-    import("@/components/pacientes/patient-clinical-assistant-panel").then((m) => ({
-      default: m.PatientClinicalAssistantPanel,
-    })),
-  { loading: () => <PatientWorkspacePanelSkeleton /> }
-);
-
 const PatientChartView = dynamic(
   () =>
     import("@/components/pacientes/patient-chart-view").then((m) => ({
@@ -83,7 +75,14 @@ export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
       <PatientWorkspaceTabBar activeTab={activeTab} onTabChange={setTab} />
 
       <div className="drflow-patient-workspace-panel">
-        {activeTab === "resumen" ? <PatientChartView {...chartProps} workspaceMode /> : null}
+        {activeTab === "resumen" ? (
+          <PatientChartView
+            {...chartProps}
+            workspaceMode
+            lastEvolution={ehr.consultations[0]?.evolution}
+            lastDiagnosis={ehr.diagnosisRows[0]?.name}
+          />
+        ) : null}
 
         {activeTab === "soap" ? (
           <PatientWorkspaceEhrPanel ehr={ehr} patientId={chartProps.patientId} />
@@ -117,16 +116,6 @@ export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
 
         {activeTab === "auditoria" ? (
           <PatientClinicalAuditPanel patientId={chartProps.patientId} />
-        ) : null}
-
-        {activeTab === "ia" ? (
-          <PatientClinicalAssistantPanel
-            chart={chartProps.chart}
-            patient={chartProps.patient}
-            patientId={chartProps.patientId}
-            canIssue={chartProps.canIssue}
-            ehr={ehr}
-          />
         ) : null}
       </div>
 

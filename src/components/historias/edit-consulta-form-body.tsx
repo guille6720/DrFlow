@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { ConsultationAssistantPanel } from "@/components/historias/consultation-assistant-panel";
+import { ConsultationPhysicianAssist } from "@/components/clinical-workflow/consultation-physician-assist";
 import type { EditConsultaFormState, RecordData } from "@/lib/hooks/use-edit-consulta-form";
 import type { Patient } from "@/types/database";
 import { Pill, ScrollText } from "lucide-react";
@@ -32,11 +32,17 @@ export function EditConsultaFormBody({
         )}
 
         {patient ? (
-          <ConsultationAssistantPanel
+          <ConsultationPhysicianAssist
             patientId={record.patient_id}
-            allergies={patient.allergies}
-            regularMedication={patient.regular_medication}
+            context={{
+              patientName: `${patient.last_name}, ${patient.first_name}`,
+              allergies: patient.allergies,
+              regularMedication: patient.regular_medication,
+              medicalHistory: patient.medical_history,
+              diagnosis: record.diagnosis,
+            }}
             evolutionText={form.evolution}
+            onApplyToEvolution={form.setEvolution}
             pharmacologyHref={form.pharmacologyHref()}
           />
         ) : null}

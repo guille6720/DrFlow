@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, ClipboardList, Pill, Stethoscope } from "lucide-react";
+import { CheckCircle2, ClipboardList, FileText, LogOut, Pill, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { patientWorkflowHref } from "@/lib/utils/clinical-workflow-context";
+import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
 import { CLINICAL_WORKFLOW_SHORTCUTS } from "@/lib/constants/clinical-workflow-shortcuts";
 
 type Props = {
@@ -55,6 +56,18 @@ export function PatientWorkflowActionBar({
             <Button size="sm" variant="outline" type="button" title="Nueva orden (Ctrl+Shift+O)">
               <ClipboardList className="h-4 w-4" />
               Orden
+            </Button>
+          </Link>
+          <Link href={buildPatientWorkspaceUrl(patientId, { action: "certificado" })}>
+            <Button size="sm" variant="outline" type="button" title="Certificado médico">
+              <FileText className="h-4 w-4" />
+              Certificado
+            </Button>
+          </Link>
+          <Link href={buildPatientWorkspaceUrl(patientId, { action: "alta" })}>
+            <Button size="sm" variant="outline" type="button" title="Resumen de alta">
+              <LogOut className="h-4 w-4" />
+              Alta
             </Button>
           </Link>
         </>

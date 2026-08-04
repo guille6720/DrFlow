@@ -1,5 +1,10 @@
 import type { ChartAlert, MedicationCard } from "@/lib/utils/patient-chart-types";
 import { extractEvolutionDiagnosis } from "@/lib/utils/parse-evolution-medications";
+import type {
+  PhysicianAssistContext,
+  PhysicianAssistItem,
+  PhysicianAssistKind,
+} from "@/lib/utils/physician-assist-types";
 
 function containsAny(hay: string, terms: string[]): boolean {
   const h = hay.toLowerCase();
@@ -174,4 +179,356 @@ export function buildLightweightPatientWarnings(input: {
     })),
     extraMedNames: evolutionMeds,
   });
+}
+
+const DIFFERENTIAL_RULES: Array<{ terms: string[]; diagnoses: string[] }> = [
+  {
+    terms: ["fiebre", "tos", "disnea", "expectoración"],
+    diagnoses: ["Neumonía adquirida en la comunidad", "Bronquitis aguda", "COVID-19", "EPOC reagudizado"],
+  },
+  {
+    terms: ["cefalea", "vómitos", "fotofobia", "rigidez"],
+    diagnoses: ["Cefalea tensional", "Migraña", "Meningitis", "Hemorragia subaracnoidea"],
+  },
+  {
+    terms: ["dolor torácico", "opresivo", "irradiación", "sudoración"],
+    diagnoses: ["Angina inestable", "IAM", "Pericarditis", "Reflujo gastroesofágico"],
+  },
+  {
+    terms: ["dolor abdominal", "náuseas", "vómitos", "fiebre"],
+    diagnoses: ["Gastroenteritis aguda", "Apendicitis", "Cólico biliar", "Pancreatitis"],
+  },
+  {
+    terms: ["poliuria", "polidipsia", "pérdida de peso", "glicemia"],
+    diagnoses: ["Diabetes mellitus tipo 2", "Diabetes mellitus tipo 1", "Diabetes gestacional"],
+  },
+  {
+    terms: ["hipertensión", "presión", "hta", "elevada"],
+    diagnoses: ["Hipertensión arterial esencial", "HTA secundaria", "Crisis hipertensiva"],
+  },
+];
+
+const ORDER_SUGGESTION_RULES: Array<{ terms: string[]; studies: string[] }> = [
+  { terms: ["diabetes", "glicemia", "hba1c"], studies: ["Hemoglobina glicosilada", "Glicemia en ayunas", "Perfil lipídico"] },
+  { terms: ["hipertensión", "hta", "renal"], studies: ["Creatinina", "Ionograma", "ECG", "Ecografía renal"] },
+  { terms: ["anemia", "palidez", "hemoglobina"], studies: ["Hemograma completo", "Ferritina", "Reticulocitos"] },
+  { terms: ["disnea", "tos", "neumonía"], studies: ["Radiografía de tórax PA", "Hemograma", "PCR"] },
+  { terms: ["dolor abdominal", "hepático", "cólico"], studies: ["Ecografía abdominal", "Hepatograma", "Amilasa/lipasa"] },
+];
+
+function textBlob(ctx: PhysicianAssistContext): string {
+  return [
+    ctx.evolutionText,
+    ctx.diagnosis,
+    ctx.chiefComplaint,
+    ctx.lastEvolution,
+    ctx.lastDiagnosis,
+    ...(ctx.activeProblems ?? []),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+function stableId(kind: PhysicianAssistKind, seed: string): string {
+  return `${kind}-${seed.slice(0, 48).replace(/\s+/g, "-")}`;
+}
+
+/** Structured SOAP draft from chart context — physician must confirm before applying. */
+export function buildSoapDraftSuggestion(ctx: PhysicianAssistContext): PhysicianAssistItem | null {
+  const evolution = (ctx.evolutionText ?? ctx.lastEvolution ?? "").trim();
+  const diagnosis = (ctx.diagnosis ?? ctx.lastDiagnosis ?? extractEvolutionDiagnosis(evolution) ?? "").trim();
+  const subjective =
+    ctx.chiefComplaint?.trim() ||
+    (evolution ? evolution.split("\n")[0]?.trim() : "") ||
+    "Paciente refiere motivo de consulta (completar).";
+  const objective = ctx.medicalHistory?.trim()
+    ? `Antecedentes: ${ctx.medicalHistory.trim().slice(0, 400)}`
+    : "Signos vitales y examen físico (completar).";
+  const assessment = diagnosis || "Impresión diagnóstica pendiente de confirmación.";
+  const planParts = [
+    ctx.regularMedication?.trim() ? `Continuar: ${ctx.regularMedication.trim().slice(0, 200)}` : null,
+    "Indicaciones y seguimiento (completar).",
+  ].filter(Boolean);
+
+  const body = [
+    `S (Subjetivo):\n${subjective}`,
+    `\nO (Objetivo):\n${objective}`,
+    `\nA (Análisis):\n${assessment}`,
+    `\nP (Plan):\n${planParts.join("\n")}`,
+  ].join("\n");
+
+  if (!evolution && !diagnosis && !ctx.chiefComplaint) return null;
+
+  return {
+    id: stableId("soap", body),
+    kind: "soap",
+    title: "Borrador SOAP",
+    body,
+  };
+}
+
+/** Ranked differential diagnoses from free-text context. */
+export function buildDifferentialDiagnosisSuggestions(ctx: PhysicianAssistContext): PhysicianAssistItem[] {
+  const blob = textBlob(ctx);
+  if (blob.length < 8) return [];
+
+  const matched = new Set<string>();
+  for (const rule of DIFFERENTIAL_RULES) {
+    if (rule.terms.some((t) => blob.includes(t))) {
+      for (const d of rule.diagnoses) matched.add(d);
+    }
+  }
+
+  if (matched.size === 0 && ctx.lastDiagnosis) {
+    matched.add(`Reevaluar: ${ctx.lastDiagnosis}`);
+    matched.add("Proceso agudo intercurrente");
+    matched.add("Descompensación de comorbilidad crónica");
+  }
+
+  if (matched.size === 0) return [];
+
+  const list = [...matched].slice(0, 5).map((d, i) => `${i + 1}. ${d}`).join("\n");
+  return [
+    {
+      id: stableId("differential", list),
+      kind: "differential",
+      title: "Diagnóstico diferencial sugerido",
+      body: `${list}\n\nVerificar con anamnesis, examen físico y estudios complementarios.`,
+    },
+  ];
+}
+
+/** Prescription draft text from habitual meds and diagnosis context. */
+export function buildPrescriptionDraftSuggestion(ctx: PhysicianAssistContext): PhysicianAssistItem | null {
+  const diagnosis = (ctx.diagnosis ?? ctx.lastDiagnosis ?? "").trim();
+  const meds = (ctx.regularMedication ?? "")
+    .split(/[\n,;]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  if (meds.length === 0 && !diagnosis) return null;
+
+  const lines = [
+    diagnosis ? `Diagnóstico: ${diagnosis}` : null,
+    meds.length > 0 ? "Medicación sugerida (revisar dosis y vía):" : null,
+    ...meds.map((m) => `• ${m}`),
+    ctx.proposedMedications?.length
+      ? `\nFármacos en formulario:\n${ctx.proposedMedications.map((m) => `• ${m}`).join("\n")}`
+      : null,
+  ].filter(Boolean);
+
+  return {
+    id: stableId("prescription_draft", lines.join("\n")),
+    kind: "prescription_draft",
+    title: "Borrador de receta",
+    body: lines.join("\n"),
+  };
+}
+
+/** Study/referral order draft from diagnosis keywords. */
+export function buildOrderDraftSuggestion(ctx: PhysicianAssistContext): PhysicianAssistItem | null {
+  const blob = textBlob(ctx);
+  const studies = new Set<string>();
+
+  for (const rule of ORDER_SUGGESTION_RULES) {
+    if (rule.terms.some((t) => blob.includes(t))) {
+      for (const s of rule.studies) studies.add(s);
+    }
+  }
+
+  if (studies.size === 0) {
+    if (!blob.trim()) return null;
+    return {
+      id: stableId("order_draft", blob),
+      kind: "order_draft",
+      title: "Borrador de orden",
+      body: `Solicito estudios complementarios acordes a cuadro clínico:\n• (completar según criterio médico)\n\nContexto: ${(ctx.diagnosis ?? ctx.lastDiagnosis ?? "—").slice(0, 120)}`,
+    };
+  }
+
+  const body = [
+    "Solicito:",
+    ...[...studies].slice(0, 6).map((s) => `• ${s}`),
+    "",
+    `Motivo: ${(ctx.diagnosis ?? ctx.lastEvolution ?? "evaluación clínica").slice(0, 200)}`,
+  ].join("\n");
+
+  return {
+    id: stableId("order_draft", body),
+    kind: "order_draft",
+    title: "Borrador de orden de estudios",
+    body,
+  };
+}
+
+/** Discharge summary draft from last encounter context. */
+export function buildDischargeSummarySuggestion(ctx: PhysicianAssistContext): PhysicianAssistItem | null {
+  const evolution = (ctx.evolutionText ?? ctx.lastEvolution ?? "").trim();
+  const diagnosis = (ctx.diagnosis ?? ctx.lastDiagnosis ?? "").trim();
+  if (!evolution && !diagnosis) return null;
+
+  const patient = ctx.patientName ?? "Paciente";
+  const body = [
+    `RESUMEN DE ALTA — ${patient}`,
+    "",
+    `Diagnóstico principal: ${diagnosis || "—"}`,
+    "",
+    "Evolución durante la internación/consulta:",
+    evolution.slice(0, 600) || "—",
+    "",
+    "Plan al alta:",
+    "• Medicación: " + (ctx.regularMedication?.trim().slice(0, 200) || "completar"),
+    "• Controles: completar según protocolo",
+    "• Signos de alarma: consultar ante empeoramiento",
+  ].join("\n");
+
+  return {
+    id: stableId("discharge_summary", body),
+    kind: "discharge_summary",
+    title: "Resumen de alta",
+    body,
+  };
+}
+
+/** Medical certificate draft (reposo / aptitud). */
+export function buildMedicalCertificateDraft(ctx: PhysicianAssistContext): PhysicianAssistItem | null {
+  const diagnosis = (ctx.diagnosis ?? ctx.lastDiagnosis ?? extractEvolutionDiagnosis(ctx.evolutionText) ?? "").trim();
+  if (!diagnosis && !ctx.evolutionText?.trim()) return null;
+
+  const patient = ctx.patientName ?? "________________";
+  const body = [
+    "CERTIFICADO MÉDICO",
+    "",
+    `Certifico que ${patient} fue atendido/a en consulta y presenta:`,
+    diagnosis || "(diagnóstico a completar)",
+    "",
+    "Se indica reposo / tratamiento / aptitud física: _______________ días / situación.",
+    "",
+    "Observaciones:",
+    (ctx.evolutionText ?? ctx.lastEvolution ?? "").slice(0, 300) || "—",
+    "",
+    "Este certificado requiere revisión, firma y sello del profesional tratante.",
+  ].join("\n");
+
+  return {
+    id: stableId("medical_certificate", body),
+    kind: "medical_certificate",
+    title: "Borrador de certificado médico",
+    body,
+  };
+}
+
+/** Interaction alerts as confirmable assist items. */
+export function buildInteractionAlertItems(ctx: PhysicianAssistContext): PhysicianAssistItem[] {
+  const warnings = buildLightweightPatientWarnings({
+    allergies: ctx.allergies,
+    regularMedication: ctx.regularMedication,
+    evolutionText: ctx.evolutionText ?? ctx.lastEvolution ?? undefined,
+  });
+
+  const extra = ctx.proposedMedications?.length
+    ? buildMedicationSafetyWarnings({
+        allergies: (ctx.allergies ?? "")
+          .split(/[\n,;]+/)
+          .map((s) => s.trim())
+          .filter(Boolean),
+        medications: ctx.proposedMedications.map((name, i) => ({
+          id: `rx-${i}`,
+          name,
+          dose: "—",
+          frequency: "—",
+          sinceLabel: "—",
+          lastRenewalLabel: "—",
+          raw: {} as never,
+        })),
+        extraMedNames: (ctx.regularMedication ?? "")
+          .split(/[\n,;]+/)
+          .map((s) => s.trim())
+          .filter(Boolean),
+      })
+    : [];
+
+  return [...new Set([...warnings, ...extra])].map((w) => ({
+    id: stableId("interaction_alert", w),
+    kind: "interaction_alert" as const,
+    title: "Alerta medicamentosa",
+    body: w,
+  }));
+}
+
+/** Clinical summary as a single assist item for resumen tab. */
+export function buildClinicalSummaryAssistItem(input: {
+  ageLabel: string;
+  sex: string;
+  insurance: string;
+  activeProblems: string[];
+  allergies: string[];
+  medicationCount: number;
+  lastConsultLabel?: string | null;
+  alerts: ChartAlert[];
+}): PhysicianAssistItem {
+  const lines = buildClinicalSummary(input);
+  return {
+    id: stableId("clinical_summary", lines.join("|")),
+    kind: "clinical_summary",
+    title: "Resumen clínico",
+    body: lines.join("\n"),
+  };
+}
+
+/** Generate assist items for a workflow, filtered by kind. */
+export function buildPhysicianAssistItems(
+  ctx: PhysicianAssistContext,
+  kinds: PhysicianAssistKind[]
+): PhysicianAssistItem[] {
+  const kindSet = new Set(kinds);
+  const items: PhysicianAssistItem[] = [];
+
+  if (kindSet.has("interaction_alert")) {
+    items.push(...buildInteractionAlertItems(ctx));
+  }
+  if (kindSet.has("soap")) {
+    const soap = buildSoapDraftSuggestion(ctx);
+    if (soap) items.push(soap);
+  }
+  if (kindSet.has("clinical_summary")) {
+    items.push(
+      buildClinicalSummaryAssistItem({
+        ageLabel: ctx.ageLabel ?? "—",
+        sex: ctx.sex ?? "—",
+        insurance: ctx.insurance ?? "—",
+        activeProblems: ctx.activeProblems ?? [],
+        allergies: (ctx.allergies ?? "")
+          .split(/[\n,;]+/)
+          .map((s) => s.trim())
+          .filter(Boolean),
+        medicationCount: (ctx.regularMedication ?? "")
+          .split(/[\n,;]+/)
+          .filter((s) => s.trim()).length,
+        alerts: [],
+      })
+    );
+  }
+  if (kindSet.has("differential")) {
+    items.push(...buildDifferentialDiagnosisSuggestions(ctx));
+  }
+  if (kindSet.has("prescription_draft")) {
+    const rx = buildPrescriptionDraftSuggestion(ctx);
+    if (rx) items.push(rx);
+  }
+  if (kindSet.has("order_draft")) {
+    const order = buildOrderDraftSuggestion(ctx);
+    if (order) items.push(order);
+  }
+  if (kindSet.has("discharge_summary")) {
+    const discharge = buildDischargeSummarySuggestion(ctx);
+    if (discharge) items.push(discharge);
+  }
+  if (kindSet.has("medical_certificate")) {
+    const cert = buildMedicalCertificateDraft(ctx);
+    if (cert) items.push(cert);
+  }
+
+  return items;
 }

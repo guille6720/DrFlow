@@ -9,7 +9,6 @@ import {
   Pill,
   ScrollText,
   Shield,
-  Sparkles,
   Stethoscope,
   Syringe,
 } from "lucide-react";
@@ -27,8 +26,7 @@ export type PatientWorkspaceTabId =
   | "estudios"
   | "archivos"
   | "vacunas"
-  | "auditoria"
-  | "ia";
+  | "auditoria";
 
 export type PatientWorkspaceTabDef = {
   id: PatientWorkspaceTabId;
@@ -51,7 +49,6 @@ export const PATIENT_WORKSPACE_TABS: PatientWorkspaceTabDef[] = [
   { id: "archivos", label: "Archivos", icon: FileStack, ready: true },
   { id: "vacunas", label: "Vacunas", icon: Syringe, ready: true },
   { id: "auditoria", label: "Auditoría", icon: Shield, ready: true },
-  { id: "ia", label: "IA", icon: Sparkles, ready: true },
 ];
 
 export const DEFAULT_PATIENT_WORKSPACE_TAB: PatientWorkspaceTabId = "resumen";
@@ -61,6 +58,7 @@ const TAB_IDS = new Set<string>([
   "evoluciones",
   "vitales",
   "interconsultas",
+  "ia",
 ]);
 
 /** Maps legacy tab IDs to the patient-centered EMR tab model. */
@@ -70,6 +68,7 @@ export const LEGACY_TAB_ALIASES: Record<string, PatientWorkspaceTabId> = {
   hc: "soap",
   vitales: "resumen",
   interconsultas: "resumen",
+  ia: "resumen",
 };
 
 export function parsePatientWorkspaceTab(value: string | null | undefined): PatientWorkspaceTabId {

@@ -1,7 +1,7 @@
 "use client";
 
 import { PATIENT_WORKSPACE_TABS, type PatientWorkspaceTabId } from "@/lib/constants/patient-workspace-tabs";
-import { usePluginEnabled, useFeatureFlag } from "@/components/plugins/clinic-plugins-provider";
+import { useFeatureFlag } from "@/components/plugins/clinic-plugins-provider";
 import { cn } from "@/lib/utils/cn";
 
 type Props = {
@@ -10,12 +10,10 @@ type Props = {
 };
 
 export function PatientWorkspaceTabBar({ activeTab, onTabChange }: Props) {
-  const iaEnabled = usePluginEnabled("ia");
   const timelineEnabled = useFeatureFlag("clinical_timeline");
   const auditEnabled = useFeatureFlag("patient_audit_tab");
 
   const tabs = PATIENT_WORKSPACE_TABS.filter((tab) => {
-    if (tab.id === "ia") return iaEnabled;
     if (tab.id === "timeline") return timelineEnabled;
     if (tab.id === "auditoria") return auditEnabled;
     return true;
