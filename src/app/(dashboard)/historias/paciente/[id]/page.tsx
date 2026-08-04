@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { getActiveClinicId } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
-import { patientWorkspacePath } from "@/lib/constants/patient-workspace-tabs";
+import { getActiveClinicId } from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
+import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
 
 /** Compat: la HC electrónica vive en el workspace del paciente (Fase 4). */
 export default async function PatientClinicalHistoryRedirectPage({

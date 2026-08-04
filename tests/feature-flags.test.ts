@@ -4,13 +4,13 @@ import {
   listFeatureFlags,
   NAV_FLAG_BY_HREF,
   FEATURE_FLAG_REGISTRY,
-} from "@/lib/features/flags/registry";
+} from "@/features/flags/lib/registry";
 import {
   filterNavByFeatureFlags,
   isFeatureFlagEnabled,
   resolveClinicFeatureFlags,
   buildClinicFeaturesContext,
-} from "@/lib/features/flags/resolve";
+} from "@/features/flags/lib/resolve";
 import { resolveClinicPlugins } from "@/plugins/resolve";
 
 describe("feature flag registry", () => {

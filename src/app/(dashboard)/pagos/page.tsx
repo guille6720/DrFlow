@@ -1,13 +1,13 @@
-import { PagosView } from "@/components/pagos/pagos-view";
+import { PagosView } from "@/features/facturacion/components/pagos/pagos-view";
 import {
   getActiveClinicId,
   getProfile,
   getUserClinics,
   getActiveClinic,
-} from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
+} from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
 import { redirect } from "next/navigation";
-import { hasPermission } from "@/lib/permissions/roles";
+import { hasPermission } from "@/core/permissions/roles";
 
 export default async function PagosPage() {
   const profile = await getProfile();

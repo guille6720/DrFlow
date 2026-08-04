@@ -3,11 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Header } from "@/components/layout/header";
+import { Header } from "@/core/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PatientFormFields } from "@/components/pacientes/patient-form-fields";
-import { createPatient } from "@/lib/actions/patients";
+import { PatientFormFields } from "@/features/pacientes/components/pacientes/patient-form-fields";
+import { createPatient } from "@/features/pacientes/actions/patients";
 import type { Clinic, UserRole } from "@/types/database";
 import { ArrowLeft } from "lucide-react";
 

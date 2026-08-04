@@ -1,6 +1,6 @@
 import { signOut } from "@/lib/actions/auth";
 import { NextResponse, type NextRequest } from "next/server";
-import { isSameOriginPost } from "@/lib/security/csrf";
+import { isSameOriginPost } from "@/core/security/csrf";
 
 export async function POST(request: NextRequest) {
   if (!isSameOriginPost(request)) {

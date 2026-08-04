@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
 import {
   CLINICAL_CSV_MAX_BYTES,
   CLINICAL_CSV_MAX_ROWS,
@@ -13,7 +13,7 @@ import {
   resolveImportProfessionalId,
 } from "@/lib/utils/clinical-pdf-import";
 import { parseClinicalCsvContent } from "@/lib/utils/clinical-csv-parse";
-import { sanitizeText } from "@/lib/validations/schemas";
+import { sanitizeText } from "@/core/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
 
 async function requireClinicalImportAccess() {

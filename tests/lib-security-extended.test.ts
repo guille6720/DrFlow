@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
-import { isSameOriginPost } from "@/lib/security/csrf";
+import { isSameOriginPost } from "@/core/security/csrf";
 import {
   assertSameClinic,
   clinicScopedIdFilter,
   isSameClinic,
   requireResourceInClinic,
   TenantScopeError,
-} from "@/lib/security/tenant-scope";
+} from "@/core/security/tenant-scope";
 
 function mockRequest(headers: Record<string, string>) {
   return new NextRequest("https://drflow.opusorg.com/api/auth/login", {

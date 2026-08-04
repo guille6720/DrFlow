@@ -5,7 +5,7 @@ export {
   useClinicPlugins,
   usePluginEnabled,
   useFeatureFlag,
-} from "@/components/plugins/clinic-plugins-provider";
+} from "@/features/plugins/providers";
 export {
   FEATURE_FLAG_REGISTRY,
   NAV_FLAG_BY_HREF,
@@ -14,7 +14,7 @@ export {
   type FeatureFlagId,
   type FeatureFlagCategory,
   type FeatureFlagDefinition,
-} from "@/lib/features/flags/registry";
+} from "@/features/flags/lib/registry";
 export {
   buildClinicFeaturesContext,
   filterNavByFeatureFlags,
@@ -22,7 +22,7 @@ export {
   resolveClinicFeatureFlags,
   type ClinicFeaturesContext,
   type ResolvedClinicFeatureFlags,
-} from "@/lib/features/flags/resolve";
+} from "@/features/flags/lib/resolve";
 export {
   loadClinicFeatureFlags,
   loadClinicFeatures,

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
-import { PatientPortalView } from "@/components/portal/patient-portal-view";
+import { createClient } from "@/core/supabase/server";
+import { PatientPortalView } from "@/features/portal/components/portal/patient-portal-view";
 import { notFound } from "next/navigation";
 import { resolvePortalDoctorInfo } from "@/lib/utils/portal-doctor-info";
 import { clinicOffersPami } from "@/lib/constants/coverages";

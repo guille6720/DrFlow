@@ -1,9 +1,2 @@
-import { REDUCED_MOTION_STORAGE_KEY } from "@/lib/accessibility/constants";
-
-/** Lee preferencia de movimiento reducido (SSR-safe). */
-export function readReducedMotionPreference(): boolean {
-  if (typeof window === "undefined") return false;
-  const stored = localStorage.getItem(REDUCED_MOTION_STORAGE_KEY);
-  const prefersReduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  return stored === "true" || (stored !== "false" && prefersReduce);
-}
+/** @deprecated Use @/core/accessibility/read-reduced-motion */
+export * from "@/core/accessibility/read-reduced-motion";

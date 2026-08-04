@@ -20,7 +20,15 @@ const DANGEROUS_PATTERNS = [
   { re: /\.innerHTML\s*=/, label: "innerHTML assignment" },
 ];
 
-const ALLOW_DANGEROUS = ["src/components/theme/ui-theme-bootstrap-script.tsx"];
+const ALLOW_DANGEROUS = ["src/core/components/theme/ui-theme-bootstrap-script.tsx"];
+
+function isUiComponentPath(r) {
+  return (
+    r.startsWith("src/components/ui/") ||
+    r.startsWith("src/core/components/") ||
+    (r.startsWith("src/features/") && r.includes("/components/") && r.endsWith(".tsx"))
+  );
+}
 
 function scanSourceFiles() {
   const violations = [];
@@ -39,15 +47,12 @@ function scanSourceFiles() {
       }
     }
 
-    if (
-      r.startsWith("src/components/") &&
-      /createAdminClient|SUPABASE_SERVICE_ROLE/.test(content)
-    ) {
+    if (isUiComponentPath(r) && /createAdminClient|SUPABASE_SERVICE_ROLE/.test(content)) {
       violations.push(`${r} — service role usage in UI component`);
     }
 
     if (
-      r.startsWith("src/components/") &&
+      isUiComponentPath(r) &&
       /\.from\s*\(\s*["'][a-z_]+["']\s*\)\.(insert|update|delete|upsert)/.test(content)
     ) {
       violations.push(`${r} — direct Supabase mutation in UI component`);
@@ -57,9 +62,9 @@ function scanSourceFiles() {
 }
 
 function checkRlsManifest() {
-  const manifest = resolve(SRC_ROOT, "lib/security/rls-manifest.ts");
+  const manifest = resolve(SRC_ROOT, "core/security/rls-manifest.ts");
   if (!existsSync(manifest)) {
-    return ["src/lib/security/rls-manifest.ts missing"];
+    return ["src/core/security/rls-manifest.ts missing"];
   }
   const content = readSource(manifest);
   if (!content.includes("TABLES_REQUIRING_RLS")) {

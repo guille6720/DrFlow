@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
-import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import {
   Calendar,
   ClipboardPlus,

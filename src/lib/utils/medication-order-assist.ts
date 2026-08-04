@@ -2,7 +2,7 @@ import type {
   PhysicianAssistContext,
   PhysicianAssistItem,
   PhysicianAssistKind,
-} from "@/lib/utils/physician-assist-types";
+} from "@/features/ia/types/physician-assist-types";
 
 function containsAny(hay: string, terms: string[]): boolean {
   const h = hay.toLowerCase();

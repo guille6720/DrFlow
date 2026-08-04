@@ -1,14 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { getActiveClinicId, getSession, logAudit } from "@/lib/auth/session";
-import { requireClinicPermission } from "@/lib/actions/clinic-guard";
+import { createClient } from "@/core/supabase/server";
+import { getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import {
   getFeatureFlagDefinition,
   listFeatureFlags,
   type FeatureFlagId,
-} from "@/lib/features/flags/registry";
+} from "@/features/flags/lib/registry";
 
 export async function updateClinicFeatureFlag(
   flagId: FeatureFlagId,

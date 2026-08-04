@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { registerClinicSchema } from "@/lib/validations/schemas";
-import { normalizeSlug, zodFieldErrors } from "@/lib/validations/form-errors";
+import { registerClinicSchema } from "@/core/validations/schemas";
+import { normalizeSlug, zodFieldErrors } from "@/core/validations/form-errors";
 
 describe("register validation", () => {
   it("flags invalid slug with field error", () => {

@@ -1,12 +1,18 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
-import { publicBookingSchema } from "@/lib/validations/public-booking";
-import { sanitizeText } from "@/lib/validations/schemas";
+import { createClient } from "@/core/supabase/server";
+import {
+  publicBookingCancelSchema,
+  publicBookingSchema,
+  publicBookingSlotsSchema,
+  publicBookingStatusesSchema,
+} from "@/core/validations/public-booking";
+import { sanitizeText } from "@/core/validations/schemas";
+import { firstZodIssue } from "@/core/validations/params";
 import {
   CONSENT_TYPES,
   LEGAL_PATIENT_NOTICE_VERSION,
-} from "@/lib/legal/documents";
+} from "@/core/legal/documents";
 
 export async function submitPublicBooking(formData: FormData) {
   const parsed = publicBookingSchema.safeParse({
@@ -23,7 +29,7 @@ export async function submitPublicBooking(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+    return { error: firstZodIssue(parsed.error) };
   }
 
   const data = parsed.data;
@@ -79,25 +85,23 @@ export async function fetchPatientAppointmentStatuses(
   documentNumber: string,
   appointmentIds: string[]
 ) {
-  if (!appointmentIds.length) {
-    return {
-      statuses: [] as Array<{
-        appointmentId: string;
-        status: string;
-        startAt: string;
-        bookingSource: string | null;
-        cancellationReason: string | null;
-        cancelledAt: string | null;
-        cancelledByType: string | null;
-      }>,
-    };
+  const parsed = publicBookingStatusesSchema.safeParse({
+    slug,
+    document_number: documentNumber.trim(),
+    appointment_ids: appointmentIds,
+  });
+  if (!parsed.success) {
+    return { error: firstZodIssue(parsed.error), statuses: [] };
+  }
+  if (parsed.data.appointment_ids.length === 0) {
+    return { statuses: [] };
   }
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_patient_appointment_statuses", {
-    p_slug: slug,
-    p_document_number: documentNumber.trim(),
-    p_appointment_ids: appointmentIds,
+    p_slug: parsed.data.slug,
+    p_document_number: parsed.data.document_number,
+    p_appointment_ids: parsed.data.appointment_ids,
   });
 
   if (error) return { error: "No pudimos consultar el estado", statuses: [] };
@@ -131,17 +135,22 @@ export async function cancelPatientAppointment(
   appointmentId: string,
   reason: string
 ) {
-  const trimmed = reason.trim();
-  if (trimmed.length < 3) {
-    return { error: "Indicá el motivo de la cancelación (mín. 3 caracteres)" };
+  const parsed = publicBookingCancelSchema.safeParse({
+    slug,
+    document_number: documentNumber.trim(),
+    appointment_id: appointmentId,
+    reason: reason.trim(),
+  });
+  if (!parsed.success) {
+    return { error: firstZodIssue(parsed.error) };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("cancel_patient_appointment", {
-    p_slug: slug,
-    p_document_number: documentNumber.trim(),
-    p_appointment_id: appointmentId,
-    p_reason: trimmed,
+    p_slug: parsed.data.slug,
+    p_document_number: parsed.data.document_number,
+    p_appointment_id: parsed.data.appointment_id,
+    p_reason: parsed.data.reason,
   });
 
   if (error) {
@@ -161,39 +170,44 @@ export async function loadPublicBookingSlots(
   slug: string,
   professionalId: string
 ) {
+  const parsed = publicBookingSlotsSchema.safeParse({ slug, professional_id: professionalId });
+  if (!parsed.success) {
+    return { error: firstZodIssue(parsed.error), slots: [] };
+  }
+
   const supabase = await createClient();
 
   const { data: link } = await supabase
     .from("public_booking_links")
     .select("clinic_id, clinics(timezone)")
-    .eq("slug", slug)
+    .eq("slug", parsed.data.slug)
     .eq("is_active", true)
     .single();
 
   if (!link) return { error: "Link inválido", slots: [] };
 
   const clinic = link.clinics as { timezone?: string } | null;
-  const { DEFAULT_CLINIC_TIMEZONE } = await import("@/lib/utils/clinic-timezone");
+  const { DEFAULT_CLINIC_TIMEZONE } = await import("@/shared/utils/clinic-timezone");
   const timeZone = clinic?.timezone ?? DEFAULT_CLINIC_TIMEZONE;
 
-  const { generateAvailableSlots } = await import("@/lib/booking/slots");
+  const { generateAvailableSlots } = await import("@/core/booking/slots");
 
   const [rules, occupancy, blocks] = await Promise.all([
     supabase
       .from("availability_rules")
       .select("day_of_week, start_time, end_time, slot_duration")
       .eq("clinic_id", link.clinic_id)
-      .eq("professional_id", professionalId)
+      .eq("professional_id", parsed.data.professional_id)
       .eq("is_active", true),
     supabase.rpc("get_public_booking_occupancy", {
-      p_slug: slug,
-      p_professional_id: professionalId,
+      p_slug: parsed.data.slug,
+      p_professional_id: parsed.data.professional_id,
     }),
     supabase
       .from("schedule_blocks")
       .select("start_at, end_at")
       .eq("clinic_id", link.clinic_id)
-      .eq("professional_id", professionalId)
+      .eq("professional_id", parsed.data.professional_id)
       .gte("end_at", new Date().toISOString()),
   ]);
 

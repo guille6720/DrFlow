@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { mergePatientClinicalFields } from "@/lib/server/patient-clinical-profile";
-import { isSameOriginPost } from "@/lib/security/csrf";
+import { mergePatientClinicalFields } from "@/features/pacientes/server/patient-clinical-profile";
+import { isSameOriginPost } from "@/core/security/csrf";
 
 describe("mergePatientClinicalFields", () => {
   it("merges profile fields onto patient row", () => {

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { sanitizeText } from "@/lib/validations/schemas";
+import { sanitizeText } from "@/core/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
-import { upsertPatientClinicalProfile } from "@/lib/server/patient-clinical-profile";
+import { upsertPatientClinicalProfile } from "@/features/pacientes/server/patient-clinical-profile";
 
 export { extractTextFromPdfBuffer } from "@/lib/utils/pdf-text-extract.server";
 

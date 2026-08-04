@@ -1,7 +1,2 @@
-export function SkipToContent() {
-  return (
-    <a href="#main-content" className="drflow-skip-link">
-      Saltar al contenido principal
-    </a>
-  );
-}
+/** @deprecated Use @/core/components/accessibility/skip-to-content */
+export * from "@/core/components/accessibility/skip-to-content";

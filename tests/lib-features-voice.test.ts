@@ -7,7 +7,7 @@ import {
   readVoiceInputUserPref,
   writeVoiceInputUserPref,
   VOICE_INPUT_USER_STORAGE_KEY,
-} from "@/lib/features/voice-input";
+} from "@/features/voice/lib/voice-input";
 
 describe("voice-input feature", () => {
   const envBackup = process.env.NEXT_PUBLIC_VOICE_INPUT_ENABLED;

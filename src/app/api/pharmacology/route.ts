@@ -1,14 +1,26 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { getActiveClinic } from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+import { getActiveClinic } from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
+import { pharmacologyApiQuerySchema } from "@/core/validations/pharmacology-api";
+import { firstZodIssue } from "@/core/validations/params";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get("q")?.trim() ?? "";
-  const pathologyId = searchParams.get("pathologyId")?.trim();
-  const symptomIdsParam = searchParams.get("symptomIds")?.trim();
-  const type = searchParams.get("type")?.trim() ?? "pathology";
+  const parsed = pharmacologyApiQuerySchema.safeParse({
+    q: searchParams.get("q")?.trim() || undefined,
+    pathologyId: searchParams.get("pathologyId")?.trim() || undefined,
+    symptomIds: searchParams.get("symptomIds")?.trim()
+      ? searchParams.get("symptomIds")!.trim().split(",").filter(Boolean)
+      : undefined,
+    type: searchParams.get("type")?.trim() || undefined,
+  });
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: firstZodIssue(parsed.error) }, { status: 400 });
+  }
+
+  const { q: query, pathologyId, symptomIds, type } = parsed.data;
 
   const supabase = await createClient();
   const {
@@ -41,8 +53,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ data });
   }
 
-  if (symptomIdsParam) {
-    const symptomIds = symptomIdsParam.split(",").filter(Boolean);
+  if (symptomIds?.length) {
     const { data, error } = await supabase.rpc("search_pathologies_by_symptoms", {
       p_symptom_ids: symptomIds,
       p_limit: 12,
@@ -54,7 +65,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ data });
   }
 
-  if (query.length < 2) {
+  if (!query || query.length < 2) {
     return NextResponse.json({ data: [] });
   }
 

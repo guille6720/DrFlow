@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { appointmentSchema, patientSchema, sanitizeText } from "@/lib/validations/schemas";
+import { appointmentSchema, patientSchema, sanitizeText } from "@/core/validations/schemas";
 
 describe("Validation schemas", () => {
   it("validates patient required fields", () => {

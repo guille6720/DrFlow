@@ -1,4 +1,4 @@
-import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 const PATIENT_PATH = /^\/pacientes\/([^/]+)/;
 

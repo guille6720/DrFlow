@@ -1,272 +1,589 @@
 "use server";
 
+
+
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
+
+import { createClient } from "@/core/supabase/server";
+
+import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+
+import { hasPermission } from "@/core/permissions/roles";
 import { z } from "zod";
+import { firstZodIssue, parseEntityId } from "@/core/validations/params";
+
+import {
+
+  clinicSettingsSchema,
+
+  createLocationSchema,
+
+  createProfessionalSchema,
+
+  createScheduleBlockSchema,
+
+  namedEntitySchema,
+
+  parseClinicSettingsForm,
+
+  parseCreateProfessionalForm,
+
+  parseScheduleBlockForm,
+
+} from "@/core/validations/settings-schemas";
+
+
 
 async function requireAdmin() {
+
   const clinicId = await getActiveClinicId();
+
   const { role, isSuperadmin } = await getActiveClinic();
+
   if (!clinicId || !hasPermission(role, "manageSettings", isSuperadmin)) {
+
     return { error: "Sin permisos", clinicId: null as string | null };
+
   }
+
   return { clinicId, error: null };
+
 }
+
+
 
 export async function updateClinicSettings(formData: FormData) {
+
   const { clinicId, error: permErr } = await requireAdmin();
+
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
+
+
+  const parsed = clinicSettingsSchema.safeParse(parseClinicSettingsForm(formData));
+
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
+
+
+
   const supabase = await createClient();
+
   const { error } = await supabase
+
     .from("clinics")
+
     .update({
-      name: String(formData.get("name") ?? "").trim(),
-      phone: String(formData.get("phone") ?? "").trim() || null,
-      email: String(formData.get("email") ?? "").trim() || null,
-      address: String(formData.get("address") ?? "").trim() || null,
-      default_appointment_duration: parseInt(
-        String(formData.get("default_appointment_duration") ?? "30"),
-        10
-      ),
-      voice_input_enabled: formData.get("voice_input_enabled") === "on",
+
+      name: parsed.data.name,
+
+      phone: parsed.data.phone,
+
+      email: parsed.data.email,
+
+      address: parsed.data.address,
+
+      default_appointment_duration: parsed.data.default_appointment_duration,
+
+      voice_input_enabled: parsed.data.voice_input_enabled,
+
     })
+
     .eq("id", clinicId);
 
+
+
   if (error) return { error: error.message };
+
   revalidatePath("/configuracion");
+
   revalidatePath("/agenda");
+
   revalidatePath("/historias");
+
   revalidatePath("/historias/nueva");
+
   return { success: true };
+
 }
+
+
 
 export async function createSpecialty(name: string) {
+
   const { clinicId, error: permErr } = await requireAdmin();
+
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
-  if (!name.trim()) return { error: "Nombre requerido" };
+
+
+
+  const parsed = namedEntitySchema.safeParse(name.trim());
+
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
+
+
 
   const supabase = await createClient();
+
   const { error } = await supabase
+
     .from("specialties")
-    .insert({ clinic_id: clinicId, name: name.trim() });
+
+    .insert({ clinic_id: clinicId, name: parsed.data });
+
   if (error) return { error: error.message };
+
   revalidatePath("/configuracion");
+
   return { success: true };
+
 }
+
+
 
 export async function deleteSpecialty(id: string) {
+
   const { clinicId, error: permErr } = await requireAdmin();
+
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
+
+
+  const idParsed = parseEntityId(id, "Especialidad");
+
+  if (!idParsed.ok) return { error: idParsed.error };
+
+
+
   const supabase = await createClient();
+
   const { error } = await supabase
+
     .from("specialties")
+
     .delete()
-    .eq("id", id)
+
+    .eq("id", idParsed.data)
+
     .eq("clinic_id", clinicId);
+
   if (error) return { error: error.message };
+
   revalidatePath("/configuracion");
+
   return { success: true };
+
 }
+
+
 
 export async function createLocation(name: string, address?: string) {
+
   const { clinicId, error: permErr } = await requireAdmin();
+
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
-  if (!name.trim()) return { error: "Nombre requerido" };
+
+
+
+  const parsed = createLocationSchema.safeParse({ name: name.trim(), address: address?.trim() });
+
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
+
+
 
   const supabase = await createClient();
+
   const { error } = await supabase.from("locations").insert({
+
     clinic_id: clinicId,
-    name: name.trim(),
-    address: address?.trim() || null,
+
+    name: parsed.data.name,
+
+    address: parsed.data.address || null,
+
   });
+
   if (error) return { error: error.message };
+
   revalidatePath("/configuracion");
+
   return { success: true };
+
 }
+
+
 
 export async function deleteLocation(id: string) {
+
   const { clinicId, error: permErr } = await requireAdmin();
+
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
+
+
+  const idParsed = parseEntityId(id, "Ubicación");
+
+  if (!idParsed.ok) return { error: idParsed.error };
+
+
+
   const supabase = await createClient();
+
   const { error } = await supabase
+
     .from("locations")
+
     .delete()
-    .eq("id", id)
+
+    .eq("id", idParsed.data)
+
     .eq("clinic_id", clinicId);
+
   if (error) return { error: error.message };
+
   revalidatePath("/configuracion");
+
   return { success: true };
+
 }
+
+
 
 export async function createConsultationReason(name: string) {
+
   const { clinicId, error: permErr } = await requireAdmin();
+
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
-  if (!name.trim()) return { error: "Nombre requerido" };
+
+
+
+  const parsed = namedEntitySchema.safeParse(name.trim());
+
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
+
+
 
   const supabase = await createClient();
+
   const { error } = await supabase
+
     .from("consultation_reasons")
-    .insert({ clinic_id: clinicId, name: name.trim() });
+
+    .insert({ clinic_id: clinicId, name: parsed.data });
+
   if (error) return { error: error.message };
+
   revalidatePath("/configuracion");
+
   return { success: true };
+
 }
+
+
 
 export async function createProfessional(formData: FormData) {
+
   const { clinicId, error: permErr } = await requireAdmin();
+
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
-  const user = await getSession();
-  const displayName = String(formData.get("display_name") ?? "").trim();
-  const specialtyId = String(formData.get("specialty_id") ?? "") || null;
-  const userId = String(formData.get("user_id") ?? "") || user?.id || null;
 
-  if (!displayName) return { error: "Nombre del profesional requerido" };
+
+  const user = await getSession();
+
+  const raw = parseCreateProfessionalForm(formData);
+
+  const parsed = createProfessionalSchema.safeParse({
+
+    ...raw,
+
+    user_id: raw.user_id || user?.id || null,
+
+  });
+
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
+
+
 
   const supabase = await createClient();
+
   const { error } = await supabase.from("professionals").insert({
+
     clinic_id: clinicId,
-    user_id: userId,
-    specialty_id: specialtyId,
-    display_name: displayName,
-    license_number: String(formData.get("license_number") ?? "").trim() || null,
+
+    user_id: parsed.data.user_id,
+
+    specialty_id: parsed.data.specialty_id,
+
+    display_name: parsed.data.display_name,
+
+    license_number: parsed.data.license_number,
+
   });
+
   if (error) return { error: error.message };
+
   revalidatePath("/configuracion");
+
   revalidatePath("/agenda");
+
   return { success: true };
+
 }
+
+
 
 export async function enablePublicBooking() {
+
   const { clinicId, error: permErr } = await requireAdmin();
+
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
+
+
   const supabase = await createClient();
+
   const { data: clinic } = await supabase
+
     .from("clinics")
+
     .select("slug")
+
     .eq("id", clinicId)
+
     .single();
+
   if (!clinic) return { error: "Clínica no encontrada" };
 
+
+
   const { data: pro } = await supabase
+
     .from("professionals")
+
     .select("id")
+
     .eq("clinic_id", clinicId)
+
     .eq("is_active", true)
+
     .limit(1)
+
     .maybeSingle();
 
+
+
   const { error } = await supabase.from("public_booking_links").upsert(
+
     {
+
       clinic_id: clinicId,
+
       slug: clinic.slug,
+
       professional_id: pro?.id ?? null,
+
       is_active: true,
+
     },
+
     { onConflict: "slug" }
+
   );
+
   if (error) return { error: error.message };
+
   revalidatePath("/configuracion");
+
   revalidatePath("/agenda");
+
   return { success: true, slug: clinic.slug };
+
 }
+
+
 
 export async function createScheduleBlock(formData: FormData) {
+
   const { clinicId, error: permErr } = await requireAdmin();
+
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
+
+
+
+  const parsed = createScheduleBlockSchema.safeParse(parseScheduleBlockForm(formData));
+
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
+
+
 
   const user = await getSession();
-  const professionalId = String(formData.get("professional_id") ?? "");
-  const startAt = String(formData.get("start_at") ?? "");
-  const endAt = String(formData.get("end_at") ?? "");
-  const reason = String(formData.get("reason") ?? "").trim() || "Bloqueo";
-
-  if (!professionalId || !startAt || !endAt) return { error: "Completá todos los campos" };
 
   const supabase = await createClient();
+
   const { error } = await supabase.from("schedule_blocks").insert({
+
     clinic_id: clinicId,
-    professional_id: professionalId,
-    start_at: new Date(startAt).toISOString(),
-    end_at: new Date(endAt).toISOString(),
-    reason,
+
+    professional_id: parsed.data.professional_id,
+
+    start_at: new Date(parsed.data.start_at).toISOString(),
+
+    end_at: new Date(parsed.data.end_at).toISOString(),
+
+    reason: parsed.data.reason,
+
     created_by: user?.id,
+
   });
+
   if (error) return { error: error.message };
+
   revalidatePath("/agenda");
+
   return { success: true };
+
 }
+
+
 
 export async function createAvailabilityRule(formData: FormData) {
+
   const { clinicId, error: permErr } = await requireAdmin();
+
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
+
+
   const schema = z.object({
+
     professional_id: z.string().uuid(),
+
     day_of_week: z.coerce.number().min(0).max(6),
+
     start_time: z.string(),
+
     end_time: z.string(),
+
     slot_duration: z.coerce.number().min(10).max(120).default(30),
+
   });
+
+
 
   const parsed = schema.safeParse(Object.fromEntries(formData.entries()));
+
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 
+
+
   const supabase = await createClient();
+
   const { error } = await supabase.from("availability_rules").insert({
+
     clinic_id: clinicId,
+
     ...parsed.data,
+
   });
+
   if (error) return { error: error.message };
+
   revalidatePath("/configuracion");
+
   revalidatePath("/agenda");
+
   return { success: true };
+
 }
+
+
 
 export async function deactivatePatient(id: string) {
+
   const clinicId = await getActiveClinicId();
+
   const { role, isSuperadmin } = await getActiveClinic();
+
   if (!clinicId || !hasPermission(role, "managePatients", isSuperadmin)) {
+
     return { error: "Sin permisos" };
+
   }
+
+
+
+  const idParsed = parseEntityId(id, "Paciente");
+
+  if (!idParsed.ok) return { error: idParsed.error };
+
+
 
   const supabase = await createClient();
 
+
+
   const { data: patient } = await supabase
+
     .from("patients")
+
     .select("id, first_name, last_name, is_active")
-    .eq("id", id)
+
+    .eq("id", idParsed.data)
+
     .eq("clinic_id", clinicId)
+
     .single();
 
+
+
   if (!patient) return { error: "Paciente no encontrado" };
+
   if (!patient.is_active) return { error: "El paciente ya fue eliminado" };
 
+
+
   const { error } = await supabase
+
     .from("patients")
+
     .update({ is_active: false })
-    .eq("id", id)
+
+    .eq("id", idParsed.data)
+
     .eq("clinic_id", clinicId);
+
   if (error) return { error: error.message };
 
+
+
   await logAudit({
+
     clinicId,
+
     entityType: "patient",
-    entityId: id,
+
+    entityId: idParsed.data,
+
     action: "delete",
+
     metadata: {
+
       name: `${patient.first_name} ${patient.last_name}`,
+
       softDelete: true,
+
     },
+
   });
 
+
+
   revalidatePath("/pacientes");
-  revalidatePath(`/pacientes/${id}`);
+
+  revalidatePath(`/pacientes/${idParsed.data}`);
+
   return { success: true };
+
 }
+
+

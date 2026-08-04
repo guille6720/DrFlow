@@ -4,27 +4,35 @@ import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { createClient } from "@/lib/supabase/server";
-import { getSession } from "@/lib/auth/session";
+import { createClient } from "@/core/supabase/server";
+import { getSession } from "@/core/auth/session";
 import { reminderService, buildAppointmentReminderMessage } from "@/lib/services/reminders";
 import { buildPamiReminderMessage } from "@/lib/constants/pami-cabecera";
-import { buildWhatsAppUrl } from "@/lib/utils/whatsapp";
+import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 import { paymentService } from "@/lib/services/payments";
 import { telemedicineService } from "@/lib/services/telemedicine";
-import { requireClinicPermission } from "@/lib/actions/clinic-guard";
-import { enqueueClinicJob } from "@/lib/jobs/enqueue";
-import { processPendingClinicJobs } from "@/lib/jobs/process";
+import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { parseEntityId, reminderChannelSchema, firstZodIssue } from "@/core/validations/params";
+import { mockPaymentSchema } from "@/core/validations/cash-schemas";
+import { enqueueClinicJob } from "@/core/jobs/enqueue";
+import { processPendingClinicJobs } from "@/core/jobs/process";
 
 export async function sendReminder(appointmentId: string, channel: "email" | "whatsapp" | "internal") {
   const access = await requireClinicPermission("manageAppointments");
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
+  const idParsed = parseEntityId(appointmentId, "Turno");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const channelParsed = reminderChannelSchema.safeParse(channel);
+  if (!channelParsed.success) return { error: "Canal inválido" };
+
   const supabase = await createClient();
   const { data: appointment } = await supabase
     .from("appointments")
     .select("*, patients(first_name, last_name, email, phone), professionals(profiles(full_name))")
-    .eq("id", appointmentId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
 
@@ -42,10 +50,11 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
     email: string | null;
     phone: string | null;
   };
+  const selectedChannel = channelParsed.data;
   const recipient =
-    channel === "email"
+    selectedChannel === "email"
       ? (patient.email ?? "")
-      : channel === "whatsapp"
+      : selectedChannel === "whatsapp"
         ? (patient.phone ?? "")
         : "internal";
 
@@ -67,18 +76,18 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
         )
       : buildAppointmentReminderMessage(patientFullName, dateLabel, profName);
 
-  if (channel === "whatsapp") {
+  if (selectedChannel === "whatsapp") {
     const result = await reminderService.send({
       clinicId,
-      appointmentId,
+      appointmentId: idParsed.data,
       recipient,
-      channel,
+      channel: selectedChannel,
       message,
     });
 
     await supabase.from("reminder_logs").insert({
       clinic_id: clinicId,
-      appointment_id: appointmentId,
+      appointment_id: idParsed.data,
       recipient: result.recipient,
       channel: result.channel,
       status: result.status,
@@ -99,9 +108,9 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
     .from("reminder_logs")
     .insert({
       clinic_id: clinicId,
-      appointment_id: appointmentId,
+      appointment_id: idParsed.data,
       recipient,
-      channel,
+      channel: selectedChannel,
       status: "queued",
       message,
     })
@@ -112,8 +121,8 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
     clinicId,
     jobType: "send_reminder",
     payload: {
-      appointmentId,
-      channel,
+      appointmentId: idParsed.data,
+      channel: selectedChannel,
       recipient,
       message,
       reminderLogId: queuedLog?.id,
@@ -144,11 +153,14 @@ export async function createTelemedicineSession(appointmentId: string) {
   const { clinicId } = access;
   const user = await getSession();
 
+  const idParsed = parseEntityId(appointmentId, "Turno");
+  if (!idParsed.ok) return { error: idParsed.error };
+
   const supabase = await createClient();
   const { data: appointment } = await supabase
     .from("appointments")
     .select("*, patients(first_name, last_name)")
-    .eq("id", appointmentId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
 
@@ -156,7 +168,7 @@ export async function createTelemedicineSession(appointmentId: string) {
 
   const patient = appointment.patients as unknown as { first_name: string; last_name: string };
   const room = await telemedicineService.createRoom(
-    appointmentId,
+    idParsed.data,
     `${patient.first_name} ${patient.last_name}`
   );
 
@@ -164,7 +176,7 @@ export async function createTelemedicineSession(appointmentId: string) {
     .from("telemedicine_sessions")
     .insert({
       clinic_id: clinicId,
-      appointment_id: appointmentId,
+      appointment_id: idParsed.data,
       room_url: room.roomUrl,
       status: room.status,
       created_by: user?.id,
@@ -177,7 +189,7 @@ export async function createTelemedicineSession(appointmentId: string) {
   await supabase
     .from("appointments")
     .update({ consultation_modality: "virtual", updated_at: new Date().toISOString() })
-    .eq("id", appointmentId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId);
 
   revalidatePath("/telemedicina");
@@ -190,12 +202,16 @@ export async function createMockPayment(formData: FormData) {
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
-  const patientId = formData.get("patient_id") as string;
-  const appointmentId = (formData.get("appointment_id") as string) || undefined;
-  const amount = parseFloat(formData.get("amount") as string);
-  const depositAmount = parseFloat((formData.get("deposit_amount") as string) || "0");
+  const parsed = mockPaymentSchema.safeParse({
+    patient_id: formData.get("patient_id"),
+    appointment_id: formData.get("appointment_id") || undefined,
+    amount: formData.get("amount"),
+    deposit_amount: formData.get("deposit_amount") ?? 0,
+  });
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
-  if (!patientId || isNaN(amount)) return { error: "Datos inválidos" };
+  const { patient_id: patientId, appointment_id: appointmentId, amount, deposit_amount: depositAmount } =
+    parsed.data;
 
   const result = await paymentService.createPayment({
     clinicId,

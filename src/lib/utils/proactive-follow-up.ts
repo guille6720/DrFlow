@@ -1,7 +1,7 @@
 import { formatMonthsSince } from "@/lib/utils/pre-visit-brief";
-import { mergeStandardVaccines } from "@/lib/utils/patient-chart-notes";
-import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
-import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
+import { mergeStandardVaccines } from "@/features/pacientes/utils/patient-chart-notes";
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 export type ProactiveCareCategory =
   | "overdue_visit"

@@ -6,7 +6,7 @@ import {
   inferStatusFromDuration,
   thresholdForCategory,
   CATEGORY_LABELS,
-} from "@/lib/observability/types";
+} from "@/core/observability/types";
 
 describe("observability thresholds", () => {
   it("defines slow query and job thresholds", () => {
@@ -53,7 +53,7 @@ describe("052_observability_phase16 migration", () => {
 
 describe("createTraceId", () => {
   it("generates 16-char trace ids", async () => {
-    const { createTraceId } = await import("@/lib/observability/trace-id");
+    const { createTraceId } = await import("@/core/observability/trace-id");
     const id = createTraceId();
     expect(id).toHaveLength(16);
     expect(id).toMatch(/^[a-f0-9]+$/);

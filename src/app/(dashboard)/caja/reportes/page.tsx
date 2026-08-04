@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { format, subDays } from "date-fns";
 import { es } from "date-fns/locale";
-import { Header } from "@/components/layout/header";
+import { Header } from "@/core/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,16 +10,16 @@ import {
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
-import { createClient } from "@/lib/supabase/server";
+} from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
 import {
   labelForAttentionType,
   labelForChargeKind,
   labelForPaymentMethod,
 } from "@/lib/constants/cash-register";
 import { loadRevenueSnapshot } from "@/lib/server/load-revenue-snapshot";
-import { AdminOpsAnalyticsBridge } from "@/components/admin-ops/admin-ops-analytics-bridge";
+import { AdminOpsAnalyticsBridge } from "@/features/ia/components/admin-ops/admin-ops-analytics-bridge";
 
 export default async function CajaReportesPage({
   searchParams,

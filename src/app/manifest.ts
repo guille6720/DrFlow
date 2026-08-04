@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-import { DOCTOR_THEME_COLOR, getPwaIcons } from "@/lib/utils/patient-portal-ready";
-import { getSiteUrl } from "@/lib/supabase/env";
+import { DOCTOR_THEME_COLOR, getPwaIcons } from "@/features/pacientes/utils/patient-portal-ready";
+import { getSiteUrl } from "@/core/supabase/env";
 
 export default function manifest(): MetadataRoute.Manifest {
   const origin = getSiteUrl();

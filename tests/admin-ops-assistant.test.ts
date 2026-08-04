@@ -3,9 +3,9 @@ import {
   buildAdminOpsResponse,
   buildAdminOpsSuggestedPrompts,
   matchAdminOpsIntent,
-} from "@/lib/utils/admin-ops-assistant";
-import { buildAdminOpsSnapshotFromDashboard } from "@/lib/utils/admin-ops-types";
-import type { ClinicalOperationsDashboardPayload } from "@/lib/utils/clinical-operations-dashboard-types";
+} from "@/features/dashboard/utils/admin-ops-assistant";
+import { buildAdminOpsSnapshotFromDashboard } from "@/features/dashboard/utils/admin-ops-types";
+import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
 import type { AdminAnalyticsSnapshot } from "@/lib/utils/admin-analytics-types";
 
 const analyticsStub: AdminAnalyticsSnapshot = {

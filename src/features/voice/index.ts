@@ -1,4 +1,4 @@
-export { VoiceInputProvider } from "@/components/voice/voice-input-provider";
+export { VoiceInputProvider } from "@/features/voice/components/voice/voice-input-provider";
 export {
   appendSpeechToTextarea,
   isSpeechRecognitionSupported,
@@ -6,4 +6,4 @@ export {
   isVoiceInputEnvEnabled,
   readVoiceInputUserPref,
   writeVoiceInputUserPref,
-} from "@/lib/features/voice-input";
+} from "@/features/voice/lib/voice-input";

@@ -5,15 +5,14 @@
 import { spawnSync } from "child_process";
 import { writeFileSync, mkdirSync } from "fs";
 import { resolve } from "path";
-import { walkDir, rel, lineCount, failGate, passGate, SRC_ROOT } from "./lib/quality-scan.mjs";
+import { walkComponentFiles, rel, lineCount, failGate, passGate } from "./lib/quality-scan.mjs";
 
 const METRICS_PATH = resolve(process.cwd(), "coverage/performance-metrics.json");
 const LARGE_COMPONENT_THRESHOLD = 250;
 
 function collectComponentMetrics() {
   const components = [];
-  for (const filePath of walkDir(`${SRC_ROOT}/components`)) {
-    if (!filePath.endsWith(".tsx")) continue;
+  for (const filePath of walkComponentFiles(".tsx")) {
     const lines = lineCount(filePath);
     components.push({ file: rel(filePath), lines });
   }

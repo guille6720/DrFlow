@@ -3,7 +3,7 @@ import {
   buildPatientEhrWorkspaceData,
   mapEhrPrescriptions,
   mapTimelineAppointments,
-} from "@/lib/server/load-patient-ehr-data";
+} from "@/features/pacientes/server/load-patient-ehr-data";
 
 const patient = {
   id: "pat-1",

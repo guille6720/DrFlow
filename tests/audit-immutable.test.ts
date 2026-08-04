@@ -7,7 +7,7 @@ import {
   buildAuditLogRow,
   buildAuditWhat,
   deriveAuditModule,
-} from "@/lib/security/audit-log";
+} from "@/core/security/audit-log";
 
 describe("055_immutable_audit_logging migration", () => {
   const sql = readFileSync(

@@ -5,8 +5,8 @@ import {
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
+} from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
 import type { PharmacologySearchMode } from "@/types/pharmacology";
 
 export default async function FarmacologiaPage({

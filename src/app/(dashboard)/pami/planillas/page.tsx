@@ -1,13 +1,13 @@
-import { Header } from "@/components/layout/header";
+import { Header } from "@/core/components/layout/header";
 import { PamiPlanillasView } from "@/features/pami";
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
-import { createClient } from "@/lib/supabase/server";
+} from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
 import { redirect } from "next/navigation";
 
 export default async function PamiPlanillasPage() {

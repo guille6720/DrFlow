@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildEhrPayloadFromHceRows } from "@/lib/utils/patient-ehr-from-hce";
+import { buildEhrPayloadFromHceRows } from "@/features/pacientes/utils/patient-ehr-from-hce";
 import type { HceExportRow } from "@/lib/utils/hce-export-parse";
 
 describe("buildEhrPayloadFromHceRows", () => {

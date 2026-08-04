@@ -6,7 +6,7 @@ import {
   resolveAgentForTask,
   runClinicalAiOrchestrator,
 } from "@/lib/utils/clinical-ai-orchestrator";
-import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 
 function chartStub(overrides: Partial<PatientChartPayload> = {}): PatientChartPayload {
   return {

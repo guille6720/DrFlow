@@ -1,15 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { getSession, logAudit } from "@/lib/auth/session";
-import { requireClinicPermission } from "@/lib/actions/clinic-guard";
+import { createClient } from "@/core/supabase/server";
+import { getSession, logAudit } from "@/core/auth/session";
+import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import {
   createCashChargeSchema,
   voidCashChargeSchema,
   ledgerEntrySchema,
   cashClosureSchema,
-} from "@/lib/validations/cash-schemas";
+} from "@/core/validations/cash-schemas";
+import { parseEntityId } from "@/core/validations/params";
 import { isBlockedChargeKind, labelForChargeKind } from "@/lib/constants/cash-register";
 
 async function getPatientLedgerBalance(
@@ -293,11 +294,14 @@ export async function prepareCashInvoice(chargeId: string) {
   const { clinicId } = access;
   const user = await getSession();
 
+  const idParsed = parseEntityId(chargeId, "Cobro");
+  if (!idParsed.ok) return { error: idParsed.error };
+
   const supabase = await createClient();
   const { data: charge } = await supabase
     .from("cash_charges")
     .select("id, patient_id, amount, status")
-    .eq("id", chargeId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
 

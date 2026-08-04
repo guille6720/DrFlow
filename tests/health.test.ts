@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { getHealthStatus } from "@/lib/observability/health";
-import { getReleasePayload } from "@/lib/app-release";
-import { createTraceId } from "@/lib/observability/trace-id";
+import { getHealthStatus } from "@/core/observability/health";
+import { getReleasePayload } from "@/core/app-release";
+import { createTraceId } from "@/core/observability/trace-id";
 
 describe("getHealthStatus", () => {
   const originalEnv = { ...process.env };

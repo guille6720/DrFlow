@@ -1,4 +1,2 @@
-/**
- * @deprecated Use ConsultationPhysicianAssist from clinical-workflow. Kept for imports.
- */
-export { ConsultationPhysicianAssist as ConsultationAssistantPanel } from "@/components/clinical-workflow/consultation-physician-assist";
+/** @deprecated Use @/features/historias/components/historias/consultation-assistant-panel */
+export * from "@/features/historias/components/historias/consultation-assistant-panel";

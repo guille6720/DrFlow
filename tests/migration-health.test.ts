@@ -4,7 +4,7 @@ import {
   hasConsumerImportRef,
   isPlaceholderImportDni,
 } from "@/lib/utils/migration-health";
-import { HCE_SUMMARY_ATTACHMENT_NAME } from "@/lib/utils/patient-ehr-from-hce";
+import { HCE_SUMMARY_ATTACHMENT_NAME } from "@/features/pacientes/utils/patient-ehr-from-hce";
 
 describe("migration-health", () => {
   it("detects placeholder DNI and consumer ref", () => {

@@ -54,7 +54,7 @@ describe("enterprise RLS tables phase 13-16", () => {
 
 describe("middleware public API routes", () => {
   it("bypasses auth for health and version", () => {
-    const src = readFileSync(resolve("src/lib/supabase/middleware.ts"), "utf8");
+    const src = readFileSync(resolve("src/core/supabase/middleware.ts"), "utf8");
     expect(src).toMatch(/\/api\/health/);
     expect(src).toMatch(/\/api\/version/);
     expect(src).toMatch(/\/api\/jobs\//);

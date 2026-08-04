@@ -1,5 +1,5 @@
-import type { PatientChartExtras } from "@/lib/utils/patient-chart-types";
-import type { PhysicianAssistItem, PhysicianAssistKind } from "@/lib/utils/physician-assist-types";
+import type { PatientChartExtras } from "@/features/pacientes/utils/patient-chart-model-types";
+import type { PhysicianAssistItem, PhysicianAssistKind } from "@/features/ia/types/physician-assist-types";
 
 export type ParsedLabValue = {
   name: string;

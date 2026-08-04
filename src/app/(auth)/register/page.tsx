@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { RegisterClinicForm } from "@/components/auth/register-clinic-form";
+import { RegisterClinicForm } from "@/core/components/auth/register-clinic-form";
 
 export default function RegisterPage() {
   return (

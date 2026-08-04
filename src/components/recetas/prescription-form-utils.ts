@@ -1,11 +1,2 @@
-import type { PrescriptionMedication } from "@/types/prescription";
-
-export const emptyPrescriptionMedication = (): PrescriptionMedication => ({
-  generic_name: "",
-  brand_name: "",
-  presentation: "",
-  concentration: "",
-  quantity: 1,
-  posology: "",
-  route: "oral",
-});
+/** @deprecated Use @/features/recetas/components/recetas/prescription-form-utils */
+export * from "@/features/recetas/components/recetas/prescription-form-utils";

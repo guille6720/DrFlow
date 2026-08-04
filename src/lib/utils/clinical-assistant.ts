@@ -1,4 +1,4 @@
-import type { ChartAlert, MedicationCard } from "@/lib/utils/patient-chart-types";
+import type { ChartAlert, MedicationCard } from "@/features/pacientes/utils/patient-chart-model-types";
 import { extractEvolutionDiagnosis } from "@/lib/utils/parse-evolution-medications";
 import { buildConsultationDocumentationItems } from "@/lib/utils/consultation-documentation";
 import {
@@ -9,7 +9,7 @@ import type {
   PhysicianAssistContext,
   PhysicianAssistItem,
   PhysicianAssistKind,
-} from "@/lib/utils/physician-assist-types";
+} from "@/features/ia/types/physician-assist-types";
 
 function containsAny(hay: string, terms: string[]): boolean {
   const h = hay.toLowerCase();

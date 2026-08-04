@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/core/supabase/server";
 import {
   formatProfessionalLicenses,
   getProfessionalDisplayName,

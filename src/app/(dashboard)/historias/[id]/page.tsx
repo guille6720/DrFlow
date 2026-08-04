@@ -1,16 +1,16 @@
 import { notFound, redirect } from "next/navigation";
-import { Header } from "@/components/layout/header";
-import { HistoriaDetailContent } from "@/components/historias/historia-detail-content";
+import { Header } from "@/core/components/layout/header";
+import { HistoriaDetailContent } from "@/features/historias/components/historias/historia-detail-content";
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
-import { createClient } from "@/lib/supabase/server";
-import { loadHistoriaDetailPageData } from "@/lib/server/load-historia-detail-page";
-import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
+} from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+import { loadHistoriaDetailPageData } from "@/features/historias/server/load-historia-detail-page";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 export default async function HistoriaDetailPage({
   params,

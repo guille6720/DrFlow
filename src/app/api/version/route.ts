@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getReleasePayload } from "@/lib/app-release";
+import { getReleasePayload } from "@/core/app-release";
 
 export const dynamic = "force-dynamic";
 

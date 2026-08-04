@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getActiveClinic, getActiveClinicId } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
-import { hasPermission } from "@/lib/permissions/roles";
+import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
+import { hasPermission } from "@/core/permissions/roles";
 import { normalizeCoverages } from "@/lib/constants/coverages";
+import { clinicCoveragesSchema } from "@/core/validations/settings-schemas";
+import { firstZodIssue } from "@/core/validations/params";
 
 export async function updateClinicCoverages(formData: FormData): Promise<{
   success?: boolean;
@@ -19,24 +21,34 @@ export async function updateClinicCoverages(formData: FormData): Promise<{
 
   const selected = formData.getAll("coverages").map((v) => String(v));
   const customRaw = String(formData.get("custom_coverages") ?? "");
-  const custom = customRaw
-    .split(/[,;\n]/)
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const defaultInsurance = String(formData.get("default_insurance") ?? "").trim();
 
-  const accepted = normalizeCoverages([...selected, ...custom]);
+  const parsed = clinicCoveragesSchema.safeParse({
+    coverages: selected,
+    custom_coverages: customRaw,
+    default_insurance: defaultInsurance || undefined,
+  });
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
+
+  const custom = parsed.data.custom_coverages
+    ? parsed.data.custom_coverages
+        .split(/[,;\n]/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+
+  const accepted = normalizeCoverages([...parsed.data.coverages, ...custom]);
 
   if (accepted.length === 0) {
     return { error: "Seleccioná al menos una cobertura o agregá una personalizada." };
   }
 
-  let defaultInsurance = String(formData.get("default_insurance") ?? "").trim();
-  if (!defaultInsurance || !accepted.some((c) => c.toLowerCase() === defaultInsurance.toLowerCase())) {
-    defaultInsurance = accepted[0];
+  let resolvedDefault = parsed.data.default_insurance?.trim() ?? "";
+  if (!resolvedDefault || !accepted.some((c) => c.toLowerCase() === resolvedDefault.toLowerCase())) {
+    resolvedDefault = accepted[0];
   } else {
-    // Usar la forma canónica del array
-    defaultInsurance =
-      accepted.find((c) => c.toLowerCase() === defaultInsurance.toLowerCase()) ?? accepted[0];
+    resolvedDefault =
+      accepted.find((c) => c.toLowerCase() === resolvedDefault.toLowerCase()) ?? accepted[0];
   }
 
   const supabase = await createClient();
@@ -44,7 +56,7 @@ export async function updateClinicCoverages(formData: FormData): Promise<{
     .from("clinics")
     .update({
       accepted_coverages: accepted,
-      default_insurance_provider: defaultInsurance,
+      default_insurance_provider: resolvedDefault,
       updated_at: new Date().toISOString(),
     })
     .eq("id", clinicId);
@@ -64,6 +76,6 @@ export async function updateClinicCoverages(formData: FormData): Promise<{
 
   return {
     success: true,
-    message: `Coberturas guardadas (${accepted.length}). Por defecto: ${defaultInsurance}.`,
+    message: `Coberturas guardadas (${accepted.length}). Por defecto: ${resolvedDefault}.`,
   };
 }

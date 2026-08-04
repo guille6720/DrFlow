@@ -1,5 +1,5 @@
-import type { ChartAlert, PatientChartPayload } from "@/lib/utils/patient-chart-types";
-import type { LabPanelRow } from "@/lib/utils/patient-chart-notes";
+import type { ChartAlert, PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+import type { LabPanelRow } from "@/features/pacientes/utils/patient-chart-notes";
 
 export type PreVisitBriefSection = {
   label: string;

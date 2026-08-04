@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { purgeSoleOwnerClinicsForUser } from "@/lib/actions/clinic-purge";
 import { DELETE_ACCOUNT_CONFIRM_PHRASE } from "@/lib/constants/account";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/core/supabase/server";
 
 const CLINIC_COOKIE = "drflow_clinic_id";
 

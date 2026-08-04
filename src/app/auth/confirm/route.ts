@@ -1,7 +1,8 @@
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/core/supabase/env";
+import { otpTypeSchema, parseSafeRedirectPath } from "@/core/validations/auth-redirect";
 
 /**
  * Confirmación de email / recovery (Supabase manda token_hash + type).
@@ -10,10 +11,9 @@ import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
-  const type = searchParams.get("type") as EmailOtpType | null;
+  const typeRaw = searchParams.get("type");
   const code = searchParams.get("code");
-  const nextRaw = searchParams.get("next") ?? "/login/restablecer";
-  const next = nextRaw.startsWith("/") ? nextRaw : "/login/restablecer";
+  const next = parseSafeRedirectPath(searchParams.get("next"), "/login/restablecer");
 
   const redirectTo = new URL(next, origin);
   const errorUrl = new URL("/login", origin);
@@ -34,7 +34,14 @@ export async function GET(request: NextRequest) {
   });
 
   try {
-    if (token_hash && type) {
+    if (token_hash && typeRaw) {
+      const typeParsed = otpTypeSchema.safeParse(typeRaw);
+      if (!typeParsed.success) {
+        errorUrl.searchParams.set("error", "Link de recuperación inválido.");
+        return NextResponse.redirect(errorUrl, 303);
+      }
+
+      const type = typeParsed.data as EmailOtpType;
       const { data, error } = await supabase.auth.verifyOtp({ type, token_hash });
       if (error) {
         errorUrl.searchParams.set(
@@ -43,7 +50,6 @@ export async function GET(request: NextRequest) {
         );
         return NextResponse.redirect(errorUrl, 303);
       }
-      // Asegurar cookies de sesión (recovery)
       if (data.session) {
         await supabase.auth.setSession({
           access_token: data.session.access_token,
@@ -69,7 +75,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(errorUrl, 303);
   }
 
-  // Sin params: ir a restablecer por si el hash viene en el cliente
   if (next.includes("restablecer")) {
     return NextResponse.redirect(new URL("/login/restablecer", origin), 303);
   }

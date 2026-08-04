@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getProfessionalSpecialtyDefaults } from "@/components/profesionales/professional-intake-utils";
-import type { ProfessionalIntakeDetail } from "@/components/profesionales/professional-intake-types";
+import { getProfessionalSpecialtyDefaults } from "@/features/profesionales/components/profesionales/professional-intake-utils";
+import type { ProfessionalIntakeDetail } from "@/features/profesionales/components/profesionales/professional-intake-types";
 import { SPECIALTY_OTHER_VALUE } from "@/lib/constants/medical-specialties";
 describe("getProfessionalSpecialtyDefaults", () => {
   it("maps listed specialty to select value", () => {

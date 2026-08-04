@@ -1,4 +1,4 @@
-export { PharmacologySearchView } from "@/components/pharmacology/pharmacology-search-view";
+export { PharmacologySearchView } from "@/features/pharmacology/components/pharmacology/pharmacology-search-view";
 export {
   searchPathologies,
   getDrugsByPathology,

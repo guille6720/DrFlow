@@ -3,7 +3,7 @@ import {
   appendSpeechToTextarea,
   isVoiceInputAvailable,
   isVoiceInputEnvEnabled,
-} from "@/lib/features/voice-input";
+} from "@/features/voice/lib/voice-input";
 
 describe("voice input feature flags", () => {
   it("is enabled by default via env", () => {

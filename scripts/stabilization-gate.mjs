@@ -5,9 +5,9 @@
  * - Hooks under src/components/** must live in src/lib/hooks/
  */
 import { readFileSync } from "fs";
-import { join, dirname } from "path";
+import { join, dirname, sep } from "path";
 import { fileURLToPath } from "url";
-import { walkDir, rel, lineCount, failGate, passGate, SRC_ROOT } from "./lib/quality-scan.mjs";
+import { walkComponentFiles, rel, lineCount, failGate, passGate, SRC_ROOT, walkDir, readSource } from "./lib/quality-scan.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASELINE_PATH = join(__dirname, "stabilization-baseline.json");
@@ -23,8 +23,7 @@ function scanOversizedComponents(baseline) {
   const violations = [];
   const warnings = [];
 
-  for (const filePath of walkDir(`${SRC_ROOT}/components`)) {
-    if (!filePath.endsWith(".tsx")) continue;
+  for (const filePath of walkComponentFiles(".tsx")) {
     const r = rel(filePath);
     const lines = lineCount(filePath);
     const baselineLines = baseline.components[r];
@@ -51,7 +50,11 @@ function scanOversizedComponents(baseline) {
 function scanOversizedHooks(baseline) {
   const violations = [];
 
-  const hookDirs = [`${SRC_ROOT}/lib/hooks`, `${SRC_ROOT}/components`];
+  const hookDirs = [
+    `${SRC_ROOT}/lib/hooks`,
+    `${SRC_ROOT}/core/hooks`,
+    ...walkDir(`${SRC_ROOT}/features`).filter((d) => d.endsWith(`${sep}hooks`)),
+  ];
 
   for (const dir of hookDirs) {
     for (const filePath of walkDir(dir)) {
@@ -60,9 +63,14 @@ function scanOversizedHooks(baseline) {
       if (!base.startsWith("use-") && !base.includes("use-completed")) continue;
 
       const r = rel(filePath);
+      if (readSource(filePath).startsWith("/** @deprecated")) continue;
 
-      if (r.startsWith("src/components/")) {
-        violations.push(`${r} — hook in components/ (move to src/lib/hooks/)`);
+      if (
+        r.startsWith("src/components/") ||
+        r.startsWith("src/core/components/") ||
+        (r.startsWith("src/features/") && r.includes("/components/"))
+      ) {
+        violations.push(`${r} — hook in components/ (move to feature hooks/ or core/hooks/)`);
         continue;
       }
 
@@ -109,7 +117,7 @@ function main() {
     `No new hooks >${HOOK_MAX} lines`,
     `${baselineComponentCount} baseline component(s) within cap`,
     `${baselineHookCount} baseline hook(s) within cap`,
-    "No hooks under src/components/",
+    "No hooks under feature/core components/",
   ]);
 }
 

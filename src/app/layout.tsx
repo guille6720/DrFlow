@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import { getPublicSiteUrl } from "@/lib/supabase/env";
+import { getPublicSiteUrl } from "@/core/supabase/env";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import { PWA_APPLE_ICON } from "@/lib/utils/patient-portal-ready";
-import { UiThemeBootstrapScript } from "@/components/theme/ui-theme-bootstrap-script";
+import { PWA_APPLE_ICON } from "@/features/pacientes/utils/patient-portal-ready";
+import { UiThemeBootstrapScript } from "@/core/components/theme/ui-theme-bootstrap-script";
 
 const siteUrl = getPublicSiteUrl();
 

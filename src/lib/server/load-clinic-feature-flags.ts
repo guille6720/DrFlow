@@ -4,8 +4,8 @@ import {
   buildClinicFeaturesContext,
   type ClinicFeaturesContext,
   type ResolvedClinicFeatureFlags,
-} from "@/lib/features/flags/resolve";
-import { FEATURE_FLAG_REGISTRY } from "@/lib/features/flags/registry";
+} from "@/features/flags/lib/resolve";
+import { FEATURE_FLAG_REGISTRY } from "@/features/flags/lib/registry";
 import { loadClinicPlugins } from "@/lib/server/load-clinic-plugins";
 
 export async function loadClinicFeatureFlags(

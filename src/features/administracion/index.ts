@@ -1,4 +1,4 @@
-export { WaitingRoomView } from "@/components/secretaria/waiting-room-view";
+export { WaitingRoomView } from "@/features/administracion/components/secretaria/waiting-room-view";
 export {
   updateWaitingRoomStatus,
   confirmAppointmentFromWaitingRoom,

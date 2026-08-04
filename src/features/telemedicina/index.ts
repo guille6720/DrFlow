@@ -1,1 +1,1 @@
-export { TelemedicinaView } from "@/components/telemedicina/telemedicina-view";
+export { TelemedicinaView } from "@/features/telemedicina/components/telemedicina/telemedicina-view";

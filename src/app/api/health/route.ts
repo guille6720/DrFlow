@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getHealthStatus, recordHealthCheckEvent } from "@/lib/observability/health";
-import { authorizeCronRequest } from "@/lib/observability/cron-auth";
+import { getHealthStatus, recordHealthCheckEvent } from "@/core/observability/health";
+import { authorizeCronRequest } from "@/core/observability/cron-auth";
 
 export const dynamic = "force-dynamic";
 

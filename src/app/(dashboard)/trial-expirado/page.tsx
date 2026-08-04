@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { CalendarX2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DashboardPageHeader } from "@/components/layout/dashboard-page-header";
-import { getDashboardShell } from "@/lib/auth/session";
+import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
+import { getDashboardShell } from "@/core/auth/session";
 import { redirect } from "next/navigation";
-import { isClinicTrialExpired, TRIAL_PROMO_DAYS } from "@/lib/trial/clinic-trial";
+import { isClinicTrialExpired, TRIAL_PROMO_DAYS } from "@/core/trial/clinic-trial";
 
 export default async function TrialExpiradoPage() {
   const { profile, clinic, isSuperadmin } = await getDashboardShell();

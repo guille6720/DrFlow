@@ -1,46 +1,46 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { Suspense } from "react";
-import { Sidebar } from "@/components/layout/sidebar";
-import { DashboardSidebarProvider } from "@/components/layout/dashboard-sidebar-context";
-import { DashboardMain } from "@/components/layout/dashboard-main";
-import { DashboardSidebarReveal } from "@/components/layout/dashboard-sidebar-reveal";
-import { ClinicalTopNav } from "@/components/layout/clinical-top-nav";
-import { FloatingActions } from "@/components/layout/floating-actions";
-import { CommandPaletteProvider } from "@/components/command-palette/command-palette-provider";
-import { RoutePrefetcher } from "@/components/layout/route-prefetcher";
-import { PwaRegister } from "@/components/pwa/pwa-register";
-import { UpdateBanner } from "@/components/updates/update-banner";
-import { TrialBanner } from "@/components/trial/trial-banner";
-import { UiThemeProvider } from "@/components/theme/ui-theme-provider";
+import { Sidebar } from "@/core/components/layout/sidebar";
+import { DashboardSidebarProvider } from "@/core/components/layout/dashboard-sidebar-context";
+import { DashboardMain } from "@/core/components/layout/dashboard-main";
+import { DashboardSidebarReveal } from "@/core/components/layout/dashboard-sidebar-reveal";
+import { ClinicalTopNav } from "@/core/components/layout/clinical-top-nav";
+import { FloatingActions } from "@/core/components/layout/floating-actions";
+import { CommandPaletteProvider } from "@/core/components/command-palette/command-palette-provider";
+import { RoutePrefetcher } from "@/core/components/layout/route-prefetcher";
+import { PwaRegister } from "@/core/components/pwa/pwa-register";
+import { UpdateBanner } from "@/core/components/updates/update-banner";
+import { TrialBanner } from "@/core/components/trial/trial-banner";
+import { UiThemeProvider } from "@/core/components/theme/ui-theme-provider";
 import { VoiceInputProvider } from "@/features/voice";
-import { getDashboardShell, logAudit } from "@/lib/auth/session";
-import { canAccessRoute } from "@/lib/permissions/roles";
-import { createClient } from "@/lib/supabase/server";
+import { getDashboardShell, logAudit } from "@/core/auth/session";
+import { canAccessRoute } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
 import { loadClinicFeatures } from "@/lib/server/load-clinic-feature-flags";
 import { resolveClinicPlugins, isRouteAllowedByPlugins } from "@/plugins/resolve";
-import { resolveClinicFeatureFlags } from "@/lib/features/flags/resolve";
-import { ClinicFeaturesProvider } from "@/components/plugins/clinic-plugins-provider";
-import { SkipToContent } from "@/components/accessibility/skip-to-content";
-import { AccessibilityProvider } from "@/components/accessibility/accessibility-provider";
-import { RouteAnnouncer } from "@/components/accessibility/route-announcer";
+import { resolveClinicFeatureFlags } from "@/features/flags/lib/resolve";
+import { ClinicFeaturesProvider } from "@/features/plugins/components/plugins/clinic-plugins-provider";
+import { SkipToContent } from "@/core/components/accessibility/skip-to-content";
+import { AccessibilityProvider } from "@/core/components/accessibility/accessibility-provider";
+import { RouteAnnouncer } from "@/core/components/accessibility/route-announcer";
 import {
   ClinicalContextMenuHost,
   ClinicalWorkflowShortcuts,
 } from "@/components/clinical-workflow";
-import { ClinicalCopilotProvider } from "@/components/clinical-workflow/clinical-copilot-context";
-import { ClinicalCopilotHost } from "@/components/clinical-workflow/clinical-copilot-host";
-import { AdminOpsCopilotProvider } from "@/components/admin-ops/admin-ops-copilot-context";
-import { AdminOpsCopilotHost } from "@/components/admin-ops/admin-ops-copilot-host";
+import { ClinicalCopilotProvider } from "@/features/ia/components/clinical-workflow/clinical-copilot-context";
+import { ClinicalCopilotHost } from "@/features/ia/components/clinical-workflow/clinical-copilot-host";
+import { AdminOpsCopilotProvider } from "@/features/ia/components/admin-ops/admin-ops-copilot-context";
+import { AdminOpsCopilotHost } from "@/features/ia/components/admin-ops/admin-ops-copilot-host";
 import {
   isClinicTrialExpired,
   isTrialWhitelistedPath,
   trialDaysRemaining,
-} from "@/lib/trial/clinic-trial";
+} from "@/core/trial/clinic-trial";
 
 import type { Metadata } from "next";
 
-import { PWA_APPLE_ICON } from "@/lib/utils/patient-portal-ready";
+import { PWA_APPLE_ICON } from "@/features/pacientes/utils/patient-portal-ready";
 
 export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",

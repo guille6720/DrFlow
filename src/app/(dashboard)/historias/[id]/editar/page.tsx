@@ -5,10 +5,10 @@ import {
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
-import { hasPermission } from "@/lib/permissions/roles";
-import { backHrefFromClinicalSubpage } from "@/lib/utils/clinical-navigation";
+} from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
+import { hasPermission } from "@/core/permissions/roles";
+import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation";
 
 export default async function EditarHistoriaPage({
   params,

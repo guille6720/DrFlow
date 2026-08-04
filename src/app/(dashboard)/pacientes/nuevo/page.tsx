@@ -3,7 +3,7 @@ import {
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/lib/auth/session";
+} from "@/core/auth/session";
 import NuevoPacienteForm from "./patient-form";
 
 export default async function NuevoPacientePage() {

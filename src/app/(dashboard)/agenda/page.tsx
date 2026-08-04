@@ -1,8 +1,8 @@
 import { AgendaView } from "@/features/agenda";
 import {
   getDashboardPageContext,
-} from "@/lib/auth/dashboard-page";
-import { createClient } from "@/lib/supabase/server";
+} from "@/core/auth/dashboard-page";
+import { createClient } from "@/core/supabase/server";
 import { subDays, addDays } from "date-fns";
 
 async function AgendaContent({

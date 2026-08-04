@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildEhrPayloadFromRecords } from "@/lib/utils/patient-ehr-model";
+import { buildEhrPayloadFromRecords } from "@/features/pacientes/utils/patient-ehr-model";
 
 describe("buildEhrPayloadFromRecords", () => {
   it("builds diagnosis and treatment rows", () => {

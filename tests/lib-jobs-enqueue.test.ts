@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { enqueueClinicJob } from "@/lib/jobs/enqueue";
+import { enqueueClinicJob } from "@/core/jobs/enqueue";
 
 describe("enqueueClinicJob", () => {
   it("inserts pending job with defaults", async () => {

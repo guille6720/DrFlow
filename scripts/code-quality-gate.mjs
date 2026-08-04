@@ -6,8 +6,8 @@ import { execSync } from "child_process";
 import { walkDir, rel, readSource, failGate, passGate, SRC_ROOT } from "./lib/quality-scan.mjs";
 
 const ALLOW_CONSOLE = [
-  "src/lib/observability/dev-log.ts",
-  "src/lib/jobs/process.ts", // console.warn when service role missing
+  "src/core/observability/dev-log.ts",
+  "src/core/jobs/process.ts", // console.warn when service role missing
 ];
 
 const TODO_FIXME_ALLOW = [

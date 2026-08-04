@@ -4,7 +4,7 @@ import {
   STABILIZATION_HOOK_MAX_LINES,
   isWithinStabilizationLimit,
   stabilizationLimit,
-} from "@/lib/utils/stabilization-limits";
+} from "@/shared/utils/stabilization-limits";
 
 describe("stabilization-limits", () => {
   it("defines enterprise line caps", () => {

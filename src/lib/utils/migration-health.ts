@@ -1,5 +1,5 @@
 import { isHceStructuralChiefComplaint } from "@/lib/utils/hce-export-parse";
-import { HCE_SUMMARY_ATTACHMENT_NAME } from "@/lib/utils/patient-ehr-from-hce";
+import { HCE_SUMMARY_ATTACHMENT_NAME } from "@/features/pacientes/utils/patient-ehr-from-hce";
 
 export type MigrationPatientRow = {
   id: string;

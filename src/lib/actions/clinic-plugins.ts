@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { getActiveClinicId, getSession, logAudit } from "@/lib/auth/session";
-import { requireClinicPermission } from "@/lib/actions/clinic-guard";
+import { createClient } from "@/core/supabase/server";
+import { getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import {
   getPluginDefinition,
   listToggleablePlugins,

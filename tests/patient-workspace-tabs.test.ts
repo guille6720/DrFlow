@@ -3,8 +3,8 @@ import {
   parsePatientWorkspaceTab,
   patientWorkspacePath,
   LEGACY_TAB_ALIASES,
-} from "@/lib/constants/patient-workspace-tabs";
-import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
+} from "@/features/pacientes/constants/patient-workspace-tabs";
+import { patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
 
 describe("parsePatientWorkspaceTab", () => {
   it("defaults to resumen for unknown values", () => {

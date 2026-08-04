@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
-import { usePatientChartMedicationFilter } from "@/lib/hooks/use-patient-chart";
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+import { usePatientChartMedicationFilter } from "@/features/pacientes/hooks/use-patient-chart";
 
 const baseChart = {
   medications: [

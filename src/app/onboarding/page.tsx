@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { getProfile, getUserClinics } from "@/lib/auth/session";
+import { getProfile, getUserClinics } from "@/core/auth/session";
 import { OnboardingForm } from "./onboarding-form";
-import { TRIAL_REGISTRATION_COOKIE, parseTrialDays } from "@/lib/trial/clinic-trial";
+import { TRIAL_REGISTRATION_COOKIE, parseTrialDays } from "@/core/trial/clinic-trial";
 
 export default async function OnboardingPage() {
   const profile = await getProfile();

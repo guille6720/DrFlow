@@ -1,5 +1,5 @@
 import type { ReminderChannel, ReminderLog } from "@/types/database";
-import { devLog } from "@/lib/observability/dev-log";
+import { devLog } from "@/core/observability/dev-log";
 
 export interface ReminderPayload {
   clinicId: string;

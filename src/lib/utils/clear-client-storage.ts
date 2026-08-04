@@ -1,4 +1,4 @@
-import { applyUiThemeToDocument } from "@/lib/theme/ui-theme";
+import { applyUiThemeToDocument } from "@/core/theme/ui-theme";
 
 /** Limpia datos locales de DrFlow (tema, portal, QA, etc.). */
 export function clearDrFlowClientStorage(): void {

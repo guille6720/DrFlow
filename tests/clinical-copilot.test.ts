@@ -5,7 +5,7 @@ import {
   matchCopilotIntent,
   runClinicalCopilotQuery,
 } from "@/lib/utils/clinical-copilot";
-import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 
 const chartStub = {
   chronicConditions: ["DM2"],

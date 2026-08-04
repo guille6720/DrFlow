@@ -10,9 +10,9 @@ import {
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
-import { hasPermission } from "@/lib/permissions/roles";
+} from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
+import { hasPermission } from "@/core/permissions/roles";
 
 export default async function IngresoProfesionalesPage({
   searchParams,

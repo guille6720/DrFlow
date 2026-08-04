@@ -1,5 +1,5 @@
 /** Platform guards and tenant scope — shared across features. */
-export { requireClinicPermission, requireActiveClinic } from "@/lib/actions/clinic-guard";
+export { requireClinicPermission, requireActiveClinic } from "@/core/actions/clinic-guard";
 export {
   assertSameClinic,
   clinicScopedIdFilter,
@@ -7,4 +7,4 @@ export {
   isSameClinic,
   requireResourceInClinic,
   TenantScopeError,
-} from "@/lib/security/tenant-scope";
+} from "@/core/security/tenant-scope";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 describe("clinical operations dashboard URLs", () => {
   it("links draft prescriptions to in-patient workspace sheet", () => {

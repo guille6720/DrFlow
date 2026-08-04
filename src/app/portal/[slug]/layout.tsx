@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { PortalPwaRegister } from "@/components/pwa/portal-pwa-register";
+import { PortalPwaRegister } from "@/core/components/pwa/portal-pwa-register";
 import {
   PATIENT_PWA_METADATA_ICONS,
   PATIENT_THEME_COLOR,
-} from "@/lib/utils/patient-portal-ready";
+} from "@/features/pacientes/utils/patient-portal-ready";
 
 export async function generateMetadata({
   params,

@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { logAudit } from "@/lib/auth/session";
+import { logAudit } from "@/core/auth/session";
 import { CLINICAL_DOCUMENT_MAX_BYTES } from "@/lib/constants/clinical-documents";
 import {
   extractTextFromPdfBuffer,
@@ -20,7 +20,7 @@ import {
   extractPatientFromPdfText,
   mergePatientExtract,
 } from "@/lib/utils/pdf-patient-extract";
-import type { ImportClinicalPdfResult } from "@/lib/actions/patient-attachments";
+import type { ImportClinicalPdfResult } from "@/features/pacientes/actions/patient-attachments";
 
 const BUCKET = "clinical-files";
 

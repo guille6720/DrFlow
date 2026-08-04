@@ -1,8 +1,8 @@
-export { ProfessionalIntakeView } from "@/components/profesionales/professional-intake-view";
+export { ProfessionalIntakeView } from "@/features/profesionales/components/profesionales/professional-intake-view";
 export type {
   AvailabilityRuleRow,
   ProfessionalIntakeDetail,
-} from "@/components/profesionales/professional-intake-view";
+} from "@/features/profesionales/components/profesionales/professional-intake-view";
 export {
   submitProfessionalIntake,
   updateProfessionalProfile,

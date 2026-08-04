@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildAdminOpsResponse,
   matchAdminOpsIntent,
-} from "@/lib/utils/admin-ops-assistant";
+} from "@/features/dashboard/utils/admin-ops-assistant";
 import {
   formatBreakdownLines,
   formatCurrencyAr,

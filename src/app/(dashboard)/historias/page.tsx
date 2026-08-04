@@ -1,16 +1,16 @@
 import { redirect } from "next/navigation";
-import { Header } from "@/components/layout/header";
-import { HistoriasPageContent } from "@/components/historias/historias-page-content";
+import { Header } from "@/core/components/layout/header";
+import { HistoriasPageContent } from "@/features/historias/components/historias/historias-page-content";
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
-import { sanitizePatientSearchTerm } from "@/lib/utils/patient-search";
-import { patientClinicalHistoryPath } from "@/lib/utils/clinical-navigation";
-import { loadHistoriasPageData } from "@/lib/server/load-historias-page";
+} from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
+import { sanitizePatientSearchTerm } from "@/features/pacientes/utils/patient-search";
+import { patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
+import { loadHistoriasPageData } from "@/features/historias/server/load-historias-page";
 
 export const maxDuration = 300;
 

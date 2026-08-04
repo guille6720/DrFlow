@@ -1,6 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/core/supabase/env";
+import {
+  boundedErrorDescriptionSchema,
+  parseSafeRedirectPath,
+} from "@/core/validations/auth-redirect";
 
 /**
  * Callback OAuth / PKCE / recovery.
@@ -10,24 +14,25 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get("code");
   const token_hash = requestUrl.searchParams.get("token_hash");
   const type = requestUrl.searchParams.get("type");
-  const next = requestUrl.searchParams.get("next") ?? "/auth/complete";
+  const next = parseSafeRedirectPath(requestUrl.searchParams.get("next"), "/auth/complete");
   const authError = requestUrl.searchParams.get("error");
   const origin = requestUrl.origin;
 
-  // Si viene token_hash, delegar a /auth/confirm (misma lógica que docs Supabase)
   if (token_hash && type) {
     const confirm = new URL("/auth/confirm", origin);
     confirm.searchParams.set("token_hash", token_hash);
     confirm.searchParams.set("type", type);
-    confirm.searchParams.set("next", next.startsWith("/") ? next : "/login/restablecer");
+    confirm.searchParams.set("next", next);
     return NextResponse.redirect(confirm, 303);
   }
 
   if (authError) {
-    const description =
+    const descriptionRaw =
       requestUrl.searchParams.get("error_description") ??
       requestUrl.searchParams.get("error_code") ??
       authError;
+    const descriptionParsed = boundedErrorDescriptionSchema.safeParse(descriptionRaw);
+    const description = descriptionParsed.success ? descriptionParsed.data : authError;
     const loginUrl = new URL("/login", origin);
     loginUrl.searchParams.set("error", description);
     return NextResponse.redirect(loginUrl, 303);
@@ -40,8 +45,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", origin), 303);
   }
 
-  const safeNext = next.startsWith("/") ? next : "/auth/complete";
-  const redirectUrl = new URL(safeNext, origin);
+  const redirectUrl = new URL(next, origin);
   const response = NextResponse.redirect(redirectUrl, 303);
 
   const supabase = createServerClient(getSupabaseUrl(), getSupabaseAnonKey(), {

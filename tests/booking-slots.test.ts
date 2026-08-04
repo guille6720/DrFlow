@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { generateAvailableSlots } from "@/lib/booking/slots";
+import { generateAvailableSlots } from "@/core/booking/slots";
 import { fromZonedTime } from "date-fns-tz";
-import { DEFAULT_CLINIC_TIMEZONE } from "@/lib/utils/clinic-timezone";
+import { DEFAULT_CLINIC_TIMEZONE } from "@/shared/utils/clinic-timezone";
 
 describe("generateAvailableSlots", () => {
   beforeEach(() => {

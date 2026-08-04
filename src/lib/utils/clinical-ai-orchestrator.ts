@@ -15,13 +15,13 @@ import {
   buildProactiveCareItems,
   buildProactiveCareSummaryText,
 } from "@/lib/utils/proactive-follow-up";
-import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 import {
   PHYSICIAN_ASSIST_DISCLAIMER,
   type PhysicianAssistContext,
   type PhysicianAssistItem,
   type PhysicianAssistKind,
-} from "@/lib/utils/physician-assist-types";
+} from "@/features/ia/types/physician-assist-types";
 
 /** Specialized clinical AI agents (Phase F architecture). */
 export type ClinicalAiAgentId =

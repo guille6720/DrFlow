@@ -6,4 +6,4 @@ export {
   isEnterpriseRoadmapComplete,
   type EnterprisePhase,
   type EnterprisePhaseStatus,
-} from "@/lib/enterprise/phases";
+} from "@/core/enterprise/phases";

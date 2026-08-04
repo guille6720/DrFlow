@@ -1,8 +1,8 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
-import { getActiveClinic, getActiveClinicId, getSession } from "@/lib/auth/session";
-import { hasPermission, PERMISSIONS } from "@/lib/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
+import { hasPermission, PERMISSIONS } from "@/core/permissions/roles";
 import type { UserRole } from "@/types/database";
 import { loadMyDoctorProfile, type MyDoctorProfileData } from "@/lib/actions/doctor-profile";
 

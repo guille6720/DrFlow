@@ -5,13 +5,13 @@ import { useRef, useState } from "react";
 import { setupClinic } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { setupClinicSchema } from "@/lib/validations/schemas";
-import { parseDoctorSetupFromForm, validateDoctorSetup } from "@/lib/validations/doctor-setup";
-import { normalizeSlug, zodFieldErrors } from "@/lib/validations/form-errors";
-import { DoctorSetupFields } from "@/components/onboarding/doctor-setup-fields";
-import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { setupClinicSchema } from "@/core/validations/schemas";
+import { parseDoctorSetupFromForm, validateDoctorSetup } from "@/core/validations/doctor-setup";
+import { normalizeSlug, zodFieldErrors } from "@/core/validations/form-errors";
+import { DoctorSetupFields } from "@/core/components/onboarding/doctor-setup-fields";
+import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
-import { LegalAcceptanceCheckbox } from "@/components/legal/legal-consent-fields";
+import { LegalAcceptanceCheckbox } from "@/core/components/legal/legal-consent-fields";
 
 interface OnboardingFormProps {
   userEmail: string;

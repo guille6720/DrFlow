@@ -2,30 +2,30 @@ import { describe, expect, it } from "vitest";
 import {
   parseMedicalOrderForm,
   validateMedicalOrderInput,
-} from "@/lib/services/medical-orders.service";
+} from "@/features/recetas/services/medical-orders.service";
 
 describe("medical-orders.service", () => {
   it("parseMedicalOrderForm extracts sanitized fields", () => {
     const fd = new FormData();
-    fd.set("patient_id", "p1");
-    fd.set("professional_id", "pr1");
+    fd.set("patient_id", "550e8400-e29b-41d4-a716-446655440000");
+    fd.set("professional_id", "550e8400-e29b-41d4-a716-446655440001");
     fd.set("order_text", "  RMN cerebral  ");
     fd.set("order_type", "study");
 
     const parsed = parseMedicalOrderForm(fd);
-    expect(parsed.patientId).toBe("p1");
-    expect(parsed.orderText).toBe("RMN cerebral");
+    expect(parsed.patient_id).toBe("550e8400-e29b-41d4-a716-446655440000");
+    expect(parsed.order_text).toBe("RMN cerebral");
   });
 
   it("validateMedicalOrderInput rejects incomplete input", () => {
     expect(
       validateMedicalOrderInput({
-        patientId: "",
-        professionalId: "pr1",
-        orderText: "x",
+        patient_id: "",
+        professional_id: "550e8400-e29b-41d4-a716-446655440001",
+        order_text: "x",
         notes: null,
-        clinicalRecordId: null,
-        orderType: "study",
+        clinical_record_id: null,
+        order_type: "study",
       })
     ).toBeTruthy();
   });

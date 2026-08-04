@@ -4,9 +4,9 @@ import {
   getProfile,
   getUserClinics,
   getActiveClinic,
-} from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
-import { canAccessRoute } from "@/lib/permissions/roles";
+} from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
+import { canAccessRoute } from "@/core/permissions/roles";
 import { redirect } from "next/navigation";
 
 export default async function TelemedicinaPage() {

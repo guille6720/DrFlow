@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  buildOrderWhatsAppUrl,
-  orderTypeLabel,
-} from "@/components/recetas/prescriptions-orders-utils";
+import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
+import { orderTypeLabel } from "@/features/recetas/utils/order-type-label";
 
 describe("orderTypeLabel", () => {
   it("maps known order types", () => {
@@ -12,9 +10,9 @@ describe("orderTypeLabel", () => {
   });
 });
 
-describe("buildOrderWhatsAppUrl", () => {
+describe("buildWhatsAppUrl", () => {
   it("builds wa.me link with encoded text", () => {
-    const url = buildOrderWhatsAppUrl("5491112345678", "Orden médica");
+    const url = buildWhatsAppUrl("5491112345678", "Orden médica");
     expect(url).toBe("https://wa.me/5491112345678?text=Orden%20m%C3%A9dica");
   });
 });

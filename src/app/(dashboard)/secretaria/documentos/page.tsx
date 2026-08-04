@@ -1,14 +1,14 @@
 import { redirect } from "next/navigation";
-import { Header } from "@/components/layout/header";
-import { AdminDocumentsPanel } from "@/components/secretaria/admin-documents-panel";
+import { Header } from "@/core/components/layout/header";
+import { AdminDocumentsPanel } from "@/features/administracion/components/secretaria/admin-documents-panel";
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
-import { createClient } from "@/lib/supabase/server";
+} from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
 
 export default async function SecretariaDocumentosPage() {
   const profile = await getProfile();

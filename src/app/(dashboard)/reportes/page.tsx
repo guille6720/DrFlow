@@ -1,4 +1,4 @@
-import { Header } from "@/components/layout/header";
+import { Header } from "@/core/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import {
@@ -6,14 +6,14 @@ import {
   getProfile,
   getUserClinics,
   getActiveClinic,
-} from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
+} from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
 import { redirect } from "next/navigation";
-import { hasPermission } from "@/lib/permissions/roles";
+import { hasPermission } from "@/core/permissions/roles";
 import { startOfMonth, endOfMonth, format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ExportCsvButton } from "@/components/reportes/export-csv-button";
-import { AsyncReportButton } from "@/components/reportes/async-report-button";
+import { ExportCsvButton } from "@/features/dashboard/components/reportes/export-csv-button";
+import { AsyncReportButton } from "@/features/dashboard/components/reportes/async-report-button";
 import { formatCurrency } from "@/lib/services/payments";
 
 export default async function ReportesPage() {

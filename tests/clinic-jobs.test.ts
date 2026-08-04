@@ -4,7 +4,7 @@ import {
   listClinicJobTypes,
   JOB_STATUS_LABELS,
   CLINIC_JOB_REGISTRY,
-} from "@/lib/jobs/registry";
+} from "@/core/jobs/registry";
 
 describe("clinic job registry", () => {
   it("lists job types with definitions", () => {
@@ -47,7 +47,7 @@ describe("051_clinic_jobs_phase15 migration", () => {
 
 describe("SECURITY_DEFINER_RPC_CHECKS manifest", () => {
   it("includes worker RPCs", async () => {
-    const { SECURITY_DEFINER_RPC_CHECKS } = await import("@/lib/security/rls-manifest");
+    const { SECURITY_DEFINER_RPC_CHECKS } = await import("@/core/security/rls-manifest");
     const names = SECURITY_DEFINER_RPC_CHECKS.map((r) => r.name);
     expect(names).toContain("claim_clinic_jobs");
     expect(names).toContain("complete_clinic_job");

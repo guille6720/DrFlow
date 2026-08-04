@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { DrFlowLogo } from "@/components/brand/drflow-logo";
-import { LEGAL_PATIENT_NOTICE_VERSION } from "@/lib/legal/documents";
+import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
+import { LEGAL_PATIENT_NOTICE_VERSION } from "@/core/legal/documents";
 
 export default async function AvisoPacientePage({
   searchParams,

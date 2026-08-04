@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { SECURITY_RESPONSE_HEADERS } from "@/lib/security/response-headers";
+import { SECURITY_RESPONSE_HEADERS } from "@/core/security/response-headers";
 
 describe("Security response headers", () => {
   it("includes CSP, HSTS and frame denial", () => {

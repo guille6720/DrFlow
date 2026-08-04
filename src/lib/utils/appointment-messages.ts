@@ -1,4 +1,4 @@
-import { formatClinicDateTime } from "@/lib/utils/clinic-timezone";
+import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 
 export function buildAppointmentConfirmationMessage(startAt: string): string {
   const dateLabel = formatClinicDateTime(startAt, "EEEE d 'de' MMMM 'a las' HH:mm 'hs'");

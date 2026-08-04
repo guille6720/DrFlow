@@ -15,7 +15,7 @@ describe("Pharmacology types", () => {
 
 describe("Pharmacology permissions", () => {
   it("doctors can access pharmacology", async () => {
-    const { hasPermission } = await import("@/lib/permissions/roles");
+    const { hasPermission } = await import("@/core/permissions/roles");
     expect(hasPermission("doctor", "viewPharmacology")).toBe(true);
     expect(hasPermission("secretary", "viewPharmacology")).toBe(false);
     expect(hasPermission("clinic_admin", "viewPharmacology")).toBe(true);

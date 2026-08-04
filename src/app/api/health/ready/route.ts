@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getHealthStatus } from "@/lib/observability/health";
-import { validateProductionEnv } from "@/lib/env.server";
+import { getHealthStatus } from "@/core/observability/health";
+import { validateProductionEnv } from "@/core/env.server";
 
 export const dynamic = "force-dynamic";
 

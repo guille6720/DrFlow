@@ -1,11 +1,2 @@
-"use client";
-
-import { getPublicSiteUrl } from "@/lib/supabase/env";
-
-/** URL pública para OAuth / redirects desde componentes cliente. */
-export function resolveClientPublicSiteUrl(): string {
-  if (typeof window === "undefined") {
-    return getPublicSiteUrl();
-  }
-  return getPublicSiteUrl(window.location.origin.replace(/\/$/, ""));
-}
+/** @deprecated Use @/core/supabase/client-public-url */
+export * from "@/core/supabase/client-public-url";

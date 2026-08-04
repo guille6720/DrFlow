@@ -1,14 +1,20 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/core/supabase/server";
+import { bookingSlugSchema } from "@/core/validations/params";
 import {
   getPatientPwaIcons,
   PATIENT_THEME_COLOR,
-} from "@/lib/utils/patient-portal-ready";
+} from "@/features/pacientes/utils/patient-portal-ready";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slugParsed = bookingSlugSchema.safeParse(rawSlug);
+  if (!slugParsed.success) {
+    return Response.json({ error: "Not found" }, { status: 404 });
+  }
+  const slug = slugParsed.data;
   const origin = new URL(request.url).origin;
   const supabase = await createClient();
 

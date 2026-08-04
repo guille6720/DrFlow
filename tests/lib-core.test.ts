@@ -1,23 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import {
   backHrefFromClinicalSubpage,
   FROM_CLINICAL_HISTORY,
   isFromClinicalHistory,
   patientClinicalHistoryPath,
   withClinicalHistoryReturn,
-} from "@/lib/utils/clinical-navigation";
+} from "@/shared/utils/clinical-navigation";
 import { normalizeDni } from "@/lib/utils/normalize-dni";
 import {
   buildWhatsAppShareUrl,
   buildWhatsAppUrl,
   normalizeArgentinaPhone,
-} from "@/lib/utils/whatsapp";
+} from "@/shared/utils/whatsapp";
 import {
   applyPatientSearchFilter,
   patientSearchTokens,
   sanitizePatientSearchTerm,
-} from "@/lib/utils/patient-search";
+} from "@/features/pacientes/utils/patient-search";
 
 describe("cn", () => {
   it("merges tailwind classes", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { firstFieldError, normalizeSlug, zodFieldErrors } from "@/lib/validations/form-errors";
+import { firstFieldError, normalizeSlug, zodFieldErrors } from "@/core/validations/form-errors";
 import { z } from "zod";
 
 describe("form-errors", () => {

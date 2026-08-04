@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { getActiveClinic, getSession } from "@/lib/auth/session";
-import { DashboardPageHeader } from "@/components/layout/dashboard-page-header";
-import { QaChecklistView } from "@/components/qa/qa-checklist-view";
+import { getActiveClinic, getSession } from "@/core/auth/session";
+import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
+import { QaChecklistView } from "@/core/components/qa/qa-checklist-view";
 import { Button } from "@/components/ui/button";
 import { ClipboardCheck } from "lucide-react";
-import { canAccessRoute } from "@/lib/permissions/roles";
+import { canAccessRoute } from "@/core/permissions/roles";
 import { redirect } from "next/navigation";
 
 export default async function QaPage() {

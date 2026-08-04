@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { focusFirstElement, getFocusableElements } from "@/lib/accessibility/focus";
+import { focusFirstElement, getFocusableElements } from "@/core/accessibility/focus";
 
 describe("accessibility focus utils", () => {
   it("focusFirstElement focuses first control", () => {

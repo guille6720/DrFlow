@@ -1,7 +1,7 @@
 import { appointmentStatusBadge } from "@/components/ui/badge";
 import { absenteeismRate } from "@/lib/utils/absenteeism-stats";
 import { getAttendancePeriodBounds } from "@/lib/utils/attendance-stats";
-import { formatClinicDateTime } from "@/lib/utils/clinic-timezone";
+import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 import type { DashboardStatRow, DashboardStatsDetail } from "@/lib/utils/dashboard-stats-types";
 
 type PatientRef = {

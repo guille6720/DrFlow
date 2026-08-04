@@ -8,7 +8,7 @@ import {
   type PamiPlanillaCategory,
   type PamiPlanillaTemplate,
 } from "@/lib/constants/pami-planillas";
-import { createMedicalOrder } from "@/lib/actions/medical-orders";
+import { createMedicalOrder } from "@/features/recetas/actions/medical-orders";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 
 interface Patient {

@@ -1,13 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { getActiveClinicId, getSession } from "@/lib/auth/session";
+import { createClient } from "@/core/supabase/server";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
 import {
   parseDoctorSetupFromForm,
   validateDoctorSetup,
-} from "@/lib/validations/doctor-setup";
-import { zodFieldErrors } from "@/lib/validations/form-errors";
+} from "@/core/validations/doctor-setup";
+import { zodFieldErrors } from "@/core/validations/form-errors";
 import { MEDICAL_SPECIALTIES, SPECIALTY_OTHER_VALUE } from "@/lib/constants/medical-specialties";
 
 export interface MyDoctorProfileData {
@@ -21,6 +21,21 @@ export interface MyDoctorProfileData {
   licenseNational: string;
   licenseProvincial: string;
   hasProfessional: boolean;
+}
+
+async function requireDoctorProfileAccess() {
+  const user = await getSession();
+  const clinicId = await getActiveClinicId();
+  const { role, isSuperadmin } = await getActiveClinic();
+  if (!user || !clinicId) {
+    return { error: "Tenés que iniciar sesión" as const, user: null, clinicId: null };
+  }
+  const canEdit =
+    isSuperadmin || role === "doctor" || role === "clinic_admin";
+  if (!canEdit) {
+    return { error: "Sin permisos para editar perfil profesional" as const, user: null, clinicId: null };
+  }
+  return { error: null, user, clinicId };
 }
 
 function splitFullName(fullName: string): { first: string; last: string } {
@@ -45,10 +60,10 @@ export async function loadMyDoctorProfile(): Promise<{
   data?: MyDoctorProfileData;
   error?: string;
 }> {
-  const user = await getSession();
-  const clinicId = await getActiveClinicId();
-  if (!user || !clinicId) return { error: "Tenés que iniciar sesión" };
+  const access = await requireDoctorProfileAccess();
+  if (access.error || !access.user || !access.clinicId) return { error: access.error ?? "Sin permisos" };
 
+  const { user, clinicId } = access;
   const supabase = await createClient();
 
   const [{ data: profile }, { data: professional }, { data: clinic }] = await Promise.all([
@@ -91,9 +106,10 @@ export async function loadMyDoctorProfile(): Promise<{
 }
 
 export async function updateMyDoctorProfile(formData: FormData) {
-  const user = await getSession();
-  const clinicId = await getActiveClinicId();
-  if (!user || !clinicId) return { error: "Tenés que iniciar sesión" };
+  const access = await requireDoctorProfileAccess();
+  if (access.error || !access.user || !access.clinicId) return { error: access.error ?? "Sin permisos" };
+
+  const { clinicId } = access;
 
   const parsed = validateDoctorSetup(parseDoctorSetupFromForm(formData));
   if (parsed.fieldErrors) {

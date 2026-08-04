@@ -5,7 +5,7 @@ import {
   countProactiveCareBySeverity,
   sortProactiveCareItems,
 } from "@/lib/utils/proactive-follow-up";
-import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 
 function baseChart(overrides: Partial<PatientChartPayload> = {}): PatientChartPayload {
   return {

@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Header } from "@/components/layout/header";
-import { ConsultationFlowBar } from "@/components/historias/consultation-flow-bar";
-import { PamiPatientBanner } from "@/components/pacientes/pami-patient-banner";
-import { NuevaConsultaFormBody } from "@/components/historias/nueva-consulta-form-body";
-import { useNuevaConsultaForm } from "@/lib/hooks/use-nueva-consulta-form";
+import { Header } from "@/core/components/layout/header";
+import { ConsultationFlowBar } from "@/features/historias/components/historias/consultation-flow-bar";
+import { PamiPatientBanner } from "@/features/pacientes/components/pacientes/pami-patient-banner";
+import { NuevaConsultaFormBody } from "@/features/historias/components/historias/nueva-consulta-form-body";
+import { useNuevaConsultaForm } from "@/features/historias/hooks/use-nueva-consulta-form";
 import type { Clinic, Patient, Professional, UserRole } from "@/types/database";
 import { ArrowLeft } from "lucide-react";
 

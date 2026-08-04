@@ -1,4 +1,2 @@
-/** Edge-safe trace id (middleware + server). */
-export function createTraceId(): string {
-  return crypto.randomUUID().replace(/-/g, "").slice(0, 16);
-}
+/** @deprecated Use @/core/observability/trace-id */
+export * from "@/core/observability/trace-id";

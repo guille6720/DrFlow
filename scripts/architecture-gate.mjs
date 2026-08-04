@@ -2,19 +2,19 @@
  * Architecture gate — component size, UI/service separation.
  * Usage: node scripts/architecture-gate.mjs
  */
-import { walkDir, rel, readSource, lineCount, failGate, passGate, SRC_ROOT } from "./lib/quality-scan.mjs";
+import { existsSync } from "fs";
+import { sep } from "path";
+import { walkComponentFiles, rel, readSource, lineCount, failGate, passGate, SRC_ROOT, walkDir } from "./lib/quality-scan.mjs";
 
 const MAX_COMPONENT_LINES = 350;
 const WARN_COMPONENT_LINES = 200;
 const STABILIZATION_COMPONENT_LINES = 200;
-const COMPONENTS_DIR = `${SRC_ROOT}/components`;
 
 function scanComponents() {
   const violations = [];
   const warnings = [];
 
-  for (const filePath of walkDir(COMPONENTS_DIR)) {
-    if (!filePath.endsWith(".tsx")) continue;
+  for (const filePath of walkComponentFiles(".tsx")) {
     const r = rel(filePath);
     const lines = lineCount(filePath);
     const content = readSource(filePath);
@@ -39,7 +39,12 @@ function scanComponents() {
       }
     }
 
-    if (r.startsWith("src/components/") && /\.from\s*\([^)]+\)\s*\.\s*(insert|update|delete|upsert)\s*\(/.test(content)) {
+    if (
+      (r.startsWith("src/components/ui/") ||
+        r.startsWith("src/core/components/") ||
+        r.startsWith("src/features/")) &&
+      /\.from\s*\([^)]+\)\s*\.\s*(insert|update|delete|upsert)\s*\(/.test(content)
+    ) {
       violations.push(`${r} — Supabase mutation in UI component (use server action)`);
     }
   }
@@ -49,13 +54,10 @@ function scanComponents() {
 
 function scanBusinessLogicInUi() {
   const violations = [];
-  const uiDirs = [`${SRC_ROOT}/components`];
 
-  for (const dir of uiDirs) {
-    for (const filePath of walkDir(dir)) {
-      if (!filePath.endsWith(".tsx")) continue;
-      const r = rel(filePath);
-      const content = readSource(filePath);
+  for (const filePath of walkComponentFiles(".tsx")) {
+    const r = rel(filePath);
+    const content = readSource(filePath);
 
       if (/createAdminClient\s*\(/.test(content) && !/^["']use client["']/.test(content.trimStart())) {
         violations.push(`${r} — admin client in UI (move to lib/actions or lib/server)`);
@@ -64,7 +66,6 @@ function scanBusinessLogicInUi() {
       if (/\.rpc\s*\(\s*["'][a-z_]+["']/.test(content) && !r.includes("-client.tsx")) {
         violations.push(`${r} — RPC call in UI component (use server action or hook)`);
       }
-    }
   }
 
   return violations;
@@ -73,24 +74,34 @@ function scanBusinessLogicInUi() {
 function scanHooks() {
   const violations = [];
   const warnings = [];
-  const hooksDir = `${SRC_ROOT}/lib/hooks`;
+  const hookDirs = [
+    `${SRC_ROOT}/lib/hooks`,
+    `${SRC_ROOT}/core/hooks`,
+  ];
+  for (const featureDir of walkDir(`${SRC_ROOT}/features`)) {
+    if (featureDir.endsWith(`${sep}hooks`)) hookDirs.push(featureDir);
+  }
   const HOOK_STABILIZATION_MAX = 150;
   const HOOK_HARD_MAX = 280;
 
-  for (const filePath of walkDir(hooksDir)) {
-    if (!filePath.endsWith(".ts")) continue;
-    const r = rel(filePath);
-    const content = readSource(filePath);
-    const lines = lineCount(filePath);
+  for (const hooksDir of hookDirs) {
+    if (!existsSync(hooksDir)) continue;
+    for (const filePath of walkDir(hooksDir)) {
+      if (!filePath.endsWith(".ts")) continue;
+      const r = rel(filePath);
+      const content = readSource(filePath);
+      if (content.startsWith("/** @deprecated")) continue;
+      const lines = lineCount(filePath);
 
-    if (lines > HOOK_HARD_MAX) {
-      violations.push(`${r} — ${lines} lines (hook max ${HOOK_HARD_MAX} — split by concern)`);
-    } else if (lines > HOOK_STABILIZATION_MAX) {
-      warnings.push(`${r} — ${lines} lines (stabilization target ≤${HOOK_STABILIZATION_MAX})`);
-    }
+      if (lines > HOOK_HARD_MAX) {
+        violations.push(`${r} — ${lines} lines (hook max ${HOOK_HARD_MAX} — split by concern)`);
+      } else if (lines > HOOK_STABILIZATION_MAX) {
+        warnings.push(`${r} — ${lines} lines (stabilization target ≤${HOOK_STABILIZATION_MAX})`);
+      }
 
-    if (/@\/lib\/supabase\/server/.test(content)) {
-      violations.push(`${r} — server Supabase client in client hook`);
+      if (/@\/(lib|core)\/supabase\/server/.test(content)) {
+        violations.push(`${r} — server Supabase client in client hook`);
+      }
     }
   }
 

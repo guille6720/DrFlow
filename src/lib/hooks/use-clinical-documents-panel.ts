@@ -7,7 +7,7 @@ import {
   deletePatientClinicalDocument,
   getPatientClinicalDocumentUrl,
   uploadPatientClinicalDocument,
-} from "@/lib/actions/patient-attachments";
+} from "@/features/pacientes/actions/patient-attachments";
 
 export function useClinicalDocumentsPanel(patientId: string) {
   const router = useRouter();

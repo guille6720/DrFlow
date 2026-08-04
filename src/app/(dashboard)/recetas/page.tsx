@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Header } from "@/components/layout/header";
+import { Header } from "@/core/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { PrescriptionsOrdersHub } from "@/features/recetas";
 import {
@@ -9,11 +9,11 @@ import {
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
-import { createClient } from "@/lib/supabase/server";
-import { loadRecetasPageData } from "@/lib/server/load-recetas-page";
-import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
+} from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+import { loadRecetasPageData } from "@/features/recetas/server/load-recetas-page";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { Plus } from "lucide-react";
 
 export default async function RecetasPage({

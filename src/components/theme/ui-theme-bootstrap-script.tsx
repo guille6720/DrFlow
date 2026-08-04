@@ -1,11 +1,2 @@
-import { UI_THEME_BOOTSTRAP_SCRIPT } from "@/lib/theme/ui-theme";
-
-/** Evita flash al cargar: aplica data-ui-style antes del paint. */
-export function UiThemeBootstrapScript() {
-  return (
-    <script
-      dangerouslySetInnerHTML={{ __html: UI_THEME_BOOTSTRAP_SCRIPT }}
-      suppressHydrationWarning
-    />
-  );
-}
+/** @deprecated Use @/core/components/theme/ui-theme-bootstrap-script */
+export * from "@/core/components/theme/ui-theme-bootstrap-script";

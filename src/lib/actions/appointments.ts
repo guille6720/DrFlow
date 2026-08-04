@@ -1,10 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { getSession, logAudit } from "@/lib/auth/session";
-import { appointmentSchema, sanitizeText } from "@/lib/validations/schemas";
-import { requireClinicPermission } from "@/lib/actions/clinic-guard";
+import { createClient } from "@/core/supabase/server";
+import { getSession, logAudit } from "@/core/auth/session";
+import { appointmentSchema, sanitizeText, updateAppointmentBodySchema } from "@/core/validations/schemas";
+import {
+  appointmentStatusSchema,
+  consultationModalitySchema,
+  parseEntityId,
+  firstZodIssue,
+} from "@/core/validations/params";
+import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import type { ConsultationModality } from "@/lib/constants/consultation-modality";
 
 export async function createAppointment(formData: FormData) {
@@ -66,11 +72,24 @@ export async function updateAppointment(id: string, formData: FormData) {
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
+  const idParsed = parseEntityId(id, "Turno");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const raw = Object.fromEntries(formData.entries());
+
+  const bodyParsed = updateAppointmentBodySchema.safeParse({
+    ...raw,
+    location_id: raw.location_id || null,
+    specialty_id: raw.specialty_id || null,
+  });
+
+  if (!bodyParsed.success) return { error: firstZodIssue(bodyParsed.error) };
+
   const supabase = await createClient();
   const { data: existing } = await supabase
     .from("appointments")
     .select("id, status, patient_id")
-    .eq("id", id)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
 
@@ -79,31 +98,21 @@ export async function updateAppointment(id: string, formData: FormData) {
     return { error: "No se puede modificar un turno cancelado o ya atendido." };
   }
 
-  const raw = Object.fromEntries(formData.entries());
-  const parsed = appointmentSchema.safeParse({
-    ...raw,
-    location_id: raw.location_id || null,
-    specialty_id: raw.specialty_id || null,
-    status: existing.status,
-  });
-
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
-
   const payload = {
-    patient_id: parsed.data.patient_id,
-    professional_id: parsed.data.professional_id,
-    location_id: parsed.data.location_id,
-    specialty_id: parsed.data.specialty_id,
-    start_at: parsed.data.start_at,
-    end_at: parsed.data.end_at,
-    notes: parsed.data.notes ? sanitizeText(parsed.data.notes) : parsed.data.notes,
+    patient_id: bodyParsed.data.patient_id,
+    professional_id: bodyParsed.data.professional_id,
+    location_id: bodyParsed.data.location_id,
+    specialty_id: bodyParsed.data.specialty_id,
+    start_at: bodyParsed.data.start_at,
+    end_at: bodyParsed.data.end_at,
+    notes: bodyParsed.data.notes ? sanitizeText(bodyParsed.data.notes) : bodyParsed.data.notes,
     updated_at: new Date().toISOString(),
   };
 
   const { error } = await supabase
     .from("appointments")
     .update(payload)
-    .eq("id", id)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId);
 
   if (error) {
@@ -116,7 +125,7 @@ export async function updateAppointment(id: string, formData: FormData) {
   await logAudit({
     clinicId,
     entityType: "appointment",
-    entityId: id,
+    entityId: idParsed.data,
     action: "update",
   });
 
@@ -138,39 +147,48 @@ export async function updateAppointmentStatus(
   const { clinicId } = access;
   const user = await getSession();
 
+  const idParsed = parseEntityId(id, "Turno");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const statusParsed = appointmentStatusSchema.safeParse(status);
+  if (!statusParsed.success) return { error: "Estado inválido" };
+
+  const modalityParsed = consultationModalitySchema.safeParse(consultationModality ?? "presencial");
+  if (!modalityParsed.success) return { error: "Modalidad inválida" };
+
   const supabase = await createClient();
 
   const { data: before } = await supabase
     .from("appointments")
     .select("id, start_at, patient_id, patients(first_name, last_name, phone)")
-    .eq("id", id)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
 
   const updatePayload: Record<string, unknown> = {
-    status,
+    status: statusParsed.data,
     cancellation_reason:
-      status === "cancelled"
+      statusParsed.data === "cancelled"
         ? cancellationReason?.trim()
-          ? sanitizeText(cancellationReason)
+          ? sanitizeText(cancellationReason.slice(0, 500))
           : null
         : null,
   };
 
-  if (status === "cancelled") {
+  if (statusParsed.data === "cancelled") {
     updatePayload.cancelled_at = new Date().toISOString();
     updatePayload.cancelled_by = user?.id ?? null;
     updatePayload.cancelled_by_type = "clinic";
   }
 
-  if (status === "attended") {
-    updatePayload.consultation_modality = consultationModality ?? "presencial";
+  if (statusParsed.data === "attended") {
+    updatePayload.consultation_modality = modalityParsed.data;
   }
 
   const { error } = await supabase
     .from("appointments")
     .update(updatePayload)
-    .eq("id", id)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId);
 
   if (error) return { error: error.message };
@@ -178,12 +196,12 @@ export async function updateAppointmentStatus(
   await logAudit({
     clinicId,
     entityType: "appointment",
-    entityId: id,
+    entityId: idParsed.data,
     action: "update",
     metadata: {
-      status,
+      status: statusParsed.data,
       cancellationReason: cancellationReason ?? null,
-      cancelledBy: status === "cancelled" ? "clinic" : undefined,
+      cancelledBy: statusParsed.data === "cancelled" ? "clinic" : undefined,
     },
   });
 
@@ -201,7 +219,7 @@ export async function updateAppointmentStatus(
   return {
     success: true,
     whatsapp:
-      status === "confirmed" && patientRow?.phone
+      statusParsed.data === "confirmed" && patientRow?.phone
         ? {
             phone: patientRow.phone,
             firstName: patientRow.first_name,
@@ -216,11 +234,14 @@ export async function startConsultationFromAppointment(appointmentId: string) {
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
+  const idParsed = parseEntityId(appointmentId, "Turno");
+  if (!idParsed.ok) return { error: idParsed.error };
+
   const supabase = await createClient();
   const { data: appointment } = await supabase
     .from("appointments")
     .select("id, status, patient_id, professional_id")
-    .eq("id", appointmentId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
 
@@ -230,7 +251,7 @@ export async function startConsultationFromAppointment(appointmentId: string) {
     await supabase
       .from("appointments")
       .update({ status: "confirmed", updated_at: new Date().toISOString() })
-      .eq("id", appointmentId)
+      .eq("id", idParsed.data)
       .eq("clinic_id", clinicId);
   }
 
@@ -250,15 +271,21 @@ export async function finalizeConsultation(
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
+  const idParsed = parseEntityId(appointmentId, "Turno");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const modalityParsed = consultationModalitySchema.safeParse(consultationModality);
+  if (!modalityParsed.success) return { error: "Modalidad inválida" };
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("appointments")
     .update({
       status: "attended",
-      consultation_modality: consultationModality,
+      consultation_modality: modalityParsed.data,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", appointmentId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId);
 
   if (error) return { error: error.message };

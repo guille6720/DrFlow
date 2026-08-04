@@ -6,7 +6,7 @@ import {
   ENTERPRISE_PHASE_COUNT,
   getCompletedPhases,
   isEnterpriseRoadmapComplete,
-} from "@/lib/enterprise/phases";
+} from "@/core/enterprise/phases";
 
 describe("enterprise roadmap registry", () => {
   it("defines exactly 20 phases", () => {

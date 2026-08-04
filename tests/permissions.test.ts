@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { hasPermission, canAccessRoute } from "@/lib/permissions/roles";
+import { hasPermission, canAccessRoute } from "@/core/permissions/roles";
 
 describe("Role permissions", () => {
   it("superadmin has all permissions", () => {

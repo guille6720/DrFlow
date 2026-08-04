@@ -1,20 +1,29 @@
 import { NextResponse } from "next/server";
-import { getActiveClinic, getActiveClinicId } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
-import { hasPermission } from "@/lib/permissions/roles";
-import { applyPatientSearchFilter, sanitizePatientSearchTerm } from "@/lib/utils/patient-search";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
+import { hasPermission } from "@/core/permissions/roles";
+import { searchQuerySchema } from "@/core/validations/params";
+import { applyPatientSearchFilter } from "@/features/pacientes/utils/patient-search";
 import { mapPatientHits } from "@/lib/utils/command-palette-search";
 
 export async function GET(request: Request) {
-  const q = sanitizePatientSearchTerm(new URL(request.url).searchParams.get("q") ?? "");
-  if (q.length < 2) {
+  const user = await getSession();
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  const qParsed = searchQuerySchema.safeParse(
+    new URL(request.url).searchParams.get("q")?.trim() ?? ""
+  );
+  if (!qParsed.success) {
     return NextResponse.json({ patients: [] });
   }
+  const q = qParsed.data;
 
   const clinicId = await getActiveClinicId();
   const { role, isSuperadmin } = await getActiveClinic();
   if (!clinicId) {
-    return NextResponse.json({ patients: [] });
+    return NextResponse.json({ error: "Sin clínica activa" }, { status: 403 });
   }
 
   const canSearch =

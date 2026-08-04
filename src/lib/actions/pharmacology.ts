@@ -1,8 +1,9 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
-import { getActiveClinic, getSession } from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+import { entityIdArraySchema, entityIdSchema, searchQuerySchema } from "@/core/validations/params";
+import { getActiveClinic, getSession } from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
 import type {
   PathologyBySymptomResult,
   PathologyDrug,
@@ -10,8 +11,6 @@ import type {
   PamiVademecumResult,
   SymptomSearchResult,
 } from "@/types/pharmacology";
-
-const MIN_QUERY_LENGTH = 2;
 
 async function assertPharmacologyAccess() {
   const user = await getSession();
@@ -31,14 +30,14 @@ export async function searchPathologies(
   const access = await assertPharmacologyAccess();
   if (access.error) return access;
 
-  const trimmed = query.trim();
-  if (trimmed.length < MIN_QUERY_LENGTH) {
+  const queryParsed = searchQuerySchema.safeParse(query.trim());
+  if (!queryParsed.success) {
     return { data: [] };
   }
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("search_pathologies", {
-    p_query: trimmed,
+    p_query: queryParsed.data,
     p_limit: 12,
   });
 
@@ -55,14 +54,14 @@ export async function searchSymptoms(
   const access = await assertPharmacologyAccess();
   if (access.error) return access;
 
-  const trimmed = query.trim();
-  if (trimmed.length < MIN_QUERY_LENGTH) {
+  const queryParsed = searchQuerySchema.safeParse(query.trim());
+  if (!queryParsed.success) {
     return { data: [] };
   }
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("search_symptoms", {
-    p_query: trimmed,
+    p_query: queryParsed.data,
     p_limit: 12,
   });
 
@@ -83,9 +82,12 @@ export async function getPathologiesBySymptoms(
     return { data: [] };
   }
 
+  const idsParsed = entityIdArraySchema.safeParse(symptomIds);
+  if (!idsParsed.success) return { error: "Síntomas inválidos" };
+
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("search_pathologies_by_symptoms", {
-    p_symptom_ids: symptomIds,
+    p_symptom_ids: idsParsed.data,
     p_limit: 12,
   });
 
@@ -102,14 +104,14 @@ export async function searchPamiVademecum(
   const access = await assertPharmacologyAccess();
   if (access.error) return access;
 
-  const trimmed = query.trim();
-  if (trimmed.length < MIN_QUERY_LENGTH) {
+  const queryParsed = searchQuerySchema.safeParse(query.trim());
+  if (!queryParsed.success) {
     return { data: [] };
   }
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("search_pami_vademecum", {
-    p_query: trimmed,
+    p_query: queryParsed.data,
     p_limit: 20,
   });
 
@@ -126,7 +128,8 @@ export async function getDrugsByPathology(
   const access = await assertPharmacologyAccess();
   if (access.error) return access;
 
-  if (!pathologyId) return { error: "Patología no seleccionada" };
+  const idParsed = entityIdSchema.safeParse(pathologyId);
+  if (!idParsed.success) return { error: "Patología inválida" };
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -134,7 +137,7 @@ export async function getDrugsByPathology(
     .select(
       "id, pathology_id, drug_id, treatment_line, priority, indication_notes, dosage_reference, drugs(id, name, active_ingredient, atc_code, atc_description, presentation, route)"
     )
-    .eq("pathology_id", pathologyId)
+    .eq("pathology_id", idParsed.data)
     .eq("is_active", true)
     .order("treatment_line")
     .order("priority");

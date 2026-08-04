@@ -2,11 +2,11 @@
 
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
-import { enqueueClinicJob } from "@/lib/jobs/enqueue";
-import { processPendingClinicJobs } from "@/lib/jobs/process";
+import { createClient } from "@/core/supabase/server";
+import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
+import { enqueueClinicJob } from "@/core/jobs/enqueue";
+import { processPendingClinicJobs } from "@/core/jobs/process";
 import {
   CLINICAL_DOCUMENT_MAX_BYTES,
   CLINICAL_PDF_IMPORT_MAX_FILES,
@@ -15,6 +15,7 @@ import {
 } from "@/lib/constants/clinical-documents";
 import { HCE_IMPORT_BATCH_SIZE } from "@/lib/constants/clinical-documents";
 import { uploadImportStagingFile } from "@/lib/server/import-staging";
+import { parseEntityId } from "@/core/validations/params";
 
 async function requireClinicalImportAccess() {
   const clinicId = await getActiveClinicId();
@@ -240,13 +241,16 @@ export async function enqueuePatientAiSummaryJob(patientId: string): Promise<{
     return { error: access.error ?? "Sin permisos" };
   }
 
+  const idParsed = parseEntityId(patientId, "Paciente");
+  if (!idParsed.ok) return { error: idParsed.error };
+
   const supabase = await createClient();
   const { id } = await enqueueClinicJob(supabase, {
     clinicId: access.clinicId,
     jobType: "run_ai_task",
     payload: {
       task: "clinical_summary",
-      patientId,
+      patientId: idParsed.data,
     },
     createdBy: access.userId,
   });

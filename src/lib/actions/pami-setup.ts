@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireClinicPermission } from "@/lib/actions/clinic-guard";
-import { createClient } from "@/lib/supabase/server";
+import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { createClient } from "@/core/supabase/server";
 
 export async function configurePamiCabecera(): Promise<{
   success?: boolean;

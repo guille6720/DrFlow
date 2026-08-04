@@ -1,8 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/core/supabase/env";
 import { acceptPendingInvitations } from "@/lib/actions/invitations";
-import { isSameOriginPost } from "@/lib/security/csrf";
+import { isSameOriginPost } from "@/core/security/csrf";
+import { loginSchema } from "@/core/validations/schemas";
+import { firstZodIssue } from "@/core/validations/params";
 
 function mapAuthError(message: string): string {
   const lower = message.toLowerCase();
@@ -55,16 +57,16 @@ export async function POST(request: NextRequest) {
   }
 
   const formData = await request.formData();
-  const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
+  const parsed = loginSchema.safeParse({
+    email: String(formData.get("email") ?? "").trim(),
+    password: String(formData.get("password") ?? ""),
+  });
 
-  if (!email || !password) {
-    return redirectToLogin(request, "Email y contraseña son obligatorios.", email);
+  if (!parsed.success) {
+    return redirectToLogin(request, firstZodIssue(parsed.error));
   }
 
-  if (password.length < 8) {
-    return redirectToLogin(request, "La contraseña debe tener al menos 8 caracteres.", email);
-  }
+  const { email, password } = parsed.data;
 
   const redirectUrl = new URL("/dashboard", request.url);
   // 303 fuerza GET tras POST (evita 405 al redirigir)

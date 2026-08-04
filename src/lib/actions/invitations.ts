@@ -2,12 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { getActiveClinic, getActiveClinicId, getSession } from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
-import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
-import { getPublicSiteUrl } from "@/lib/supabase/env";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
+import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
+import { createClient } from "@/core/supabase/server";
+import { getPublicSiteUrl } from "@/core/supabase/env";
 import type { UserRole } from "@/types/database";
+import { parseEntityId, staffRoleSchema } from "@/core/validations/params";
 
 const inviteSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -170,11 +171,14 @@ export async function revokeClinicInvitation(invitationId: string) {
   if ("error" in access && access.error) return { error: access.error };
   const { clinicId } = access;
 
+  const idParsed = parseEntityId(invitationId, "Invitación");
+  if (!idParsed.ok) return { error: idParsed.error };
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("clinic_invitations")
     .update({ status: "revoked" })
-    .eq("id", invitationId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .eq("status", "pending");
 
@@ -188,15 +192,17 @@ export async function updateClinicMemberRole(memberId: string, role: UserRole) {
   if ("error" in access && access.error) return { error: access.error };
   const { clinicId, user } = access;
 
-  if (!["clinic_admin", "doctor", "secretary"].includes(role)) {
-    return { error: "Rol inválido" };
-  }
+  const idParsed = parseEntityId(memberId, "Miembro");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const roleParsed = staffRoleSchema.safeParse(role);
+  if (!roleParsed.success) return { error: "Rol inválido" };
 
   const supabase = await createClient();
   const { data: target } = await supabase
     .from("clinic_members")
     .select("user_id")
-    .eq("id", memberId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
 
@@ -205,8 +211,8 @@ export async function updateClinicMemberRole(memberId: string, role: UserRole) {
 
   const { error } = await supabase
     .from("clinic_members")
-    .update({ role, updated_at: new Date().toISOString() })
-    .eq("id", memberId)
+    .update({ role: roleParsed.data, updated_at: new Date().toISOString() })
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId);
 
   if (error) return { error: error.message };
@@ -219,11 +225,14 @@ export async function deactivateClinicMember(memberId: string) {
   if ("error" in access && access.error) return { error: access.error };
   const { clinicId, user } = access;
 
+  const idParsed = parseEntityId(memberId, "Miembro");
+  if (!idParsed.ok) return { error: idParsed.error };
+
   const supabase = await createClient();
   const { data: target } = await supabase
     .from("clinic_members")
     .select("user_id")
-    .eq("id", memberId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
 
@@ -233,7 +242,7 @@ export async function deactivateClinicMember(memberId: string) {
   const { error } = await supabase
     .from("clinic_members")
     .update({ is_active: false, updated_at: new Date().toISOString() })
-    .eq("id", memberId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId);
 
   if (error) return { error: error.message };
@@ -259,11 +268,14 @@ export async function removeClinicMemberPermanently(memberId: string) {
   if ("error" in access && access.error) return { error: access.error };
   const { clinicId, user } = access;
 
+  const idParsed = parseEntityId(memberId, "Miembro");
+  if (!idParsed.ok) return { error: idParsed.error };
+
   const supabase = await createClient();
   const { data: target } = await supabase
     .from("clinic_members")
     .select("user_id, profiles(full_name, email)")
-    .eq("id", memberId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
 

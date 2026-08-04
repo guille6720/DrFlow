@@ -20,8 +20,8 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
-import type { PERMISSIONS } from "@/lib/permissions/roles";
-import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
+import type { PERMISSIONS } from "@/core/permissions/roles";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 export type CommandPaletteGroup = "acciones" | "navegacion" | "pacientes";
 

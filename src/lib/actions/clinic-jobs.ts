@@ -2,18 +2,20 @@
 
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { getSession, logAudit } from "@/lib/auth/session";
-import { requireClinicPermission } from "@/lib/actions/clinic-guard";
-import { enqueueClinicJob } from "@/lib/jobs/enqueue";
-import { processPendingClinicJobs } from "@/lib/jobs/process";
+import { createClient } from "@/core/supabase/server";
+import { getSession, logAudit } from "@/core/auth/session";
+import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { enqueueClinicJob } from "@/core/jobs/enqueue";
+import { processPendingClinicJobs } from "@/core/jobs/process";
 import {
   getClinicJobDefinition,
   JOB_STATUS_LABELS,
   listClinicJobTypes,
   type ClinicJobType,
-} from "@/lib/jobs/registry";
-import type { ClinicJobStatus } from "@/lib/jobs/registry";
+} from "@/core/jobs/registry";
+import type { ClinicJobStatus } from "@/core/jobs/registry";
+import { parseEntityId } from "@/core/validations/params";
+import { validateClinicJobEnqueue } from "@/core/validations/clinic-jobs";
 
 export async function enqueueClinicJobAction(
   jobType: ClinicJobType,
@@ -22,7 +24,10 @@ export async function enqueueClinicJobAction(
   const access = await requireClinicPermission("manageAppointments");
   if (!access.ok) return { error: access.error };
 
-  getClinicJobDefinition(jobType);
+  const validated = validateClinicJobEnqueue(jobType, payload);
+  if (!validated.ok) return { error: validated.error };
+
+  getClinicJobDefinition(validated.jobType);
 
   const user = await getSession();
   const supabase = await createClient();
@@ -30,8 +35,8 @@ export async function enqueueClinicJobAction(
   try {
     const { id } = await enqueueClinicJob(supabase, {
       clinicId: access.clinicId,
-      jobType,
-      payload,
+      jobType: validated.jobType,
+      payload: validated.payload,
       createdBy: user?.id,
     });
 
@@ -39,7 +44,7 @@ export async function enqueueClinicJobAction(
       clinicId: access.clinicId,
       entityType: "clinic_job",
       action: "create",
-      metadata: { job_id: id, job_type: jobType },
+      metadata: { job_id: id, job_type: validated.jobType },
     });
 
     after(async () => {
@@ -75,11 +80,14 @@ export async function getClinicJob(jobId: string): Promise<{
   const access = await requireClinicPermission("manageAppointments");
   if (!access.ok) return { error: access.error };
 
+  const idParsed = parseEntityId(jobId, "Trabajo");
+  if (!idParsed.ok) return { error: idParsed.error };
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("clinic_jobs")
     .select("id, job_type, status, error_message, result, created_at, completed_at")
-    .eq("id", jobId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", access.clinicId)
     .maybeSingle();
 

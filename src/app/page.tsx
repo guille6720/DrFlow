@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
-import { AccountDeletedCleanup } from "@/components/auth/account-deleted-cleanup";
-import { PatientAppLandingSection } from "@/components/landing/patient-app-section";
-import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { AccountDeletedCleanup } from "@/core/components/auth/account-deleted-cleanup";
+import { PatientAppLandingSection } from "@/core/components/landing/patient-app-section";
+import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import {
   Calendar,
   Shield,

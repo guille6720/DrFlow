@@ -1,6 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
-import { PublicBookingForm } from "@/components/booking/public-booking-form";
-import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { createClient } from "@/core/supabase/server";
+import { PublicBookingForm } from "@/core/components/booking/public-booking-form";
+import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 

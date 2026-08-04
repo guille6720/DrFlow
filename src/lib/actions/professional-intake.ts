@@ -2,14 +2,20 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
-import { getActiveClinic, getActiveClinicId } from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
 import {
   MEDICAL_SPECIALTIES,
   SPECIALTY_OTHER_VALUE,
 } from "@/lib/constants/medical-specialties";
 import type { AgendaRuleDraft } from "@/lib/constants/professional-intake-checklist";
+import { firstZodIssue, parseEntityId } from "@/core/validations/params";
+import {
+  parseProfessionalIntakeForm,
+  professionalIntakeFormSchema,
+  resolveIntakeSpecialtyName,
+} from "@/core/validations/professional-intake";
 
 const agendaRuleSchema = z.object({
   day_of_week: z.number().int().min(0).max(6),
@@ -27,13 +33,6 @@ async function requireStaffManager() {
   return { clinicId, error: null as null };
 }
 
-function resolveSpecialtyName(formData: FormData): string {
-  const select = String(formData.get("specialtySelect") ?? "").trim();
-  const custom = String(formData.get("specialtyCustom") ?? "").trim();
-  if (select === SPECIALTY_OTHER_VALUE) return custom;
-  return select;
-}
-
 function parseAgendaRules(raw: string): AgendaRuleDraft[] {
   if (!raw.trim()) return [];
   try {
@@ -48,40 +47,42 @@ function parseAgendaRules(raw: string): AgendaRuleDraft[] {
   }
 }
 
+function validateIntakeForm(formData: FormData) {
+  const raw = parseProfessionalIntakeForm(formData);
+  const parsed = professionalIntakeFormSchema.safeParse(raw);
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) } as const;
+
+  let specialtyName: string;
+  try {
+    specialtyName = resolveIntakeSpecialtyName(parsed.data);
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Especialidad inválida",
+    } as const;
+  }
+
+  if (
+    parsed.data.specialtySelect === SPECIALTY_OTHER_VALUE &&
+    !MEDICAL_SPECIALTIES.includes(specialtyName as (typeof MEDICAL_SPECIALTIES)[number]) &&
+    specialtyName.length < 3
+  ) {
+    return { error: "Especialidad manual demasiado corta." } as const;
+  }
+
+  const agendaRules = parseAgendaRules(String(formData.get("agenda_rules_json") ?? ""));
+  return { data: parsed.data, specialtyName, agendaRules } as const;
+}
+
 export async function submitProfessionalIntake(formData: FormData) {
   const access = await requireStaffManager();
   if (access.error || !access.clinicId) return { error: access.error };
 
-  const firstName = String(formData.get("doctorFirstName") ?? "").trim();
-  const lastName = String(formData.get("doctorLastName") ?? "").trim();
-  const documentNumber = String(formData.get("documentNumber") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const licenseNational = String(formData.get("licenseNational") ?? "").trim();
-  const licenseProvincial = String(formData.get("licenseProvincial") ?? "").trim();
-  const officeAddress = String(formData.get("officeAddress") ?? "").trim();
-  const officePhone = String(formData.get("officePhone") ?? "").trim();
-  const acceptedInsurances = String(formData.get("acceptedInsurances") ?? "").trim();
-  const intakeNotes = String(formData.get("intakeNotes") ?? "").trim();
-  const locationId = String(formData.get("location_id") ?? "").trim() || null;
-  const specialtyName = resolveSpecialtyName(formData);
-  const agendaRules = parseAgendaRules(String(formData.get("agenda_rules_json") ?? ""));
+  const validated = validateIntakeForm(formData);
+  if ("error" in validated) return { error: validated.error };
 
-  if (!firstName || !lastName) return { error: "Nombre y apellido son obligatorios." };
-  if (!documentNumber) return { error: "DNI es obligatorio." };
-  if (!phone) return { error: "Teléfono de contacto es obligatorio." };
-  if (!licenseNational) return { error: "Matrícula nacional es obligatoria." };
-  if (!specialtyName) return { error: "Seleccioná o escribí la especialidad." };
-  if (
-    formData.get("specialtySelect") === SPECIALTY_OTHER_VALUE &&
-    !MEDICAL_SPECIALTIES.includes(specialtyName as (typeof MEDICAL_SPECIALTIES)[number]) &&
-    specialtyName.length < 3
-  ) {
-    return { error: "Especialidad manual demasiado corta." };
-  }
-
-  const displayName = `${lastName}, ${firstName}`;
-  const licenseProv = licenseProvincial || licenseNational;
+  const { data, specialtyName, agendaRules } = validated;
+  const displayName = `${data.doctorLastName}, ${data.doctorFirstName}`;
+  const licenseProv = data.licenseProvincial || data.licenseNational;
 
   const supabase = await createClient();
   const clinicId = access.clinicId;
@@ -106,14 +107,14 @@ export async function submitProfessionalIntake(formData: FormData) {
     specialtyId = createdSpec.id;
   }
 
-  let resolvedLocationId = locationId;
-  if (!resolvedLocationId && officeAddress) {
+  let resolvedLocationId = data.location_id;
+  if (!resolvedLocationId && data.officeAddress) {
     const { data: loc, error: locErr } = await supabase
       .from("locations")
       .insert({
         clinic_id: clinicId,
-        name: `Consultorio ${lastName}`,
-        address: officeAddress,
+        name: `Consultorio ${data.doctorLastName}`,
+        address: data.officeAddress,
       })
       .select("id")
       .single();
@@ -129,15 +130,15 @@ export async function submitProfessionalIntake(formData: FormData) {
       location_id: resolvedLocationId,
       display_name: displayName,
       license_number: licenseProv,
-      license_national: licenseNational,
+      license_national: data.licenseNational,
       license_provincial: licenseProv,
-      document_number: documentNumber,
-      email: email || null,
-      phone,
-      office_phone: officePhone || null,
-      office_address: officeAddress || null,
-      accepted_insurances: acceptedInsurances || null,
-      intake_notes: intakeNotes || null,
+      document_number: data.documentNumber,
+      email: data.email || null,
+      phone: data.phone,
+      office_phone: data.officePhone || null,
+      office_address: data.officeAddress || null,
+      accepted_insurances: data.acceptedInsurances || null,
+      intake_notes: data.intakeNotes || null,
       intake_completed_at: new Date().toISOString(),
       is_active: true,
     })
@@ -184,28 +185,16 @@ export async function updateProfessionalProfile(professionalId: string, formData
   const access = await requireStaffManager();
   if (access.error || !access.clinicId) return { error: access.error };
 
-  const firstName = String(formData.get("doctorFirstName") ?? "").trim();
-  const lastName = String(formData.get("doctorLastName") ?? "").trim();
-  const documentNumber = String(formData.get("documentNumber") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const licenseNational = String(formData.get("licenseNational") ?? "").trim();
-  const licenseProvincial = String(formData.get("licenseProvincial") ?? "").trim();
-  const officeAddress = String(formData.get("officeAddress") ?? "").trim();
-  const officePhone = String(formData.get("officePhone") ?? "").trim();
-  const acceptedInsurances = String(formData.get("acceptedInsurances") ?? "").trim();
-  const intakeNotes = String(formData.get("intakeNotes") ?? "").trim();
-  const locationId = String(formData.get("location_id") ?? "").trim() || null;
-  const specialtyName = resolveSpecialtyName(formData);
+  const idParsed = parseEntityId(professionalId, "Profesional");
+  if (!idParsed.ok) return { error: idParsed.error };
 
-  if (!firstName || !lastName) return { error: "Nombre y apellido son obligatorios." };
-  if (!documentNumber) return { error: "DNI es obligatorio." };
-  if (!phone) return { error: "Teléfono de contacto es obligatorio." };
-  if (!licenseNational) return { error: "Matrícula nacional es obligatoria." };
-  if (!specialtyName) return { error: "Seleccioná o escribí la especialidad." };
+  const validated = validateIntakeForm(formData);
+  if ("error" in validated) return { error: validated.error };
 
-  const displayName = `${lastName}, ${firstName}`;
-  const licenseProv = licenseProvincial || licenseNational;
+  const { data, specialtyName } = validated;
+  const displayName = `${data.doctorLastName}, ${data.doctorFirstName}`;
+  const licenseProv = data.licenseProvincial || data.licenseNational;
+
   const supabase = await createClient();
   const clinicId = access.clinicId;
 
@@ -229,14 +218,14 @@ export async function updateProfessionalProfile(professionalId: string, formData
     specialtyId = createdSpec.id;
   }
 
-  let resolvedLocationId = locationId;
-  if (!resolvedLocationId && officeAddress) {
+  let resolvedLocationId = data.location_id;
+  if (!resolvedLocationId && data.officeAddress) {
     const { data: loc, error: locErr } = await supabase
       .from("locations")
       .insert({
         clinic_id: clinicId,
-        name: `Consultorio ${lastName}`,
-        address: officeAddress,
+        name: `Consultorio ${data.doctorLastName}`,
+        address: data.officeAddress,
       })
       .select("id")
       .single();
@@ -251,18 +240,18 @@ export async function updateProfessionalProfile(professionalId: string, formData
       location_id: resolvedLocationId,
       display_name: displayName,
       license_number: licenseProv,
-      license_national: licenseNational,
+      license_national: data.licenseNational,
       license_provincial: licenseProv,
-      document_number: documentNumber,
-      email: email || null,
-      phone,
-      office_phone: officePhone || null,
-      office_address: officeAddress || null,
-      accepted_insurances: acceptedInsurances || null,
-      intake_notes: intakeNotes || null,
+      document_number: data.documentNumber,
+      email: data.email || null,
+      phone: data.phone,
+      office_phone: data.officePhone || null,
+      office_address: data.officeAddress || null,
+      accepted_insurances: data.acceptedInsurances || null,
+      intake_notes: data.intakeNotes || null,
       intake_completed_at: new Date().toISOString(),
     })
-    .eq("id", professionalId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId);
 
   if (error) return { error: error.message };
@@ -278,6 +267,9 @@ export async function saveProfessionalSchedule(professionalId: string, formData:
   const access = await requireStaffManager();
   if (access.error || !access.clinicId) return { error: access.error };
 
+  const idParsed = parseEntityId(professionalId, "Profesional");
+  if (!idParsed.ok) return { error: idParsed.error };
+
   const agendaRules = parseAgendaRules(String(formData.get("agenda_rules_json") ?? ""));
 
   const supabase = await createClient();
@@ -286,7 +278,7 @@ export async function saveProfessionalSchedule(professionalId: string, formData:
   const { data: pro } = await supabase
     .from("professionals")
     .select("location_id")
-    .eq("id", professionalId)
+    .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .maybeSingle();
 
@@ -295,7 +287,7 @@ export async function saveProfessionalSchedule(professionalId: string, formData:
   const { error: delErr } = await supabase
     .from("availability_rules")
     .delete()
-    .eq("professional_id", professionalId)
+    .eq("professional_id", idParsed.data)
     .eq("clinic_id", clinicId);
 
   if (delErr) return { error: delErr.message };
@@ -303,7 +295,7 @@ export async function saveProfessionalSchedule(professionalId: string, formData:
   if (agendaRules.length > 0) {
     const rows = agendaRules.map((rule) => ({
       clinic_id: clinicId,
-      professional_id: professionalId,
+      professional_id: idParsed.data,
       location_id: pro.location_id,
       day_of_week: rule.day_of_week,
       start_time: rule.start_time,

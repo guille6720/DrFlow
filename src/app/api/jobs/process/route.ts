@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
-import { processPendingClinicJobs } from "@/lib/jobs/process";
+import { processPendingClinicJobs } from "@/core/jobs/process";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
+
+const jobLimitSchema = z.coerce.number().int().min(1).max(50).default(10);
 
 function authorizeWorker(request: Request): boolean {
   const cronSecret = process.env.CRON_SECRET?.trim();
@@ -18,7 +21,8 @@ async function runWorker(request: Request) {
   }
 
   const url = new URL(request.url);
-  const limit = Math.min(Number(url.searchParams.get("limit") ?? 10), 50);
+  const limitParsed = jobLimitSchema.safeParse(url.searchParams.get("limit") ?? undefined);
+  const limit = limitParsed.success ? limitParsed.data : 10;
 
   try {
     const result = await processPendingClinicJobs({ limit });

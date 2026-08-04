@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   mergeClinicalIndicators,
   upsertCreatinineLab,
-} from "@/lib/services/patient-chart-indicators.service";
+} from "@/features/pacientes/services/patient-chart-indicators.service";
 
 describe("patient-chart-indicators.service", () => {
   it("upsertCreatinineLab adds creatinine entry", () => {

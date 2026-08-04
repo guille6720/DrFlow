@@ -1,4 +1,4 @@
-import { formatAgeLabel } from "@/lib/utils/patient-age";
+import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
 
 export type YearlyAttendedPatient = {
   id: string;

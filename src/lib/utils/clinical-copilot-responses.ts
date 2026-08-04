@@ -2,10 +2,10 @@ import { buildPreVisitBrief } from "@/lib/utils/pre-visit-brief";
 import { buildPrescriptionDraftSuggestion } from "@/lib/utils/clinical-assistant";
 import { buildOrderDraftSuggestion } from "@/lib/utils/medication-order-assist";
 import { buildProactiveCareItems } from "@/lib/utils/proactive-follow-up";
-import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
-import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
-import type { PhysicianAssistContext } from "@/lib/utils/physician-assist-types";
-import { PHYSICIAN_ASSIST_DISCLAIMER } from "@/lib/utils/physician-assist-types";
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
+import { PHYSICIAN_ASSIST_DISCLAIMER } from "@/features/ia/types/physician-assist-types";
 
 export type CopilotIntentId =
   | "recent_consultations"

@@ -51,11 +51,11 @@ describe("P1 app-layer security fixes", () => {
 
   it("job handlers validate storage path prefix", () => {
     const pdf = readFileSync(
-      resolve(process.cwd(), "src/lib/jobs/handlers/import-clinical-pdf.ts"),
+      resolve(process.cwd(), "src/core/jobs/handlers/import-clinical-pdf.ts"),
       "utf8"
     );
     const batch = readFileSync(
-      resolve(process.cwd(), "src/lib/jobs/handlers/import-batch.ts"),
+      resolve(process.cwd(), "src/core/jobs/handlers/import-batch.ts"),
       "utf8"
     );
     expect(pdf).toContain("assertStoragePathInClinic");

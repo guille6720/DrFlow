@@ -56,7 +56,7 @@ export async function removeImportStagingFile(
 }
 
 export function triggerImportJobsProcessing(clinicId: string): void {
-  void import("@/lib/jobs/process")
+  void import("@/core/jobs/process")
     .then(({ processPendingClinicJobs }) => processPendingClinicJobs({ limit: 10, clinicId }))
     .catch((err) => console.error("[import-staging] worker failed", err));
 }

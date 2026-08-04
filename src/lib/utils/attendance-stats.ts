@@ -8,7 +8,7 @@ import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { formatInTimeZone } from "date-fns-tz";
 import { es } from "date-fns/locale";
 import type { ConsultationModality } from "@/lib/constants/consultation-modality";
-import { DEFAULT_CLINIC_TIMEZONE } from "@/lib/utils/clinic-timezone";
+import { DEFAULT_CLINIC_TIMEZONE } from "@/shared/utils/clinic-timezone";
 
 export type AttendancePeriod = "daily" | "weekly" | "monthly";
 

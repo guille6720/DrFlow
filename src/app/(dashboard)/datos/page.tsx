@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Header } from "@/components/layout/header";
+import { Header } from "@/core/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { SectorHero } from "@/components/ui/sector-hero";
 import {
@@ -7,13 +7,13 @@ import {
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
-import { hasPermission } from "@/lib/permissions/roles";
+} from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
+import { hasPermission } from "@/core/permissions/roles";
 import { DataImportExportSidebar } from "@/features/integraciones";
 import { MigrationHealthPanel } from "@/features/integraciones";
 import { ClearClinicalHistoryPanel } from "@/features/integraciones";
-import { DatosNavigationHelp } from "@/components/datos/datos-navigation-help";
+import { DatosNavigationHelp } from "@/features/integraciones/components/datos/datos-navigation-help";
 import { buildMigrationHealthReport, type MigrationHealthReport } from "@/lib/utils/migration-health";
 import type { ClinicalRecordExportRow, PatientExportRow } from "@/lib/utils/clinical-export-client";
 import { ArrowLeftRight, FileText, Users } from "lucide-react";

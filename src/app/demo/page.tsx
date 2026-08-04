@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { DrFlowLogo } from "@/components/brand/drflow-logo";
+import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import {
   Activity,
   Calendar,

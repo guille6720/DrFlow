@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getActiveClinic, getActiveClinicId } from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
+import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
 import {
   runClinicalAiOrchestrator,
   listClinicalAiAgents,
@@ -23,10 +23,10 @@ const TASK_VALUES = [
 
 const bodySchema = z.object({
   task: z.enum(TASK_VALUES),
-  message: z.string().optional(),
+  message: z.string().max(8000).optional(),
   patientId: z.string().uuid().optional(),
-  patientName: z.string().optional(),
-  labSourceText: z.string().optional(),
+  patientName: z.string().max(200).optional(),
+  labSourceText: z.string().max(50000).optional(),
   assistContext: z.record(z.string(), z.unknown()).optional(),
   copilotContext: z.record(z.string(), z.unknown()).optional(),
   chart: z.record(z.string(), z.unknown()).optional(),

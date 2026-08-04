@@ -4,7 +4,7 @@ import {
   buildPrescriptionDraftSuggestion,
 } from "@/lib/utils/clinical-assistant";
 import { buildFollowUpReminderItems, buildOrderDraftSuggestion } from "@/lib/utils/medication-order-assist";
-import type { PhysicianAssistContext, PhysicianAssistItem } from "@/lib/utils/physician-assist-types";
+import type { PhysicianAssistContext, PhysicianAssistItem } from "@/features/ia/types/physician-assist-types";
 
 export type CloseEncounterStepId =
   | "evolution_summary"

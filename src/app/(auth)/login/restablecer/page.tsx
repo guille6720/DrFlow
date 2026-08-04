@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
-import { RestablecerPasswordFormView } from "@/components/auth/restablecer-password-form-view";
+import { RestablecerPasswordFormView } from "@/core/components/auth/restablecer-password-form-view";
 
 export default function RestablecerPasswordPage() {
   return (

@@ -3,8 +3,8 @@ import {
   WCAG_AA_FEATURES,
   APP_KEYBOARD_SHORTCUTS,
   REDUCED_MOTION_STORAGE_KEY,
-} from "@/lib/accessibility/constants";
-import { getFocusableElements } from "@/lib/accessibility/focus";
+} from "@/core/accessibility/constants";
+import { getFocusableElements } from "@/core/accessibility/focus";
 
 describe("accessibility constants", () => {
   it("defines WCAG AA feature checklist", () => {

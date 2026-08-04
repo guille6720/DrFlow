@@ -4,7 +4,7 @@ import {
   auditEntityLabel,
   mergePatientAuditEvents,
   sanitizeAuditSnapshot,
-} from "@/lib/security/audit-types";
+} from "@/core/security/audit-types";
 
 describe("audit helpers", () => {
   it("auditActionLabel translates actions", () => {
@@ -76,7 +76,7 @@ describe("048_audit_phase12 migration", () => {
     const { readFileSync } = await import("fs");
     const { resolve } = await import("path");
     const src = readFileSync(
-      resolve(process.cwd(), "src/lib/constants/patient-workspace-tabs.ts"),
+      resolve(process.cwd(), "src/features/pacientes/constants/patient-workspace-tabs.ts"),
       "utf8"
     );
     expect(src).toMatch(/id: "auditoria"[\s\S]*ready: true/);

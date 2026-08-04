@@ -6,7 +6,7 @@ import {
   clinicScopedIdFilter,
   isSameClinic,
   TenantScopeError,
-} from "@/lib/security/tenant-scope";
+} from "@/core/security/tenant-scope";
 
 describe("tenant-scope", () => {
   const clinicA = "11111111-1111-1111-1111-111111111111";

@@ -1,20 +1,20 @@
 import { Suspense } from "react";
-import { Header } from "@/components/layout/header";
+import { Header } from "@/core/components/layout/header";
 import { ConfiguracionNavigator } from "@/features/configuracion";
-import { DeleteAccountPanel } from "@/components/configuracion/delete-account-panel";
+import { DeleteAccountPanel } from "@/features/configuracion/components/configuracion/delete-account-panel";
 import {
   renderConfiguracionSectionContent,
   type SettingsPanelData,
-} from "@/components/configuracion/configuracion-section-content";
+} from "@/features/configuracion/components/configuracion/configuracion-section-content";
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
+} from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
 import { redirect } from "next/navigation";
-import { hasPermission } from "@/lib/permissions/roles";
+import { hasPermission } from "@/core/permissions/roles";
 import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
 import { getClinicFeatureFlagSettings } from "@/lib/actions/clinic-feature-flags";
 import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
@@ -22,7 +22,7 @@ import { getClinicObservabilityDashboard } from "@/lib/actions/observability";
 import {
   resolveConfiguracionGroup,
   resolveConfiguracionSection,
-} from "@/components/configuracion/configuracion-sections";
+} from "@/features/configuracion/components/configuracion/configuracion-sections";
 
 interface PageProps {
   searchParams: Promise<{ seccion?: string; grupo?: string }>;

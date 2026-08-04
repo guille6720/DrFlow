@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getActiveClinic, getActiveClinicId } from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
+import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
 import {
   runAdminOpsOrchestrator,
   listAdminOpsAgents,
   type AdminOpsTask,
-} from "@/lib/utils/admin-ops-orchestrator";
+} from "@/features/dashboard/utils/admin-ops-orchestrator";
 
 const TASK_VALUES = [
   "daily_ops_summary",
@@ -21,7 +21,7 @@ const TASK_VALUES = [
 
 const bodySchema = z.object({
   task: z.enum(TASK_VALUES),
-  message: z.string().optional(),
+  message: z.string().max(8000).optional(),
   context: z
     .object({
       page: z

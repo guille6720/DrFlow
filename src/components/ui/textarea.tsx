@@ -1,9 +1,9 @@
 "use client";
 
-import { cn } from "@/lib/utils/cn";
-import { appendSpeechToTextarea } from "@/lib/features/voice-input";
-import { useSpeechToText } from "@/lib/hooks/use-speech-to-text";
-import { useVoiceInputOptional } from "@/components/voice/voice-input-provider";
+import { cn } from "@/shared/utils/cn";
+import { appendSpeechToTextarea } from "@/features/voice/lib/voice-input";
+import { useSpeechToText } from "@/features/voice/hooks/use-speech-to-text";
+import { useVoiceInputOptional } from "@/features/voice/components/voice/voice-input-provider";
 import { forwardRef, useRef, type TextareaHTMLAttributes } from "react";
 import { Mic, MicOff } from "lucide-react";
 

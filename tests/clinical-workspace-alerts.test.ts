@@ -3,8 +3,8 @@ import {
   buildClinicalWorkspaceAlerts,
   buildLastConsultSummary,
   detectMedicationFlags,
-} from "@/lib/utils/clinical-workspace-alerts";
-import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
+} from "@/features/pacientes/utils/clinical-workspace-alerts";
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 
 function minimalChart(overrides: Partial<PatientChartPayload> = {}): PatientChartPayload {
   return {

@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ObservabilityCategory, ObservabilityStatus } from "@/lib/observability/types";
+import type { ObservabilityCategory, ObservabilityStatus } from "@/core/observability/types";
 
 export type ObservabilityEventRow = {
   id: string;
@@ -59,13 +59,13 @@ export async function loadObservabilitySnapshot(
 }
 
 export async function getObservabilitySnapshot(clinicId: string): Promise<ObservabilitySnapshot | null> {
-  const { createClient } = await import("@/lib/supabase/server");
+  const { createClient } = await import("@/core/supabase/server");
   const supabase = await createClient();
   return loadObservabilitySnapshot(supabase, clinicId);
 }
 
 export async function getObservabilityEvents(clinicId: string, limit = 25) {
-  const { createClient } = await import("@/lib/supabase/server");
+  const { createClient } = await import("@/core/supabase/server");
   const supabase = await createClient();
   const { data } = await supabase
     .from("clinic_observability_events")

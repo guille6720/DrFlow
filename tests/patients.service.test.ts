@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isAdminOnlyPatientRole } from "@/lib/services/patients.service";
+import { isAdminOnlyPatientRole } from "@/features/pacientes/services/patients.service";
 
 describe("patients.service", () => {
   it("treats secretary as admin-only for patient PHI fields", () => {

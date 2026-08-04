@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { QA_CHECKLIST, qaStats } from "@/lib/qa/checklist-data";
+import { QA_CHECKLIST, qaStats } from "@/core/qa/checklist-data";
 
 describe("qa checklist", () => {
   it("has sections with unique item ids", () => {

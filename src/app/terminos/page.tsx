@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { DrFlowLogo } from "@/components/brand/drflow-logo";
-import { LegalDocumentView } from "@/components/legal/legal-document-view";
+import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
+import { LegalDocumentView } from "@/core/components/legal/legal-document-view";
 import { LEGAL_CONTENT_VERSION, legalDocuments } from "@/lib/legal/content";
 
 export default function TerminosPage() {

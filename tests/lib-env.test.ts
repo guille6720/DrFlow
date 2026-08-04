@@ -5,7 +5,7 @@ import {
   getSupabaseAnonKey,
   getSupabaseUrl,
   PUBLIC_SITE_FALLBACK,
-} from "@/lib/supabase/env";
+} from "@/core/supabase/env";
 
 describe("supabase env helpers", () => {
   const envBackup = { ...process.env };

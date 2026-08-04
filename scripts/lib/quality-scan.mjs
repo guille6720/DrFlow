@@ -1,13 +1,14 @@
 /**
  * Shared file scanning utilities for quality gates.
  */
-import { readFileSync, readdirSync, statSync } from "fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "fs";
 import { resolve, relative, extname, join } from "path";
 
 export const SRC_ROOT = resolve(process.cwd(), "src");
 export const SCAN_EXTENSIONS = new Set([".ts", ".tsx"]);
 
 export function walkDir(dir, files = []) {
+  if (!existsSync(dir)) return files;
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
@@ -18,6 +19,33 @@ export function walkDir(dir, files = []) {
     }
   }
   return files;
+}
+
+/** UI primitives + feature/core component roots (excludes @deprecated transition stubs). */
+export function componentScanRoots() {
+  const roots = [`${SRC_ROOT}/components/ui`, `${SRC_ROOT}/core/components`];
+  const featuresDir = `${SRC_ROOT}/features`;
+  if (existsSync(featuresDir)) {
+    for (const entry of readdirSync(featuresDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const comp = join(featuresDir, entry.name, "components");
+      if (existsSync(comp)) roots.push(comp);
+    }
+  }
+  return roots;
+}
+
+export function walkComponentFiles(filter = ".tsx") {
+  const out = [];
+  for (const root of componentScanRoots()) {
+    for (const filePath of walkDir(root)) {
+      if (filter && !filePath.endsWith(filter)) continue;
+      const content = readSource(filePath);
+      if (content.startsWith("/** @deprecated")) continue;
+      out.push(filePath);
+    }
+  }
+  return out;
 }
 
 export function rel(filePath) {

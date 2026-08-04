@@ -1,9 +1,9 @@
-export { ConsultationPhysicianAssist } from "@/components/clinical-workflow/consultation-physician-assist";
-export { InlinePhysicianAssist } from "@/components/clinical-workflow/inline-physician-assist";
-export { PrescriptionPhysicianAssist } from "@/components/clinical-workflow/prescription-physician-assist";
-export { OrderPhysicianAssist } from "@/components/clinical-workflow/order-physician-assist";
-export { ClinicalSummaryPhysicianAssist } from "@/components/clinical-workflow/clinical-summary-physician-assist";
-export { PreVisitBriefPanel } from "@/components/clinical-workflow/pre-visit-brief-panel";
+export { ConsultationPhysicianAssist } from "@/features/ia/components/clinical-workflow/consultation-physician-assist";
+export { InlinePhysicianAssist } from "@/features/ia/components/clinical-workflow/inline-physician-assist";
+export { PrescriptionPhysicianAssist } from "@/features/ia/components/clinical-workflow/prescription-physician-assist";
+export { OrderPhysicianAssist } from "@/features/ia/components/clinical-workflow/order-physician-assist";
+export { ClinicalSummaryPhysicianAssist } from "@/features/ia/components/clinical-workflow/clinical-summary-physician-assist";
+export { PreVisitBriefPanel } from "@/features/ia/components/clinical-workflow/pre-visit-brief-panel";
 export {
   buildClinicalSummary,
   buildMedicationSafetyWarnings,
@@ -20,7 +20,7 @@ export {
   buildConsultationDocumentationItems,
 } from "@/lib/utils/consultation-documentation";
 export type { Cie10Suggestion } from "@/lib/utils/consultation-documentation";
-export { ConsultationCie10Panel } from "@/components/clinical-workflow/consultation-cie10-panel";
+export { ConsultationCie10Panel } from "@/features/ia/components/clinical-workflow/consultation-cie10-panel";
 export {
   buildOrderDraftSuggestion,
   buildCoverageNoteItem,
@@ -28,11 +28,11 @@ export {
   buildMedicationOrderAssistItems,
   getMatchedOrderPanelLabels,
 } from "@/lib/utils/medication-order-assist";
-export { OrderSuggestionPanel } from "@/components/clinical-workflow/order-suggestion-panel";
-export { LabInterpretationPanel } from "@/components/clinical-workflow/lab-interpretation-panel";
-export { CloseEncounterWizardSheet } from "@/components/clinical-workflow/close-encounter-wizard-sheet";
-export { CloseEncounterWizardPanel } from "@/components/clinical-workflow/close-encounter-wizard-panel";
-export { FollowUpPhysicianAssist } from "@/components/clinical-workflow/follow-up-physician-assist";
+export { OrderSuggestionPanel } from "@/features/ia/components/clinical-workflow/order-suggestion-panel";
+export { LabInterpretationPanel } from "@/features/ia/components/clinical-workflow/lab-interpretation-panel";
+export { CloseEncounterWizardSheet } from "@/features/ia/components/clinical-workflow/close-encounter-wizard-sheet";
+export { CloseEncounterWizardPanel } from "@/features/ia/components/clinical-workflow/close-encounter-wizard-panel";
+export { FollowUpPhysicianAssist } from "@/features/ia/components/clinical-workflow/follow-up-physician-assist";
 export {
   parseLabValuesFromText,
   compareLabsWithHistory,
@@ -45,9 +45,9 @@ export {
   buildCloseEncounterBundleText,
 } from "@/lib/utils/close-encounter-assist";
 export type { CloseEncounterStep, CloseEncounterStepId } from "@/lib/utils/close-encounter-assist";
-export { ProactiveCarePanel } from "@/components/clinical-workflow/proactive-care-panel";
-export { ClinicalCopilotSheet } from "@/components/clinical-workflow/clinical-copilot-sheet";
-export { ClinicalCopilotHost } from "@/components/clinical-workflow/clinical-copilot-host";
+export { ProactiveCarePanel } from "@/features/ia/components/clinical-workflow/proactive-care-panel";
+export { ClinicalCopilotSheet } from "@/features/ia/components/clinical-workflow/clinical-copilot-sheet";
+export { ClinicalCopilotHost } from "@/features/ia/components/clinical-workflow/clinical-copilot-host";
 export {
   buildProactiveCareItems,
   buildProactiveCareSummaryText,
@@ -76,24 +76,24 @@ export {
   runAdminOpsOrchestrator,
   listAdminOpsAgents,
   ADMIN_OPS_AGENT_LABELS,
-} from "@/lib/utils/admin-ops-orchestrator";
+} from "@/features/dashboard/utils/admin-ops-orchestrator";
 export type {
   AdminOpsAgentId,
   AdminOpsTask,
   AdminOpsOrchestratorResult,
-} from "@/lib/utils/admin-ops-orchestrator";
+} from "@/features/dashboard/utils/admin-ops-orchestrator";
 export {
   matchAdminOpsIntent,
   buildAdminOpsSuggestedPrompts,
   buildAdminOpsResponse,
-} from "@/lib/utils/admin-ops-assistant";
-export type { AdminOpsContext, AdminOpsSnapshot } from "@/lib/utils/admin-ops-types";
+} from "@/features/dashboard/utils/admin-ops-assistant";
+export type { AdminOpsContext, AdminOpsSnapshot } from "@/features/dashboard/utils/admin-ops-types";
 export type { AdminAnalyticsSnapshot } from "@/lib/utils/admin-analytics-types";
 export { formatCurrencyAr, formatBreakdownLines } from "@/lib/utils/admin-analytics-types";
-export { AdminOpsCopilotHost } from "@/components/admin-ops/admin-ops-copilot-host";
-export { AdminOpsCopilotSheet } from "@/components/admin-ops/admin-ops-copilot-sheet";
+export { AdminOpsCopilotHost } from "@/features/ia/components/admin-ops/admin-ops-copilot-host";
+export { AdminOpsCopilotSheet } from "@/features/ia/components/admin-ops/admin-ops-copilot-sheet";
 export type {
   PhysicianAssistContext,
   PhysicianAssistItem,
   PhysicianAssistKind,
-} from "@/lib/utils/physician-assist-types";
+} from "@/features/ia/types/physician-assist-types";

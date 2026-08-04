@@ -12,5 +12,5 @@ export {
   getHealthStatus,
   type ObservabilityCategory,
   type ObservabilityStatus,
-} from "@/lib/observability";
+} from "@/core/observability";
 export { getClinicObservabilityDashboard } from "@/lib/actions/observability";

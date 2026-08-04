@@ -1,6 +1,6 @@
 import { describe, expect, it, afterEach, vi } from "vitest";
-import { validateProductionEnv } from "@/lib/env.server";
-import { authorizeCronRequest } from "@/lib/observability/cron-auth";
+import { validateProductionEnv } from "@/core/env.server";
+import { authorizeCronRequest } from "@/core/observability/cron-auth";
 
 describe("validateProductionEnv", () => {
   afterEach(() => {

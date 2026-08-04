@@ -1,0 +1,162 @@
+import { z } from "zod";
+
+export const loginSchema = z.object({
+  email: z.string().email("Ingresá un email válido"),
+  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+});
+
+export const setupClinicSchema = z.object({
+  clinicName: z.string().min(2, "Ingresá el nombre de la clínica (mín. 2 caracteres)"),
+  slug: z
+    .string()
+    .min(2, "El identificador URL debe tener al menos 2 caracteres")
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Usá solo minúsculas, números y guiones. Ejemplo: mi-clinica-norte"
+    ),
+});
+
+export const registerClinicSchema = z.object({
+  clinicName: z.string().min(2, "Ingresá el nombre de la clínica (mín. 2 caracteres)"),
+  slug: z
+    .string()
+    .min(2, "El identificador URL debe tener al menos 2 caracteres")
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Usá solo minúsculas, números y guiones. Ejemplo: mi-clinica-norte"
+    ),
+  email: z.string().email("Ingresá un email válido"),
+  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+});
+
+export const patientSchema = z.object({
+  first_name: z.string().min(1, "Nombre requerido"),
+  last_name: z.string().min(1, "Apellido requerido"),
+  document_number: z.string().min(6, "DNI inválido"),
+  birth_date: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email("Email inválido").optional().or(z.literal("")),
+  address: z.string().optional(),
+  insurance_provider: z.string().optional(),
+  insurance_plan: z.string().max(120).optional().nullable(),
+  insurance_number: z.string().optional(),
+  emergency_contact_name: z.string().optional(),
+  emergency_contact_phone: z.string().optional(),
+  medical_history: z.string().optional(),
+  allergies: z.string().optional(),
+  regular_medication: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const appointmentBodyFields = {
+  patient_id: z.string().uuid("Seleccioná un paciente"),
+  professional_id: z.string().uuid("Seleccioná un profesional"),
+  location_id: z.string().uuid().optional().nullable(),
+  specialty_id: z.string().uuid().optional().nullable(),
+  start_at: z.string().min(1, "Fecha y hora requeridas"),
+  end_at: z.string().min(1, "Fecha y hora requeridas"),
+  notes: z.string().optional(),
+  cancellation_reason: z.string().optional(),
+};
+
+const appointmentDateRefine = {
+  refine: (data: { start_at: string; end_at: string }) =>
+    new Date(data.end_at) > new Date(data.start_at),
+  message: "La hora de fin debe ser posterior al inicio" as const,
+  path: ["end_at"] as const,
+};
+
+/** Body for update — status comes from existing row, not form. */
+export const updateAppointmentBodySchema = z
+  .object(appointmentBodyFields)
+  .refine(appointmentDateRefine.refine, {
+    message: appointmentDateRefine.message,
+    path: [...appointmentDateRefine.path],
+  });
+
+export const appointmentSchema = z
+  .object({
+    ...appointmentBodyFields,
+    status: z.enum(["pending", "confirmed", "attended", "cancelled", "no_show"]),
+  })
+  .refine(appointmentDateRefine.refine, {
+    message: appointmentDateRefine.message,
+    path: [...appointmentDateRefine.path],
+  });
+
+export const clinicalRecordSchema = z.object({
+  patient_id: z.string().uuid(),
+  appointment_id: z.string().uuid().optional().nullable(),
+  professional_id: z.string().uuid(),
+  chief_complaint: z.string().optional(),
+  diagnosis: z.string().optional(),
+  evolution: z.string().optional(),
+  indications: z.string().optional(),
+  professional_signature: z.string().optional(),
+});
+
+export const prescriptionMedicationSchema = z.object({
+  generic_name: z.string().min(1, "Nombre genérico obligatorio (Ley 25.649)"),
+  brand_name: z.string().optional(),
+  presentation: z.string().optional(),
+  concentration: z.string().optional(),
+  quantity: z.coerce.number().int().min(1, "Cantidad mínima 1"),
+  posology: z.string().min(1, "Indicá posología"),
+  route: z.string().optional(),
+  prolonged_treatment: z.coerce.boolean().optional(),
+});
+
+export const prescriptionDraftSchema = z.object({
+  patient_id: z.string().uuid(),
+  clinical_record_id: z.string().uuid().optional().nullable(),
+  professional_id: z.string().uuid(),
+  prescription_type: z.enum(["ambulatoria", "cronica", "duplicado"]),
+  diagnosis_cie10: z.string().min(1, "CIE-10 obligatorio para receta"),
+  diagnosis_text: z.string().min(1, "Diagnóstico obligatorio"),
+  patient_insurance: z.string().optional(),
+  medications: z.array(prescriptionMedicationSchema).min(1, "Agregá al menos un medicamento"),
+  notes: z.string().optional(),
+  validity_days: z.coerce.number().int().min(1).max(365).default(30),
+  disclaimer_accepted: z.literal(true, {
+    error: "Debés aceptar el aviso legal",
+  }),
+});
+
+export function sanitizeText(input: string): string {
+  return input
+    .replace(/\0/g, "")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/javascript:/gi, "")
+    .replace(/data:text\/html/gi, "")
+    .trim()
+    .slice(0, 10000);
+}
+
+const PATIENT_SANITIZE_KEYS = [
+  "first_name",
+  "last_name",
+  "address",
+  "insurance_provider",
+  "insurance_number",
+  "emergency_contact_name",
+  "emergency_contact_phone",
+  "medical_history",
+  "allergies",
+  "regular_medication",
+  "notes",
+] as const;
+
+/** Sanitiza campos de texto libre del paciente (HC, alergias, notas). */
+export function sanitizePatientFields<T extends Record<string, unknown>>(data: T): T {
+  const out = { ...data };
+  for (const key of PATIENT_SANITIZE_KEYS) {
+    const value = out[key];
+    if (typeof value === "string" && value.length > 0) {
+      (out as Record<string, unknown>)[key] = sanitizeText(value);
+    }
+  }
+  return out;
+}

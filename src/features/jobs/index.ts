@@ -6,7 +6,7 @@ export {
   type ClinicJobType,
   type ClinicJobStatus,
   type ClinicJobDefinition,
-} from "@/lib/jobs/registry";
+} from "@/core/jobs/registry";
 export {
   enqueueClinicJobAction,
   getClinicJob,
@@ -19,6 +19,6 @@ export {
   enqueueConsumersImportJob,
   enqueuePatientAiSummaryJob,
 } from "@/lib/actions/import-jobs";
-export { enqueueClinicJob } from "@/lib/jobs/enqueue";
-export { processPendingClinicJobs } from "@/lib/jobs/process";
-export type { ClinicJobRow, EnqueueClinicJobInput } from "@/lib/jobs/types";
+export { enqueueClinicJob } from "@/core/jobs/enqueue";
+export { processPendingClinicJobs } from "@/core/jobs/process";
+export type { ClinicJobRow, EnqueueClinicJobInput } from "@/core/jobs/types";

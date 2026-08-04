@@ -2,9 +2,9 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
-import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
-import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
+import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
+import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import {
   CLEAR_CLINICAL_HISTORY_CONFIRM_PHRASE,
   CLEAR_FULL_MIGRATION_CONFIRM_PHRASE,

@@ -1,7 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { getPublicSiteUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
-import { isSameOriginPost } from "@/lib/security/csrf";
+import { z } from "zod";
+import { getPublicSiteUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/core/supabase/env";
+import { isSameOriginPost } from "@/core/security/csrf";
+import { firstZodIssue } from "@/core/validations/params";
+
+const resetEmailSchema = z.object({
+  email: z.string().email("Ingresá un email válido"),
+});
 
 /** 303 = forzar GET tras POST (evita HTTP 405 en /login). */
 function redirectGet(url: URL | string) {
@@ -18,12 +24,16 @@ export async function POST(request: NextRequest) {
   }
 
   const formData = await request.formData();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const parsed = resetEmailSchema.safeParse({
+    email: String(formData.get("email") ?? "").trim().toLowerCase(),
+  });
 
-  if (!email) {
-    loginUrl.searchParams.set("error", "Ingresá tu email para recuperar la contraseña.");
+  if (!parsed.success) {
+    loginUrl.searchParams.set("error", firstZodIssue(parsed.error));
     return redirectGet(loginUrl);
   }
+
+  const email = parsed.data.email;
 
   const publicSite = getPublicSiteUrl(request.nextUrl.origin);
   const recoveryRedirect = `${publicSite}/auth/confirm?next=${encodeURIComponent("/login/restablecer")}`;

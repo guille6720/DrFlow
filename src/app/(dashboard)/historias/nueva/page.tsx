@@ -3,11 +3,11 @@ import {
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
+} from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
 import { redirect } from "next/navigation";
-import { hasPermission } from "@/lib/permissions/roles";
-import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
+import { hasPermission } from "@/core/permissions/roles";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import NuevaConsultaForm from "./consulta-form";
 
 export default async function NuevaConsultaPage({

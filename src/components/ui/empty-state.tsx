@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import type { LucideIcon } from "lucide-react";
 
 interface EmptyStateProps {

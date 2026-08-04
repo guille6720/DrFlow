@@ -91,7 +91,7 @@ describe("dashboard pages use feature modules (static)", () => {
   it("sidebar imports FEATURE_NAV_ITEMS", async () => {
     const { readFileSync } = await import("fs");
     const { resolve } = await import("path");
-    const src = readFileSync(resolve(process.cwd(), "src/components/layout/sidebar.tsx"), "utf8");
+    const src = readFileSync(resolve(process.cwd(), "src/core/components/layout/sidebar.tsx"), "utf8");
     expect(src).toMatch(/FEATURE_NAV_ITEMS/);
   });
 });

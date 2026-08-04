@@ -5,9 +5,9 @@ import {
   resolveAdminOpsAgentForIntent,
   resolveAdminOpsAgentForTask,
   runAdminOpsOrchestrator,
-} from "@/lib/utils/admin-ops-orchestrator";
-import { buildAdminOpsSnapshotFromDashboard } from "@/lib/utils/admin-ops-types";
-import type { ClinicalOperationsDashboardPayload } from "@/lib/utils/clinical-operations-dashboard-types";
+} from "@/features/dashboard/utils/admin-ops-orchestrator";
+import { buildAdminOpsSnapshotFromDashboard } from "@/features/dashboard/utils/admin-ops-types";
+import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
 
 const opsPayload: ClinicalOperationsDashboardPayload = {
   waiting: [],

@@ -1,47 +1,53 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  logAudit,
-} from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
+import { applyClinicLegalAcceptanceInternal } from "@/core/legal/apply-clinic-legal-acceptance";
+import { parseEntityId } from "@/core/validations/params";
 import {
   LEGAL_PRIVACY_VERSION,
   LEGAL_TERMS_VERSION,
-} from "@/lib/legal/documents";
+} from "@/core/legal/documents";
 
 export async function applyClinicLegalAcceptance(clinicId: string) {
+  const idParsed = parseEntityId(clinicId, "Clínica");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const user = await getSession();
+  if (!user) return { error: "Sesión requerida" };
+
   const supabase = await createClient();
-  const now = new Date().toISOString();
+  const { data: membership } = await supabase
+    .from("clinic_members")
+    .select("role")
+    .eq("clinic_id", idParsed.data)
+    .eq("user_id", user.id)
+    .eq("is_active", true)
+    .maybeSingle();
 
-  const { error } = await supabase
-    .from("clinics")
-    .update({
-      legal_terms_version: LEGAL_TERMS_VERSION,
-      legal_terms_accepted_at: now,
-      legal_privacy_version: LEGAL_PRIVACY_VERSION,
-    })
-    .eq("id", clinicId);
-
-  if (error) {
-    console.error("legal acceptance update failed:", error.message);
-    return;
+  if (!membership) {
+    return { error: "Sin permisos para esta clínica" };
   }
 
-  await logAudit({
-    clinicId,
-    entityType: "legal",
-    action: "create",
-    metadata: {
-      terms_version: LEGAL_TERMS_VERSION,
-      privacy_version: LEGAL_PRIVACY_VERSION,
-    },
-  });
+  const { role, isSuperadmin } = await getActiveClinic();
+  const activeClinicId = await getActiveClinicId();
+  const canAccept =
+    isSuperadmin ||
+    hasPermission(role, "manageSettings", isSuperadmin) ||
+    (activeClinicId === idParsed.data && membership.role === "clinic_admin");
+
+  if (!canAccept) {
+    return { error: "Sin permisos para registrar aceptación legal" };
+  }
+
+  return applyClinicLegalAcceptanceInternal(idParsed.data);
 }
 
 export async function exportPatientArcoBundle(patientId: string) {
+  const patientParsed = parseEntityId(patientId, "Paciente");
+  if (!patientParsed.ok) return { error: patientParsed.error };
+
   const clinicId = await getActiveClinicId();
   const { role, isSuperadmin } = await getActiveClinic();
 
@@ -54,7 +60,7 @@ export async function exportPatientArcoBundle(patientId: string) {
   const { data: patient } = await supabase
     .from("patients")
     .select("*")
-    .eq("id", patientId)
+    .eq("id", patientParsed.data)
     .eq("clinic_id", clinicId)
     .single();
 
@@ -65,32 +71,32 @@ export async function exportPatientArcoBundle(patientId: string) {
       supabase
         .from("clinical_records")
         .select("id, created_at, diagnosis, chief_complaint, evolution, indications")
-        .eq("patient_id", patientId)
+        .eq("patient_id", patientParsed.data)
         .eq("clinic_id", clinicId)
         .order("created_at", { ascending: false }),
       supabase
         .from("appointments")
         .select("id, start_at, status, notes, booking_source")
-        .eq("patient_id", patientId)
+        .eq("patient_id", patientParsed.data)
         .eq("clinic_id", clinicId)
         .order("start_at", { ascending: false }),
       supabase
         .from("consent_records")
         .select("consent_type, granted, granted_at, document_version, created_at")
-        .eq("patient_id", patientId)
+        .eq("patient_id", patientParsed.data)
         .eq("clinic_id", clinicId)
         .order("created_at", { ascending: false }),
       supabase
         .from("patient_attachments")
         .select("id, file_name, category, created_at, file_size")
-        .eq("patient_id", patientId)
+        .eq("patient_id", patientParsed.data)
         .eq("clinic_id", clinicId),
     ]);
 
   await logAudit({
     clinicId,
     entityType: "patient",
-    entityId: patientId,
+    entityId: patientParsed.data,
     action: "export",
     metadata: { reason: "arco_export_bundle" },
   });

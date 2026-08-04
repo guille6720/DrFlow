@@ -3,4 +3,4 @@ export {
   APP_KEYBOARD_SHORTCUTS,
   getFocusableElements,
   focusFirstElement,
-} from "@/lib/accessibility";
+} from "@/core/accessibility";

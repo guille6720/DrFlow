@@ -1,4 +1,4 @@
-export { PamiPlanillasView } from "@/components/pami/pami-planillas-view";
+export { PamiPlanillasView } from "@/features/pami/components/pami/pami-planillas-view";
 export { PAMI_PLANILLA_TEMPLATES } from "@/lib/constants/pami-planillas";
 export {
   PAMI_STUDY_TEMPLATES,

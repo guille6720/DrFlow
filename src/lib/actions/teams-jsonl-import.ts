@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/lib/auth/session";
-import { hasPermission } from "@/lib/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { hasPermission } from "@/core/permissions/roles";
 import { TEAMS_JSONL_IMPORT_BATCH_SIZE } from "@/lib/constants/clinical-documents";
 import { findOrCreatePatientFromExtract, resolveImportProfessionalId } from "@/lib/utils/clinical-pdf-import";
 import {
@@ -11,9 +11,9 @@ import {
   placeholderDniFromConsumerId,
   type HceExportRow,
 } from "@/lib/utils/hce-export-parse";
-import { sanitizeText } from "@/lib/validations/schemas";
+import { sanitizeText } from "@/core/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
-import { upsertPatientClinicalProfile } from "@/lib/server/patient-clinical-profile";
+import { upsertPatientClinicalProfile } from "@/features/pacientes/server/patient-clinical-profile";
 
 async function requireTeamsJsonlImportAccess() {
   const clinicId = await getActiveClinicId();

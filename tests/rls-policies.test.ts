@@ -4,7 +4,7 @@ import { resolve } from "path";
 import {
   SECURITY_DEFINER_RPC_CHECKS,
   TABLES_REQUIRING_RLS,
-} from "@/lib/security/rls-manifest";
+} from "@/core/security/rls-manifest";
 
 function loadAllMigrationSql(): string {
   const dir = resolve(process.cwd(), "supabase/migrations");

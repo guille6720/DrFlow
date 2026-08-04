@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   formatPatientEhrSidebarDate,
   patientEhrEvolutionBody,
-} from "@/components/historias/patient-ehr-utils";
-import type { PatientEhrConsultation } from "@/lib/utils/patient-ehr-model";
+} from "@/features/historias/components/historias/patient-ehr-utils";
+import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
 
 describe("patientEhrEvolutionBody", () => {
   it("returns evolution text when present", () => {
