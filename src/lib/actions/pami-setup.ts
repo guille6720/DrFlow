@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getActiveClinicId } from "@/lib/auth/session";
 import { requireClinicPermission } from "@/lib/actions/clinic-guard";
 import { createClient } from "@/lib/supabase/server";
 

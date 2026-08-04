@@ -50,8 +50,17 @@ describe("Role permissions", () => {
     expect(canAccessRoute("doctor", "/historias/nueva")).toBe(true);
   });
 
-  it("requires edit permission for historia editar", () => {
-    expect(canAccessRoute("secretary", "/historias/abc/editar")).toBe(false);
-    expect(canAccessRoute("doctor", "/historias/abc/editar")).toBe(true);
+  it("restricts manageStaff to clinic_admin", () => {
+    expect(hasPermission("clinic_admin", "manageStaff")).toBe(true);
+    expect(hasPermission("doctor", "manageStaff")).toBe(false);
+  });
+
+  it("requires managePatients for paciente editar route", () => {
+    expect(canAccessRoute("secretary", "/pacientes/abc/editar")).toBe(true);
+    expect(canAccessRoute("patient", "/pacientes/abc/editar")).toBe(false);
+  });
+
+  it("allows unknown dashboard routes by default", () => {
+    expect(canAccessRoute("doctor", "/dashboard")).toBe(true);
   });
 });

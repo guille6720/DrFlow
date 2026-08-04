@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getActiveClinic, getActiveClinicId, getSession } from "@/lib/auth/session";
-import { hasPermission, PERMISSIONS, ROLE_LABELS } from "@/lib/permissions/roles";
+import { hasPermission, PERMISSIONS } from "@/lib/permissions/roles";
 import type { UserRole } from "@/types/database";
 import { loadMyDoctorProfile, type MyDoctorProfileData } from "@/lib/actions/doctor-profile";
 

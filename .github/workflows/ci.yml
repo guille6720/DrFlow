@@ -7,7 +7,7 @@ on:
     branches: [main, master]
 
 jobs:
-  test:
+  quality-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,14 +19,38 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run lint
+      - name: TypeScript (zero errors)
+        run: npm run typecheck
 
-      - run: npm test
+      - name: ESLint (zero errors)
+        run: npm run lint
 
-      - name: Coverage gate (Phase 19 — core lib 90%)
+      - name: Code quality gate
+        run: node scripts/code-quality-gate.mjs
+
+      - name: Security gate
+        run: node scripts/security-gate.mjs
+
+      - name: Architecture gate
+        run: node scripts/architecture-gate.mjs
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Coverage gate (core lib ≥90%)
         run: npm run check:coverage
 
-      - run: npm run build
+      - name: Critical coverage gate (auth/clinical ≥95%)
+        run: npm run check:critical-coverage
+
+      - name: Performance gate
+        run: npm run performance:gate
+
+      - name: RLS static audit
+        run: npm run test:rls:static
+
+      - name: Production build
+        run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_placeholder
@@ -44,14 +68,14 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
-    needs: test
+    needs: quality-gate
     steps:
       - uses: actions/checkout@v4
       - run: docker build -t drflow-app .
 
   e2e:
     runs-on: ubuntu-latest
-    needs: test
+    needs: quality-gate
     steps:
       - uses: actions/checkout@v4
 
@@ -66,7 +90,7 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_placeholder
-          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium

@@ -9,7 +9,6 @@ import {
   revokeClinicInvitation,
   updateClinicMemberRole,
 } from "@/lib/actions/invitations";
-import type { UserRole } from "@/types/database";
 
 interface Member {
   id: string;

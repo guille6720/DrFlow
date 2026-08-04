@@ -1,12 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { CancelAppointmentDialog } from "@/components/agenda/cancel-appointment-dialog";
 import { AppointmentRowActions } from "@/components/agenda/appointment-row-actions";
 import { useAppointmentRow } from "@/lib/hooks/use-appointment-row";
-import { canStartConsultation, isOnlineBooking } from "@/lib/utils/appointment";
+import { isOnlineBooking } from "@/lib/utils/appointment";
 import type { Appointment } from "@/types/database";
 import { isSameDay, parseISO } from "date-fns";
 import { formatClinicDateTime } from "@/lib/utils/clinic-timezone";

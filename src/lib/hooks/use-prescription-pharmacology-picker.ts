@@ -9,7 +9,6 @@ import type {
   PharmacologySearchMode,
   SymptomSearchResult,
 } from "@/types/pharmacology";
-import type { PrescriptionMedication } from "@/types/prescription";
 
 type Options = {
   onPathologySelect: (pathology: PathologySearchResult) => void;

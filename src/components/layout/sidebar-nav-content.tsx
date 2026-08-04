@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { DrFlowLogo } from "@/components/brand/drflow-logo";
-import { SIDEBAR_NAV_ITEMS, type SidebarNavItem } from "@/components/layout/sidebar-nav-config";
+import { type SidebarNavItem } from "@/components/layout/sidebar-nav-config";
 
 export function SidebarNavContent({
   clinicName,

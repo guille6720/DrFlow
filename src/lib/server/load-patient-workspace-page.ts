@@ -13,7 +13,6 @@ import {
   PATIENT_EHR_RECORD_LIMIT,
   PATIENT_RX_FETCH_LIMIT,
   PATIENT_TIMELINE_APPOINTMENT_LIMIT,
-  type PatientEhrPatientRow,
   type PatientEhrWorkspaceData,
 } from "@/lib/server/load-patient-ehr-data";
 import { loadPatientHceSummaryRows, HCE_SUMMARY_ATTACHMENT_NAME } from "@/lib/utils/patient-ehr-from-hce";

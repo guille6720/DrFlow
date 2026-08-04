@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ClinicJobType } from "@/lib/jobs/registry";
 import type { ClinicJobRow } from "@/lib/jobs/types";
+import { devLog } from "@/lib/observability/dev-log";
 import { handleSendReminderJob } from "@/lib/jobs/handlers/send-reminder";
 import { handleGenerateReportJob } from "@/lib/jobs/handlers/generate-report";
 import { handleImportClinicalPdfJob } from "@/lib/jobs/handlers/import-clinical-pdf";
@@ -31,7 +32,7 @@ export async function handleSendEmailJob(
     });
   }
 
-  console.log(`[MOCK EMAIL] → ${payload.recipient}: ${payload.subject}`);
+  devLog(`[MOCK EMAIL] → ${payload.recipient}: ${payload.subject}`);
   return { status: "simulated", recipient: payload.recipient ?? "" };
 }
 

@@ -130,7 +130,7 @@ export function auditModuleLabel(module: string): string {
 
 /** Row payload for audit_logs INSERT (immutable — no updates). */
 export function buildAuditLogRow(params: ImmutableAuditParams) {
-  const module = params.module ?? deriveAuditModule(params.entityType);
+  const auditModule = params.module ?? deriveAuditModule(params.entityType);
   const what = buildAuditWhat(params.action, params.entityType, params.what);
   const patientId =
     params.patientId ??
@@ -139,7 +139,7 @@ export function buildAuditLogRow(params: ImmutableAuditParams) {
   return {
     clinic_id: params.clinicId ?? null,
     user_id: params.userId,
-    module,
+    module: auditModule,
     what,
     entity_type: params.entityType,
     entity_id: params.entityId ?? null,

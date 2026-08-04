@@ -2,18 +2,14 @@
 
 import { useMemo, useState } from "react";
 import {
-  addMonths,
   eachDayOfInterval,
   endOfMonth,
   endOfWeek,
   isBefore,
-  isSameDay,
-  isSameMonth,
   parseISO,
   startOfDay,
   startOfMonth,
   startOfWeek,
-  subMonths,
 } from "date-fns";
 import {
   APPOINTMENT_SLOT_MINUTES,

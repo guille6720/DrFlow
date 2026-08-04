@@ -166,7 +166,7 @@ export async function processConsumersImportBatchFromBuffer(
     limit?: number;
   }
 ): Promise<ImportConsumersResult> {
-  const { clinicId, userId, buffer, originalName, offset } = params;
+  const { clinicId, userId: _userId, buffer, originalName, offset } = params;
   const limit = params.limit ?? IMPORT_BATCH_SIZE;
 
   const { records, errors, format } = await parseConsumersUpload(

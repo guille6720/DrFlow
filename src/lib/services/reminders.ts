@@ -1,4 +1,5 @@
 import type { ReminderChannel, ReminderLog } from "@/types/database";
+import { devLog } from "@/lib/observability/dev-log";
 
 export interface ReminderPayload {
   clinicId: string;
@@ -15,7 +16,7 @@ export interface ReminderService {
 class MockReminderService implements ReminderService {
   async send(payload: ReminderPayload): Promise<ReminderLog> {
     // Simulated send — replace with SendGrid/Twilio later
-    console.log(`[MOCK REMINDER] ${payload.channel} → ${payload.recipient}: ${payload.message}`);
+    devLog(`[MOCK REMINDER] ${payload.channel} → ${payload.recipient}: ${payload.message}`);
 
     return {
       id: crypto.randomUUID(),

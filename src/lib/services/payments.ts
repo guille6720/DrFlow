@@ -21,7 +21,7 @@ export interface PaymentService {
 }
 
 class MockMercadoPagoService implements PaymentService {
-  async createPayment(intent: PaymentIntent): Promise<PaymentResult> {
+  async createPayment(_intent: PaymentIntent): Promise<PaymentResult> {
     const mockId = `mock_mp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     // Simulated approval — replace with Mercado Pago SDK
     return {

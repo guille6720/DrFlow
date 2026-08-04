@@ -8,7 +8,16 @@
     "preview": "next build && next start",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings 0",
+    "lint-staged": "lint-staged",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "quality:gate": "node scripts/quality-gate.mjs",
+    "quality:gate:fast": "node scripts/quality-gate.mjs --skip-build",
+    "code-quality:gate": "node scripts/code-quality-gate.mjs",
+    "security:gate": "node scripts/security-gate.mjs",
+    "architecture:gate": "node scripts/architecture-gate.mjs",
+    "performance:gate": "node scripts/performance-gate.mjs",
+    "check:critical-coverage": "node scripts/check-critical-coverage.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -29,11 +38,21 @@
     "migrate:p0": "node scripts/apply-p0-migrations.mjs",
     "migrate:production-pending": "node scripts/apply-production-pending.mjs",
     "test:rls": "vitest run tests/rls-policies.test.ts tests/cross-tenant-rls.integration.test.ts",
+    "test:rls:static": "vitest run tests/rls-policies.test.ts tests/phase19-infrastructure.test.ts",
     "deploy:vercel": "node scripts/deploy-vercel.mjs",
     "import:pami-vademecum": "node scripts/import-pami-vademecum.mjs",
     "import:pami-vademecum:apply": "node scripts/import-pami-vademecum.mjs --apply",
     "import:pami-vademecum:split": "node scripts/import-pami-vademecum.mjs --split-dir supabase/seeds/pami_batches",
-    "deploy:checklist": "node scripts/print-supabase-redirects.mjs"
+    "deploy:checklist": "node scripts/print-supabase-redirects.mjs",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix --max-warnings 0"
+    ],
+    "src/**/*.{ts,tsx}": [
+      "node scripts/code-quality-gate.mjs --staged"
+    ]
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
@@ -67,7 +86,9 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
+    "lint-staged": "^15.4.3",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.8"

@@ -9,9 +9,10 @@ describe("Phase 19 testing infrastructure", () => {
     expect(COVERAGE_INCLUDE.some((p) => p.includes("src/lib/utils"))).toBe(true);
   });
 
-  it("includes playwright and vitest coverage config", () => {
+  it("includes playwright and quality gate scripts", () => {
     expect(readFileSync(resolve("playwright.config.ts"), "utf8")).toMatch(/testDir/);
-    expect(readFileSync(resolve("vitest.config.ts"), "utf8")).toMatch(/thresholds/);
+    expect(readFileSync(resolve("vitest.config.ts"), "utf8")).toMatch(/coverage-scope/);
+    expect(readFileSync(resolve("scripts/check-coverage.mjs"), "utf8")).toMatch(/MIN_LINES/);
     expect(readFileSync(resolve("e2e/smoke.spec.ts"), "utf8")).toMatch(/health API/);
   });
 
@@ -27,6 +28,8 @@ describe("Phase 19 testing infrastructure", () => {
     expect(pkg.scripts["test:coverage"]).toBeTruthy();
     expect(pkg.scripts["test:e2e"]).toBeTruthy();
     expect(pkg.scripts["test:rls"]).toBeTruthy();
+    expect(pkg.scripts["quality:gate"]).toBeTruthy();
+    expect(pkg.scripts["check:critical-coverage"]).toBeTruthy();
   });
 });
 

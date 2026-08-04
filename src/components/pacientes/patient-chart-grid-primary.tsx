@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CheckCircle2, Plus, Search } from "lucide-react";
 import { RenewMedicationPanel } from "@/components/pacientes/renew-medication-panel";
-import { ChartSection, VitalsSparkline } from "@/components/pacientes/patient-chart-primitives";
+import { ChartSection } from "@/components/pacientes/patient-chart-primitives";
 import { PatientChartVitalsGrid, PatientChartLabsPanel } from "@/components/pacientes/patient-chart-vitals-grid";
 import type {
   PatientChartPatient,

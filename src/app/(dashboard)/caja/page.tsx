@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { format, startOfDay, endOfDay } from "date-fns";
+import { startOfDay, endOfDay } from "date-fns";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { CashRegisterView } from "@/features/caja";

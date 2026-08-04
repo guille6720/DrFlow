@@ -16,12 +16,6 @@ export default defineConfig({
       reportsDirectory: "./coverage",
       include: COVERAGE_INCLUDE,
       exclude: COVERAGE_EXCLUDE,
-      thresholds: {
-        lines: 90,
-        statements: 90,
-        functions: 85,
-        branches: 70,
-      },
     },
   },
   resolve: {

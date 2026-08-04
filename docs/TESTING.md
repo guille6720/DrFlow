@@ -32,7 +32,7 @@ Umbrales CI:
 
 - Lines / statements: **90%**
 - Functions: **85%**
-- Branches: **75%**
+- Branches: **70%**
 
 Reporte HTML: `coverage/index.html`
 

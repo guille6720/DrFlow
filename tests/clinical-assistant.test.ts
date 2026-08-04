@@ -6,6 +6,12 @@ import {
   buildMedicationSafetyWarnings,
   buildPhysicianAssistItems,
   buildSoapDraftSuggestion,
+  buildPrescriptionDraftSuggestion,
+  buildOrderDraftSuggestion,
+  buildDischargeSummarySuggestion,
+  buildMedicalCertificateDraft,
+  buildInteractionAlertItems,
+  buildClinicalSummaryAssistItem,
   extractPathologySearchQuery,
 } from "@/lib/utils/clinical-assistant";
 
@@ -113,5 +119,71 @@ describe("clinical-assistant", () => {
     expect(items.every((i) => i.kind === "interaction_alert" || i.kind === "differential")).toBe(
       true
     );
+  });
+
+  it("buildPrescriptionDraftSuggestion returns Rx draft", () => {
+    const item = buildPrescriptionDraftSuggestion({
+      evolutionText: "HTA controlada",
+      diagnosis: "Hipertensión arterial",
+      regularMedication: "Losartan 50 mg",
+    });
+    expect(item?.kind).toBe("prescription_draft");
+    expect(item?.body).toContain("Losartan");
+  });
+
+  it("buildOrderDraftSuggestion returns order draft", () => {
+    const item = buildOrderDraftSuggestion({
+      evolutionText: "Dolor abdominal",
+      diagnosis: "Cólico biliar",
+    });
+    expect(item?.kind).toBe("order_draft");
+    expect(item?.body.length).toBeGreaterThan(10);
+  });
+
+  it("buildDischargeSummarySuggestion returns discharge draft", () => {
+    const item = buildDischargeSummarySuggestion({
+      evolutionText: "Evolución favorable",
+      diagnosis: "Neumonía resuelta",
+    });
+    expect(item?.kind).toBe("discharge_summary");
+  });
+
+  it("buildMedicalCertificateDraft returns certificate draft", () => {
+    const item = buildMedicalCertificateDraft({
+      evolutionText: "Reposo indicado",
+      diagnosis: "Lumbalgia",
+    });
+    expect(item?.kind).toBe("medical_certificate");
+  });
+
+  it("buildInteractionAlertItems flags allergy conflicts", () => {
+    const items = buildInteractionAlertItems({
+      allergies: "Penicilina",
+      proposedMedications: ["Amoxicilina"],
+    });
+    expect(items.some((i) => i.kind === "interaction_alert")).toBe(true);
+  });
+
+  it("buildPhysicianAssistItems can include all assist kinds", () => {
+    const items = buildPhysicianAssistItems(
+      {
+        evolutionText: "fiebre disnea tos",
+        diagnosis: "Neumonía",
+        allergies: "Penicilina",
+        regularMedication: "Warfarina",
+        proposedMedications: ["Ibuprofeno"],
+      },
+      [
+        "soap_draft",
+        "differential",
+        "prescription_draft",
+        "order_draft",
+        "discharge_summary",
+        "medical_certificate",
+        "interaction_alert",
+        "clinical_summary",
+      ]
+    );
+    expect(items.length).toBeGreaterThan(3);
   });
 });

@@ -3,7 +3,7 @@
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getActiveClinicId, getSession, logAudit } from "@/lib/auth/session";
+import { getSession, logAudit } from "@/lib/auth/session";
 import { requireClinicPermission } from "@/lib/actions/clinic-guard";
 import { enqueueClinicJob } from "@/lib/jobs/enqueue";
 import { processPendingClinicJobs } from "@/lib/jobs/process";

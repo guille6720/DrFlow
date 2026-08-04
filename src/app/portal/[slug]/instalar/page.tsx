@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/server";
 import { PatientAppInstallView } from "@/components/portal/patient-app-install-view";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";

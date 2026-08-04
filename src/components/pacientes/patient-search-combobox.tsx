@@ -132,7 +132,6 @@ export function PatientSearchCombobox({
                   "drflow-ui-dropdown-item w-full px-3 py-2 text-left text-sm",
                   selectedId === p.id && "bg-teal-950/60 text-teal-200"
                 )}
-                aria-selected={selectedId === p.id}
                 onClick={() => pick(p)}
               >
                 <span className="font-medium">

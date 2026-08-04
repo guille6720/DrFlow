@@ -30,8 +30,7 @@ export function useLoginForm() {
       email: leak?.email || searchParams.get("email") || "",
       passwordLeakError: leak?.error ?? null,
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
   const [email, setEmail] = useState(bootstrap.email);
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);

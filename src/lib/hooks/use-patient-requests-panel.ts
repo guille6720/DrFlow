@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import {
   cancelPatientAppointment,
   fetchPatientAppointmentStatuses,
@@ -36,7 +36,7 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [cancelling, startCancel] = useTransition();
 
-  const loadStatuses = (dni: string, list: PatientRequestRecord[]) => {
+  const loadStatuses = useCallback((dni: string, list: PatientRequestRecord[]) => {
     const ids = list
       .map((r) => r.appointmentId)
       .filter((id): id is string => Boolean(id));
@@ -59,7 +59,7 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
       }
       setStatuses(map);
     });
-  };
+  }, [slug]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -69,8 +69,7 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
       setRequests(list);
       loadStatuses(dni, list);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, refreshTrigger]);
+  }, [slug, refreshTrigger, loadStatuses]);
 
   const handleRefresh = () => {
     setStoredDocument(slug, documentNumber);

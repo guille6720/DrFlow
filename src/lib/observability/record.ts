@@ -54,17 +54,29 @@ export async function recordObservabilityEvent(input: ObservabilityEventInput): 
     error_message: input.errorMessage ?? null,
   };
 
-  const level = status === "error" ? "error" : status === "warn" ? "warn" : "info";
-  console[level](
-    `[obs:${input.category}] ${input.name}`,
-    JSON.stringify({
-      status,
-      durationMs,
-      path: input.path,
-      traceId: input.traceId,
-      error: input.errorMessage,
-    })
-  );
+  if (status === "error") {
+    console.error(
+      `[obs:${input.category}] ${input.name}`,
+      JSON.stringify({
+        status,
+        durationMs,
+        path: input.path,
+        traceId: input.traceId,
+        error: input.errorMessage,
+      })
+    );
+  } else if (status === "warn") {
+    console.warn(
+      `[obs:${input.category}] ${input.name}`,
+      JSON.stringify({
+        status,
+        durationMs,
+        path: input.path,
+        traceId: input.traceId,
+        error: input.errorMessage,
+      })
+    );
+  }
 
   const supabase = await resolveClientAsync();
   if (!supabase) return;

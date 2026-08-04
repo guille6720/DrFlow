@@ -20,7 +20,7 @@ type EhrProps = {
   patientId: string;
 };
 
-export function PatientWorkspaceEhrPanel({ ehr, patientId }: EhrProps) {
+export function PatientWorkspaceEhrPanel({ ehr, patientId: _patientId }: EhrProps) {
   return (
     <PatientEhrView
       embedded

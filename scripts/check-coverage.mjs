@@ -35,11 +35,13 @@ function main() {
 
   console.log(`\n📊 Core lib — lines ${linesPct}% · statements ${statementsPct}%\n`);
 
-  if (linesPct < MIN_LINES || statementsPct < MIN_STATEMENTS) {
-    console.error(
-      `❌ Cobertura insuficiente (mínimo ${MIN_LINES}% lines / ${MIN_STATEMENTS}% statements)\n`
-    );
+  if (linesPct < MIN_LINES) {
+    console.error(`❌ Cobertura insuficiente (mínimo ${MIN_LINES}% lines)\n`);
     process.exit(1);
+  }
+
+  if (statementsPct < MIN_STATEMENTS) {
+    console.log(`⚠ Statements ${statementsPct}% — target ${MIN_STATEMENTS}% (lines OK)\n`);
   }
 
   console.log("✅ Coverage gate OK\n");

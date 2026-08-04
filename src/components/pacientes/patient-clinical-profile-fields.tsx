@@ -36,7 +36,7 @@ export function PatientClinicalProfileFields({ patient }: Props) {
       m.set(l.name, l);
     }
     return m;
-  }, [extras.labs]);
+  }, [extras]);
 
   return (
     <div

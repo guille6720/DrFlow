@@ -53,7 +53,7 @@ export function PamiPlanillaFieldsSection({
   professionals,
   template,
   categoryTemplates,
-  templateId,
+  templateId: _templateId,
   setTemplateId,
   setValues,
   patientId,
