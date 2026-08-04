@@ -103,7 +103,11 @@ function SidebarNavContent({
         </p>
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+      <nav
+        id="sidebar-nav"
+        aria-label="Navegación principal"
+        className="flex-1 space-y-1 overflow-y-auto px-3 py-4"
+      >
         {visibleItems.map((item) => {
           const active = pathname.startsWith(item.href);
           return (
@@ -191,19 +195,25 @@ export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
         type="button"
         className="fixed left-4 top-4 z-50 rounded-2xl bg-gradient-to-r from-cyan-500 to-teal-500 p-2.5 text-white shadow-lg shadow-cyan-500/30 lg:hidden"
         onClick={() => setMobileOpen(!mobileOpen)}
-        aria-label="Menú"
+        aria-label={mobileOpen ? "Cerrar menú de navegación" : "Abrir menú de navegación"}
+        aria-expanded={mobileOpen}
+        aria-controls="drflow-sidebar"
       >
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
       {mobileOpen && (
-        <div
+        <button
+          type="button"
+          aria-label="Cerrar menú de navegación"
           className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       <aside
+        id="drflow-sidebar"
+        aria-label="Menú lateral"
         className={cn(
           "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r drflow-ui-sidebar drflow-sidebar-gradient shadow-xl shadow-black/30 transition-transform duration-200 ease-out",
           mobileOpen ? "translate-x-0" : "-translate-x-full",

@@ -21,6 +21,9 @@ import { loadClinicFeatures } from "@/lib/server/load-clinic-feature-flags";
 import { resolveClinicPlugins, isRouteAllowedByPlugins } from "@/plugins/resolve";
 import { resolveClinicFeatureFlags } from "@/lib/features/flags/resolve";
 import { ClinicFeaturesProvider } from "@/components/plugins/clinic-plugins-provider";
+import { SkipToContent } from "@/components/accessibility/skip-to-content";
+import { AccessibilityProvider } from "@/components/accessibility/accessibility-provider";
+import { RouteAnnouncer } from "@/components/accessibility/route-announcer";
 import {
   isClinicTrialExpired,
   isTrialWhitelistedPath,
@@ -130,12 +133,15 @@ export default async function DashboardLayout({
           isSuperadmin={isSuperadmin}
           enabled={clinicFeatures.flags.command_palette}
         >
+        <AccessibilityProvider>
         <UiThemeProvider>
         <VoiceInputProvider
           clinicVoiceInputEnabled={
             clinic?.voice_input_enabled !== false && clinicFeatures.plugins.voice
           }
         >
+        <SkipToContent />
+        <RouteAnnouncer />
         <Sidebar
           clinicName={clinic?.name}
           role={role}
@@ -151,6 +157,7 @@ export default async function DashboardLayout({
         <FloatingActions />
         </VoiceInputProvider>
         </UiThemeProvider>
+        </AccessibilityProvider>
         </CommandPaletteProvider>
         </ClinicFeaturesProvider>
       </DashboardSidebarProvider>

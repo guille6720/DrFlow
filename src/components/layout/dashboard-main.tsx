@@ -8,8 +8,10 @@ export function DashboardMain({ children }: { children: React.ReactNode }) {
 
   return (
     <main
+      id="main-content"
+      tabIndex={-1}
       className={cn(
-        "transition-[padding] duration-200 ease-out",
+        "transition-[padding] duration-200 ease-out outline-none",
         hidden ? "lg:pl-0" : "lg:pl-64"
       )}
     >

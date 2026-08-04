@@ -16,6 +16,7 @@ import {
   ToggleLeft,
   ListTodo,
   Activity,
+  Accessibility,
 } from "lucide-react";
 
 export type ConfiguracionSectionId =
@@ -31,7 +32,8 @@ export type ConfiguracionSectionId =
   | "plugins"
   | "flags"
   | "jobs"
-  | "observabilidad";
+  | "observabilidad"
+  | "accesibilidad";
 
 export type ConfiguracionGroupId = "consultorio" | "agenda" | "coberturas" | "sistema";
 
@@ -124,6 +126,12 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
     icon: Activity,
   },
   {
+    id: "accesibilidad",
+    title: "Accesibilidad",
+    description: "WCAG AA, teclado, foco visible y lectores de pantalla.",
+    icon: Accessibility,
+  },
+  {
     id: "demo",
     title: "Datos de prueba",
     description: "Pacientes ficticios para probar la agenda y HC.",
@@ -158,7 +166,16 @@ export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
     title: "Sistema y legal",
     description: "Apariencia, cumplimiento normativo y datos de prueba.",
     icon: Settings2,
-    sections: ["apariencia", "legal", "plugins", "flags", "jobs", "observabilidad", "demo"],
+    sections: [
+      "apariencia",
+      "legal",
+      "plugins",
+      "flags",
+      "jobs",
+      "observabilidad",
+      "accesibilidad",
+      "demo",
+    ],
   },
 ];
 

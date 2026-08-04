@@ -19,6 +19,7 @@ import { ClinicPluginsPanel } from "@/components/configuracion/clinic-plugins-pa
 import { ClinicFeatureFlagsPanel } from "@/components/configuracion/clinic-feature-flags-panel";
 import { ClinicJobsPanel } from "@/components/configuracion/clinic-jobs-panel";
 import { ClinicObservabilityPanel } from "@/components/configuracion/clinic-observability-panel";
+import { ClinicAccessibilityPanel } from "@/components/configuracion/clinic-accessibility-panel";
 import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
 import { getClinicFeatureFlagSettings } from "@/lib/actions/clinic-feature-flags";
 import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
@@ -114,6 +115,8 @@ function renderSectionContent(
           health={extras.observability.health}
         />
       ) : null;
+    case "accesibilidad":
+      return <ClinicAccessibilityPanel />;
     case "demo":
       return <DemoDataPanel patientCount={extras.patientCount} />;
     case "clinica":
