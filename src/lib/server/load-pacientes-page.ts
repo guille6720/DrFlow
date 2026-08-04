@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { applyPatientSearchFilter } from "@/lib/utils/patient-search";
-import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
+import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
 
 export const PACIENTES_PAGE_SIZE = 20;
 
@@ -19,7 +19,7 @@ export type PacientesPageData = {
   patients: PacientesPagePatient[];
   total: number;
   portalSlug: string | null;
-  doctorInfo: Awaited<ReturnType<typeof getDoctorShareInfoForClinic>>;
+  doctorInfo: Awaited<ReturnType<typeof getPortalContextForClinic>>["doctorInfo"];
   shareByPatient: Map<
     string,
     { sharedAt: string; sharedByName?: string | null; channel?: string | null }
@@ -38,18 +38,13 @@ export async function loadPacientesPageData(
   let patients: PacientesPagePatient[] = [];
   let total = 0;
   let portalSlug: string | null = null;
-  let doctorInfo: Awaited<ReturnType<typeof getDoctorShareInfoForClinic>> = null;
+  let doctorInfo: PacientesPageData["doctorInfo"] = null;
   const shareByPatient = new Map<
     string,
     { sharedAt: string; sharedByName?: string | null; channel?: string | null }
   >();
 
   if (clinicId) {
-    portalSlug = await getPortalSlugForClinic(clinicId);
-    if (portalSlug) {
-      doctorInfo = await getDoctorShareInfoForClinic(clinicId);
-    }
-
     let query = supabase
       .from("patients")
       .select(
@@ -68,9 +63,14 @@ export async function loadPacientesPageData(
     }
 
     const from = (page - 1) * PACIENTES_PAGE_SIZE;
-    const { data, count } = await query.range(from, from + PACIENTES_PAGE_SIZE - 1);
+    const [{ data, count }, portalContext] = await Promise.all([
+      query.range(from, from + PACIENTES_PAGE_SIZE - 1),
+      getPortalContextForClinic(clinicId, supabase),
+    ]);
     patients = data ?? [];
     total = count ?? 0;
+    portalSlug = portalContext.portalSlug;
+    doctorInfo = portalContext.doctorInfo;
 
     if (patients.length > 0 && portalSlug) {
       const { data: shares } = await supabase

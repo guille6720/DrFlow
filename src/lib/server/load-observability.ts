@@ -30,21 +30,15 @@ export async function loadObservabilitySnapshot(
 ): Promise<ObservabilitySnapshot> {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  const [eventsRes, statsRes] = await Promise.all([
-    supabase
-      .from("clinic_observability_events")
-      .select("id, category, name, status, path, duration_ms, trace_id, error_message, created_at")
-      .eq("clinic_id", clinicId)
-      .order("created_at", { ascending: false })
-      .limit(25),
-    supabase
-      .from("clinic_observability_events")
-      .select("category, status, duration_ms")
-      .eq("clinic_id", clinicId)
-      .gte("created_at", since),
-  ]);
+  const { data: dayRows } = await supabase
+    .from("clinic_observability_events")
+    .select("id, category, name, status, path, duration_ms, trace_id, error_message, created_at")
+    .eq("clinic_id", clinicId)
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(500);
 
-  const rows = statsRes.data ?? [];
+  const rows = dayRows ?? [];
   const jobDurations = rows
     .filter((r) => r.category === "job" && r.duration_ms != null)
     .map((r) => r.duration_ms as number);
@@ -60,7 +54,7 @@ export async function loadObservabilitySnapshot(
           ? Math.round(jobDurations.reduce((a, b) => a + b, 0) / jobDurations.length)
           : null,
     },
-    recentEvents: (eventsRes.data ?? []) as ObservabilityEventRow[],
+    recentEvents: rows.slice(0, 25) as ObservabilityEventRow[],
   };
 }
 

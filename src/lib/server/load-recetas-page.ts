@@ -1,7 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { parseHabitualMedicationText } from "@/lib/utils/parse-habitual-meds";
-import type { PrescriptionMedication } from "@/types/prescription";
-import type { ElectronicPrescription } from "@/types/prescription";
+import type { ElectronicPrescription, PrescriptionMedication } from "@/types/prescription";
 import type { MedicalOrder } from "@/types/medical-order";
 
 export type RecetasPageData = {
@@ -71,7 +69,7 @@ export async function loadRecetasPageData(
           .eq("clinic_id", clinicId)
           .eq("is_active", true)
           .order("last_name")
-          .limit(500),
+          .limit(80),
         supabase
           .from("professionals")
           .select("*, profiles(full_name), specialties(name)")
@@ -92,85 +90,16 @@ export async function loadRecetasPageData(
   const professionals = professionalsRes.data ?? [];
   const recentPrescriptions = (recentRxRes.data ?? []) as RecetasPageData["recentPrescriptions"];
 
-  let selectedPatient: RecetasPageData["selectedPatient"] = null;
-  let patientPrescriptions: RecetasPageData["patientPrescriptions"] = [];
-  let patientOrders: RecetasPageData["patientOrders"] = [];
-  let prefillDiagnosis = "";
-  const prefillCie10 = "";
-  let initialMedications: PrescriptionMedication[] | undefined;
-
-  if (clinicId && patientId) {
-    const [patientRes, rxRes, ordersRes, lastRecordRes, lastRxRes] = await Promise.all([
-      supabase
-        .from("patients")
-        .select(
-          "id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, email, regular_medication"
-        )
-        .eq("clinic_id", clinicId)
-        .eq("id", patientId)
-        .maybeSingle(),
-      supabase
-        .from("prescription_drafts")
-        .select("*, professionals(display_name, license_number, profiles(full_name), specialties(name))")
-        .eq("clinic_id", clinicId)
-        .eq("patient_id", patientId)
-        .order("created_at", { ascending: false })
-        .limit(20),
-      supabase
-        .from("medical_orders")
-        .select("*")
-        .eq("clinic_id", clinicId)
-        .eq("patient_id", patientId)
-        .order("issued_at", { ascending: false })
-        .limit(20),
-      supabase
-        .from("clinical_records")
-        .select("diagnosis, evolution")
-        .eq("clinic_id", clinicId)
-        .eq("patient_id", patientId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("prescription_drafts")
-        .select("medications")
-        .eq("clinic_id", clinicId)
-        .eq("patient_id", patientId)
-        .neq("status", "void")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
-
-    selectedPatient = patientRes.data;
-    patientPrescriptions = (rxRes.data ?? []) as RecetasPageData["patientPrescriptions"];
-    patientOrders = (ordersRes.data ?? []) as RecetasPageData["patientOrders"];
-
-    const lastRecord = lastRecordRes.data;
-    if (lastRecord?.diagnosis) prefillDiagnosis = lastRecord.diagnosis;
-    else if (lastRecord?.evolution) {
-      prefillDiagnosis = lastRecord.evolution.slice(0, 200);
-    }
-
-    const lastMeds = (lastRxRes.data?.medications as PrescriptionMedication[] | null) ?? null;
-    if (lastMeds && lastMeds.length > 0) {
-      initialMedications = lastMeds;
-    } else if (selectedPatient?.regular_medication) {
-      const parsed = parseHabitualMedicationText(selectedPatient.regular_medication);
-      if (parsed.length > 0) initialMedications = parsed;
-    }
-  }
-
   return {
     patients,
     professionals,
     recentPrescriptions,
-    selectedPatient,
-    patientPrescriptions,
-    patientOrders,
-    prefillDiagnosis,
-    prefillCie10,
-    initialMedications,
+    selectedPatient: null,
+    patientPrescriptions: [],
+    patientOrders: [],
+    prefillDiagnosis: "",
+    prefillCie10: "",
+    initialMedications: undefined,
     defaultProfessionalId: professionalParam?.trim() || professionals[0]?.id,
     defaultTab: tipo === "orden" ? "orden" : "receta",
     clinic: {

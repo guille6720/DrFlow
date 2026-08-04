@@ -5,22 +5,20 @@ import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
 import { buildPatientChartPayload } from "@/lib/utils/patient-chart-model";
 import type { PatientChartPayload } from "@/lib/utils/patient-chart-types";
 import type { PrescriptionMedication } from "@/types/prescription";
-import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
+import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
 import {
   buildPatientEhrWorkspaceData,
   mapClinicalRecordsForEhr,
   mapTimelineAppointments,
-  PATIENT_CHART_APPOINTMENT_LIMIT,
   PATIENT_EHR_RECORD_LIMIT,
   PATIENT_RX_FETCH_LIMIT,
   PATIENT_TIMELINE_APPOINTMENT_LIMIT,
   type PatientEhrPatientRow,
   type PatientEhrWorkspaceData,
 } from "@/lib/server/load-patient-ehr-data";
-import { loadPatientHceSummaryRows } from "@/lib/utils/patient-ehr-from-hce";
+import { loadPatientHceSummaryRows, HCE_SUMMARY_ATTACHMENT_NAME } from "@/lib/utils/patient-ehr-from-hce";
 import type { MedicalOrder } from "@/types/medical-order";
 import {
-  loadPatientClinicalProfile,
   mergePatientClinicalFields,
   type PatientClinicalProfileFields,
 } from "@/lib/server/patient-clinical-profile";
@@ -109,22 +107,20 @@ export async function loadPatientWorkspacePageData(
   patient: PatientRow
 ): Promise<PatientWorkspacePagePayload> {
   const patientId = patient.id;
-  const portalSlug = await getPortalSlugForClinic(clinicId);
 
   const [
+    portalContext,
     { count: totalRecords },
     { data: records },
     { data: attachments },
     { data: rxList },
     { data: orders },
-    { data: chartAppointments },
-    { data: timelineAppointments },
+    { data: allAppointments },
     { data: professionals },
-    appShareResult,
-    hceRows,
     clinicalProfileResult,
     { data: templates },
   ] = await Promise.all([
+    getPortalContextForClinic(clinicId, supabase),
     supabase
       .from("clinical_records")
       .select("id", { count: "exact", head: true })
@@ -141,7 +137,7 @@ export async function loadPatientWorkspacePageData(
       .limit(PATIENT_EHR_RECORD_LIMIT),
     supabase
       .from("patient_attachments")
-      .select("id, file_name, file_size, category, created_at, profiles:uploaded_by(full_name)")
+      .select("id, file_name, file_path, file_size, category, created_at, profiles:uploaded_by(full_name)")
       .eq("patient_id", patientId)
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false }),
@@ -167,14 +163,6 @@ export async function loadPatientWorkspacePageData(
       .eq("patient_id", patientId)
       .eq("clinic_id", clinicId)
       .order("start_at", { ascending: false })
-      .limit(PATIENT_CHART_APPOINTMENT_LIMIT),
-    supabase
-      .from("appointments")
-      .select("id, start_at, status, professionals(profiles(full_name))")
-      .eq("clinic_id", clinicId)
-      .eq("patient_id", patientId)
-      .in("status", ["attended", "no_show"])
-      .order("start_at", { ascending: false })
       .limit(PATIENT_TIMELINE_APPOINTMENT_LIMIT),
     supabase
       .from("professionals")
@@ -182,14 +170,6 @@ export async function loadPatientWorkspacePageData(
       .eq("clinic_id", clinicId)
       .eq("is_active", true)
       .order("display_name"),
-    portalSlug
-      ? supabase
-          .from("patient_app_share_log")
-          .select("shared_at, channel, profiles(full_name)")
-          .eq("patient_id", patientId)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
-    loadPatientHceSummaryRows(supabase, clinicId, patientId),
     supabase
       .from("patient_clinical_profiles")
       .select("medical_history, allergies, regular_medication, notes")
@@ -206,7 +186,28 @@ export async function loadPatientWorkspacePageData(
       .order("name"),
   ]);
 
-  const doctorInfo = portalSlug ? await getDoctorShareInfoForClinic(clinicId) : null;
+  const { portalSlug, doctorInfo } = portalContext;
+
+  const hceAttachment = attachments?.find((a) => a.file_name === HCE_SUMMARY_ATTACHMENT_NAME);
+  const hceRows = await loadPatientHceSummaryRows(
+    supabase,
+    clinicId,
+    patientId,
+    hceAttachment?.file_path ?? null
+  );
+
+  const appShareResult = portalSlug
+    ? await supabase
+        .from("patient_app_share_log")
+        .select("shared_at, channel, profiles(full_name)")
+        .eq("patient_id", patientId)
+        .maybeSingle()
+    : { data: null };
+
+  const timelineAppointments = (allAppointments ?? []).filter((a) =>
+    ["attended", "no_show"].includes(a.status as string)
+  );
+
   const patientWithClinical = mergePatientClinicalFields(patient, clinicalProfileResult.data);
 
   const mappedRecords = mapClinicalRecordsForEhr(records);
@@ -260,7 +261,7 @@ export async function loadPatientWorkspacePageData(
     patient: patientWithClinical,
     ehr,
     chart,
-    appointments: mapChartAppointments(chartAppointments),
+    appointments: mapChartAppointments(allAppointments),
     clinicalDocuments,
     professionals: mapProfessionals(professionals),
     lastMedications,

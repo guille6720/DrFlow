@@ -185,21 +185,27 @@ const HCE_STORAGE_BUCKET = "clinical-files";
 export async function loadPatientHceSummaryRows(
   supabase: Awaited<ReturnType<typeof createClient>>,
   clinicId: string,
-  patientId: string
+  patientId: string,
+  preloadedFilePath?: string | null
 ): Promise<HceExportRow[] | null> {
-  const { data: att } = await supabase
-    .from("patient_attachments")
-    .select("file_path")
-    .eq("patient_id", patientId)
-    .eq("clinic_id", clinicId)
-    .eq("file_name", HCE_SUMMARY_ATTACHMENT_NAME)
-    .maybeSingle();
+  let filePath = preloadedFilePath;
 
-  if (!att?.file_path) return null;
+  if (filePath === undefined) {
+    const { data: att } = await supabase
+      .from("patient_attachments")
+      .select("file_path")
+      .eq("patient_id", patientId)
+      .eq("clinic_id", clinicId)
+      .eq("file_name", HCE_SUMMARY_ATTACHMENT_NAME)
+      .maybeSingle();
+    filePath = att?.file_path ?? null;
+  }
+
+  if (!filePath) return null;
 
   const { data: blob, error } = await supabase.storage
     .from(HCE_STORAGE_BUCKET)
-    .download(att.file_path);
+    .download(filePath);
 
   if (error || !blob) return null;
 

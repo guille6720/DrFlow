@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { PatientRecordGroup } from "@/components/historias/clinical-records-grouped-list";
+import { batchPatientRecordCounts } from "@/lib/utils/batch-patient-record-counts";
 import { applyPatientSearchFilter } from "@/lib/utils/patient-search";
 import type { ClinicalRecordListRow } from "@/lib/utils/clinical-record-list-types";
 
@@ -38,15 +39,6 @@ export async function loadHistoriasPageData(
   let clinicTotalRecords = 0;
 
   if (clinicId) {
-    const { count: clinicCount } = await supabase
-      .from("clinical_records")
-      .select("id", { count: "exact", head: true })
-      .eq("clinic_id", clinicId);
-    clinicTotalRecords = clinicCount ?? 0;
-
-    const selectFields =
-      "id, patient_id, diagnosis, chief_complaint, created_at, patients(first_name, last_name, phone, document_number), professionals(profiles(full_name))";
-
     let patientIds: string[] | null = null;
 
     if (q) {
@@ -74,39 +66,50 @@ export async function loadHistoriasPageData(
     }
 
     if (!noMatchPatients) {
-      let query = supabase
+      const selectFields =
+        "id, patient_id, diagnosis, chief_complaint, created_at, patients(first_name, last_name, phone, document_number), professionals(profiles(full_name))";
+
+      const clinicCountPromise = supabase
+        .from("clinical_records")
+        .select("id", { count: "exact", head: true })
+        .eq("clinic_id", clinicId);
+
+      let recordsQuery = supabase
         .from("clinical_records")
         .select(selectFields, { count: "exact" })
         .eq("clinic_id", clinicId)
         .order("created_at", { ascending: false });
 
       if (patientIds) {
-        query = query.in("patient_id", patientIds);
+        recordsQuery = recordsQuery.in("patient_id", patientIds);
       }
 
       const from = (page - 1) * HISTORIAS_PAGE_SIZE;
-      const { data, count } = await query.range(from, from + HISTORIAS_PAGE_SIZE - 1);
+      const [{ count: clinicCount }, { data, count }] = await Promise.all([
+        clinicCountPromise,
+        recordsQuery.range(from, from + HISTORIAS_PAGE_SIZE - 1),
+      ]);
+
+      clinicTotalRecords = clinicCount ?? 0;
       records = (data ?? []) as unknown as ClinicalRecordListRow[];
       totalRecords = count ?? 0;
+    } else {
+      const { count: clinicCount } = await supabase
+        .from("clinical_records")
+        .select("id", { count: "exact", head: true })
+        .eq("clinic_id", clinicId);
+      clinicTotalRecords = clinicCount ?? 0;
     }
   }
 
   const totalPages = Math.max(1, Math.ceil(totalRecords / HISTORIAS_PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
 
-  const patientCountCache = new Map<string, number>();
   const uniquePatientIds = [...new Set(records.map((r) => r.patient_id as string))];
-  await Promise.all(
-    uniquePatientIds.map(async (pid) => {
-      if (!clinicId) return;
-      const { count } = await supabase
-        .from("clinical_records")
-        .select("id", { count: "exact", head: true })
-        .eq("clinic_id", clinicId)
-        .eq("patient_id", pid);
-      patientCountCache.set(pid, count ?? 0);
-    })
-  );
+  const patientCountCache =
+    clinicId && uniquePatientIds.length > 0
+      ? await batchPatientRecordCounts(supabase, clinicId, uniquePatientIds)
+      : new Map<string, number>();
 
   const groupsMap = new Map<string, PatientRecordGroup>();
   for (const r of records) {

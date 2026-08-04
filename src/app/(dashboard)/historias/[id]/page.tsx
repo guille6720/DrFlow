@@ -29,18 +29,27 @@ export default async function HistoriaDetailPage({
 
   if (!clinicId) notFound();
 
-  const data = await loadHistoriaDetailPageData(supabase, id, clinicId);
-  if (!data) notFound();
-
   if (embed !== "1") {
+    const { data: recordRef } = await supabase
+      .from("clinical_records")
+      .select("patient_id")
+      .eq("id", id)
+      .eq("clinic_id", clinicId)
+      .maybeSingle();
+
+    if (!recordRef?.patient_id) notFound();
+
     redirect(
-      buildPatientWorkspaceUrl(data.patient.id, {
+      buildPatientWorkspaceUrl(recordRef.patient_id, {
         tab: "soap",
         record: id,
         mode: "view",
       })
     );
   }
+
+  const data = await loadHistoriaDetailPageData(supabase, id, clinicId);
+  if (!data) notFound();
 
   const canIssue = hasPermission(role, "issuePrescriptions", isSuperadmin);
   const canEditClinical = hasPermission(role, "editClinicalRecords", isSuperadmin);
