@@ -15,7 +15,8 @@
 ## Fase 1 — Estabilización
 
 - [x] CI/CD con GitHub Actions (lint, test, build, smoke health) — ver [PRODUCTION.md](./PRODUCTION.md)
-- [ ] E2E con Playwright (auth, atender ahora, booking)
+- [x] Cobertura 90% core lib + E2E smoke (Playwright) — ver [TESTING.md](./TESTING.md)
+- [ ] E2E ampliado (auth, atender ahora, booking)
 - [ ] Monitoreo de errores (Sentry)
 - [ ] Listado/edición/borrado de reglas de disponibilidad
 - [ ] Mis turnos del portal backeados por servidor (hoy: localStorage)

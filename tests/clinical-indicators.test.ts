@@ -22,4 +22,19 @@ describe("clinical-indicators", () => {
     });
     expect(tfg).toBeGreaterThan(50);
   });
+
+  it("formats labels and parses optional numbers", async () => {
+    const {
+      formatTfgLabel,
+      cardiovascularRiskLabel,
+      parseOptionalNumber,
+    } = await import("@/lib/utils/clinical-indicators");
+
+    expect(formatTfgLabel(90)).toContain("ml/min");
+    expect(formatTfgLabel(null)).toBeNull();
+    expect(cardiovascularRiskLabel("high")).toBe("Alto");
+    expect(cardiovascularRiskLabel(undefined)).toBe("Sin evaluar");
+    expect(parseOptionalNumber("72,5")).toBe(72.5);
+    expect(parseOptionalNumber("")).toBeNull();
+  });
 });

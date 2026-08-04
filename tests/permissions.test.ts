@@ -50,7 +50,8 @@ describe("Role permissions", () => {
     expect(canAccessRoute("doctor", "/historias/nueva")).toBe(true);
   });
 
-  it("secretary can edit patient admin data", () => {
-    expect(canAccessRoute("secretary", "/pacientes/abc/editar")).toBe(true);
+  it("requires edit permission for historia editar", () => {
+    expect(canAccessRoute("secretary", "/historias/abc/editar")).toBe(false);
+    expect(canAccessRoute("doctor", "/historias/abc/editar")).toBe(true);
   });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { getHealthStatus } from "@/lib/observability/health";
 import { getReleasePayload } from "@/lib/app-release";
+import { createTraceId } from "@/lib/observability/trace-id";
 
 describe("getHealthStatus", () => {
   const originalEnv = { ...process.env };
@@ -45,6 +46,14 @@ describe("getHealthStatus", () => {
     expect(status.ok).toBe(false);
     expect(status.checks.supabase.ok).toBe(false);
     expect(status.checks.supabase.error).toBe("Network down");
+  });
+});
+
+describe("createTraceId", () => {
+  it("generates 16-char trace ids", () => {
+    const id = createTraceId();
+    expect(id).toHaveLength(16);
+    expect(id).toMatch(/^[a-f0-9]+$/);
   });
 });
 

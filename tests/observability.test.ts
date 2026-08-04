@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   SLOW_QUERY_MS,
   SLOW_JOB_MS,
+  SLOW_REQUEST_MS,
   inferStatusFromDuration,
   thresholdForCategory,
   CATEGORY_LABELS,
@@ -22,6 +23,13 @@ describe("observability thresholds", () => {
   it("maps category thresholds", () => {
     expect(thresholdForCategory("query")).toBe(SLOW_QUERY_MS);
     expect(thresholdForCategory("job")).toBe(SLOW_JOB_MS);
+    expect(thresholdForCategory("api")).toBe(SLOW_REQUEST_MS);
+    expect(thresholdForCategory("performance")).toBe(SLOW_REQUEST_MS);
+    expect(thresholdForCategory("error")).toBe(SLOW_REQUEST_MS);
+  });
+
+  it("forces error status for error category", () => {
+    expect(inferStatusFromDuration(10, SLOW_QUERY_MS, "error")).toBe("error");
   });
 
   it("has category labels", () => {
