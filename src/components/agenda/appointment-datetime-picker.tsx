@@ -1,55 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  addMonths,
-  eachDayOfInterval,
-  endOfMonth,
-  endOfWeek,
-  format,
-  isBefore,
-  isSameDay,
-  isSameMonth,
-  parseISO,
-  startOfDay,
-  startOfMonth,
-  startOfWeek,
-  subMonths,
-} from "date-fns";
+import { format, addMonths, subMonths, isBefore, isSameDay, isSameMonth, startOfDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-
-const HOUR_START = 8;
-const HOUR_END = 20;
-const SLOT_MINUTES = 30;
-
-function buildTimeSlots() {
-  const slots: string[] = [];
-  for (let h = HOUR_START; h < HOUR_END; h++) {
-    for (let m = 0; m < 60; m += SLOT_MINUTES) {
-      slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
-    }
-  }
-  return slots;
-}
-
-const TIME_SLOTS = buildTimeSlots();
-
-function toLocalDatetimeValue(date: Date, time: string) {
-  const [h, m] = time.split(":").map(Number);
-  const d = new Date(date);
-  d.setHours(h, m, 0, 0);
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-}
-
-function parseLocalDatetimeValue(value: string): { date: Date; time: string } | null {
-  if (!value) return null;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return null;
-  const time = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-  return { date: startOfDay(d), time };
-}
+import { useAppointmentDatetimePicker } from "@/lib/hooks/use-appointment-datetime-picker";
+import { APPOINTMENT_TIME_SLOTS } from "@/lib/utils/appointment-datetime";
 
 interface OccupiedSlot {
   start_at: string;
@@ -72,6 +28,8 @@ interface AppointmentDatetimePickerProps {
   required?: boolean;
 }
 
+const weekDayLabels = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
 export function AppointmentDatetimePicker({
   value,
   onChange,
@@ -81,63 +39,23 @@ export function AppointmentDatetimePicker({
   label = "Fecha y hora",
   required,
 }: AppointmentDatetimePickerProps) {
-  const parsed = parseLocalDatetimeValue(value);
-  const [pickerDate, setPickerDate] = useState<Date | null>(null);
-  const selectedDate = pickerDate ?? parsed?.date ?? startOfDay(new Date());
-  const selectedTime = parsed?.time ?? null;
-  const [month, setMonth] = useState(() => startOfMonth(selectedDate));
-
-  const calendarDays = useMemo(() => {
-    const start = startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
-    const end = endOfWeek(endOfMonth(month), { weekStartsOn: 1 });
-    return eachDayOfInterval({ start, end });
-  }, [month]);
-
-  function selectDate(day: Date) {
-    if (isBefore(day, startOfDay(new Date()))) return;
-    setPickerDate(day);
-    setMonth(startOfMonth(day));
-    if (selectedTime) {
-      onChange(toLocalDatetimeValue(day, selectedTime));
-    }
-  }
-
-  function selectTime(time: string) {
-    onChange(toLocalDatetimeValue(selectedDate, time));
-  }
-
-  function isSlotOccupied(day: Date, time: string) {
-    const [h, m] = time.split(":").map(Number);
-    const slotStart = new Date(day);
-    slotStart.setHours(h, m, 0, 0);
-    const slotEnd = new Date(slotStart.getTime() + SLOT_MINUTES * 60000);
-
-    const apptBusy = appointments.some((a) => {
-      if (professionalId && a.professional_id && a.professional_id !== professionalId) {
-        return false;
-      }
-      const start = parseISO(a.start_at);
-      const end = parseISO(a.end_at);
-      return slotStart < end && slotEnd > start;
-    });
-
-    const blockBusy = scheduleBlocks.some((b) => {
-      const start = parseISO(b.start_at);
-      const end = parseISO(b.end_at);
-      return slotStart < end && slotEnd > start;
-    });
-
-    return apptBusy || blockBusy;
-  }
-
-  function isSlotPast(day: Date, time: string) {
-    const [h, m] = time.split(":").map(Number);
-    const slot = new Date(day);
-    slot.setHours(h, m, 0, 0);
-    return slot < new Date();
-  }
-
-  const weekDayLabels = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+  const {
+    month,
+    setMonth,
+    calendarDays,
+    selectedDate,
+    selectedTime,
+    selectDate,
+    selectTime,
+    isSlotOccupied,
+    isSlotPast,
+  } = useAppointmentDatetimePicker({
+    value,
+    onChange,
+    appointments,
+    scheduleBlocks,
+    professionalId,
+  });
 
   return (
     <div className="space-y-1 sm:col-span-2">
@@ -210,7 +128,7 @@ export function AppointmentDatetimePicker({
             Horario — {format(selectedDate, "EEEE d MMM", { locale: es })}
           </div>
           <div className="grid max-h-40 grid-cols-4 gap-2 overflow-y-auto sm:grid-cols-6">
-            {TIME_SLOTS.map((time) => {
+            {APPOINTMENT_TIME_SLOTS.map((time) => {
               const occupied = isSlotOccupied(selectedDate, time);
               const past = isSlotPast(selectedDate, time);
               const disabled = occupied || past;
@@ -241,9 +159,7 @@ export function AppointmentDatetimePicker({
         {value && (
           <p className="mt-3 text-sm text-teal-300">
             Seleccionado:{" "}
-            <strong>
-              {format(new Date(value), "EEEE d MMM · HH:mm", { locale: es })}
-            </strong>
+            <strong>{format(new Date(value), "EEEE d MMM · HH:mm", { locale: es })}</strong>
           </p>
         )}
       </div>

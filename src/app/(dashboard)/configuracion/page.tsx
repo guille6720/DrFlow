@@ -1,9 +1,11 @@
 import { Suspense } from "react";
 import { Header } from "@/components/layout/header";
-import { SettingsPanel, ConfiguracionNavigator } from "@/features/configuracion";
-import { DemoDataPanel } from "@/components/configuracion/demo-data-panel";
-import { PamiSetupPanel } from "@/components/configuracion/pami-setup-panel";
-import { CoveragesPanel } from "@/components/configuracion/coverages-panel";
+import { ConfiguracionNavigator } from "@/features/configuracion";
+import { DeleteAccountPanel } from "@/components/configuracion/delete-account-panel";
+import {
+  renderConfiguracionSectionContent,
+  type SettingsPanelData,
+} from "@/components/configuracion/configuracion-section-content";
 import {
   getActiveClinic,
   getActiveClinicId,
@@ -13,123 +15,17 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { hasPermission } from "@/lib/permissions/roles";
-import { AppearanceStylePanel } from "@/components/configuracion/appearance-style-panel";
-import { ComplianceLegalPanel } from "@/components/configuracion/compliance-legal-panel";
-import { ClinicPluginsPanel } from "@/components/configuracion/clinic-plugins-panel";
-import { ClinicFeatureFlagsPanel } from "@/components/configuracion/clinic-feature-flags-panel";
-import { ClinicJobsPanel } from "@/components/configuracion/clinic-jobs-panel";
-import { ClinicObservabilityPanel } from "@/components/configuracion/clinic-observability-panel";
-import { ClinicAccessibilityPanel } from "@/components/configuracion/clinic-accessibility-panel";
 import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
 import { getClinicFeatureFlagSettings } from "@/lib/actions/clinic-feature-flags";
 import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
 import { getClinicObservabilityDashboard } from "@/lib/actions/observability";
-import { DeleteAccountPanel } from "@/components/configuracion/delete-account-panel";
 import {
   resolveConfiguracionGroup,
   resolveConfiguracionSection,
-  type ConfiguracionSectionId,
 } from "@/components/configuracion/configuracion-sections";
-import type { Clinic } from "@/types/database";
 
 interface PageProps {
   searchParams: Promise<{ seccion?: string; grupo?: string }>;
-}
-
-interface SettingsPanelData {
-  clinic: Clinic | null;
-  professionals: never[];
-  members: never[];
-  invitations: never[];
-  bookingSlug: string | null;
-}
-
-function renderSectionContent(
-  sectionId: ConfiguracionSectionId,
-  settingsProps: SettingsPanelData,
-  extras: {
-    patientCount: number;
-    practiceProfile: string | null;
-    defaultInsurance: string | null;
-    acceptedCoverages: string[] | null;
-    pluginSettings: Array<{
-      id: import("@/plugins/registry").PluginId;
-      label: string;
-      description: string;
-      tier: string;
-      enabled: boolean;
-    }>;
-    flagSettings: Array<{
-      id: import("@/lib/features/flags/registry").FeatureFlagId;
-      label: string;
-      description: string;
-      category: string;
-      enabled: boolean;
-      requiresPlugin?: string;
-    }>;
-    jobSettings: Array<{
-      id: string;
-      jobType: string;
-      jobLabel: string;
-      status: import("@/lib/jobs/registry").ClinicJobStatus;
-      statusLabel: string;
-      errorMessage: string | null;
-      createdAt: string;
-      completedAt: string | null;
-    }>;
-    observability?: {
-      snapshot: import("@/lib/server/load-observability").ObservabilitySnapshot;
-      health: import("@/lib/observability/health").HealthStatus;
-    };
-  }
-) {
-  switch (sectionId) {
-    case "legal":
-      return <ComplianceLegalPanel />;
-    case "apariencia":
-      return <AppearanceStylePanel />;
-    case "coberturas":
-      return (
-        <CoveragesPanel
-          acceptedCoverages={extras.acceptedCoverages}
-          defaultInsurance={extras.defaultInsurance}
-        />
-      );
-    case "pami":
-      return (
-        <PamiSetupPanel
-          practiceProfile={extras.practiceProfile}
-          defaultInsurance={extras.defaultInsurance}
-        />
-      );
-    case "plugins":
-      return <ClinicPluginsPanel plugins={extras.pluginSettings} />;
-    case "flags":
-      return <ClinicFeatureFlagsPanel flags={extras.flagSettings} />;
-    case "jobs":
-      return <ClinicJobsPanel jobs={extras.jobSettings} />;
-    case "observabilidad":
-      return extras.observability ? (
-        <ClinicObservabilityPanel
-          snapshot={extras.observability.snapshot}
-          health={extras.observability.health}
-        />
-      ) : null;
-    case "accesibilidad":
-      return <ClinicAccessibilityPanel />;
-    case "demo":
-      return <DemoDataPanel patientCount={extras.patientCount} />;
-    case "clinica":
-      return <SettingsPanel section="clinica" {...settingsProps} />;
-    case "equipo":
-      return <SettingsPanel section="equipo" {...settingsProps} />;
-    case "agenda":
-      return <SettingsPanel section="agenda" {...settingsProps} />;
-    case "apps":
-      return <SettingsPanel section="apps" {...settingsProps} />;
-    default:
-      return null;
-  }
 }
 
 export default async function ConfiguracionPage({ searchParams }: PageProps) {
@@ -179,13 +75,7 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
           .eq("clinic_id", clinicId)
           .eq("is_active", true),
       ])
-    : [
-        { data: [] },
-        { data: [] },
-        { data: [] },
-        { data: null },
-        { count: 0 },
-      ];
+    : [{ data: [] }, { data: [] }, { data: [] }, { data: null }, { count: 0 }];
 
   const settingsProps: SettingsPanelData = {
     clinic,
@@ -195,25 +85,24 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
     bookingSlug: booking.data?.slug ?? null,
   };
 
-  const pluginSettingsResult = await getClinicPluginSettings();
-  const pluginSettings = pluginSettingsResult.data ?? [];
-  const flagSettingsResult = await getClinicFeatureFlagSettings();
-  const flagSettings = flagSettingsResult.data ?? [];
-  const jobsResult = await getClinicJobsList();
-  const jobSettings = jobsResult.data ?? [];
-  const observabilityResult = await getClinicObservabilityDashboard();
-  const observability = observabilityResult.data;
+  const [pluginSettingsResult, flagSettingsResult, jobsResult, observabilityResult] =
+    await Promise.all([
+      getClinicPluginSettings(),
+      getClinicFeatureFlagSettings(),
+      getClinicJobsList(),
+      getClinicObservabilityDashboard(),
+    ]);
 
   const sectionContent = activeSection
-    ? renderSectionContent(activeSection, settingsProps, {
+    ? renderConfiguracionSectionContent(activeSection, settingsProps, {
         patientCount: patientCount.count ?? 0,
         practiceProfile: clinic?.practice_profile ?? null,
         defaultInsurance: clinic?.default_insurance_provider ?? null,
         acceptedCoverages: clinic?.accepted_coverages ?? null,
-        pluginSettings,
-        flagSettings,
-        jobSettings,
-        observability,
+        pluginSettings: pluginSettingsResult.data ?? [],
+        flagSettings: flagSettingsResult.data ?? [],
+        jobSettings: jobsResult.data ?? [],
+        observability: observabilityResult.data,
       })
     : undefined;
 

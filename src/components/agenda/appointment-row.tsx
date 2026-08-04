@@ -1,25 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CancelAppointmentDialog } from "@/components/agenda/cancel-appointment-dialog";
-import { updateAppointmentStatus } from "@/lib/actions/appointments";
+import { AppointmentRowActions } from "@/components/agenda/appointment-row-actions";
+import { useAppointmentRow } from "@/lib/hooks/use-appointment-row";
 import { canStartConsultation, isOnlineBooking } from "@/lib/utils/appointment";
-import {
-  buildAppointmentCancellationByClinicMessage,
-  buildAppointmentConfirmationMessage,
-} from "@/lib/utils/appointment-messages";
-import { buildWhatsAppUrl } from "@/lib/utils/whatsapp";
 import type { Appointment } from "@/types/database";
 import { isSameDay, parseISO } from "date-fns";
 import { formatClinicDateTime } from "@/lib/utils/clinic-timezone";
-import { Globe, Pencil, Play, Trash2, User, UserX, Check } from "lucide-react";
-
-const agendaBtn =
-  "border-slate-500/80 bg-slate-700/90 text-slate-50 hover:bg-slate-600 hover:border-slate-400";
+import { Globe } from "lucide-react";
 
 interface Props {
   appointment: Appointment;
@@ -36,55 +27,9 @@ export function AppointmentRow({
   canStartClinical,
   onEdit,
 }: Props) {
-  const router = useRouter();
-  const [acting, setActing] = useState(false);
-  const [cancelOpen, setCancelOpen] = useState(false);
+  const row = useAppointmentRow(appointment);
   const statusInfo = appointmentStatusBadge[appointment.status];
   const online = isOnlineBooking(appointment);
-  const patient = appointment.patients as
-    | { first_name: string; last_name: string; phone?: string | null }
-    | undefined;
-
-  async function setStatus(status: string, cancellationReason?: string) {
-    setActing(true);
-    const result = await updateAppointmentStatus(appointment.id, status, cancellationReason);
-    setActing(false);
-
-    if (result.error) return;
-
-    if (status === "confirmed" && result.whatsapp?.phone) {
-      const message = buildAppointmentConfirmationMessage(result.whatsapp.startAt);
-      const url = buildWhatsAppUrl(result.whatsapp.phone, message);
-      if (url) window.open(url, "_blank", "noopener,noreferrer");
-    }
-
-    if (status === "cancelled" && cancellationReason && patient?.phone) {
-      const message = buildAppointmentCancellationByClinicMessage(
-        appointment.start_at,
-        cancellationReason
-      );
-      const url = buildWhatsAppUrl(patient.phone, message);
-      if (url) window.open(url, "_blank", "noopener,noreferrer");
-    }
-
-    router.refresh();
-  }
-
-  async function handleCancelConfirm(reason: string) {
-    setActing(true);
-    await setStatus("cancelled", reason);
-    setActing(false);
-    setCancelOpen(false);
-  }
-
-  const startHref = `/historias/nueva?patient=${appointment.patient_id}&appointment=${appointment.id}&professional=${appointment.professional_id}`;
-
-  const cancelledByLabel =
-    appointment.status === "cancelled"
-      ? appointment.cancelled_by_type === "patient"
-        ? "Cancelado por el paciente"
-        : "Cancelado por el consultorio"
-      : null;
 
   return (
     <>
@@ -92,7 +37,7 @@ export function AppointmentRow({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-medium">
-              {patient ? `${patient.last_name}, ${patient.first_name}` : "Paciente"}
+              {row.patient ? `${row.patient.last_name}, ${row.patient.first_name}` : "Paciente"}
             </p>
             {online && (
               <Badge variant="info" className="gap-1">
@@ -116,7 +61,7 @@ export function AppointmentRow({
           )}
           {appointment.status === "cancelled" && (
             <p className="mt-1 text-xs text-red-700">
-              {cancelledByLabel}
+              {row.cancelledByLabel}
               {appointment.cancellation_reason
                 ? ` · ${appointment.cancellation_reason}`
                 : ""}
@@ -124,91 +69,26 @@ export function AppointmentRow({
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Link href={`/pacientes/${appointment.patient_id}`}>
-            <Button type="button" size="sm" variant="outline" className={agendaBtn}>
-              <User className="h-3.5 w-3.5" />
-              Ficha
-            </Button>
-          </Link>
-
-          {canStartClinical && canStartConsultation(appointment.status) && (
-            <Link href={startHref}>
-              <Button type="button" size="sm">
-                <Play className="h-3.5 w-3.5" />
-                Empezar consulta
-              </Button>
-            </Link>
-          )}
-
-          {canManage &&
-            appointment.status !== "cancelled" &&
-            appointment.status !== "attended" &&
-            onEdit && (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className={agendaBtn}
-                onClick={() => onEdit(appointment)}
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                Editar
-              </Button>
-            )}
-
-          {canManage && appointment.status === "pending" && (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className={agendaBtn}
-              loading={acting}
-              onClick={() => setStatus("confirmed")}
-            >
-              <Check className="h-3.5 w-3.5" />
-              Confirmar
-            </Button>
-          )}
-
-          {canManage &&
-            appointment.status !== "cancelled" &&
-            appointment.status !== "attended" && (
-              <>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className={agendaBtn}
-                  loading={acting}
-                  onClick={() => setStatus("no_show")}
-                >
-                  <UserX className="h-3.5 w-3.5" />
-                  Ausente
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="danger"
-                  loading={acting}
-                  onClick={() => setCancelOpen(true)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Eliminar
-                </Button>
-              </>
-            )}
-        </div>
+        <AppointmentRowActions
+          appointment={appointment}
+          canManage={canManage}
+          canStartClinical={canStartClinical}
+          onEdit={onEdit}
+          acting={row.acting}
+          startHref={row.startHref}
+          setStatus={row.setStatus}
+          onCancel={() => row.setCancelOpen(true)}
+        />
       </li>
 
       <CancelAppointmentDialog
-        open={cancelOpen}
-        onClose={() => setCancelOpen(false)}
-        onConfirm={handleCancelConfirm}
+        open={row.cancelOpen}
+        onClose={() => row.setCancelOpen(false)}
+        onConfirm={row.handleCancelConfirm}
         patientName={
-          patient ? `${patient.last_name}, ${patient.first_name}` : undefined
+          row.patient ? `${row.patient.last_name}, ${row.patient.first_name}` : undefined
         }
-        loading={acting}
+        loading={row.acting}
       />
     </>
   );

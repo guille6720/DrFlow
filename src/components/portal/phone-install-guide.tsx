@@ -4,57 +4,18 @@ import { useState } from "react";
 import { PatientAppIcon } from "@/components/brand/patient-app-icon";
 import { cn } from "@/lib/utils/cn";
 import { Share } from "lucide-react";
-
-type Platform = "android" | "ios";
-
-const STEPS: Record<
-  Platform,
-  { title: string; detail: string; highlight: "menu" | "install" | "icon" | "share" }[]
-> = {
-  android: [
-    {
-      title: "Abrí el menú ⋮",
-      detail: "Arriba a la derecha en Chrome",
-      highlight: "menu",
-    },
-    {
-      title: "Tocá Instalar app",
-      detail: "O «Agregar a pantalla de inicio»",
-      highlight: "install",
-    },
-    {
-      title: "Confirmá Instalar",
-      detail: "Queda el icono verde «Pacientes»",
-      highlight: "icon",
-    },
-  ],
-  ios: [
-    {
-      title: "Tocá Compartir",
-      detail: "El botón abajo en Safari",
-      highlight: "share",
-    },
-    {
-      title: "Agregar a inicio",
-      detail: "Desplazá y elegí esa opción",
-      highlight: "install",
-    },
-    {
-      title: "Tocá Agregar",
-      detail: "Icono verde «Pacientes» en tu pantalla",
-      highlight: "icon",
-    },
-  ],
-};
+import {
+  PHONE_INSTALL_STEPS,
+  type PhoneInstallPlatform,
+} from "@/lib/constants/phone-install-steps";
 
 interface PhoneInstallGuideProps {
-  platform: Platform;
+  platform: PhoneInstallPlatform;
   step: number;
 }
 
-/** Mockup de celular con pasos visuales (estilo tutoriales tipo Crontu). */
 export function PhoneInstallGuide({ platform, step }: PhoneInstallGuideProps) {
-  const steps = STEPS[platform];
+  const steps = PHONE_INSTALL_STEPS[platform];
   const current = steps[step];
   const highlight = current?.highlight;
 
@@ -62,7 +23,6 @@ export function PhoneInstallGuide({ platform, step }: PhoneInstallGuideProps) {
     <div className="relative mx-auto w-[220px]">
       <div className="rounded-[2rem] border-[3px] border-slate-800 bg-slate-900 p-2 shadow-2xl">
         <div className="overflow-hidden rounded-[1.5rem] bg-white">
-          {/* Status bar */}
           <div className="flex items-center justify-between bg-slate-100 px-3 py-1.5 text-[9px] text-slate-500">
             <span>16:16</span>
             <div className="flex gap-1">
@@ -71,7 +31,6 @@ export function PhoneInstallGuide({ platform, step }: PhoneInstallGuideProps) {
             </div>
           </div>
 
-          {/* Browser chrome */}
           <div className="border-b border-slate-200 bg-slate-50 px-2 py-2">
             <div className="rounded-full bg-white px-2 py-1 text-center text-[8px] text-slate-400">
               drflow…/instalar
@@ -90,7 +49,6 @@ export function PhoneInstallGuide({ platform, step }: PhoneInstallGuideProps) {
             </div>
           </div>
 
-          {/* App preview */}
           <div className="bg-gradient-to-b from-emerald-600 to-emerald-800 px-3 py-4 text-center">
             <div className="mx-auto mb-2 w-fit rounded-xl bg-white p-2">
               <PatientAppIcon size="sm" />
@@ -99,7 +57,6 @@ export function PhoneInstallGuide({ platform, step }: PhoneInstallGuideProps) {
             <p className="text-[8px] text-emerald-200">Pacientes</p>
           </div>
 
-          {/* Action hint overlay */}
           {highlight === "install" && (
             <div className="border-t border-emerald-200 bg-emerald-50 px-2 py-2">
               <div className="rounded-lg bg-emerald-600 px-2 py-1.5 text-center text-[9px] font-bold text-white ring-2 ring-amber-400">
@@ -130,7 +87,6 @@ export function PhoneInstallGuide({ platform, step }: PhoneInstallGuideProps) {
         </div>
       </div>
 
-      {/* Step dots */}
       <div className="mt-3 flex justify-center gap-1.5">
         {steps.map((_, i) => (
           <div
@@ -147,13 +103,13 @@ export function PhoneInstallGuide({ platform, step }: PhoneInstallGuideProps) {
 }
 
 interface InstallStepWizardProps {
-  platform: Platform;
-  onPlatformChange: (p: Platform) => void;
+  platform: PhoneInstallPlatform;
+  onPlatformChange: (p: PhoneInstallPlatform) => void;
 }
 
 export function InstallStepWizard({ platform, onPlatformChange }: InstallStepWizardProps) {
   const [step, setStep] = useState(0);
-  const steps = STEPS[platform];
+  const steps = PHONE_INSTALL_STEPS[platform];
 
   return (
     <div className="w-full">

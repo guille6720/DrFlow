@@ -1,39 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout/header";
-import { Card } from "@/components/ui/card";
-import { PathologyTypeahead } from "@/components/pharmacology/pathology-typeahead";
-import { SymptomTypeahead } from "@/components/pharmacology/symptom-typeahead";
-import { PathologyMatchList } from "@/components/pharmacology/pathology-match-list";
 import { DrugTreatmentList } from "@/components/pharmacology/drug-treatment-list";
-import { VademecumTypeahead } from "@/components/pharmacology/vademecum-typeahead";
+import { PharmacologyConsultationBanner } from "@/components/pharmacology/pharmacology-consultation-banner";
+import { PharmacologySearchInputPanel } from "@/components/pharmacology/pharmacology-search-input-panel";
+import { PharmacologySearchModeTabs } from "@/components/pharmacology/pharmacology-search-mode-tabs";
 import { VademecumResultList } from "@/components/pharmacology/vademecum-result-list";
+import { usePharmacologySearch } from "@/lib/hooks/use-pharmacology-search";
 import {
-  getDrugsByPathology,
-  getPathologiesBySymptoms,
-} from "@/lib/actions/pharmacology";
-import type {
-  PathologyBySymptomResult,
-  PathologyDrug,
-  PathologySearchResult,
-  PamiVademecumResult,
-  PharmacologySearchMode,
-  SymptomSearchResult,
-} from "@/types/pharmacology";
-import type { Clinic, UserRole } from "@/types/database";
-import { cn } from "@/lib/utils/cn";
-import {
-  appendToConsultationEvolution,
-  buildConsultaHref,
-  consultationDraftKey,
   formatVademecumForEvolution,
-  parseConsultationDraftContext,
   pathologyDrugToEvolutionLine,
 } from "@/lib/utils/consultation-draft";
-import { Activity, ArrowLeft, BookOpen, Check, Stethoscope } from "lucide-react";
+import type { PharmacologySearchMode } from "@/types/pharmacology";
+import type { Clinic, UserRole } from "@/types/database";
 
 interface Props {
   clinics: { clinic_id: string; clinic?: Clinic }[];
@@ -50,114 +29,7 @@ export function PharmacologySearchView({
   userName,
   initialMode = "pathology",
 }: Props) {
-  const searchParams = useSearchParams();
-  const consultationContext = useMemo(
-    () => parseConsultationDraftContext(searchParams),
-    [searchParams]
-  );
-  const draftKey = useMemo(
-    () => (consultationContext ? consultationDraftKey(consultationContext) : null),
-    [consultationContext]
-  );
-
-  const [mode, setMode] = useState<PharmacologySearchMode>(initialMode);
-  const [selected, setSelected] = useState<PathologySearchResult | null>(null);
-  const [symptoms, setSymptoms] = useState<SymptomSearchResult[]>([]);
-  const [pathologyMatches, setPathologyMatches] = useState<PathologyBySymptomResult[]>([]);
-  const [matchesLoading, setMatchesLoading] = useState(false);
-  const [matchesError, setMatchesError] = useState<string | null>(null);
-  const [drugs, setDrugs] = useState<PathologyDrug[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [vademecumItems, setVademecumItems] = useState<PamiVademecumResult[]>([]);
-  const [vademecumLoading, setVademecumLoading] = useState(false);
-  const [vademecumError, setVademecumError] = useState<string | null>(null);
-  const [vademecumQueryLength, setVademecumQueryLength] = useState(0);
-  const [addedMessage, setAddedMessage] = useState<string | null>(null);
-  const [lastAddedKey, setLastAddedKey] = useState<string | null>(null);
-
-  function handleAddToEvolution(line: string, itemKey: string) {
-    if (!draftKey) return;
-    appendToConsultationEvolution(draftKey, line);
-    setLastAddedKey(itemKey);
-    setAddedMessage("Agregado a la evolución de la consulta");
-    window.setTimeout(() => {
-      setAddedMessage(null);
-      setLastAddedKey(null);
-    }, 2500);
-  }
-
-  function fetchPathologyMatches(nextSymptoms: SymptomSearchResult[]) {
-    if (nextSymptoms.length === 0) {
-      setPathologyMatches([]);
-      setMatchesError(null);
-      setMatchesLoading(false);
-      return;
-    }
-
-    setMatchesLoading(true);
-    setMatchesError(null);
-
-    getPathologiesBySymptoms(nextSymptoms.map((s) => s.id)).then((res) => {
-      setMatchesLoading(false);
-      if (res.error) {
-        setMatchesError(res.error);
-        setPathologyMatches([]);
-      } else {
-        setPathologyMatches(res.data ?? []);
-      }
-    });
-  }
-
-  function handleSymptomsChange(next: SymptomSearchResult[]) {
-    setSymptoms(next);
-    handleClearPathology();
-    fetchPathologyMatches(next);
-  }
-
-  function loadDrugs(pathology: PathologySearchResult) {
-    setSelected(pathology);
-    setLoading(true);
-    setError(null);
-
-    getDrugsByPathology(pathology.id).then((res) => {
-      setLoading(false);
-      if (res.error) {
-        setError(res.error);
-        setDrugs([]);
-      } else {
-        setDrugs(res.data ?? []);
-      }
-    });
-  }
-
-  function handlePathologySelect(pathology: PathologySearchResult) {
-    loadDrugs(pathology);
-  }
-
-  function handleSymptomPathologySelect(pathology: PathologyBySymptomResult) {
-    loadDrugs(pathology);
-  }
-
-  function handleClearPathology() {
-    setSelected(null);
-    setDrugs([]);
-    setError(null);
-    setLoading(false);
-  }
-
-  function switchMode(next: PharmacologySearchMode) {
-    setMode(next);
-    handleClearPathology();
-    setSymptoms([]);
-    setPathologyMatches([]);
-    setMatchesError(null);
-    setMatchesLoading(false);
-    setVademecumItems([]);
-    setVademecumError(null);
-    setVademecumLoading(false);
-    setVademecumQueryLength(0);
-  }
+  const search = usePharmacologySearch({ initialMode });
 
   return (
     <>
@@ -170,151 +42,67 @@ export function PharmacologySearchView({
         userName={userName}
       />
 
-      {consultationContext && (
-        <div className="mx-4 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-teal-500/40 bg-teal-950/50 px-4 py-3 sm:mx-6">
-          <Link
-            href={buildConsultaHref(consultationContext)}
-            className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-teal-500"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {consultationContext.recordId ? "Volver a editar consulta" : "Volver a consulta en curso"}
-          </Link>
-          <p className="text-sm text-teal-100">
-            {addedMessage ? (
-              <span className="inline-flex items-center gap-1.5 font-medium text-teal-200">
-                <Check className="h-4 w-4" />
-                {addedMessage}
-              </span>
-            ) : (
-              "Hacé clic en un medicamento para agregarlo a la evolución."
-            )}
-          </p>
-        </div>
+      {search.consultationContext && (
+        <PharmacologyConsultationBanner
+          consultationContext={search.consultationContext}
+          addedMessage={search.addedMessage}
+        />
       )}
 
       <div className="space-y-6 p-4 sm:p-6">
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => switchMode("pathology")}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-              mode === "pathology"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
-            )}
-          >
-            <Stethoscope className="h-4 w-4" />
-            Por patología / CIE-10
-          </button>
-          <button
-            type="button"
-            onClick={() => switchMode("symptoms")}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-              mode === "symptoms"
-                ? "bg-violet-600 text-white shadow-sm"
-                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
-            )}
-          >
-            <Activity className="h-4 w-4" />
-            Por síntomas
-          </button>
-          <button
-            type="button"
-            onClick={() => switchMode("vademecum")}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-              mode === "vademecum"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
-            )}
-          >
-            <BookOpen className="h-4 w-4" />
-            Vademécum PAMI
-          </button>
-        </div>
+        <PharmacologySearchModeTabs mode={search.mode} onSwitchMode={search.switchMode} />
 
-        {mode === "pathology" ? (
-          <Card className="border-blue-100">
-            <PathologyTypeahead
-              selected={selected}
-              onSelect={handlePathologySelect}
-              onClear={handleClearPathology}
-            />
-            <p className="mt-3 text-xs text-slate-500">
-              Tip: buscá por código (<span className="font-mono">I10</span>,{" "}
-              <span className="font-mono">E11</span>) o nombre de enfermedad.
-            </p>
-          </Card>
-        ) : mode === "symptoms" ? (
-          <div className="space-y-4">
-            <Card className="border-violet-100">
-              <SymptomTypeahead selected={symptoms} onChange={handleSymptomsChange} />
-              <p className="mt-3 text-xs text-slate-500">
-                Tip: podés usar frases comunes como &quot;dolor en las piernas&quot;,
-                &quot;dolor de garganta&quot; o &quot;falta de aire&quot;.
-              </p>
-            </Card>
+        <PharmacologySearchInputPanel
+          mode={search.mode}
+          selected={search.selected}
+          symptoms={search.symptoms}
+          pathologyMatches={search.pathologyMatches}
+          matchesLoading={search.matchesLoading}
+          matchesError={search.matchesError}
+          onPathologySelect={search.handlePathologySelect}
+          onClearPathology={search.handleClearPathology}
+          onSymptomsChange={search.handleSymptomsChange}
+          onSymptomPathologySelect={search.handleSymptomPathologySelect}
+          onVademecumResults={search.setVademecumItems}
+          onVademecumLoading={search.setVademecumLoading}
+          onVademecumError={search.setVademecumError}
+          onVademecumQueryChange={search.setVademecumQueryLength}
+        />
 
-            <PathologyMatchList
-              items={pathologyMatches}
-              loading={matchesLoading}
-              error={matchesError}
-              symptomCount={symptoms.length}
-              onSelect={handleSymptomPathologySelect}
-              selectedId={selected?.id}
-            />
-          </div>
-        ) : (
-          <Card className="border-emerald-100">
-            <VademecumTypeahead
-              onResults={setVademecumItems}
-              onLoading={setVademecumLoading}
-              onError={setVademecumError}
-              onQueryChange={(q) => setVademecumQueryLength(q.trim().length)}
-            />
-            <p className="mt-3 text-xs text-slate-500">
-              Tip: buscá por marca (<span className="font-mono">BETASERC</span>), principio activo (
-              <span className="font-mono">losartán</span>) o código Alfabeta.
-            </p>
-          </Card>
-        )}
-
-        {mode === "vademecum" ? (
+        {search.mode === "vademecum" ? (
           <VademecumResultList
-            items={vademecumItems}
-            loading={vademecumLoading}
-            error={vademecumError}
-            queryLength={vademecumQueryLength}
+            items={search.vademecumItems}
+            loading={search.vademecumLoading}
+            error={search.vademecumError}
+            queryLength={search.vademecumQueryLength}
             onAddToEvolution={
-              draftKey
+              search.draftKey
                 ? (item) =>
-                    handleAddToEvolution(
+                    search.handleAddToEvolution(
                       formatVademecumForEvolution(item),
                       `vademecum-${item.id}`
                     )
                 : undefined
             }
-            lastAddedKey={lastAddedKey}
+            lastAddedKey={search.lastAddedKey}
           />
         ) : (
           <DrugTreatmentList
-            items={selected ? drugs : []}
-            loading={selected ? loading : false}
-            error={selected ? error : null}
-            pathologyName={selected?.name}
-            cie10Code={selected?.cie10_code}
-            searchMode={mode === "symptoms" ? "symptoms" : "pathology"}
+            items={search.selected ? search.drugs : []}
+            loading={search.selected ? search.loading : false}
+            error={search.selected ? search.error : null}
+            pathologyName={search.selected?.name}
+            cie10Code={search.selected?.cie10_code}
+            searchMode={search.mode === "symptoms" ? "symptoms" : "pathology"}
             onAddToEvolution={
-              draftKey
+              search.draftKey
                 ? (pd) => {
                     const line = pathologyDrugToEvolutionLine(pd);
-                    if (line) handleAddToEvolution(line, `drug-${pd.id}`);
+                    if (line) search.handleAddToEvolution(line, `drug-${pd.id}`);
                   }
                 : undefined
             }
-            lastAddedKey={lastAddedKey}
+            lastAddedKey={search.lastAddedKey}
           />
         )}
       </div>

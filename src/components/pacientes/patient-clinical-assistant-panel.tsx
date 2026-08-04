@@ -1,80 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { AlertTriangle, Pill, ScrollText, Sparkles, Stethoscope } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { PatientChartViewProps } from "@/components/pacientes/patient-chart-types";
 import type { PatientEhrWorkspaceData } from "@/lib/server/load-patient-ehr-data";
-import { getDrugsByPathology } from "@/lib/actions/pharmacology";
-import { useDeferredPathologySearch } from "@/lib/hooks/use-deferred-pathology-search";
+import { usePatientClinicalAssistant } from "@/lib/hooks/use-patient-clinical-assistant";
 import { patientWorkspacePath } from "@/lib/constants/patient-workspace-tabs";
-import {
-  buildClinicalSummary,
-  extractPathologySearchQuery,
-} from "@/lib/utils/clinical-assistant";
-import type { PathologyDrug, PathologySearchResult } from "@/types/pharmacology";
 
 type Props = Pick<PatientChartViewProps, "chart" | "patient" | "patientId" | "canIssue"> & {
   ehr: PatientEhrWorkspaceData;
 };
 
 export function PatientClinicalAssistantPanel({ chart, patient, patientId, ehr, canIssue }: Props) {
-  const [selectedPathology, setSelectedPathology] = useState<PathologySearchResult | null>(null);
-  const [drugs, setDrugs] = useState<PathologyDrug[]>([]);
-
-  const lastConsultLabel = ehr.consultations[0]?.created_at
-    ? format(new Date(ehr.consultations[0].created_at), "dd/MM/yyyy", { locale: es })
-    : null;
-
-  const summaryLines = useMemo(
-    () =>
-      buildClinicalSummary({
-        ageLabel: chart.ageLabel ?? "—",
-        sex: chart.sex,
-        insurance: chart.insurance,
-        activeProblems: chart.activeProblemsText,
-        allergies: chart.allergies,
-        medicationCount: chart.medications.length,
-        lastConsultLabel,
-        alerts: chart.alerts,
-      }),
-    [chart, lastConsultLabel]
-  );
-
-  const pathologyQuery = useMemo(
-    () =>
-      extractPathologySearchQuery({
-        lastDiagnosis: ehr.diagnosisRows[0]?.name,
-        lastEvolution: ehr.consultations[0]?.evolution,
-        activeProblems: chart.activeProblemsText,
-      }),
-    [ehr, chart.activeProblemsText]
-  );
-
-  const { pathologies, loading: loadingPathologies } = useDeferredPathologySearch({
-    query: pathologyQuery,
-    minLength: 2,
-    debounceMs: 350,
-  });
-
-  useEffect(() => {
-    if (!selectedPathology?.id) {
-      const resetTimer = window.setTimeout(() => setDrugs([]), 0);
-      return () => window.clearTimeout(resetTimer);
-    }
-    let cancelled = false;
-    getDrugsByPathology(selectedPathology.id).then(({ data }) => {
-      if (!cancelled) setDrugs((data ?? []).slice(0, 5));
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedPathology?.id]);
+  const assistant = usePatientClinicalAssistant({ chart, patient, patientId, ehr, canIssue });
 
   return (
     <div className="space-y-4">
@@ -90,7 +31,7 @@ export function PatientClinicalAssistantPanel({ chart, patient, patientId, ehr, 
 
       <Card title="Resumen clínico">
         <ul className="list-inside list-disc space-y-1 text-sm text-slate-700">
-          {summaryLines.map((line) => (
+          {assistant.summaryLines.map((line) => (
             <li key={line}>{line}</li>
           ))}
         </ul>
@@ -134,27 +75,27 @@ export function PatientClinicalAssistantPanel({ chart, patient, patientId, ehr, 
       ) : null}
 
       <Card title="CIE-10 sugerido">
-        {pathologyQuery ? (
+        {assistant.pathologyQuery ? (
           <p className="mb-2 text-xs text-slate-500">
-            Búsqueda a partir de: <span className="font-medium">{pathologyQuery}</span>
+            Búsqueda a partir de: <span className="font-medium">{assistant.pathologyQuery}</span>
           </p>
         ) : (
           <p className="mb-2 text-sm text-slate-500">
             Sin diagnóstico reciente para sugerir CIE-10. Registrá una evolución o diagnóstico.
           </p>
         )}
-        {loadingPathologies ? (
+        {assistant.loadingPathologies ? (
           <p className="text-sm text-slate-500">Buscando patologías…</p>
-        ) : pathologies.length === 0 && pathologyQuery.length >= 2 ? (
+        ) : assistant.pathologies.length === 0 && assistant.pathologyQuery.length >= 2 ? (
           <p className="text-sm text-slate-500">Sin coincidencias en la guía farmacológica.</p>
         ) : (
           <ul className="divide-y divide-slate-100">
-            {pathologies.slice(0, 6).map((p) => (
+            {assistant.pathologies.slice(0, 6).map((p) => (
               <li key={p.id} className="py-2">
                 <button
                   type="button"
                   className="w-full text-left text-sm hover:text-teal-800"
-                  onClick={() => setSelectedPathology(p)}
+                  onClick={() => assistant.setSelectedPathology(p)}
                 >
                   <span className="font-medium">{p.name}</span>
                   <span className="ml-2 font-mono text-xs text-slate-500">{p.cie10_code}</span>
@@ -163,15 +104,15 @@ export function PatientClinicalAssistantPanel({ chart, patient, patientId, ehr, 
             ))}
           </ul>
         )}
-        {selectedPathology ? (
+        {assistant.selectedPathology ? (
           <div className="mt-3 rounded-lg border border-slate-100 bg-slate-50 p-3">
             <p className="text-sm font-medium">
-              {selectedPathology.name}{" "}
-              <span className="font-mono text-teal-700">{selectedPathology.cie10_code}</span>
+              {assistant.selectedPathology.name}{" "}
+              <span className="font-mono text-teal-700">{assistant.selectedPathology.cie10_code}</span>
             </p>
-            {drugs.length > 0 ? (
+            {assistant.drugs.length > 0 ? (
               <ul className="mt-2 space-y-1 text-xs text-slate-600">
-                {drugs.map((d) => {
+                {assistant.drugs.map((d) => {
                   const drug = Array.isArray(d.drugs) ? d.drugs[0] : d.drugs;
                   return (
                     <li key={d.id}>
@@ -182,7 +123,7 @@ export function PatientClinicalAssistantPanel({ chart, patient, patientId, ehr, 
               </ul>
             ) : null}
             <Link
-              href={`/herramientas/farmacologia?pathology=${selectedPathology.id}`}
+              href={`/herramientas/farmacologia?pathology=${assistant.selectedPathology.id}`}
               className="mt-2 inline-block text-xs text-violet-700 hover:underline"
             >
               Abrir en guía farmacológica →
