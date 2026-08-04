@@ -13,6 +13,8 @@ type Professional = {
 type Props = {
   open: boolean;
   patientId: string;
+  patientInsurance?: string | null;
+  patientInsurancePlan?: string | null;
   patientName: string;
   patientAllergies?: string | null;
   patientRegularMedication?: string | null;
@@ -29,6 +31,8 @@ export function PatientOrderSheet({
   open,
   patientId,
   patientName,
+  patientInsurance,
+  patientInsurancePlan,
   patientAllergies,
   patientRegularMedication,
   lastDiagnosis,
@@ -59,6 +63,8 @@ export function PatientOrderSheet({
           regularMedication: patientRegularMedication,
           lastDiagnosis,
           lastEvolution,
+          insurance: patientInsurance ?? undefined,
+          insurancePlan: patientInsurancePlan,
         }}
       />
     </PatientWorkspaceOverlay>

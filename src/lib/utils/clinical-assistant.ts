@@ -1,6 +1,10 @@
 import type { ChartAlert, MedicationCard } from "@/lib/utils/patient-chart-types";
 import { extractEvolutionDiagnosis } from "@/lib/utils/parse-evolution-medications";
 import { buildConsultationDocumentationItems } from "@/lib/utils/consultation-documentation";
+import {
+  buildMedicationOrderAssistItems,
+  buildOrderDraftSuggestion,
+} from "@/lib/utils/medication-order-assist";
 import type {
   PhysicianAssistContext,
   PhysicianAssistItem,
@@ -213,14 +217,6 @@ const DIFFERENTIAL_RULES: Array<{ terms: string[]; diagnoses: string[] }> = [
   },
 ];
 
-const ORDER_SUGGESTION_RULES: Array<{ terms: string[]; studies: string[] }> = [
-  { terms: ["diabetes", "glicemia", "hba1c"], studies: ["Hemoglobina glicosilada", "Glicemia en ayunas", "Perfil lipídico"] },
-  { terms: ["hipertensión", "hta", "renal"], studies: ["Creatinina", "Ionograma", "ECG", "Ecografía renal"] },
-  { terms: ["anemia", "palidez", "hemoglobina"], studies: ["Hemograma completo", "Ferritina", "Reticulocitos"] },
-  { terms: ["disnea", "tos", "neumonía"], studies: ["Radiografía de tórax PA", "Hemograma", "PCR"] },
-  { terms: ["dolor abdominal", "hepático", "cólico"], studies: ["Ecografía abdominal", "Hepatograma", "Amilasa/lipasa"] },
-];
-
 function textBlob(ctx: PhysicianAssistContext): string {
   return [
     ctx.evolutionText,
@@ -331,41 +327,8 @@ export function buildPrescriptionDraftSuggestion(ctx: PhysicianAssistContext): P
   };
 }
 
-/** Study/referral order draft from diagnosis keywords. */
-export function buildOrderDraftSuggestion(ctx: PhysicianAssistContext): PhysicianAssistItem | null {
-  const blob = textBlob(ctx);
-  const studies = new Set<string>();
-
-  for (const rule of ORDER_SUGGESTION_RULES) {
-    if (rule.terms.some((t) => blob.includes(t))) {
-      for (const s of rule.studies) studies.add(s);
-    }
-  }
-
-  if (studies.size === 0) {
-    if (!blob.trim()) return null;
-    return {
-      id: stableId("order_draft", blob),
-      kind: "order_draft",
-      title: "Borrador de orden",
-      body: `Solicito estudios complementarios acordes a cuadro clínico:\n• (completar según criterio médico)\n\nContexto: ${(ctx.diagnosis ?? ctx.lastDiagnosis ?? "—").slice(0, 120)}`,
-    };
-  }
-
-  const body = [
-    "Solicito:",
-    ...[...studies].slice(0, 6).map((s) => `• ${s}`),
-    "",
-    `Motivo: ${(ctx.diagnosis ?? ctx.lastEvolution ?? "evaluación clínica").slice(0, 200)}`,
-  ].join("\n");
-
-  return {
-    id: stableId("order_draft", body),
-    kind: "order_draft",
-    title: "Borrador de orden de estudios",
-    body,
-  };
-}
+/** Study/referral order draft — see medication-order-assist (Phase C panels). */
+export { buildOrderDraftSuggestion } from "@/lib/utils/medication-order-assist";
 
 /** Discharge summary draft from last encounter context. */
 export function buildDischargeSummarySuggestion(ctx: PhysicianAssistContext): PhysicianAssistItem | null {
@@ -494,6 +457,7 @@ export function buildPhysicianAssistItems(
     items.push(...buildInteractionAlertItems(ctx));
   }
   items.push(...buildConsultationDocumentationItems(ctx, kinds));
+  items.push(...buildMedicationOrderAssistItems(ctx, kinds));
 
   if (kindSet.has("soap")) {
     const soap = buildSoapDraftSuggestion(ctx);

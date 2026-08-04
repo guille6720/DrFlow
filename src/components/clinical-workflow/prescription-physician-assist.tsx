@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { InlinePhysicianAssist } from "@/components/clinical-workflow/inline-physician-assist";
 import type { PhysicianAssistContext, PhysicianAssistItem } from "@/lib/utils/physician-assist-types";
 import { useFeatureFlag } from "@/components/plugins/clinic-plugins-provider";
@@ -11,6 +12,15 @@ type Props = {
   onAlertGateChange?: (ready: boolean) => void;
 };
 
+const RX_KINDS = [
+  "interaction_alert",
+  "coverage_note",
+  "dosage_hint",
+  "follow_up_reminder",
+  "prescription_draft",
+] as const;
+
+/** Rx workflow — interactions, coverage, dosage hints, follow-up (Phase C). */
 export function PrescriptionPhysicianAssist({
   context,
   medicationNames,
@@ -19,15 +29,23 @@ export function PrescriptionPhysicianAssist({
 }: Props) {
   const enabled = useFeatureFlag("consultation_assistant");
 
+  const assistContext: PhysicianAssistContext = useMemo(
+    () => ({
+      ...context,
+      proposedMedications: medicationNames,
+    }),
+    [context, medicationNames]
+  );
+
   if (!enabled) return null;
 
-  const assistContext: PhysicianAssistContext = {
-    ...context,
-    proposedMedications: medicationNames,
-  };
-
   function handleApply(item: PhysicianAssistItem) {
-    if (item.kind === "prescription_draft") {
+    if (
+      item.kind === "prescription_draft" ||
+      item.kind === "coverage_note" ||
+      item.kind === "dosage_hint" ||
+      item.kind === "follow_up_reminder"
+    ) {
       onApplyPrescriptionNotes(item.body);
     }
   }
@@ -35,7 +53,7 @@ export function PrescriptionPhysicianAssist({
   return (
     <InlinePhysicianAssist
       context={assistContext}
-      kinds={["interaction_alert", "prescription_draft"]}
+      kinds={[...RX_KINDS]}
       onApply={handleApply}
       requireAlertAcknowledgement
       onAlertsAcknowledged={onAlertGateChange}

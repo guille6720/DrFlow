@@ -86,6 +86,12 @@ export function PrescriptionsOrdersFormPanel({
             initialMedications={medicationsForForm}
             clinicalRecordId={consultationContext?.recordId}
             onSuccess={onPrescriptionSuccess}
+            assistContext={{
+              patientName: `${patient.last_name}, ${patient.first_name}`,
+              diagnosis: diagnosisForForm,
+              insurance: patient.insurance_provider ?? undefined,
+              insurancePlan: patient.insurance_number ?? undefined,
+            }}
           />
         </>
       ) : (
@@ -94,6 +100,12 @@ export function PrescriptionsOrdersFormPanel({
           professionals={professionals}
           defaultProfessionalId={defaultPro}
           onSuccess={onOrderSuccess}
+          assistContext={{
+            patientName: `${patient.last_name}, ${patient.first_name}`,
+            diagnosis: diagnosisForForm,
+            insurance: patient.insurance_provider ?? undefined,
+            insurancePlan: patient.insurance_number ?? undefined,
+          }}
         />
       )}
     </Card>

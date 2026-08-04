@@ -151,11 +151,11 @@ describe("clinical-assistant", () => {
 
   it("buildOrderDraftSuggestion returns order draft", () => {
     const item = buildOrderDraftSuggestion({
-      evolutionText: "Dolor abdominal",
-      diagnosis: "Cólico biliar",
+      evolutionText: "Control de diabetes",
+      diagnosis: "Diabetes mellitus tipo 2",
     });
     expect(item?.kind).toBe("order_draft");
-    expect(item?.body.length).toBeGreaterThan(10);
+    expect(item?.body).toContain("HbA1c");
   });
 
   it("buildDischargeSummarySuggestion returns discharge draft", () => {

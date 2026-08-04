@@ -71,6 +71,7 @@ export function PatientWorkspaceSheets({
         open={actions.prescriptionSheetOpen && canIssue}
         patientId={patientId}
         patientInsurance={patient.insurance_provider}
+        patientInsurancePlan={patientRecord.insurance_plan}
         patientName={patientName}
         patientAllergies={patientRecord.allergies}
         patientRegularMedication={patientRecord.regular_medication}
@@ -86,6 +87,8 @@ export function PatientWorkspaceSheets({
         open={actions.orderSheetOpen && canIssue}
         patientId={patientId}
         patientName={patientName}
+        patientInsurance={patient.insurance_provider}
+        patientInsurancePlan={patientRecord.insurance_plan}
         patientAllergies={patientRecord.allergies}
         patientRegularMedication={patientRecord.regular_medication}
         lastDiagnosis={assistBase.lastDiagnosis}

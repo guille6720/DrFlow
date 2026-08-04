@@ -84,7 +84,10 @@ export function PrescriptionForm({
 
       {assistContext ? (
         <PrescriptionPhysicianAssist
-          context={assistContext}
+          context={{
+            ...assistContext,
+            insurance: assistContext.insurance ?? patientInsurance ?? undefined,
+          }}
           medicationNames={medications
             .map((m) => m.generic_name || m.brand_name || "")
             .filter(Boolean)}

@@ -21,6 +21,14 @@ export {
 } from "@/lib/utils/consultation-documentation";
 export type { Cie10Suggestion } from "@/lib/utils/consultation-documentation";
 export { ConsultationCie10Panel } from "@/components/clinical-workflow/consultation-cie10-panel";
+export {
+  buildOrderDraftSuggestion,
+  buildCoverageNoteItem,
+  buildDosageHintItems,
+  buildMedicationOrderAssistItems,
+  getMatchedOrderPanelLabels,
+} from "@/lib/utils/medication-order-assist";
+export { OrderSuggestionPanel } from "@/components/clinical-workflow/order-suggestion-panel";
 export type {
   PhysicianAssistContext,
   PhysicianAssistItem,

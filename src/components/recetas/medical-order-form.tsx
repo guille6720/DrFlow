@@ -102,12 +102,27 @@ export function MedicalOrderForm({
         ))}
       </div>
 
+      <Textarea
+        id="order-text-field"
+        name="order_text"
+        label={orderType === "study" ? "Estudios / análisis" : "Texto de derivación"}
+        required
+        rows={6}
+        voiceInput
+        value={orderText}
+        onChange={(e) => setOrderText(e.target.value)}
+        placeholder={
+          orderType === "study"
+            ? "Control de diabetes, hemograma, ECG..."
+            : "Derivación a especialista..."
+        }
+      />
+
       {assistContext ? (
         <OrderPhysicianAssist
           context={assistContext}
-          onApplyOrderText={(text) =>
-            setOrderText((prev) => (prev.trim() ? `${prev.trim()}\n\n${text}` : text))
-          }
+          orderIntentText={orderText}
+          onApplyOrderText={setOrderText}
         />
       ) : null}
 
@@ -122,21 +137,7 @@ export function MedicalOrderForm({
         }))}
         placeholder="Seleccionar"
       />
-      <Textarea
-        id="order-text-field"
-        name="order_text"
-        label={orderType === "study" ? "Estudios / análisis" : "Texto de derivación"}
-        required
-        rows={6}
-        voiceInput
-        value={orderText}
-        onChange={(e) => setOrderText(e.target.value)}
-        placeholder={
-          orderType === "study"
-            ? "Hemograma, glucemia, ECG..."
-            : "Derivación a especialista..."
-        }
-      />
+
       <Textarea
         name="notes"
         label="Indicaciones para el paciente"

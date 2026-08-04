@@ -30,6 +30,7 @@ export const COVERAGE_INCLUDE = [
   "src/lib/utils/clinical-assistant.ts",
   "src/lib/utils/pre-visit-brief.ts",
   "src/lib/utils/consultation-documentation.ts",
+  "src/lib/utils/medication-order-assist.ts",
   "src/lib/utils/clinical-csv-parse.ts",
   "src/lib/utils/build-clinical-timeline.ts",
   "src/lib/utils/command-palette-search.ts",
