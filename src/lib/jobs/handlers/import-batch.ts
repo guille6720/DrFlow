@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { assertStoragePathInClinic } from "@/lib/security/tenant-scope";
 import { HCE_IMPORT_BATCH_SIZE } from "@/lib/constants/clinical-documents";
 import { processHceImportBatchFromContent } from "@/lib/actions/hce-import";
 import { processConsumersImportBatchFromBuffer } from "@/lib/actions/patient-import";
@@ -38,6 +39,8 @@ export async function handleImportBatchJob(
     storagePath: string;
     fileName: string;
   };
+
+  assertStoragePathInClinic(job.clinic_id, payload.storagePath);
 
   const buffer = await downloadImportStagingFile(supabase, payload.storagePath);
 

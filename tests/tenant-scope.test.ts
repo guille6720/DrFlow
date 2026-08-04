@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   assertSameClinic,
+  assertStoragePathInClinic,
   CLINIC_SCOPED_TABLES,
   clinicScopedIdFilter,
   isSameClinic,
@@ -31,6 +32,12 @@ describe("tenant-scope", () => {
     expect(CLINIC_SCOPED_TABLES).toContain("patients");
     expect(CLINIC_SCOPED_TABLES).toContain("patient_clinical_profiles");
     expect(CLINIC_SCOPED_TABLES).toContain("clinical_records");
+  });
+
+  it("assertStoragePathInClinic rejects cross-tenant paths", () => {
+    const path = `${clinicA}/import-staging/batch/file.csv`;
+    expect(() => assertStoragePathInClinic(clinicA, path)).not.toThrow();
+    expect(() => assertStoragePathInClinic(clinicB, path)).toThrow(TenantScopeError);
   });
 });
 

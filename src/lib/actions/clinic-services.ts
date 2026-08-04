@@ -11,12 +11,12 @@ import { buildPamiReminderMessage } from "@/lib/constants/pami-cabecera";
 import { buildWhatsAppUrl } from "@/lib/utils/whatsapp";
 import { paymentService } from "@/lib/services/payments";
 import { telemedicineService } from "@/lib/services/telemedicine";
-import { requireActiveClinic, requireClinicPermission } from "@/lib/actions/clinic-guard";
+import { requireClinicPermission } from "@/lib/actions/clinic-guard";
 import { enqueueClinicJob } from "@/lib/jobs/enqueue";
 import { processPendingClinicJobs } from "@/lib/jobs/process";
 
 export async function sendReminder(appointmentId: string, channel: "email" | "whatsapp" | "internal") {
-  const access = await requireActiveClinic();
+  const access = await requireClinicPermission("manageAppointments");
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 

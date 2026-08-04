@@ -55,6 +55,14 @@ export function requireResourceInClinic(
   return { ok: true };
 }
 
+/** Validates storage object path belongs to active clinic (defense in depth vs service role). */
+export function assertStoragePathInClinic(clinicId: string, storagePath: string): void {
+  const prefix = `${clinicId}/`;
+  if (!storagePath.startsWith(prefix)) {
+    throw new TenantScopeError("Archivo fuera del consultorio activo");
+  }
+}
+
 /** Standard filter pair for Supabase queries by primary key within tenant. */
 export function clinicScopedIdFilter(clinicId: string, id: string) {
   return { clinic_id: clinicId, id } as const;

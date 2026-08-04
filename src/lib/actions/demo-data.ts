@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getActiveClinicId } from "@/lib/auth/session";
+import { requireClinicPermission } from "@/lib/actions/clinic-guard";
 import { createClient } from "@/lib/supabase/server";
 
 export type DemoSeedResult = {
@@ -11,10 +11,9 @@ export type DemoSeedResult = {
 };
 
 export async function seedDemoPatientsForActiveClinic(): Promise<DemoSeedResult> {
-  const clinicId = await getActiveClinicId();
-  if (!clinicId) {
-    return { error: "No hay clínica activa." };
-  }
+  const access = await requireClinicPermission("manageClinic");
+  if (!access.ok) return { error: access.error };
+  const clinicId = access.clinicId;
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("seed_demo_patients_for_clinic", {

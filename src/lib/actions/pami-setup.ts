@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getActiveClinicId } from "@/lib/auth/session";
+import { requireClinicPermission } from "@/lib/actions/clinic-guard";
 import { createClient } from "@/lib/supabase/server";
 
 export async function configurePamiCabecera(): Promise<{
@@ -9,8 +10,9 @@ export async function configurePamiCabecera(): Promise<{
   error?: string;
   message?: string;
 }> {
-  const clinicId = await getActiveClinicId();
-  if (!clinicId) return { error: "No hay clínica activa." };
+  const access = await requireClinicPermission("manageSettings");
+  if (!access.ok) return { error: access.error };
+  const clinicId = access.clinicId;
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("seed_pami_cabecera_for_clinic", {

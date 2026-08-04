@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 function authorizeCron(request: Request): boolean {
   const cronSecret = process.env.CRON_SECRET?.trim();
+  if (process.env.NODE_ENV === "production" && !cronSecret) return false;
   if (!cronSecret) return true;
   return request.headers.get("authorization") === `Bearer ${cronSecret}`;
 }

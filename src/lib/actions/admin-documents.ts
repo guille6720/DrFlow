@@ -24,10 +24,19 @@ export async function uploadPatientAdminDocument(formData: FormData) {
   if (!(file instanceof File)) return { error: "Archivo requerido" };
   if (file.size > MAX_BYTES) return { error: "Máximo 10 MB" };
 
+  const supabase = await createClient();
+  const { data: patient } = await supabase
+    .from("patients")
+    .select("id")
+    .eq("id", patientId)
+    .eq("clinic_id", clinicId)
+    .single();
+
+  if (!patient) return { error: "Paciente no encontrado en este consultorio" };
+
   const safeName = file.name.replace(/[^\w.\-() ]+/g, "_");
   const path = `${clinicId}/${patientId}/admin/${Date.now()}-${safeName}`;
 
-  const supabase = await createClient();
   const buffer = Buffer.from(await file.arrayBuffer());
   const { error: uploadError } = await supabase.storage
     .from("clinical-files")

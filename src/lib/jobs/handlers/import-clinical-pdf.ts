@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { assertStoragePathInClinic } from "@/lib/security/tenant-scope";
 import {
   downloadImportStagingFile,
   removeImportStagingFile,
@@ -15,6 +16,8 @@ export async function handleImportClinicalPdfJob(
     userId: string;
     fileSize: number;
   };
+
+  assertStoragePathInClinic(job.clinic_id, payload.storagePath);
 
   const buffer = await downloadImportStagingFile(supabase, payload.storagePath);
 
