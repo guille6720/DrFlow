@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, ClipboardList, FileText, LogOut, Pill, Stethoscope } from "lucide-react";
+import { CheckCircle2, ClipboardList, FileText, FlaskConical, LogOut, Pill, Sparkles, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { patientWorkflowHref } from "@/lib/utils/clinical-workflow-context";
 import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
@@ -68,6 +68,18 @@ export function PatientWorkflowActionBar({
             <Button size="sm" variant="outline" type="button" title="Resumen de alta">
               <LogOut className="h-4 w-4" />
               Alta
+            </Button>
+          </Link>
+          <Link href={buildPatientWorkspaceUrl(patientId, { action: "cerrar" })}>
+            <Button size="sm" variant="outline" type="button" title="Wizard de cierre de consulta">
+              <Sparkles className="h-4 w-4" />
+              Generar cierre
+            </Button>
+          </Link>
+          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "estudios", action: "estudio" })}>
+            <Button size="sm" variant="outline" type="button" title="Interpretar laboratorio (OCR / pegado)">
+              <FlaskConical className="h-4 w-4" />
+              Labs
             </Button>
           </Link>
         </>

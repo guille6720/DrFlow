@@ -15,6 +15,9 @@ export type PhysicianAssistKind =
   | "follow_up_reminder"
   | "discharge_summary"
   | "medical_certificate"
+  | "lab_interpretation"
+  | "evolution_summary"
+  | "patient_instructions"
   | "interaction_alert";
 
 export type PhysicianAssistContext = {
@@ -62,5 +65,8 @@ export const PHYSICIAN_ASSIST_KIND_LABELS: Record<PhysicianAssistKind, string> =
   follow_up_reminder: "Control sugerido",
   discharge_summary: "Resumen de alta",
   medical_certificate: "Certificado médico",
+  lab_interpretation: "Interpretación de laboratorio",
+  evolution_summary: "Resumen de evolución",
+  patient_instructions: "Indicaciones al paciente",
   interaction_alert: "Alerta de interacción",
 };

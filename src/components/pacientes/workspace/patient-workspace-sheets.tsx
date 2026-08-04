@@ -2,9 +2,11 @@
 
 import { PatientConsultSheet } from "@/components/pacientes/workspace/patient-consult-sheet";
 import { PatientDocumentAssistSheet } from "@/components/pacientes/workspace/patient-document-assist-sheet";
+import { PatientLabInterpretSheet } from "@/components/pacientes/workspace/patient-lab-interpret-sheet";
 import { PatientOrderSheet } from "@/components/pacientes/workspace/patient-order-sheet";
 import { PatientPrescriptionSheet } from "@/components/pacientes/workspace/patient-prescription-sheet";
 import { PatientRecordSheet } from "@/components/pacientes/workspace/patient-record-sheet";
+import { CloseEncounterWizardSheet } from "@/components/clinical-workflow/close-encounter-wizard-sheet";
 import type { PatientWorkspaceViewProps } from "@/components/pacientes/patient-workspace-types";
 import type { PatientWorkspaceTabId } from "@/lib/constants/patient-workspace-tabs";
 import { usePatientWorkspaceActions } from "@/lib/hooks/use-patient-workspace-actions";
@@ -19,6 +21,7 @@ type Props = Pick<
   | "lastMedications"
   | "templates"
   | "canIssue"
+  | "chart"
 > & {
   activeTab: PatientWorkspaceTabId;
   patientRecord: Patient;
@@ -34,6 +37,7 @@ export function PatientWorkspaceSheets({
   lastMedications,
   templates,
   canIssue,
+  chart,
 }: Props) {
   const actions = usePatientWorkspaceActions(patientId, activeTab);
   const patientName = `${patient.last_name}, ${patient.first_name}`;
@@ -46,6 +50,11 @@ export function PatientWorkspaceSheets({
     lastEvolution: lastConsult?.evolution ?? null,
     lastDiagnosis: lastConsult?.diagnosis ?? ehr.diagnosisRows[0]?.name ?? null,
     activeProblems: ehr.diagnosisRows.map((d) => d.name).slice(0, 6),
+    insurance: patient.insurance_provider ?? undefined,
+    insurancePlan: patientRecord.insurance_plan,
+    chiefComplaint: lastConsult?.chief_complaint ?? null,
+    diagnosis: lastConsult?.diagnosis ?? null,
+    evolutionText: lastConsult?.evolution ?? undefined,
   };
 
   const selectedRecord = actions.record
@@ -123,6 +132,20 @@ export function PatientWorkspaceSheets({
         title="Certificado médico"
         patientName={patientName}
         context={assistBase}
+        onClose={actions.closeSheet}
+      />
+
+      <CloseEncounterWizardSheet
+        open={actions.closeEncounterSheetOpen && canIssue}
+        patientName={patientName}
+        context={assistBase}
+        onClose={actions.closeSheet}
+      />
+
+      <PatientLabInterpretSheet
+        open={actions.labInterpretSheetOpen}
+        patientName={patientName}
+        previousLabs={chart.extras.labs}
         onClose={actions.closeSheet}
       />
     </>

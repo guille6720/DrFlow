@@ -29,6 +29,20 @@ export {
   getMatchedOrderPanelLabels,
 } from "@/lib/utils/medication-order-assist";
 export { OrderSuggestionPanel } from "@/components/clinical-workflow/order-suggestion-panel";
+export { LabInterpretationPanel } from "@/components/clinical-workflow/lab-interpretation-panel";
+export { CloseEncounterWizardSheet } from "@/components/clinical-workflow/close-encounter-wizard-sheet";
+export {
+  parseLabValuesFromText,
+  compareLabsWithHistory,
+  classifyLabValue,
+  buildLabInterpretationItem,
+} from "@/lib/utils/lab-interpretation";
+export type { ParsedLabValue, LabComparisonRow } from "@/lib/utils/lab-interpretation";
+export {
+  buildCloseEncounterSteps,
+  buildCloseEncounterBundleText,
+} from "@/lib/utils/close-encounter-assist";
+export type { CloseEncounterStep, CloseEncounterStepId } from "@/lib/utils/close-encounter-assist";
 export type {
   PhysicianAssistContext,
   PhysicianAssistItem,

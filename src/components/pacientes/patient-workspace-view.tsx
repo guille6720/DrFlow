@@ -137,6 +137,7 @@ export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
         lastMedications={chartProps.lastMedications}
         templates={templates}
         canIssue={chartProps.canIssue}
+        chart={chartProps.chart}
       />
     </div>
   );
