@@ -1,0 +1,21 @@
+# Auth URLs de producción — `supabase config push` actualiza Site URL y Redirect URLs.
+# Ver: node scripts/print-supabase-redirects.mjs
+project_id = "nipqdarduknydqptqzup"
+
+[auth]
+enabled = true
+site_url = "https://drflow.opusorg.com"
+additional_redirect_urls = [
+  "https://drflow.opusorg.com/**",
+  "https://drflow-app-rho.vercel.app/**",
+  "http://localhost:3000/**",
+  "http://127.0.0.1:3000/**",
+]
+
+[auth.email]
+max_frequency = "1m0s"
+otp_length = 8
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true

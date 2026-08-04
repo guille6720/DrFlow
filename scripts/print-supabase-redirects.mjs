@@ -11,10 +11,11 @@ const site =
 const base = site.replace(/\/$/, "");
 
 console.log("\n=== Supabase → Authentication → URL Configuration ===\n");
-console.log("Site URL:");
+console.log("Site URL (DEBE ser el subdominio DrFlow, NO opusorg.com raíz):");
 console.log(`  ${base}\n`);
-console.log("Redirect URLs (agregar TODAS):");
+console.log("Redirect URLs (recomendado: wildcards + rutas exactas):");
 [
+  `${base}/**`,
   `${base}/auth/callback`,
   `${base}/auth/confirm`,
   `${base}/auth/complete`,
@@ -22,15 +23,23 @@ console.log("Redirect URLs (agregar TODAS):");
   `${base}/login`,
   `${base}/register`,
   `${base}/onboarding`,
+  "https://drflow-app-rho.vercel.app/**",
   "https://drflow-app-rho.vercel.app/auth/callback",
   "https://drflow-app-rho.vercel.app/auth/confirm",
   "https://drflow-app-rho.vercel.app/auth/complete",
   "https://drflow-app-rho.vercel.app/login/restablecer",
+  "http://localhost:3000/**",
   "http://localhost:3000/auth/callback",
   "http://localhost:3000/auth/confirm",
   "http://localhost:3000/auth/complete",
   "http://localhost:3000/login/restablecer",
 ].forEach((u) => console.log(`  ${u}`));
+
+console.log("\n=== Si el mail de reset te manda a opusorg.com (sin drflow) ===\n");
+console.log("  1. Site URL mal puesta (opusorg.com o vercel.app sin drflow.opusorg.com)");
+console.log("  2. Falta redirect URL con query params → usá wildcards " + base + "/**");
+console.log("  3. En Vercel: NEXT_PUBLIC_SITE_URL=" + base);
+console.log("  4. Aplicar desde repo: npx supabase config push --yes\n");
 
 console.log("\n=== Google OAuth (Authentication → Providers → Google) ===\n");
 console.log("1. Activá Google provider");
