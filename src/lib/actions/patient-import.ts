@@ -7,6 +7,10 @@ import { hasPermission } from "@/lib/permissions/roles";
 import { CONSUMERS_IMPORT_MAX_BYTES, CONSUMERS_IMPORT_MAX_ROWS } from "@/lib/constants/clinical-documents";
 import { parseConsumersUpload } from "@/lib/utils/consumers-import.server";
 import { findOrCreatePatientFromExtract } from "@/lib/utils/clinical-pdf-import";
+import {
+  loadPatientClinicalProfile,
+  upsertPatientClinicalProfile,
+} from "@/lib/server/patient-clinical-profile";
 import { sanitizeText } from "@/lib/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -70,12 +74,14 @@ async function mergePatientFields(
 ) {
   const { data: patient } = await supabase
     .from("patients")
-    .select("phone, email, insurance_provider, insurance_number, birth_date, notes")
+    .select("phone, email, insurance_provider, insurance_number, birth_date")
     .eq("id", patientId)
     .eq("clinic_id", clinicId)
     .single();
 
   if (!patient) return false;
+
+  const profile = await loadPatientClinicalProfile(supabase, patientId, clinicId);
 
   const updates: Record<string, string> = {};
   if (!patient.phone?.trim() && record.phone) updates.phone = sanitizeText(record.phone);
@@ -88,13 +94,18 @@ async function mergePatientFields(
   }
   if (!patient.birth_date && record.birth_date) updates.birth_date = record.birth_date;
 
-  if (record.external_consumer_id && !patient.notes?.includes(record.external_consumer_id)) {
+  let profileNotesUpdated = false;
+  if (record.external_consumer_id && !profile?.notes?.includes(record.external_consumer_id)) {
     const note = `ID importación: ${record.external_consumer_id}`;
-    updates.notes = patient.notes?.trim() ? `${patient.notes.trim()}\n${note}` : note;
-    updates.notes = sanitizeText(updates.notes);
+    const notes = profile?.notes?.trim() ? `${profile.notes.trim()}\n${note}` : note;
+    const { error: profileError } = await upsertPatientClinicalProfile(supabase, patientId, clinicId, {
+      notes: sanitizeText(notes),
+    });
+    if (profileError) return false;
+    profileNotesUpdated = true;
   }
 
-  if (Object.keys(updates).length === 0) return false;
+  if (Object.keys(updates).length === 0) return profileNotesUpdated;
 
   await supabase.from("patients").update(updates).eq("id", patientId).eq("clinic_id", clinicId);
   return true;

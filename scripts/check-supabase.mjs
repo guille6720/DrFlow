@@ -124,6 +124,25 @@ async function main() {
     console.log(`⚠ Verificación insurance_plan: HTTP ${planRes.status}`);
   }
 
+  const memberProfRes = await fetch(
+    `${url}/rest/v1/clinic_members?select=id,professional_id&limit=1`,
+    {
+      headers: {
+        apikey: schemaKey,
+        Authorization: schemaAuth,
+      },
+    }
+  );
+  const memberProfBody = await memberProfRes.text();
+  if (memberProfRes.status === 400 && memberProfBody.includes("professional_id")) {
+    console.log("❌ Columna clinic_members.professional_id — migración 057 pendiente");
+    allOk = false;
+  } else if (memberProfRes.ok) {
+    console.log("✓ Columna clinic_members.professional_id");
+  } else {
+    console.log(`⚠ Verificación clinic_members.professional_id: HTTP ${memberProfRes.status}`);
+  }
+
   const profileRes = await fetch(
     `${url}/rest/v1/patient_clinical_profiles?select=patient_id&limit=1`,
     {

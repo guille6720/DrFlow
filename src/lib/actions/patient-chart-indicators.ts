@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireClinicPermission } from "@/lib/actions/clinic-guard";
+import {
+  loadPatientClinicalProfile,
+  upsertPatientClinicalProfile,
+} from "@/lib/server/patient-clinical-profile";
 import { calculatePackYears } from "@/lib/utils/clinical-indicators";
 import {
   mergeNotesWithChartExtras,
@@ -50,17 +54,17 @@ export async function savePatientClinicalIndicators(
   const { clinicId } = access;
 
   const supabase = await createClient();
-  const { data: patient, error: fetchError } = await supabase
+  const { data: exists } = await supabase
     .from("patients")
-    .select("notes")
+    .select("id")
     .eq("id", patientId)
     .eq("clinic_id", clinicId)
     .maybeSingle();
 
-  if (fetchError) return { error: fetchError.message };
-  if (!patient) return { error: "Paciente no encontrado" };
+  if (!exists) return { error: "Paciente no encontrado" };
 
-  const current = parsePatientChartExtras(patient.notes);
+  const profile = await loadPatientClinicalProfile(supabase, patientId, clinicId);
+  const current = parsePatientChartExtras(profile?.notes);
   const packYears =
     input.cigarettesPerDay != null && input.smokingYears != null
       ? calculatePackYears(input.cigarettesPerDay, input.smokingYears)
@@ -77,14 +81,10 @@ export async function savePatientClinicalIndicators(
     labs: upsertCreatinineLab(current.labs, input.creatinineMgDl),
   };
 
-  const notes = mergeNotesWithChartExtras(stripChartJsonFromNotes(patient.notes), merged);
-  const { error } = await supabase
-    .from("patients")
-    .update({ notes })
-    .eq("id", patientId)
-    .eq("clinic_id", clinicId);
+  const notes = mergeNotesWithChartExtras(stripChartJsonFromNotes(profile?.notes), merged);
+  const { error } = await upsertPatientClinicalProfile(supabase, patientId, clinicId, { notes });
 
-  if (error) return { error: error.message };
+  if (error) return { error };
 
   revalidatePath(`/pacientes/${patientId}`);
   revalidatePath(`/pacientes/${patientId}?tab=soap`);

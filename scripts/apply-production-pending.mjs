@@ -1,5 +1,5 @@
 /**
- * Aplica migraciones pendientes de producción (030 → 055).
+ * Aplica migraciones pendientes de producción (030 → 057).
  *
  * PowerShell:
  *   cd c:\dev\DrFlow
@@ -50,9 +50,11 @@ const pending = [
   "053_security_p0_p1_fixes.sql",
   "054_database_audit_fixes.sql",
   "055_immutable_audit_logging.sql",
+  "056_admin_ops_assistant_flag.sql",
+  "057_schema_code_parity.sql",
 ];
 
-console.log(`\n🔧 DrFlow — Migraciones producción (${pending.length} archivos, 030→055)\n`);
+console.log(`\n🔧 DrFlow — Migraciones producción (${pending.length} archivos, 030→057)\n`);
 
 for (const file of pending) {
   const filePath = resolve(process.cwd(), "supabase/migrations", file);
@@ -75,6 +77,6 @@ Aplicá el resto manualmente desde docs/SUPABASE_PENDIENTE.md
   }
 }
 
-console.log("\n✓ Migraciones 030–055 aplicadas.");
+console.log("\n✓ Migraciones 030–057 aplicadas.");
 console.log("  Verificá: npm run check:supabase");
 console.log("  Extra:    node scripts/check-insurance-plan-column.mjs\n");
