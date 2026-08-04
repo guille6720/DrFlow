@@ -13,6 +13,7 @@ import {
   auditEntityLabel,
   type PatientAuditEvent,
 } from "@/lib/security/audit-types";
+import { auditModuleLabel } from "@/lib/security/audit-log";
 
 type Props = {
   patientId: string;
@@ -87,7 +88,12 @@ export function PatientClinicalAuditPanel({ patientId }: Props) {
             <li key={event.id} className="py-3 text-sm">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="info">{auditActionLabel(event.action)}</Badge>
-                <span className="font-medium">{auditEntityLabel(event.entityType)}</span>
+                {event.module ? (
+                  <Badge variant="default">{auditModuleLabel(event.module)}</Badge>
+                ) : null}
+                <span className="font-medium">
+                  {event.what ?? auditEntityLabel(event.entityType)}
+                </span>
                 {event.clinicalRecordId ? (
                   <Link
                     href={`/historias/${event.clinicalRecordId}`}

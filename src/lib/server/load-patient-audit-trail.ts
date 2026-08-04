@@ -53,7 +53,7 @@ export async function loadPatientAuditTrail(
       supabase
         .from("audit_logs")
         .select(
-          "id, action, entity_type, entity_id, created_at, ip_address, user_agent, old_values, new_values, profiles(full_name)"
+          "id, action, module, what, entity_type, entity_id, created_at, ip_address, user_agent, old_values, new_values, profiles(full_name)"
         )
         .eq("clinic_id", clinicId)
         .or(entityFilter.join(","))
@@ -63,7 +63,7 @@ export async function loadPatientAuditTrail(
         ? supabase
             .from("clinical_record_audit")
             .select(
-              "id, action, clinical_record_id, changed_at, ip_address, user_agent, old_values, new_values, profiles:changed_by(full_name)"
+              "id, action, module, what, clinical_record_id, changed_at, ip_address, user_agent, old_values, new_values, profiles:changed_by(full_name)"
             )
             .eq("clinic_id", clinicId)
             .in("clinical_record_id", recordIdList)

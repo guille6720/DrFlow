@@ -109,6 +109,8 @@ export async function createPatient(formData: FormData) {
 
   await logAudit({
     clinicId,
+    module: "patients",
+    what: "Creó ficha de paciente",
     entityType: "patient",
     entityId: data.id,
     patientId: data.id,
@@ -204,6 +206,8 @@ export async function updatePatient(id: string, formData: FormData) {
 
   await logAudit({
     clinicId,
+    module: "patients",
+    what: "Actualizó ficha de paciente",
     entityType: "patient",
     entityId: id,
     patientId: id,

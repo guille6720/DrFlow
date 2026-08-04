@@ -119,8 +119,11 @@ export async function savePrescriptionDraft(formData: FormData) {
 
   await logAudit({
     clinicId,
+    module: "prescriptions",
+    what: "Guardó borrador de receta",
     entityType: "prescription",
     entityId: data.id,
+    patientId: parsed.data.patient_id,
     action: "create",
   });
 

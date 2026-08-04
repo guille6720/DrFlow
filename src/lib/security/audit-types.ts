@@ -48,6 +48,8 @@ export type PatientAuditEvent = {
   id: string;
   source: "audit_logs" | "clinical_record_audit";
   action: string;
+  module: string | null;
+  what: string | null;
   entityType: string;
   entityId: string | null;
   occurredAt: string;
@@ -63,6 +65,8 @@ export function mergePatientAuditEvents(
   clinicLogs: Array<{
     id: string;
     action: string;
+    module?: string | null;
+    what?: string | null;
     entity_type: string;
     entity_id: string | null;
     created_at: string;
@@ -75,6 +79,8 @@ export function mergePatientAuditEvents(
   recordLogs: Array<{
     id: string;
     action: string;
+    module?: string | null;
+    what?: string | null;
     clinical_record_id: string;
     changed_at: string;
     ip_address: string | null;
@@ -90,6 +96,8 @@ export function mergePatientAuditEvents(
       id: `log-${row.id}`,
       source: "audit_logs",
       action: row.action,
+      module: row.module ?? null,
+      what: row.what ?? null,
       entityType: row.entity_type,
       entityId: row.entity_id,
       occurredAt: row.created_at,
@@ -107,6 +115,8 @@ export function mergePatientAuditEvents(
       id: `cra-${row.id}`,
       source: "clinical_record_audit",
       action: row.action,
+      module: row.module ?? "clinical",
+      what: row.what ?? null,
       entityType: "clinical_record",
       entityId: row.clinical_record_id,
       clinicalRecordId: row.clinical_record_id,

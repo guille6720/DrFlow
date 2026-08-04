@@ -8,9 +8,9 @@ import {
   getAuditRequestContext,
 } from "@/lib/security/audit-context";
 import {
-  sanitizeAuditSnapshot,
-  type AuditAction,
-} from "@/lib/security/audit-types";
+  buildAuditLogRow,
+} from "@/lib/security/audit-log";
+import type { AuditAction } from "@/lib/security/audit-types";
 
 const CLINIC_COOKIE = "drflow_clinic_id";
 
@@ -141,6 +141,8 @@ export async function setActiveClinic(clinicId: string) {
 
 export async function logAudit(params: {
   clinicId?: string;
+  module?: import("@/lib/security/audit-log").AuditModule;
+  what?: string;
   entityType: string;
   entityId?: string;
   patientId?: string;
@@ -154,21 +156,13 @@ export async function logAudit(params: {
   if (!user) return;
 
   const ctx = await getAuditRequestContext();
-  const patientId =
-    params.patientId ??
-    (params.entityType === "patient" ? params.entityId : undefined);
 
-  await supabase.from("audit_logs").insert({
-    clinic_id: params.clinicId,
-    user_id: user.id,
-    entity_type: params.entityType,
-    entity_id: params.entityId,
-    patient_id: patientId ?? null,
-    action: params.action,
-    metadata: params.metadata ?? {},
-    old_values: sanitizeAuditSnapshot(params.oldValues ?? null),
-    new_values: sanitizeAuditSnapshot(params.newValues ?? null),
-    ip_address: ctx.ip_address,
-    user_agent: ctx.user_agent,
-  });
+  await supabase.from("audit_logs").insert(
+    buildAuditLogRow({
+      ...params,
+      userId: user.id,
+      ipAddress: ctx.ip_address,
+      userAgent: ctx.user_agent,
+    })
+  );
 }
