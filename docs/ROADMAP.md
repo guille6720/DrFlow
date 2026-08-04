@@ -14,7 +14,7 @@
 
 ## Fase 1 — Estabilización
 
-- [ ] CI/CD con GitHub Actions (lint, test, build)
+- [x] CI/CD con GitHub Actions (lint, test, build, smoke health) — ver [PRODUCTION.md](./PRODUCTION.md)
 - [ ] E2E con Playwright (auth, atender ahora, booking)
 - [ ] Monitoreo de errores (Sentry)
 - [ ] Listado/edición/borrado de reglas de disponibilidad

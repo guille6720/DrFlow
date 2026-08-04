@@ -2,23 +2,7 @@
  * Verifica conexión y estado de Supabase para DrFlow.
  * Uso: node scripts/check-supabase.mjs
  */
-import { readFileSync, existsSync } from "fs";
-import { resolve } from "path";
-
-function loadEnv() {
-  const path = resolve(process.cwd(), ".env.local");
-  if (!existsSync(path)) {
-    console.error("❌ No existe .env.local — copiá .env.example y completá las claves.");
-    process.exit(1);
-  }
-  const raw = readFileSync(path, "utf8");
-  const env = {};
-  for (const line of raw.split("\n")) {
-    const m = line.match(/^([A-Z_]+)=(.*)$/);
-    if (m) env[m[1]] = m[2].trim();
-  }
-  return env;
-}
+import { loadEnv } from "./_env.mjs";
 
 const CHECKS = [
   { table: "clinics", min: 1, label: "Clínicas" },

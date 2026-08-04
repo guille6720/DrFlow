@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import { SECURITY_RESPONSE_HEADERS } from "./src/lib/security/response-headers";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   reactCompiler: true,
   serverExternalPackages: ["pdf-parse", "pdfjs-dist", "unpdf", "xlsx"],
   outputFileTracingIncludes: {
