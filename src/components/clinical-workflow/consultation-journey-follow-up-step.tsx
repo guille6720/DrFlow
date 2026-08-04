@@ -1,20 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { addDays, setHours, setMinutes } from "date-fns";
 import { Calendar, SkipForward } from "lucide-react";
 import { AppointmentDatetimePicker } from "@/components/agenda/appointment-datetime-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { createAppointment } from "@/lib/actions/appointments";
-
-const DEFAULT_APPOINTMENT_DURATION = 30;
-
-function defaultFollowUpStartAt(): string {
-  const base = setMinutes(setHours(addDays(new Date(), 30), 9), 0);
-  return new Date(base.getTime() - base.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-}
+import { useConsultationFollowUp } from "@/lib/hooks/use-consultation-follow-up";
 
 type Props = {
   patientId: string;
@@ -23,46 +14,14 @@ type Props = {
   onSkip: () => void;
 };
 
+/** Presentation-only follow-up scheduling step. */
 export function ConsultationJourneyFollowUpStep({
   patientId,
   professionalId,
   onScheduled,
   onSkip,
 }: Props) {
-  const [startAt, setStartAt] = useState(defaultFollowUpStartAt);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [notes, setNotes] = useState("Control de seguimiento");
-
-  const duration = useMemo(() => DEFAULT_APPOINTMENT_DURATION, []);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!professionalId) {
-      setError("Seleccioná un profesional para agendar el turno.");
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    const formData = new FormData(e.currentTarget);
-    formData.set("patient_id", patientId);
-    formData.set("professional_id", professionalId);
-    formData.set("status", "pending");
-    const start = new Date(startAt);
-    const end = new Date(start.getTime() + duration * 60000);
-    formData.set("start_at", startAt);
-    formData.set("end_at", end.toISOString());
-    formData.set("duration", String(duration));
-    formData.set("notes", notes);
-
-    const result = await createAppointment(formData);
-    setLoading(false);
-    if (result.error) {
-      setError(result.error);
-      return;
-    }
-    onScheduled();
-  }
+  const followUp = useConsultationFollowUp({ patientId, professionalId, onScheduled });
 
   return (
     <Card title="Próximo turno">
@@ -78,13 +37,10 @@ export function ConsultationJourneyFollowUpStep({
         </p>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="grid gap-4">
-        <input type="hidden" name="patient_id" value={patientId} />
-        {professionalId ? <input type="hidden" name="professional_id" value={professionalId} /> : null}
-
+      <form onSubmit={followUp.handleSubmit} className="grid gap-4">
         <AppointmentDatetimePicker
-          value={startAt}
-          onChange={setStartAt}
+          value={followUp.startAt}
+          onChange={followUp.setStartAt}
           required
           label="Fecha y hora del control"
         />
@@ -93,22 +49,22 @@ export function ConsultationJourneyFollowUpStep({
           name="duration"
           label="Duración (min)"
           type="number"
-          defaultValue={duration}
+          defaultValue={followUp.duration}
           required
         />
 
         <Input
           name="notes"
           label="Motivo / notas"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          value={followUp.notes}
+          onChange={(e) => followUp.setNotes(e.target.value)}
           placeholder="Control de seguimiento"
         />
 
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {followUp.error ? <p className="text-sm text-red-600">{followUp.error}</p> : null}
 
         <div className="flex flex-wrap gap-2">
-          <Button type="submit" loading={loading} disabled={!professionalId}>
+          <Button type="submit" loading={followUp.loading} disabled={!professionalId}>
             <Calendar className="h-4 w-4" />
             Agendar turno
           </Button>

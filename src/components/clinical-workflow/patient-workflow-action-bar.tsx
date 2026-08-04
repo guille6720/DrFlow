@@ -32,7 +32,7 @@ export function PatientWorkflowActionBar({
   if (!canEditClinical && !canIssue) return null;
 
   return (
-    <div className="drflow-patient-workflow-bar mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+    <div className="drflow-patient-workflow-bar mb-3 flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 shadow-sm">
       {canEditClinical ? (
         <Link href={patientWorkflowHref(patientId, "soap")}>
           <Button size="sm" type="button" title={`Nueva SOAP (${shortcutLabel("patient", "Ctrl+Shift+N")})`}>

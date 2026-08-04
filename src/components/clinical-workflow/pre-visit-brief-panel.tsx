@@ -17,10 +17,10 @@ type Props = {
 function SectionValue({ section }: { section: PreVisitBriefSection }) {
   const toneClass =
     section.tone === "critical"
-      ? "text-red-700 font-medium"
+      ? "text-red-400 font-medium"
       : section.tone === "warning"
-        ? "text-amber-800 font-medium"
-        : "text-slate-800";
+        ? "text-amber-300 font-medium"
+        : "drflow-previsit-value";
 
   return <dd className={`text-sm ${toneClass}`}>{section.value}</dd>;
 }
@@ -47,7 +47,7 @@ export function PreVisitBriefPanel({ patientName, chart, lastConsultAt, classNam
 
   return (
     <section
-      className={`mx-0 rounded-xl border border-violet-100 bg-violet-50/60 ${className}`}
+      className={`drflow-previsit-panel mx-0 rounded-xl border ${className}`}
       aria-label="Resumen pre-consulta"
     >
       <button
@@ -56,24 +56,24 @@ export function PreVisitBriefPanel({ patientName, chart, lastConsultAt, classNam
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
       >
-        <span className="flex items-center gap-2 text-sm font-medium text-violet-900">
+        <span className="drflow-previsit-title flex items-center gap-2 text-sm font-medium">
           <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
           Resumen pre-consulta (~10 seg)
         </span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-violet-700 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`drflow-previsit-title h-4 w-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
           aria-hidden
         />
       </button>
 
       {open ? (
-        <div className="border-t border-violet-100 px-4 pb-4 pt-3">
-          <p className="mb-3 text-base font-semibold text-slate-900">{brief.headline}</p>
+        <div className="drflow-previsit-divider border-t px-4 pb-4 pt-3">
+          <p className="drflow-previsit-headline mb-3 text-base font-semibold">{brief.headline}</p>
 
           <dl className="grid gap-2 sm:grid-cols-2">
             {brief.sections.map((section) => (
               <div key={section.label}>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">{section.label}</dt>
+                <dt className="drflow-previsit-label text-xs font-semibold uppercase tracking-wide">{section.label}</dt>
                 <SectionValue section={section} />
               </div>
             ))}
@@ -94,7 +94,7 @@ export function PreVisitBriefPanel({ patientName, chart, lastConsultAt, classNam
           ) : null}
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-violet-800">
+            <p className="drflow-previsit-footer text-xs">
               Resumen automático basado en la historia — verificar antes de decidir.
             </p>
             <Button type="button" size="sm" variant="outline" onClick={() => void handleCopy()}>
