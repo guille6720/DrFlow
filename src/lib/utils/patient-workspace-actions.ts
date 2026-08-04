@@ -3,7 +3,7 @@ import {
   type PatientWorkspaceTabId,
 } from "@/lib/constants/patient-workspace-tabs";
 
-export type PatientWorkspaceAction = "nueva" | "upload" | "alta" | "certificado" | "cerrar" | "estudio";
+export type PatientWorkspaceAction = "nueva" | "upload" | "alta" | "certificado" | "cerrar" | "estudio" | "copilot";
 export type PatientWorkspaceMode = "edit" | "view";
 
 export type PatientWorkspaceUrlOptions = {
@@ -61,6 +61,7 @@ export type ParsedPatientWorkspaceActions = {
   certificateSheetOpen: boolean;
   closeEncounterSheetOpen: boolean;
   labInterpretSheetOpen: boolean;
+  copilotSheetOpen: boolean;
 };
 
 export function parsePatientWorkspaceActions(
@@ -89,5 +90,6 @@ export function parsePatientWorkspaceActions(
     certificateSheetOpen: action === "certificado",
     closeEncounterSheetOpen: action === "cerrar",
     labInterpretSheetOpen: action === "estudio",
+    copilotSheetOpen: action === "copilot",
   };
 }

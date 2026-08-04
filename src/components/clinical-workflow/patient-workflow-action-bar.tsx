@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, ClipboardList, FileText, FlaskConical, LogOut, Pill, Sparkles, Stethoscope } from "lucide-react";
+import { CheckCircle2, ClipboardList, FileText, FlaskConical, LogOut, MessageSquare, Pill, Sparkles, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { patientWorkflowHref } from "@/lib/utils/clinical-workflow-context";
 import { buildPatientWorkspaceUrl } from "@/lib/utils/patient-workspace-actions";
@@ -80,6 +80,12 @@ export function PatientWorkflowActionBar({
             <Button size="sm" variant="outline" type="button" title="Interpretar laboratorio (OCR / pegado)">
               <FlaskConical className="h-4 w-4" />
               Labs
+            </Button>
+          </Link>
+          <Link href={buildPatientWorkspaceUrl(patientId, { action: "copilot" })}>
+            <Button size="sm" variant="outline" type="button" title="Copilot clínico conversacional">
+              <MessageSquare className="h-4 w-4" />
+              Copilot
             </Button>
           </Link>
         </>

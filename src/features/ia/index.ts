@@ -43,6 +43,21 @@ export {
   buildCloseEncounterBundleText,
 } from "@/lib/utils/close-encounter-assist";
 export type { CloseEncounterStep, CloseEncounterStepId } from "@/lib/utils/close-encounter-assist";
+export { ProactiveCarePanel } from "@/components/clinical-workflow/proactive-care-panel";
+export { ClinicalCopilotSheet } from "@/components/clinical-workflow/clinical-copilot-sheet";
+export { ClinicalCopilotHost } from "@/components/clinical-workflow/clinical-copilot-host";
+export {
+  buildProactiveCareItems,
+  buildProactiveCareSummaryText,
+  sortProactiveCareItems,
+} from "@/lib/utils/proactive-follow-up";
+export type { ProactiveCareItem, ProactiveCareSeverity } from "@/lib/utils/proactive-follow-up";
+export {
+  matchCopilotIntent,
+  runClinicalCopilotQuery,
+  buildCopilotSuggestedPrompts,
+} from "@/lib/utils/clinical-copilot";
+export type { ClinicalCopilotContext, CopilotResponse } from "@/lib/utils/clinical-copilot";
 export type {
   PhysicianAssistContext,
   PhysicianAssistItem,

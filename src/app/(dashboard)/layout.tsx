@@ -28,6 +28,8 @@ import {
   ClinicalContextMenuHost,
   ClinicalWorkflowShortcuts,
 } from "@/components/clinical-workflow";
+import { ClinicalCopilotProvider } from "@/components/clinical-workflow/clinical-copilot-context";
+import { ClinicalCopilotHost } from "@/components/clinical-workflow/clinical-copilot-host";
 import {
   isClinicTrialExpired,
   isTrialWhitelistedPath,
@@ -132,6 +134,7 @@ export default async function DashboardLayout({
           plugins={clinicFeatures.plugins}
           flags={clinicFeatures.flags}
         >
+        <ClinicalCopilotProvider>
         <CommandPaletteProvider
           role={role}
           isSuperadmin={isSuperadmin}
@@ -163,10 +166,12 @@ export default async function DashboardLayout({
           {children}
         </DashboardMain>
         <FloatingActions />
+        <ClinicalCopilotHost />
         </VoiceInputProvider>
         </UiThemeProvider>
         </AccessibilityProvider>
         </CommandPaletteProvider>
+        </ClinicalCopilotProvider>
         </ClinicFeaturesProvider>
       </DashboardSidebarProvider>
     </div>

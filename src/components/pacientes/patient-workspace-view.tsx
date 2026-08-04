@@ -18,6 +18,8 @@ import type { PatientWorkspaceTabId } from "@/lib/constants/patient-workspace-ta
 import { usePatientWorkspaceTab } from "@/lib/hooks/use-patient-workspace-tab";
 import { PatientWorkflowActionBarHost } from "@/components/clinical-workflow/patient-workflow-action-bar-host";
 import { PreVisitBriefPanel } from "@/components/clinical-workflow/pre-visit-brief-panel";
+import { ProactiveCarePanel } from "@/components/clinical-workflow/proactive-care-panel";
+import { PatientWorkspaceCopilotBridge } from "@/components/pacientes/workspace/patient-workspace-copilot-bridge";
 
 const PatientClinicalAuditPanel = dynamic(
   () =>
@@ -79,6 +81,22 @@ export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
         chart={chartProps.chart}
         lastConsultAt={ehr.consultations[0]?.created_at ?? null}
         className="mb-3"
+      />
+      <ProactiveCarePanel
+        patientId={chartProps.patientId}
+        chart={chartProps.chart}
+        lastConsultAt={ehr.consultations[0]?.created_at ?? null}
+        className="mb-3"
+      />
+      <PatientWorkspaceCopilotBridge
+        activeTab={activeTab}
+        patient={chartProps.patient}
+        patientId={chartProps.patientId}
+        patientName={patientName}
+        chart={chartProps.chart}
+        ehr={ehr}
+        patientRecord={patientRecord}
+        lastMedications={chartProps.lastMedications}
       />
       <PatientWorkspaceTabBar activeTab={activeTab} onTabChange={setTab} />
 
