@@ -1,11 +1,13 @@
 "use client";
 
 import { ClinicalSummaryPhysicianAssist } from "@/components/clinical-workflow/clinical-summary-physician-assist";
+import { ClinicalWorkspaceView } from "@/components/pacientes/clinical-workspace/clinical-workspace-view";
 import { PatientChartGridPrimary } from "@/components/pacientes/patient-chart-grid-primary";
 import { PatientChartGridSecondary } from "@/components/pacientes/patient-chart-grid-secondary";
 import { PatientChartStickyBar } from "@/components/pacientes/patient-chart-sticky-bar";
 import { PatientChartSummary } from "@/components/pacientes/patient-chart-summary";
 import type { PatientChartViewProps } from "@/components/pacientes/patient-chart-types";
+import type { PatientEhrWorkspaceData } from "@/lib/server/load-patient-ehr-data";
 import { usePatientChartMedicationFilter } from "@/lib/hooks/use-patient-chart";
 
 export type { AppointmentRow } from "@/components/pacientes/patient-chart-types";
@@ -28,11 +30,36 @@ export function PatientChartView({
   workspaceMode = false,
   lastEvolution,
   lastDiagnosis,
+  ehr,
 }: PatientChartViewProps & {
   lastEvolution?: string | null;
   lastDiagnosis?: string | null;
+  ehr?: PatientEhrWorkspaceData;
 }) {
   const { medSearch, setMedSearch, filteredMeds } = usePatientChartMedicationFilter(chart);
+
+  if (workspaceMode && ehr) {
+    return (
+      <ClinicalWorkspaceView
+        patient={patient}
+        chart={chart}
+        patientId={patientId}
+        canEditClinical={canEditClinical}
+        canIssue={canIssue}
+        professionals={professionals}
+        lastMedications={lastMedications}
+        clinicalDocuments={clinicalDocuments}
+        appointments={appointments}
+        portalSlug={portalSlug}
+        doctorInfo={doctorInfo}
+        patientShare={patientShare}
+        regularMedication={regularMedication}
+        ehr={ehr}
+        lastEvolution={lastEvolution}
+        lastDiagnosis={lastDiagnosis}
+      />
+    );
+  }
 
   return (
     <div className="drflow-patient-chart">

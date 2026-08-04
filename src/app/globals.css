@@ -2113,3 +2113,262 @@ html[data-motion="reduce"] *::after {
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
 }
+
+/* Clinical workspace — single-screen patient summary */
+.drflow-clinical-workspace {
+  --cw-gap: 0.5rem;
+  max-width: 1440px;
+}
+
+.drflow-clinical-workspace-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: var(--cw-gap);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.15), rgba(15, 23, 42, 0.55));
+}
+
+.drflow-clinical-workspace-header-main {
+  display: flex;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1 1 20rem;
+}
+
+.drflow-clinical-workspace-avatar {
+  display: flex;
+  height: 3rem;
+  width: 3rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgba(51, 65, 85, 0.8);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #99f6e4;
+  box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.4);
+  flex-shrink: 0;
+}
+
+.drflow-clinical-workspace-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f1f5f9;
+}
+
+.drflow-clinical-workspace-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.25rem 0.75rem;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+}
+
+.drflow-clinical-workspace-meta dt {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.drflow-clinical-workspace-meta dd {
+  color: #cbd5e1;
+  margin: 0;
+}
+
+.drflow-clinical-workspace-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.drflow-clinical-workspace-alerts {
+  margin-bottom: var(--cw-gap);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  background: rgba(127, 29, 29, 0.12);
+}
+
+.drflow-clinical-workspace-alerts-empty {
+  border-color: rgba(100, 116, 139, 0.3);
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.drflow-clinical-workspace-alerts-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.drflow-clinical-workspace-alert-badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.drflow-clinical-workspace-alert-critical {
+  background: rgba(127, 29, 29, 0.55);
+  border-color: #f87171;
+  color: #fecaca;
+}
+
+.drflow-clinical-workspace-alert-high {
+  background: rgba(120, 53, 15, 0.45);
+  border-color: #fbbf24;
+  color: #fde68a;
+}
+
+.drflow-clinical-workspace-alert-normal {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: #64748b;
+  color: #cbd5e1;
+}
+
+.drflow-clinical-workspace-grid {
+  display: grid;
+  gap: var(--cw-gap);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .drflow-clinical-workspace-grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    align-items: start;
+  }
+}
+
+.drflow-clinical-workspace-col-main,
+.drflow-clinical-workspace-col-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cw-gap);
+}
+
+.drflow-clinical-workspace-section {
+  border-radius: 0.65rem;
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  background: rgba(15, 23, 42, 0.45);
+  padding: 0.65rem 0.75rem;
+}
+
+.drflow-clinical-workspace-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.drflow-clinical-workspace-section-head h3 {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.drflow-clinical-workspace-compact-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.drflow-clinical-workspace-problem-row,
+.drflow-clinical-workspace-med-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.15);
+  font-size: 0.8125rem;
+}
+
+.drflow-clinical-workspace-vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .drflow-clinical-workspace-vitals-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.drflow-clinical-workspace-vitals-grid dt {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.drflow-clinical-workspace-vitals-grid dd {
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.drflow-clinical-workspace-vital-abnormal {
+  color: #fca5a5 !important;
+}
+
+.drflow-clinical-workspace-last-consult {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+}
+
+.drflow-clinical-workspace-last-consult dt {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.drflow-clinical-workspace-last-consult dd {
+  color: #cbd5e1;
+  margin: 0;
+}
+
+.drflow-clinical-workspace-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.drflow-clinical-workspace-timeline li {
+  padding-left: 0.5rem;
+  border-left: 2px solid rgba(45, 212, 191, 0.35);
+}
+
+.drflow-clinical-workspace-ai {
+  border-color: rgba(45, 212, 191, 0.25);
+}
+
+@media print {
+  .drflow-patient-workflow-bar,
+  .drflow-patient-workspace-tabs,
+  .drflow-clinical-workspace-header-actions {
+    display: none !important;
+  }
+}

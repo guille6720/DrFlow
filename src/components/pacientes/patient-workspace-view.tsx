@@ -105,6 +105,7 @@ export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
           <PatientChartView
             {...chartProps}
             workspaceMode
+            ehr={ehr}
             lastEvolution={ehr.consultations[0]?.evolution}
             lastDiagnosis={ehr.diagnosisRows[0]?.name}
           />
