@@ -140,9 +140,29 @@ Migraciones pendientes: ver [MIGRATIONS.md](./MIGRATIONS.md) y `scripts/run-migr
 
 ## Monitoreo externo (opcional)
 
-Configurá un monitor HTTP (UptimeRobot, Better Stack, etc.) contra:
+### GitHub Actions (incluido — Fase 18)
 
-- `https://drflow.opusorg.com/api/health` — alerta si HTTP ≠ 200
-- `https://drflow.opusorg.com/api/version` — detecta deploys
+Workflow `.github/workflows/uptime.yml`:
 
-Telemetría interna: Configuración → Observabilidad (Fase 16).
+- Corre cada **15 minutos** contra producción
+- `npm run check:health -- --strict` + verificación de `/api/version`
+- URL configurable en repo **Variables** → `PRODUCTION_URL` (default: `https://drflow.opusorg.com`)
+- Fallos visibles en GitHub → Actions → **Uptime**
+
+También podés dispararlo manualmente: Actions → Uptime → **Run workflow**.
+
+### UptimeRobot / Better Stack (recomendado para alertas)
+
+1. Creá monitor HTTP(s) en [UptimeRobot](https://uptimerobot.com) o [Better Stack](https://betterstack.com)
+2. URL: `https://drflow.opusorg.com/api/health`
+3. Intervalo: 5 min
+4. Alerta si HTTP ≠ **200** o timeout > 30s
+5. Keyword opcional: `"ok":true` en el body JSON
+
+Monitor secundario (deploys):
+
+- `https://drflow.opusorg.com/api/version` — keyword `"version"`
+
+### CI en cada push
+
+`.github/workflows/ci.yml` — lint, test, build, smoke health local, `docker build`.

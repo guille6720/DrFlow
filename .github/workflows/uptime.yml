@@ -1,0 +1,37 @@
+name: Uptime
+
+on:
+  schedule:
+    # Cada 15 min — monitoreo externo vía GitHub (sin servicio tercero)
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  production-health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe production health
+        run: node scripts/check-health.mjs --url="${{ vars.PRODUCTION_URL || 'https://drflow.opusorg.com' }}" --strict
+
+      - name: Probe production version
+        run: |
+          node -e "
+            const url = '${{ vars.PRODUCTION_URL || 'https://drflow.opusorg.com' }}'.replace(/\\/$/, '') + '/api/version';
+            fetch(url).then(async (r) => {
+              const ct = r.headers.get('content-type') || '';
+              const text = await r.text();
+              if (!ct.includes('application/json')) {
+                console.error('Expected JSON from', url, 'got', ct);
+                console.error(text.slice(0, 200));
+                process.exit(1);
+              }
+              const body = JSON.parse(text);
+              if (!body.version) {
+                console.error('Missing version field');
+                process.exit(1);
+              }
+              console.log('✓ /api/version v' + body.version);
+            }).catch((e) => { console.error(e); process.exit(1); });
+          "

@@ -67,7 +67,7 @@ describe("production scripts", () => {
     expect(existsSync(resolve(root, "docker-compose.yml"))).toBe(true);
 
     const dockerfile = readFileSync(resolve(root, "Dockerfile"), "utf8");
-    expect(dockerfile).toMatch(/standalone/);
+    expect(dockerfile).toMatch(/DOCKER_BUILD/);
 
     const healthScript = readFileSync(resolve(root, "scripts/check-health.mjs"), "utf8");
     expect(healthScript).toMatch(/\/api\/health/);

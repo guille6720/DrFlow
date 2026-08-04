@@ -29,6 +29,11 @@ async function fetchJson(url) {
   try {
     body = JSON.parse(text);
   } catch {
+    if (text.trimStart().startsWith("<!DOCTYPE") || text.trimStart().startsWith("<html")) {
+      throw new Error(
+        `Respuesta HTML en ${url} — ¿deploy pendiente o ruta /api bloqueada? (HTTP ${res.status})`
+      );
+    }
     throw new Error(`Respuesta no JSON (${res.status}) en ${url}: ${text.slice(0, 120)}`);
   }
   return { res, body };
