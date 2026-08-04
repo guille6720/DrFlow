@@ -17,6 +17,7 @@ import {
 import type { PatientWorkspaceTabId } from "@/lib/constants/patient-workspace-tabs";
 import { usePatientWorkspaceTab } from "@/lib/hooks/use-patient-workspace-tab";
 import { PatientWorkflowActionBarHost } from "@/components/clinical-workflow/patient-workflow-action-bar-host";
+import { PreVisitBriefPanel } from "@/components/clinical-workflow/pre-visit-brief-panel";
 
 const PatientClinicalAuditPanel = dynamic(
   () =>
@@ -64,6 +65,7 @@ export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
   const { activeTab, setTab } = usePatientWorkspaceTab(chartProps.patientId, initialTab);
 
   const chartFocus = CHART_FOCUS_TABS[activeTab];
+  const patientName = `${chartProps.patient.first_name} ${chartProps.patient.last_name}`.trim();
 
   return (
     <div className="drflow-patient-workspace">
@@ -71,6 +73,12 @@ export function PatientWorkspaceView(props: PatientWorkspaceViewProps) {
         patientId={chartProps.patientId}
         canEditClinical={chartProps.canEditClinical}
         canIssue={chartProps.canIssue}
+      />
+      <PreVisitBriefPanel
+        patientName={patientName}
+        chart={chartProps.chart}
+        lastConsultAt={ehr.consultations[0]?.created_at ?? null}
+        className="mb-3"
       />
       <PatientWorkspaceTabBar activeTab={activeTab} onTabChange={setTab} />
 
