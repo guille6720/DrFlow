@@ -1,7 +1,7 @@
 # Enterprise Transformation — DrFlow
 
 Plan de 20 fases para convertir DrFlow en software **enterprise-grade** orientado a velocidad del médico.  
-**Estado:** ✅ **Roadmap completado** (Fases 1–20) · **HEAD:** `fa0147f` · **Versión:** 0.2.1
+**Estado:** ✅ **Roadmap completado** (Fases 1–20) + Hardening v1.0 · **HEAD:** `d31afcc` · **Versión:** 0.2.1
 
 ---
 
@@ -19,7 +19,7 @@ Cada fase es incremental: sin romper compatibilidad, sin eliminar funcionalidade
 |---------|-------|
 | Fases completadas | 19 implementación + 1 auditoría + 1 cierre doc |
 | Migraciones enterprise | `046`–`052` |
-| Tests Vitest | 281+ |
+| Tests Vitest | 291+ |
 | Cobertura core lib | ≥90% (gate CI) |
 | E2E smoke | Playwright (`e2e/smoke.spec.ts`) |
 | Prod | [drflow.opusorg.com](https://drflow.opusorg.com) · Vercel `gru1` |

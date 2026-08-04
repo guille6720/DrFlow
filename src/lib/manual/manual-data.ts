@@ -37,7 +37,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     steps: [
       {
         title: "Entrá con tu cuenta",
-        body: "Usá email/contraseña o Continuar con Google. Si olvidaste la clave, pedí el link de restablecer (llega a tu correo).",
+        body: "Usá email/contraseña o Continuar con Google en https://drflow.opusorg.com/login. Si olvidaste la clave: escribí tu email → «Enviar link para restablecer contraseña» → abrí el mail en Chrome o Edge (no en la app de Gmail embebida) → elegí una clave nueva de al menos 8 caracteres.",
       },
       {
         title: "Miriá el panel «Consultorio en vivo»",
@@ -50,6 +50,8 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     ],
     tips: [
       "Si no hay turnos, usá «Nuevo turno» o cargá datos demo desde Configuración.",
+      "Atajo: Ctrl+K (Cmd+K en Mac) abre la paleta de comandos para buscar pacientes o ir a una sección.",
+      "Si el link de restablecer contraseña no abre el formulario, pedí uno nuevo: los mails viejos pueden haber expirado.",
     ],
   },
   {
@@ -85,6 +87,10 @@ export const MANUAL_SECTIONS: ManualSection[] = [
       {
         title: "Alta de paciente",
         body: "Nombre, DNI, cobertura (lista de tu consultorio) y N° afiliado o beneficio PAMI.",
+      },
+      {
+        title: "Ficha del paciente (hub clínico)",
+        body: "En Pacientes → abrir ficha: resumen, timeline, SOAP, recetas, órdenes, estudios, adjuntos, auditoría e IA — todo sin salir del paciente.",
       },
       {
         title: "Banner clínico",
@@ -196,6 +202,10 @@ export const MANUAL_SECTIONS: ManualSection[] = [
       {
         title: "Disponibilidad",
         body: "Agregá días/horarios por profesional (incluye domingo si atienden).",
+      },
+      {
+        title: "Accesibilidad",
+        body: "Configuración → Accesibilidad: atajos de teclado, criterios WCAG y opción «Reducir animaciones».",
       },
       {
         title: "Datos demo",
