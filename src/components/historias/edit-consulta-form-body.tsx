@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +24,8 @@ export function EditConsultaFormBody({
   canIssuePrescriptions,
   form,
 }: Props) {
+  const [voiceDraftPending, setVoiceDraftPending] = useState(false);
+
   return (
     <Card title="Actualizar consulta">
       <form onSubmit={form.handleSubmit} className="grid gap-4">
@@ -29,6 +34,20 @@ export function EditConsultaFormBody({
         {record.appointment_id && (
           <input type="hidden" name="appointment_id" value={record.appointment_id} />
         )}
+
+        <Textarea
+          name="evolution"
+          label="Evolución"
+          required
+          rows={12}
+          voiceInput
+          value={form.evolution}
+          onChange={(e) => {
+            form.setEvolution(e.target.value);
+            if (!e.target.value.trim()) setVoiceDraftPending(false);
+          }}
+          onVoiceAppend={() => setVoiceDraftPending(true)}
+        />
 
         {patient ? (
           <ConsultationPhysicianAssist
@@ -41,20 +60,14 @@ export function EditConsultaFormBody({
               diagnosis: record.diagnosis,
             }}
             evolutionText={form.evolution}
-            onApplyToEvolution={form.setEvolution}
+            onApplyToEvolution={(text) => {
+              form.setEvolution(text);
+              setVoiceDraftPending(false);
+            }}
             pharmacologyHref={form.pharmacologyHref()}
+            voiceDraftPending={voiceDraftPending}
           />
         ) : null}
-
-        <Textarea
-          name="evolution"
-          label="Evolución"
-          required
-          rows={12}
-          voiceInput
-          value={form.evolution}
-          onChange={(e) => form.setEvolution(e.target.value)}
-        />
 
         <div className="flex flex-wrap gap-3 text-sm">
           <Link

@@ -1,5 +1,6 @@
 import type { ChartAlert, MedicationCard } from "@/lib/utils/patient-chart-types";
 import { extractEvolutionDiagnosis } from "@/lib/utils/parse-evolution-medications";
+import { buildConsultationDocumentationItems } from "@/lib/utils/consultation-documentation";
 import type {
   PhysicianAssistContext,
   PhysicianAssistItem,
@@ -205,6 +206,10 @@ const DIFFERENTIAL_RULES: Array<{ terms: string[]; diagnoses: string[] }> = [
   {
     terms: ["hipertensión", "presión", "hta", "elevada"],
     diagnoses: ["Hipertensión arterial esencial", "HTA secundaria", "Crisis hipertensiva"],
+  },
+  {
+    terms: ["dolor lumbar", "lumbalgia", "lumbago", "columna lumbar"],
+    diagnoses: ["Lumbalgia mecánica", "Hernia discal lumbar", "Estenosis espinal", "Infección vertebral"],
   },
 ];
 
@@ -488,6 +493,8 @@ export function buildPhysicianAssistItems(
   if (kindSet.has("interaction_alert")) {
     items.push(...buildInteractionAlertItems(ctx));
   }
+  items.push(...buildConsultationDocumentationItems(ctx, kinds));
+
   if (kindSet.has("soap")) {
     const soap = buildSoapDraftSuggestion(ctx);
     if (soap) items.push(soap);

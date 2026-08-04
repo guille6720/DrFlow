@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
@@ -59,6 +60,8 @@ export function NuevaConsultaFormBody({
     applyTemplate,
   } = form;
 
+  const [voiceDraftPending, setVoiceDraftPending] = useState(false);
+
   return (
     <>
       {templates.length > 0 && (
@@ -108,6 +111,20 @@ export function NuevaConsultaFormBody({
             </div>
           )}
 
+          <Textarea
+            name="evolution"
+            label="Evolución"
+            required
+            rows={10}
+            voiceInput
+            value={evolution}
+            onChange={(e) => {
+              setEvolution(e.target.value);
+              if (!e.target.value.trim()) setVoiceDraftPending(false);
+            }}
+            onVoiceAppend={() => setVoiceDraftPending(true)}
+          />
+
           {selectedPatient && consultationContext ? (
             <ConsultationPhysicianAssist
               patientId={selectedPatient.id}
@@ -118,20 +135,14 @@ export function NuevaConsultaFormBody({
                 medicalHistory: selectedPatient.medical_history,
               }}
               evolutionText={evolution}
-              onApplyToEvolution={setEvolution}
+              onApplyToEvolution={(text) => {
+                setEvolution(text);
+                setVoiceDraftPending(false);
+              }}
               pharmacologyHref={pharmacologyHref()}
+              voiceDraftPending={voiceDraftPending}
             />
           ) : null}
-
-          <Textarea
-            name="evolution"
-            label="Evolución"
-            required
-            rows={10}
-            voiceInput
-            value={evolution}
-            onChange={(e) => setEvolution(e.target.value)}
-          />
 
           <div className="flex flex-wrap gap-3 text-sm">
             <Link

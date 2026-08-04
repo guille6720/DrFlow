@@ -12,10 +12,12 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   error?: string;
   /** Muestra botón de dictado por voz (historias clínicas). */
   voiceInput?: boolean;
+  /** Called after speech-to-text appends a final transcript. */
+  onVoiceAppend?: (appendedText: string, fullValue: string) => void;
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, label, error, id, voiceInput = false, ...props }, ref) => {
+  ({ className, label, error, id, voiceInput = false, onVoiceAppend, ...props }, ref) => {
     const textareaId = id ?? label?.toLowerCase().replace(/\s/g, "-");
     const innerRef = useRef<HTMLTextAreaElement | null>(null);
     const voice = useVoiceInputOptional();
@@ -37,7 +39,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     function handleVoiceToggle() {
       const el = innerRef.current;
       if (!el) return;
-      toggle((text) => appendSpeechToTextarea(el, text));
+      toggle((text) => {
+        appendSpeechToTextarea(el, text);
+        onVoiceAppend?.(text, el.value);
+      });
     }
 
     return (

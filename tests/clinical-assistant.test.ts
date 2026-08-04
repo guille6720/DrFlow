@@ -111,6 +111,24 @@ describe("clinical-assistant", () => {
     expect(items[0].body).toContain("Neumonía");
   });
 
+  it("buildDifferentialDiagnosisSuggestions matches lumbar pain", () => {
+    const items = buildDifferentialDiagnosisSuggestions({
+      evolutionText: "dolor lumbar hace tres semanas sin irradiación",
+    });
+    expect(items.length).toBeGreaterThan(0);
+    expect(items[0].body).toContain("Lumbalgia");
+  });
+
+  it("buildPhysicianAssistItems includes documentation kinds", () => {
+    const items = buildPhysicianAssistItems(
+      { evolutionText: "dolor lumbar hace tres semanas, sin irradiación, no fiebre" },
+      ["evolution_draft", "physical_exam", "therapeutic_plan", "soap", "differential"]
+    );
+    expect(items.some((i) => i.kind === "evolution_draft")).toBe(true);
+    expect(items.some((i) => i.kind === "physical_exam")).toBe(true);
+    expect(items.some((i) => i.kind === "therapeutic_plan")).toBe(true);
+  });
+
   it("buildPhysicianAssistItems filters by kind", () => {
     const items = buildPhysicianAssistItems(
       { evolutionText: "dolor torácico opresivo", allergies: "Penicilina" },
