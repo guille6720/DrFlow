@@ -50,6 +50,9 @@ export const COVERAGE_INCLUDE = [
   "src/lib/utils/patient-age.ts",
   "src/lib/utils/patient-ehr-model.ts",
   "src/lib/utils/sanitize-clinical-display.ts",
+  "src/lib/utils/clinical-workspace-alerts.ts",
+  "src/lib/utils/stabilization-limits.ts",
+  "src/lib/utils/clinical-ops-metrics.ts",
   "src/lib/utils/yearly-attended-patients.ts",
 ];
 

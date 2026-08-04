@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "description": "Grandfathered files exceeding stabilization targets (200-line components, 150-line hooks). Line counts must not increase; no new files may be added to this list.",
+  "componentMaxLines": 200,
+  "hookMaxLines": 150,
+  "components": {
+    "src/components/portal/app-install-card.tsx": 212,
+    "src/components/pacientes/patient-indicators-calculator.tsx": 211,
+    "src/components/pharmacology/drug-treatment-list.tsx": 210,
+    "src/components/recetas/prescription-form.tsx": 210,
+    "src/components/pacientes/patient-chart-grid-secondary.tsx": 208,
+    "src/components/historias/nueva-consulta-form-body.tsx": 207,
+    "src/components/command-palette/command-palette-dialog.tsx": 204,
+    "src/components/agenda/edit-appointment-dialog.tsx": 200
+  },
+  "hooks": {
+    "src/lib/hooks/use-nueva-consulta-form.ts": 231,
+    "src/lib/hooks/use-professional-intake.ts": 172,
+    "src/lib/hooks/use-register-clinic-form.ts": 172,
+    "src/lib/hooks/use-patient-consult-sheet.ts": 170,
+    "src/lib/hooks/use-restablecer-password.ts": 169,
+    "src/lib/hooks/use-edit-consulta-form.ts": 168,
+    "src/lib/hooks/use-pharmacology-search.ts": 159,
+    "src/lib/hooks/use-agenda-view.ts": 153
+  }
+}

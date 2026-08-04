@@ -10,7 +10,7 @@ import {
   TodayScheduleSection,
   TodayTasksSection,
 } from "@/components/dashboard/clinical-ops-center/clinical-ops-tasks-sections";
-import { useCompletedTasks } from "@/components/dashboard/clinical-ops-center/use-completed-tasks";
+import { useCompletedOpsTasks } from "@/lib/hooks/use-completed-ops-tasks";
 import {
   LabResultsSection,
   PrescriptionsAndOrdersSections,
@@ -23,7 +23,7 @@ type Props = {
 };
 
 export function ClinicalOpsMainSections({ ops, canManageAppointments }: Props) {
-  const { openTasks, markDone } = useCompletedTasks(ops.tasks);
+  const { openTasks, markDone } = useCompletedOpsTasks(ops.tasks);
 
   return (
     <div className="flex min-w-0 flex-col gap-4">

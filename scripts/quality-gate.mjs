@@ -32,6 +32,7 @@ npmScript("lint");
 run("code-quality:gate", "node", ["scripts/code-quality-gate.mjs"]);
 run("security:gate", "node", ["scripts/security-gate.mjs"]);
 run("architecture:gate", "node", ["scripts/architecture-gate.mjs"]);
+run("stabilization:gate", "node", ["scripts/stabilization-gate.mjs"]);
 npmScript("test");
 npmScript("check:coverage");
 run("critical-coverage", "node", ["scripts/check-critical-coverage.mjs"]);

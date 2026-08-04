@@ -1,6 +1,6 @@
 # Engineering Standards — DrFlow
 
-**Version:** 1.0  
+**Version:** 2.0 (Enterprise Stabilization Program)  
 **Audience:** All contributors  
 **Companion:** [DEFINITION_OF_DONE.md](./DEFINITION_OF_DONE.md)
 
@@ -69,7 +69,10 @@ DrFlow/
 
 ## 4. Component rules
 
-- Max **350** lines (CI architecture gate); target **≤ 250**
+- Max **350** lines (CI hard fail); stabilization target **≤ 200** (baseline lock — see `scripts/stabilization-baseline.json`)
+- New components **>200 lines are rejected** by `stabilization-gate.mjs`
+- Hooks in **`src/lib/hooks/` only** — max **280** hard / **≤ 150** stabilization target
+- Functions target **≤ 40** lines (manual review; extract when exceeded)
 - `"use client"` only when needed (interactivity, hooks)
 - Server Components for data fetching — no client-side waterfall
 - Extract forms into dedicated components + hooks
@@ -180,6 +183,8 @@ npm run quality:gate
 | `npm run code-quality:gate` | TODO, console.log, any, eslint-disable |
 | `npm run security:gate` | XSS, secrets, RLS manifest, npm audit |
 | `npm run architecture:gate` | Component size, UI/service separation |
+| `npm run stabilization:gate` | Baseline lock — no new >200/150 line files |
+| `npm run stabilization:audit` | Metrics JSON for enterprise reports |
 | `npm run architecture:review` | Report mandatory review triggers (local) |
 | `npm run architecture:review:strict` | Fail if triggers without ADR note |
 | `npm run performance:gate` | Benchmarks + component metrics |

@@ -55,6 +55,8 @@ export const CRITICAL_COVERAGE = [
       filePath.includes("src/lib/utils/admin-ops-orchestrator.ts") ||
       filePath.includes("src/lib/utils/admin-analytics-types.ts") ||
       filePath.includes("src/lib/utils/parse-evolution-medications.ts") ||
+      filePath.includes("src/lib/utils/clinical-workspace-alerts.ts") ||
+      filePath.includes("src/lib/utils/stabilization-limits.ts") ||
       filePath.includes("src/lib/utils/sanitize-clinical-display.ts"),
   },
   {

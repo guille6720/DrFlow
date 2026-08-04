@@ -5,7 +5,8 @@
 import { walkDir, rel, readSource, lineCount, failGate, passGate, SRC_ROOT } from "./lib/quality-scan.mjs";
 
 const MAX_COMPONENT_LINES = 350;
-const WARN_COMPONENT_LINES = 250;
+const WARN_COMPONENT_LINES = 200;
+const STABILIZATION_COMPONENT_LINES = 200;
 const COMPONENTS_DIR = `${SRC_ROOT}/components`;
 
 function scanComponents() {
@@ -21,7 +22,7 @@ function scanComponents() {
     if (lines > MAX_COMPONENT_LINES) {
       violations.push(`${r} — ${lines} lines (max ${MAX_COMPONENT_LINES})`);
     } else if (lines > WARN_COMPONENT_LINES) {
-      warnings.push(`${r} — ${lines} lines (target ≤${WARN_COMPONENT_LINES})`);
+      warnings.push(`${r} — ${lines} lines (stabilization target ≤${STABILIZATION_COMPONENT_LINES})`);
     }
 
     if (/export async function/.test(content) && /^["']use client["']/.test(content.trimStart())) {
@@ -71,7 +72,10 @@ function scanBusinessLogicInUi() {
 
 function scanHooks() {
   const violations = [];
+  const warnings = [];
   const hooksDir = `${SRC_ROOT}/lib/hooks`;
+  const HOOK_STABILIZATION_MAX = 150;
+  const HOOK_HARD_MAX = 280;
 
   for (const filePath of walkDir(hooksDir)) {
     if (!filePath.endsWith(".ts")) continue;
@@ -79,8 +83,10 @@ function scanHooks() {
     const content = readSource(filePath);
     const lines = lineCount(filePath);
 
-    if (lines > 280) {
-      violations.push(`${r} — ${lines} lines (hook max 280 — split by concern)`);
+    if (lines > HOOK_HARD_MAX) {
+      violations.push(`${r} — ${lines} lines (hook max ${HOOK_HARD_MAX} — split by concern)`);
+    } else if (lines > HOOK_STABILIZATION_MAX) {
+      warnings.push(`${r} — ${lines} lines (stabilization target ≤${HOOK_STABILIZATION_MAX})`);
     }
 
     if (/@\/lib\/supabase\/server/.test(content)) {
@@ -88,7 +94,7 @@ function scanHooks() {
     }
   }
 
-  return violations;
+  return { violations, warnings };
 }
 
 function main() {
@@ -96,12 +102,13 @@ function main() {
 
   const { violations: sizeViolations, warnings } = scanComponents();
   const logicViolations = scanBusinessLogicInUi();
-  const hookViolations = scanHooks();
+  const { violations: hookViolations, warnings: hookWarnings } = scanHooks();
   const violations = [...sizeViolations, ...logicViolations, ...hookViolations];
+  const allWarnings = [...warnings, ...hookWarnings];
 
-  if (warnings.length) {
-    console.log("⚠ Large components (refactor recommended):");
-    for (const w of warnings) console.log(`   ${w}`);
+  if (allWarnings.length) {
+    console.log("⚠ Stabilization debt (refactor recommended):");
+    for (const w of allWarnings) console.log(`   ${w}`);
     console.log("");
   }
 
@@ -112,7 +119,7 @@ function main() {
   passGate("Architecture gate OK", [
     `Component max ${MAX_COMPONENT_LINES} lines enforced`,
     `Hook max 280 lines enforced`,
-    `${warnings.length} component(s) above ${WARN_COMPONENT_LINES} lines (warning only)`,
+    `${allWarnings.length} file(s) above stabilization targets (200/150 lines)`,
   ]);
 }
 

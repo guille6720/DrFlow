@@ -1,7 +1,5 @@
 "use client";
 
-"use client";
-
 import { useCallback, useMemo, useState } from "react";
 import type { ClinicalOpsTask } from "@/lib/utils/clinical-operations-dashboard-types";
 
@@ -9,7 +7,7 @@ function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function useCompletedTasks(tasks: ClinicalOpsTask[]) {
+export function useCompletedOpsTasks(tasks: ClinicalOpsTask[]) {
   const storageKey = `drflow-ops-tasks-done-${todayKey()}`;
   const [done, setDone] = useState<Set<string>>(() => {
     if (typeof window === "undefined") return new Set();

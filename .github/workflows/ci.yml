@@ -34,6 +34,9 @@ jobs:
       - name: Architecture gate
         run: node scripts/architecture-gate.mjs
 
+      - name: Stabilization gate
+        run: node scripts/stabilization-gate.mjs
+
       - name: Architecture review (strict on PRs)
         if: github.event_name == 'pull_request'
         run: node scripts/architecture-review.mjs --strict --base origin/${{ github.base_ref }}
