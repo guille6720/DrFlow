@@ -1,5 +1,7 @@
 # Roadmap — DrFlow
 
+> **Enterprise Transformation (20 fases):** completado — ver [ENTERPRISE_TRANSFORMATION.md](./ENTERPRISE_TRANSFORMATION.md)
+
 ## Ya construido (MVP + post-QA)
 
 - [x] Agenda, pacientes, historia clínica, timer de consulta

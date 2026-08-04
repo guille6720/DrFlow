@@ -37,9 +37,21 @@ DrFlow/
 │   │   ├── services/        # Mock: pagos, reminders, telemedicina
 │   │   └── actions/         # Server actions
 │   └── types/               # Tipos TypeScript
-├── tests/                   # Vitest
-└── docs/                    # QA checklist, roadmap
+├── tests/                   # Vitest + Playwright E2E
+└── docs/                    # QA, roadmap, enterprise transformation
 ```
+
+## Enterprise Transformation
+
+Plan de 20 fases completado (auditoría → testing 90%). Resumen:
+
+```bash
+npm run enterprise:status
+```
+
+Documentación completa: [docs/ENTERPRISE_TRANSFORMATION.md](./docs/ENTERPRISE_TRANSFORMATION.md)
+
+Runbooks: [TESTING.md](./docs/TESTING.md) · [PRODUCTION.md](./docs/PRODUCTION.md)
 
 ## Instalación
 
