@@ -79,7 +79,7 @@ export function ConsultationPhysicianAssist({
   return (
     <div className="space-y-2">
       {voiceDraftPending && hasEvolution ? (
-        <p className="flex items-center gap-1.5 rounded-lg border border-teal-100 bg-teal-50/80 px-3 py-2 text-xs text-teal-800">
+        <p className="drflow-clinical-assist-voice flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs">
           <Mic className="h-3.5 w-3.5 shrink-0" aria-hidden />
           Texto dictado — revisá las sugerencias antes de guardar.
         </p>
@@ -92,7 +92,7 @@ export function ConsultationPhysicianAssist({
           onApply={handleApply}
         />
       ) : (
-        <p className="rounded-lg border border-dashed border-violet-200 bg-violet-50/40 px-3 py-2 text-xs text-violet-800">
+        <p className="drflow-clinical-assist-hint rounded-lg border border-dashed px-3 py-2 text-xs">
           Escribí o dictá la evolución para generar SOAP, examen físico, diferencial y plan terapéutico.
         </p>
       )}
@@ -103,11 +103,14 @@ export function ConsultationPhysicianAssist({
 
       <div className="flex flex-wrap gap-3 text-xs">
         {pharmacologyHref ? (
-          <Link href={pharmacologyHref} className="text-violet-700 hover:underline">
+          <Link href={pharmacologyHref} className="drflow-clinical-assist-link hover:underline">
             Guía farmacológica →
           </Link>
         ) : null}
-        <Link href={`/pacientes/${patientId}?tab=resumen`} className="text-violet-700 hover:underline">
+        <Link
+          href={`/pacientes/${patientId}?tab=resumen`}
+          className="drflow-clinical-assist-link hover:underline"
+        >
           Ver resumen clínico →
         </Link>
       </div>

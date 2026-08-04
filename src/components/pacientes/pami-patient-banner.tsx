@@ -43,17 +43,17 @@ export function PamiPatientBanner({ patient }: PamiPatientBannerProps) {
             {isGeriatric && <Badge variant="warning">Adulto mayor</Badge>}
           </div>
           {patient.insurance_number ? (
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="drflow-patient-banner-meta mt-2 text-sm">
               {numberLabel}:{" "}
-              <span className="font-medium text-slate-900">{patient.insurance_number}</span>
+              <span className="font-semibold text-slate-900">{patient.insurance_number}</span>
             </p>
           ) : patient.insurance_provider ? (
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="drflow-patient-banner-meta mt-2 text-sm">
               {numberLabel}: <span className="italic">Sin Nº</span>
             </p>
           ) : null}
           {(patient.emergency_contact_name || patient.emergency_contact_phone) && (
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="drflow-patient-banner-meta mt-1 text-xs">
               Contacto: {patient.emergency_contact_name ?? "—"}
               {patient.emergency_contact_phone ? ` · ${patient.emergency_contact_phone}` : ""}
             </p>
@@ -79,8 +79,8 @@ export function PamiPatientBanner({ patient }: PamiPatientBannerProps) {
           </div>
         )}
         {!patient.allergies && !patient.regular_medication && (
-          <div className="flex items-center gap-2 text-sm text-slate-500 sm:col-span-2">
-            <Heart className="h-4 w-4" />
+          <div className="drflow-patient-banner-hint flex items-center gap-2 text-sm sm:col-span-2">
+            <Heart className="h-4 w-4 shrink-0" />
             Completá alergias y medicación habitual en la ficha del paciente.
           </div>
         )}

@@ -45,16 +45,16 @@ function AssistItemCard({
       className={
         isAlert
           ? "rounded-lg border border-amber-200 bg-amber-50/90 p-3"
-          : "rounded-lg border border-violet-100 bg-white p-3 shadow-sm"
+          : "drflow-physician-assist-card rounded-lg border p-3 shadow-sm"
       }
     >
       <div className="mb-1 flex items-start justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <p className="drflow-physician-assist-card-label text-xs font-semibold uppercase tracking-wide">
           {PHYSICIAN_ASSIST_KIND_LABELS[item.kind]}
         </p>
         {isAlert ? <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" /> : null}
       </div>
-      <pre className="mb-3 max-h-48 overflow-auto whitespace-pre-wrap font-sans text-sm text-slate-800">
+      <pre className="drflow-physician-assist-card-body mb-3 max-h-48 overflow-auto whitespace-pre-wrap font-sans text-sm">
         {item.body}
       </pre>
       <div className="flex flex-wrap gap-2">
@@ -125,15 +125,15 @@ export function InlinePhysicianAssist({
 
   return (
     <div
-      className={`rounded-xl border border-violet-100 bg-violet-50/50 p-3 ${className}`}
+      className={`drflow-physician-assist-panel rounded-xl border p-3 ${className}`}
       data-physician-assist
       data-alerts-acknowledged={allAlertsAcknowledged ? "true" : "false"}
     >
-      <div className="mb-2 flex items-center gap-1.5 text-sm font-medium text-violet-900">
+      <div className="drflow-physician-assist-title mb-2 flex items-center gap-1.5 text-sm font-medium">
         <Sparkles className="h-4 w-4" />
         Asistencia clínica
       </div>
-      <p className="mb-3 text-xs text-violet-800">{PHYSICIAN_ASSIST_DISCLAIMER}</p>
+      <p className="drflow-physician-assist-disclaimer mb-3 text-xs">{PHYSICIAN_ASSIST_DISCLAIMER}</p>
 
       {pendingAlerts.length > 0 ? (
         <div className="mb-3 space-y-2">

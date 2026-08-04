@@ -866,6 +866,127 @@ html:not([data-ui-style="2"]) .drflow-patient-context-banner :is(.text-slate-500
   color: #cbd5e1 !important;
 }
 
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-patient-context-banner .drflow-patient-banner-hint,
+html:not([data-ui-style="2"]) .drflow-patient-context-banner .drflow-patient-banner-hint {
+  color: #f8fafc !important;
+  font-weight: 500;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-context-banner .drflow-patient-banner-hint {
+  color: #475569 !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-patient-context-banner .drflow-patient-banner-meta,
+html:not([data-ui-style="2"]) .drflow-patient-context-banner .drflow-patient-banner-meta {
+  color: #e2e8f0 !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-context-banner .drflow-patient-banner-meta {
+  color: #475569 !important;
+}
+
+/* Asistente clínico en consulta — contraste en dark / estilo clínico */
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-clinical-assist-hint,
+html:not([data-ui-style="2"]) .drflow-clinical-assist-hint {
+  border-color: rgb(167 139 250 / 0.45) !important;
+  background: rgb(91 33 182 / 0.28) !important;
+  color: #f5f3ff !important;
+  font-weight: 500;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-assist-hint {
+  border-color: rgb(221 214 254);
+  background: rgb(245 243 255 / 0.9);
+  color: rgb(76 29 149);
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-clinical-assist-voice,
+html:not([data-ui-style="2"]) .drflow-clinical-assist-voice {
+  border-color: rgb(45 212 191 / 0.4) !important;
+  background: rgb(19 78 74 / 0.35) !important;
+  color: #ccfbf1 !important;
+  font-weight: 500;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-assist-voice {
+  border-color: rgb(204 251 241);
+  background: rgb(240 253 250 / 0.9);
+  color: rgb(17 94 89);
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-clinical-assist-link,
+html:not([data-ui-style="2"]) .drflow-clinical-assist-link {
+  color: #c4b5fd !important;
+  font-weight: 500;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-clinical-assist-link:hover,
+html:not([data-ui-style="2"]) .drflow-clinical-assist-link:hover {
+  color: #e9d5ff !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-assist-link {
+  color: rgb(109 40 217) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-physician-assist-panel,
+html:not([data-ui-style="2"]) .drflow-physician-assist-panel {
+  border-color: rgb(167 139 250 / 0.35) !important;
+  background: rgb(30 27 75 / 0.4) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-physician-assist-panel {
+  border-color: rgb(237 233 254);
+  background: rgb(245 243 255 / 0.75);
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-physician-assist-title,
+html:not([data-ui-style="2"]) .drflow-physician-assist-title {
+  color: #ede9fe !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-physician-assist-title {
+  color: rgb(76 29 149);
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-physician-assist-disclaimer,
+html:not([data-ui-style="2"]) .drflow-physician-assist-disclaimer {
+  color: #ddd6fe !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-physician-assist-disclaimer {
+  color: rgb(91 33 182);
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-physician-assist-card,
+html:not([data-ui-style="2"]) .drflow-physician-assist-card {
+  border-color: rgb(100 116 139 / 0.55) !important;
+  background: rgb(15 23 42 / 0.55) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-physician-assist-card {
+  border-color: rgb(237 233 254);
+  background: #fff;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-physician-assist-card-body,
+html:not([data-ui-style="2"]) .drflow-physician-assist-card-body {
+  color: #f8fafc !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-physician-assist-card-body {
+  color: rgb(30 41 59);
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-physician-assist-card-label,
+html:not([data-ui-style="2"]) .drflow-physician-assist-card-label {
+  color: #cbd5e1 !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-physician-assist-card-label {
+  color: rgb(100 116 139);
+}
+
 /* Estilo 2 clinical dark — legibilidad en todo el main */
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main {
   color: var(--foreground);

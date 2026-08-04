@@ -73,7 +73,7 @@ export function EditConsultaFormBody({
           <Link
             href={form.pharmacologyHref("symptoms")}
             onClick={form.flushEvolutionDraft}
-            className="inline-flex items-center gap-1.5 text-violet-700 hover:underline"
+            className="drflow-clinical-assist-link inline-flex items-center gap-1.5 hover:underline"
           >
             <Pill className="h-4 w-4" />
             Buscar por síntomas
@@ -81,7 +81,7 @@ export function EditConsultaFormBody({
           <Link
             href={form.pharmacologyHref()}
             onClick={form.flushEvolutionDraft}
-            className="inline-flex items-center gap-1.5 text-blue-700 hover:underline"
+            className="drflow-clinical-assist-link inline-flex items-center gap-1.5 hover:underline"
           >
             <Pill className="h-4 w-4" />
             Guía farmacológica

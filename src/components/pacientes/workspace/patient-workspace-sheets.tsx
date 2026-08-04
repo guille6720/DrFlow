@@ -72,6 +72,7 @@ export function PatientWorkspaceSheets({
         canIssuePrescriptions={canIssue}
         appointmentId={actions.appointment}
         professionalId={actions.professional}
+        lastMedications={lastMedications}
         onClose={actions.closeSheet}
         onSaved={actions.onConsultSaved}
       />

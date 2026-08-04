@@ -27,6 +27,8 @@ type Props = {
   professionals: FormProfessional[];
   templates: Array<{ id: string; name: string }>;
   canIssuePrescriptions: boolean;
+  /** Flujo lineal consulta → receta → orden → turno → fin (sin links externos). */
+  journeyMode?: boolean;
 };
 
 export function NuevaConsultaFormBody({
@@ -35,6 +37,7 @@ export function NuevaConsultaFormBody({
   professionals,
   templates,
   canIssuePrescriptions,
+  journeyMode = false,
 }: Props) {
   const {
     fromAppointment,
@@ -148,7 +151,7 @@ export function NuevaConsultaFormBody({
             <Link
               href={pharmacologyHref("symptoms")}
               onClick={flushEvolutionDraft}
-              className="inline-flex items-center gap-1.5 text-violet-700 hover:underline"
+              className="drflow-clinical-assist-link inline-flex items-center gap-1.5 hover:underline"
             >
               <Pill className="h-4 w-4" />
               Buscar por síntomas
@@ -156,7 +159,7 @@ export function NuevaConsultaFormBody({
             <Link
               href={pharmacologyHref()}
               onClick={flushEvolutionDraft}
-              className="inline-flex items-center gap-1.5 text-blue-700 hover:underline"
+              className="drflow-clinical-assist-link inline-flex items-center gap-1.5 hover:underline"
             >
               <Pill className="h-4 w-4" />
               Guía farmacológica
@@ -175,9 +178,9 @@ export function NuevaConsultaFormBody({
 
           <div className="flex flex-wrap gap-2">
             <Button type="submit" loading={loading}>
-              Guardar consulta
+              {journeyMode && fromAppointment ? "Guardar y continuar" : "Guardar consulta"}
             </Button>
-            {canIssuePrescriptions && consultationContext ? (
+            {!journeyMode && canIssuePrescriptions && consultationContext ? (
               <Link
                 href={recetaHref()}
                 onClick={flushEvolutionDraft}

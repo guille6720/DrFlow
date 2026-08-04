@@ -25,6 +25,10 @@ interface ConsultationFlowBarProps {
   showSteps?: boolean;
   recetaHref?: string;
   onRecetaClick?: () => void;
+  /** Oculta el link externo a receta cuando el flujo lineal (journey) está activo. */
+  hideRecetaLink?: boolean;
+  /** Oculta finalizar turno en la barra (se hace al final del journey). */
+  hideFinalize?: boolean;
 }
 
 /** Barra fija de consulta: paciente + timer + pasos + finalizar. */
@@ -36,6 +40,8 @@ export function ConsultationFlowBar({
   showSteps = true,
   recetaHref,
   onRecetaClick,
+  hideRecetaLink = false,
+  hideFinalize = false,
 }: ConsultationFlowBarProps) {
   const stepIndex = STEPS.findIndex((s) => s.id === activeStep);
 
@@ -57,7 +63,7 @@ export function ConsultationFlowBar({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ConsultationTimer storageKey={appointmentId} />
-          {recetaHref ? (
+          {!hideRecetaLink && recetaHref ? (
             <Link
               href={recetaHref}
               onClick={onRecetaClick}
@@ -67,7 +73,7 @@ export function ConsultationFlowBar({
               Generar receta
             </Link>
           ) : null}
-          <FinalizeConsultationButton appointmentId={appointmentId} />
+          {!hideFinalize ? <FinalizeConsultationButton appointmentId={appointmentId} /> : null}
         </div>
       </div>
 
