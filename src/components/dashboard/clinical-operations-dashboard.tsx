@@ -17,16 +17,32 @@ import {
   ClinicalOpsCriticalAlertsCard,
   ClinicalOpsTasksCard,
 } from "@/components/dashboard/clinical-ops-tasks-cards";
+import { AdminOpsDashboardBridge } from "@/components/admin-ops/admin-ops-dashboard-bridge";
 
 type Props = {
   ops: ClinicalOperationsDashboardPayload;
   canManageAppointments: boolean;
+  canManageCash?: boolean;
+  canManageWaitingRoom?: boolean;
+  canManageSettings?: boolean;
 };
 
 /** Operational dashboard — physicians and reception; no decorative widgets. */
-export function ClinicalOperationsDashboard({ ops, canManageAppointments }: Props) {
+export function ClinicalOperationsDashboard({
+  ops,
+  canManageAppointments,
+  canManageCash,
+  canManageWaitingRoom,
+  canManageSettings,
+}: Props) {
   return (
     <section aria-label="Operaciones clínicas" className="space-y-4">
+      <AdminOpsDashboardBridge
+        ops={ops}
+        canManageCash={canManageCash}
+        canManageWaitingRoom={canManageWaitingRoom}
+        canManageSettings={canManageSettings}
+      />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-slate-600">
           Cola de atención, alertas y pendientes del día

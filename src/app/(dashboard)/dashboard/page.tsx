@@ -39,6 +39,9 @@ export default async function DashboardPage() {
           <ClinicalOperationsDashboard
             ops={ops}
             canManageAppointments={hasPermission(role, "manageAppointments", isSuperadmin)}
+            canManageCash={hasPermission(role, "manageCashRegister", isSuperadmin)}
+            canManageWaitingRoom={hasPermission(role, "manageWaitingRoom", isSuperadmin)}
+            canManageSettings={hasPermission(role, "manageSettings", isSuperadmin)}
           />
         ) : (
           <p className="text-sm text-slate-500">Seleccioná un consultorio para ver operaciones del día.</p>

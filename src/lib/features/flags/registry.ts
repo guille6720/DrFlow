@@ -8,6 +8,7 @@ export type FeatureFlagId =
   | "clinical_operations"
   | "recordatorios"
   | "consultation_assistant"
+  | "admin_ops_assistant"
   | "patient_audit_tab"
   | "public_booking_online";
 
@@ -63,6 +64,14 @@ export const FEATURE_FLAG_REGISTRY: FeatureFlagDefinition[] = [
     label: "Asistente en consulta",
     description: "Panel de sugerencias inline al escribir evoluciones.",
     category: "clinical",
+    defaultEnabled: true,
+    requiresPlugin: "ia",
+  },
+  {
+    id: "admin_ops_assistant",
+    label: "Asistente operativo",
+    description: "Copilot de secretaría y operaciones (cola, caja, tareas del día).",
+    category: "ux",
     defaultEnabled: true,
     requiresPlugin: "ia",
   },

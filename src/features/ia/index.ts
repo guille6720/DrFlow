@@ -70,6 +70,24 @@ export type {
   ClinicalAiOrchestratorResult,
   ClinicalAiEngine,
 } from "@/lib/utils/clinical-ai-orchestrator";
+export {
+  runAdminOpsOrchestrator,
+  listAdminOpsAgents,
+  ADMIN_OPS_AGENT_LABELS,
+} from "@/lib/utils/admin-ops-orchestrator";
+export type {
+  AdminOpsAgentId,
+  AdminOpsTask,
+  AdminOpsOrchestratorResult,
+} from "@/lib/utils/admin-ops-orchestrator";
+export {
+  matchAdminOpsIntent,
+  buildAdminOpsSuggestedPrompts,
+  buildAdminOpsResponse,
+} from "@/lib/utils/admin-ops-assistant";
+export type { AdminOpsContext, AdminOpsSnapshot } from "@/lib/utils/admin-ops-types";
+export { AdminOpsCopilotHost } from "@/components/admin-ops/admin-ops-copilot-host";
+export { AdminOpsCopilotSheet } from "@/components/admin-ops/admin-ops-copilot-sheet";
 export type {
   PhysicianAssistContext,
   PhysicianAssistItem,
