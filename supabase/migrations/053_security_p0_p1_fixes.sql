@@ -3,6 +3,29 @@
 -- bucket MIME types for imports.
 
 -- ---------------------------------------------------------------------------
+-- Ensure RLS helpers exist (idempotent if 034/047 already applied)
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION can_manage_admin_docs(p_clinic_id UUID)
+RETURNS BOOLEAN AS $$
+  SELECT is_superadmin() OR user_role_in_clinic(p_clinic_id) IN ('clinic_admin', 'secretary');
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
+
+CREATE OR REPLACE FUNCTION clinic_subscription_active(p_clinic_id UUID)
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM clinics c
+    WHERE c.id = p_clinic_id
+      AND (c.trial_ends_at IS NULL OR c.trial_ends_at > now())
+  );
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
+
+CREATE OR REPLACE FUNCTION can_write_clinical(p_clinic_id UUID)
+RETURNS BOOLEAN AS $$
+  SELECT is_superadmin()
+    OR (can_view_clinical(p_clinic_id) AND clinic_subscription_active(p_clinic_id));
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
+
+-- ---------------------------------------------------------------------------
 -- Storage path classification
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION clinical_storage_path_kind(p_path text)

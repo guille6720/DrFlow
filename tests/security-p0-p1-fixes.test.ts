@@ -23,6 +23,7 @@ describe("053_security_p0_p1_fixes migration", () => {
     expect(sql).toMatch(/can_read_clinical_storage/);
     expect(sql).toMatch(/can_write_clinical_storage/);
     expect(sql).toMatch(/can_manage_admin_docs/);
+    expect(sql).toMatch(/CREATE OR REPLACE FUNCTION can_manage_admin_docs/);
   });
 
   it("restricts clinic_jobs INSERT to staff roles", () => {
