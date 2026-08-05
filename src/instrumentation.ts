@@ -5,6 +5,16 @@ export async function register() {
     process.env.LIGHTHOUSE_AUDIT !== "1"
   ) {
     const { validateProductionEnv } = await import("@/core/env.server");
-    validateProductionEnv({ throwOnError: true });
+    const result = validateProductionEnv({ throwOnError: false });
+
+    if (!result.ok) {
+      console.error(
+        "[drflow] Production env incomplete:",
+        result.missing.join(", "),
+        "— see .env.example"
+      );
+    } else if (result.warnings.length > 0) {
+      console.error("[drflow] Production env warnings:", result.warnings.join("; "));
+    }
   }
 }

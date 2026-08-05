@@ -14,7 +14,7 @@ describe("validateProductionEnv", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("fails in production when CRON_SECRET is missing", () => {
+  it("warns in production when CRON_SECRET is missing", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://test.supabase.co");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_test_key");
@@ -23,8 +23,18 @@ describe("validateProductionEnv", () => {
     vi.stubEnv("CRON_SECRET", "");
 
     const result = validateProductionEnv({ throwOnError: false });
-    expect(result.ok).toBe(false);
-    expect(result.missing).toContain("CRON_SECRET");
+    expect(result.ok).toBe(true);
+    expect(result.warnings.some((w) => w.includes("CRON_SECRET"))).toBe(true);
+  });
+
+  it("accepts legacy anon key when publishable key is unset", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "legacy_anon_key_1234567890");
+
+    const result = validateProductionEnv({ throwOnError: false });
+    expect(result.ok).toBe(true);
   });
 });
 

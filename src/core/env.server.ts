@@ -2,12 +2,11 @@ import "server-only";
 
 import { z } from "zod";
 
-const productionServerEnvSchema = z.object({
+import { normalizePublicUrl } from "@/core/supabase/env";
+
+const coreProductionEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(10),
-  NEXT_PUBLIC_SITE_URL: z.string().url(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(20),
-  CRON_SECRET: z.string().min(16),
 });
 
 export type ProductionEnvCheck = {
@@ -17,7 +16,28 @@ export type ProductionEnvCheck = {
   warnings: string[];
 };
 
-/** Validates required production secrets — call at startup or pre-deploy. */
+function resolvePublishableKey(): string | undefined {
+  const publishable = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
+  if (publishable) return publishable;
+
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  if (anon && !anon.includes("placeholder")) return anon;
+
+  return undefined;
+}
+
+function resolveSiteUrl(): string | undefined {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (!configured) return undefined;
+
+  try {
+    return normalizePublicUrl(configured);
+  } catch {
+    return undefined;
+  }
+}
+
+/** Validates production env — missing core keys block readiness; ops secrets warn only. */
 export function validateProductionEnv(options?: { throwOnError?: boolean }): ProductionEnvCheck {
   const isProd = process.env.NODE_ENV === "production";
   const missing: string[] = [];
@@ -27,11 +47,28 @@ export function validateProductionEnv(options?: { throwOnError?: boolean }): Pro
     return { ok: true, environment: process.env.NODE_ENV ?? "development", missing, warnings };
   }
 
-  const parsed = productionServerEnvSchema.safeParse(process.env);
+  const publishableKey = resolvePublishableKey();
+  const parsed = coreProductionEnvSchema.safeParse({
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
+  });
+
   if (!parsed.success) {
     for (const issue of parsed.error.issues) {
       missing.push(String(issue.path[0] ?? issue.message));
     }
+  }
+
+  if (!resolveSiteUrl()) {
+    warnings.push("NEXT_PUBLIC_SITE_URL unset or invalid — using VERCEL_URL fallback");
+  }
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
+    warnings.push("SUPABASE_SERVICE_ROLE_KEY unset — jobs/observability persistence disabled");
+  }
+
+  if (!process.env.CRON_SECRET?.trim() || process.env.CRON_SECRET.trim().length < 16) {
+    warnings.push("CRON_SECRET unset or too short — cron endpoints will reject requests");
   }
 
   if (!process.env.DATABASE_URL?.trim()) {

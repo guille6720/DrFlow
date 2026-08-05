@@ -31,7 +31,7 @@ function isLocalhostUrl(url: string): boolean {
 }
 
 /** Acepta `https://dominio` o `dominio` (común en env de Vercel). */
-function normalizePublicUrl(url: string): string {
+export function normalizePublicUrl(url: string): string {
   const trimmed = url.trim().replace(/\/$/, "");
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `https://${trimmed}`;
