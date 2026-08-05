@@ -16,13 +16,13 @@ export default function DashboardError({
   }, [error]);
 
   return (
-    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-6 text-center">
-      <h1 className="text-lg font-semibold text-slate-900">No pudimos cargar esta pantalla</h1>
-      <p className="max-w-md text-sm text-slate-600">
-        Puede ser un problema temporal del servidor. Probá de nuevo o volvé al inicio de sesión.
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-950 p-6 text-center">
+      <h1 className="text-lg font-semibold text-white">No pudimos cargar el panel</h1>
+      <p className="max-w-md text-sm text-slate-400">
+        Hubo un error al cargar el dashboard. Probá de nuevo o volvé al login.
       </p>
       {error.digest ? (
-        <p className="font-mono text-xs text-slate-400">Ref: {error.digest}</p>
+        <p className="font-mono text-xs text-slate-600">Ref: {error.digest}</p>
       ) : null}
       <div className="flex flex-wrap justify-center gap-2">
         <Button type="button" onClick={() => reset()}>
