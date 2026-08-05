@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
+import { SidebarGeminiNavItem } from "@/core/components/layout/sidebar-gemini-nav-item";
 import { type SidebarNavItem } from "@/core/components/layout/sidebar-nav-config";
 
 import { cn } from "@/shared/utils/cn";
@@ -46,31 +47,37 @@ export function SidebarNavContent({
         aria-label="Navegación principal"
         className="flex-1 space-y-1 overflow-y-auto px-3 py-4"
       >
-        {visibleItems.map((item) => {
+        {visibleItems.map((item, index) => {
           const active = pathname.startsWith(item.href);
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              prefetch
-              onMouseEnter={() => onPrefetch(item.href)}
-              onFocus={() => onPrefetch(item.href)}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all",
-                active
-                  ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900 shadow-md shadow-teal-500/20"
-                  : "text-slate-300 hover:bg-slate-800/90 hover:text-white"
-              )}
-            >
-              <item.icon
+            <div key={item.href}>
+              <Link
+                href={item.href}
+                prefetch
+                onMouseEnter={() => onPrefetch(item.href)}
+                onFocus={() => onPrefetch(item.href)}
+                onClick={onNavigate}
                 className={cn(
-                  "h-5 w-5 shrink-0",
-                  active ? "text-slate-900" : "text-teal-400/90"
+                  "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all",
+                  active
+                    ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900 shadow-md shadow-teal-500/20"
+                    : "text-slate-300 hover:bg-slate-800/90 hover:text-white"
                 )}
-              />
-              {item.label}
-            </Link>
+              >
+                <item.icon
+                  className={cn(
+                    "h-5 w-5 shrink-0",
+                    active ? "text-slate-900" : "text-teal-400/90"
+                  )}
+                />
+                {item.label}
+              </Link>
+              {index === 0 ? (
+                <div className="mt-1">
+                  <SidebarGeminiNavItem onNavigate={onNavigate} />
+                </div>
+              ) : null}
+            </div>
           );
         })}
       </nav>
