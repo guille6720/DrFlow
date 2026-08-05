@@ -128,39 +128,44 @@ export function NuevaConsultaFormBody({
             </div>
           )}
 
-          <Textarea
-            name="evolution"
-            label="Evolución"
-            required
-            rows={fillViewport ? undefined : 10}
-            grow={fillViewport}
-            voiceInput
-            value={evolution}
-            onChange={(e) => {
-              setEvolution(e.target.value);
-              if (!e.target.value.trim()) setVoiceDraftPending(false);
-            }}
-            onVoiceAppend={() => setVoiceDraftPending(true)}
-          />
-
-          {selectedPatient && consultationContext ? (
-            <ConsultationPhysicianAssist
-              patientId={selectedPatient.id}
-              context={{
-                patientName: `${selectedPatient.last_name}, ${selectedPatient.first_name}`,
-                allergies: selectedPatient.allergies,
-                regularMedication: selectedPatient.regular_medication,
-                medicalHistory: selectedPatient.medical_history,
+          <div
+            className={cn(
+              fillViewport && "flex min-h-0 flex-1 flex-col overflow-y-auto gap-4"
+            )}
+          >
+            <Textarea
+              name="evolution"
+              label="Evolución"
+              required
+              rows={fillViewport ? 12 : 10}
+              voiceInput
+              value={evolution}
+              onChange={(e) => {
+                setEvolution(e.target.value);
+                if (!e.target.value.trim()) setVoiceDraftPending(false);
               }}
-              evolutionText={evolution}
-              onApplyToEvolution={(text) => {
-                setEvolution(text);
-                setVoiceDraftPending(false);
-              }}
-              pharmacologyHref={pharmacologyHref()}
-              voiceDraftPending={voiceDraftPending}
+              onVoiceAppend={() => setVoiceDraftPending(true)}
             />
-          ) : null}
+
+            {selectedPatient && consultationContext ? (
+              <ConsultationPhysicianAssist
+                patientId={selectedPatient.id}
+                context={{
+                  patientName: `${selectedPatient.last_name}, ${selectedPatient.first_name}`,
+                  allergies: selectedPatient.allergies,
+                  regularMedication: selectedPatient.regular_medication,
+                  medicalHistory: selectedPatient.medical_history,
+                }}
+                evolutionText={evolution}
+                onApplyToEvolution={(text) => {
+                  setEvolution(text);
+                  setVoiceDraftPending(false);
+                }}
+                pharmacologyHref={pharmacologyHref()}
+                voiceDraftPending={voiceDraftPending}
+              />
+            ) : null}
+          </div>
 
           <div className="flex flex-wrap gap-3 text-sm">
             <Link

@@ -46,17 +46,29 @@ function AssistItemCard({
     <div
       className={
         isAlert
-          ? "rounded-lg border border-amber-200 bg-amber-50/90 p-3"
+          ? "drflow-interaction-alert-card rounded-lg border border-amber-300 bg-amber-50 p-3"
           : "drflow-physician-assist-card rounded-lg border p-3 shadow-sm"
       }
     >
       <div className="mb-1 flex items-start justify-between gap-2">
-        <p className="drflow-physician-assist-card-label text-xs font-semibold uppercase tracking-wide">
+        <p
+          className={
+            isAlert
+              ? "drflow-interaction-alert-label text-xs font-semibold uppercase tracking-wide text-amber-900"
+              : "drflow-physician-assist-card-label text-xs font-semibold uppercase tracking-wide"
+          }
+        >
           {PHYSICIAN_ASSIST_KIND_LABELS[item.kind]}
         </p>
         {isAlert ? <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" /> : null}
       </div>
-      <pre className="drflow-physician-assist-card-body mb-3 max-h-48 overflow-auto whitespace-pre-wrap font-sans text-sm">
+      <pre
+        className={
+          isAlert
+            ? "drflow-interaction-alert-body mb-3 max-h-40 overflow-auto whitespace-pre-wrap font-sans text-sm text-amber-950"
+            : "drflow-physician-assist-card-body mb-3 max-h-48 overflow-auto whitespace-pre-wrap font-sans text-sm"
+        }
+      >
         {item.body}
       </pre>
       <div className="flex flex-wrap gap-2">
@@ -77,6 +89,40 @@ function AssistItemCard({
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function InteractionAlertsGroup({
+  alerts,
+  onDismissAll,
+}: {
+  alerts: PhysicianAssistItem[];
+  onDismissAll: () => void;
+}) {
+  if (alerts.length === 0) return null;
+
+  return (
+    <div className="drflow-interaction-alert-card rounded-lg border border-amber-300 bg-amber-50 p-3">
+      <div className="mb-2 flex items-start justify-between gap-2">
+        <p className="drflow-interaction-alert-label text-xs font-semibold uppercase tracking-wide text-amber-900">
+          {alerts.length === 1
+            ? PHYSICIAN_ASSIST_KIND_LABELS.interaction_alert
+            : `${alerts.length} alertas de interacción`}
+        </p>
+        <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
+      </div>
+      <ul className="drflow-interaction-alert-body mb-3 max-h-44 space-y-2 overflow-y-auto text-sm text-amber-950">
+        {alerts.map((item) => (
+          <li key={item.id} className="leading-snug">
+            {item.body}
+          </li>
+        ))}
+      </ul>
+      <Button type="button" size="sm" variant="outline" onClick={onDismissAll}>
+        <Check className="h-3.5 w-3.5" />
+        Entendido
+      </Button>
     </div>
   );
 }
@@ -127,7 +173,7 @@ export function InlinePhysicianAssist({
 
   return (
     <div
-      className={`drflow-physician-assist-panel rounded-xl border p-3 ${className}`}
+      className={`drflow-physician-assist-panel max-h-[min(28rem,55vh)] overflow-y-auto rounded-xl border p-3 ${className}`}
       data-physician-assist
       data-alerts-acknowledged={allAlertsAcknowledged ? "true" : "false"}
     >
@@ -138,16 +184,24 @@ export function InlinePhysicianAssist({
       <p className="drflow-physician-assist-disclaimer mb-3 text-xs">{PHYSICIAN_ASSIST_DISCLAIMER}</p>
 
       {pendingAlerts.length > 0 ? (
-        <div className="mb-3 space-y-2">
-          {pendingAlerts.map((item) => (
+        <div className="mb-3">
+          {pendingAlerts.length === 1 ? (
             <AssistItemCard
-              key={item.id}
-              item={item}
-              state={getState(item.id)}
-              onApply={() => setItemState(item.id, "applied")}
-              onDismiss={() => setItemState(item.id, "dismissed")}
+              item={pendingAlerts[0]!}
+              state={getState(pendingAlerts[0]!.id)}
+              onApply={() => setItemState(pendingAlerts[0]!.id, "applied")}
+              onDismiss={() => setItemState(pendingAlerts[0]!.id, "dismissed")}
             />
-          ))}
+          ) : (
+            <InteractionAlertsGroup
+              alerts={pendingAlerts}
+              onDismissAll={() => {
+                for (const item of pendingAlerts) {
+                  setItemState(item.id, "dismissed");
+                }
+              }}
+            />
+          )}
         </div>
       ) : null}
 

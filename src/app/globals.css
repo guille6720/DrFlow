@@ -989,8 +989,35 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-physician-assist-c
   color: rgb(100 116 139);
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-physician-assist-card-label {
-  color: rgb(100 116 139);
+/* Alertas medicamentosas — siempre legibles sobre fondo ámbar */
+.drflow-interaction-alert-card {
+  border-color: #fcd34d !important;
+  background: #fffbeb !important;
+  color: #78350f !important;
+}
+
+.drflow-interaction-alert-label {
+  color: #92400e !important;
+}
+
+.drflow-interaction-alert-body {
+  color: #78350f !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-interaction-alert-card,
+html[data-ui-palette="cobalt"] .drflow-interaction-alert-card,
+html[data-ui-palette="azure"] .drflow-interaction-alert-card {
+  border-color: #fcd34d !important;
+  background: #fffbeb !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-interaction-alert-label,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-interaction-alert-body,
+html[data-ui-palette="cobalt"] .drflow-interaction-alert-label,
+html[data-ui-palette="cobalt"] .drflow-interaction-alert-body,
+html[data-ui-palette="azure"] .drflow-interaction-alert-label,
+html[data-ui-palette="azure"] .drflow-interaction-alert-body {
+  color: #78350f !important;
 }
 
 /* Resumen pre-consulta — contraste en dark / estilo clínico */
