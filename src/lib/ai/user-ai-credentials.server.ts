@@ -114,8 +114,15 @@ export async function saveUserAiConnection(input: {
     { onConflict: "user_id" }
   );
 
-  if (error) return { error: error.message };
+  if (error) return { error: formatUserAiConnectionError(error.message) };
   return {};
+}
+
+function formatUserAiConnectionError(message: string): string {
+  if (message.includes("user_ai_connections_provider_check")) {
+    return "Gemini todavía no está habilitado en la base de datos. Un administrador debe aplicar la migración 069 en Supabase (ver instrucciones abajo).";
+  }
+  return message;
 }
 
 export async function deleteUserAiConnection(): Promise<{ error?: string }> {
@@ -126,6 +133,6 @@ export async function deleteUserAiConnection(): Promise<{ error?: string }> {
   if (!user) return { error: "Sesión expirada" };
 
   const { error } = await supabase.from("user_ai_connections").delete().eq("user_id", user.id);
-  if (error) return { error: error.message };
+  if (error) return { error: formatUserAiConnectionError(error.message) };
   return {};
 }

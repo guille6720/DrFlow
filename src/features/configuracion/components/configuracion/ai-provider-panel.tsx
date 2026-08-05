@@ -115,7 +115,19 @@ export function AiProviderPanel() {
         </div>
       ) : null}
 
-      {error ? <p className="mb-3 text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <div className="mb-3 space-y-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+          <p>{error}</p>
+          {error.includes("migración 069") ? (
+            <p className="text-xs text-red-700">
+              En Supabase → SQL Editor, ejecutá el archivo{" "}
+              <code className="rounded bg-red-100 px-1">069_user_ai_gemini_provider.sql</code> del
+              repo, o pedile a soporte que corra{" "}
+              <code className="rounded bg-red-100 px-1">npx supabase db push</code>.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       {success ? <p className="mb-3 text-sm text-emerald-700">{success}</p> : null}
 
       <div className="space-y-4">
@@ -146,19 +158,26 @@ export function AiProviderPanel() {
           </label>
           {providerMeta.apiKeyHelpUrl ? (
             <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
-              <p className="text-xs text-slate-600">
-                Ingresá con tu cuenta Google en AI Studio para crear una clave de Gemini.
-              </p>
+              <p className="text-xs font-medium text-slate-800">Conectar tu Gemini personal</p>
+              <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs text-slate-600">
+                <li>Abrí Google AI Studio con el botón de abajo e iniciá sesión con tu cuenta Google.</li>
+                <li>Creá una API key (plan gratuito disponible).</li>
+                <li>Copiá la clave y pegala en el campo «API key».</li>
+                <li>Guardá con «Conectar» y usá «Asistente IA» en Historia clínica o Pacientes.</li>
+              </ol>
               <a
                 href={providerMeta.apiKeyHelpUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-800 hover:bg-slate-50"
+                className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-800 hover:bg-slate-50"
               >
                 <GoogleMark />
-                Obtener API key con Google
+                Abrir Google AI Studio
                 <ExternalLink className="h-3 w-3 opacity-60" />
               </a>
+              <p className="mt-2 text-[11px] text-slate-500">
+                No es login de DrFlow: es la clave de tu cuenta Google para consultas con Gemini.
+              </p>
             </div>
           ) : null}
           <Input
