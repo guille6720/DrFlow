@@ -3,18 +3,18 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 
 type Props = { children: ReactNode };
-type State = { failed: boolean };
+type State = { failed: boolean; message?: string };
 
 /** Catches client render errors in the dashboard shell (layout-level). */
 export class DashboardClientErrorBoundary extends Component<Props, State> {
   state: State = { failed: false };
 
-  static getDerivedStateFromError(): State {
-    return { failed: true };
+  static getDerivedStateFromError(error: Error): State {
+    return { failed: true, message: error.message };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("[dashboard-client-boundary]", error, info.componentStack);
+    console.error("[dashboard-client-boundary]", error.message, info.componentStack);
   }
 
   render() {
@@ -25,11 +25,12 @@ export class DashboardClientErrorBoundary extends Component<Props, State> {
           <p className="max-w-md text-sm text-slate-400">
             Hubo un error en el navegador. Probá recargar o volvé al login.
           </p>
+          <p className="max-w-md font-mono text-xs text-slate-600">{this.state.message}</p>
           <div className="flex flex-wrap justify-center gap-2">
             <button
               type="button"
               className="rounded-lg bg-teal-600 px-4 py-2 text-sm text-white"
-              onClick={() => this.setState({ failed: false })}
+              onClick={() => this.setState({ failed: false, message: undefined })}
             >
               Reintentar
             </button>

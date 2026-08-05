@@ -15,10 +15,18 @@ type Props = {
 };
 
 export function ClinicalOpsTopBar({ clinicName, professionalName, notificationCount }: Props) {
-  const [now, setNow] = useState(() => new Date());
+  const [clock, setClock] = useState<{ label: string; iso: string } | null>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 30000);
+    const tick = () => {
+      const now = new Date();
+      setClock({
+        label: format(now, "EEEE d MMM · HH:mm", { locale: es }),
+        iso: now.toISOString(),
+      });
+    };
+    tick();
+    const timer = setInterval(tick, 30000);
     return () => clearInterval(timer);
   }, []);
 
@@ -29,8 +37,8 @@ export function ClinicalOpsTopBar({ clinicName, professionalName, notificationCo
       aria-label="Barra operativa del día"
     >
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-        <time dateTime={now.toISOString()} className="font-mono font-semibold text-teal-300">
-          {format(now, "EEEE d MMM · HH:mm", { locale: es })}
+        <time dateTime={clock?.iso} className="font-mono font-semibold text-teal-300">
+          {clock?.label ?? "Cargando hora…"}
         </time>
         {professionalName ? (
           <span className="inline-flex items-center gap-1.5 text-slate-300">
