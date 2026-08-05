@@ -1,11 +1,18 @@
 import type { NextConfig } from "next";
 import { SECURITY_RESPONSE_HEADERS } from "./src/core/security/response-headers";
 
+const STATIC_ASSET_CACHE = "public, max-age=31536000, immutable";
+const SW_CACHE = "public, max-age=0, must-revalidate";
+
 const nextConfig: NextConfig = {
   // Solo para imagen Docker; Vercel no debe usar standalone.
   ...(process.env.DOCKER_BUILD === "true" ? { output: "standalone" as const } : {}),
   reactCompiler: true,
   serverExternalPackages: ["pdf-parse", "pdfjs-dist", "unpdf", "xlsx"],
+  images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+  },
   outputFileTracingIncludes: {
     "/**": [
       "./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs",
@@ -24,6 +31,18 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        source: "/:path(.*\\.(?:png|jpg|jpeg|webp|avif|svg|ico|woff2?))",
+        headers: [{ key: "Cache-Control", value: STATIC_ASSET_CACHE }],
+      },
+      {
+        source: "/sw.js",
+        headers: [{ key: "Cache-Control", value: SW_CACHE }],
+      },
+      {
+        source: "/sw-portal.js",
+        headers: [{ key: "Cache-Control", value: SW_CACHE }],
+      },
       {
         source: "/:path*",
         headers: [...SECURITY_RESPONSE_HEADERS],

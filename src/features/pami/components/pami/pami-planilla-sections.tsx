@@ -2,6 +2,8 @@
 
 import { ClipboardCopy, FileCheck, Printer } from "lucide-react";
 
+import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +22,7 @@ type PlanillaState = ReturnType<typeof usePamiPlanillas>;
 type Props = PlanillaState & {
   patients: PamiPlanillaPatient[];
   professionals: PamiPlanillaProfessional[];
+  remotePatientSearch?: boolean;
 };
 
 export function PamiPlanillaCategorySection({
@@ -62,6 +65,7 @@ export function PamiPlanillaFieldsSection({
   professionalId,
   setProfessionalId,
   values,
+  remotePatientSearch,
 }: Props) {
   return (
       <Card title="Completar planilla">
@@ -76,16 +80,28 @@ export function PamiPlanillaFieldsSection({
             options={categoryTemplates.map((t) => ({ value: t.id, label: t.title }))}
           />
 
-          <Select
-            label="Paciente PAMI"
-            value={patientId}
-            onChange={(e) => setPatientId(e.target.value)}
-            placeholder="Seleccionar paciente"
-            options={patients.map((p) => ({
-              value: p.id,
-              label: `${p.last_name}, ${p.first_name} — DNI ${p.document_number}`,
-            }))}
-          />
+          {remotePatientSearch ? (
+            <PatientSearchCombobox
+              label="Paciente PAMI"
+              patients={patients}
+              defaultPatientId={patientId}
+              onPatientChange={setPatientId}
+              searchMode="remote"
+              cobertura="pami"
+              required
+            />
+          ) : (
+            <Select
+              label="Paciente PAMI"
+              value={patientId}
+              onChange={(e) => setPatientId(e.target.value)}
+              placeholder="Seleccionar paciente"
+              options={patients.map((p) => ({
+                value: p.id,
+                label: `${p.last_name}, ${p.first_name} — DNI ${p.document_number}`,
+              }))}
+            />
+          )}
 
           <Select
             label="Profesional"

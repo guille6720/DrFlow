@@ -16,6 +16,7 @@ import { CashRegisterView } from "@/features/caja";
 import { AdminOpsAnalyticsBridge } from "@/features/ia/components/admin-ops/admin-ops-analytics-bridge";
 
 import { Button } from "@/components/ui/button";
+import { loadPatientPickerList } from "@/lib/server/load-patient-picker-list";
 import { loadRevenueSnapshot } from "@/lib/server/load-revenue-snapshot";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 
@@ -47,15 +48,9 @@ export default async function CajaPage() {
   const todayStart = startOfDay(new Date()).toISOString();
   const todayEnd = endOfDay(new Date()).toISOString();
 
-  const [{ data: patients }, { data: professionals }, { data: charges }, analytics] =
+  const [{ patients }, { data: professionals }, { data: charges }, analytics] =
     await Promise.all([
-    supabase
-      .from("patients")
-      .select("id, first_name, last_name, document_number")
-      .eq("clinic_id", clinicId)
-      .eq("is_active", true)
-      .order("last_name")
-      .limit(500),
+    loadPatientPickerList(supabase, clinicId),
     supabase
       .from("professionals")
       .select("id, display_name, profiles(full_name)")

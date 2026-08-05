@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { brandIconSizes } from "@/core/components/brand/brand-image-utils";
+
 import { cn } from "@/shared/utils/cn";
 
 type LogoSize = "xs" | "sm" | "md" | "lg" | "xl";
@@ -38,7 +40,9 @@ export function DrFlowLogo({
       alt="DrFlow"
       width={width}
       height={height}
+      sizes={brandIconSizes(height)}
       priority={priority}
+      loading={priority ? undefined : "lazy"}
       className={cn(
         "h-auto w-auto object-contain rounded-2xl",
         className

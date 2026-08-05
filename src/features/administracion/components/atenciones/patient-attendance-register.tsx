@@ -1,6 +1,8 @@
 import { Building2, CalendarDays, Monitor, Users, Video } from "lucide-react";
 import Link from "next/link";
 
+import type { PageMeta } from "@/core/supabase/pagination";
+
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 
 import { ExportCsvButton } from "@/features/dashboard/components/reportes/export-csv-button";
@@ -8,28 +10,24 @@ import { ExportCsvButton } from "@/features/dashboard/components/reportes/export
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ListPagination, ListPaginationLabel } from "@/components/ui/list-pagination";
 import { StatCard } from "@/components/ui/stat-card";
 import {
-  type ConsultationModality,
   consultationModalityLabel,
 } from "@/lib/constants/consultation-modality";
-import type { AttendancePeriod, AttendanceSummary } from "@/lib/utils/attendance-stats";
-
-export interface AttendanceListItem {
-  id: string;
-  start_at: string;
-  consultation_modality: ConsultationModality | null;
-  patientName: string;
-  professionalName: string;
-  patientId: string;
-  coverage?: string;
-}
+import type {
+  AttendanceListItem,
+  AttendancePeriod,
+  AttendanceSummary,
+} from "@/lib/utils/attendance-stats";
 
 interface Props {
   period: AttendancePeriod;
   periodLabel: string;
   summary: AttendanceSummary;
   items: AttendanceListItem[];
+  pageMeta?: PageMeta;
+  buildPageHref?: (page: number) => string;
 }
 
 const PERIOD_TABS: { id: AttendancePeriod; label: string }[] = [
@@ -43,6 +41,8 @@ export function PatientAttendanceRegister({
   periodLabel,
   summary,
   items,
+  pageMeta,
+  buildPageHref,
 }: Props) {
   const csvRows = [
     ["Fecha", "Paciente", "Profesional", "Modalidad", "Cobertura"],
@@ -178,6 +178,29 @@ export function PatientAttendanceRegister({
               );
             })}
           </ul>
+        )}
+        {pageMeta && pageMeta.totalPages > 1 && buildPageHref && (
+          <ListPagination className="mt-4">
+            {pageMeta.page > 1 ? (
+              <Link href={buildPageHref(pageMeta.page - 1)}>
+                <Button type="button" size="sm" variant="outline">
+                  Anterior
+                </Button>
+              </Link>
+            ) : null}
+            <ListPaginationLabel
+              current={pageMeta.page}
+              totalPages={pageMeta.totalPages}
+              suffix={`${pageMeta.total} atenciones`}
+            />
+            {pageMeta.page < pageMeta.totalPages ? (
+              <Link href={buildPageHref(pageMeta.page + 1)}>
+                <Button type="button" size="sm" variant="outline">
+                  Siguiente
+                </Button>
+              </Link>
+            ) : null}
+          </ListPagination>
         )}
       </Card>
     </div>

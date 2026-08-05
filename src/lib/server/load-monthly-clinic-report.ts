@@ -42,7 +42,7 @@ export async function loadMonthlyClinicReport(
   monthEnd: string,
   periodLabel: string
 ): Promise<MonthlyClinicReport> {
-  const [totalAppts, noShow, cancelled, newPats, records, revenue] = await Promise.all([
+  const [totalAppts, noShow, cancelled, newPats, _recordsCount, revenue, recordsByDoctor] = await Promise.all([
     supabase
       .from("appointments")
       .select("id", { count: "exact", head: true })
@@ -68,25 +68,24 @@ export async function loadMonthlyClinicReport(
       .gte("created_at", monthStart),
     supabase
       .from("clinical_records")
-      .select("id, professional_id, professionals(profiles(full_name))")
+      .select("id", { count: "exact", head: true })
       .eq("clinic_id", clinicId)
-      .gte("created_at", monthStart),
+      .gte("created_at", monthStart)
+      .lte("created_at", monthEnd),
     sumPaidPayments(supabase, clinicId, monthStart, monthEnd),
+    supabase.rpc("count_clinical_records_by_professional", {
+      p_clinic_id: clinicId,
+      p_from: monthStart,
+      p_to: monthEnd,
+    }),
   ]);
 
-  const doctorCounts = new Map<string, number>();
-  for (const record of records.data ?? []) {
-    const name =
-      (record.professionals as unknown as { profiles?: { full_name?: string } })?.profiles
-        ?.full_name ?? "Sin asignar";
-    doctorCounts.set(name, (doctorCounts.get(name) ?? 0) + 1);
-  }
-
-  const totalAppointments = totalAppts.count ?? 0;
-  const consultationsByDoctor = Array.from(doctorCounts.entries()).map(([name, count]) => ({
-    name,
-    count,
+  const doctorRows = (recordsByDoctor.data ?? []) as Array<{ name: string; count: number }>;
+  const consultationsByDoctor = doctorRows.map((row) => ({
+    name: row.name,
+    count: row.count,
   }));
+  const totalAppointments = totalAppts.count ?? 0;
 
   const csvRows: string[][] = [
     ["Métrica", "Valor", "Período"],
@@ -95,7 +94,7 @@ export async function loadMonthlyClinicReport(
     ["Cancelaciones", String(cancelled.count ?? 0), periodLabel],
     ["Pacientes nuevos", String(newPats.count ?? 0), periodLabel],
     ["Ingresos estimados", String(revenue), periodLabel],
-    ...Array.from(doctorCounts.entries()).map(([name, count]) => [
+    ...consultationsByDoctor.map(({ name, count }) => [
       `Consultas - ${name}`,
       String(count),
       periodLabel,

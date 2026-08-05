@@ -5,30 +5,31 @@ import {
   getUserClinics,
 } from "@/core/auth/session";
 import { Header } from "@/core/components/layout/header";
+import { parsePageParam } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
 
 import { DEFAULT_CLINIC_TIMEZONE } from "@/shared/utils/clinic-timezone";
 
 import { PatientAttendanceRegister } from "@/features/administracion/components/atenciones/patient-attendance-register";
-
-import type { ConsultationModality } from "@/lib/constants/consultation-modality";
 import {
-  type AttendancePeriod,
-  getAttendancePeriodBounds,
-  summarizeAttendedAppointments,
-} from "@/lib/utils/attendance-stats";
+  buildAtencionesUrl,
+  loadAtencionesPageData,
+} from "@/features/administracion/server/load-atenciones-page";
+
+import type { AttendancePeriod } from "@/lib/utils/attendance-stats";
 
 const VALID_PERIODS = new Set<AttendancePeriod>(["daily", "weekly", "monthly"]);
 
 export default async function AtencionesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string }>;
+  searchParams: Promise<{ period?: string; page?: string }>;
 }) {
-  const { period: periodParam } = await searchParams;
+  const { period: periodParam, page: pageParam } = await searchParams;
   const period: AttendancePeriod = VALID_PERIODS.has(periodParam as AttendancePeriod)
     ? (periodParam as AttendancePeriod)
     : "daily";
+  const page = parsePageParam(pageParam);
 
   const profile = await getProfile();
   const clinics = await getUserClinics();
@@ -37,59 +38,7 @@ export default async function AtencionesPage({
   const supabase = await createClient();
 
   const timeZone = clinic?.timezone ?? DEFAULT_CLINIC_TIMEZONE;
-  const { start, end, label } = getAttendancePeriodBounds(period, new Date(), timeZone);
-
-  let summary = summarizeAttendedAppointments([]);
-  let items: {
-    id: string;
-    start_at: string;
-    consultation_modality: ConsultationModality | null;
-    patientName: string;
-    professionalName: string;
-    patientId: string;
-    coverage: string;
-  }[] = [];
-
-  if (clinicId) {
-    const { data } = await supabase
-      .from("appointments")
-      .select(
-        "id, start_at, consultation_modality, patient_id, patients(first_name, last_name, insurance_provider), professionals(profiles(full_name))"
-      )
-      .eq("clinic_id", clinicId)
-      .eq("status", "attended")
-      .gte("start_at", start.toISOString())
-      .lt("start_at", end.toISOString())
-      .order("start_at", { ascending: false });
-
-    const rows = (data ?? []).map((row) => ({
-      id: row.id,
-      start_at: row.start_at,
-      consultation_modality: (row.consultation_modality as ConsultationModality | null) ?? "presencial",
-      patient_id: row.patient_id,
-      patients: row.patients as unknown as {
-        first_name: string;
-        last_name: string;
-        insurance_provider?: string | null;
-      } | null,
-      professionals: row.professionals as unknown as {
-        profiles?: { full_name?: string } | null;
-      } | null,
-    }));
-
-    summary = summarizeAttendedAppointments(rows);
-    items = rows.map((row) => ({
-      id: row.id,
-      start_at: row.start_at,
-      consultation_modality: row.consultation_modality,
-      patientId: row.patient_id,
-      patientName: row.patients
-        ? `${row.patients.last_name}, ${row.patients.first_name}`
-        : "Paciente",
-      professionalName: row.professionals?.profiles?.full_name ?? "Profesional",
-      coverage: row.patients?.insurance_provider?.trim() || "Sin cobertura",
-    }));
-  }
+  const data = await loadAtencionesPageData(supabase, clinicId, period, page, timeZone);
 
   return (
     <>
@@ -104,10 +53,12 @@ export default async function AtencionesPage({
 
       <div className="p-4 sm:p-6">
         <PatientAttendanceRegister
-          period={period}
-          periodLabel={label}
-          summary={summary}
-          items={items}
+          period={data.period}
+          periodLabel={data.periodLabel}
+          summary={data.summary}
+          items={data.items}
+          pageMeta={data.pageMeta}
+          buildPageHref={(p) => buildAtencionesUrl(period, p)}
         />
       </div>
     </>

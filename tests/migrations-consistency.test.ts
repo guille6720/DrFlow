@@ -9,10 +9,10 @@ describe("migrations consistency", () => {
     .filter((f) => f.endsWith(".sql"))
     .sort();
 
-  it("has 66 migration files in lexicographic order", () => {
-    expect(files.length).toBe(66);
+  it("has 67 migration files in lexicographic order", () => {
+    expect(files.length).toBe(67);
     expect(files[0]).toBe("001_schema.sql");
-    expect(files[files.length - 1]).toBe("064_query_optimization.sql");
+    expect(files[files.length - 1]).toBe("065_list_pagination_rpcs.sql");
   });
 
   it("uses numeric prefix pattern without gaps (except b-suffix repairs)", () => {
@@ -22,8 +22,8 @@ describe("migrations consistency", () => {
       .map(Number);
     const unique = [...new Set(numeric)].sort((a, b) => a - b);
     expect(unique[0]).toBe(1);
-    expect(unique[unique.length - 1]).toBe(64);
-    for (let i = 1; i <= 64; i++) {
+    expect(unique[unique.length - 1]).toBe(65);
+    for (let i = 1; i <= 65; i++) {
       expect(unique).toContain(i);
     }
   });

@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
 import { hasPermission } from "@/core/permissions/roles";
+import { PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
 import { searchQuerySchema } from "@/core/validations/params";
 
@@ -9,19 +11,24 @@ import { applyPatientSearchFilter } from "@/features/pacientes/utils/patient-sea
 
 import { mapPatientHits } from "@/lib/utils/command-palette-search";
 
+const limitSchema = z.coerce.number().int().min(1).max(50).optional();
+
 export async function GET(request: Request) {
   const user = await getSession();
   if (!user) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const qParsed = searchQuerySchema.safeParse(
-    new URL(request.url).searchParams.get("q")?.trim() ?? ""
-  );
+  const url = new URL(request.url);
+  const qParsed = searchQuerySchema.safeParse(url.searchParams.get("q")?.trim() ?? "");
   if (!qParsed.success) {
     return NextResponse.json({ patients: [] });
   }
   const q = qParsed.data;
+  const cobertura = url.searchParams.get("cobertura");
+  const extended = url.searchParams.get("extended") === "1";
+  const limitParsed = limitSchema.safeParse(url.searchParams.get("limit") ?? undefined);
+  const limit = limitParsed.success ? limitParsed.data : PATIENT_SEARCH_API_LIMIT;
 
   const clinicId = await getActiveClinicId();
   const { role, isSuperadmin } = await getActiveClinic();
@@ -37,13 +44,21 @@ export async function GET(request: Request) {
   }
 
   const supabase = await createClient();
+  const selectFields = extended
+    ? "id, first_name, last_name, document_number, insurance_number, phone, address"
+    : "id, first_name, last_name, document_number";
+
   let query = supabase
     .from("patients")
-    .select("id, first_name, last_name, document_number")
+    .select(selectFields)
     .eq("clinic_id", clinicId)
     .eq("is_active", true)
     .order("last_name")
-    .limit(12);
+    .limit(limit ?? PATIENT_SEARCH_API_LIMIT);
+
+  if (cobertura === "pami") {
+    query = query.ilike("insurance_provider", "%PAMI%");
+  }
 
   query = applyPatientSearchFilter(query, q);
 
@@ -52,5 +67,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ patients: [], error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ patients: mapPatientHits(data ?? []) });
+  const patients = extended ? (data ?? []) : mapPatientHits((data ?? []) as never);
+
+  return NextResponse.json({ patients });
 }

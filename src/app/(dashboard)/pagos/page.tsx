@@ -2,10 +2,11 @@ import { redirect } from "next/navigation";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { hasPermission } from "@/core/permissions/roles";
-import { PATIENT_PICKER_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
 import { PagosView } from "@/features/facturacion/components/pagos/pagos-view";
+
+import { loadPatientPickerList } from "@/lib/server/load-patient-picker-list";
 
 export default async function PagosPage() {
   const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
@@ -15,7 +16,7 @@ export default async function PagosPage() {
   }
 
   const supabase = await createClient();
-  const [payments, patients] = clinicId
+  const [payments, patientPicker] = clinicId
     ? await Promise.all([
         supabase
           .from("payments")
@@ -23,20 +24,14 @@ export default async function PagosPage() {
           .eq("clinic_id", clinicId)
           .order("created_at", { ascending: false })
           .limit(50),
-        supabase
-          .from("patients")
-          .select(PATIENT_PICKER_COLUMNS)
-          .eq("clinic_id", clinicId)
-          .eq("is_active", true)
-          .order("last_name")
-          .limit(500),
+        loadPatientPickerList(supabase, clinicId),
       ])
-    : [{ data: [] }, { data: [] }];
+    : [{ data: [] }, { patients: [] }];
 
   return (
     <PagosView
       payments={(payments.data ?? []) as never}
-      patients={(patients.data ?? []) as never}
+      patients={patientPicker.patients as never}
       clinics={clinics}
       clinicId={clinicId}
       role={role}

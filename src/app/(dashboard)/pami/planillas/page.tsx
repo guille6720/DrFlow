@@ -8,11 +8,25 @@ import {
 } from "@/core/auth/session";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { parsePageParam } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
 
+import { sanitizePatientSearchTerm } from "@/features/pacientes/utils/patient-search";
 import { PamiPlanillasView } from "@/features/pami";
+import {
+  buildPamiPlanillasUrl,
+  loadPamiPlanillasPageData,
+} from "@/features/pami/server/load-pami-planillas-page";
 
-export default async function PamiPlanillasPage() {
+export default async function PamiPlanillasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; page?: string }>;
+}) {
+  const { q: qRaw, page: pageParam } = await searchParams;
+  const q = sanitizePatientSearchTerm(qRaw);
+  const page = parsePageParam(pageParam);
+
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
@@ -23,46 +37,15 @@ export default async function PamiPlanillasPage() {
     redirect("/dashboard");
   }
 
-  let patients: Array<{
-    id: string;
-    first_name: string;
-    last_name: string;
-    document_number: string;
-    insurance_number: string | null;
-    phone: string | null;
-    address: string | null;
-  }> = [];
-  let professionals: Array<{
-    id: string;
-    display_name?: string | null;
-    license_number?: string | null;
-    profiles?: { full_name: string } | null;
-  }> = [];
-  let defaultProfessionalId: string | undefined;
-
-  if (clinicId) {
-    const [{ data: pats }, { data: profs }, { data: membership }] = await Promise.all([
-      supabase
-        .from("patients")
-        .select("id, first_name, last_name, document_number, insurance_number, phone, address")
-        .eq("clinic_id", clinicId)
-        .order("last_name"),
-      supabase
-        .from("professionals")
-        .select("id, display_name, license_number, profiles(full_name)")
-        .eq("clinic_id", clinicId)
-        .eq("is_active", true),
-      supabase
-        .from("clinic_members")
-        .select("professional_id")
-        .eq("clinic_id", clinicId)
-        .eq("user_id", profile?.id ?? "")
-        .maybeSingle(),
-    ]);
-    patients = pats ?? [];
-    professionals = (profs ?? []) as unknown as typeof professionals;
-    defaultProfessionalId = membership?.professional_id ?? professionals[0]?.id;
-  }
+  const data = clinicId
+    ? await loadPamiPlanillasPageData(supabase, clinicId, profile?.id, q, page)
+    : {
+        patients: [],
+        professionals: [],
+        defaultProfessionalId: undefined,
+        pageMeta: { page: 1, pageSize: 50, total: 0, totalPages: 1 },
+        searchQuery: q,
+      };
 
   return (
     <>
@@ -77,9 +60,12 @@ export default async function PamiPlanillasPage() {
 
       <div className="p-4 sm:p-6">
         <PamiPlanillasView
-          patients={patients}
-          professionals={professionals}
-          defaultProfessionalId={defaultProfessionalId}
+          patients={data.patients}
+          professionals={data.professionals as never}
+          defaultProfessionalId={data.defaultProfessionalId}
+          pageMeta={data.pageMeta}
+          searchQuery={data.searchQuery}
+          buildPageHref={(p) => buildPamiPlanillasUrl(q, p)}
         />
       </div>
     </>

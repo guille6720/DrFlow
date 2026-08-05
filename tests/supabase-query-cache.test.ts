@@ -49,27 +49,16 @@ describe("loadMonthlyClinicReport", () => {
   it("builds doctor breakdown and csv rows", async () => {
     const { loadMonthlyClinicReport } = await import("@/lib/server/load-monthly-clinic-report");
 
-    function buildChain(table: string) {
+    function buildChain(_table: string) {
       const chain: Record<string, unknown> = {
         eq: vi.fn().mockReturnThis(),
         gte: vi.fn().mockReturnThis(),
         lte: vi.fn().mockReturnThis(),
       };
-      chain.select = vi.fn((_cols: string, opts?: { count?: string; head?: boolean }) => {
-        if (table === "clinical_records" && !opts?.head) {
-          chain.then = vi.fn((resolve: (v: unknown) => void) =>
-            Promise.resolve(
-              resolve({
-                data: [{ id: "1", professionals: { profiles: { full_name: "Dr. Ana" } } }],
-                error: null,
-              })
-            )
-          );
-        } else {
-          chain.then = vi.fn((resolve: (v: unknown) => void) =>
-            Promise.resolve(resolve({ count: 2, data: null, error: null }))
-          );
-        }
+      chain.select = vi.fn((_cols: string, _opts?: { count?: string; head?: boolean }) => {
+        chain.then = vi.fn((resolve: (v: unknown) => void) =>
+          Promise.resolve(resolve({ count: 2, data: null, error: null }))
+        );
         return chain;
       });
       return chain;
@@ -77,7 +66,18 @@ describe("loadMonthlyClinicReport", () => {
 
     const supabase = {
       from: vi.fn((table: string) => buildChain(table)),
-      rpc: vi.fn().mockResolvedValue({ data: 500, error: null }),
+      rpc: vi.fn((fn: string) => {
+        if (fn === "sum_paid_payments") {
+          return Promise.resolve({ data: 500, error: null });
+        }
+        if (fn === "count_clinical_records_by_professional") {
+          return Promise.resolve({
+            data: [{ name: "Dr. Ana", count: 1 }],
+            error: null,
+          });
+        }
+        return Promise.resolve({ data: null, error: null });
+      }),
     };
 
     const report = await loadMonthlyClinicReport(

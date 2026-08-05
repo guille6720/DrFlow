@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { PATIENT_ATTACHMENTS_LIMIT } from "@/core/supabase/pagination";
+
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
 import type { PatientChartAppointment, PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { ClinicalTemplateRow } from "@/features/pacientes/components/pacientes/patient-workspace-types";
@@ -140,7 +142,8 @@ export async function loadPatientWorkspacePageData(
       .select("id, file_name, file_path, file_size, category, created_at, profiles:uploaded_by(full_name)")
       .eq("patient_id", patientId)
       .eq("clinic_id", clinicId)
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .limit(PATIENT_ATTACHMENTS_LIMIT),
     supabase
       .from("prescription_drafts")
       .select("id, created_at, medications, status, diagnosis_text, issued_at, prescription_number")

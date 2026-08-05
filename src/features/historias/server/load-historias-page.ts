@@ -1,12 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { HISTORIAS_PAGE_SIZE } from "@/core/supabase/pagination";
+
 import type { PatientRecordGroup } from "@/features/historias/components/historias/clinical-records-grouped-list";
 import { applyPatientSearchFilter } from "@/features/pacientes/utils/patient-search";
 
 import { batchPatientRecordCounts } from "@/lib/utils/batch-patient-record-counts";
 import type { ClinicalRecordListRow } from "@/lib/utils/clinical-record-list-types";
 
-export const HISTORIAS_PAGE_SIZE = 25;
+export { HISTORIAS_PAGE_SIZE };
 
 export function buildHistoriasUrl(params: { q?: string; page?: number }) {
   const parts = new URLSearchParams();

@@ -3,6 +3,8 @@
 import { Search } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
+import { useAsyncPatientSearch } from "@/core/hooks/use-async-patient-search";
+
 import { cn } from "@/shared/utils/cn";
 
 export type PatientSearchOption = {
@@ -20,6 +22,9 @@ interface Props {
   placeholder?: string;
   defaultPatientId?: string;
   onPatientChange?: (patientId: string) => void;
+  /** When `remote`, searches via API instead of filtering the full local list. */
+  searchMode?: "local" | "remote";
+  cobertura?: "pami";
 }
 
 function normalize(s: string) {
@@ -41,6 +46,8 @@ export function PatientSearchCombobox({
   placeholder = "Escribí nombre, apellido o DNI…",
   defaultPatientId,
   onPatientChange,
+  searchMode = "local",
+  cobertura,
 }: Props) {
   const initial = patients.find((p) => p.id === defaultPatientId);
   const [query, setQuery] = useState(initial ? formatLabel(initial) : "");
@@ -61,7 +68,16 @@ export function PatientSearchCombobox({
     }
   }
 
+  const isRemote = searchMode === "remote";
+  const { results: remoteResults, loading } = useAsyncPatientSearch(query, {
+    cobertura,
+    enabled: isRemote && open,
+  });
+
   const filtered = useMemo(() => {
+    if (isRemote) {
+      return query.trim().length >= 2 ? remoteResults : patients.slice(0, 12);
+    }
     const q = normalize(query.trim());
     if (!q) return patients.slice(0, 12);
     const qDigits = q.replace(/\D/g, "");
@@ -77,7 +93,7 @@ export function PatientSearchCombobox({
         return false;
       })
       .slice(0, 12);
-  }, [patients, query]);
+  }, [patients, query, isRemote, remoteResults]);
 
   function pick(p: PatientSearchOption) {
     setSelectedId(p.id);
@@ -120,7 +136,12 @@ export function PatientSearchCombobox({
           className="drflow-ui-input w-full rounded-xl border py-2.5 pl-10 pr-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/30"
         />
       </div>
-      {open && filtered.length > 0 && (
+      {open && loading && isRemote && query.trim().length >= 2 && (
+        <p className="drflow-ui-dropdown absolute mt-1 w-full rounded-xl px-3 py-2 text-xs opacity-80">
+          Buscando…
+        </p>
+      )}
+      {open && !loading && filtered.length > 0 && (
         <ul
           className="drflow-ui-dropdown absolute mt-1 max-h-56 w-full overflow-y-auto rounded-xl py-1"
           onMouseDown={(e) => e.preventDefault()}
@@ -144,9 +165,11 @@ export function PatientSearchCombobox({
           ))}
         </ul>
       )}
-      {open && query.trim() && filtered.length === 0 && (
+      {open && !loading && query.trim() && filtered.length === 0 && (
         <p className="drflow-ui-dropdown absolute mt-1 w-full rounded-xl px-3 py-2 text-xs opacity-80">
-          Sin coincidencias. Probá otro nombre o DNI.
+          {isRemote && query.trim().length < 2
+            ? "Escribí al menos 2 caracteres para buscar."
+            : "Sin coincidencias. Probá otro nombre o DNI."}
         </p>
       )}
     </div>

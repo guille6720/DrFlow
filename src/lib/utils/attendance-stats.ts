@@ -35,6 +35,16 @@ export interface AttendanceSummary {
   byCoverage: { coverage: string; count: number }[];
 }
 
+export interface AttendanceListItem {
+  id: string;
+  start_at: string;
+  consultation_modality: ConsultationModality | null;
+  patientName: string;
+  professionalName: string;
+  patientId: string;
+  coverage?: string;
+}
+
 export function getAttendancePeriodBounds(
   period: AttendancePeriod,
   referenceDate: Date = new Date(),

@@ -3,6 +3,7 @@ import { addDays, subDays } from "date-fns";
 import {
   getDashboardPageContext,
 } from "@/core/auth/dashboard-page";
+import { APPOINTMENTS_AGENDA_MAX, PATIENT_PICKER_INITIAL_LIMIT } from "@/core/supabase/pagination";
 import { APPOINTMENT_AGENDA_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
@@ -39,14 +40,15 @@ async function AgendaContent({
             .eq("clinic_id", clinicId)
             .gte("start_at", rangeStart)
             .lte("start_at", rangeEnd)
-            .order("start_at"),
+            .order("start_at")
+            .limit(APPOINTMENTS_AGENDA_MAX),
           supabase
             .from("patients")
             .select("id, first_name, last_name, document_number")
             .eq("clinic_id", clinicId)
             .eq("is_active", true)
             .order("last_name")
-            .limit(200),
+            .limit(PATIENT_PICKER_INITIAL_LIMIT),
           getCachedClinicProfessionalsAgenda(clinicId),
           getCachedClinicLocations(clinicId),
           getCachedClinicSpecialties(clinicId),

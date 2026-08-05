@@ -1,8 +1,11 @@
 import Image from "next/image";
 
-import { cn } from "@/shared/utils/cn";
+import {
+  brandIconSizes,
+  resolvePatientAppIconSrc,
+} from "@/core/components/brand/brand-image-utils";
 
-import { PATIENT_PWA_ICON_512 } from "@/features/pacientes/utils/patient-portal-ready";
+import { cn } from "@/shared/utils/cn";
 
 type IconSize = "sm" | "md" | "lg";
 
@@ -25,14 +28,17 @@ export function PatientAppIcon({
   priority = false,
 }: PatientAppIconProps) {
   const px = sizes[size];
+  const src = resolvePatientAppIconSrc(px);
 
   return (
     <Image
-      src={PATIENT_PWA_ICON_512}
+      src={src}
       alt="DrFlow — App para pacientes"
       width={px}
       height={px}
+      sizes={brandIconSizes(px)}
       priority={priority}
+      loading={priority ? undefined : "lazy"}
       className={cn("rounded-[22%] shadow-lg", className)}
     />
   );

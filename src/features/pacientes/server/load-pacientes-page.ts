@@ -1,10 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { PACIENTES_PAGE_SIZE } from "@/core/supabase/pagination";
+
 import { applyPatientSearchFilter } from "@/features/pacientes/utils/patient-search";
 
 import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
 
-export const PACIENTES_PAGE_SIZE = 20;
+export { PACIENTES_PAGE_SIZE };
 
 export type PacientesPagePatient = {
   id: string;
