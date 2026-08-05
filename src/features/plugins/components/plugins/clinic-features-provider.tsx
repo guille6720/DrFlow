@@ -3,6 +3,7 @@
 import { createContext, type ReactNode, useContext, useMemo } from "react";
 
 import type { FeatureFlagId } from "@/features/flags/lib/registry";
+import { getFeatureFlagDefinition } from "@/features/flags/lib/registry";
 import {
   buildClinicFeaturesContext,
   type ClinicFeaturesContext,
@@ -54,5 +55,7 @@ export function usePluginEnabled(pluginId: PluginId): boolean {
 }
 
 export function useFeatureFlag(flagId: FeatureFlagId): boolean {
-  return isFeatureFlagEnabled(useClinicFeatures(), flagId);
+  const ctx = useContext(ClinicFeaturesContext);
+  if (!ctx) return getFeatureFlagDefinition(flagId).defaultEnabled;
+  return isFeatureFlagEnabled(ctx, flagId);
 }

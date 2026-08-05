@@ -134,13 +134,13 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
     <div className="min-h-screen drflow-mesh">
       <PwaRegister />
       <PerformanceMonitor />
-      <LazyDashboardInteractionHosts />
       <UpdateBanner />
       {showTrialBanner && clinic?.trial_ends_at && (
         <TrialBanner trialEndsAt={clinic.trial_ends_at} daysRemaining={daysLeft} />
       )}
       <DashboardSidebarProvider>
         <ClinicFeaturesProvider plugins={clinicFeatures.plugins} flags={clinicFeatures.flags}>
+          <LazyDashboardInteractionHosts />
           <ClinicalCopilotProvider>
             <AdminOpsCopilotProvider>
               <CommandPaletteProvider
