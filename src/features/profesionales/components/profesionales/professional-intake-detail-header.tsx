@@ -1,11 +1,12 @@
 "use client";
 
+import { cn } from "@/shared/utils/cn";
+
 import {
   PROFESSIONAL_INTAKE_DETAIL_TABS,
   type ProfessionalIntakeDetail,
   type ProfessionalIntakeDetailTab,
 } from "@/features/profesionales/components/profesionales/professional-intake-types";
-import { cn } from "@/shared/utils/cn";
 
 type Props = {
   selected: ProfessionalIntakeDetail;

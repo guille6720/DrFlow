@@ -1,7 +1,3 @@
-"use client";
-
-import { useMemo } from "react";
-import { PamiPatientBanner } from "@/features/pacientes/components/pacientes/pami-patient-banner";
 import { ClinicalWorkspaceAiSection } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-ai-section";
 import { ClinicalWorkspaceAlertsStrip } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-alerts-strip";
 import { ClinicalWorkspaceHeader } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-header";
@@ -11,9 +7,9 @@ import { ClinicalWorkspaceProblemsSection } from "@/features/pacientes/component
 import { ClinicalWorkspaceStudiesSection } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-studies-section";
 import { ClinicalWorkspaceTimelinePreview } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-timeline-preview";
 import { ClinicalWorkspaceVitalsSection } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-vitals-section";
+import { PamiPatientBanner } from "@/features/pacientes/components/pacientes/pami-patient-banner";
 import type { PatientChartViewProps } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
-import { usePatientChartMedicationFilter } from "@/features/pacientes/hooks/use-patient-chart";
 import {
   buildClinicalWorkspaceAlerts,
   buildLastConsultSummary,
@@ -38,15 +34,10 @@ export function ClinicalWorkspaceView({
   lastEvolution,
   lastDiagnosis,
 }: ClinicalWorkspaceViewProps) {
-  const { filteredMeds } = usePatientChartMedicationFilter(chart);
-  const alerts = useMemo(() => buildClinicalWorkspaceAlerts(chart), [chart]);
-
-  const lastConsult = useMemo(() => {
-    const lastRx = ehr.prescriptions.slice(0, 3).map((rx) => rx.label);
-    const lastOrders = ehr.orders.slice(0, 3).map((o) => o.order_text.slice(0, 40));
-    return buildLastConsultSummary(ehr.consultations[0], lastRx, lastOrders);
-  }, [ehr]);
-
+  const alerts = buildClinicalWorkspaceAlerts(chart);
+  const lastRx = ehr.prescriptions.slice(0, 3).map((rx) => rx.label);
+  const lastOrders = ehr.orders.slice(0, 3).map((o) => o.order_text.slice(0, 40));
+  const lastConsult = buildLastConsultSummary(ehr.consultations[0], lastRx, lastOrders);
   const patientName = `${patient.last_name}, ${patient.first_name}`;
 
   return (
@@ -75,7 +66,7 @@ export function ClinicalWorkspaceView({
           <ClinicalWorkspaceMedicationsSection
             chart={chart}
             patientId={patientId}
-            filteredMeds={filteredMeds}
+            filteredMeds={chart.medications}
           />
           <ClinicalWorkspaceVitalsSection
             chart={chart}

@@ -1,11 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
 import type { PatientChartAppointment, PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
-import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
-import { buildPatientChartPayload } from "@/features/pacientes/utils/patient-chart-model";
-import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
-import type { PrescriptionMedication } from "@/types/prescription";
-import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
+import type { ClinicalTemplateRow } from "@/features/pacientes/components/pacientes/patient-workspace-types";
 import {
   buildPatientEhrWorkspaceData,
   mapClinicalRecordsForEhr,
@@ -15,13 +12,22 @@ import {
   PATIENT_TIMELINE_APPOINTMENT_LIMIT,
   type PatientEhrWorkspaceData,
 } from "@/features/pacientes/server/load-patient-ehr-data";
-import { loadPatientHceSummaryRows, HCE_SUMMARY_ATTACHMENT_NAME } from "@/features/pacientes/utils/patient-ehr-from-hce";
-import type { MedicalOrder } from "@/types/medical-order";
 import {
   mergePatientClinicalFields,
   type PatientClinicalProfileFields,
 } from "@/features/pacientes/server/patient-clinical-profile";
-import type { ClinicalTemplateRow } from "@/features/pacientes/components/pacientes/patient-workspace-types";
+import { buildPatientChartPayload } from "@/features/pacientes/utils/patient-chart-model";
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+import { HCE_SUMMARY_ATTACHMENT_NAME, loadPatientHceSummaryRows } from "@/features/pacientes/utils/patient-ehr-from-hce";
+
+import {
+  getCachedClinicalTemplates,
+  getCachedClinicProfessionalsList,
+  getCachedPortalContext,
+} from "@/lib/server/cached-clinic-queries";
+import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
+import type { MedicalOrder } from "@/types/medical-order";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 export type PatientWorkspaceProfessional = {
   id: string;
@@ -109,26 +115,21 @@ export async function loadPatientWorkspacePageData(
 
   const [
     portalContext,
-    { count: totalRecords },
-    { data: records },
+    { data: records, count: totalRecords },
     { data: attachments },
     { data: rxList },
     { data: orders },
     { data: allAppointments },
-    { data: professionals },
+    professionals,
     clinicalProfileResult,
-    { data: templates },
+    templates,
   ] = await Promise.all([
-    getPortalContextForClinic(clinicId, supabase),
-    supabase
-      .from("clinical_records")
-      .select("id", { count: "exact", head: true })
-      .eq("clinic_id", clinicId)
-      .eq("patient_id", patientId),
+    getCachedPortalContext(clinicId),
     supabase
       .from("clinical_records")
       .select(
-        "id, created_at, chief_complaint, diagnosis, evolution, indications, professionals(profiles(full_name))"
+        "id, created_at, chief_complaint, diagnosis, evolution, indications, professionals(profiles(full_name))",
+        { count: "exact" }
       )
       .eq("clinic_id", clinicId)
       .eq("patient_id", patientId)
@@ -163,26 +164,14 @@ export async function loadPatientWorkspacePageData(
       .eq("clinic_id", clinicId)
       .order("start_at", { ascending: false })
       .limit(PATIENT_TIMELINE_APPOINTMENT_LIMIT),
-    supabase
-      .from("professionals")
-      .select("id, display_name, license_number, profiles(full_name)")
-      .eq("clinic_id", clinicId)
-      .eq("is_active", true)
-      .order("display_name"),
+    getCachedClinicProfessionalsList(clinicId),
     supabase
       .from("patient_clinical_profiles")
       .select("medical_history, allergies, regular_medication, notes")
       .eq("patient_id", patientId)
       .eq("clinic_id", clinicId)
       .maybeSingle(),
-    supabase
-      .from("clinical_templates")
-      .select(
-        "id, name, chief_complaint_template, diagnosis_template, evolution_template, indications_template"
-      )
-      .eq("clinic_id", clinicId)
-      .eq("is_active", true)
-      .order("name"),
+    getCachedClinicalTemplates(clinicId),
   ]);
 
   const { portalSlug, doctorInfo } = portalContext;

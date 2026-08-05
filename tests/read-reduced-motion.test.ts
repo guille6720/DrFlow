@@ -1,6 +1,7 @@
-import { describe, expect, it, beforeEach, afterEach } from "vitest";
-import { readReducedMotionPreference } from "@/core/accessibility/read-reduced-motion";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+
 import { REDUCED_MOTION_STORAGE_KEY } from "@/core/accessibility/constants";
+import { readReducedMotionPreference } from "@/core/accessibility/read-reduced-motion";
 
 describe("readReducedMotionPreference", () => {
   beforeEach(() => {

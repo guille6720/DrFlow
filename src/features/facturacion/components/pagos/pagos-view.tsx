@@ -1,20 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Header } from "@/core/components/layout/header";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Select } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { EmptyState } from "@/components/ui/empty-state";
-import { createMockPayment } from "@/lib/actions/clinic-services";
-import { formatCurrency } from "@/lib/services/payments";
-import type { Clinic, Payment, Patient, UserRole } from "@/types/database";
-import { CreditCard } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { CreditCard } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import { Header } from "@/core/components/layout/header";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { createMockPayment } from "@/lib/actions/clinic-services";
+import { formatCurrency } from "@/lib/services/payments";
+import type { Clinic, Patient, Payment, UserRole } from "@/types/database";
 
 interface Props {
   payments: Payment[];

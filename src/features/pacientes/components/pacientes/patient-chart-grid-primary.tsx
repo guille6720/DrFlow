@@ -1,16 +1,18 @@
-import Link from "next/link";
 import { CheckCircle2, Plus, Search } from "lucide-react";
-import { RenewMedicationPanel } from "@/features/pacientes/components/pacientes/renew-medication-panel";
+import Link from "next/link";
+
 import { ChartSection } from "@/features/pacientes/components/pacientes/patient-chart-primitives";
-import { PatientChartVitalsGrid, PatientChartLabsPanel } from "@/features/pacientes/components/pacientes/patient-chart-vitals-grid";
 import type {
   PatientChartPatient,
   PatientChartProfessional,
 } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
+import { PatientChartLabsPanel, PatientChartVitalsGrid } from "@/features/pacientes/components/pacientes/patient-chart-vitals-grid";
+import { RenewMedicationPanel } from "@/features/pacientes/components/pacientes/renew-medication-panel";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 import type { MedicationCard } from "@/features/pacientes/utils/patient-chart-model-types";
-import type { PrescriptionMedication } from "@/types/prescription";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
+import type { PrescriptionMedication } from "@/types/prescription";
 
 type Props = {
   patient: PatientChartPatient;

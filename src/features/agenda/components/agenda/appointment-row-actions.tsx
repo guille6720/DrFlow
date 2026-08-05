@@ -1,10 +1,11 @@
 "use client";
 
+import { Check, Pencil, Play, Trash2, User, UserX } from "lucide-react";
 import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import { canStartConsultation } from "@/lib/utils/appointment";
 import type { Appointment } from "@/types/database";
-import { Pencil, Play, Trash2, User, UserX, Check } from "lucide-react";
 
 const agendaBtn =
   "border-slate-500/80 bg-slate-700/90 text-slate-50 hover:bg-slate-600 hover:border-slate-400";

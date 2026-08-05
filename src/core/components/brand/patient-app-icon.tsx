@@ -1,5 +1,7 @@
 import Image from "next/image";
+
 import { cn } from "@/shared/utils/cn";
+
 import { PATIENT_PWA_ICON_512 } from "@/features/pacientes/utils/patient-portal-ready";
 
 type IconSize = "sm" | "md" | "lg";

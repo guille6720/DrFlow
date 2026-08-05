@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
 import { createClient } from "@supabase/supabase-js";
-import { readFileSync, existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
+import { describe, expect, it } from "vitest";
 
 function loadEnvLocal(): Record<string, string> {
   const path = resolve(process.cwd(), ".env.local");
@@ -57,7 +57,6 @@ describe.skipIf(!runIntegration)("cross-tenant RLS (integration)", () => {
       .maybeSingle();
 
     if (!patientB?.id) {
-      console.warn("Sin paciente en clínica B — omitiendo assert de fila");
       return;
     }
 

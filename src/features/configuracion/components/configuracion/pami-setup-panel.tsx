@@ -1,11 +1,12 @@
 "use client";
 
+import { HeartPulse, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { configurePamiCabecera } from "@/lib/actions/pami-setup";
-import { HeartPulse, Loader2 } from "lucide-react";
 
 interface PamiSetupPanelProps {
   practiceProfile: string | null;

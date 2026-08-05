@@ -1,18 +1,20 @@
-import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Search } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import Link from "next/link";
+
+import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
 import { ChartSection } from "@/features/pacientes/components/pacientes/patient-chart-primitives";
-import { RenewMedicationPanel } from "@/features/pacientes/components/pacientes/renew-medication-panel";
 import type {
   PatientChartPatient,
   PatientChartProfessional,
 } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
-import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
+import { RenewMedicationPanel } from "@/features/pacientes/components/pacientes/renew-medication-panel";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
-import type { PrescriptionMedication } from "@/types/prescription";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
+import { Card } from "@/components/ui/card";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 type BaseProps = {
   patient: PatientChartPatient;

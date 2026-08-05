@@ -1,14 +1,18 @@
+import { endOfMonth, format, startOfMonth } from "date-fns";
+import { es } from "date-fns/locale";
+import { redirect } from "next/navigation";
+
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
+import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+
+import { AsyncReportButton } from "@/features/dashboard/components/reportes/async-report-button";
+import { ExportCsvButton } from "@/features/dashboard/components/reportes/export-csv-button";
+
 import { Card } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { getDashboardPageContext } from "@/core/auth/dashboard-page";
-import { createClient } from "@/core/supabase/server";
-import { redirect } from "next/navigation";
-import { hasPermission } from "@/core/permissions/roles";
-import { startOfMonth, endOfMonth, format } from "date-fns";
-import { es } from "date-fns/locale";
-import { ExportCsvButton } from "@/features/dashboard/components/reportes/export-csv-button";
-import { AsyncReportButton } from "@/features/dashboard/components/reportes/async-report-button";
+import { loadMonthlyClinicReport } from "@/lib/server/load-monthly-clinic-report";
 import { formatCurrency } from "@/lib/services/payments";
 
 export default async function ReportesPage() {
@@ -35,81 +39,13 @@ export default async function ReportesPage() {
   };
 
   if (clinicId) {
-    const [totalAppts, noShow, cancelled, newPats, records, revenueRes] = await Promise.all([
-      supabase
-        .from("appointments")
-        .select("id", { count: "exact", head: true })
-        .eq("clinic_id", clinicId)
-        .gte("start_at", monthStart)
-        .lte("start_at", monthEnd),
-      supabase
-        .from("appointments")
-        .select("id", { count: "exact", head: true })
-        .eq("clinic_id", clinicId)
-        .eq("status", "no_show")
-        .gte("start_at", monthStart),
-      supabase
-        .from("appointments")
-        .select("id", { count: "exact", head: true })
-        .eq("clinic_id", clinicId)
-        .eq("status", "cancelled")
-        .gte("start_at", monthStart),
-      supabase
-        .from("patients")
-        .select("id", { count: "exact", head: true })
-        .eq("clinic_id", clinicId)
-        .gte("created_at", monthStart),
-      supabase
-        .from("clinical_records")
-        .select("id, professional_id, professionals(profiles(full_name))")
-        .eq("clinic_id", clinicId)
-        .gte("created_at", monthStart),
-      supabase.rpc("sum_paid_payments", {
-        p_clinic_id: clinicId,
-        p_from: monthStart,
-        p_to: monthEnd,
-      }),
-    ]);
-
-    const doctorCounts = new Map<string, number>();
-    for (const r of records.data ?? []) {
-      const name = (r.professionals as unknown as { profiles?: { full_name?: string } })?.profiles?.full_name ?? "Sin asignar";
-      doctorCounts.set(name, (doctorCounts.get(name) ?? 0) + 1);
-    }
-
-    const totalAppointments = totalAppts.count ?? 0;
-    let revenue = Number(revenueRes.data ?? 0);
-    if (revenueRes.error) {
-      const { data: payments } = await supabase
-        .from("payments")
-        .select("amount")
-        .eq("clinic_id", clinicId)
-        .eq("status", "paid")
-        .gte("created_at", monthStart);
-      revenue = (payments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
-    }
-
-    report = {
-      totalAppointments,
-      noShow: noShow.count ?? 0,
-      cancelled: cancelled.count ?? 0,
-      newPatients: newPats.count ?? 0,
-      consultationsByDoctor: Array.from(doctorCounts.entries()).map(([name, count]) => ({ name, count })),
-      estimatedRevenue: revenue,
-      csvRows: [
-        ["Métrica", "Valor", "Período"],
-        ["Turnos totales", String(totalAppointments), periodLabel],
-        ["Ausentismo", String(noShow.count ?? 0), periodLabel],
-        ["Cancelaciones", String(cancelled.count ?? 0), periodLabel],
-        ["Pacientes nuevos", String(newPats.count ?? 0), periodLabel],
-        ["Ingresos estimados", String(revenue), periodLabel],
-        ...Array.from(doctorCounts.entries()).map(([name, count]) => [
-          `Consultas - ${name}`,
-          String(count),
-          periodLabel,
-        ]),
-      ],
-    };
+    report = await loadMonthlyClinicReport(
+      supabase,
+      clinicId,
+      monthStart,
+      monthEnd,
+      periodLabel
+    );
   }
 
   return (

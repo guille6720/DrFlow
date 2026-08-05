@@ -1,17 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { ExternalLink, Smartphone } from "lucide-react";
 import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import { PatientAppIcon } from "@/core/components/brand/patient-app-icon";
-import { Button } from "@/components/ui/button";
-import { ExternalLink, Smartphone } from "lucide-react";
+
 import { cn } from "@/shared/utils/cn";
+
 import {
   isPatientPortalReady,
   isPatientStandalone,
   markPatientPortalInstalled,
 } from "@/features/pacientes/utils/patient-portal-ready";
+
+import { Button } from "@/components/ui/button";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;

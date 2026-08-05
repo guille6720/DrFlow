@@ -1,5 +1,6 @@
-import type { ReminderChannel } from "@/types/database";
 import type { ClinicJobStatus, ClinicJobType } from "@/core/jobs/registry";
+
+import type { ReminderChannel } from "@/types/database";
 
 export type ClinicJobRow = {
   id: string;

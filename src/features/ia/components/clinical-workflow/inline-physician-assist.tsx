@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Check, Sparkles, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { buildPhysicianAssistItems } from "@/lib/utils/clinical-assistant";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import {
   PHYSICIAN_ASSIST_DISCLAIMER,
   PHYSICIAN_ASSIST_KIND_LABELS,
@@ -11,6 +10,9 @@ import {
   type PhysicianAssistItem,
   type PhysicianAssistKind,
 } from "@/features/ia/types/physician-assist-types";
+
+import { Button } from "@/components/ui/button";
+import { buildPhysicianAssistItems } from "@/lib/utils/clinical-assistant";
 
 type ItemState = "pending" | "applied" | "dismissed";
 

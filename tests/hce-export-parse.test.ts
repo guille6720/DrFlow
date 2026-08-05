@@ -1,9 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+
 import {
-  parseHceExportCsv,
   hceRowToClinicalRecord,
-  placeholderDniFromConsumerId,
   isHceExportCsv,
+  parseHceExportCsv,
+  placeholderDniFromConsumerId,
 } from "@/lib/utils/hce-export-parse";
 
 const SAMPLE = `paciente_id,apellido,nombre,dni,tipo_registro,fecha_inicio,fecha_fin,estado,diagnostico,cie10,notas

@@ -2,21 +2,25 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { cn } from "@/shared/utils/cn";
-import type { UserRole } from "@/types/database";
-import { hasPermission } from "@/core/permissions/roles";
+
 import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-context";
-import { NAV_PLUGIN_BY_FEATURE } from "@/plugins/registry";
-import { filterNavByPlugins } from "@/plugins/resolve";
-import { NAV_FLAG_BY_HREF } from "@/features/flags/lib/registry";
-import { filterNavByFeatureFlags } from "@/features/flags/lib/resolve";
-import { useClinicFeatures } from "@/features/plugins/components/plugins/clinic-plugins-provider";
+import { SIDEBAR_NAV_ITEMS } from "@/core/components/layout/sidebar-nav-config";
 import {
   Menu,
   SidebarNavContent,
   X,
 } from "@/core/components/layout/sidebar-nav-content";
-import { SIDEBAR_NAV_ITEMS } from "@/core/components/layout/sidebar-nav-config";
+import { hasPermission } from "@/core/permissions/roles";
+
+import { cn } from "@/shared/utils/cn";
+
+import { NAV_FLAG_BY_HREF } from "@/features/flags/lib/registry";
+import { filterNavByFeatureFlags } from "@/features/flags/lib/resolve";
+import { useClinicFeatures } from "@/features/plugins/components/plugins/clinic-features-provider";
+
+import { NAV_PLUGIN_BY_FEATURE } from "@/plugins/registry";
+import { filterNavByPlugins } from "@/plugins/resolve";
+import type { UserRole } from "@/types/database";
 export { FEATURE_NAV_ITEMS } from "@/features/_shared/nav";
 
 interface SidebarProps {

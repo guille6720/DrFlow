@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import type { LiveAppointment } from "@/features/dashboard/utils/clinical-operations-types";
 
 function filterOverdue(queue: LiveAppointment[], nowIso: string): LiveAppointment[] {

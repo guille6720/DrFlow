@@ -1,21 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import { DoctorSetupFields } from "@/core/components/onboarding/doctor-setup-fields";
+
 import { ProfessionalIntakeFormMessages } from "@/features/profesionales/components/profesionales/professional-intake-form-messages";
 import { ProfessionalIntakeOfficeFields } from "@/features/profesionales/components/profesionales/professional-intake-office-fields";
-import { getProfessionalSpecialtyDefaults } from "@/features/profesionales/components/profesionales/professional-intake-utils";
 import type {
   ProfessionalIntakeDetail,
   ProfessionalIntakeDetailTab,
   ProfessionalIntakeLocation,
 } from "@/features/profesionales/components/profesionales/professional-intake-types";
+import { getProfessionalSpecialtyDefaults } from "@/features/profesionales/components/profesionales/professional-intake-utils";
 import {
   ProfessionalScheduleEditor,
 } from "@/features/profesionales/components/profesionales/professional-schedule-editor";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import type { AgendaRuleDraft } from "@/lib/constants/professional-intake-checklist";
 
 type Props = {

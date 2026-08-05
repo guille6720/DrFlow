@@ -1,13 +1,15 @@
 "use client";
 
 import { Calendar, SkipForward } from "lucide-react";
+
 import { AppointmentDatetimePicker } from "@/features/agenda/components/agenda/appointment-datetime-picker";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import { useConsultationFollowUp } from "@/features/historias/hooks/use-consultation-follow-up";
 import { FollowUpPhysicianAssist } from "@/features/ia/components/clinical-workflow/follow-up-physician-assist";
 import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 type Props = {
   patientId: string;

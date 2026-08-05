@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+
 import { getActiveClinicId } from "@/core/auth/session";
 import { createClient } from "@/core/supabase/server";
+
 import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
 
 /** Compat: la HC electrónica vive en el workspace del paciente (Fase 4). */

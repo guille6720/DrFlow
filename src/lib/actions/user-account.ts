@@ -1,10 +1,11 @@
 "use server";
 
-import { createClient } from "@/core/supabase/server";
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
 import { hasPermission, PERMISSIONS } from "@/core/permissions/roles";
-import type { UserRole } from "@/types/database";
+import { createClient } from "@/core/supabase/server";
+
 import { loadMyDoctorProfile, type MyDoctorProfileData } from "@/lib/actions/doctor-profile";
+import type { UserRole } from "@/types/database";
 
 export type MyUserAccountData = {
   fullName: string;

@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import { LegalDocumentView } from "@/core/components/legal/legal-document-view";
 import { LEGAL_CONTENT_VERSION, privacyPolicyDocument } from "@/core/legal/content";
+
+import { Button } from "@/components/ui/button";
 
 export default function PrivacidadPage() {
   return (

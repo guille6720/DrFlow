@@ -1,6 +1,7 @@
 "use client";
 
 import { PanelLeftOpen } from "lucide-react";
+
 import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-context";
 
 /** Botón flotante para volver a abrir el menú cuando está oculto en escritorio. */

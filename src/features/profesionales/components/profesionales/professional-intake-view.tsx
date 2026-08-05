@@ -1,7 +1,7 @@
 "use client";
 
 import { Header } from "@/core/components/layout/header";
-import { Card } from "@/components/ui/card";
+
 import { ProfessionalIntakeChecklistCard } from "@/features/profesionales/components/profesionales/professional-intake-checklist-card";
 import { ProfessionalIntakeDetailHeader } from "@/features/profesionales/components/profesionales/professional-intake-detail-header";
 import { ProfessionalIntakeDetailPanel } from "@/features/profesionales/components/profesionales/professional-intake-detail-panel";
@@ -9,6 +9,8 @@ import { ProfessionalIntakeNewForm } from "@/features/profesionales/components/p
 import { ProfessionalIntakeSidebar } from "@/features/profesionales/components/profesionales/professional-intake-sidebar";
 import type { ProfessionalIntakeViewProps } from "@/features/profesionales/components/profesionales/professional-intake-types";
 import { useProfessionalIntake } from "@/features/profesionales/hooks/use-professional-intake";
+
+import { Card } from "@/components/ui/card";
 
 export type {
   AvailabilityRuleRow,

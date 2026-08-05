@@ -2,7 +2,7 @@
  * Verifica columna patients.insurance_plan (migración 041 / 034).
  * Uso: node scripts/check-insurance-plan-column.mjs
  */
-import { readFileSync, existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
 
 function loadEnv() {

@@ -1,10 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { Smartphone } from "lucide-react";
-import { AppInstallCard } from "@/features/portal/components/portal/app-install-card";
+import Link from "next/link";
+
 import { cn } from "@/shared/utils/cn";
+
 import type { PatientPortalState } from "@/features/pacientes/hooks/use-patient-portal";
+import { AppInstallCard } from "@/features/portal/components/portal/app-install-card";
 
 type Props = Pick<PatientPortalState, "quickActions" | "setScreen"> & {
   slug: string;

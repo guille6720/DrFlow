@@ -1,15 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { Copy, ExternalLink } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import {
-  enablePublicBooking,
   createAvailabilityRule,
   createScheduleBlock,
+  enablePublicBooking,
 } from "@/lib/actions/settings";
 import type { Clinic } from "@/types/database";
 

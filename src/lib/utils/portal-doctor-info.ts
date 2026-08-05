@@ -1,10 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { createClient } from "@/core/supabase/server";
+
+import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
 import {
   formatProfessionalLicenses,
   getProfessionalDisplayName,
 } from "@/lib/utils/professional";
-import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
 
 export type { DoctorShareInfo };
 
@@ -84,13 +86,11 @@ export function doctorInfoFromBookingLink(link: {
 }
 
 /** Slug + doctor info in one round-trip (avoids sequential portal waterfall). */
-export async function getPortalContextForClinic(
+export async function fetchPortalContext(
   clinicId: string,
-  supabase?: SupabaseClient
+  supabase: SupabaseClient
 ): Promise<PortalContext> {
-  const client = supabase ?? (await createClient());
-
-  const { data: link } = await client
+  const { data: link } = await supabase
     .from("public_booking_links")
     .select(BOOKING_LINK_DOCTOR_SELECT)
     .eq("clinic_id", clinicId)
@@ -104,7 +104,7 @@ export async function getPortalContextForClinic(
     };
   }
 
-  const { data: clinic } = await client
+  const { data: clinic } = await supabase
     .from("clinics")
     .select("slug, name, phone")
     .eq("id", clinicId)
@@ -129,6 +129,20 @@ export async function getPortalContextForClinic(
   }
 
   return { portalSlug, doctorInfo: await resolvePortalDoctorInfo(portalSlug) };
+}
+
+/**
+ * Portal context for a clinic. Uses React `cache()` per request when no client is injected.
+ */
+export async function getPortalContextForClinic(
+  clinicId: string,
+  supabase?: SupabaseClient
+): Promise<PortalContext> {
+  if (supabase) {
+    return fetchPortalContext(clinicId, supabase);
+  }
+  const { getCachedPortalContext } = await import("@/lib/server/cached-clinic-queries");
+  return getCachedPortalContext(clinicId);
 }
 
 export async function resolvePortalDoctorInfo(slug: string): Promise<DoctorShareInfo | null> {

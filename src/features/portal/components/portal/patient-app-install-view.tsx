@@ -1,17 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-import { PatientAppIcon } from "@/core/components/brand/patient-app-icon";
-import { InstallStepWizard } from "@/features/portal/components/portal/phone-install-guide";
-import { Button } from "@/components/ui/button";
 import { Copy, Smartphone } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+
+import { PatientAppIcon } from "@/core/components/brand/patient-app-icon";
+
 import {
   isConsultorioStandalone,
   isPatientStandalone,
   markPatientPortalInstalled,
   PATIENT_CONTACT_PHONE_DISCLAIMER,
 } from "@/features/pacientes/utils/patient-portal-ready";
+import { InstallStepWizard } from "@/features/portal/components/portal/phone-install-guide";
+
+import { Button } from "@/components/ui/button";
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
 
 interface BeforeInstallPromptEvent extends Event {

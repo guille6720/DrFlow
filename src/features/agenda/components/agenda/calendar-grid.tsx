@@ -1,18 +1,21 @@
 "use client";
 
-import { format, parseISO, isSameDay, getHours, getMinutes } from "date-fns";
+import { format, getHours, getMinutes, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import { Globe } from "lucide-react";
+import { memo, useMemo } from "react";
+
 import { cn } from "@/shared/utils/cn";
+
+import { appointmentStatusBadge, Badge } from "@/components/ui/badge";
 import { isOnlineBooking } from "@/lib/utils/appointment";
 import type { Appointment } from "@/types/database";
-import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
-import { Globe } from "lucide-react";
 
 const HOUR_START = 8;
 const HOUR_END = 20;
 const SLOT_MINUTES = 30;
 
-function timeSlots() {
+const TIME_SLOTS: string[] = (() => {
   const slots: string[] = [];
   for (let h = HOUR_START; h < HOUR_END; h++) {
     for (let m = 0; m < 60; m += SLOT_MINUTES) {
@@ -20,7 +23,7 @@ function timeSlots() {
     }
   }
   return slots;
-}
+})();
 
 interface Block {
   start_at: string;
@@ -35,41 +38,144 @@ interface CalendarGridProps {
   onSlotClick?: (day: Date, time: string) => void;
 }
 
+function slotKey(day: Date, time: string): string {
+  return `${format(day, "yyyy-MM-dd")}-${time}`;
+}
+
+function appointmentSlotKey(startAt: string): string {
+  const d = parseISO(startAt);
+  const minutes = getMinutes(d);
+  const time = `${String(getHours(d)).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  return `${format(d, "yyyy-MM-dd")}-${time}`;
+}
+
+function isSlotBlocked(day: Date, time: string, blocks: Block[]): boolean {
+  const [h, m] = time.split(":").map(Number);
+  const slotStart = new Date(day);
+  slotStart.setHours(h, m, 0, 0);
+  const slotEnd = new Date(slotStart.getTime() + SLOT_MINUTES * 60000);
+  return blocks.some((b) => {
+    const bs = new Date(b.start_at);
+    const be = new Date(b.end_at);
+    return slotStart < be && slotEnd > bs;
+  });
+}
+
+function buildAppointmentsBySlot(appointments: Appointment[]): Map<string, Appointment[]> {
+  const map = new Map<string, Appointment[]>();
+  for (const appt of appointments) {
+    const key = appointmentSlotKey(appt.start_at);
+    const list = map.get(key);
+    if (list) {
+      list.push(appt);
+    } else {
+      map.set(key, [appt]);
+    }
+  }
+  return map;
+}
+
+function buildBlockedSlotKeys(weekDays: Date[], blocks: Block[]): Set<string> {
+  const set = new Set<string>();
+  if (blocks.length === 0) return set;
+  for (const day of weekDays) {
+    for (const time of TIME_SLOTS) {
+      if (isSlotBlocked(day, time, blocks)) {
+        set.add(slotKey(day, time));
+      }
+    }
+  }
+  return set;
+}
+
+const CalendarAppointmentChip = memo(function CalendarAppointmentChip({
+  appt,
+}: {
+  appt: Appointment;
+}) {
+  const status = appointmentStatusBadge[appt.status];
+  const online = isOnlineBooking(appt);
+  const patient = appt.patients as { first_name?: string; last_name?: string } | undefined;
+
+  return (
+    <div
+      className="mb-0.5 truncate rounded-md bg-gradient-to-r from-teal-600 to-cyan-600 px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm"
+      title={`${patient?.last_name ?? "Paciente"}${online ? " (reserva web)" : ""}`}
+    >
+      {online && <Globe className="mr-0.5 inline h-2.5 w-2.5" />}
+      {patient?.last_name ?? "Turno"}
+      {status ? (
+        <Badge variant={status.variant} className="ml-1 scale-75">
+          {status.label}
+        </Badge>
+      ) : null}
+    </div>
+  );
+});
+
+const CalendarSlotCell = memo(function CalendarSlotCell({
+  day,
+  time,
+  dayAppts,
+  blocked,
+  onSlotClick,
+}: {
+  day: Date;
+  time: string;
+  dayAppts: Appointment[];
+  blocked: boolean;
+  onSlotClick?: (day: Date, time: string) => void;
+}) {
+  function handleClick() {
+    if (!blocked && dayAppts.length === 0 && onSlotClick) {
+      onSlotClick(day, time);
+    }
+  }
+
+  return (
+    <div
+      className={cn(
+        "relative min-h-[28px] border-l border-slate-700/50 bg-slate-800/60 p-0.5 transition-colors",
+        blocked && "bg-red-950/40",
+        !blocked && dayAppts.length === 0 && onSlotClick && "cursor-pointer hover:bg-slate-700/80"
+      )}
+      onClick={handleClick}
+    >
+      {blocked && dayAppts.length === 0 ? (
+        <span className="block truncate px-1 text-[9px] text-red-400/90">Bloqueo</span>
+      ) : null}
+      {dayAppts.map((appt) => (
+        <CalendarAppointmentChip key={appt.id} appt={appt} />
+      ))}
+    </div>
+  );
+});
+
 export function CalendarGrid({
   weekDays,
   appointments,
   blocks = [],
   onSlotClick,
 }: CalendarGridProps) {
-  const slots = timeSlots();
+  const gridColumnStyle = useMemo(
+    () => ({ gridTemplateColumns: `64px repeat(${weekDays.length}, 1fr)` }),
+    [weekDays.length]
+  );
 
-  function apptsFor(day: Date, time: string) {
-    const [h, m] = time.split(":").map(Number);
-    return appointments.filter((a) => {
-      const d = parseISO(a.start_at);
-      return isSameDay(d, day) && getHours(d) === h && getMinutes(d) === m;
-    });
-  }
+  const appointmentsBySlot = useMemo(
+    () => buildAppointmentsBySlot(appointments),
+    [appointments]
+  );
 
-  function isBlocked(day: Date, time: string) {
-    const [h, m] = time.split(":").map(Number);
-    const slotStart = new Date(day);
-    slotStart.setHours(h, m, 0, 0);
-    const slotEnd = new Date(slotStart.getTime() + SLOT_MINUTES * 60000);
-    return blocks.some((b) => {
-      const bs = new Date(b.start_at);
-      const be = new Date(b.end_at);
-      return slotStart < be && slotEnd > bs;
-    });
-  }
+  const blockedSlotKeys = useMemo(
+    () => buildBlockedSlotKeys(weekDays, blocks),
+    [weekDays, blocks]
+  );
 
   return (
     <div className="overflow-x-auto rounded-2xl border border-slate-600/80 bg-slate-800 shadow-xl shadow-black/20">
       <div className="min-w-[800px]">
-        <div
-          className="grid border-b border-slate-600/80"
-          style={{ gridTemplateColumns: `64px repeat(${weekDays.length}, 1fr)` }}
-        >
+        <div className="grid border-b border-slate-600/80" style={gridColumnStyle}>
           <div className="bg-slate-900/90 p-2" />
           {weekDays.map((day) => (
             <div
@@ -83,59 +189,22 @@ export function CalendarGrid({
             </div>
           ))}
         </div>
-        {slots.map((time) => (
-          <div
-            key={time}
-            className="grid border-b border-slate-700/60"
-            style={{ gridTemplateColumns: `64px repeat(${weekDays.length}, 1fr)` }}
-          >
+        {TIME_SLOTS.map((time) => (
+          <div key={time} className="grid border-b border-slate-700/60" style={gridColumnStyle}>
             <div className="bg-slate-900/80 px-2 py-1 text-right text-[10px] font-medium text-slate-500">
               {time}
             </div>
             {weekDays.map((day) => {
-              const dayAppts = apptsFor(day, time);
-              const blocked = isBlocked(day, time);
+              const key = slotKey(day, time);
               return (
-                <div
-                  key={`${day.toISOString()}-${time}`}
-                  className={cn(
-                    "relative min-h-[28px] border-l border-slate-700/50 bg-slate-800/60 p-0.5 transition-colors",
-                    blocked && "bg-red-950/40",
-                    !blocked &&
-                      dayAppts.length === 0 &&
-                      onSlotClick &&
-                      "cursor-pointer hover:bg-slate-700/80"
-                  )}
-                  onClick={() => {
-                    if (!blocked && dayAppts.length === 0 && onSlotClick) {
-                      onSlotClick(day, time);
-                    }
-                  }}
-                >
-                  {blocked && dayAppts.length === 0 && (
-                    <span className="block truncate px-1 text-[9px] text-red-400/90">Bloqueo</span>
-                  )}
-                  {dayAppts.map((appt) => {
-                    const status = appointmentStatusBadge[appt.status];
-                    const online = isOnlineBooking(appt);
-                    return (
-                      <div
-                        key={appt.id}
-                        className="mb-0.5 truncate rounded-md bg-gradient-to-r from-teal-600 to-cyan-600 px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm"
-                        title={`${appt.patients ? `${(appt.patients as { last_name: string; first_name: string }).last_name}` : "Paciente"}${online ? " (reserva web)" : ""}`}
-                      >
-                        {online && <Globe className="mr-0.5 inline h-2.5 w-2.5" />}
-                        {(appt.patients as { first_name?: string; last_name?: string })?.last_name ??
-                          "Turno"}
-                        {status && (
-                          <Badge variant={status.variant} className="ml-1 scale-75">
-                            {status.label}
-                          </Badge>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                <CalendarSlotCell
+                  key={key}
+                  day={day}
+                  time={time}
+                  dayAppts={appointmentsBySlot.get(key) ?? []}
+                  blocked={blockedSlotKeys.has(key)}
+                  onSlotClick={onSlotClick}
+                />
               );
             })}
           </div>

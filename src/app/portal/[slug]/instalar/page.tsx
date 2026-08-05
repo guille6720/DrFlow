@@ -1,12 +1,15 @@
-import { PatientAppInstallView } from "@/features/portal/components/portal/patient-app-install-view";
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+
+import { getSiteUrl } from "@/core/supabase/env";
+
 import {
   buildPatientAppOgDescription,
   PATIENT_PWA_ICON_512,
 } from "@/features/pacientes/utils/patient-portal-ready";
+import { PatientAppInstallView } from "@/features/portal/components/portal/patient-app-install-view";
+
 import { resolvePortalDoctorInfo } from "@/lib/utils/portal-doctor-info";
-import { getSiteUrl } from "@/core/supabase/env";
 
 export async function generateMetadata({
   params,

@@ -1,7 +1,8 @@
-import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
+import { logServerError } from "@/core/errors/log-error.server";
 import { runClinicJobHandler } from "@/core/jobs/handlers";
-import { recordObservabilityEvent, createTraceId } from "@/core/observability/record";
 import type { ClinicJobRow } from "@/core/jobs/types";
+import { createTraceId, recordObservabilityEvent } from "@/core/observability/record";
+import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 
 export type ProcessJobsResult = {
   processed: number;
@@ -19,7 +20,9 @@ export async function processPendingClinicJobs(options?: {
   clinicId?: string;
 }): Promise<ProcessJobsResult> {
   if (!hasAdminClient()) {
-    console.warn("[clinic_jobs] SUPABASE_SERVICE_ROLE_KEY missing — skip worker");
+    logServerError("clinic-jobs.worker-skip", "SUPABASE_SERVICE_ROLE_KEY missing", {
+      persist: false,
+    });
     return { processed: 0, completed: 0, failed: 0, jobIds: [] };
   }
 

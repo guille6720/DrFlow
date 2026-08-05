@@ -1,10 +1,12 @@
 "use client";
 
+import { Bell, RefreshCw } from "lucide-react";
+
+import { usePatientRequestsPanel } from "@/features/pacientes/hooks/use-patient-requests-panel";
+import { PatientRequestCard } from "@/features/portal/components/portal/patient-request-card";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PatientRequestCard } from "@/features/portal/components/portal/patient-request-card";
-import { usePatientRequestsPanel } from "@/features/pacientes/hooks/use-patient-requests-panel";
-import { Bell, RefreshCw } from "lucide-react";
 
 interface Props {
   slug: string;

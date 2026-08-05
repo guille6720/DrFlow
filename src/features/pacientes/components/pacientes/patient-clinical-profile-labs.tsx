@@ -1,7 +1,8 @@
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { STANDARD_LAB_NAMES } from "@/features/pacientes/utils/patient-chart-notes";
 import { parsePatientChartExtras } from "@/features/pacientes/utils/patient-chart-notes";
+
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 
 type LabEntry = NonNullable<ReturnType<typeof parsePatientChartExtras>["labs"]>[number];
 

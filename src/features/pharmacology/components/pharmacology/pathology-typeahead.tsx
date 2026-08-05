@@ -1,8 +1,10 @@
 "use client";
 
+import { Loader2, Search, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { Search, X, Loader2 } from "lucide-react";
+
 import { cn } from "@/shared/utils/cn";
+
 import { searchPathologies } from "@/lib/actions/pharmacology";
 import type { PathologySearchResult } from "@/types/pharmacology";
 

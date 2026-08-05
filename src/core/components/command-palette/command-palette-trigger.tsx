@@ -1,9 +1,12 @@
 "use client";
 
 import { Search } from "lucide-react";
+
 import { useCommandPalette } from "@/core/components/command-palette/command-palette-provider";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
+
 import { cn } from "@/shared/utils/cn";
+
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
 type Props = {
   className?: string;

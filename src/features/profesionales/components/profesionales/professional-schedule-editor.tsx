@@ -1,13 +1,14 @@
 "use client";
 
+import { CalendarClock } from "lucide-react";
 import { useMemo } from "react";
+
 import { Input } from "@/components/ui/input";
 import {
   AGENDA_PRESETS,
-  WEEKDAY_LABELS,
   type AgendaRuleDraft,
+  WEEKDAY_LABELS,
 } from "@/lib/constants/professional-intake-checklist";
-import { CalendarClock } from "lucide-react";
 
 interface Props {
   rules: AgendaRuleDraft[];

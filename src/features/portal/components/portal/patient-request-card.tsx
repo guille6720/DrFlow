@@ -1,14 +1,17 @@
+import { CheckCircle2, Clock, Globe, MessageCircle, XCircle } from "lucide-react";
+
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
+
+import type { PatientRequestsPanelState } from "@/features/pacientes/hooks/use-patient-requests-panel";
 import {
+  type PatientRequestRecord,
   requestChannelLabel,
   requestTypeLabel,
-  type PatientRequestRecord,
 } from "@/features/pacientes/utils/patient-requests-storage";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import type { PatientRequestsPanelState } from "@/features/pacientes/hooks/use-patient-requests-panel";
-import { CheckCircle2, Clock, Globe, MessageCircle, XCircle } from "lucide-react";
 
 interface Props {
   request: PatientRequestRecord;

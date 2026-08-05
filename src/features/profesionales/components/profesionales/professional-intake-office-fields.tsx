@@ -1,10 +1,11 @@
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import type {
   ProfessionalIntakeDetail,
   ProfessionalIntakeLocation,
 } from "@/features/profesionales/components/profesionales/professional-intake-types";
+
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 type Props = {
   locations: ProfessionalIntakeLocation[];

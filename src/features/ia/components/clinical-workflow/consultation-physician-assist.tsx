@@ -1,15 +1,17 @@
 "use client";
 
-import { useMemo } from "react";
-import Link from "next/link";
 import { Mic } from "lucide-react";
-import { useDeferredPathologySearch } from "@/lib/hooks/use-deferred-pathology-search";
+import Link from "next/link";
+import { useMemo } from "react";
+
 import { useConsultationCie10Suggestions } from "@/features/historias/hooks/use-consultation-cie10-suggestions";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
-import { InlinePhysicianAssist } from "@/features/ia/components/clinical-workflow/inline-physician-assist";
 import { ConsultationCie10Panel } from "@/features/ia/components/clinical-workflow/consultation-cie10-panel";
-import { resolveConsultationPathologyQuery } from "@/lib/utils/consultation-pathology-query";
+import { InlinePhysicianAssist } from "@/features/ia/components/clinical-workflow/inline-physician-assist";
 import type { PhysicianAssistContext, PhysicianAssistItem } from "@/features/ia/types/physician-assist-types";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+
+import { useDeferredPathologySearch } from "@/lib/hooks/use-deferred-pathology-search";
+import { resolveConsultationPathologyQuery } from "@/lib/utils/consultation-pathology-query";
 
 type Props = {
   patientId: string;

@@ -1,16 +1,19 @@
+import { Building2, CalendarDays, Monitor, Users, Video } from "lucide-react";
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
+
+import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
+
+import { ExportCsvButton } from "@/features/dashboard/components/reportes/export-csv-button";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExportCsvButton } from "@/features/dashboard/components/reportes/export-csv-button";
+import { Card } from "@/components/ui/card";
+import { StatCard } from "@/components/ui/stat-card";
 import {
-  consultationModalityLabel,
   type ConsultationModality,
+  consultationModalityLabel,
 } from "@/lib/constants/consultation-modality";
 import type { AttendancePeriod, AttendanceSummary } from "@/lib/utils/attendance-stats";
-import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
-import { Building2, CalendarDays, Monitor, Users, Video } from "lucide-react";
 
 export interface AttendanceListItem {
   id: string;

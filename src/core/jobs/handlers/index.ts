@@ -1,12 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { handleGenerateReportJob } from "@/core/jobs/handlers/generate-report";
+import { handleImportBatchJob } from "@/core/jobs/handlers/import-batch";
+import { handleImportClinicalPdfJob } from "@/core/jobs/handlers/import-clinical-pdf";
+import { handleRunAiTaskJob } from "@/core/jobs/handlers/run-ai-task";
+import { handleSendReminderJob } from "@/core/jobs/handlers/send-reminder";
 import type { ClinicJobType } from "@/core/jobs/registry";
 import type { ClinicJobRow } from "@/core/jobs/types";
-import { devLog } from "@/core/observability/dev-log";
-import { handleSendReminderJob } from "@/core/jobs/handlers/send-reminder";
-import { handleGenerateReportJob } from "@/core/jobs/handlers/generate-report";
-import { handleImportClinicalPdfJob } from "@/core/jobs/handlers/import-clinical-pdf";
-import { handleImportBatchJob } from "@/core/jobs/handlers/import-batch";
-import { handleRunAiTaskJob } from "@/core/jobs/handlers/run-ai-task";
+import { recordObservabilityEvent } from "@/core/observability/record";
 
 export async function handleSendEmailJob(
   supabase: SupabaseClient,
@@ -32,7 +33,17 @@ export async function handleSendEmailJob(
     });
   }
 
-  devLog(`[MOCK EMAIL] → ${payload.recipient}: ${payload.subject}`);
+  void recordObservabilityEvent({
+    clinicId: job.clinic_id,
+    category: "job",
+    name: "mock_email_send",
+    status: "ok",
+    metadata: {
+      recipient: payload.recipient,
+      subject: payload.subject,
+      simulated: true,
+    },
+  });
   return { status: "simulated", recipient: payload.recipient ?? "" };
 }
 

@@ -1,26 +1,29 @@
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { Header } from "@/core/components/layout/header";
-import { DeletePatientButton } from "@/features/pacientes/components/pacientes/delete-patient-button";
-import { PatientAdminDetailView } from "@/features/pacientes/components/pacientes/patient-admin-detail-view";
-import { PatientWorkspaceContent } from "@/features/pacientes";
-import { PatientWorkspaceSkeleton } from "@/features/pacientes";
-import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
-import { hasPermission } from "@/core/permissions/roles";
+import { Suspense } from "react";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
+import { Header } from "@/core/components/layout/header";
+import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
-import { ArrowLeft } from "lucide-react";
+
 import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation";
+
+import { PatientWorkspaceContent } from "@/features/pacientes";
+import { PatientWorkspaceSkeleton } from "@/features/pacientes";
+import { DeletePatientButton } from "@/features/pacientes/components/pacientes/delete-patient-button";
+import { PatientAdminDetailView } from "@/features/pacientes/components/pacientes/patient-admin-detail-view";
 import {
   LEGACY_TAB_ALIASES,
   parsePatientWorkspaceTab,
 } from "@/features/pacientes/constants/patient-workspace-tabs";
+import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
 
 export default async function PacienteDetailPage({
   params,

@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
+
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+
 import {
   buildProactiveCareItems,
   buildProactiveCareSummaryText,
   countProactiveCareBySeverity,
   sortProactiveCareItems,
 } from "@/lib/utils/proactive-follow-up";
-import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 
 function baseChart(overrides: Partial<PatientChartPayload> = {}): PatientChartPayload {
   return {

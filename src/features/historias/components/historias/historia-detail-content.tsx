@@ -1,25 +1,28 @@
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { PamiPatientBanner } from "@/features/pacientes/components/pacientes/pami-patient-banner";
-import { PatientAppShareControl } from "@/features/pacientes/components/pacientes/patient-app-share-control";
-import { PatientWhatsAppButton } from "@/features/pacientes/components/patient-whatsapp-button";
-import { ExportClinicalPdfButton } from "@/features/historias/components/historias/export-pdf-button";
-import { ConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
-import { FinalizeConsultationButton } from "@/features/historias/components/historias/finalize-consultation-button";
-import { ClinicalDocumentsPanel } from "@/features/historias/components/historias/clinical-documents-panel";
-import { PrescriptionPanel } from "@/features/recetas/components/recetas/prescription-panel";
-import { MedicalOrderPanel } from "@/features/historias/components/historias/medical-order-panel";
-import { HistoriaDetailConsultaCard } from "@/features/historias/components/historias/historia-detail-consulta-card";
-import { HistoriaDetailAuditCard } from "@/features/historias/components/historias/historia-detail-audit-card";
+import Link from "next/link";
+
 import {
   backHrefFromClinicalSubpage,
   patientClinicalHistoryPath,
   withClinicalHistoryReturn,
 } from "@/shared/utils/clinical-navigation";
-import { buildPatientContactMessage } from "@/features/pacientes/utils/patient-messages";
+
+import { ClinicalDocumentsPanel } from "@/features/historias/components/historias/clinical-documents-panel";
+import { ConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
+import { ExportClinicalPdfButton } from "@/features/historias/components/historias/export-clinical-pdf-button";
+import { FinalizeConsultationButton } from "@/features/historias/components/historias/finalize-consultation-button";
+import { HistoriaDetailAuditCard } from "@/features/historias/components/historias/historia-detail-audit-card";
+import { HistoriaDetailConsultaCard } from "@/features/historias/components/historias/historia-detail-consulta-card";
+import { MedicalOrderPanel } from "@/features/historias/components/historias/medical-order-panel";
 import type { HistoriaDetailPageData } from "@/features/historias/server/load-historia-detail-page";
+import { PamiPatientBanner } from "@/features/pacientes/components/pacientes/pami-patient-banner";
+import { PatientAppShareControl } from "@/features/pacientes/components/pacientes/patient-app-share-control";
+import { PatientWhatsAppButton } from "@/features/pacientes/components/pacientes/patient-whatsapp-button";
+import { buildPatientContactMessage } from "@/features/pacientes/utils/patient-messages";
+import { PrescriptionPanel } from "@/features/recetas/components/recetas/prescription-panel";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import type { Clinic } from "@/types/database";
 
 type Props = HistoriaDetailPageData & {

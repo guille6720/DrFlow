@@ -1,7 +1,7 @@
 import type { HceExportRow } from "@/lib/utils/hce-export-parse";
 import { placeholderDniFromConsumerId } from "@/lib/utils/hce-export-parse";
 import { normalizeDni } from "@/lib/utils/normalize-dni";
-import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
+import { mapTeamsJsonlRecordToRow } from "@/lib/utils/teams-jsonl-record-mapper";
 
 export interface TeamsJsonlConsumer {
   id: string;
@@ -20,31 +20,6 @@ export interface TeamsJsonlParseResult {
     recordsSkipped: number;
     recordsParsed: number;
   };
-}
-
-function parseIsoDate(raw: string | undefined): string | null {
-  if (!raw) return null;
-  const m = raw.match(/^(\d{4}-\d{2}-\d{2})/);
-  return m ? m[1] : null;
-}
-
-function stripHtml(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n")
-    .replace(/<\/li>/gi, "\n")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&oacute;/gi, "ó")
-    .replace(/&aacute;/gi, "á")
-    .replace(/&eacute;/gi, "é")
-    .replace(/&iacute;/gi, "í")
-    .replace(/&uacute;/gi, "ú")
-    .replace(/&ntilde;/gi, "ñ")
-    .replace(/\s+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .replace(/[ \t]{2,}/g, " ")
-    .trim();
 }
 
 function splitLabel(label: string): { last_name: string; first_name: string } {
@@ -121,78 +96,7 @@ function jsonlRecordToRow(
   const document_number =
     normalizeDni(consumer.identification) ?? placeholderDniFromConsumerId(consumerRef);
 
-  const tipo = rec.type === "vitalSigns" ? "vitalsigns" : rec.type.toLowerCase();
-  const fecha_inicio = parseIsoDate(rec.date ?? rec.startsAt);
-  const fecha_fin = parseIsoDate(rec.endsAt);
-
-  const base: HceExportRow = {
-    lineNumber,
-    paciente_id: consumerRef,
-    last_name,
-    first_name,
-    document_number,
-    tipo_registro: tipo,
-    fecha_inicio,
-    fecha_fin,
-    estado: rec.status ?? "",
-    diagnostico: "",
-    cie10: rec.cie10Code ?? "",
-    notas: "",
-    import_record_id: rec.id,
-  };
-
-  const clean = (s: string) => sanitizeClinicalDisplayText(s);
-
-  if (tipo === "diagnostics") {
-    base.diagnostico = clean((rec.dx ?? rec.label ?? "").trim());
-    base.notas = clean((rec.notes ?? "").trim());
-    base.estado = rec.status ?? "registro";
-    return base.diagnostico ? base : null;
-  }
-
-  if (tipo === "treatments") {
-    const label = (rec.label ?? "").trim();
-    const drugLine = [rec.drug, rec.product, rec.presentation].filter(Boolean).join(" · ");
-    base.diagnostico = label || drugLine;
-    base.notas = clean(
-      [rec.dose, rec.frecuency, rec.notes, rec.company ? `Lab: ${rec.company}` : ""]
-        .filter(Boolean)
-        .join(" · ")
-    );
-    base.estado = rec.status ?? "activo";
-    return base.diagnostico || base.notas ? base : null;
-  }
-
-  if (tipo === "records") {
-    const body = stripHtml(rec.content ?? rec.text ?? "");
-    if (!body && !fecha_inicio) return null;
-    base.notas = clean(body);
-    return base;
-  }
-
-  if (tipo === "vitalsigns") {
-    const parts = [
-      rec.tas && rec.tad ? `TA ${rec.tas}/${rec.tad}` : rec.tas ? `TAS ${rec.tas}` : "",
-      rec.fc ? `FC ${rec.fc}` : "",
-      rec.weight ? `Peso ${rec.weight} kg` : "",
-      rec.height ? `Talla ${rec.height} cm` : "",
-    ].filter(Boolean);
-    base.notas = parts.join(" · ") || "Signos vitales";
-    return base;
-  }
-
-  if (tipo === "files") {
-    base.diagnostico = (rec.name ?? rec.fileName ?? "Archivo").trim();
-    base.notas = clean([rec.link, rec.notes].filter(Boolean).join("\n"));
-    base.estado = rec.classification ?? rec.status ?? "archivo";
-    return base;
-  }
-
-  const fallback = stripHtml(rec.content ?? rec.text ?? rec.notes ?? "");
-  if (!fallback && !rec.label) return null;
-  base.diagnostico = (rec.label ?? "").trim();
-  base.notas = clean(fallback);
-  return base;
+  return mapTeamsJsonlRecordToRow(rec, lineNumber, consumerRef, last_name, first_name, document_number);
 }
 
 export function parseTeamsJsonlContent(content: string, maxRows = 20_000): TeamsJsonlParseResult {

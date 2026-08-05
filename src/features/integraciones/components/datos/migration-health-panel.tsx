@@ -1,12 +1,14 @@
-import Link from "next/link";
 import {
   AlertTriangle,
   CheckCircle2,
   Circle,
   CircleDot,
 } from "lucide-react";
-import type { MigrationHealthReport, MigrationStepStatus } from "@/lib/utils/migration-health";
+import Link from "next/link";
+
 import { patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
+
+import type { MigrationHealthReport, MigrationStepStatus } from "@/lib/utils/migration-health";
 
 function StepIcon({ status }: { status: MigrationStepStatus }) {
   if (status === "done") return <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />;

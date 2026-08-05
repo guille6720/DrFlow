@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
 import { readdirSync, readFileSync } from "fs";
 import { resolve } from "path";
+import { describe, expect, it } from "vitest";
 
 const MIGRATIONS_DIR = resolve(process.cwd(), "supabase/migrations");
 
@@ -9,10 +9,10 @@ describe("migrations consistency", () => {
     .filter((f) => f.endsWith(".sql"))
     .sort();
 
-  it("has 65 migration files in lexicographic order", () => {
-    expect(files.length).toBe(65);
+  it("has 66 migration files in lexicographic order", () => {
+    expect(files.length).toBe(66);
     expect(files[0]).toBe("001_schema.sql");
-    expect(files[files.length - 1]).toBe("063_atomic_operations.sql");
+    expect(files[files.length - 1]).toBe("064_query_optimization.sql");
   });
 
   it("uses numeric prefix pattern without gaps (except b-suffix repairs)", () => {
@@ -22,8 +22,8 @@ describe("migrations consistency", () => {
       .map(Number);
     const unique = [...new Set(numeric)].sort((a, b) => a - b);
     expect(unique[0]).toBe(1);
-    expect(unique[unique.length - 1]).toBe(63);
-    for (let i = 1; i <= 63; i++) {
+    expect(unique[unique.length - 1]).toBe(64);
+    for (let i = 1; i <= 64; i++) {
       expect(unique).toContain(i);
     }
   });

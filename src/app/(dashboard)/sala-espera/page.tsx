@@ -1,17 +1,20 @@
-import { redirect } from "next/navigation";
+import { endOfDay, startOfDay } from "date-fns";
 import Link from "next/link";
-import { startOfDay, endOfDay } from "date-fns";
-import { Header } from "@/core/components/layout/header";
-import { Button } from "@/components/ui/button";
-import { WaitingRoomView } from "@/features/administracion";
+import { redirect } from "next/navigation";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
+import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
+
+import { WaitingRoomView } from "@/features/administracion";
+
+import { Button } from "@/components/ui/button";
 
 export default async function SalaEsperaPage() {
   const profile = await getProfile();

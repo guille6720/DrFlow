@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { Check, Copy, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
+
+import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
+import { PHYSICIAN_ASSIST_DISCLAIMER } from "@/features/ia/types/physician-assist-types";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+
 import { Button } from "@/components/ui/button";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
 import {
   buildCloseEncounterBundleText,
   buildCloseEncounterSteps,
   type CloseEncounterStep,
 } from "@/lib/utils/close-encounter-assist";
-import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
-import { PHYSICIAN_ASSIST_DISCLAIMER } from "@/features/ia/types/physician-assist-types";
 
 type StepCardProps = {
   step: CloseEncounterStep;

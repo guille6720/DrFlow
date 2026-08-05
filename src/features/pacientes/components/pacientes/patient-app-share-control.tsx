@@ -1,19 +1,21 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { CheckCircle2, Copy, MessageCircle, RefreshCw, Smartphone } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
+
+import { cn } from "@/shared/utils/cn";
+import { buildWhatsAppShareUrl, buildWhatsAppUrl } from "@/shared/utils/whatsapp";
+
+import { recordPatientAppShare } from "@/features/pacientes/actions/patient-app-share";
 import {
   buildPatientAppInstallUrl,
   buildPatientAppShareMessage,
 } from "@/features/pacientes/utils/patient-portal-ready";
-import { buildWhatsAppShareUrl, buildWhatsAppUrl } from "@/shared/utils/whatsapp";
-import { recordPatientAppShare } from "@/features/pacientes/actions/patient-app-share";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { cn } from "@/shared/utils/cn";
 
+import { Button } from "@/components/ui/button";
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
 
 export interface PatientAppShareInfo {

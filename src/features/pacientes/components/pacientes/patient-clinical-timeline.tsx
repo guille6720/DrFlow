@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
@@ -19,8 +17,12 @@ import {
   Stethoscope,
   UserX,
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+
 import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
+
+import { Card } from "@/components/ui/card";
 import {
   buildClinicalTimeline,
   filterClinicalTimelineEvents,

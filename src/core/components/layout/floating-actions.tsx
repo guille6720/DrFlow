@@ -1,19 +1,22 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import { useState } from "react";
 import {
-  Plus,
-  X,
   Calendar,
-  Users,
-  Stethoscope,
-  Pill,
   ClipboardList,
+  Pill,
+  Plus,
+  Stethoscope,
+  Users,
+  X,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+
 import { cn } from "@/shared/utils/cn";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
+
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+
 import {
   parsePatientIdFromPath,
   patientWorkflowHref,

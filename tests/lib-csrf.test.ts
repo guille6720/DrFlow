@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { isSameOriginPost } from "@/core/security/csrf";
 import type { NextRequest } from "next/server";
+import { describe, expect, it } from "vitest";
+
+import { isSameOriginPost } from "@/core/security/csrf";
 
 function mockRequest(headers: Record<string, string>): NextRequest {
   return {

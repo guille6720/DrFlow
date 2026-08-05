@@ -1,9 +1,11 @@
 "use client";
 
+import { Activity, Loader2 } from "lucide-react";
+
 import { cn } from "@/shared/utils/cn";
+
 import { EmptyState } from "@/components/ui/empty-state";
 import type { PathologyBySymptomResult } from "@/types/pharmacology";
-import { Activity, Loader2 } from "lucide-react";
 
 interface PathologyMatchListProps {
   items: PathologyBySymptomResult[];

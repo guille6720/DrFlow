@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
 import { createClient } from "@/core/supabase/client";
 
 /** Refreshes dashboard data on appointment / task-relevant changes. */

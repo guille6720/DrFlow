@@ -1,8 +1,8 @@
 /**
  * Shared file scanning utilities for quality gates.
  */
-import { existsSync, readFileSync, readdirSync, statSync } from "fs";
-import { resolve, relative, extname, join } from "path";
+import { existsSync, readdirSync, readFileSync } from "fs";
+import { extname, join, relative, resolve } from "path";
 
 export const SRC_ROOT = resolve(process.cwd(), "src");
 export const SCAN_EXTENSIONS = new Set([".ts", ".tsx"]);

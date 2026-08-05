@@ -1,13 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+
 import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
-import { createClient } from "@/core/supabase/server";
-import { recordAuditChange } from "@/core/security/audit-service";
 import { hasPermission } from "@/core/permissions/roles";
-import { normalizeCoverages } from "@/lib/constants/coverages";
-import { clinicCoveragesSchema } from "@/core/validations/settings-schemas";
+import { recordAuditChange } from "@/core/security/audit-service";
+import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
+import { clinicCoveragesSchema } from "@/core/validations/settings-schemas";
+
+import { normalizeCoverages } from "@/lib/constants/coverages";
 
 export async function updateClinicCoverages(formData: FormData): Promise<{
   success?: boolean;

@@ -1,9 +1,10 @@
 "use client";
 
+import { UserPlus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { UserPlus } from "lucide-react";
 import type { UserRole } from "@/types/database";
 
 const INVITE_ROLES: { value: UserRole; label: string }[] = [

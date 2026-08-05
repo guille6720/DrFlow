@@ -1,17 +1,19 @@
-import type { MedicalOrder } from "@/types/medical-order";
 import type { DbClient } from "@/core/repositories/types";
+import type { ServiceResult } from "@/core/services/types";
+import { fromRepo, serviceErr } from "@/core/services/types";
+import {
+  type MedicalOrderFormInput,
+  medicalOrderFormSchema,
+} from "@/core/validations/medical-order";
+import { firstZodIssue } from "@/core/validations/params";
+import { sanitizeText } from "@/core/validations/schemas";
+
 import {
   insertMedicalOrder,
   voidMedicalOrderRow,
 } from "@/features/recetas/repositories/medical-orders.repository";
-import type { ServiceResult } from "@/core/services/types";
-import { fromRepo, serviceErr } from "@/core/services/types";
-import { sanitizeText } from "@/core/validations/schemas";
-import {
-  medicalOrderFormSchema,
-  type MedicalOrderFormInput,
-} from "@/core/validations/medical-order";
-import { firstZodIssue } from "@/core/validations/params";
+
+import type { MedicalOrder } from "@/types/medical-order";
 
 export type MedicalOrderInput = MedicalOrderFormInput;
 

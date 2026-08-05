@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
+
+import { patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
+
 import {
+  LEGACY_TAB_ALIASES,
   parsePatientWorkspaceTab,
   patientWorkspacePath,
-  LEGACY_TAB_ALIASES,
 } from "@/features/pacientes/constants/patient-workspace-tabs";
-import { patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
 
 describe("parsePatientWorkspaceTab", () => {
   it("defaults to resumen for unknown values", () => {

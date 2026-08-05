@@ -1,9 +1,8 @@
-"use client";
-
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { buildConsultaHref } from "@/lib/utils/consultation-draft";
+import Link from "next/link";
+
 import type { ConsultationDraftContext } from "@/lib/utils/consultation-draft";
+import { buildConsultaHref } from "@/lib/utils/consultation-draft";
 
 type Props = {
   consultationContext: ConsultationDraftContext;

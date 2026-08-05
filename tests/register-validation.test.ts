@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { registerClinicSchema } from "@/core/validations/schemas";
+import { describe, expect, it } from "vitest";
+
 import { normalizeSlug, zodFieldErrors } from "@/core/validations/form-errors";
+import { registerClinicSchema } from "@/core/validations/schemas";
 
 describe("register validation", () => {
   it("flags invalid slug with field error", () => {

@@ -1,16 +1,18 @@
 "use client";
 
+import { Download } from "lucide-react";
 import { useState } from "react";
+
+import { ImportConsumersPanel } from "@/features/pacientes/components/pacientes/import-consumers-panel";
+
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { ImportConsumersPanel } from "@/features/pacientes/components/pacientes/import-consumers-panel";
 import {
   downloadPatientsCsv,
   downloadPatientsPdf,
   type PatientExportRow,
 } from "@/lib/utils/clinical-export-client";
-import { Download } from "lucide-react";
 
 const IMPORT_OPTIONS = [
   { value: "consumers", label: "Excel / CSV de pacientes (consumers)" },
@@ -43,7 +45,7 @@ export function PatientsImportExportHub({
     if (exportKind === "patients-csv") {
       downloadPatientsCsv("pacientes-drflow.csv", exportPatients);
     } else if (exportKind === "patients-pdf") {
-      downloadPatientsPdf(exportPatients);
+      void downloadPatientsPdf(exportPatients);
     }
   }
 

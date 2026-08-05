@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { deactivatePatient } from "@/lib/actions/settings";
-import { Trash2, X } from "lucide-react";
 
 interface DeletePatientButtonProps {
   patientId: string;

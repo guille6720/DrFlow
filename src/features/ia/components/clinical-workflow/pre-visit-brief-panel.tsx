@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { AlertTriangle, ChevronDown, Copy, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
-import { buildPreVisitBrief, type PreVisitBriefSection } from "@/lib/utils/pre-visit-brief";
+import { useMemo, useState } from "react";
+
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+
+import { Button } from "@/components/ui/button";
+import { buildPreVisitBrief, type PreVisitBriefSection } from "@/lib/utils/pre-visit-brief";
 
 type Props = {
   patientName: string;

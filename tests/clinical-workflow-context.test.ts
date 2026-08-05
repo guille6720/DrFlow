@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
+
 import {
   parsePatientIdFromPath,
   patientWorkflowHref,
-  workflowClickReduction,
   WORKFLOW_CLICK_BEFORE,
   WORKFLOW_CLICK_TARGETS,
+  workflowClickReduction,
 } from "@/lib/utils/clinical-workflow-context";
 
 describe("parsePatientIdFromPath", () => {

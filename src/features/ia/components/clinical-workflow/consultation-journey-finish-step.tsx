@@ -1,7 +1,10 @@
 "use client";
 
 import { CheckCircle2, Circle, MinusCircle } from "lucide-react";
+
 import { CloseEncounterWizardPanel } from "@/features/ia/components/clinical-workflow/close-encounter-wizard-panel";
+import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type {
@@ -9,7 +12,6 @@ import type {
   ConsultationJourneyStepMeta,
   ConsultationJourneyStepStatus,
 } from "@/lib/utils/consultation-journey";
-import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
 
 type Props = {
   steps: ConsultationJourneyStepMeta[];

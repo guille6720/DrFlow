@@ -2,9 +2,9 @@
  * Genera drflow-logo.png con fondo transparente, bordes suaves y esquinas redondeadas.
  * Uso: node scripts/remove-logo-bg.mjs [ruta-entrada]
  */
+import { existsSync } from "fs";
+import { dirname, join } from "path";
 import sharp from "sharp";
-import { copyFileSync, existsSync } from "fs";
-import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

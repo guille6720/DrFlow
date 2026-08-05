@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
+
 import { InlinePhysicianAssist } from "@/features/ia/components/clinical-workflow/inline-physician-assist";
 import { OrderSuggestionPanel } from "@/features/ia/components/clinical-workflow/order-suggestion-panel";
 import type { PhysicianAssistContext, PhysicianAssistItem } from "@/features/ia/types/physician-assist-types";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
 type Props = {
   context: PhysicianAssistContext;

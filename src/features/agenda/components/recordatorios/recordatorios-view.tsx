@@ -1,18 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { Bell, Mail, MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import { Header } from "@/core/components/layout/header";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+
+import { formatPatientName } from "@/shared/utils/patient-display";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { sendReminder } from "@/lib/actions/clinic-services";
 import type { Clinic, ReminderLog, UserRole } from "@/types/database";
-import { Bell, Mail, MessageCircle } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { formatPatientName } from "@/shared/utils/patient-display";
 
 interface Props {
   logs: ReminderLog[];

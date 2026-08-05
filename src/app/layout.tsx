@@ -1,6 +1,8 @@
+import "./globals.css";
+
 import type { Metadata } from "next";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
-import "./globals.css";
+
 import { getPublicSiteUrl } from "@/core/supabase/env";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -14,8 +16,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import { PWA_APPLE_ICON } from "@/features/pacientes/utils/patient-portal-ready";
 import { UiThemeBootstrapScript } from "@/core/components/theme/ui-theme-bootstrap-script";
+
+import { PWA_APPLE_ICON } from "@/features/pacientes/utils/patient-portal-ready";
 
 const siteUrl = getPublicSiteUrl();
 

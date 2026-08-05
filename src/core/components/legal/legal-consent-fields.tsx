@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+
 import {
   LEGAL_PRIVACY_VERSION,
   LEGAL_TERMS_VERSION,

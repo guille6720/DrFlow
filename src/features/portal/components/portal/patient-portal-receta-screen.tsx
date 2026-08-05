@@ -1,9 +1,10 @@
 "use client";
 
+import { PatientWhatsAppButton } from "@/features/pacientes/components/pacientes/patient-whatsapp-button";
+import type { PatientPortalState } from "@/features/pacientes/hooks/use-patient-portal";
+
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PatientWhatsAppButton } from "@/features/pacientes/components/patient-whatsapp-button";
-import type { PatientPortalState } from "@/features/pacientes/hooks/use-patient-portal";
 
 type Props = Pick<
   PatientPortalState,

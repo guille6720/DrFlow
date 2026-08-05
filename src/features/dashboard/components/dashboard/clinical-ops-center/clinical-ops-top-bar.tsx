@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Bell, Building2, UserRound } from "lucide-react";
-import { CommandPaletteTrigger } from "@/core/components/command-palette/command-palette-trigger";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+import { CommandPaletteTrigger } from "@/core/components/command-palette/command-palette-trigger";
 
 type Props = {
   clinicName: string;

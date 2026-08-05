@@ -1,8 +1,8 @@
 import {
+  type AuditAction,
   auditActionLabel,
   auditEntityLabel,
   sanitizeAuditSnapshot,
-  type AuditAction,
 } from "@/core/security/audit-types";
 
 /** Functional modules for immutable audit trail grouping. */

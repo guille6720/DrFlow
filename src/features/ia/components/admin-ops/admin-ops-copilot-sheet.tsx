@@ -1,22 +1,25 @@
 "use client";
 
+import { Building2, Copy, Send } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Copy, Send, Building2 } from "lucide-react";
+
 import { SafeInternalLink } from "@/core/components/safe-link";
-import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
+
 import {
   buildAdminOpsSuggestedPrompts,
 } from "@/features/dashboard/utils/admin-ops-assistant";
+import { ADMIN_OPS_DISCLAIMER } from "@/features/dashboard/utils/admin-ops-assistant";
 import {
-  runAdminOpsOrchestrator,
   ADMIN_OPS_AGENT_LABELS,
   type AdminOpsOrchestratorResult,
+  runAdminOpsOrchestrator,
 } from "@/features/dashboard/utils/admin-ops-orchestrator";
 import type { AdminOpsContext } from "@/features/dashboard/utils/admin-ops-types";
-import { ADMIN_OPS_DISCLAIMER } from "@/features/dashboard/utils/admin-ops-assistant";
+import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 type Props = {
   open: boolean;

@@ -1,17 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
-import { finalizeConsultation } from "@/lib/actions/appointments";
 import { useConsultationJourney } from "@/features/historias/hooks/use-consultation-journey";
 import { useNuevaConsultaForm } from "@/features/historias/hooks/use-nueva-consulta-form";
-import { journeyStepSubtitle } from "@/lib/utils/consultation-journey";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
-import type { PatientChartProfessional } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
-import type { PrescriptionMedication } from "@/types/prescription";
-import type { Patient } from "@/types/database";
 import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
+import type { PatientChartProfessional } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
+import { finalizeConsultation } from "@/lib/actions/appointments";
+import { journeyStepSubtitle } from "@/lib/utils/consultation-journey";
+import type { Patient } from "@/types/database";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 type Template = {
   id: string;

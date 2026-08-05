@@ -2,15 +2,16 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Card } from "@/components/ui/card";
+import { ExternalLink, FileUp, Loader2, Trash2 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import {
   CLINICAL_DOCUMENT_CATEGORIES,
   clinicalDocumentCategoryLabel,
 } from "@/lib/constants/clinical-documents";
 import { useClinicalDocumentsPanel } from "@/lib/hooks/use-clinical-documents-panel";
-import { ExternalLink, FileUp, Loader2, Trash2 } from "lucide-react";
 
 export interface ClinicalDocumentItem {
   id: string;

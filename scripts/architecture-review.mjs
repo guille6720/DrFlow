@@ -8,11 +8,12 @@
 import { execSync } from "child_process";
 import { existsSync } from "fs";
 import { resolve } from "path";
+
 import {
   collectArchitectureTriggers,
   hasArchitectureReviewNote,
 } from "./lib/architecture-review-rules.mjs";
-import { lineCount, rel, failGate, passGate } from "./lib/quality-scan.mjs";
+import { failGate, lineCount, passGate } from "./lib/quality-scan.mjs";
 
 const args = new Set(process.argv.slice(2));
 const strict = args.has("--strict");

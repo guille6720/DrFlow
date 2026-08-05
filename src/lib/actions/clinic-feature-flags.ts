@@ -1,14 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/core/supabase/server";
-import { getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { revalidateClinicFeatureFlagsCache } from "@/core/cache/revalidate-clinic-cache";
+import { createClient } from "@/core/supabase/server";
+
 import {
+  type FeatureFlagId,
   getFeatureFlagDefinition,
   listFeatureFlags,
-  type FeatureFlagId,
 } from "@/features/flags/lib/registry";
+
+import { getCachedClinicFeatureFlags } from "@/lib/server/cached-clinic-queries";
 
 export async function updateClinicFeatureFlag(
   flagId: FeatureFlagId,
@@ -46,6 +51,7 @@ export async function updateClinicFeatureFlag(
     metadata: { flag_id: flagId, enabled },
   });
 
+  revalidateClinicFeatureFlagsCache(clinicId);
   revalidatePath("/configuracion");
   revalidatePath("/", "layout");
 
@@ -69,23 +75,15 @@ export async function getClinicFeatureFlagSettings(): Promise<{
   const clinicId = await getActiveClinicId();
   if (!clinicId) return { error: "Sin clínica activa" };
 
-  const supabase = await createClient();
-  const { data: rows } = await supabase
-    .from("clinic_feature_flags")
-    .select("flag_id, enabled")
-    .eq("clinic_id", clinicId);
-
+  const flags = await getCachedClinicFeatureFlags(clinicId);
   return {
-    data: listFeatureFlags().map((def) => {
-      const row = rows?.find((r) => r.flag_id === def.id);
-      return {
-        id: def.id,
-        label: def.label,
-        description: def.description,
-        category: def.category,
-        enabled: row?.enabled ?? def.defaultEnabled,
-        requiresPlugin: def.requiresPlugin,
-      };
-    }),
+    data: listFeatureFlags().map((def) => ({
+      id: def.id,
+      label: def.label,
+      description: def.description,
+      category: def.category,
+      enabled: flags[def.id] ?? def.defaultEnabled,
+      requiresPlugin: def.requiresPlugin,
+    })),
   };
 }

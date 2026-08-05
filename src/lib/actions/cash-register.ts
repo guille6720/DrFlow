@@ -1,16 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/core/supabase/server";
-import { getSession, logAudit } from "@/core/auth/session";
+
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { getSession, logAudit } from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
 import {
-  createCashChargeSchema,
-  voidCashChargeSchema,
-  ledgerEntrySchema,
   cashClosureSchema,
+  createCashChargeSchema,
+  ledgerEntrySchema,
+  voidCashChargeSchema,
 } from "@/core/validations/cash-schemas";
-import { parseEntityId } from "@/core/validations/params";
+import { firstZodIssue, parseEntityId } from "@/core/validations/params";
+
 import { isBlockedChargeKind, labelForChargeKind } from "@/lib/constants/cash-register";
 
 export async function createCashCharge(formData: FormData) {
@@ -21,7 +23,7 @@ export async function createCashCharge(formData: FormData) {
 
   const raw = Object.fromEntries(formData.entries());
   const parsed = createCashChargeSchema.safeParse(raw);
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   const kindLabel = labelForChargeKind(parsed.data.charge_kind);
   if (isBlockedChargeKind(kindLabel)) {
@@ -73,7 +75,7 @@ export async function voidCashCharge(formData: FormData) {
 
   const raw = Object.fromEntries(formData.entries());
   const parsed = voidCashChargeSchema.safeParse(raw);
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("void_cash_charge_atomic", {
@@ -111,7 +113,7 @@ export async function addLedgerEntry(formData: FormData) {
   const user = await getSession();
 
   const parsed = ledgerEntrySchema.safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
   if (parsed.data.debit <= 0 && parsed.data.credit <= 0) {
     return { error: "Ingresá debe o haber" };
   }
@@ -154,7 +156,7 @@ export async function closeDailyCash(formData: FormData) {
   const user = await getSession();
 
   const parsed = cashClosureSchema.safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   const supabase = await createClient();
   const dayStart = `${parsed.data.closure_date}T00:00:00.000Z`;

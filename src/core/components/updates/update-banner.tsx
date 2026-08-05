@@ -1,8 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { RefreshCw, Sparkles, X } from "lucide-react";
 import Link from "next/link";
-import { RefreshCw, X, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+
+import { logClientError } from "@/core/errors";
+
 import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "drflow_seen_release";
@@ -88,7 +91,7 @@ export function UpdateBanner() {
         reg?.addEventListener("updatefound", () => {
           void check();
         });
-      });
+      }).catch((err) => logClientError("update-banner.service-worker", err));
     }
 
     return () => {

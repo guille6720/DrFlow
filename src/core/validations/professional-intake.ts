@@ -1,5 +1,7 @@
 import { z } from "zod";
+
 import { optionalEntityIdSchema } from "@/core/validations/params";
+
 import { SPECIALTY_OTHER_VALUE } from "@/lib/constants/medical-specialties";
 
 export const professionalIntakeFormSchema = z.object({

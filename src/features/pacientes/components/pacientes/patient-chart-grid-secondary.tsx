@@ -1,17 +1,20 @@
-import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Syringe } from "lucide-react";
-import { PatientAppShareControl } from "@/features/pacientes/components/pacientes/patient-app-share-control";
-import { ClinicalDocumentsPanel } from "@/features/historias/components/historias/clinical-documents-panel";
+import Link from "next/link";
+
+import { patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
+
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
+import { ClinicalDocumentsPanel } from "@/features/historias/components/historias/clinical-documents-panel";
+import { PatientAppShareControl } from "@/features/pacientes/components/pacientes/patient-app-share-control";
 import { ChartSection, VaccineIcon } from "@/features/pacientes/components/pacientes/patient-chart-primitives";
 import type { PatientChartAppointment, PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
-import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
-import { patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
+
 import { appointmentStatusBadge, Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
 
 type Props = {
   patient: PatientChartPatient;

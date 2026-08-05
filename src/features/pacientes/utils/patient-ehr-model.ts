@@ -41,14 +41,14 @@ export type PatientEhrTreatmentRow = {
   recordId: string;
 };
 
-import { isHceStructuralChiefComplaint } from "@/lib/utils/hce-export-parse";
-import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 import {
   extractMedicationDose,
   looksLikeClinicalFileName,
   looksLikeMedication,
   stripDiagnosisDecorators,
 } from "@/lib/utils/ehr-clinical-category";
+import { isHceStructuralChiefComplaint } from "@/lib/utils/hce-export-parse";
+import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 
 function formatShortDate(iso: string): string {
   const d = new Date(iso);

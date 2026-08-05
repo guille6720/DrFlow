@@ -1,21 +1,23 @@
 "use server";
 
-import { after } from "next/server";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/core/supabase/server";
-import { getSession, logAudit } from "@/core/auth/session";
+
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { getSession, logAudit } from "@/core/auth/session";
+import { scheduleAfterTask } from "@/core/errors/background.server";
+import { logServerError } from "@/core/errors/log-error.server";
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
 import { processPendingClinicJobs } from "@/core/jobs/process";
+import type { ClinicJobStatus } from "@/core/jobs/registry";
 import {
+  type ClinicJobType,
   getClinicJobDefinition,
   JOB_STATUS_LABELS,
   listClinicJobTypes,
-  type ClinicJobType,
 } from "@/core/jobs/registry";
-import type { ClinicJobStatus } from "@/core/jobs/registry";
-import { parseEntityId } from "@/core/validations/params";
+import { createClient } from "@/core/supabase/server";
 import { validateClinicJobEnqueue } from "@/core/validations/clinic-jobs";
+import { parseEntityId } from "@/core/validations/params";
 
 export async function enqueueClinicJobAction(
   jobType: ClinicJobType,
@@ -47,19 +49,18 @@ export async function enqueueClinicJobAction(
       metadata: { job_id: id, job_type: validated.jobType },
     });
 
-    after(async () => {
-      try {
-        await processPendingClinicJobs({ limit: 5, clinicId: access.clinicId });
-      } catch (err) {
-        console.error("[clinic_jobs] background process failed", err);
-      }
-    });
+    scheduleAfterTask(
+      "clinic-jobs.background-process",
+      () => processPendingClinicJobs({ limit: 5, clinicId: access.clinicId }),
+      { clinicId: access.clinicId }
+    );
 
     revalidatePath("/configuracion");
     revalidatePath("/recordatorios");
 
     return { success: true, jobId: id };
   } catch (err) {
+    logServerError("clinic-jobs.enqueue", err, { clinicId: access.clinicId });
     return { error: err instanceof Error ? err.message : "No se pudo encolar" };
   }
 }

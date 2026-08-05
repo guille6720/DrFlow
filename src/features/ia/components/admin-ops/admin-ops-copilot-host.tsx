@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
-import { usePathname } from "next/navigation";
 import { Building2 } from "lucide-react";
-import { AdminOpsCopilotSheet } from "@/features/ia/components/admin-ops/admin-ops-copilot-sheet";
-import { useAdminOpsCopilot } from "@/features/ia/components/admin-ops/admin-ops-copilot-context";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+
 import { cn } from "@/shared/utils/cn";
+
+import { useAdminOpsCopilot } from "@/features/ia/components/admin-ops/admin-ops-copilot-context";
+import { AdminOpsCopilotSheet } from "@/features/ia/components/admin-ops/admin-ops-copilot-sheet";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
 /** Floating admin/ops assistant — bottom-right (Phase G). */
 export function AdminOpsCopilotHost() {

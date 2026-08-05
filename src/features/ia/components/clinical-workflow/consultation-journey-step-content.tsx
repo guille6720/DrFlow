@@ -1,16 +1,18 @@
 "use client";
 
 import { SkipForward } from "lucide-react";
+
 import { ConsultationFlowBar } from "@/features/historias/components/historias/consultation-flow-bar";
 import { NuevaConsultaFormBody } from "@/features/historias/components/historias/nueva-consulta-form-body";
 import { ConsultationJourneyFinishStep } from "@/features/ia/components/clinical-workflow/consultation-journey-finish-step";
 import { ConsultationJourneyFollowUpStep } from "@/features/ia/components/clinical-workflow/consultation-journey-follow-up-step";
 import { ConsultationJourneyStepper } from "@/features/ia/components/clinical-workflow/consultation-journey-stepper";
 import { PamiPatientBanner } from "@/features/pacientes/components/pacientes/pami-patient-banner";
-import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
-import { MedicalOrderForm } from "@/features/recetas/components/recetas/medical-order-form";
-import { Button } from "@/components/ui/button";
 import type { PatientConsultSheetInput, PatientConsultSheetState } from "@/features/pacientes/hooks/use-patient-consult-sheet";
+import { MedicalOrderForm } from "@/features/recetas/components/recetas/medical-order-form";
+import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
+
+import { Button } from "@/components/ui/button";
 import type { PrescriptionMedication } from "@/types/prescription";
 
 type Props = PatientConsultSheetInput &

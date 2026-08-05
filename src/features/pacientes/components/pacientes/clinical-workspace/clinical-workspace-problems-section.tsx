@@ -1,10 +1,9 @@
-"use client";
-
-import Link from "next/link";
 import { CheckCircle2, Plus } from "lucide-react";
+import Link from "next/link";
+
+import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
-import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
 
 type Props = {
   chart: PatientChartPayload;

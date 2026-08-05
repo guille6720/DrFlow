@@ -1,7 +1,3 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import {
   Activity,
   Calendar,
@@ -11,6 +7,12 @@ import {
   Stethoscope,
   Users,
 } from "lucide-react";
+import Link from "next/link";
+
+import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 const PRODUCTION_URL = "https://drflow-app-rho.vercel.app";
 

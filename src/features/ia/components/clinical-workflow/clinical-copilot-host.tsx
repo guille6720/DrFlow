@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
-import { usePathname } from "next/navigation";
 import { MessageSquare } from "lucide-react";
-import { ClinicalCopilotSheet } from "@/features/ia/components/clinical-workflow/clinical-copilot-sheet";
-import { useClinicalCopilot } from "@/features/ia/components/clinical-workflow/clinical-copilot-context";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+
 import { cn } from "@/shared/utils/cn";
+
+import { useClinicalCopilot } from "@/features/ia/components/clinical-workflow/clinical-copilot-context";
+import { ClinicalCopilotSheet } from "@/features/ia/components/clinical-workflow/clinical-copilot-sheet";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
 /** Floating copilot trigger — available across dashboard when IA is enabled. */
 export function ClinicalCopilotHost() {

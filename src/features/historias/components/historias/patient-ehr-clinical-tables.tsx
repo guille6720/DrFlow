@@ -1,11 +1,11 @@
-"use client";
-
 import Link from "next/link";
+
+import { withClinicalHistoryReturn } from "@/shared/utils/clinical-navigation";
+
 import type {
   PatientEhrDiagnosisRow,
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
-import { withClinicalHistoryReturn } from "@/shared/utils/clinical-navigation";
 
 type Props = {
   patientId: string;

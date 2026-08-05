@@ -1,8 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+
 import {
+  isConsumersImportHeaderCell,
   parseConsumerImportLine,
   parseConsumerImportLines,
-  isConsumersImportHeaderCell,
 } from "@/lib/utils/consumers-import-parse";
 
 const SAMPLE =

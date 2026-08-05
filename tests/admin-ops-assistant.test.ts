@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import {
   buildAdminOpsResponse,
   buildAdminOpsSuggestedPrompts,
@@ -6,6 +7,7 @@ import {
 } from "@/features/dashboard/utils/admin-ops-assistant";
 import { buildAdminOpsSnapshotFromDashboard } from "@/features/dashboard/utils/admin-ops-types";
 import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+
 import type { AdminAnalyticsSnapshot } from "@/lib/utils/admin-analytics-types";
 
 const analyticsStub: AdminAnalyticsSnapshot = {

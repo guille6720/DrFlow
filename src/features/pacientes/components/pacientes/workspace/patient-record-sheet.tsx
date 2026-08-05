@@ -3,11 +3,13 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+
 import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
-import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
+import { Button } from "@/components/ui/button";
+import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 
 type Props = {
   open: boolean;

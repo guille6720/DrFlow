@@ -1,8 +1,10 @@
 "use client";
 
+import { Loader2, Search } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { Search, Loader2 } from "lucide-react";
+
 import { cn } from "@/shared/utils/cn";
+
 import { searchPamiVademecum } from "@/lib/actions/pharmacology";
 import type { PamiVademecumResult } from "@/types/pharmacology";
 

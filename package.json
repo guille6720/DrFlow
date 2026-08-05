@@ -9,6 +9,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
+    "lint:fix": "eslint src tests scripts e2e --fix --max-warnings 0 && node scripts/fix-import-spacing.mjs",
     "lint-staged": "lint-staged",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "quality:gate": "node scripts/quality-gate.mjs",
@@ -50,11 +51,13 @@
     "import:pami-vademecum:apply": "node scripts/import-pami-vademecum.mjs --apply",
     "import:pami-vademecum:split": "node scripts/import-pami-vademecum.mjs --split-dir supabase/seeds/pami_batches",
     "deploy:checklist": "node scripts/print-supabase-redirects.mjs",
+    "analyze:bundle": "node scripts/analyze-bundle.mjs",
     "prepare": "husky"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --fix --max-warnings 0"
+      "eslint --fix --max-warnings 0",
+      "node scripts/fix-import-spacing.mjs"
     ],
     "src/**/*.{ts,tsx}": [
       "node scripts/code-quality-gate.mjs --staged"
@@ -93,6 +96,8 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "eslint-plugin-simple-import-sort": "^14.0.0",
+    "eslint-plugin-unused-imports": "^4.4.1",
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "lint-staged": "^15.4.3",

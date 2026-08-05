@@ -1,21 +1,22 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Card } from "@/components/ui/card";
+import { ExternalLink, FileUp, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
-import {
-  ADMIN_DOCUMENT_CATEGORIES,
-} from "@/lib/constants/cash-register";
 import {
   deletePatientAdminDocument,
   getAdminDocumentUrl,
   uploadPatientAdminDocument,
 } from "@/lib/actions/admin-documents";
-import { ExternalLink, FileUp, Trash2 } from "lucide-react";
+import {
+  ADMIN_DOCUMENT_CATEGORIES,
+} from "@/lib/constants/cash-register";
 
 type Doc = {
   id: string;

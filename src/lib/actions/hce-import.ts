@@ -1,36 +1,41 @@
 "use server";
 
-import { createClient } from "@/core/supabase/server";
-import { validateCsvImportUpload } from "@/core/security/file-upload";
+import { resolveImportAccess } from "@/core/actions/action-response";
+import { withActionErrorBoundary } from "@/core/errors/action-boundary.server";
 import { recordAudit } from "@/core/security/audit-service";
+import { validateCsvImportUpload } from "@/core/security/file-upload";
 import { requireClinicalImportAccess } from "@/core/services/import-access.service";
-import { HCE_EXPORT_MAX_BYTES } from "@/lib/constants/clinical-documents";
+import { createClient } from "@/core/supabase/server";
+
 import {
-  processHceImportBatchFromContent,
   type ImportHceExportResult,
+  processHceImportBatchFromContent,
 } from "@/features/integraciones/server/hce-import-batch";
 
-export type { ImportHceExportResult };
+import { HCE_EXPORT_MAX_BYTES } from "@/lib/constants/clinical-documents";
 
 export async function importHceExportCsv(formData: FormData): Promise<ImportHceExportResult> {
-  try {
-    return await importHceExportCsvInner(formData);
-  } catch (err) {
-    console.error("[hce-import] failed:", err);
-    const f = formData.get("file");
-    return {
+  return withActionErrorBoundary(
+    "hce-import",
+    (fileName) => ({
       success: false,
-      fileName: f instanceof File ? f.name : "HCE_export.csv",
+      fileName: fileName || "HCE_export.csv",
       error: "La importación HCE se interrumpió. Reintentá; el progreso parcial puede estar en Pacientes.",
-    };
-  }
+    }),
+    () => importHceExportCsvInner(formData),
+    {
+      getFileName: () => {
+        const f = formData.get("file");
+        return f instanceof File ? f.name : "HCE_export.csv";
+      },
+    }
+  );
 }
 
 async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExportResult> {
   const access = await requireClinicalImportAccess();
-  if (access.error || !access.clinicId || !access.userId) {
-    return { success: false, fileName: "", error: access.error ?? "Sin permisos" };
-  }
+  const auth = resolveImportAccess(access);
+  if (!auth.ok) return { success: false, fileName: "", error: auth.error };
 
   const file = formData.get("file");
   const originalName = file instanceof File ? file.name : "HCE_export.csv";
@@ -54,8 +59,8 @@ async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExp
 
   const supabase = await createClient();
   const result = await processHceImportBatchFromContent(supabase, {
-    clinicId: access.clinicId,
-    userId: access.userId,
+    clinicId: auth.clinicId,
+    userId: auth.userId,
     content,
     originalName,
     offset,
@@ -63,10 +68,10 @@ async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExp
 
   if (result.success) {
     await recordAudit({
-      clinicId: access.clinicId,
+      clinicId: auth.clinicId,
       module: "imports",
       entityType: "clinical_record",
-      entityId: access.clinicId,
+      entityId: auth.clinicId,
       action: "create",
       what: "Importó lote HCE CSV",
       metadata: {

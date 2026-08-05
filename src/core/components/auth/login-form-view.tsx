@@ -1,13 +1,15 @@
 "use client";
 
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
+
 import { GoogleLoginButton } from "@/core/components/auth/google-login-button";
 import { LoginBrandPanel } from "@/core/components/auth/login-brand-panel";
+import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import { useLoginForm } from "@/core/hooks/use-login-form";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function LoginFormView() {
   const {

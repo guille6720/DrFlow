@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
 import type { ObservabilityCategory, ObservabilityStatus } from "@/core/observability/types";
 
 export type ObservabilityEventRow = {

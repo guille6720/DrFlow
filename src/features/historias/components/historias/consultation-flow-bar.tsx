@@ -1,11 +1,14 @@
 "use client";
 
-import { ConsultationTimer, clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
-import { FinalizeConsultationButton } from "@/features/historias/components/historias/finalize-consultation-button";
-import { cn } from "@/shared/utils/cn";
-import type { Patient } from "@/types/database";
-import { User, FileText, Stethoscope, ClipboardList, Pill, ScrollText } from "lucide-react";
+import { ClipboardList, FileText, Pill, ScrollText, Stethoscope, User } from "lucide-react";
 import Link from "next/link";
+
+import { cn } from "@/shared/utils/cn";
+
+import { clearConsultationTimer, ConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
+import { FinalizeConsultationButton } from "@/features/historias/components/historias/finalize-consultation-button";
+
+import type { Patient } from "@/types/database";
 
 export type ConsultationStep = "motivo" | "evolucion" | "diagnostico" | "indicaciones";
 

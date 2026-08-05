@@ -1,5 +1,5 @@
-import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { getReleasePayload } from "@/core/app-release";
+import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 
 export type PublicHealthStatus = {
   ok: boolean;

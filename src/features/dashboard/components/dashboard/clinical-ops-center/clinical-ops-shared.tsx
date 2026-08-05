@@ -1,6 +1,7 @@
-"use client";
+import type { ReactNode } from "react";
 
 import { cn } from "@/shared/utils/cn";
+
 import type { ClinicalOpsWaitingPriority } from "@/features/dashboard/utils/clinical-operations-types";
 
 export function patientInitials(firstName?: string, lastName?: string): string {
@@ -52,8 +53,8 @@ export function OpsSection({
   id?: string;
   title: string;
   count?: number;
-  action?: React.ReactNode;
-  children: React.ReactNode;
+  action?: ReactNode;
+  children: ReactNode;
   className?: string;
 }) {
   return (

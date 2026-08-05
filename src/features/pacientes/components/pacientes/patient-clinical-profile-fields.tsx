@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { parsePatientChartExtras } from "@/features/pacientes/utils/patient-chart-notes";
-import type { Patient } from "@/types/database";
+
 import { PatientClinicalProfileDemographics } from "@/features/pacientes/components/pacientes/patient-clinical-profile-demographics";
-import { PatientClinicalProfileVaccines } from "@/features/pacientes/components/pacientes/patient-clinical-profile-vaccines";
 import { PatientClinicalProfileLabs } from "@/features/pacientes/components/pacientes/patient-clinical-profile-labs";
+import { PatientClinicalProfileVaccines } from "@/features/pacientes/components/pacientes/patient-clinical-profile-vaccines";
+import { parsePatientChartExtras } from "@/features/pacientes/utils/patient-chart-notes";
+
+import type { Patient } from "@/types/database";
 
 interface Props {
   patient?: Patient;

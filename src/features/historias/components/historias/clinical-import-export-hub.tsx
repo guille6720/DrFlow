@@ -1,20 +1,22 @@
 "use client";
 
+import { Download } from "lucide-react";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Select } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { ImportClinicalPdfPanel } from "@/features/historias/components/historias/import-clinical-pdf-panel";
+
 import { ImportClinicalCsvPanel } from "@/features/historias/components/historias/import-clinical-csv-panel";
+import { ImportClinicalPdfPanel } from "@/features/historias/components/historias/import-clinical-pdf-panel";
 import { ImportHceExportPanel } from "@/features/historias/components/historias/import-hce-export-panel";
 import { ImportTeamsJsonlPanel } from "@/features/historias/components/historias/import-teams-jsonl-panel";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
 import {
+  type ClinicalRecordExportRow,
   downloadClinicalHistoryPdf,
   downloadClinicalRecordsCsv,
   downloadClinicalRecordsListPdf,
-  type ClinicalRecordExportRow,
 } from "@/lib/utils/clinical-export-client";
-import { Download } from "lucide-react";
 
 const IMPORT_OPTIONS = [
   { value: "pdf", label: "Historias PDF (una o en lote)" },
@@ -57,9 +59,9 @@ export function ClinicalImportExportHub({
     if (exportKind === "records-csv") {
       downloadClinicalRecordsCsv("consultas-clinicas.csv", exportRecords);
     } else if (exportKind === "records-pdf") {
-      downloadClinicalRecordsListPdf(exportRecords, exportTitle);
+      void downloadClinicalRecordsListPdf(exportRecords, exportTitle);
     } else if (exportKind === "history-pdf" && focusedPatient) {
-      downloadClinicalHistoryPdf(focusedPatient, exportRecords);
+      void downloadClinicalHistoryPdf(focusedPatient, exportRecords);
     }
   }
 

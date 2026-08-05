@@ -1,14 +1,18 @@
 "use client";
 
-import { Badge, appointmentStatusBadge } from "@/components/ui/badge";
-import { CancelAppointmentDialog } from "@/features/agenda/components/agenda/cancel-appointment-dialog";
+import { isSameDay, parseISO } from "date-fns";
+import { Globe } from "lucide-react";
+import { memo } from "react";
+
+import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
+
 import { AppointmentRowActions } from "@/features/agenda/components/agenda/appointment-row-actions";
+import { CancelAppointmentDialog } from "@/features/agenda/components/agenda/cancel-appointment-dialog";
 import { useAppointmentRow } from "@/features/agenda/hooks/use-appointment-row";
+
+import { appointmentStatusBadge, Badge } from "@/components/ui/badge";
 import { isOnlineBooking } from "@/lib/utils/appointment";
 import type { Appointment } from "@/types/database";
-import { isSameDay, parseISO } from "date-fns";
-import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
-import { Globe } from "lucide-react";
 
 interface Props {
   appointment: Appointment;
@@ -18,7 +22,7 @@ interface Props {
   onEdit?: (appointment: Appointment) => void;
 }
 
-export function AppointmentRow({
+export const AppointmentRow = memo(function AppointmentRow({
   appointment,
   showDate = false,
   canManage,
@@ -75,13 +79,13 @@ export function AppointmentRow({
           acting={row.acting}
           startHref={row.startHref}
           setStatus={row.setStatus}
-          onCancel={() => row.setCancelOpen(true)}
+          onCancel={row.openCancelDialog}
         />
       </li>
 
       <CancelAppointmentDialog
         open={row.cancelOpen}
-        onClose={() => row.setCancelOpen(false)}
+        onClose={row.closeCancelDialog}
         onConfirm={row.handleCancelConfirm}
         patientName={
           row.patient ? `${row.patient.last_name}, ${row.patient.first_name}` : undefined
@@ -90,7 +94,7 @@ export function AppointmentRow({
       />
     </>
   );
-}
+});
 
 export function filterAppointmentsForDay(appointments: Appointment[], day: Date) {
   return appointments

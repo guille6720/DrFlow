@@ -1,31 +1,34 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { logAudit } from "@/core/auth/session";
-import { CLINICAL_DOCUMENT_MAX_BYTES } from "@/lib/constants/clinical-documents";
 import {
   buildPatientFilePath,
   ensureExtension,
   isPdfBuffer,
   sanitizeStorageFileName,
 } from "@/core/security/file-upload";
-import {
-  extractTextFromPdfBuffer,
-  findOrCreatePatientFromExtract,
-  enrichPatientFromLegacyPdfDemographics,
-  insertLegacyPdfClinicalRecords,
-  insertCompactClinicalPdfStructuralRecords,
-} from "@/lib/utils/clinical-pdf-import";
+
+import type { ImportClinicalPdfResult } from "@/features/pacientes/actions/patient-attachments";
+
+import { CLINICAL_DOCUMENT_MAX_BYTES } from "@/lib/constants/clinical-documents";
 import {
   isLegacyClinicalPdfExport,
+  parseCompactClinicalPdf,
   parseLegacyClinicalDemographics,
   parseLegacyClinicalEvolutionsWithFallback,
-  parseCompactClinicalPdf,
 } from "@/lib/utils/clinical-export-pdf-parse";
+import {
+  enrichPatientFromLegacyPdfDemographics,
+  extractTextFromPdfBuffer,
+  findOrCreatePatientFromExtract,
+  insertCompactClinicalPdfStructuralRecords,
+  insertLegacyPdfClinicalRecords,
+} from "@/lib/utils/clinical-pdf-import";
 import {
   extractPatientFromFileName,
   extractPatientFromPdfText,
   mergePatientExtract,
 } from "@/lib/utils/pdf-patient-extract";
-import type { ImportClinicalPdfResult } from "@/features/pacientes/actions/patient-attachments";
 
 const BUCKET = "clinical-files";
 

@@ -1,5 +1,3 @@
-"use client";
-
 import {
   AlertTriangle,
   CalendarClock,
@@ -7,11 +5,13 @@ import {
   HeartPulse,
   UserCheck,
 } from "lucide-react";
-import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 import { cn } from "@/shared/utils/cn";
 
-export function ActivityStrip({
+import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+
+export function ClinicalOpsActivityStrip({
   activity,
 }: {
   activity: ClinicalOperationsDashboardPayload["activity"];

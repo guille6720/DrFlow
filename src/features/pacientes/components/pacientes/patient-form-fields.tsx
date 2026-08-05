@@ -1,15 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
+
+import { stripChartJsonFromNotes } from "@/features/pacientes/utils/patient-chart-notes";
+
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   coverageOptionsForClinic,
   insuranceNumberLabel,
   resolveDefaultCoverage,
 } from "@/lib/constants/coverages";
-import { stripChartJsonFromNotes } from "@/features/pacientes/utils/patient-chart-notes";
 import type { Patient } from "@/types/database";
 
 interface PatientFormFieldsProps {

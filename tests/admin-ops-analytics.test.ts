@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
+
 import {
   buildAdminOpsResponse,
   matchAdminOpsIntent,
 } from "@/features/dashboard/utils/admin-ops-assistant";
+
 import {
+  type AdminAnalyticsSnapshot,
   formatBreakdownLines,
   formatCurrencyAr,
-  type AdminAnalyticsSnapshot,
 } from "@/lib/utils/admin-analytics-types";
 
 const analyticsStub: AdminAnalyticsSnapshot = {

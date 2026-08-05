@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
+
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
-import { createClient } from "@/core/supabase/server";
 import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
 import { searchQuerySchema } from "@/core/validations/params";
+
 import { applyPatientSearchFilter } from "@/features/pacientes/utils/patient-search";
+
 import { mapPatientHits } from "@/lib/utils/command-palette-search";
 
 export async function GET(request: Request) {

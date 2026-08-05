@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { buildYearlyAttendedPatients } from "@/lib/utils/yearly-attended-patients";
 
 describe("buildYearlyAttendedPatients", () => {

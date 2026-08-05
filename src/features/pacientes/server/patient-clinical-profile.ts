@@ -3,18 +3,18 @@
  * Data access: repositories · Business logic: services.
  */
 export type { PatientClinicalProfileFields } from "@/features/pacientes/repositories/patient-clinical-profile.repository";
-
 export {
+  extractClinicalProfileFields,
   findPatientClinicalProfile as loadPatientClinicalProfile,
   findPatientClinicalProfilesByIds as loadPatientClinicalProfilesByIds,
   mergePatientClinicalFields,
-  extractClinicalProfileFields,
 } from "@/features/pacientes/repositories/patient-clinical-profile.repository";
 
 import type { DbClient } from "@/core/repositories/types";
+
 import {
-  upsertPatientClinicalProfileRow,
   type PatientClinicalProfileFields,
+  upsertPatientClinicalProfileRow,
 } from "@/features/pacientes/repositories/patient-clinical-profile.repository";
 
 /** Preserves legacy `{ error: string | null }` contract for existing callers. */

@@ -2,9 +2,13 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+
+import { resolveAccessFields } from "@/core/actions/action-response";
 import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { logServerError } from "@/core/errors/log-error.server";
 import { hasPermission } from "@/core/permissions/roles";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
+
 import {
   CLEAR_CLINICAL_HISTORY_CONFIRM_PHRASE,
   CLEAR_FULL_MIGRATION_CONFIRM_PHRASE,
@@ -79,7 +83,7 @@ async function executeClinicalHistoryClear(
     const batch = paths.slice(i, i + STORAGE_REMOVE_BATCH);
     const { error: storageError } = await admin.storage.from(BUCKET).remove(batch);
     if (storageError) {
-      console.error("[clinical-reset] storage remove:", storageError.message);
+      logServerError("clinical-reset.storage-remove", storageError, { clinicId, metadata: { batchSize: batch.length } });
     } else {
       storageObjectsRemoved += batch.length;
     }
@@ -141,9 +145,8 @@ export async function clearClinicClinicalHistory(
   confirmation: string
 ): Promise<ClearClinicalHistoryResult> {
   const access = await requireClinicalResetAccess();
-  if (access.error || !access.clinicId || !access.userId) {
-    return { success: false, error: access.error ?? "Sin permisos" };
-  }
+  const auth = resolveAccessFields(access);
+  if (!auth.ok) return { success: false, error: auth.error };
 
   if (confirmation.trim() !== CLEAR_CLINICAL_HISTORY_CONFIRM_PHRASE) {
     return {
@@ -153,13 +156,13 @@ export async function clearClinicClinicalHistory(
   }
 
   const admin = createAdminClient();
-  const cleared = await executeClinicalHistoryClear(admin, access.clinicId);
+  const cleared = await executeClinicalHistoryClear(admin, auth.clinicId);
   if ("error" in cleared) return { success: false, error: cleared.error };
 
   await logAudit({
-    clinicId: access.clinicId,
+    clinicId: auth.clinicId,
     entityType: "clinical_record",
-    entityId: access.clinicId,
+    entityId: auth.clinicId,
     action: "delete",
     metadata: { type: "clinic_clinical_history_reset", ...cleared },
   });
@@ -173,9 +176,8 @@ export async function clearClinicFullMigrationReset(
   confirmation: string
 ): Promise<ClearFullMigrationResult> {
   const access = await requireClinicalResetAccess();
-  if (access.error || !access.clinicId || !access.userId) {
-    return { success: false, error: access.error ?? "Sin permisos" };
-  }
+  const auth = resolveAccessFields(access);
+  if (!auth.ok) return { success: false, error: auth.error };
 
   if (confirmation.trim() !== CLEAR_FULL_MIGRATION_CONFIRM_PHRASE) {
     return {
@@ -184,7 +186,7 @@ export async function clearClinicFullMigrationReset(
     };
   }
 
-  const clinicId = access.clinicId;
+  const clinicId = auth.clinicId;
   const admin = createAdminClient();
 
   const cleared = await executeClinicalHistoryClear(admin, clinicId);

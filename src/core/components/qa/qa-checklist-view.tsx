@@ -1,12 +1,15 @@
 "use client";
 
+import { CheckCircle2, Circle, ExternalLink, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+
 import { QA_CHECKLIST, qaStats } from "@/core/qa/checklist-data";
+
 import { cn } from "@/shared/utils/cn";
-import { CheckCircle2, Circle, ExternalLink, RotateCcw } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 const STORAGE_KEY = "drflow-qa-checklist-v1";
 

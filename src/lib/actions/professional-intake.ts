@@ -1,13 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/core/supabase/server";
-import { requireStaffManagerAccess } from "@/core/services/staff-access.service";
+
+import { requireStaffManagerWithClinicId } from "@/core/actions/guard-adapters";
 import {
-  MEDICAL_SPECIALTIES,
-  SPECIALTY_OTHER_VALUE,
-} from "@/lib/constants/medical-specialties";
-import type { AgendaRuleDraft } from "@/lib/constants/professional-intake-checklist";
+  revalidateClinicLocationsCache,
+  revalidateClinicProfessionalsCache,
+  revalidateClinicSpecialtiesCache,
+} from "@/core/cache/revalidate-clinic-cache";
+import { createClient } from "@/core/supabase/server";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
 import {
   parseProfessionalIntakeForm,
@@ -16,14 +17,16 @@ import {
 } from "@/core/validations/professional-intake";
 import { agendaRuleSchema } from "@/core/validations/settings-schemas";
 
+import {
+  MEDICAL_SPECIALTIES,
+  SPECIALTY_OTHER_VALUE,
+} from "@/lib/constants/medical-specialties";
+import type { AgendaRuleDraft } from "@/lib/constants/professional-intake-checklist";
+
 async function requireStaffManager() {
-  const access = await requireStaffManagerAccess({
+  return requireStaffManagerWithClinicId({
     deniedMessage: "Sin permisos para ingreso de profesionales",
   });
-  if (!access.ok) {
-    return { error: access.error, clinicId: null };
-  }
-  return { clinicId: access.clinicId, error: null as null };
 }
 
 function parseAgendaRules(raw: string): AgendaRuleDraft[] {
@@ -68,7 +71,7 @@ function validateIntakeForm(formData: FormData) {
 
 export async function submitProfessionalIntake(formData: FormData) {
   const access = await requireStaffManager();
-  if (access.error || !access.clinicId) return { error: access.error };
+  if (!access.ok) return { error: access.error };
 
   const validated = validateIntakeForm(formData);
   if ("error" in validated) return { error: validated.error };
@@ -161,6 +164,9 @@ export async function submitProfessionalIntake(formData: FormData) {
     }
   }
 
+  revalidateClinicProfessionalsCache(clinicId);
+  revalidateClinicSpecialtiesCache(clinicId);
+  revalidateClinicLocationsCache(clinicId);
   revalidatePath("/ingreso-profesionales");
   revalidatePath("/configuracion");
   revalidatePath("/agenda");
@@ -176,7 +182,7 @@ export async function submitProfessionalIntake(formData: FormData) {
 
 export async function updateProfessionalProfile(professionalId: string, formData: FormData) {
   const access = await requireStaffManager();
-  if (access.error || !access.clinicId) return { error: access.error };
+  if (!access.ok) return { error: access.error };
 
   const idParsed = parseEntityId(professionalId, "Profesional");
   if (!idParsed.ok) return { error: idParsed.error };
@@ -249,6 +255,9 @@ export async function updateProfessionalProfile(professionalId: string, formData
 
   if (error) return { error: error.message };
 
+  revalidateClinicProfessionalsCache(clinicId);
+  revalidateClinicSpecialtiesCache(clinicId);
+  revalidateClinicLocationsCache(clinicId);
   revalidatePath("/ingreso-profesionales");
   revalidatePath("/configuracion");
   revalidatePath("/agenda");
@@ -258,7 +267,7 @@ export async function updateProfessionalProfile(professionalId: string, formData
 
 export async function saveProfessionalSchedule(professionalId: string, formData: FormData) {
   const access = await requireStaffManager();
-  if (access.error || !access.clinicId) return { error: access.error };
+  if (!access.ok) return { error: access.error };
 
   const idParsed = parseEntityId(professionalId, "Profesional");
   if (!idParsed.ok) return { error: idParsed.error };

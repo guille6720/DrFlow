@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { looksLikeClinicalFileName, looksLikeMedication } from "@/lib/utils/ehr-clinical-category";
+
 import { buildEhrPayloadFromHceRows } from "@/features/pacientes/utils/patient-ehr-from-hce";
 import { buildEhrPayloadFromRecords, sanitizeEhrPayload } from "@/features/pacientes/utils/patient-ehr-model";
+
+import { looksLikeClinicalFileName, looksLikeMedication } from "@/lib/utils/ehr-clinical-category";
 import type { HceExportRow } from "@/lib/utils/hce-export-parse";
 
 describe("looksLikeClinicalFileName", () => {

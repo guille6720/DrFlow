@@ -1,10 +1,8 @@
-/** Platform guards and tenant scope — shared across features. */
-export { requireClinicPermission, requireActiveClinic } from "@/core/actions/clinic-guard";
 export {
-  assertSameClinic,
-  clinicScopedIdFilter,
-  CLINIC_SCOPED_TABLES,
-  isSameClinic,
-  requireResourceInClinic,
-  TenantScopeError,
-} from "@/core/security/tenant-scope";
+  FEATURE_MODULES,
+  FEATURE_NAV_ITEMS,
+  type FeatureModuleDef,
+  type FeatureModuleId,
+  getFeatureModule,
+  listReadyFeatureModules,
+} from "@/features/_shared";

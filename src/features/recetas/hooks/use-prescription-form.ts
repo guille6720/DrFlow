@@ -1,11 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { savePrescriptionDraft, issuePrescription } from "@/features/recetas/actions/prescriptions";
+import { useRef, useState } from "react";
+
+import { issuePrescription, savePrescriptionDraft } from "@/features/recetas/actions/prescriptions";
 import { emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
-import type { PrescriptionMedication } from "@/types/prescription";
+
 import type { PathologySearchResult } from "@/types/pharmacology";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 type Options = {
   patientId: string;

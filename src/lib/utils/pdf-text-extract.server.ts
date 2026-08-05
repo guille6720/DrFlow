@@ -4,6 +4,8 @@ import { access } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
+import { logServerError } from "@/core/errors/log-error.server";
+
 async function extractWithUnpdf(buffer: Buffer): Promise<string> {
   const { extractText, getDocumentProxy } = await import("unpdf");
   const pdf = await getDocumentProxy(new Uint8Array(buffer));
@@ -101,7 +103,7 @@ export async function extractTextFromPdfBuffer(buffer: Buffer): Promise<string> 
         return text;
       }
     } catch (err) {
-      console.error(`[clinical-pdf-import] ${attempt.name} failed:`, err);
+      logServerError(`clinical-pdf-import.${attempt.name}`, err);
     }
   }
 

@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
+
 import {
-  WCAG_AA_FEATURES,
   APP_KEYBOARD_SHORTCUTS,
   REDUCED_MOTION_STORAGE_KEY,
+  WCAG_AA_FEATURES,
 } from "@/core/accessibility/constants";
 import { getFocusableElements } from "@/core/accessibility/focus";
 

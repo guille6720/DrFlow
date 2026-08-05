@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import { Settings } from "lucide-react";
-import { UserAccountModal } from "./user-account-modal";
-import { ROLE_LABELS, hasPermission } from "@/core/permissions/roles";
-import type { Clinic, UserRole } from "@/types/database";
-import { ClinicSelector } from "./clinic-selector";
+import Link from "next/link";
+import { useState } from "react";
+
 import { CommandPaletteTrigger } from "@/core/components/command-palette/command-palette-trigger";
-import { cn } from "@/shared/utils/cn";
 import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-context";
+import { hasPermission, ROLE_LABELS } from "@/core/permissions/roles";
+
+import { cn } from "@/shared/utils/cn";
+
+import type { Clinic, UserRole } from "@/types/database";
+
+import { ClinicSelector } from "./clinic-selector";
+import { UserAccountModal } from "./user-account-modal";
 
 interface HeaderProps {
   title: string;

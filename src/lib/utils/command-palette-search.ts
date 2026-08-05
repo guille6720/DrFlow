@@ -1,7 +1,9 @@
-import type { CommandPaletteItemDef } from "@/lib/constants/command-palette-items";
 import { hasPermission } from "@/core/permissions/roles";
-import type { UserRole } from "@/types/database";
+
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
+import type { CommandPaletteItemDef } from "@/lib/constants/command-palette-items";
+import type { UserRole } from "@/types/database";
 
 function normalize(value: string): string {
   return value

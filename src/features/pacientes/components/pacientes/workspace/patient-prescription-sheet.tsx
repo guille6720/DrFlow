@@ -1,7 +1,8 @@
 "use client";
 
-import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
 import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
+import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
+
 import type { PrescriptionMedication } from "@/types/prescription";
 
 type Professional = {

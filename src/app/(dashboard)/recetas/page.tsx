@@ -1,20 +1,23 @@
-import { Suspense } from "react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Header } from "@/core/components/layout/header";
-import { Button } from "@/components/ui/button";
-import { PrescriptionsOrdersHub } from "@/features/recetas";
+import { Suspense } from "react";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
+import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
-import { loadRecetasPageData } from "@/features/recetas/server/load-recetas-page";
+
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
-import { Plus } from "lucide-react";
+import { PrescriptionsOrdersHub } from "@/features/recetas";
+import { loadRecetasPageData } from "@/features/recetas/server/load-recetas-page";
+
+import { Button } from "@/components/ui/button";
 
 export default async function RecetasPage({
   searchParams,
@@ -90,17 +93,9 @@ export default async function RecetasPage({
         <Suspense fallback={<p className="text-sm text-slate-500">Cargando…</p>}>
           <PrescriptionsOrdersHub
             patients={pageData.patients}
-            professionals={pageData.professionals}
             clinic={pageData.clinic}
             selectedPatient={pageData.selectedPatient}
-            patientPrescriptions={pageData.patientPrescriptions}
-            patientOrders={pageData.patientOrders}
             recentPrescriptions={pageData.recentPrescriptions}
-            prefillDiagnosis={pageData.prefillDiagnosis}
-            prefillCie10={pageData.prefillCie10}
-            initialMedications={pageData.initialMedications}
-            defaultProfessionalId={pageData.defaultProfessionalId}
-            defaultTab={pageData.defaultTab}
           />
         </Suspense>
       </div>

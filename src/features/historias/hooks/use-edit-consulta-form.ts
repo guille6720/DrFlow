@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+
 import { updateClinicalRecord } from "@/features/historias/actions/clinical-records";
-import { buildUnifiedClinicalEvolution } from "@/lib/utils/unified-clinical-evolution";
+
 import {
   buildPharmacologyHrefFromConsultation,
   buildRecetasHrefFromConsultation,
@@ -12,6 +13,7 @@ import {
   readConsultationEvolution,
   saveConsultationEvolution,
 } from "@/lib/utils/consultation-draft";
+import { buildUnifiedClinicalEvolution } from "@/lib/utils/unified-clinical-evolution";
 interface RecordData {
   id: string;
   patient_id: string;

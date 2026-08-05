@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
+
+import type { ClinicalTimelineInput } from "@/lib/utils/build-clinical-timeline";
 import {
   buildClinicalTimeline,
   classifyAttachmentTimelineType,
   filterClinicalTimelineEvents,
   groupClinicalTimelineByMonth,
 } from "@/lib/utils/build-clinical-timeline";
-import type { ClinicalTimelineInput } from "@/lib/utils/build-clinical-timeline";
 
 const baseInput: ClinicalTimelineInput = {
   patientId: "pat-1",

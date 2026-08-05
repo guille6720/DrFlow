@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { entityIdSchema } from "@/core/validations/params";
 
 export const adminDocumentUploadSchema = z.object({

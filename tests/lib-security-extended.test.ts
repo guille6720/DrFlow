@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
+import { describe, expect, it } from "vitest";
+
 import { isSameOriginPost } from "@/core/security/csrf";
 import {
   assertSameClinic,

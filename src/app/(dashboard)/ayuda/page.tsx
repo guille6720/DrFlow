@@ -1,6 +1,6 @@
-import { ManualView } from "@/core/components/manual/manual-view";
-import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
 import { getAppVersion, getLatestChangelog } from "@/core/app-release";
+import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
+import { ManualView } from "@/core/components/manual/manual-view";
 
 export default async function AyudaPage() {
   const latest = getLatestChangelog();

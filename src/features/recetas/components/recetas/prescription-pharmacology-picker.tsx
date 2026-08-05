@@ -1,14 +1,17 @@
 "use client";
 
+import { Activity, Loader2, Pill, Stethoscope } from "lucide-react";
+
+import { cn } from "@/shared/utils/cn";
+
+import { PathologyMatchList } from "@/features/pharmacology/components/pharmacology/pathology-match-list";
 import { PathologyTypeahead } from "@/features/pharmacology/components/pharmacology/pathology-typeahead";
 import { SymptomTypeahead } from "@/features/pharmacology/components/pharmacology/symptom-typeahead";
-import { PathologyMatchList } from "@/features/pharmacology/components/pharmacology/pathology-match-list";
 import { PrescriptionDrugSuggestions } from "@/features/recetas/components/recetas/prescription-drug-suggestions";
 import { usePrescriptionPharmacologyPicker } from "@/features/recetas/hooks/use-prescription-pharmacology-picker";
-import { cn } from "@/shared/utils/cn";
-import type { PrescriptionMedication } from "@/types/prescription";
+
 import type { PathologySearchResult } from "@/types/pharmacology";
-import { Activity, Loader2, Pill, Stethoscope } from "lucide-react";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 export { pathologyDrugToPrescription } from "@/features/recetas/components/recetas/pathology-drug-to-prescription";
 

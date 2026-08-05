@@ -1,8 +1,9 @@
 "use client";
 
-import { PATIENT_WORKSPACE_TABS, type PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
 import { cn } from "@/shared/utils/cn";
+
+import { PATIENT_WORKSPACE_TABS, type PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
 type Props = {
   activeTab: PatientWorkspaceTabId;

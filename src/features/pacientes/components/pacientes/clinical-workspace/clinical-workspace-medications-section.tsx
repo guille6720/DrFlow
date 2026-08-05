@@ -1,11 +1,10 @@
-"use client";
-
-import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
+
+import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
+import { detectMedicationFlags } from "@/features/pacientes/utils/clinical-workspace-alerts";
 import type { MedicationCard } from "@/features/pacientes/utils/patient-chart-model-types";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
-import { detectMedicationFlags } from "@/features/pacientes/utils/clinical-workspace-alerts";
-import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
 
 type Props = {
   chart: PatientChartPayload;

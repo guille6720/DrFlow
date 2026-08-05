@@ -1,17 +1,19 @@
 "use client";
 
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { setupClinic } from "@/lib/actions/auth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { setupClinicSchema } from "@/core/validations/schemas";
+
+import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
+import { LegalAcceptanceCheckbox } from "@/core/components/legal/legal-consent-fields";
+import { DoctorSetupFields } from "@/core/components/onboarding/doctor-setup-fields";
 import { parseDoctorSetupFromForm, validateDoctorSetup } from "@/core/validations/doctor-setup";
 import { normalizeSlug, zodFieldErrors } from "@/core/validations/form-errors";
-import { DoctorSetupFields } from "@/core/components/onboarding/doctor-setup-fields";
-import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
-import { LegalAcceptanceCheckbox } from "@/core/components/legal/legal-consent-fields";
+import { setupClinicSchema } from "@/core/validations/schemas";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { setupClinic } from "@/lib/actions/auth";
 
 interface OnboardingFormProps {
   userEmail: string;

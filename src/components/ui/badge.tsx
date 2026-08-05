@@ -1,5 +1,6 @@
-import { cn } from "@/shared/utils/cn";
 import type { ReactNode } from "react";
+
+import { cn } from "@/shared/utils/cn";
 
 const variants = {
   default: "bg-slate-100 text-slate-700",

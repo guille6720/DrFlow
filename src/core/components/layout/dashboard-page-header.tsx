@@ -1,5 +1,5 @@
-import { Header } from "@/core/components/layout/header";
 import { getDashboardHeaderProps } from "@/core/auth/dashboard-page";
+import { Header } from "@/core/components/layout/header";
 
 type DashboardPageHeaderProps = {
   title: string;

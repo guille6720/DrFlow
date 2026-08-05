@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ElectronicPrescription, PrescriptionMedication } from "@/types/prescription";
+
+import { getCachedClinicProfessionalsFull } from "@/lib/server/cached-clinic-queries";
 import type { MedicalOrder } from "@/types/medical-order";
+import type { ElectronicPrescription, PrescriptionMedication } from "@/types/prescription";
 
 export type RecetasPageData = {
   patients: Array<{ id: string; first_name: string; last_name: string; document_number: string }>;
@@ -61,7 +63,7 @@ export async function loadRecetasPageData(
   clinicAddress?: string | null,
   clinicPhone?: string | null
 ): Promise<RecetasPageData> {
-  const [patientsRes, professionalsRes, recentRxRes] = clinicId
+  const [patientsRes, professionals, recentRxRes] = clinicId
     ? await Promise.all([
         supabase
           .from("patients")
@@ -70,11 +72,7 @@ export async function loadRecetasPageData(
           .eq("is_active", true)
           .order("last_name")
           .limit(80),
-        supabase
-          .from("professionals")
-          .select("*, profiles(full_name), specialties(name)")
-          .eq("clinic_id", clinicId)
-          .eq("is_active", true),
+        getCachedClinicProfessionalsFull(clinicId),
         supabase
           .from("prescription_drafts")
           .select(
@@ -84,10 +82,9 @@ export async function loadRecetasPageData(
           .order("created_at", { ascending: false })
           .limit(30),
       ])
-    : [{ data: [] }, { data: [] }, { data: [] }];
+    : [{ data: [] }, [], { data: [] }];
 
   const patients = patientsRes.data ?? [];
-  const professionals = professionalsRes.data ?? [];
   const recentPrescriptions = (recentRxRes.data ?? []) as RecetasPageData["recentPrescriptions"];
 
   return {

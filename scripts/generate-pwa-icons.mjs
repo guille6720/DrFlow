@@ -2,9 +2,9 @@
  * Genera iconos PWA cuadrados (192/512) con fondo sólido para Android/iOS.
  * Azul = app del médico/consultorio · Verde + "Pacientes" = app del paciente.
  */
-import sharp from "sharp";
 import { copyFileSync, existsSync } from "fs";
-import { join, dirname } from "path";
+import { dirname, join } from "path";
+import sharp from "sharp";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

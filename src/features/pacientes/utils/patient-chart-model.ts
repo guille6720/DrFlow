@@ -1,17 +1,7 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+
 import { calculateAge, formatAgeLabel } from "@/features/pacientes/utils/patient-age";
-import { calculateBmi, estimateTfgCkdEpi, formatTfgLabel } from "@/lib/utils/clinical-indicators";
-import { parseHabitualMedicationText } from "@/lib/utils/parse-habitual-meds";
-import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
-import {
-  buildStandardLabPanel,
-  mergeStandardVaccines,
-  parsePatientChartExtras,
-  chartProfileCompleteness,
-} from "@/features/pacientes/utils/patient-chart-notes";
-import type { PrescriptionMedication } from "@/types/prescription";
-import { buildMedicationSafetyWarnings } from "@/lib/utils/clinical-assistant";
 import type {
   ActiveProblem,
   ChartAlert,
@@ -22,6 +12,18 @@ import type {
   StudyDocumentItem,
   VitalReading,
 } from "@/features/pacientes/utils/patient-chart-model-types";
+import {
+  buildStandardLabPanel,
+  chartProfileCompleteness,
+  mergeStandardVaccines,
+  parsePatientChartExtras,
+} from "@/features/pacientes/utils/patient-chart-notes";
+
+import { buildMedicationSafetyWarnings } from "@/lib/utils/clinical-assistant";
+import { calculateBmi, estimateTfgCkdEpi, formatTfgLabel } from "@/lib/utils/clinical-indicators";
+import { parseHabitualMedicationText } from "@/lib/utils/parse-habitual-meds";
+import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 function splitList(text: string | null | undefined): string[] {
   if (!text?.trim()) return [];

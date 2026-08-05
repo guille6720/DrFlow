@@ -1,8 +1,8 @@
 "use client";
 
-import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
 import { CloseEncounterWizardPanel } from "@/features/ia/components/clinical-workflow/close-encounter-wizard-panel";
 import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
+import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
 
 type Props = {
   open: boolean;

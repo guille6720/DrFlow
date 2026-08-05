@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { ArrowLeft, Check } from "lucide-react";
-import { buildConsultaHref } from "@/lib/utils/consultation-draft";
+import Link from "next/link";
+
 import type { ConsultationDraftContext } from "@/lib/utils/consultation-draft";
+import { buildConsultaHref } from "@/lib/utils/consultation-draft";
 
 interface Props {
   consultationContext: ConsultationDraftContext;

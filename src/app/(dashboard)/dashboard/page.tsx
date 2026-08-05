@@ -1,15 +1,17 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Header } from "@/core/components/layout/header";
-import { ClinicalOperationsDashboard } from "@/features/dashboard/components/dashboard/clinical-operations-dashboard";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
-import { createClient } from "@/core/supabase/server";
+import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+
+import { ClinicalOperationsDashboard } from "@/features/dashboard/components/dashboard/clinical-operations-dashboard";
 import { loadClinicalOperationsDashboard } from "@/features/dashboard/server/load-clinical-operations-dashboard";
 
 export default async function DashboardPage() {

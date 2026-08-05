@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { ClinicalCopilotSessionSync } from "@/features/ia/components/clinical-workflow/clinical-copilot-session-sync";
+
 import { useClinicalCopilot } from "@/features/ia/components/clinical-workflow/clinical-copilot-context";
+import { ClinicalCopilotSessionSync } from "@/features/ia/components/clinical-workflow/clinical-copilot-session-sync";
 import type { PatientWorkspaceViewProps } from "@/features/pacientes/components/pacientes/patient-workspace-types";
-import { usePatientWorkspaceActions } from "@/features/pacientes/hooks/use-patient-workspace-actions";
 import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
+import { usePatientWorkspaceActions } from "@/features/pacientes/hooks/use-patient-workspace-actions";
 
 type Props = Pick<
   PatientWorkspaceViewProps,

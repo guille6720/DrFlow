@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { canStartConsultation, isOnlineBooking } from "@/lib/utils/appointment";
 
 describe("appointment utils", () => {

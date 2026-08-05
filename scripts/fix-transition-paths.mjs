@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /** Fix @/src/... transition paths → @/core/... */
-import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const ROOT = resolve(process.cwd(), "src/lib");

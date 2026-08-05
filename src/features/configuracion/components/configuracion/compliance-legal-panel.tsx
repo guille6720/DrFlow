@@ -1,9 +1,11 @@
-import Link from "next/link";
-import { Card } from "@/components/ui/card";
-import { getClinicComplianceSummary } from "@/lib/actions/compliance";
-import { CLINICAL_RECORD_RETENTION_YEARS, LEGAL_PRIVACY_VERSION, LEGAL_TERMS_VERSION } from "@/core/legal/documents";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import Link from "next/link";
+
+import { CLINICAL_RECORD_RETENTION_YEARS, LEGAL_PRIVACY_VERSION, LEGAL_TERMS_VERSION } from "@/core/legal/documents";
+
+import { Card } from "@/components/ui/card";
+import { getClinicComplianceSummary } from "@/lib/actions/compliance";
 
 export async function ComplianceLegalPanel() {
   const summary = await getClinicComplianceSummary();

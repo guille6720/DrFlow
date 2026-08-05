@@ -1,10 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
-import { getSupabaseAnonKey, getSupabaseUrl } from "@/core/supabase/env";
-import { acceptPendingInvitations } from "@/lib/actions/invitations";
+import { type NextRequest, NextResponse } from "next/server";
+
 import { isSameOriginPost } from "@/core/security/csrf";
-import { loginSchema } from "@/core/validations/schemas";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/core/supabase/env";
 import { firstZodIssue } from "@/core/validations/params";
+import { loginSchema } from "@/core/validations/schemas";
+
+import { acceptPendingInvitations } from "@/lib/actions/invitations";
 
 function mapAuthError(message: string): string {
   const lower = message.toLowerCase();

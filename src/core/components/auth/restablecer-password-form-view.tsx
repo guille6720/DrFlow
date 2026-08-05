@@ -1,11 +1,13 @@
 "use client";
 
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import { useRestablecerPassword } from "@/core/hooks/use-restablecer-password";
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function RestablecerPasswordFormView() {
   const {

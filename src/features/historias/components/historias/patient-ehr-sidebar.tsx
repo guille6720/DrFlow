@@ -1,8 +1,9 @@
 "use client";
 
-import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
-import { formatPatientEhrSidebarDate } from "@/features/historias/components/historias/patient-ehr-utils";
 import { cn } from "@/shared/utils/cn";
+
+import { formatPatientEhrSidebarDate } from "@/features/historias/components/historias/patient-ehr-utils";
+import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
 
 type Props = {
   evolutionList: PatientEhrConsultation[];

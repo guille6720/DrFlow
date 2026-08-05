@@ -1,9 +1,11 @@
-import { PagosView } from "@/features/facturacion/components/pagos/pagos-view";
-import { getDashboardPageContext } from "@/core/auth/dashboard-page";
-import { createClient } from "@/core/supabase/server";
-import { PATIENT_PICKER_COLUMNS } from "@/core/supabase/select-columns";
 import { redirect } from "next/navigation";
+
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { hasPermission } from "@/core/permissions/roles";
+import { PATIENT_PICKER_COLUMNS } from "@/core/supabase/select-columns";
+import { createClient } from "@/core/supabase/server";
+
+import { PagosView } from "@/features/facturacion/components/pagos/pagos-view";
 
 export default async function PagosPage() {
   const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();

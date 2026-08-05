@@ -1,15 +1,16 @@
 import { SettingsPanel } from "@/features/configuracion";
-import { DemoDataPanel } from "@/features/configuracion/components/configuracion/demo-data-panel";
-import { PamiSetupPanel } from "@/features/configuracion/components/configuracion/pami-setup-panel";
-import { CoveragesPanel } from "@/features/configuracion/components/configuracion/coverages-panel";
 import { AppearanceStylePanel } from "@/features/configuracion/components/configuracion/appearance-style-panel";
-import { ComplianceLegalPanel } from "@/features/configuracion/components/configuracion/compliance-legal-panel";
-import { ClinicPluginsPanel } from "@/features/configuracion/components/configuracion/clinic-plugins-panel";
+import { ClinicAccessibilityPanel } from "@/features/configuracion/components/configuracion/clinic-accessibility-panel";
 import { ClinicFeatureFlagsPanel } from "@/features/configuracion/components/configuracion/clinic-feature-flags-panel";
 import { ClinicJobsPanel } from "@/features/configuracion/components/configuracion/clinic-jobs-panel";
 import { ClinicObservabilityPanel } from "@/features/configuracion/components/configuracion/clinic-observability-panel";
-import { ClinicAccessibilityPanel } from "@/features/configuracion/components/configuracion/clinic-accessibility-panel";
+import { ClinicPluginsPanel } from "@/features/configuracion/components/configuracion/clinic-plugins-panel";
+import { ComplianceLegalPanel } from "@/features/configuracion/components/configuracion/compliance-legal-panel";
 import type { ConfiguracionSectionId } from "@/features/configuracion/components/configuracion/configuracion-sections";
+import { CoveragesPanel } from "@/features/configuracion/components/configuracion/coverages-panel";
+import { DemoDataPanel } from "@/features/configuracion/components/configuracion/demo-data-panel";
+import { PamiSetupPanel } from "@/features/configuracion/components/configuracion/pami-setup-panel";
+
 import type { Clinic } from "@/types/database";
 
 export interface SettingsPanelData {

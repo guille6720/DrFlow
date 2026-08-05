@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+
+import { logClientError } from "@/core/errors";
+
 import type { CommandPalettePatientHit } from "@/lib/utils/command-palette-search";
 
 export function useCommandPalettePatientSearch(open: boolean, query: string) {
@@ -28,7 +31,10 @@ export function useCommandPalettePatientSearch(open: boolean, query: string) {
         .then((data: { patients?: CommandPalettePatientHit[] }) => {
           setPatientHits(data.patients ?? []);
         })
-        .catch(() => setPatientHits([]))
+        .catch((err) => {
+          logClientError("command-palette.patient-search", err, { query: q });
+          setPatientHits([]);
+        })
         .finally(() => setLoadingPatients(false));
     }, 200);
 

@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+
 import { formatCurrency } from "@/lib/services/payments";
 import { buildAppointmentReminderMessage } from "@/lib/services/reminders";
 

@@ -1,7 +1,6 @@
-"use client";
+import { PatientAppIcon } from "@/core/components/brand/patient-app-icon";
 
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
-import { PatientAppIcon } from "@/core/components/brand/patient-app-icon";
 
 type Props = {
   doctorName: string;

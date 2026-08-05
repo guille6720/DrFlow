@@ -1,19 +1,22 @@
-import { Header } from "@/core/components/layout/header";
-import { PatientAttendanceRegister } from "@/features/administracion/components/atenciones/patient-attendance-register";
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
+import { Header } from "@/core/components/layout/header";
 import { createClient } from "@/core/supabase/server";
+
+import { DEFAULT_CLINIC_TIMEZONE } from "@/shared/utils/clinic-timezone";
+
+import { PatientAttendanceRegister } from "@/features/administracion/components/atenciones/patient-attendance-register";
+
+import type { ConsultationModality } from "@/lib/constants/consultation-modality";
 import {
+  type AttendancePeriod,
   getAttendancePeriodBounds,
   summarizeAttendedAppointments,
-  type AttendancePeriod,
 } from "@/lib/utils/attendance-stats";
-import type { ConsultationModality } from "@/lib/constants/consultation-modality";
-import { DEFAULT_CLINIC_TIMEZONE } from "@/shared/utils/clinic-timezone";
 
 const VALID_PERIODS = new Set<AttendancePeriod>(["daily", "weekly", "monthly"]);
 

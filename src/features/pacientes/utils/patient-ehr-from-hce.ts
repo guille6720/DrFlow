@@ -1,13 +1,15 @@
-import type { HceExportRow } from "@/lib/utils/hce-export-parse";
-import { parsePatientHceSummaryCsv } from "@/lib/utils/hce-export-parse";
 import type { createClient } from "@/core/supabase/server";
+
 import type {
   PatientEhrConsultation,
   PatientEhrDiagnosisRow,
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
 import { sanitizeEhrPayload } from "@/features/pacientes/utils/patient-ehr-model";
+
 import { looksLikeClinicalFileName, looksLikeMedication } from "@/lib/utils/ehr-clinical-category";
+import type { HceExportRow } from "@/lib/utils/hce-export-parse";
+import { parsePatientHceSummaryCsv } from "@/lib/utils/hce-export-parse";
 
 function formatShortDateFromIso(iso: string | null, fallbackIso: string): string {
   const raw = iso ?? fallbackIso;

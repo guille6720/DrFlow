@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { FileText, Stethoscope } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Select } from "@/components/ui/select";
+import { useState } from "react";
+
 import { OrderPhysicianAssist } from "@/features/ia/components/clinical-workflow/order-physician-assist";
+import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
 import { createMedicalOrder } from "@/features/recetas/actions/medical-orders";
+
+import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { PAMI_REFERRAL_TEMPLATES, PAMI_STUDY_TEMPLATES } from "@/lib/constants/pami-cabecera";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
-import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
-import { FileText, Stethoscope } from "lucide-react";
 
 interface Professional {
   id: string;

@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
 import { Search } from "lucide-react";
+import { useEffect, useMemo, useRef } from "react";
+
+import { cn } from "@/shared/utils/cn";
+
 import type { CommandPaletteItemDef } from "@/lib/constants/command-palette-items";
 import { COMMAND_PALETTE_SHORTCUTS } from "@/lib/constants/command-palette-items";
-import type { CommandPalettePatientHit } from "@/lib/utils/command-palette-search";
 import { buildStaticPaletteSections } from "@/lib/utils/command-palette-layout";
-import { cn } from "@/shared/utils/cn";
+import type { CommandPalettePatientHit } from "@/lib/utils/command-palette-search";
 
 const GROUP_LABELS = {
   acciones: "Acciones rápidas",

@@ -1,7 +1,8 @@
 "use client";
 
-import { cn } from "@/shared/utils/cn";
 import { Plus, UserRound } from "lucide-react";
+
+import { cn } from "@/shared/utils/cn";
 
 export type ProfessionalListItem = {
   id: string;

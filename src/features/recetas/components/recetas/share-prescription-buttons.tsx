@@ -1,9 +1,11 @@
 "use client";
 
+import { Mail, MessageCircle } from "lucide-react";
+
+import { buildWhatsAppShareUrl, buildWhatsAppUrl } from "@/shared/utils/whatsapp";
+
 import { Button } from "@/components/ui/button";
 import type { ElectronicPrescription, PrescriptionMedication } from "@/types/prescription";
-import { buildWhatsAppShareUrl, buildWhatsAppUrl } from "@/shared/utils/whatsapp";
-import { Mail, MessageCircle } from "lucide-react";
 
 interface PatientInfo {
   first_name: string;

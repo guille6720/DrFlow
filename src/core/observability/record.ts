@@ -1,12 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
+
+import { logServerError } from "@/core/errors/log-error.server";
 import { createTraceId } from "@/core/observability/trace-id";
 import {
   inferStatusFromDuration,
-  thresholdForCategory,
   type ObservabilityEventInput,
   type ObservabilityStatus,
+  thresholdForCategory,
 } from "@/core/observability/types";
+import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 
 export { createTraceId };
 
@@ -84,7 +86,7 @@ export async function recordObservabilityEvent(input: ObservabilityEventInput): 
   try {
     await supabase.from("clinic_observability_events").insert(payload);
   } catch (err) {
-    console.error("[observability] failed to persist event", err);
+    logServerError("observability.persist", err, { persist: false });
   }
 }
 

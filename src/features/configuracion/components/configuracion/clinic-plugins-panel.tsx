@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import { Puzzle } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { useState, useTransition } from "react";
+
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { updateClinicPlugin } from "@/lib/actions/clinic-plugins";
 import type { PluginId } from "@/plugins/registry";
 

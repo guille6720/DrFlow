@@ -1,6 +1,7 @@
+import { readdirSync, readFileSync, statSync } from "fs";
+import { join, resolve } from "path";
 import { describe, expect, it } from "vitest";
-import { readFileSync, readdirSync, statSync } from "fs";
-import { resolve, join } from "path";
+
 import {
   buildPatientFilePath,
   isJpegBuffer,
@@ -93,7 +94,7 @@ describe("file upload audit static checks", () => {
     "src/lib/actions/import-jobs.ts",
     "src/lib/actions/hce-import.ts",
     "src/lib/actions/patient-import.ts",
-    "src/lib/actions/clinical-import.ts",
+    "src/lib/actions/clinical-import.helpers.ts",
     "src/lib/server/process-clinical-pdf-import.ts",
   ];
 

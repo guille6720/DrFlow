@@ -1,12 +1,20 @@
+import {
+  PHYSICIAN_ASSIST_DISCLAIMER,
+  type PhysicianAssistContext,
+  type PhysicianAssistItem,
+  type PhysicianAssistKind,
+} from "@/features/ia/types/physician-assist-types";
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+
 import { buildPhysicianAssistItems } from "@/lib/utils/clinical-assistant";
-import { buildCloseEncounterSteps, buildCloseEncounterBundleText } from "@/lib/utils/close-encounter-assist";
 import {
   buildCopilotResponse,
-  matchCopilotIntent,
   type ClinicalCopilotContext,
   type CopilotAction,
   type CopilotIntentId,
+  matchCopilotIntent,
 } from "@/lib/utils/clinical-copilot-responses";
+import { buildCloseEncounterBundleText, buildCloseEncounterSteps } from "@/lib/utils/close-encounter-assist";
 import { buildConsultationDocumentationItems } from "@/lib/utils/consultation-documentation";
 import { buildLabInterpretationItem } from "@/lib/utils/lab-interpretation";
 import { buildMedicationOrderAssistItems } from "@/lib/utils/medication-order-assist";
@@ -15,13 +23,6 @@ import {
   buildProactiveCareItems,
   buildProactiveCareSummaryText,
 } from "@/lib/utils/proactive-follow-up";
-import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
-import {
-  PHYSICIAN_ASSIST_DISCLAIMER,
-  type PhysicianAssistContext,
-  type PhysicianAssistItem,
-  type PhysicianAssistKind,
-} from "@/features/ia/types/physician-assist-types";
 
 /** Specialized clinical AI agents (Phase F architecture). */
 export type ClinicalAiAgentId =

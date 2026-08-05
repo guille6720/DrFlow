@@ -1,21 +1,27 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/core/supabase/server";
+
+import {
+  resolveClinicalRecordAccess,
+  resolveImportAccess,
+} from "@/core/actions/action-response";
 import { logAudit } from "@/core/auth/session";
 import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
-import { requireClinicalRecordAccess } from "@/core/services/clinical-access.service";
-import { requireClinicalImportAccess } from "@/core/services/import-access.service";
 import {
   buildPatientFilePath,
   validatePdfUpload,
 } from "@/core/security/file-upload";
+import { requireClinicalRecordAccess } from "@/core/services/clinical-access.service";
+import { requireClinicalImportAccess } from "@/core/services/import-access.service";
+import { createClient } from "@/core/supabase/server";
+import { parseEntityId } from "@/core/validations/params";
+
 import {
   CLINICAL_DOCUMENT_MAX_BYTES,
   type ClinicalDocumentCategory,
 } from "@/lib/constants/clinical-documents";
 import { processClinicalPdfImport } from "@/lib/server/process-clinical-pdf-import";
-import { parseEntityId } from "@/core/validations/params";
 
 const BUCKET = "clinical-files";
 
@@ -27,9 +33,8 @@ const VALID_CATEGORIES = new Set<ClinicalDocumentCategory>([
 
 export async function uploadPatientClinicalDocument(formData: FormData) {
   const access = await requireClinicalRecordAccess("edit");
-  if (access.error || !access.clinicId || !access.userId) {
-    return { error: access.error ?? "Sin permisos" };
-  }
+  const auth = resolveClinicalRecordAccess(access);
+  if (!auth.ok) return { error: auth.error };
 
   const patientParsed = parseEntityId(formData.get("patient_id"), "Paciente");
   if (!patientParsed.ok) return { error: patientParsed.error };
@@ -53,13 +58,13 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
     .from("patients")
     .select("id")
     .eq("id", patientParsed.data)
-    .eq("clinic_id", access.clinicId)
+    .eq("clinic_id", auth.clinicId)
     .single();
 
   if (!patient) return { error: "Paciente no encontrado" };
 
   const fileName = validated.sanitizedName;
-  const filePath = buildPatientFilePath(access.clinicId, patientParsed.data, fileName);
+  const filePath = buildPatientFilePath(auth.clinicId, patientParsed.data, fileName);
 
   const { error: uploadError } = await supabase.storage
     .from(BUCKET)
@@ -82,13 +87,13 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
     .from("patient_attachments")
     .insert({
       patient_id: patientParsed.data,
-      clinic_id: access.clinicId,
+      clinic_id: auth.clinicId,
       file_name: fileName,
       file_path: filePath,
       file_type: "application/pdf",
       file_size: file.size,
       category,
-      uploaded_by: access.userId,
+      uploaded_by: auth.userId,
     })
     .select("id")
     .single();
@@ -99,7 +104,7 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
   }
 
   await logAudit({
-    clinicId: access.clinicId,
+    clinicId: auth.clinicId,
     entityType: "patient",
     entityId: patientParsed.data,
     action: "create",
@@ -118,9 +123,8 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
 
 export async function deletePatientClinicalDocument(id: string) {
   const access = await requireClinicalRecordAccess("edit");
-  if (access.error || !access.clinicId) {
-    return { error: access.error ?? "Sin permisos" };
-  }
+  const auth = resolveClinicalRecordAccess(access, { requireUserId: false });
+  if (!auth.ok) return { error: auth.error };
 
   const idParsed = parseEntityId(id, "Documento");
   if (!idParsed.ok) return { error: idParsed.error };
@@ -130,7 +134,7 @@ export async function deletePatientClinicalDocument(id: string) {
     .from("patient_attachments")
     .select("id, patient_id, file_path, file_name, category")
     .eq("id", idParsed.data)
-    .eq("clinic_id", access.clinicId)
+    .eq("clinic_id", auth.clinicId)
     .single();
 
   if (!attachment) return { error: "Documento no encontrado" };
@@ -141,11 +145,11 @@ export async function deletePatientClinicalDocument(id: string) {
     .from("patient_attachments")
     .delete()
     .eq("id", idParsed.data)
-    .eq("clinic_id", access.clinicId);
+    .eq("clinic_id", auth.clinicId);
   if (error) return { error: error.message };
 
   await logAudit({
-    clinicId: access.clinicId,
+    clinicId: auth.clinicId,
     entityType: "patient",
     entityId: attachment.patient_id,
     action: "delete",
@@ -164,9 +168,8 @@ export async function deletePatientClinicalDocument(id: string) {
 
 export async function getPatientClinicalDocumentUrl(id: string) {
   const access = await requireClinicalRecordAccess("view");
-  if (access.error || !access.clinicId) {
-    return { error: access.error ?? "Sin permisos" };
-  }
+  const auth = resolveClinicalRecordAccess(access, { requireUserId: false });
+  if (!auth.ok) return { error: auth.error };
 
   const idParsed = parseEntityId(id, "Documento");
   if (!idParsed.ok) return { error: idParsed.error };
@@ -176,7 +179,7 @@ export async function getPatientClinicalDocumentUrl(id: string) {
     .from("patient_attachments")
     .select("file_path, file_name")
     .eq("id", idParsed.data)
-    .eq("clinic_id", access.clinicId)
+    .eq("clinic_id", auth.clinicId)
     .single();
 
   if (!attachment) return { error: "Documento no encontrado" };
@@ -218,9 +221,8 @@ export async function importClinicalPdfDocument(
   formData: FormData
 ): Promise<ImportClinicalPdfResult> {
   const access = await requireClinicalImportAccess();
-  if (access.error || !access.clinicId || !access.userId) {
-    return { success: false, fileName: "", error: access.error ?? "Sin permisos" };
-  }
+  const auth = resolveImportAccess(access);
+  if (!auth.ok) return { success: false, fileName: "", error: auth.error };
 
   const file = formData.get("file");
   const originalName = file instanceof File ? file.name : "documento.pdf";
@@ -236,8 +238,8 @@ export async function importClinicalPdfDocument(
   }
   const supabase = await createClient();
   const result = await processClinicalPdfImport(supabase, {
-    clinicId: access.clinicId,
-    userId: access.userId,
+    clinicId: auth.clinicId,
+    userId: auth.userId,
     buffer,
     originalName,
     fileSize: file.size,

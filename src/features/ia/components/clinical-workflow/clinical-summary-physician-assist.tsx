@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
+
 import { InlinePhysicianAssist } from "@/features/ia/components/clinical-workflow/inline-physician-assist";
-import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 import type { PhysicianAssistContext, PhysicianAssistItem } from "@/features/ia/types/physician-assist-types";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
 type Props = {
   chart: PatientChartPayload;

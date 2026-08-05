@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+
 import {
-  CONSULTATION_JOURNEY_STEPS,
   canNavigateToJourneyStep,
+  CONSULTATION_JOURNEY_STEPS,
   getConsultationJourneySteps,
   journeyProgressPercent,
   nextJourneyStepId,

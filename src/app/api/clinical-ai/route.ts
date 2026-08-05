@@ -1,40 +1,15 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
-import { requireSameOriginMutation } from "@/core/security/csrf";
+
 import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
 import { hasPermission } from "@/core/permissions/roles";
-import {
-  runClinicalAiOrchestrator,
-  listClinicalAiAgents,
-  type ClinicalAiTask,
-} from "@/lib/utils/clinical-ai-orchestrator";
+import { requireSameOriginMutation } from "@/core/security/csrf";
+import { clinicalAiRequestSchema } from "@/core/validations/clinical-ai-api";
+
 import { enhanceClinicalAiBodyIfConfigured, isClinicalLlmConfigured } from "@/lib/utils/clinical-ai-llm-provider.server";
-
-const TASK_VALUES = [
-  "pre_visit_brief",
-  "consultation_documentation",
-  "medication_order_assist",
-  "lab_interpretation",
-  "close_encounter",
-  "proactive_followup",
-  "copilot_query",
-  "clinical_summary",
-  "soap_draft",
-] as const satisfies readonly ClinicalAiTask[];
-
-const bodySchema = z.object({
-  task: z.enum(TASK_VALUES),
-  message: z.string().max(8000).optional(),
-  patientId: z.string().uuid().optional(),
-  patientName: z.string().max(200).optional(),
-  labSourceText: z.string().max(50000).optional(),
-  assistContext: z.record(z.string(), z.unknown()).optional(),
-  copilotContext: z.record(z.string(), z.unknown()).optional(),
-  chart: z.record(z.string(), z.unknown()).optional(),
-  lastConsultAt: z.string().nullable().optional(),
-  enhanceWithLlm: z.boolean().optional(),
-});
-
+import {
+  listClinicalAiAgents,
+  runClinicalAiOrchestrator,
+} from "@/lib/utils/clinical-ai-orchestrator";
 /** POST /api/clinical-ai — unified orchestrator endpoint (Phase F). */
 export async function POST(request: Request) {
   const csrfBlock = requireSameOriginMutation(request);
@@ -61,7 +36,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
 
-  const parsed = bodySchema.safeParse(json);
+  const parsed = clinicalAiRequestSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
   }

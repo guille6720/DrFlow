@@ -1,5 +1,6 @@
 import type { FeatureFlagId } from "@/features/flags/lib/registry";
-import { getFeatureFlagDefinition, FEATURE_FLAG_REGISTRY } from "@/features/flags/lib/registry";
+import { FEATURE_FLAG_REGISTRY, getFeatureFlagDefinition } from "@/features/flags/lib/registry";
+
 import { isPluginEnabled, type ResolvedClinicPlugins } from "@/plugins/resolve";
 
 export type ClinicFeatureFlagRow = {

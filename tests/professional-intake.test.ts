@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import {
   AGENDA_PRESETS,
   PROFESSIONAL_INTAKE_SECTIONS,

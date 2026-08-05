@@ -1,14 +1,19 @@
 import { notFound, redirect } from "next/navigation";
-import { EditConsultaForm } from "@/features/historias";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
-import { createClient } from "@/core/supabase/server";
 import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+
 import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation";
+
+import { EditConsultaForm } from "@/features/historias";
+
+import { getCachedClinicalTemplates } from "@/lib/server/cached-clinic-queries";
 
 export default async function EditarHistoriaPage({
   params,
@@ -40,13 +45,9 @@ export default async function EditarHistoriaPage({
 
   if (!record) notFound();
 
-  const [patientRes, templatesRes] = await Promise.all([
+  const [patientRes, templates] = await Promise.all([
     supabase.from("patients").select("*").eq("id", record.patient_id).eq("clinic_id", clinicId).maybeSingle(),
-    supabase
-      .from("clinical_templates")
-      .select("*")
-      .eq("clinic_id", clinicId)
-      .eq("is_active", true),
+    getCachedClinicalTemplates(clinicId),
   ]);
 
   const backHref = backHrefFromClinicalSubpage(
@@ -64,7 +65,7 @@ export default async function EditarHistoriaPage({
       role={role}
       userName={profile?.full_name}
       backHref={backHref}
-      templates={templatesRes.data ?? []}
+      templates={templates}
       canIssuePrescriptions={hasPermission(role, "issuePrescriptions", isSuperadmin)}
     />
   );

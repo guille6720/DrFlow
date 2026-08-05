@@ -1,28 +1,32 @@
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { Header } from "@/core/components/layout/header";
-import { ConfiguracionNavigator } from "@/features/configuracion";
-import { DeleteAccountPanel } from "@/features/configuracion/components/configuracion/delete-account-panel";
-import {
-  renderConfiguracionSectionContent,
-  type SettingsPanelData,
-} from "@/features/configuracion/components/configuracion/configuracion-section-content";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
-import { createClient } from "@/core/supabase/server";
-import { redirect } from "next/navigation";
+import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
-import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
-import { getClinicFeatureFlagSettings } from "@/lib/actions/clinic-feature-flags";
-import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
-import { getClinicObservabilityDashboard } from "@/lib/actions/observability";
+import { createClient } from "@/core/supabase/server";
+
+import { ConfiguracionNavigator } from "@/features/configuracion";
+import {
+  renderConfiguracionSectionContent,
+  type SettingsPanelData,
+} from "@/features/configuracion/components/configuracion/configuracion-section-content";
 import {
   resolveConfiguracionGroup,
   resolveConfiguracionSection,
 } from "@/features/configuracion/components/configuracion/configuracion-sections";
+import { DeleteAccountPanel } from "@/features/configuracion/components/configuracion/delete-account-panel";
+
+import { getClinicFeatureFlagSettings } from "@/lib/actions/clinic-feature-flags";
+import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
+import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
+import { getClinicObservabilityDashboard } from "@/lib/actions/observability";
+import { getCachedActiveBookingSlug, getCachedClinicProfessionalsSettings } from "@/lib/server/cached-clinic-queries";
 
 interface PageProps {
   searchParams: Promise<{ seccion?: string; grupo?: string }>;
@@ -48,12 +52,9 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
 
   const supabase = await createClient();
 
-  const [professionals, members, invitations, booking, patientCount] = clinicId
+  const [professionals, members, invitations, bookingSlug, patientCount] = clinicId
     ? await Promise.all([
-        supabase
-          .from("professionals")
-          .select("id, display_name, license_number, profiles(full_name), specialties(name)")
-          .eq("clinic_id", clinicId),
+        getCachedClinicProfessionalsSettings(clinicId),
         supabase
           .from("clinic_members")
           .select("id, role, is_active, profiles(full_name, email)")
@@ -63,26 +64,21 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
           .select("id, email, full_name, role, status, created_at")
           .eq("clinic_id", clinicId)
           .order("created_at", { ascending: false }),
-        supabase
-          .from("public_booking_links")
-          .select("slug")
-          .eq("clinic_id", clinicId)
-          .eq("is_active", true)
-          .maybeSingle(),
+        getCachedActiveBookingSlug(clinicId),
         supabase
           .from("patients")
           .select("id", { count: "exact", head: true })
           .eq("clinic_id", clinicId)
           .eq("is_active", true),
       ])
-    : [{ data: [] }, { data: [] }, { data: [] }, { data: null }, { count: 0 }];
+    : [{ data: [] }, { data: [] }, { data: [] }, null, { count: 0 }];
 
   const settingsProps: SettingsPanelData = {
     clinic,
-    professionals: (professionals.data ?? []) as never[],
+    professionals: professionals as never[],
     members: (members.data ?? []) as never[],
     invitations: (invitations.data ?? []) as never[],
-    bookingSlug: booking.data?.slug ?? null,
+    bookingSlug,
   };
 
   const [pluginSettingsResult, flagSettingsResult, jobsResult, observabilityResult] =

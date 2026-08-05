@@ -1,10 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+
 import {
   isLegacyClinicalPdfExport,
   parseCompactClinicalPdf,
+  parseLegacyClinicalChronicDiagnoses,
   parseLegacyClinicalDemographics,
   parseLegacyClinicalEvolutions,
-  parseLegacyClinicalChronicDiagnoses,
 } from "@/lib/utils/clinical-export-pdf-parse";
 import { extractPatientFromPdfText } from "@/lib/utils/pdf-patient-extract";
 

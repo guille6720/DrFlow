@@ -1,5 +1,5 @@
-import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz";
 import { es } from "date-fns/locale";
+import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz";
 
 export const DEFAULT_CLINIC_TIMEZONE = "America/Argentina/Buenos_Aires";
 

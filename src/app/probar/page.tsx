@@ -1,15 +1,17 @@
-import Link from "next/link";
-import type { Metadata } from "next";
-import { Button } from "@/components/ui/button";
-import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import {
   Calendar,
+  CheckCircle2,
   ClipboardPlus,
   Pill,
   Smartphone,
   Stethoscope,
-  CheckCircle2,
 } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+
+import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
+
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Probar DrFlow 10 días gratis | Consultorio",

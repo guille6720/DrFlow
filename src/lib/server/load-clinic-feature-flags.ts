@@ -1,11 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { FEATURE_FLAG_REGISTRY } from "@/features/flags/lib/registry";
 import {
-  resolveClinicFeatureFlags,
   buildClinicFeaturesContext,
   type ClinicFeaturesContext,
+  resolveClinicFeatureFlags,
   type ResolvedClinicFeatureFlags,
 } from "@/features/flags/lib/resolve";
-import { FEATURE_FLAG_REGISTRY } from "@/features/flags/lib/registry";
+
 import { loadClinicPlugins } from "@/lib/server/load-clinic-plugins";
 
 export async function loadClinicFeatureFlags(

@@ -1,10 +1,12 @@
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { pathologyDrugToPrescription } from "@/features/recetas/components/recetas/pathology-drug-to-prescription";
-import { TREATMENT_LINE_LABELS } from "@/types/pharmacology";
-import type { PathologyDrug } from "@/types/pharmacology";
-import type { PrescriptionMedication } from "@/types/prescription";
 import { Plus } from "lucide-react";
+
+import { pathologyDrugToPrescription } from "@/features/recetas/components/recetas/pathology-drug-to-prescription";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import type { PathologyDrug } from "@/types/pharmacology";
+import { TREATMENT_LINE_LABELS } from "@/types/pharmacology";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 function resolveDrug(pd: PathologyDrug) {
   return Array.isArray(pd.drugs) ? pd.drugs[0] : pd.drugs;

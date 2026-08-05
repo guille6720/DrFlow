@@ -1,8 +1,9 @@
 "use client";
 
+import { INVITE_ROLES } from "@/features/configuracion/components/configuracion/team-invite-form-section";
+
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
-import { INVITE_ROLES } from "@/features/configuracion/components/configuracion/team-invite-form-section";
 import type { TeamMember } from "@/lib/hooks/use-team-invite-panel";
 import type { UserRole } from "@/types/database";
 

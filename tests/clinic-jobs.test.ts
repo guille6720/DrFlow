@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
+
 import {
-  getClinicJobDefinition,
-  listClinicJobTypes,
-  JOB_STATUS_LABELS,
   CLINIC_JOB_REGISTRY,
+  getClinicJobDefinition,
+  JOB_STATUS_LABELS,
+  listClinicJobTypes,
 } from "@/core/jobs/registry";
 
 describe("clinic job registry", () => {

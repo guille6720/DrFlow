@@ -1,7 +1,8 @@
 "use client";
 
-import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
+import { Suspense } from "react";
+
 import { RestablecerPasswordFormView } from "@/core/components/auth/restablecer-password-form-view";
 
 export default function RestablecerPasswordPage() {

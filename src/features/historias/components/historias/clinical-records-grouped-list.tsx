@@ -1,13 +1,11 @@
-"use client";
-
-import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronDown } from "lucide-react";
-import { PatientWhatsAppButton } from "@/features/pacientes/components/patient-whatsapp-button";
-import { buildPatientContactMessage } from "@/features/pacientes/utils/patient-messages";
+import Link from "next/link";
+
+import { ClinicalRecordsGroupSummaryActions } from "@/features/historias/components/historias/clinical-records-group-summary-actions";
+
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
-import { patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
 
 export type GroupedClinicalRecord = {
   id: string;
@@ -60,31 +58,11 @@ export function ClinicalRecordsGroupedList({ groups, defaultOpenPatientId }: Pro
                     : ""}
                 </p>
               </div>
-              <div
-                className="flex shrink-0 items-center gap-2"
-                onClick={(e) => e.preventDefault()}
-                onKeyDown={(e) => e.stopPropagation()}
-              >
-                <PatientWhatsAppButton
-                  phone={group.phone}
-                  message={buildPatientContactMessage(whatsappName)}
-                  size="icon"
-                />
-                <Link
-                  href={patientClinicalHistoryPath(group.patientId)}
-                  className="rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-cyan-700 hover:to-teal-700"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  Toda su historia
-                </Link>
-                <Link
-                  href={`/pacientes/${group.patientId}`}
-                  className="text-xs text-slate-600 hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  Ficha
-                </Link>
-              </div>
+              <ClinicalRecordsGroupSummaryActions
+                patientId={group.patientId}
+                phone={group.phone}
+                whatsappName={whatsappName}
+              />
             </summary>
 
             <ul className="divide-y divide-slate-100 border-t border-slate-100 px-2 pb-2">

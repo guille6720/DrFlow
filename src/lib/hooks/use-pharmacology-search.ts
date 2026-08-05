@@ -1,24 +1,25 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
+
 import {
   getDrugsByPathology,
   getPathologiesBySymptoms,
 } from "@/lib/actions/pharmacology";
-import type {
-  PathologyBySymptomResult,
-  PathologyDrug,
-  PathologySearchResult,
-  PamiVademecumResult,
-  PharmacologySearchMode,
-  SymptomSearchResult,
-} from "@/types/pharmacology";
 import {
   appendToConsultationEvolution,
   consultationDraftKey,
   parseConsultationDraftContext,
 } from "@/lib/utils/consultation-draft";
+import type {
+  PamiVademecumResult,
+  PathologyBySymptomResult,
+  PathologyDrug,
+  PathologySearchResult,
+  PharmacologySearchMode,
+  SymptomSearchResult,
+} from "@/types/pharmacology";
 
 type Options = {
   initialMode?: PharmacologySearchMode;

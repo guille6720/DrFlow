@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
 
 describe("enqueueClinicJob", () => {

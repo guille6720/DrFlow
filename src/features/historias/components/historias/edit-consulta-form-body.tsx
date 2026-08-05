@@ -1,15 +1,17 @@
 "use client";
 
+import { Pill, ScrollText } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { ConsultationPhysicianAssist } from "@/features/ia/components/clinical-workflow/consultation-physician-assist";
+
 import type { EditConsultaFormState, RecordData } from "@/features/historias/hooks/use-edit-consulta-form";
+import { ConsultationPhysicianAssist } from "@/features/ia/components/clinical-workflow/consultation-physician-assist";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import type { Patient } from "@/types/database";
-import { Pill, ScrollText } from "lucide-react";
 
 interface Props {
   record: RecordData;

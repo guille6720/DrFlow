@@ -1,10 +1,10 @@
 "use client";
 
-import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
 import { ConsultationJourneyStepContent } from "@/features/ia/components/clinical-workflow/consultation-journey-step-content";
+import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
 import {
-  usePatientConsultSheet,
   type PatientConsultSheetInput,
+  usePatientConsultSheet,
 } from "@/features/pacientes/hooks/use-patient-consult-sheet";
 
 export type PatientConsultSheetProps = PatientConsultSheetInput;

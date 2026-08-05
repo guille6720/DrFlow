@@ -2,9 +2,10 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { labelForChargeKind, labelForPaymentMethod } from "@/lib/constants/cash-register";
 
 type ChargeRow = {

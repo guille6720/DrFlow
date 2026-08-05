@@ -2,10 +2,12 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ExportPrescriptionPdfButton } from "@/features/recetas/components/recetas/export-prescription-pdf";
+
+import { ExportPrescriptionPdfButton } from "@/features/recetas/components/recetas/export-prescription-pdf-button";
 import type { PrescriptionsOrdersRecentPrescription } from "@/features/recetas/components/recetas/prescriptions-orders-types";
+
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import { PRESCRIPTION_STATUS_LABELS } from "@/types/prescription";
 

@@ -1,8 +1,9 @@
 "use client";
 
+import { ChevronDown, ChevronUp, ClipboardList, ExternalLink } from "lucide-react";
+
 import { Card } from "@/components/ui/card";
 import { PROFESSIONAL_INTAKE_SECTIONS } from "@/lib/constants/professional-intake-checklist";
-import { ChevronDown, ChevronUp, ClipboardList, ExternalLink } from "lucide-react";
 
 type Props = {
   showReference: boolean;

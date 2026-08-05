@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/core/supabase/server";
-import { logAudit } from "@/core/auth/session";
+
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { logAudit } from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
 import { waitingRoomStatusSchema } from "@/core/validations/cash-schemas";
 import { parseEntityId } from "@/core/validations/params";
+
 import type { WaitingRoomStatus } from "@/lib/constants/cash-register";
 
 export async function updateWaitingRoomStatus(

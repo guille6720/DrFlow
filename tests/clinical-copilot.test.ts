@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
+
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+
 import {
   buildCopilotResponse,
   buildCopilotSuggestedPrompts,
   matchCopilotIntent,
   runClinicalCopilotQuery,
 } from "@/lib/utils/clinical-copilot";
-import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 
 const chartStub = {
   chronicConditions: ["DM2"],

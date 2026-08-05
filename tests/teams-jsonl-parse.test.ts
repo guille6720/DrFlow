@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { parseTeamsJsonlContent } from "@/lib/utils/teams-jsonl-parse";
+
 import { hceRowToClinicalRecord } from "@/lib/utils/hce-export-parse";
+import { parseTeamsJsonlContent } from "@/lib/utils/teams-jsonl-parse";
 
 describe("parseTeamsJsonlContent", () => {
   it("maps diagnostics, treatments and evolutions for a patient", () => {

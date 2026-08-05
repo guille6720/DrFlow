@@ -1,18 +1,21 @@
 "use client";
 
+import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+
 import { AccountDeletedCleanup } from "@/core/components/auth/account-deleted-cleanup";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { DoctorSetupFields } from "@/core/components/onboarding/doctor-setup-fields";
 import { GoogleLoginButton } from "@/core/components/auth/google-login-button";
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import { LegalAcceptanceCheckbox } from "@/core/components/legal/legal-consent-fields";
-import { AlertCircle } from "lucide-react";
-import { TRIAL_PROMO_DAYS } from "@/core/trial/clinic-trial";
-import { cn } from "@/shared/utils/cn";
+import { DoctorSetupFields } from "@/core/components/onboarding/doctor-setup-fields";
 import { useRegisterClinicForm } from "@/core/hooks/use-register-clinic-form";
+import { TRIAL_PROMO_DAYS } from "@/core/trial/clinic-trial";
+
+import { cn } from "@/shared/utils/cn";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function RegisterClinicForm() {
   const {

@@ -3,7 +3,7 @@ export { CancelAppointmentDialog } from "@/features/agenda/components/agenda/can
 export { EditAppointmentDialog } from "@/features/agenda/components/agenda/edit-appointment-dialog";
 export {
   createAppointment,
+  startConsultationFromAppointment,
   updateAppointment,
   updateAppointmentStatus,
-  startConsultationFromAppointment,
 } from "@/lib/actions/appointments";

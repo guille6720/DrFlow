@@ -1,13 +1,15 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+
 import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
+import type { ClinicJobRow, ImportClinicalPdfJobPayload } from "@/core/jobs/types";
 import { assertStoragePathInClinic } from "@/core/security/tenant-scope";
+
 import {
   downloadImportStagingFile,
   removeImportStagingFile,
 } from "@/lib/server/import-staging";
 import { processClinicalPdfImport } from "@/lib/server/process-clinical-pdf-import";
-import type { ClinicJobRow, ImportClinicalPdfJobPayload } from "@/core/jobs/types";
 
 export async function handleImportClinicalPdfJob(
   supabase: SupabaseClient,

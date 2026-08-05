@@ -1,9 +1,10 @@
-import { createClient } from "@/core/supabase/server";
 import { logAudit } from "@/core/auth/session";
+import { logServerError } from "@/core/errors/log-error.server";
 import {
   LEGAL_PRIVACY_VERSION,
   LEGAL_TERMS_VERSION,
 } from "@/core/legal/documents";
+import { createClient } from "@/core/supabase/server";
 
 /** Internal — apply legal acceptance during trusted setup flows. */
 export async function applyClinicLegalAcceptanceInternal(clinicId: string) {
@@ -20,7 +21,7 @@ export async function applyClinicLegalAcceptanceInternal(clinicId: string) {
     .eq("id", clinicId);
 
   if (error) {
-    console.error("legal acceptance update failed:", error.message);
+    logServerError("legal.acceptance-update", error, { clinicId });
     return { error: error.message };
   }
 

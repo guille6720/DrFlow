@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import { createClient } from "@/core/supabase/server";
-import { PatientPortalView } from "@/features/portal/components/portal/patient-portal-view";
 import { notFound } from "next/navigation";
+
+import { createClient } from "@/core/supabase/server";
+
+import { PatientPortalView } from "@/features/portal/components/portal/patient-portal-view";
+
+import { clinicOffersPami } from "@/lib/constants/coverages";
 import {
   doctorInfoFromBookingLink,
   resolvePortalDoctorInfo,
 } from "@/lib/utils/portal-doctor-info";
-import { clinicOffersPami } from "@/lib/constants/coverages";
 
 export async function generateMetadata({
   params,

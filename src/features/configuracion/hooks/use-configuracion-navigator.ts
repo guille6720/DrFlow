@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+
 import {
   CONFIGURACION_HASH_ALIASES,
-  getGroupForSection,
   type ConfiguracionGroupId,
   type ConfiguracionSectionId,
+  getGroupForSection,
 } from "@/features/configuracion/components/configuracion/configuracion-sections";
 
 export function useConfiguracionNavigator(

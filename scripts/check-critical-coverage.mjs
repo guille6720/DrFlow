@@ -2,8 +2,9 @@
  * Critical module coverage gate — 95–100% on auth, authz, clinical workflows.
  * Requires prior `vitest run --coverage` (run via check:coverage or quality:gate).
  */
-import { readFileSync, existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
+
 import { CRITICAL_COVERAGE } from "./critical-coverage-rules.mjs";
 
 const SUMMARY_PATH = resolve(process.cwd(), "coverage/coverage-summary.json");

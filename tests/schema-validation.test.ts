@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { readFileSync, readdirSync } from "fs";
-import { resolve, join } from "path";
+import { readdirSync, readFileSync } from "fs";
+import { join, resolve } from "path";
+import { describe, expect, it } from "vitest";
 
 const migrationsDir = resolve(process.cwd(), "supabase/migrations");
 

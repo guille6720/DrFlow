@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
+import { describe, expect, it } from "vitest";
+
 import { CRITICAL_COVERAGE } from "../tests/coverage-scope";
 
 const root = process.cwd();

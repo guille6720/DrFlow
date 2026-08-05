@@ -1,15 +1,16 @@
-import { Header } from "@/core/components/layout/header";
-import { PacientesPageContent } from "@/features/pacientes/components/pacientes/pacientes-page-content";
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
-import { createClient } from "@/core/supabase/server";
-import { sanitizePatientSearchTerm } from "@/features/pacientes/utils/patient-search";
+import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+
+import { PacientesPageContent } from "@/features/pacientes/components/pacientes/pacientes-page-content";
 import { loadPacientesPageData } from "@/features/pacientes/server/load-pacientes-page";
+import { sanitizePatientSearchTerm } from "@/features/pacientes/utils/patient-search";
 
 export const maxDuration = 300;
 

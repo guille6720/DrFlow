@@ -1,20 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { Copy, Send, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
+
 import { SafeInternalLink } from "@/core/components/safe-link";
+
+import { PHYSICIAN_ASSIST_DISCLAIMER } from "@/features/ia/types/physician-assist-types";
 import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
+import { CLINICAL_AI_AGENT_LABELS } from "@/lib/utils/clinical-ai-orchestrator";
+import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
 import {
   buildCopilotSuggestedPrompts,
-  runClinicalCopilotQuery,
   type OrchestratedCopilotResponse,
+  runClinicalCopilotQuery,
 } from "@/lib/utils/clinical-copilot";
-import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
-import { CLINICAL_AI_AGENT_LABELS } from "@/lib/utils/clinical-ai-orchestrator";
-import { PHYSICIAN_ASSIST_DISCLAIMER } from "@/features/ia/types/physician-assist-types";
 
 type Props = {
   open: boolean;

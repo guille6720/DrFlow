@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   Activity,
   ClipboardList,
@@ -7,9 +6,12 @@ import {
   Stethoscope,
   Upload,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import Link from "next/link";
+
 import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
+import { Button } from "@/components/ui/button";
 
 type Props = {
   patientId: string;

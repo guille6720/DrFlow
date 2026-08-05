@@ -1,9 +1,10 @@
 "use client";
 
+import { Calendar, CalendarDays, Stethoscope, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+
 import { cn } from "@/shared/utils/cn";
-import { Calendar, CalendarDays, Users, Stethoscope } from "lucide-react";
 
 const tabs = [
   { href: "/agenda?view=week", label: "Calendario", icon: Calendar, match: (p: string, v: string | null) => p.startsWith("/agenda") && v !== "day" },

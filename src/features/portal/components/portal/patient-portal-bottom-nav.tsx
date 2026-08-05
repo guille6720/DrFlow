@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/shared/utils/cn";
+
 import type { PatientPortalScreen } from "@/features/pacientes/hooks/use-patient-portal";
 import { PATIENT_PORTAL_NAV } from "@/features/pacientes/hooks/use-patient-portal";
 

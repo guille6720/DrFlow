@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClinicalRecord } from "@/features/historias/actions/clinical-records";
-import { startConsultationFromAppointment } from "@/lib/actions/appointments";
-import { buildProfessionalSignature } from "@/lib/utils/professional";
-import type { Patient } from "@/types/database";
+import { useEffect, useMemo, useState } from "react";
+
 import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation";
+
+import { createClinicalRecord } from "@/features/historias/actions/clinical-records";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
+import { startConsultationFromAppointment } from "@/lib/actions/appointments";
 import {
   buildPharmacologyHrefFromConsultation,
   buildRecetasHrefFromConsultation,
@@ -16,6 +17,8 @@ import {
   readConsultationEvolution,
   saveConsultationEvolution,
 } from "@/lib/utils/consultation-draft";
+import { buildProfessionalSignature } from "@/lib/utils/professional";
+import type { Patient } from "@/types/database";
 
 type Template = {
   id: string;

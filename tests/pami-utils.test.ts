@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { calculateAge, formatAgeLabel, isPamiPatient } from "@/features/pacientes/utils/patient-age";
+
 import { buildWhatsAppUrl, normalizeArgentinaPhone } from "@/shared/utils/whatsapp";
+
+import { calculateAge, formatAgeLabel, isPamiPatient } from "@/features/pacientes/utils/patient-age";
 
 describe("patient-age", () => {
   it("calculates age from birth date", () => {

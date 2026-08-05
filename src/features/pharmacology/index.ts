@@ -1,6 +1,6 @@
 export { PharmacologySearchView } from "@/features/pharmacology/components/pharmacology/pharmacology-search-view";
 export {
-  searchPathologies,
   getDrugsByPathology,
   searchPamiVademecum,
+  searchPathologies,
 } from "@/lib/actions/pharmacology";

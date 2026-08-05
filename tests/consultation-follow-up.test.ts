@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+
 import {
-  CONSULTATION_FOLLOW_UP_DEFAULT_DURATION,
   buildFollowUpAppointmentFormData,
+  CONSULTATION_FOLLOW_UP_DEFAULT_DURATION,
   defaultFollowUpStartAt,
   validateFollowUpProfessional,
 } from "@/lib/utils/consultation-follow-up";

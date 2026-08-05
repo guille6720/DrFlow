@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { applyPatientSearchFilter } from "@/features/pacientes/utils/patient-search";
+
 import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
 
 export const PACIENTES_PAGE_SIZE = 20;
@@ -65,7 +67,7 @@ export async function loadPacientesPageData(
     const from = (page - 1) * PACIENTES_PAGE_SIZE;
     const [{ data, count }, portalContext] = await Promise.all([
       query.range(from, from + PACIENTES_PAGE_SIZE - 1),
-      getPortalContextForClinic(clinicId, supabase),
+      getPortalContextForClinic(clinicId),
     ]);
     patients = data ?? [];
     total = count ?? 0;

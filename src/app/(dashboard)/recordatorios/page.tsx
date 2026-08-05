@@ -1,11 +1,12 @@
-import { RecordatoriosView } from "@/features/agenda/components/recordatorios/recordatorios-view";
 import {
+  getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
-  getActiveClinic,
 } from "@/core/auth/session";
 import { createClient } from "@/core/supabase/server";
+
+import { RecordatoriosView } from "@/features/agenda/components/recordatorios/recordatorios-view";
 
 export default async function RecordatoriosPage() {
   const profile = await getProfile();

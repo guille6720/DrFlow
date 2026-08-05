@@ -1,13 +1,15 @@
 "use client";
 
 import { Calendar, CheckCircle2, ClipboardList, Pill, Stethoscope } from "lucide-react";
+
 import { cn } from "@/shared/utils/cn";
+
 import {
-  journeyProgressPercent,
-  journeyStepIndex,
   type ConsultationJourneyStepId,
   type ConsultationJourneyStepMeta,
   type ConsultationJourneyStepStatus,
+  journeyProgressPercent,
+  journeyStepIndex,
 } from "@/lib/utils/consultation-journey";
 
 const STEP_ICONS: Record<ConsultationJourneyStepId, typeof Stethoscope> = {

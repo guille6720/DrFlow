@@ -1,13 +1,10 @@
 "use server";
 
-import { after } from "next/server";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/core/supabase/server";
+
+import { resolveImportAccess } from "@/core/actions/action-response";
 import { logAudit } from "@/core/auth/session";
-import {
-  requireClinicalImportAccess,
-  requirePatientImportAccess,
-} from "@/core/services/import-access.service";
+import { scheduleAfterTask } from "@/core/errors/background.server";
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
 import { processPendingClinicJobs } from "@/core/jobs/process";
 import {
@@ -16,6 +13,13 @@ import {
   validateSpreadsheetImportUpload,
 } from "@/core/security/file-upload";
 import {
+  requireClinicalImportAccess,
+  requirePatientImportAccess,
+} from "@/core/services/import-access.service";
+import { createClient } from "@/core/supabase/server";
+import { parseEntityId } from "@/core/validations/params";
+
+import {
   CLINICAL_DOCUMENT_MAX_BYTES,
   CLINICAL_PDF_IMPORT_MAX_FILES,
   CONSUMERS_IMPORT_MAX_BYTES,
@@ -23,15 +27,10 @@ import {
 } from "@/lib/constants/clinical-documents";
 import { HCE_IMPORT_BATCH_SIZE } from "@/lib/constants/clinical-documents";
 import { uploadImportStagingFile } from "@/lib/server/import-staging";
-import { parseEntityId } from "@/core/validations/params";
 
 function scheduleWorker(clinicId: string) {
-  after(async () => {
-    try {
-      await processPendingClinicJobs({ limit: 10, clinicId });
-    } catch (err) {
-      console.error("[import-jobs] worker failed", err);
-    }
+  scheduleAfterTask("import-jobs.worker", () => processPendingClinicJobs({ limit: 10, clinicId }), {
+    clinicId,
   });
 }
 
@@ -42,9 +41,8 @@ export async function enqueueClinicalPdfImports(formData: FormData): Promise<{
   error?: string;
 }> {
   const access = await requireClinicalImportAccess();
-  if (access.error || !access.clinicId || !access.userId) {
-    return { error: access.error ?? "Sin permisos" };
-  }
+  const auth = resolveImportAccess(access);
+  if (!auth.ok) return { error: auth.error };
 
   const files = formData.getAll("files").filter((f): f is File => f instanceof File);
   if (files.length === 0) {
@@ -69,34 +67,34 @@ export async function enqueueClinicalPdfImports(formData: FormData): Promise<{
 
     const { storagePath } = await uploadImportStagingFile(
       supabase,
-      access.clinicId,
+      auth.clinicId,
       file.name,
       buffer
     );
 
     const { id } = await enqueueClinicJob(supabase, {
-      clinicId: access.clinicId,
+      clinicId: auth.clinicId,
       jobType: "import_clinical_pdf",
       payload: {
         storagePath,
         fileName: file.name,
         fileSize: file.size,
-        userId: access.userId,
+        userId: auth.userId,
       },
-      createdBy: access.userId,
+      createdBy: auth.userId,
     });
 
     jobIds.push(id);
   }
 
   await logAudit({
-    clinicId: access.clinicId,
+    clinicId: auth.clinicId,
     entityType: "clinic_job",
     action: "create",
     metadata: { type: "import_clinical_pdf", count: jobIds.length, job_ids: jobIds },
   });
 
-  scheduleWorker(access.clinicId);
+  scheduleWorker(auth.clinicId);
   revalidatePath("/configuracion");
   revalidatePath("/datos");
 
@@ -109,9 +107,8 @@ export async function enqueueHceImportJob(formData: FormData): Promise<{
   error?: string;
 }> {
   const access = await requireClinicalImportAccess();
-  if (access.error || !access.clinicId || !access.userId) {
-    return { error: access.error ?? "Sin permisos" };
-  }
+  const auth = resolveImportAccess(access);
+  if (!auth.ok) return { error: auth.error };
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -125,13 +122,13 @@ export async function enqueueHceImportJob(formData: FormData): Promise<{
   const supabase = await createClient();
   const { storagePath } = await uploadImportStagingFile(
     supabase,
-    access.clinicId,
+    auth.clinicId,
     file.name,
     buffer
   );
 
   const { id } = await enqueueClinicJob(supabase, {
-    clinicId: access.clinicId,
+    clinicId: auth.clinicId,
     jobType: "import_hce_batch",
     payload: {
       storagePath,
@@ -139,19 +136,19 @@ export async function enqueueHceImportJob(formData: FormData): Promise<{
       offset: 0,
       batchSize: HCE_IMPORT_BATCH_SIZE,
       importKind: "hce",
-      userId: access.userId,
+      userId: auth.userId,
     },
-    createdBy: access.userId,
+    createdBy: auth.userId,
   });
 
   await logAudit({
-    clinicId: access.clinicId,
+    clinicId: auth.clinicId,
     entityType: "clinic_job",
     action: "create",
     metadata: { type: "import_hce_batch", job_id: id, fileName: file.name },
   });
 
-  scheduleWorker(access.clinicId);
+  scheduleWorker(auth.clinicId);
   revalidatePath("/configuracion");
   revalidatePath("/datos");
 
@@ -164,9 +161,8 @@ export async function enqueueConsumersImportJob(formData: FormData): Promise<{
   error?: string;
 }> {
   const access = await requirePatientImportAccess();
-  if (access.error || !access.clinicId || !access.userId) {
-    return { error: access.error ?? "Sin permisos" };
-  }
+  const auth = resolveImportAccess(access);
+  if (!auth.ok) return { error: auth.error };
 
   const file = formData.get("file");
 
@@ -181,13 +177,13 @@ export async function enqueueConsumersImportJob(formData: FormData): Promise<{
   const supabase = await createClient();
   const { storagePath } = await uploadImportStagingFile(
     supabase,
-    access.clinicId,
+    auth.clinicId,
     file.name,
     buffer
   );
 
   const { id } = await enqueueClinicJob(supabase, {
-    clinicId: access.clinicId,
+    clinicId: auth.clinicId,
     jobType: "import_patients_batch",
     payload: {
       storagePath,
@@ -195,19 +191,19 @@ export async function enqueueConsumersImportJob(formData: FormData): Promise<{
       offset: 0,
       batchSize: 80,
       importKind: "patients",
-      userId: access.userId,
+      userId: auth.userId,
     },
-    createdBy: access.userId,
+    createdBy: auth.userId,
   });
 
   await logAudit({
-    clinicId: access.clinicId,
+    clinicId: auth.clinicId,
     entityType: "clinic_job",
     action: "create",
     metadata: { type: "import_patients_batch", job_id: id, fileName: file.name },
   });
 
-  scheduleWorker(access.clinicId);
+  scheduleWorker(auth.clinicId);
   revalidatePath("/configuracion");
   revalidatePath("/datos");
 
@@ -220,25 +216,24 @@ export async function enqueuePatientAiSummaryJob(patientId: string): Promise<{
   error?: string;
 }> {
   const access = await requireClinicalImportAccess();
-  if (access.error || !access.clinicId || !access.userId) {
-    return { error: access.error ?? "Sin permisos" };
-  }
+  const auth = resolveImportAccess(access);
+  if (!auth.ok) return { error: auth.error };
 
   const idParsed = parseEntityId(patientId, "Paciente");
   if (!idParsed.ok) return { error: idParsed.error };
 
   const supabase = await createClient();
   const { id } = await enqueueClinicJob(supabase, {
-    clinicId: access.clinicId,
+    clinicId: auth.clinicId,
     jobType: "run_ai_task",
     payload: {
       task: "clinical_summary",
       patientId: idParsed.data,
     },
-    createdBy: access.userId,
+    createdBy: auth.userId,
   });
 
-  scheduleWorker(access.clinicId);
+  scheduleWorker(auth.clinicId);
   revalidatePath("/configuracion");
 
   return { success: true, jobId: id };

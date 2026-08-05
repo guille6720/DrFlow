@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import { parseISO } from "date-fns";
 import { X } from "lucide-react";
+import { useState } from "react";
+
+import { AppointmentDatetimePicker } from "@/features/agenda/components/agenda/appointment-datetime-picker";
+import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { AppointmentDatetimePicker } from "@/features/agenda/components/agenda/appointment-datetime-picker";
-import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { updateAppointment } from "@/lib/actions/appointments";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { Appointment, Patient, Professional } from "@/types/database";

@@ -1,19 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
-import { ExportPrescriptionPdfButton } from "@/features/recetas/components/recetas/export-prescription-pdf";
-import { SharePrescriptionButtons } from "@/features/recetas/components/recetas/share-prescription-buttons";
-import { issuePrescription, voidPrescription } from "@/features/recetas/actions/prescriptions";
-import { PRESCRIPTION_STATUS_LABELS } from "@/types/prescription";
-import type { ElectronicPrescription } from "@/types/prescription";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import { issuePrescription, voidPrescription } from "@/features/recetas/actions/prescriptions";
+import { ExportPrescriptionPdfButton } from "@/features/recetas/components/recetas/export-prescription-pdf-button";
+import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
+import { SharePrescriptionButtons } from "@/features/recetas/components/recetas/share-prescription-buttons";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import type { ElectronicPrescription } from "@/types/prescription";
+import { PRESCRIPTION_STATUS_LABELS } from "@/types/prescription";
 
 interface Professional {
   id: string;

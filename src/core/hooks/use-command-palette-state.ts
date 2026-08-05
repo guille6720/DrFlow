@@ -1,17 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import type { UserRole } from "@/types/database";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { useCommandPaletteKeyboard } from "@/core/hooks/use-command-palette-keyboard";
+import { useCommandPalettePatientSearch } from "@/core/hooks/use-command-palette-patient-search";
+
 import {
   buildPatientContextPaletteActions,
   COMMAND_PALETTE_ACTIONS,
   COMMAND_PALETTE_NAV,
 } from "@/lib/constants/command-palette-items";
-import { filterCommandPaletteItems } from "@/lib/utils/command-palette-search";
 import { parsePatientIdFromPath } from "@/lib/utils/clinical-workflow-context";
-import { useCommandPaletteKeyboard } from "@/core/hooks/use-command-palette-keyboard";
-import { useCommandPalettePatientSearch } from "@/core/hooks/use-command-palette-patient-search";
+import { filterCommandPaletteItems } from "@/lib/utils/command-palette-search";
+import type { UserRole } from "@/types/database";
 
 type Options = {
   role: UserRole | null;

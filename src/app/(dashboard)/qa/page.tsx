@@ -1,11 +1,13 @@
+import { ClipboardCheck } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
 import { getActiveClinic, getSession } from "@/core/auth/session";
 import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
 import { QaChecklistView } from "@/core/components/qa/qa-checklist-view";
-import { Button } from "@/components/ui/button";
-import { ClipboardCheck } from "lucide-react";
 import { canAccessRoute } from "@/core/permissions/roles";
-import { redirect } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
 
 export default async function QaPage() {
   const user = await getSession();

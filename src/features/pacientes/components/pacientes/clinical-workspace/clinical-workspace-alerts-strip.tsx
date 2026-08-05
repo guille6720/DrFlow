@@ -1,7 +1,6 @@
-"use client";
+import { cn } from "@/shared/utils/cn";
 
 import type { ClinicalWorkspaceAlert } from "@/features/pacientes/utils/clinical-workspace-alerts";
-import { cn } from "@/shared/utils/cn";
 
 const KIND_LABELS: Record<ClinicalWorkspaceAlert["kind"], string> = {
   drug_allergy: "Alergia medicamentosa",

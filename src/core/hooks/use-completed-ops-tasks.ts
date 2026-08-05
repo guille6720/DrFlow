@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+
+import { logClientError } from "@/core/errors";
+
 import type { ClinicalOpsTask } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
 
 function todayKey(): string {
@@ -14,7 +17,8 @@ export function useCompletedOpsTasks(tasks: ClinicalOpsTask[]) {
     try {
       const raw = localStorage.getItem(storageKey);
       return new Set(raw ? (JSON.parse(raw) as string[]) : []);
-    } catch {
+    } catch (err) {
+      logClientError("ops-tasks.read-storage", err, { storageKey });
       return new Set();
     }
   });
@@ -24,7 +28,11 @@ export function useCompletedOpsTasks(tasks: ClinicalOpsTask[]) {
       setDone((prev) => {
         const next = new Set(prev);
         next.add(id);
-        localStorage.setItem(storageKey, JSON.stringify([...next]));
+        try {
+          localStorage.setItem(storageKey, JSON.stringify([...next]));
+        } catch (err) {
+          logClientError("ops-tasks.write-storage", err, { storageKey, taskId: id });
+        }
         return next;
       });
     },

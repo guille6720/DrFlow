@@ -1,4 +1,5 @@
 import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
+
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 
 export function formatPatientEhrSidebarDate(iso: string): string {

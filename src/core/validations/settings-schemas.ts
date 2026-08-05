@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { entityIdSchema, optionalEntityIdSchema } from "@/core/validations/params";
 
 export const clinicSettingsSchema = z.object({
@@ -75,6 +76,15 @@ export const agendaRuleSchema = z.object({
   start_time: z.string().regex(/^\d{2}:\d{2}$/),
   end_time: z.string().regex(/^\d{2}:\d{2}$/),
   slot_duration: z.number().int().min(10).max(120),
+});
+
+/** Form POST schema for createAvailabilityRule (coerced form fields). */
+export const createAvailabilityRuleSchema = z.object({
+  professional_id: z.string().uuid(),
+  day_of_week: z.coerce.number().min(0).max(6),
+  start_time: z.string(),
+  end_time: z.string(),
+  slot_duration: z.coerce.number().min(10).max(120).default(30),
 });
 
 export function parseScheduleBlockForm(formData: FormData) {

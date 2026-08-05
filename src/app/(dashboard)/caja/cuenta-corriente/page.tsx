@@ -1,18 +1,20 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Header } from "@/core/components/layout/header";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
+import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export default async function CuentaCorrientePage({
   searchParams,

@@ -1,6 +1,7 @@
-import { type EmailOtpType } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { type EmailOtpType } from "@supabase/supabase-js";
+import { type NextRequest, NextResponse } from "next/server";
+
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/core/supabase/env";
 import { otpTypeSchema, parseSafeRedirectPath } from "@/core/validations/auth-redirect";
 

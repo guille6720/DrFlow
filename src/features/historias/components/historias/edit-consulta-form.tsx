@@ -1,14 +1,17 @@
 "use client";
 
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+
 import { Header } from "@/core/components/layout/header";
-import { Select } from "@/components/ui/select";
+
 import { ConsultationFlowBar } from "@/features/historias/components/historias/consultation-flow-bar";
 import { EditConsultaFormBody } from "@/features/historias/components/historias/edit-consulta-form-body";
-import { PamiPatientBanner } from "@/features/pacientes/components/pacientes/pami-patient-banner";
 import { useEditConsultaForm } from "@/features/historias/hooks/use-edit-consulta-form";
+import { PamiPatientBanner } from "@/features/pacientes/components/pacientes/pami-patient-banner";
+
+import { Select } from "@/components/ui/select";
 import type { Clinic, Patient, UserRole } from "@/types/database";
-import { ArrowLeft } from "lucide-react";
 
 interface RecordData {
   id: string;

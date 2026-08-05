@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+
 import { isEditableTarget } from "@/lib/utils/command-palette-search";
 
 type FlatResult =

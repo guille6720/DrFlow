@@ -1,14 +1,15 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
+import { AppointmentDatetimePicker } from "@/features/agenda/components/agenda/appointment-datetime-picker";
+import type { AgendaViewState } from "@/features/agenda/hooks/use-agenda-view";
+import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
+
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
-import { AppointmentDatetimePicker } from "@/features/agenda/components/agenda/appointment-datetime-picker";
-import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import type { Appointment, Patient, Professional } from "@/types/database";
-import type { AgendaViewState } from "@/features/agenda/hooks/use-agenda-view";
 
 type Props = {
   agenda: Pick<

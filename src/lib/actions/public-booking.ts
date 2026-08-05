@@ -1,6 +1,11 @@
 "use server";
 
+import {
+  CONSENT_TYPES,
+  LEGAL_PATIENT_NOTICE_VERSION,
+} from "@/core/legal/documents";
 import { createClient } from "@/core/supabase/server";
+import { firstZodIssue } from "@/core/validations/params";
 import {
   publicBookingCancelSchema,
   publicBookingSchema,
@@ -8,11 +13,6 @@ import {
   publicBookingStatusesSchema,
 } from "@/core/validations/public-booking";
 import { sanitizeText } from "@/core/validations/schemas";
-import { firstZodIssue } from "@/core/validations/params";
-import {
-  CONSENT_TYPES,
-  LEGAL_PATIENT_NOTICE_VERSION,
-} from "@/core/legal/documents";
 
 export async function submitPublicBooking(formData: FormData) {
   const parsed = publicBookingSchema.safeParse({

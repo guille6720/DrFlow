@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 
 const CLINICAL_BUCKET = "clinical-files";

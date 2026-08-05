@@ -1,14 +1,16 @@
 "use client";
 
+import { Bell, Calendar, Home, MessageCircle, Pill } from "lucide-react";
 import { useEffect, useState } from "react";
+
 import { buildPrescriptionRequestMessage } from "@/features/pacientes/utils/patient-messages";
 import { isPatientPortalReady } from "@/features/pacientes/utils/patient-portal-ready";
 import {
   addPatientRequest,
   getStoredDocument,
 } from "@/features/pacientes/utils/patient-requests-storage";
+
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
-import { Calendar, Home, Bell, Pill, MessageCircle } from "lucide-react";
 
 export type PatientPortalScreen = "inicio" | "turno" | "receta" | "turnos" | "whatsapp";
 

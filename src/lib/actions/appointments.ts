@@ -1,17 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/core/supabase/server";
+
+import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { getSession, logAudit } from "@/core/auth/session";
 import { recordAudit } from "@/core/security/audit-service";
-import { appointmentSchema, sanitizeText, updateAppointmentBodySchema } from "@/core/validations/schemas";
+import { createClient } from "@/core/supabase/server";
 import {
   appointmentStatusSchema,
   consultationModalitySchema,
-  parseEntityId,
   firstZodIssue,
+  parseEntityId,
 } from "@/core/validations/params";
-import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { appointmentSchema, sanitizeText, updateAppointmentBodySchema } from "@/core/validations/schemas";
+
 import type { ConsultationModality } from "@/lib/constants/consultation-modality";
 
 export async function createAppointment(formData: FormData) {
@@ -27,7 +29,7 @@ export async function createAppointment(formData: FormData) {
     specialty_id: raw.specialty_id || null,
   });
 
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   const payload = {
     ...parsed.data,

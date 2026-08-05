@@ -1,9 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { PLUGIN_REGISTRY } from "@/plugins/registry";
 import {
   resolveClinicPlugins,
   type ResolvedClinicPlugins,
 } from "@/plugins/resolve";
-import { PLUGIN_REGISTRY } from "@/plugins/registry";
 
 export async function loadClinicPlugins(
   supabase: SupabaseClient,

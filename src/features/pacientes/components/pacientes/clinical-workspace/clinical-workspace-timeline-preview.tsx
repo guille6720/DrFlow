@@ -1,10 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+
+import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
 import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
+
 import {
   buildClinicalTimeline,
   filterClinicalTimelineEvents,
@@ -14,7 +17,6 @@ import {
   CLINICAL_TIMELINE_TYPE_LABELS,
   type ClinicalTimelineFilterId,
 } from "@/lib/utils/clinical-timeline-types";
-import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
 
 type Props = {
   ehr: PatientEhrWorkspaceData;

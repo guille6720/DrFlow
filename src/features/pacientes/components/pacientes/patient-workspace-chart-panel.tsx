@@ -1,13 +1,6 @@
 "use client";
 
-import type {
-  PatientChartPatient,
-  PatientChartProfessional,
-} from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
-import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
-import type { PrescriptionMedication } from "@/types/prescription";
-import { usePatientChartMedicationFilter } from "@/features/pacientes/hooks/use-patient-chart";
 import {
   PatientChartAllergiesPanel,
   PatientChartDocumentsPanel,
@@ -17,6 +10,14 @@ import {
   PatientChartVaccinesPanel,
   PatientChartVitalsPanel,
 } from "@/features/pacientes/components/pacientes/patient-chart-focus-panels";
+import type {
+  PatientChartPatient,
+  PatientChartProfessional,
+} from "@/features/pacientes/components/pacientes/patient-chart-view-types";
+import { usePatientChartMedicationFilter } from "@/features/pacientes/hooks/use-patient-chart-medication-filter";
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+
+import type { PrescriptionMedication } from "@/types/prescription";
 
 export type PatientChartFocus =
   | "problemas"

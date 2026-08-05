@@ -1,4 +1,4 @@
-import { differenceInYears, parseISO, isValid } from "date-fns";
+import { differenceInYears, isValid, parseISO } from "date-fns";
 
 export function calculateAge(birthDate: string | null | undefined): number | null {
   if (!birthDate) return null;

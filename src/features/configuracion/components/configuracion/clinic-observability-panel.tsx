@@ -3,15 +3,17 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Activity, AlertTriangle, Clock, Database, Server } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
+import type { HealthStatus } from "@/core/observability/health";
 import {
   CATEGORY_LABELS,
-  STATUS_LABELS,
   type ObservabilityCategory,
   type ObservabilityStatus,
+  STATUS_LABELS,
 } from "@/core/observability/types";
-import type { HealthStatus } from "@/core/observability/health";
+
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import type { ObservabilitySnapshot } from "@/lib/server/load-observability";
 
 const STATUS_VARIANT: Record<ObservabilityStatus, "success" | "warning" | "danger" | "info"> = {

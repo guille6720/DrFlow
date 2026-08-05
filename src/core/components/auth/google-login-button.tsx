@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+
 import { createClient } from "@/core/supabase/client";
 import { resolveClientPublicSiteUrl } from "@/core/supabase/client-public-url";
+
+import { Button } from "@/components/ui/button";
 import { setTrialRegistrationIntent } from "@/lib/actions/auth";
 
 export function GoogleLoginButton({ trialDays }: { trialDays?: number }) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { searchPathologies } from "@/lib/actions/pharmacology";
 import type { PathologySearchResult } from "@/types/pharmacology";
 

@@ -1,15 +1,16 @@
 "use client";
 
-import { usePamiPlanillas } from "@/lib/hooks/use-pami-planillas";
 import {
   PamiPlanillaCategorySection,
   PamiPlanillaFieldsSection,
   PamiPlanillaPreviewSection,
 } from "@/features/pami/components/pami/pami-planilla-sections";
+
 import type {
   PamiPlanillaPatient,
   PamiPlanillaProfessional,
 } from "@/lib/hooks/use-pami-planillas";
+import { usePamiPlanillas } from "@/lib/hooks/use-pami-planillas";
 
 interface Props {
   patients: PamiPlanillaPatient[];

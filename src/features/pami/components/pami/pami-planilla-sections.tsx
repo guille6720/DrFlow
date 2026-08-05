@@ -1,18 +1,19 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select } from "@/components/ui/select";
-import { PAMI_PLANILLA_CATEGORIES } from "@/lib/constants/pami-planillas";
-import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import { ClipboardCopy, FileCheck, Printer } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { PAMI_PLANILLA_CATEGORIES } from "@/lib/constants/pami-planillas";
 import type {
   PamiPlanillaPatient,
   PamiPlanillaProfessional,
 } from "@/lib/hooks/use-pami-planillas";
 import type { usePamiPlanillas } from "@/lib/hooks/use-pami-planillas";
+import { getProfessionalDisplayName } from "@/lib/utils/professional";
 
 type PlanillaState = ReturnType<typeof usePamiPlanillas>;
 

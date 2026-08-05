@@ -1,18 +1,20 @@
 "use client";
 
 import { Header } from "@/core/components/layout/header";
+
 import { DrugTreatmentList } from "@/features/pharmacology/components/pharmacology/drug-treatment-list";
 import { PharmacologyConsultationBanner } from "@/features/pharmacology/components/pharmacology/pharmacology-consultation-banner";
 import { PharmacologySearchInputPanel } from "@/features/pharmacology/components/pharmacology/pharmacology-search-input-panel";
 import { PharmacologySearchModeTabs } from "@/features/pharmacology/components/pharmacology/pharmacology-search-mode-tabs";
 import { VademecumResultList } from "@/features/pharmacology/components/pharmacology/vademecum-result-list";
+
 import { usePharmacologySearch } from "@/lib/hooks/use-pharmacology-search";
 import {
   formatVademecumForEvolution,
   pathologyDrugToEvolutionLine,
 } from "@/lib/utils/consultation-draft";
-import type { PharmacologySearchMode } from "@/types/pharmacology";
 import type { Clinic, UserRole } from "@/types/database";
+import type { PharmacologySearchMode } from "@/types/pharmacology";
 
 interface Props {
   clinics: { clinic_id: string; clinic?: Clinic }[];

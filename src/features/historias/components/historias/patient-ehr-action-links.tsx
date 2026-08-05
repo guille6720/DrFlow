@@ -1,9 +1,10 @@
-"use client";
-
-import Link from "next/link";
 import { Plus, Printer } from "lucide-react";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import Link from "next/link";
+
+import { PrintPageButton } from "@/core/components/ui/print-page-button";
+
 import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 export function PatientEhrActionLinks({ patientId }: { patientId: string }) {
   return (
@@ -44,13 +45,14 @@ export function PatientEhrActionLinks({ patientId }: { patientId: string }) {
       >
         <Plus className="h-3.5 w-3.5" /> Orden
       </Link>
-      <button
-        type="button"
-        onClick={() => window.print()}
-        className="drflow-ehr-action-muted ml-auto inline-flex items-center gap-1 print:hidden"
+      <PrintPageButton
+        variant="link"
+        className="drflow-ehr-action-muted ml-auto inline-flex items-center gap-1"
+        label="Imprimir"
+        iconClassName="h-3.5 w-3.5"
       >
-        <Printer className="h-3.5 w-3.5" /> Imprimir
-      </button>
+        <Printer className="h-3.5 w-3.5" aria-hidden /> Imprimir
+      </PrintPageButton>
     </div>
   );
 }

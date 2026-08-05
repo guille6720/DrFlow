@@ -1,12 +1,15 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState, useEffect } from "react";
-import { signUpClinic, setTrialRegistrationIntent } from "@/lib/actions/auth";
-import { registerClinicSchema } from "@/core/validations/schemas";
+import { useEffect, useRef, useState } from "react";
+
+import { logClientError } from "@/core/errors";
+import { parseTrialDays, TRIAL_PROMO_DAYS } from "@/core/trial/clinic-trial";
 import { parseDoctorSetupFromForm, validateDoctorSetup } from "@/core/validations/doctor-setup";
 import { normalizeSlug, zodFieldErrors } from "@/core/validations/form-errors";
-import { TRIAL_PROMO_DAYS, parseTrialDays } from "@/core/trial/clinic-trial";
+import { registerClinicSchema } from "@/core/validations/schemas";
+
+import { setTrialRegistrationIntent, signUpClinic } from "@/lib/actions/auth";
 
 const FIELD_ORDER = [
   "email",
@@ -35,7 +38,11 @@ export function useRegisterClinicForm() {
   const [slug, setSlug] = useState("");
 
   useEffect(() => {
-    if (isTrial) void setTrialRegistrationIntent(TRIAL_PROMO_DAYS);
+    if (isTrial) {
+      void setTrialRegistrationIntent(TRIAL_PROMO_DAYS).catch((err) =>
+        logClientError("register-clinic.trial-intent", err)
+      );
+    }
   }, [isTrial]);
 
   function scrollToFirstError(errors: Record<string, string>) {
@@ -147,7 +154,8 @@ export function useRegisterClinicForm() {
         return;
       }
       setFormError("No se pudo completar el registro. Si ya te registraste, probá iniciar sesión.");
-    } catch {
+    } catch (err) {
+      logClientError("register-clinic.submit", err);
       setFormError("Error inesperado. Intentá de nuevo.");
     } finally {
       setLoading(false);

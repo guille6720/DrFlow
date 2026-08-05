@@ -1,10 +1,11 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { useTeamInvitePanel } from "@/lib/hooks/use-team-invite-panel";
 import { TeamInviteFormSection } from "@/features/configuracion/components/configuracion/team-invite-form-section";
 import { TeamMembersListSection } from "@/features/configuracion/components/configuracion/team-members-list-section";
 import { TeamPendingInvitesSection } from "@/features/configuracion/components/configuracion/team-pending-invites-section";
+
+import { Card } from "@/components/ui/card";
+import { useTeamInvitePanel } from "@/lib/hooks/use-team-invite-panel";
 
 interface Member {
   id: string;

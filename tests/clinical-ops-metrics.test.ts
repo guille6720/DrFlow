@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+
+import type { LiveAppointment } from "@/features/dashboard/utils/clinical-operations-types";
 import {
   buildActionableAlerts,
   computeActivityMetrics,
@@ -10,7 +12,6 @@ import {
   summarizeMedications,
   waitingPriority,
 } from "@/features/dashboard/utils/clinical-ops-metrics";
-import type { LiveAppointment } from "@/features/dashboard/utils/clinical-operations-types";
 
 const NOW = new Date("2026-07-30T15:00:00.000Z");
 

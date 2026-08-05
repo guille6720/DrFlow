@@ -1,6 +1,7 @@
-import { MEDICAL_SPECIALTIES, SPECIALTY_OTHER_VALUE } from "@/lib/constants/medical-specialties";
-import { parseDisplayName } from "@/features/profesionales/components/profesionales/professional-schedule-editor";
 import type { ProfessionalIntakeDetail } from "@/features/profesionales/components/profesionales/professional-intake-types";
+import { parseDisplayName } from "@/features/profesionales/components/profesionales/professional-schedule-editor";
+
+import { MEDICAL_SPECIALTIES, SPECIALTY_OTHER_VALUE } from "@/lib/constants/medical-specialties";
 
 export function getProfessionalSpecialtyDefaults(selected: ProfessionalIntakeDetail | null) {
   const specialtyDefault = selected?.specialties?.name ?? "";

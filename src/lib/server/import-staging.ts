@@ -1,5 +1,7 @@
-import { randomUUID } from "crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { randomUUID } from "crypto";
+
+import { scheduleFireAndForget } from "@/core/errors/background.server";
 import { sanitizeStorageFileName } from "@/core/security/file-upload";
 
 const BUCKET = "clinical-files";
@@ -56,7 +58,11 @@ export async function removeImportStagingFile(
 }
 
 export function triggerImportJobsProcessing(clinicId: string): void {
-  void import("@/core/jobs/process")
-    .then(({ processPendingClinicJobs }) => processPendingClinicJobs({ limit: 10, clinicId }))
-    .catch((err) => console.error("[import-staging] worker failed", err));
+  scheduleFireAndForget(
+    "import-staging.worker",
+    import("@/core/jobs/process").then(({ processPendingClinicJobs }) =>
+      processPendingClinicJobs({ limit: 10, clinicId })
+    ),
+    { clinicId }
+  );
 }

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/core/supabase/server";
+
 import { getActiveClinic } from "@/core/auth/session";
 import { hasPermission } from "@/core/permissions/roles";
-import { pharmacologyApiQuerySchema } from "@/core/validations/pharmacology-api";
+import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
+import { pharmacologyApiQuerySchema } from "@/core/validations/pharmacology-api";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -37,20 +38,17 @@ export async function GET(request: Request) {
   }
 
   if (pathologyId) {
-    const { data, error } = await supabase
-      .from("pathology_drugs")
-      .select(
-        "id, treatment_line, priority, indication_notes, dosage_reference, drugs(id, name, active_ingredient, atc_code, atc_description, presentation, route)"
-      )
-      .eq("pathology_id", pathologyId)
-      .eq("is_active", true)
-      .order("treatment_line")
-      .order("priority");
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    const { loadPathologyDrugsCached } = await import("@/lib/server/cached-reference-data");
+    try {
+      const data = await loadPathologyDrugsCached(pathologyId);
+      return NextResponse.json(
+        { data },
+        { headers: { "Cache-Control": "private, max-age=3600" } }
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Error loading drugs";
+      return NextResponse.json({ error: message }, { status: 500 });
     }
-    return NextResponse.json({ data });
   }
 
   if (symptomIds?.length) {

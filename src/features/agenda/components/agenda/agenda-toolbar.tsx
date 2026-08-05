@@ -3,11 +3,13 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+
+import type { AgendaViewState } from "@/features/agenda/hooks/use-agenda-view";
+
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { Professional } from "@/types/database";
-import type { AgendaViewState } from "@/features/agenda/hooks/use-agenda-view";
 
 type Props = {
   agenda: Pick<

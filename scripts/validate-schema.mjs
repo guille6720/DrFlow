@@ -6,14 +6,15 @@
  *   node scripts/validate-schema.mjs           # static (migrations only)
  *   node scripts/validate-schema.mjs --live      # + Supabase REST probes
  */
-import { readFileSync, readdirSync, existsSync } from "node:fs";
-import { resolve, join } from "node:path";
+import {readdirSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+
 import { loadEnv } from "./_env.mjs";
 import {
-  EXPECTED_TABLES,
   EXPECTED_COLUMNS,
-  EXPECTED_RPCS,
   EXPECTED_INDEXES,
+  EXPECTED_RPCS,
+  EXPECTED_TABLES,
   MIGRATION_SEQUENCE,
 } from "./lib/schema-expectations.mjs";
 

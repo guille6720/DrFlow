@@ -1,9 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { createClient } from "@/core/supabase/server";
 import { recordAudit } from "@/core/security/audit-service";
+import { createClient } from "@/core/supabase/server";
 
 export type DemoSeedResult = {
   success?: boolean;

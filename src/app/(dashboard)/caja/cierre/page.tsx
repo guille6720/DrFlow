@@ -1,19 +1,22 @@
-import { redirect } from "next/navigation";
+import { endOfDay, format, startOfDay } from "date-fns";
 import Link from "next/link";
-import { format, startOfDay, endOfDay } from "date-fns";
-import { Header } from "@/core/components/layout/header";
-import { Button } from "@/components/ui/button";
-import { CashClosureView } from "@/features/caja";
+import { redirect } from "next/navigation";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
+import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
-import { loadRevenueSnapshot } from "@/lib/server/load-revenue-snapshot";
+
+import { CashClosureView } from "@/features/caja";
 import { AdminOpsAnalyticsBridge } from "@/features/ia/components/admin-ops/admin-ops-analytics-bridge";
+
+import { Button } from "@/components/ui/button";
+import { loadRevenueSnapshot } from "@/lib/server/load-revenue-snapshot";
 
 export default async function CajaCierrePage() {
   const profile = await getProfile();

@@ -1,4 +1,5 @@
-import { describe, expect, it, afterEach, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
 import { validateProductionEnv } from "@/core/env.server";
 import { authorizeCronRequest } from "@/core/observability/cron-auth";
 
@@ -64,7 +65,7 @@ describe("enterprise deployment artifacts", () => {
 
     expect(existsSync(resolve(root, "PRODUCTION_READINESS_REPORT.md"))).toBe(true);
     expect(existsSync(resolve(root, "docs/DISASTER_RECOVERY.md"))).toBe(true);
-    expect(existsSync(resolve(root, "src/lib/env.server.ts"))).toBe(true);
+    expect(existsSync(resolve(root, "src/core/env.server.ts"))).toBe(true);
     expect(existsSync(resolve(root, "src/app/api/health/live/route.ts"))).toBe(true);
     expect(existsSync(resolve(root, "src/app/api/health/ready/route.ts"))).toBe(true);
   });

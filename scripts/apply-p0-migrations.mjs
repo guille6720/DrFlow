@@ -5,8 +5,8 @@
  *   $env:DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.TU_REF.supabase.co:5432/postgres"
  *   npm run migrate:p0
  */
-import { resolve } from "path";
 import { spawnSync } from "child_process";
+import { resolve } from "path";
 
 const dbUrl = process.env.DATABASE_URL?.trim();
 if (!dbUrl) {

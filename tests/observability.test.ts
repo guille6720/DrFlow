@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
+
 import {
-  SLOW_QUERY_MS,
-  SLOW_JOB_MS,
-  SLOW_REQUEST_MS,
-  inferStatusFromDuration,
-  thresholdForCategory,
   CATEGORY_LABELS,
+  inferStatusFromDuration,
+  SLOW_JOB_MS,
+  SLOW_QUERY_MS,
+  SLOW_REQUEST_MS,
+  thresholdForCategory,
 } from "@/core/observability/types";
 
 describe("observability thresholds", () => {

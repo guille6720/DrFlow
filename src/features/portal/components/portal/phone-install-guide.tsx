@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { PatientAppIcon } from "@/core/components/brand/patient-app-icon";
-import { cn } from "@/shared/utils/cn";
 import { Share } from "lucide-react";
+import { useState } from "react";
+
+import { PatientAppIcon } from "@/core/components/brand/patient-app-icon";
+
+import { cn } from "@/shared/utils/cn";
+
 import {
   PHONE_INSTALL_STEPS,
   type PhoneInstallPlatform,

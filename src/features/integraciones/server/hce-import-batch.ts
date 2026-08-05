@@ -2,14 +2,21 @@
  * Internal batch processor for HCE CSV import (jobs / authenticated actions).
  * Not a Server Action — not callable from the client.
  */
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
-import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
+
 import { logAudit } from "@/core/auth/session";
+import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
+import { sanitizeText } from "@/core/validations/schemas";
+
+import { upsertPatientClinicalProfile } from "@/features/pacientes/server/patient-clinical-profile";
+
 import {
   HCE_EXPORT_MAX_ROWS,
   HCE_IMPORT_BATCH_SIZE,
 } from "@/lib/constants/clinical-documents";
 import { findOrCreatePatientFromExtract, resolveImportProfessionalId } from "@/lib/utils/clinical-pdf-import";
+import type { HceExportRow } from "@/lib/utils/hce-export-parse";
 import {
   buildPatientHceCsv,
   groupHceRowsByPatient,
@@ -17,11 +24,7 @@ import {
   parseHceExportCsv,
   placeholderDniFromConsumerId,
 } from "@/lib/utils/hce-export-parse";
-import { sanitizeText } from "@/core/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
-import type { HceExportRow } from "@/lib/utils/hce-export-parse";
-import { upsertPatientClinicalProfile } from "@/features/pacientes/server/patient-clinical-profile";
-import type { SupabaseClient } from "@supabase/supabase-js";
 
 const BUCKET = "clinical-files";
 const HCE_ATTACHMENT_NAME = "hce-export-resumen.csv";

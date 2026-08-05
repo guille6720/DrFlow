@@ -5,7 +5,8 @@
 import { spawnSync } from "child_process";
 import { existsSync } from "fs";
 import { resolve } from "path";
-import { walkDir, rel, readSource, failGate, passGate, SRC_ROOT } from "./lib/quality-scan.mjs";
+
+import { failGate, passGate, readSource, rel, SRC_ROOT, walkDir } from "./lib/quality-scan.mjs";
 
 const SECRET_PATTERNS = [
   { re: /sk_live_[a-zA-Z0-9]{10,}/, label: "Stripe live secret" },

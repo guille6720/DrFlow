@@ -1,6 +1,7 @@
-import type { ElectronicPrescription } from "@/types/prescription";
 import type { DbClient, RepoResult } from "@/core/repositories/types";
 import { mapDbError, repoErr, repoOk } from "@/core/repositories/types";
+
+import type { ElectronicPrescription } from "@/types/prescription";
 
 export type PrescriptionDraftInsertRow = {
   clinic_id: string;

@@ -1,9 +1,10 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { useCashRegister } from "@/features/caja/hooks/use-cash-register";
 import { CashChargeFormSection } from "@/features/caja/components/caja/cash-charge-form-section";
 import { CashChargesListSection } from "@/features/caja/components/caja/cash-charges-list-section";
+import { useCashRegister } from "@/features/caja/hooks/use-cash-register";
+
+import { Card } from "@/components/ui/card";
 
 type PatientOption = { id: string; label: string };
 type ProfessionalOption = { id: string; label: string };

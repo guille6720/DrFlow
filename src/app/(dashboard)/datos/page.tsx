@@ -1,22 +1,25 @@
+import { ArrowLeftRight, FileText, Users } from "lucide-react";
 import Link from "next/link";
-import { Header } from "@/core/components/layout/header";
-import { Button } from "@/components/ui/button";
-import { SectorHero } from "@/components/ui/sector-hero";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
-import { createClient } from "@/core/supabase/server";
+import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+
 import { DataImportExportSidebar } from "@/features/integraciones";
 import { MigrationHealthPanel } from "@/features/integraciones";
 import { ClearClinicalHistoryPanel } from "@/features/integraciones";
 import { DatosNavigationHelp } from "@/features/integraciones/components/datos/datos-navigation-help";
-import { buildMigrationHealthReport, type MigrationHealthReport } from "@/lib/utils/migration-health";
+
+import { Button } from "@/components/ui/button";
+import { SectorHero } from "@/components/ui/sector-hero";
 import type { ClinicalRecordExportRow, PatientExportRow } from "@/lib/utils/clinical-export-client";
-import { ArrowLeftRight, FileText, Users } from "lucide-react";
+import { buildMigrationHealthReport, type MigrationHealthReport } from "@/lib/utils/migration-health";
 
 export const maxDuration = 300;
 

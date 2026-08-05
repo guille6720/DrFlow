@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 describe("clinical operations dashboard URLs", () => {

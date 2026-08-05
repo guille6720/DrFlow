@@ -1,14 +1,16 @@
 import { notFound, redirect } from "next/navigation";
-import { Header } from "@/core/components/layout/header";
-import { HistoriaDetailContent } from "@/features/historias/components/historias/historia-detail-content";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
+import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
+
+import { HistoriaDetailContent } from "@/features/historias/components/historias/historia-detail-content";
 import { loadHistoriaDetailPageData } from "@/features/historias/server/load-historia-detail-page";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 

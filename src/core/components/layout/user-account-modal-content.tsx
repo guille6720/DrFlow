@@ -1,12 +1,14 @@
+import { ExternalLink, Shield, UserCircle } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import {
   DoctorSetupFields,
 } from "@/core/components/onboarding/doctor-setup-fields";
 import type { useUserAccountModal } from "@/core/hooks/use-user-account-modal";
 import { ROLE_LABELS } from "@/core/permissions/roles";
-import { ExternalLink, Shield, UserCircle } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 type ModalState = ReturnType<typeof useUserAccountModal>;
 

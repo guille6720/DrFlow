@@ -1,10 +1,11 @@
 import { z } from "zod";
+
+import type { ClinicJobType } from "@/core/jobs/registry";
 import {
   entityIdSchema,
   firstZodIssue,
   reminderChannelSchema,
 } from "@/core/validations/params";
-import type { ClinicJobType } from "@/core/jobs/registry";
 
 export const clinicJobTypeSchema = z.enum([
   "send_reminder",

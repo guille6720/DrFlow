@@ -1,19 +1,20 @@
 import { describe, expect, it } from "vitest";
+
+import { safeRedirectPathSchema } from "@/core/validations/auth-redirect";
+import { mockPaymentSchema } from "@/core/validations/cash-schemas";
+import { validateClinicJobEnqueue } from "@/core/validations/clinic-jobs";
+import { clinicalIndicatorsSchema } from "@/core/validations/clinical-indicators";
+import { medicalOrderFormSchema } from "@/core/validations/medical-order";
 import {
   entityIdSchema,
   parseEntityId,
   searchQuerySchema,
 } from "@/core/validations/params";
+import { pharmacologyApiQuerySchema } from "@/core/validations/pharmacology-api";
 import {
   publicBookingCancelSchema,
   publicBookingStatusesSchema,
 } from "@/core/validations/public-booking";
-import { pharmacologyApiQuerySchema } from "@/core/validations/pharmacology-api";
-import { medicalOrderFormSchema } from "@/core/validations/medical-order";
-import { mockPaymentSchema } from "@/core/validations/cash-schemas";
-import { clinicalIndicatorsSchema } from "@/core/validations/clinical-indicators";
-import { validateClinicJobEnqueue } from "@/core/validations/clinic-jobs";
-import { safeRedirectPathSchema } from "@/core/validations/auth-redirect";
 import { clinicSettingsSchema } from "@/core/validations/settings-schemas";
 
 describe("input validation params", () => {

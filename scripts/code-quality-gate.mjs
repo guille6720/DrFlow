@@ -2,12 +2,12 @@
  * Code quality gate — TODO/FIXME, eslint-disable, console.log, unsafe any.
  * Usage: node scripts/code-quality-gate.mjs [--staged file1 file2 ...]
  */
-import { execSync } from "child_process";
-import { walkDir, rel, readSource, failGate, passGate, SRC_ROOT } from "./lib/quality-scan.mjs";
+import { failGate, passGate, readSource, rel, SRC_ROOT, walkDir } from "./lib/quality-scan.mjs";
 
 const ALLOW_CONSOLE = [
-  "src/core/observability/dev-log.ts",
-  "src/core/jobs/process.ts", // console.warn when service role missing
+  "src/core/observability/record.ts",
+  "src/core/errors/log-error.server.ts",
+  "src/core/errors/log-error.client.ts",
 ];
 
 const TODO_FIXME_ALLOW = [
@@ -57,6 +57,9 @@ function scanFile(filePath) {
       const line = lines[i];
       if (/console\.(log|debug|info)\(/.test(line)) {
         violations.push(`${r}:${i + 1} — console.log/debug/info in production code`);
+      }
+      if (/console\.warn\(/.test(line)) {
+        violations.push(`${r}:${i + 1} — console.warn in production code (use observability logging)`);
       }
     }
   }

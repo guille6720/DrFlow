@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
+import { describe, expect, it } from "vitest";
 
 function readSrc(relativePath: string): string {
   return readFileSync(resolve(process.cwd(), relativePath), "utf8");

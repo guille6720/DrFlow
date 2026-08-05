@@ -1,12 +1,13 @@
-import { describe, expect, it, afterEach } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+
 import {
   appendSpeechToTextarea,
   isSpeechRecognitionSupported,
   isVoiceInputAvailable,
   isVoiceInputEnvEnabled,
   readVoiceInputUserPref,
-  writeVoiceInputUserPref,
   VOICE_INPUT_USER_STORAGE_KEY,
+  writeVoiceInputUserPref,
 } from "@/features/voice/lib/voice-input";
 
 describe("voice-input feature", () => {

@@ -1,12 +1,16 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { LayoutGrid, Mic, Moon, Sun } from "lucide-react";
+
 import { useUiTheme } from "@/core/components/theme/ui-theme-provider";
 import { UI_STYLE_LABELS, type UiStyleId } from "@/core/theme/ui-theme";
-import { LayoutGrid, Mic, Moon, Sun } from "lucide-react";
+
 import { cn } from "@/shared/utils/cn";
+
 import { useVoiceInputOptional } from "@/features/voice/components/voice/voice-input-provider";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export function AppearanceStylePanel() {
   const { style, clinicalDark, setStyle, setClinicalDark } = useUiTheme();

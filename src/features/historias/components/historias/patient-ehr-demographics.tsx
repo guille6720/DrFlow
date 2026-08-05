@@ -1,8 +1,6 @@
-"use client";
-
-import { PatientWhatsAppButton } from "@/features/pacientes/components/patient-whatsapp-button";
-import { PatientEhrDemographicCell } from "@/features/historias/components/historias/patient-ehr-primitives";
+import { PatientEhrDemographicCell } from "@/features/historias/components/historias/patient-ehr-demographic-cell";
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
+import { PatientWhatsAppButton } from "@/features/pacientes/components/pacientes/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/features/pacientes/utils/patient-messages";
 
 export function PatientEhrDemographics({ patient }: { patient: PatientEhrPatientInfo }) {

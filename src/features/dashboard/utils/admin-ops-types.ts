@@ -1,6 +1,8 @@
-import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
-import type { AdminAnalyticsSnapshot } from "@/lib/utils/admin-analytics-types";
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
+
+import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+
+import type { AdminAnalyticsSnapshot } from "@/lib/utils/admin-analytics-types";
 
 export type AdminOpsPageHint =
   | "dashboard"
@@ -53,6 +55,39 @@ export type AdminOpsContext = {
   canManageWaitingRoom?: boolean;
   canManageSettings?: boolean;
   canViewReports?: boolean;
+};
+
+export type AdminOpsIntentId =
+  | "daily_ops_summary"
+  | "waiting_queue"
+  | "overdue_appointments"
+  | "pending_prescriptions"
+  | "pending_studies"
+  | "tasks_list"
+  | "notifications"
+  | "revenue_today"
+  | "revenue_month"
+  | "payment_breakdown"
+  | "closure_status"
+  | "authorizations_list"
+  | "copago_summary"
+  | "open_waiting_room"
+  | "open_agenda"
+  | "open_caja"
+  | "cash_help"
+  | "admin_help";
+
+export type AdminOpsAction = {
+  label: string;
+  href?: string;
+  copyText?: string;
+};
+
+export type AdminOpsResponse = {
+  intent: AdminOpsIntentId;
+  title: string;
+  body: string;
+  actions: AdminOpsAction[];
 };
 
 export function buildAdminOpsSnapshotFromDashboard(

@@ -1,7 +1,8 @@
 "use client";
 
-import { getMatchedOrderPanelLabels } from "@/lib/utils/medication-order-assist";
 import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
+
+import { getMatchedOrderPanelLabels } from "@/lib/utils/medication-order-assist";
 
 type Props = {
   context: PhysicianAssistContext;

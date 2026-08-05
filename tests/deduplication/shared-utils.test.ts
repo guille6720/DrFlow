@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { formatPatientName } from "@/shared/utils/patient-display";
+
 import { unwrapJoin } from "@/core/supabase/unwrap-join";
+
 import { formatCurrency, formatCurrencyAr } from "@/shared/utils/currency";
+import { formatPatientName } from "@/shared/utils/patient-display";
 
 describe("shared deduplication utilities", () => {
   it("formatPatientName handles array join", () => {

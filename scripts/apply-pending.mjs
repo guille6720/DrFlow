@@ -2,8 +2,8 @@
  * Aplica solo las migraciones pendientes detectadas por check:supabase.
  * Uso: DATABASE_URL=... npm run migrate:pending
  */
-import { resolve } from "path";
 import { spawnSync } from "child_process";
+import { resolve } from "path";
 
 const dbUrl = process.env.DATABASE_URL?.trim();
 if (!dbUrl) {

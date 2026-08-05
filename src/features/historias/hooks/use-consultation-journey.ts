@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+
 import {
   canNavigateToJourneyStep,
-  getConsultationJourneySteps,
-  nextJourneyStepId,
   type ConsultationJourneyStepId,
   type ConsultationJourneyStepStatus,
+  getConsultationJourneySteps,
+  nextJourneyStepId,
 } from "@/lib/utils/consultation-journey";
 
 type Options = {

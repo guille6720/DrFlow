@@ -1,4 +1,5 @@
 import fs from "fs";
+
 import { parseConsumerImportLines } from "../src/lib/utils/consumers-import-parse.ts";
 
 const path = process.argv[2];

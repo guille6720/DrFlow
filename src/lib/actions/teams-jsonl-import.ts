@@ -1,19 +1,23 @@
 "use server";
 
-import { createClient } from "@/core/supabase/server";
+import { resolveImportAccess } from "@/core/actions/action-response";
 import { logAudit } from "@/core/auth/session";
 import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
+import { withActionErrorBoundary } from "@/core/errors/action-boundary.server";
 import { requireClinicalImportAccess } from "@/core/services/import-access.service";
+import { createClient } from "@/core/supabase/server";
+import { sanitizeText } from "@/core/validations/schemas";
+
+import { upsertPatientClinicalProfile } from "@/features/pacientes/server/patient-clinical-profile";
+
+import { processTeamsJsonlImportRow } from "@/lib/actions/teams-jsonl-import.helpers";
 import { TEAMS_JSONL_IMPORT_BATCH_SIZE } from "@/lib/constants/clinical-documents";
 import { findOrCreatePatientFromExtract, resolveImportProfessionalId } from "@/lib/utils/clinical-pdf-import";
 import {
-  hceRowToClinicalRecord,
-  placeholderDniFromConsumerId,
   type HceExportRow,
+  placeholderDniFromConsumerId,
 } from "@/lib/utils/hce-export-parse";
-import { sanitizeText } from "@/core/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
-import { upsertPatientClinicalProfile } from "@/features/pacientes/server/patient-clinical-profile";
 
 async function findPatientByConsumerRef(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -97,26 +101,26 @@ export type ImportTeamsJsonlBatchResult =
 export async function importTeamsJsonlBatch(
   formData: FormData
 ): Promise<ImportTeamsJsonlBatchResult> {
-  try {
-    return await importTeamsJsonlBatchInner(formData);
-  } catch (err) {
-    console.error("[teams-jsonl-import] failed:", err);
-    const fileName = String(formData.get("fileName") ?? "teams.jsonl");
-    return {
+  return withActionErrorBoundary(
+    "teams-jsonl-import",
+    (fileName) => ({
       success: false,
-      fileName,
+      fileName: fileName || "teams.jsonl",
       error: "La importación JSONL se interrumpió. Reintentá el lote.",
-    };
-  }
+    }),
+    () => importTeamsJsonlBatchInner(formData),
+    {
+      getFileName: () => String(formData.get("fileName") ?? "teams.jsonl"),
+    }
+  );
 }
 
 async function importTeamsJsonlBatchInner(
   formData: FormData
 ): Promise<ImportTeamsJsonlBatchResult> {
   const access = await requireClinicalImportAccess();
-  if (access.error || !access.clinicId || !access.userId) {
-    return { success: false, fileName: "", error: access.error ?? "Sin permisos" };
-  }
+  const auth = resolveImportAccess(access);
+  if (!auth.ok) return { success: false, fileName: "", error: auth.error };
 
   const fileName = String(formData.get("fileName") ?? "teams.jsonl");
   const totalRecords = Math.max(0, Number(formData.get("totalRecords") ?? 0) || 0);
@@ -148,13 +152,13 @@ async function importTeamsJsonlBatchInner(
   const { data: clinic } = await supabase
     .from("clinics")
     .select("default_insurance_provider")
-    .eq("id", access.clinicId)
+    .eq("id", auth.clinicId)
     .single();
 
   const defaultInsurance = clinic?.default_insurance_provider ?? null;
   const professionalId = await resolveImportProfessionalId(
     supabase,
-    access.clinicId,
+    auth.clinicId,
     "Profesional"
   );
   if (!professionalId) {
@@ -168,68 +172,24 @@ async function importTeamsJsonlBatchInner(
   const patientCache = new Map<string, string>();
 
   for (const row of batch) {
-    let patientId = patientCache.get(row.paciente_id);
-    if (!patientId) {
-      const resolved = await resolvePatientForRow(
-        supabase,
-        access.clinicId,
-        row,
-        defaultInsurance,
-        `Import teams JSONL: ${fileName}`
-      );
-      if ("error" in resolved) {
-        parseErrors.push(`Registro ${row.import_record_id ?? row.lineNumber}: ${resolved.error}`);
-        continue;
-      }
-      patientId = resolved.patientId;
-      patientCache.set(row.paciente_id, patientId);
-      if (resolved.created) patientsCreated += 1;
-    }
+    const result = await processTeamsJsonlImportRow({
+      supabase,
+      clinicId: auth.clinicId,
+      userId: auth.userId,
+      professionalId,
+      row,
+      patientCache,
+      resolvePatient: (r) =>
+        resolvePatientForRow(supabase, auth.clinicId, r, defaultInsurance, `Import teams JSONL: ${fileName}`),
+    });
 
-    const clinical = hceRowToClinicalRecord(row);
-    if (clinical) {
-      const importId = row.import_record_id;
-      let existingQuery = supabase
-        .from("clinical_records")
-        .select("id")
-        .eq("clinic_id", access.clinicId)
-        .eq("patient_id", patientId);
-
-      if (importId) {
-        const escaped = importId.replace(/,/g, "");
-        existingQuery = existingQuery.or(
-          `chief_complaint.ilike.[IMPORT:${escaped}]%,chief_complaint.ilike.[DRAPP:${escaped}]%`
-        );
-      } else {
-        existingQuery = existingQuery.ilike("chief_complaint", `${clinical.marker}%`);
-      }
-
-      const { data: existing } = await existingQuery.maybeSingle();
-
-      if (existing) {
-        recordsSkipped += 1;
-      } else {
-        const createdAt = clinical.consultation_date
-          ? `${clinical.consultation_date}T12:00:00.000Z`
-          : new Date().toISOString();
-        const { error: insertError } = await supabase.from("clinical_records").insert({
-          clinic_id: access.clinicId,
-          patient_id: patientId,
-          professional_id: professionalId,
-          chief_complaint: sanitizeText(clinical.chief_complaint),
-          diagnosis: sanitizeText(clinical.diagnosis),
-          evolution: sanitizeText(clinical.evolution),
-          indications: sanitizeText(clinical.indications),
-          created_by: access.userId,
-          created_at: createdAt,
-          updated_at: createdAt,
-        });
-        if (insertError) {
-          parseErrors.push(`Registro ${row.import_record_id ?? row.lineNumber}: ${insertError.message}`);
-        } else {
-          recordsCreated += 1;
-        }
-      }
+    patientsCreated += result.patientsCreated;
+    if (result.action === "skip") {
+      recordsSkipped += 1;
+    } else if (result.action === "created") {
+      recordsCreated += 1;
+    } else if (result.action === "error") {
+      parseErrors.push(result.message);
     }
   }
 
@@ -238,9 +198,9 @@ async function importTeamsJsonlBatchInner(
   const hasMore = processedThrough < total;
 
   await logAudit({
-    clinicId: access.clinicId,
+    clinicId: auth.clinicId,
     entityType: "clinical_record",
-    entityId: access.clinicId,
+    entityId: auth.clinicId,
     action: "create",
     metadata: {
       type: "teams_jsonl_import",

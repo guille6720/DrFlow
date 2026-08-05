@@ -1,15 +1,16 @@
 "use client";
 
+import { CloseEncounterWizardSheet } from "@/features/ia/components/clinical-workflow/close-encounter-wizard-sheet";
+import type { PatientWorkspaceViewProps } from "@/features/pacientes/components/pacientes/patient-workspace-types";
 import { PatientConsultSheet } from "@/features/pacientes/components/pacientes/workspace/patient-consult-sheet";
 import { PatientDocumentAssistSheet } from "@/features/pacientes/components/pacientes/workspace/patient-document-assist-sheet";
 import { PatientLabInterpretSheet } from "@/features/pacientes/components/pacientes/workspace/patient-lab-interpret-sheet";
 import { PatientOrderSheet } from "@/features/pacientes/components/pacientes/workspace/patient-order-sheet";
 import { PatientPrescriptionSheet } from "@/features/pacientes/components/pacientes/workspace/patient-prescription-sheet";
 import { PatientRecordSheet } from "@/features/pacientes/components/pacientes/workspace/patient-record-sheet";
-import { CloseEncounterWizardSheet } from "@/features/ia/components/clinical-workflow/close-encounter-wizard-sheet";
-import type { PatientWorkspaceViewProps } from "@/features/pacientes/components/pacientes/patient-workspace-types";
 import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
 import { usePatientWorkspaceActions } from "@/features/pacientes/hooks/use-patient-workspace-actions";
+
 import type { Patient } from "@/types/database";
 
 type Props = Pick<

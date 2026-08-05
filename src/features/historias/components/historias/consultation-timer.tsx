@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
+import { useEffect, useState } from "react";
 
 function formatElapsed(seconds: number) {
   const m = Math.floor(seconds / 60);

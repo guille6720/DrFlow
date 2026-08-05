@@ -1,9 +1,10 @@
-import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
+
 import { PamiPatientBanner } from "@/features/pacientes/components/pacientes/pami-patient-banner";
-import { PatientIndicatorsCalculator } from "@/features/pacientes/components/pacientes/patient-indicators-calculator";
 import { AlertBadge, IndicatorChip } from "@/features/pacientes/components/pacientes/patient-chart-primitives";
 import type { PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
+import { PatientIndicatorsCalculator } from "@/features/pacientes/components/pacientes/patient-indicators-calculator";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 
 type Props = {

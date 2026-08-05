@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+
+import type { CommandPaletteItemDef } from "@/lib/constants/command-palette-items";
 import { parseClinicalCsvContent } from "@/lib/utils/clinical-csv-parse";
 import { filterCommandPaletteItems } from "@/lib/utils/command-palette-search";
-import type { CommandPaletteItemDef } from "@/lib/constants/command-palette-items";
 
 describe("performance — critical parse paths", () => {
   it("parses 500-row clinical CSV under 1s", () => {

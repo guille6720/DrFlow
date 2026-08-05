@@ -1,13 +1,15 @@
+import { ChevronLeft, ChevronRight, FileText, Plus } from "lucide-react";
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { SectorHero } from "@/components/ui/sector-hero";
-import { ListPagination, ListPaginationLabel } from "@/components/ui/list-pagination";
-import { ProminentSearchForm } from "@/components/ui/prominent-search-form";
+
 import { ClinicalRecordsGroupedList } from "@/features/historias";
 import { buildHistoriasUrl, type HistoriasPageData } from "@/features/historias/server/load-historias-page";
-import { FileText, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ListPagination, ListPaginationLabel } from "@/components/ui/list-pagination";
+import { ProminentSearchForm } from "@/components/ui/prominent-search-form";
+import { SectorHero } from "@/components/ui/sector-hero";
 
 type Props = HistoriasPageData & { q: string };
 

@@ -1,12 +1,14 @@
 "use client";
 
+import { Pill, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+
 import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { parseHabitualMedicationText } from "@/lib/utils/parse-habitual-meds";
 import type { PrescriptionMedication } from "@/types/prescription";
-import { Pill, RefreshCw } from "lucide-react";
 
 interface Professional {
   id: string;

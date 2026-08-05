@@ -1,18 +1,20 @@
+import { ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { SectorHero } from "@/components/ui/sector-hero";
-import { ListPagination, ListPaginationLabel } from "@/components/ui/list-pagination";
-import { ProminentSearchForm } from "@/components/ui/prominent-search-form";
+
 import { PatientsListCards } from "@/features/pacientes";
 import {
   buildPacientesPageQuery,
-  resolvePacientesClearHref,
   type PacientesPageData,
+  resolvePacientesClearHref,
 } from "@/features/pacientes/server/load-pacientes-page";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
-import { Users, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ListPagination, ListPaginationLabel } from "@/components/ui/list-pagination";
+import { ProminentSearchForm } from "@/components/ui/prominent-search-form";
+import { SectorHero } from "@/components/ui/sector-hero";
 
 type Props = PacientesPageData & {
   q: string;

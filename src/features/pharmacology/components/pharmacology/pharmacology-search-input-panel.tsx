@@ -1,12 +1,13 @@
-import { Card } from "@/components/ui/card";
+import { PathologyMatchList } from "@/features/pharmacology/components/pharmacology/pathology-match-list";
 import { PathologyTypeahead } from "@/features/pharmacology/components/pharmacology/pathology-typeahead";
 import { SymptomTypeahead } from "@/features/pharmacology/components/pharmacology/symptom-typeahead";
-import { PathologyMatchList } from "@/features/pharmacology/components/pharmacology/pathology-match-list";
 import { VademecumTypeahead } from "@/features/pharmacology/components/pharmacology/vademecum-typeahead";
+
+import { Card } from "@/components/ui/card";
 import type {
+  PamiVademecumResult,
   PathologyBySymptomResult,
   PathologySearchResult,
-  PamiVademecumResult,
   PharmacologySearchMode,
   SymptomSearchResult,
 } from "@/types/pharmacology";

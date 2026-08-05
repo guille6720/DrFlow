@@ -1,14 +1,15 @@
 import "server-only";
 
-import { createClient } from "@/core/supabase/server";
 import { getSession } from "@/core/auth/session";
+import { logServerError } from "@/core/errors/log-error.server";
 import { getAuditRequestContext } from "@/core/security/audit-context";
 import {
   auditFieldChanges,
-  buildAuditLogRow,
   type AuditModule,
+  buildAuditLogRow,
 } from "@/core/security/audit-log";
 import type { AuditAction } from "@/core/security/audit-types";
+import { createClient } from "@/core/supabase/server";
 
 export type RecordAuditParams = {
   clinicId?: string;
@@ -67,10 +68,10 @@ export async function recordAudit(params: RecordAuditParams): Promise<void> {
     );
 
     if (error) {
-      console.error("[audit] insert failed:", error.message);
+      logServerError("audit.insert", error, { clinicId: params.clinicId, persist: true });
     }
   } catch (err) {
-    console.error("[audit] record failed:", err);
+    logServerError("audit.record", err, { clinicId: params.clinicId });
   }
 }
 

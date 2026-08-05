@@ -1,7 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
-import { getSupabaseAnonKey, getSupabaseUrl } from "./env";
+import { type NextRequest, NextResponse } from "next/server";
+
 import { createTraceId } from "@/core/observability/trace-id";
+
+import { getSupabaseAnonKey, getSupabaseUrl } from "./env";
 
 const AUTH_TIMEOUT_MS = 1200;
 

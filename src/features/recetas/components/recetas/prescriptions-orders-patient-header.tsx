@@ -1,10 +1,11 @@
-"use client";
-
-import Link from "next/link";
 import { User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import type { PrescriptionsOrdersPatient } from "@/features/recetas/components/recetas/prescriptions-orders-types";
+import Link from "next/link";
+
 import { patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
+
+import type { PrescriptionsOrdersPatient } from "@/features/recetas/components/recetas/prescriptions-orders-types";
+
+import { Button } from "@/components/ui/button";
 
 export function PrescriptionsOrdersPatientHeader({ patient }: { patient: PrescriptionsOrdersPatient }) {
   return (

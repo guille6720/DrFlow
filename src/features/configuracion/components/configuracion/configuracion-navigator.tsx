@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useConfiguracionNavigator } from "@/features/configuracion/hooks/use-configuracion-navigator";
+
 import {
   ConfiguracionNavigatorGroupView,
   ConfiguracionNavigatorHubView,
@@ -11,6 +11,7 @@ import type {
   ConfiguracionGroupId,
   ConfiguracionSectionId,
 } from "@/features/configuracion/components/configuracion/configuracion-sections";
+import { useConfiguracionNavigator } from "@/features/configuracion/hooks/use-configuracion-navigator";
 
 interface ConfiguracionNavigatorProps {
   activeGroup: ConfiguracionGroupId | null;

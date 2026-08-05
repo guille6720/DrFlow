@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/core/supabase/server";
-import { getSession, logAudit } from "@/core/auth/session";
-import { clinicalRecordSchema } from "@/core/validations/schemas";
-import { parseEntityId } from "@/core/validations/params";
+
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { getSession, logAudit } from "@/core/auth/session";
 import { getAuditRequestContext } from "@/core/security/audit-context";
+import { createClient } from "@/core/supabase/server";
+import { firstZodIssue, parseEntityId } from "@/core/validations/params";
+import { clinicalRecordSchema } from "@/core/validations/schemas";
+
 import {
   createClinicalRecordEntry,
   updateClinicalRecordEntry,
@@ -25,7 +27,7 @@ export async function createClinicalRecord(formData: FormData) {
     appointment_id: raw.appointment_id || null,
   });
 
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   const supabase = await createClient();
   const ctx = await getAuditRequestContext();
@@ -76,7 +78,7 @@ export async function updateClinicalRecord(id: string, formData: FormData) {
     ...raw,
     appointment_id: raw.appointment_id || null,
   });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   const supabase = await createClient();
   const ctx = await getAuditRequestContext();

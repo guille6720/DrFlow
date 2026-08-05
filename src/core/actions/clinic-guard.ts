@@ -1,6 +1,6 @@
 "use server";
 
-import { getActiveClinicId, getActiveClinic } from "@/core/auth/session";
+import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
 import { hasPermission, PERMISSIONS } from "@/core/permissions/roles";
 
 export async function requireClinicPermission(permission: keyof typeof PERMISSIONS) {

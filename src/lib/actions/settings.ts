@@ -4,35 +4,28 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createClient } from "@/core/supabase/server";
-
-import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
 import { requireSettingsAccess } from "@/core/actions/clinic-guard";
-
-import { recordAuditChange } from "@/core/security/audit-service";
-
-import { hasPermission } from "@/core/permissions/roles";
-import { z } from "zod";
-import { firstZodIssue, parseEntityId } from "@/core/validations/params";
-
+import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
 import {
-
+  revalidateClinicLocationsCache,
+  revalidateClinicPortalCache,
+  revalidateClinicProfessionalsCache,
+  revalidateClinicSpecialtiesCache,
+} from "@/core/cache/revalidate-clinic-cache";
+import { hasPermission } from "@/core/permissions/roles";
+import { recordAuditChange } from "@/core/security/audit-service";
+import { createClient } from "@/core/supabase/server";
+import { firstZodIssue, parseEntityId } from "@/core/validations/params";
+import {
   clinicSettingsSchema,
-
+  createAvailabilityRuleSchema,
   createLocationSchema,
-
   createProfessionalSchema,
-
   createScheduleBlockSchema,
-
   namedEntitySchema,
-
   parseClinicSettingsForm,
-
   parseCreateProfessionalForm,
-
   parseScheduleBlockForm,
-
 } from "@/core/validations/settings-schemas";
 
 export async function updateClinicSettings(formData: FormData) {
@@ -82,6 +75,15 @@ export async function updateClinicSettings(formData: FormData) {
 
   if (error) return { error: error.message };
 
+  const after = {
+    name: parsed.data.name,
+    phone: parsed.data.phone ?? null,
+    email: parsed.data.email ?? null,
+    address: parsed.data.address ?? null,
+    default_appointment_duration: parsed.data.default_appointment_duration,
+    voice_input_enabled: parsed.data.voice_input_enabled,
+  };
+
   await recordAuditChange({
     clinicId,
     module: "settings",
@@ -90,7 +92,7 @@ export async function updateClinicSettings(formData: FormData) {
     action: "update",
     what: "Actualizó configuración del consultorio",
     before: before ?? null,
-    after: parsed.data,
+    after,
     keys: ["name", "phone", "email", "address", "default_appointment_duration", "voice_input_enabled"],
   });
 
@@ -132,6 +134,7 @@ export async function createSpecialty(name: string) {
 
   if (error) return { error: error.message };
 
+  revalidateClinicSpecialtiesCache(clinicId);
   revalidatePath("/configuracion");
 
   return { success: true };
@@ -168,6 +171,7 @@ export async function deleteSpecialty(id: string) {
 
   if (error) return { error: error.message };
 
+  revalidateClinicSpecialtiesCache(clinicId);
   revalidatePath("/configuracion");
 
   return { success: true };
@@ -204,6 +208,7 @@ export async function createLocation(name: string, address?: string) {
 
   if (error) return { error: error.message };
 
+  revalidateClinicLocationsCache(clinicId);
   revalidatePath("/configuracion");
 
   return { success: true };
@@ -240,6 +245,7 @@ export async function deleteLocation(id: string) {
 
   if (error) return { error: error.message };
 
+  revalidateClinicLocationsCache(clinicId);
   revalidatePath("/configuracion");
 
   return { success: true };
@@ -322,6 +328,7 @@ export async function createProfessional(formData: FormData) {
 
   if (error) return { error: error.message };
 
+  revalidateClinicProfessionalsCache(clinicId);
   revalidatePath("/configuracion");
 
   revalidatePath("/agenda");
@@ -392,6 +399,7 @@ export async function enablePublicBooking() {
 
   if (error) return { error: error.message };
 
+  revalidateClinicPortalCache(clinicId);
   revalidatePath("/configuracion");
 
   revalidatePath("/agenda");
@@ -454,25 +462,9 @@ export async function createAvailabilityRule(formData: FormData) {
 
 
 
-  const schema = z.object({
+  const parsed = createAvailabilityRuleSchema.safeParse(Object.fromEntries(formData.entries()));
 
-    professional_id: z.string().uuid(),
-
-    day_of_week: z.coerce.number().min(0).max(6),
-
-    start_time: z.string(),
-
-    end_time: z.string(),
-
-    slot_duration: z.coerce.number().min(10).max(120).default(30),
-
-  });
-
-
-
-  const parsed = schema.safeParse(Object.fromEntries(formData.entries()));
-
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
 
 

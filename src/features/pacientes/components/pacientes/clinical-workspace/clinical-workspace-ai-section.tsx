@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { Sparkles } from "lucide-react";
+import Link from "next/link";
+
 import { ClinicalSummaryPhysicianAssist } from "@/features/ia/components/clinical-workflow/clinical-summary-physician-assist";
-import { usePatientClinicalAssistant } from "@/features/pacientes/hooks/use-patient-clinical-assistant";
 import type { PatientChartViewProps } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
+import { usePatientClinicalAssistant } from "@/features/pacientes/hooks/use-patient-clinical-assistant";
 import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 

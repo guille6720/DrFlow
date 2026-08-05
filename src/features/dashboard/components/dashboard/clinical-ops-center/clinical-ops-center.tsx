@@ -1,6 +1,3 @@
-"use client";
-
-import { AdminOpsDashboardBridge } from "@/features/ia/components/admin-ops/admin-ops-dashboard-bridge";
 import { ClinicalOpsAiRail } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-ai-rail";
 import { ClinicalOpsLeftRail } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-left-rail";
 import { ClinicalOpsMainSections } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-main-sections";
@@ -8,6 +5,7 @@ import { ClinicalOpsQuickActions } from "@/features/dashboard/components/dashboa
 import { ClinicalOpsRealtime } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-realtime";
 import { ClinicalOpsTopBar } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-top-bar";
 import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+import { AdminOpsDashboardBridge } from "@/features/ia/components/admin-ops/admin-ops-dashboard-bridge";
 
 type Props = {
   clinicId: string;

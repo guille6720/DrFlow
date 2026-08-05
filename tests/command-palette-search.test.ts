@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { COMMAND_PALETTE_ACTIONS } from "@/lib/constants/command-palette-items";
 import {
   filterCommandPaletteItems,

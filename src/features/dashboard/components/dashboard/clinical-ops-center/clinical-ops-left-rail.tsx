@@ -1,6 +1,3 @@
-"use client";
-
-import Link from "next/link";
 import {
   AlertTriangle,
   CalendarDays,
@@ -11,9 +8,12 @@ import {
   Plus,
   Zap,
 } from "lucide-react";
-import { cn } from "@/shared/utils/cn";
-import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+import Link from "next/link";
+
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
+import { cn } from "@/shared/utils/cn";
+
+import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
 
 const NAV = [
   { id: "ops-schedule", label: "Agenda de hoy", icon: CalendarDays },

@@ -1,11 +1,11 @@
 import type { LiveAppointment } from "@/features/dashboard/utils/clinical-operations-types";
 import type {
+  ClinicalOperationsPayload,
   ClinicalOpsActionableAlert,
   ClinicalOpsActivityMetrics,
   ClinicalOpsEnrichedWaitingRow,
   ClinicalOpsLabResult,
   ClinicalOpsPendingOrder,
-  ClinicalOperationsPayload,
 } from "@/features/dashboard/utils/clinical-operations-types";
 
 export type ClinicalOpsTask = {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { SPECIALTY_OTHER_VALUE } from "@/lib/constants/medical-specialties";
 
 const dniSchema = z

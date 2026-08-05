@@ -1,7 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
 import type { PatientRecordGroup } from "@/features/historias/components/historias/clinical-records-grouped-list";
-import { batchPatientRecordCounts } from "@/lib/utils/batch-patient-record-counts";
 import { applyPatientSearchFilter } from "@/features/pacientes/utils/patient-search";
+
+import { batchPatientRecordCounts } from "@/lib/utils/batch-patient-record-counts";
 import type { ClinicalRecordListRow } from "@/lib/utils/clinical-record-list-types";
 
 export const HISTORIAS_PAGE_SIZE = 25;

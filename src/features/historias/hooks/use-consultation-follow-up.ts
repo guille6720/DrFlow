@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useState } from "react";
+
 import { createAppointment } from "@/lib/actions/appointments";
 import {
+  buildFollowUpAppointmentFormData,
   CONSULTATION_FOLLOW_UP_DEFAULT_DURATION,
   CONSULTATION_FOLLOW_UP_DEFAULT_NOTES,
-  buildFollowUpAppointmentFormData,
   defaultFollowUpStartAt,
   validateFollowUpProfessional,
 } from "@/lib/utils/consultation-follow-up";

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   LayoutDashboard,
   LogOut,
@@ -9,9 +8,12 @@ import {
   PanelLeftOpen,
   X,
 } from "lucide-react";
-import { cn } from "@/shared/utils/cn";
+import Link from "next/link";
+
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import { type SidebarNavItem } from "@/core/components/layout/sidebar-nav-config";
+
+import { cn } from "@/shared/utils/cn";
 
 export function SidebarNavContent({
   clinicName,

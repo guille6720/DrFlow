@@ -3,9 +3,11 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ListTodo } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import type { ClinicJobStatus } from "@/core/jobs/registry";
+
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 type JobRow = {
   id: string;

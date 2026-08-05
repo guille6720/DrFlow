@@ -1,15 +1,18 @@
 "use client";
 
+import { AlertTriangle, Trash2, X } from "lucide-react";
 import { useState, useTransition } from "react";
 import { createPortal } from "react-dom";
-import { AlertTriangle, Trash2, X } from "lucide-react";
+
+import { useClientMounted } from "@/core/hooks/use-client-mounted";
+
+import { cn } from "@/shared/utils/cn";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { deleteMyAccount } from "@/lib/actions/account";
 import { DELETE_ACCOUNT_CONFIRM_PHRASE } from "@/lib/constants/account";
 import { clearDrFlowClientStorage } from "@/lib/utils/clear-client-storage";
-import { cn } from "@/shared/utils/cn";
-import { useClientMounted } from "@/core/hooks/use-client-mounted";
 
 interface DeleteAccountPanelProps {
   userEmail?: string | null;

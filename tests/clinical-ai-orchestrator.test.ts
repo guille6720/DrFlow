@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+
 import {
   CLINICAL_AI_AGENT_LABELS,
   listClinicalAiAgents,
@@ -6,7 +9,6 @@ import {
   resolveAgentForTask,
   runClinicalAiOrchestrator,
 } from "@/lib/utils/clinical-ai-orchestrator";
-import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 
 function chartStub(overrides: Partial<PatientChartPayload> = {}): PatientChartPayload {
   return {

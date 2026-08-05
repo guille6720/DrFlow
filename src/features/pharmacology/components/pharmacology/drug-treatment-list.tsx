@@ -1,9 +1,10 @@
 "use client";
 
+import { AlertTriangle, Check, Loader2, Pill, Plus } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { TREATMENT_LINE_LABELS, type PathologyDrug, type PharmacologySearchMode } from "@/types/pharmacology";
-import { AlertTriangle, Check, Pill, Loader2, Plus } from "lucide-react";
+import { type PathologyDrug, type PharmacologySearchMode, TREATMENT_LINE_LABELS } from "@/types/pharmacology";
 
 interface DrugTreatmentListProps {
   items: PathologyDrug[];

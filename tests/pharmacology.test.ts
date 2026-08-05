@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+
 import { SYMPTOM_RELEVANCE_HINT, TREATMENT_LINE_LABELS } from "@/types/pharmacology";
 
 describe("Pharmacology types", () => {

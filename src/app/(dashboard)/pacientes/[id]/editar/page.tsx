@@ -1,14 +1,16 @@
 import { notFound } from "next/navigation";
-import { EditPatientForm } from "@/features/pacientes/components/pacientes/edit-patient-form";
+import { redirect } from "next/navigation";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
-import { createClient } from "@/core/supabase/server";
 import { hasPermission } from "@/core/permissions/roles";
-import { redirect } from "next/navigation";
+import { createClient } from "@/core/supabase/server";
+
+import { EditPatientForm } from "@/features/pacientes/components/pacientes/edit-patient-form";
 
 export default async function EditarPacientePage({
   params,

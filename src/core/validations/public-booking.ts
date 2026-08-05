@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { entityIdArraySchema, entityIdSchema, bookingSlugSchema, documentNumberSchema, boundedReasonSchema } from "@/core/validations/params";
+
+import { bookingSlugSchema, boundedReasonSchema, documentNumberSchema, entityIdArraySchema, entityIdSchema } from "@/core/validations/params";
 
 export const publicBookingSchema = z.object({
   slug: bookingSlugSchema,

@@ -1,9 +1,11 @@
 "use client";
 
-import { setActiveClinic } from "@/core/auth/session";
-import type { Clinic } from "@/types/database";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
+
+import { setActiveClinic } from "@/core/auth/session";
+
+import type { Clinic } from "@/types/database";
 
 interface ClinicSelectorProps {
   clinics: { clinic_id: string; clinic?: Clinic }[];

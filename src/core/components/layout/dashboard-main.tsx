@@ -1,7 +1,8 @@
 "use client";
 
-import { cn } from "@/shared/utils/cn";
 import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-context";
+
+import { cn } from "@/shared/utils/cn";
 
 export function DashboardMain({ children }: { children: React.ReactNode }) {
   const { hidden } = useDashboardSidebar();

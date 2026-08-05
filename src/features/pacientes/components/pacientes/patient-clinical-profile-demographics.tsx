@@ -1,6 +1,7 @@
+import { parsePatientChartExtras } from "@/features/pacientes/utils/patient-chart-notes";
+
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { parsePatientChartExtras } from "@/features/pacientes/utils/patient-chart-notes";
 
 type Extras = ReturnType<typeof parsePatientChartExtras>;
 

@@ -1,15 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import { AlertTriangle, Pill, ScrollText, Sparkles, Stethoscope } from "lucide-react";
+import Link from "next/link";
+
+import type { PatientChartViewProps } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
+import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
+import { usePatientClinicalAssistant } from "@/features/pacientes/hooks/use-patient-clinical-assistant";
+import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { PatientChartViewProps } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
-import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
-import { usePatientClinicalAssistant } from "@/features/pacientes/hooks/use-patient-clinical-assistant";
-import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 type Props = Pick<PatientChartViewProps, "chart" | "patient" | "patientId" | "canIssue"> & {
   ehr: PatientEhrWorkspaceData;

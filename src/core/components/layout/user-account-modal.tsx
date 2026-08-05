@@ -1,10 +1,12 @@
 "use client";
 
-import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import { createPortal } from "react-dom";
+
 import { UserAccountModalContent } from "@/core/components/layout/user-account-modal-content";
-import { useUserAccountModal } from "@/core/hooks/use-user-account-modal";
 import { useClientMounted } from "@/core/hooks/use-client-mounted";
+import { useUserAccountModal } from "@/core/hooks/use-user-account-modal";
+
 import type { UserRole } from "@/types/database";
 
 interface UserAccountModalProps {

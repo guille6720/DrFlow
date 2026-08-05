@@ -1,13 +1,15 @@
-import { TelemedicinaView } from "@/features/telemedicina";
+import { redirect } from "next/navigation";
+
 import {
+  getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
-  getActiveClinic,
 } from "@/core/auth/session";
-import { createClient } from "@/core/supabase/server";
 import { canAccessRoute } from "@/core/permissions/roles";
-import { redirect } from "next/navigation";
+import { createClient } from "@/core/supabase/server";
+
+import { TelemedicinaView } from "@/features/telemedicina";
 
 export default async function TelemedicinaPage() {
   const profile = await getProfile();

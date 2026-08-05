@@ -1,14 +1,14 @@
 "use server";
 
-import { createClient } from "@/core/supabase/server";
 import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
-import { hasPermission } from "@/core/permissions/roles";
 import { applyClinicLegalAcceptanceInternal } from "@/core/legal/apply-clinic-legal-acceptance";
-import { parseEntityId } from "@/core/validations/params";
 import {
   LEGAL_PRIVACY_VERSION,
   LEGAL_TERMS_VERSION,
 } from "@/core/legal/documents";
+import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+import { parseEntityId } from "@/core/validations/params";
 
 export async function applyClinicLegalAcceptance(clinicId: string) {
   const idParsed = parseEntityId(clinicId, "Clínica");

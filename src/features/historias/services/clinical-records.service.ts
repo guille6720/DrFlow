@@ -1,9 +1,11 @@
+import type { z } from "zod";
+
 import type { DbClient } from "@/core/repositories/types";
-import { parseConsultationModality } from "@/lib/constants/consultation-modality";
-import { clinicalRecordSchema, sanitizeText } from "@/core/validations/schemas";
 import type { ServiceResult } from "@/core/services/types";
 import { serviceErr, serviceOk } from "@/core/services/types";
-import type { z } from "zod";
+import { clinicalRecordSchema, sanitizeText } from "@/core/validations/schemas";
+
+import { parseConsultationModality } from "@/lib/constants/consultation-modality";
 
 type ClinicalRecordInput = z.infer<typeof clinicalRecordSchema>;
 

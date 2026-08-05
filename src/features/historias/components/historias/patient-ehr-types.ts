@@ -5,6 +5,7 @@ import {
   Pill,
   Stethoscope,
 } from "lucide-react";
+
 import type {
   PatientEhrAttachment,
   PatientEhrConsultation,

@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
     root: process.cwd(),
   },
   experimental: {
-    optimizePackageImports: ["lucide-react", "date-fns"],
+    optimizePackageImports: ["lucide-react", "date-fns", "zod"],
     serverActions: {
       bodySizeLimit: "12mb",
     },

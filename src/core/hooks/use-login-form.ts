@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
+
+import { sanitizeAuthErrorParam } from "@/core/security/xss";
 import { createClient } from "@/core/supabase/client";
 import { resolveClientPublicSiteUrl } from "@/core/supabase/client-public-url";
-import { sanitizeAuthErrorParam } from "@/core/security/xss";
 
 function readPasswordLeakFromUrl(): { email: string; error: string } | null {
   if (typeof window === "undefined") return null;

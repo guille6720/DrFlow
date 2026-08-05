@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+
 import { PortalPwaRegister } from "@/core/components/pwa/portal-pwa-register";
+
 import {
   PATIENT_PWA_METADATA_ICONS,
   PATIENT_THEME_COLOR,

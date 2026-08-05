@@ -1,25 +1,28 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
 import { format, subDays } from "date-fns";
 import { es } from "date-fns/locale";
-import { Header } from "@/core/components/layout/header";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
+import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
+
+import { AdminOpsAnalyticsBridge } from "@/features/ia/components/admin-ops/admin-ops-analytics-bridge";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   labelForAttentionType,
   labelForChargeKind,
   labelForPaymentMethod,
 } from "@/lib/constants/cash-register";
 import { loadRevenueSnapshot } from "@/lib/server/load-revenue-snapshot";
-import { AdminOpsAnalyticsBridge } from "@/features/ia/components/admin-ops/admin-ops-analytics-bridge";
 
 export default async function CajaReportesPage({
   searchParams,

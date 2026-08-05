@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+
 import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
 
 type Props = {

@@ -1,13 +1,14 @@
-import { orderTypeLabel } from "@/features/recetas/utils/order-type-label";
 import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
+import type { PatientEhrAttachment, PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { orderTypeLabel } from "@/features/recetas/utils/order-type-label";
+
 import type {
   ClinicalTimelineEvent,
   ClinicalTimelineEventType,
   ClinicalTimelineFilterId,
 } from "@/lib/utils/clinical-timeline-types";
 import { CLINICAL_TIMELINE_FILTER_OPTIONS } from "@/lib/utils/clinical-timeline-types";
-import type { PatientEhrConsultation, PatientEhrAttachment } from "@/features/pacientes/utils/patient-ehr-model";
 import type { MedicalOrder } from "@/types/medical-order";
 
 export type PatientEhrAppointment = {

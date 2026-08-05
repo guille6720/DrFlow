@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import { ToggleLeft } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { updateClinicFeatureFlag } from "@/lib/actions/clinic-feature-flags";
+import { useState, useTransition } from "react";
+
 import type { FeatureFlagId } from "@/features/flags/lib/registry";
+
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { updateClinicFeatureFlag } from "@/lib/actions/clinic-feature-flags";
 
 type FlagRow = {
   id: FeatureFlagId;

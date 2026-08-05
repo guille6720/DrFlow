@@ -1,10 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+
+import { HCE_SUMMARY_ATTACHMENT_NAME } from "@/features/pacientes/utils/patient-ehr-from-hce";
+
 import {
   buildMigrationHealthReport,
   hasConsumerImportRef,
   isPlaceholderImportDni,
 } from "@/lib/utils/migration-health";
-import { HCE_SUMMARY_ATTACHMENT_NAME } from "@/features/pacientes/utils/patient-ehr-from-hce";
 
 describe("migration-health", () => {
   it("detects placeholder DNI and consumer ref", () => {

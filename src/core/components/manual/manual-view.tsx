@@ -1,12 +1,12 @@
-"use client";
-
-import { ManualIllustration } from "@/core/components/manual/manual-illustration";
-import { ExportManualPdfButton } from "@/core/components/manual/export-manual-pdf";
-import { MANUAL_SECTIONS, MANUAL_SUBTITLE, MANUAL_TITLE } from "@/core/manual/manual-data";
-import { CHANGELOG, getAppVersion } from "@/core/app-release";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { BookOpen } from "lucide-react";
+
+import { CHANGELOG, getAppVersion } from "@/core/app-release";
+import { ExportManualPdfButton } from "@/core/components/manual/export-manual-pdf-button";
+import { ManualIllustration } from "@/core/components/manual/manual-illustration";
+import { MANUAL_SECTIONS, MANUAL_SUBTITLE, MANUAL_TITLE } from "@/core/manual/manual-data";
+
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 export function ManualView() {
   return (

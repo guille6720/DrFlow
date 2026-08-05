@@ -1,6 +1,7 @@
+import { readdirSync, readFileSync, statSync } from "fs";
+import { join, resolve } from "path";
 import { describe, expect, it } from "vitest";
-import { readFileSync, readdirSync, statSync } from "fs";
-import { resolve, join } from "path";
+
 import {
   escapeHtml,
   sanitizeAuthErrorParam,

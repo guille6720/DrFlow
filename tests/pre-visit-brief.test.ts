@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildPreVisitBrief, formatMonthsSince } from "@/lib/utils/pre-visit-brief";
+
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+
+import { buildPreVisitBrief, formatMonthsSince } from "@/lib/utils/pre-visit-brief";
 
 function minimalChart(overrides: Partial<PatientChartPayload> = {}): PatientChartPayload {
   return {

@@ -1,9 +1,15 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/ui/card";
+import { useEffect, useState, useTransition } from "react";
+
+import { PatientDataConsentCheckbox } from "@/core/components/legal/legal-consent-fields";
+
+import { addPatientRequest } from "@/features/pacientes/utils/patient-requests-storage";
+
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,9 +18,6 @@ import {
   submitPublicBooking,
 } from "@/lib/actions/public-booking";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
-import { addPatientRequest } from "@/features/pacientes/utils/patient-requests-storage";
-import { PatientDataConsentCheckbox } from "@/core/components/legal/legal-consent-fields";
-import { CheckCircle2 } from "lucide-react";
 
 interface Professional {
   id: string;

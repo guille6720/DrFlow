@@ -1,14 +1,16 @@
 "use client";
 
+import { CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+import { clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
+
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { finalizeConsultation } from "@/lib/actions/appointments";
-import { clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
-import { CONSULTATION_MODALITY_OPTIONS } from "@/lib/constants/consultation-modality";
 import type { ConsultationModality } from "@/lib/constants/consultation-modality";
-import { CheckCircle2 } from "lucide-react";
+import { CONSULTATION_MODALITY_OPTIONS } from "@/lib/constants/consultation-modality";
 
 interface Props {
   appointmentId: string;

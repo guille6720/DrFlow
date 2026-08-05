@@ -1,11 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Calculator } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+
+import { savePatientClinicalIndicators } from "@/features/pacientes/actions/patient-chart-indicators";
+import type { PatientChartExtras } from "@/features/pacientes/utils/patient-chart-model-types";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { savePatientClinicalIndicators } from "@/features/pacientes/actions/patient-chart-indicators";
 import {
   calculateBmi,
   calculatePackYears,
@@ -14,8 +18,6 @@ import {
   formatTfgLabel,
   parseOptionalNumber,
 } from "@/lib/utils/clinical-indicators";
-import type { PatientChartExtras } from "@/features/pacientes/utils/patient-chart-model-types";
-import { Calculator } from "lucide-react";
 
 interface Props {
   patientId: string;

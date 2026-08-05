@@ -4,7 +4,8 @@
  */
 import { existsSync } from "fs";
 import { sep } from "path";
-import { walkComponentFiles, rel, readSource, lineCount, failGate, passGate, SRC_ROOT, walkDir } from "./lib/quality-scan.mjs";
+
+import { failGate, lineCount, passGate, readSource, rel, SRC_ROOT, walkComponentFiles, walkDir } from "./lib/quality-scan.mjs";
 
 const MAX_COMPONENT_LINES = 350;
 const WARN_COMPONENT_LINES = 200;

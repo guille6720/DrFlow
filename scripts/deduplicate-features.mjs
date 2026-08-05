@@ -6,13 +6,11 @@
  * Usage: node scripts/deduplicate-features.mjs
  */
 import {
-  cpSync,
   existsSync,
   mkdirSync,
   readdirSync,
   readFileSync,
   renameSync,
-  rmSync,
   statSync,
   writeFileSync,
 } from "node:fs";
@@ -224,14 +222,14 @@ export {
   ClinicFeaturesProvider,
   useClinicFeatures,
   useFeatureFlag,
-} from "@/features/plugins/components/plugins/clinic-plugins-provider";
+} from "@/features/plugins/components/plugins/clinic-features-provider";
 `,
     "utf8"
   );
 
   patchFile("src/features/plugins/index.ts", (c) =>
     c.replace(
-      `export { ClinicPluginsProvider, useClinicPlugins, usePluginEnabled, ClinicFeaturesProvider, useClinicFeatures, useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";`,
+      `export { ClinicPluginsProvider, useClinicPlugins, usePluginEnabled, ClinicFeaturesProvider, useClinicFeatures, useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";`,
       `export {
   ClinicPluginsProvider,
   useClinicPlugins,
@@ -252,7 +250,7 @@ export {
   useClinicPlugins,
   usePluginEnabled,
   useFeatureFlag,
-} from "@/features/plugins/components/plugins/clinic-plugins-provider";`,
+} from "@/features/plugins/components/plugins/clinic-features-provider";`,
       `export {
   ClinicFeaturesProvider,
   ClinicPluginsProvider,

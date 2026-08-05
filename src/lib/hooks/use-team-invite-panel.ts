@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
 import {
   deactivateClinicMember,
   inviteClinicMember,
@@ -88,4 +89,4 @@ export function useTeamInvitePanel(members: Member[], invitations: Invitation[])
   };
 }
 
-export type { Member as TeamMember, Invitation as TeamInvitation };
+export type { Invitation as TeamInvitation, Member as TeamMember };

@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { loadMyUserAccount } from "@/lib/actions/user-account";
-import { updateMyDoctorProfile } from "@/lib/actions/doctor-profile";
+import { useEffect, useState, useTransition } from "react";
+
+import type { DoctorSetupDefaultValues } from "@/core/components/onboarding/doctor-setup-fields";
 import { parseDoctorSetupFromForm, validateDoctorSetup } from "@/core/validations/doctor-setup";
 import { zodFieldErrors } from "@/core/validations/form-errors";
-import type { DoctorSetupDefaultValues } from "@/core/components/onboarding/doctor-setup-fields";
+
+import { updateMyDoctorProfile } from "@/lib/actions/doctor-profile";
+import { loadMyUserAccount } from "@/lib/actions/user-account";
 import type { UserRole } from "@/types/database";
 
 type Options = {

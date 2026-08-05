@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
+
 import { PublicBookingForm } from "@/core/components/booking/public-booking-form";
-import { PatientRequestsPanel } from "@/features/portal/components/portal/patient-requests-panel";
+
+import { usePatientPortal } from "@/features/pacientes/hooks/use-patient-portal";
+import { PatientPortalBottomNav } from "@/features/portal/components/portal/patient-portal-bottom-nav";
 import { PatientPortalHeader } from "@/features/portal/components/portal/patient-portal-header";
 import { PatientPortalHomeScreen } from "@/features/portal/components/portal/patient-portal-home-screen";
 import { PatientPortalRecetaScreen } from "@/features/portal/components/portal/patient-portal-receta-screen";
 import { PatientPortalWhatsappScreen } from "@/features/portal/components/portal/patient-portal-whatsapp-screen";
-import { PatientPortalBottomNav } from "@/features/portal/components/portal/patient-portal-bottom-nav";
-import { usePatientPortal } from "@/features/pacientes/hooks/use-patient-portal";
+import { PatientRequestsPanel } from "@/features/portal/components/portal/patient-requests-panel";
+
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
 
 interface Professional {

@@ -8,9 +8,9 @@
  * La contraseña es la que elegiste al crear el proyecto (Settings → Database).
  * Si tiene caracteres especiales (@, #, etc.), codificá la URL.
  */
+import { spawnSync } from "child_process";
 import { readdirSync } from "fs";
 import { resolve } from "path";
-import { spawnSync } from "child_process";
 
 const dbUrl = process.env.DATABASE_URL?.trim();
 if (!dbUrl) {

@@ -1,23 +1,25 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { normalizeAgendaRules } from "@/features/profesionales/components/profesionales/professional-schedule-editor";
-import {
-  AGENDA_PRESETS,
-  type AgendaRuleDraft,
-} from "@/lib/constants/professional-intake-checklist";
-import {
-  saveProfessionalSchedule,
-  submitProfessionalIntake,
-  updateProfessionalProfile,
-} from "@/lib/actions/professional-intake";
+import { useMemo, useState } from "react";
+
 import type {
   AvailabilityRuleRow,
   ProfessionalIntakeDetail,
   ProfessionalIntakeDetailTab,
   ProfessionalIntakeNewStep,
 } from "@/features/profesionales/components/profesionales/professional-intake-types";
+import { normalizeAgendaRules } from "@/features/profesionales/components/profesionales/professional-schedule-editor";
+
+import {
+  saveProfessionalSchedule,
+  submitProfessionalIntake,
+  updateProfessionalProfile,
+} from "@/lib/actions/professional-intake";
+import {
+  AGENDA_PRESETS,
+  type AgendaRuleDraft,
+} from "@/lib/constants/professional-intake-checklist";
 
 type Params = {
   professionals: ProfessionalIntakeDetail[];

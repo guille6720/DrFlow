@@ -1,6 +1,8 @@
-import { cn } from "@/shared/utils/cn";
-import type { PharmacologySearchMode } from "@/types/pharmacology";
 import { Activity, BookOpen, Stethoscope } from "lucide-react";
+
+import { cn } from "@/shared/utils/cn";
+
+import type { PharmacologySearchMode } from "@/types/pharmacology";
 
 interface Props {
   mode: PharmacologySearchMode;

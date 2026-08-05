@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { buildUnifiedClinicalEvolution } from "@/lib/utils/unified-clinical-evolution";
 
 describe("buildUnifiedClinicalEvolution", () => {

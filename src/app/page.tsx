@@ -1,19 +1,21 @@
-import Link from "next/link";
-import { Suspense } from "react";
-import { Button } from "@/components/ui/button";
-import { AccountDeletedCleanup } from "@/core/components/auth/account-deleted-cleanup";
-import { PatientAppLandingSection } from "@/core/components/landing/patient-app-section";
-import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import {
   Calendar,
-  Shield,
-  Users,
   FileText,
-  Pill,
-  Stethoscope,
-  Sparkles,
   Globe,
+  Pill,
+  Shield,
+  Sparkles,
+  Stethoscope,
+  Users,
 } from "lucide-react";
+import Link from "next/link";
+import { Suspense } from "react";
+
+import { AccountDeletedCleanup } from "@/core/components/auth/account-deleted-cleanup";
+import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
+import { PatientAppLandingSection } from "@/core/components/landing/patient-app-landing-section";
+
+import { Button } from "@/components/ui/button";
 
 const differentiators = [
   {

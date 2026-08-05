@@ -1,24 +1,26 @@
+import {
+  ArrowRight,
+  Calendar,
+  CheckCircle2,
+  ClipboardList,
+  MessageCircle,
+  Pill,
+  ScrollText,
+  Stethoscope,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
-import { Header } from "@/core/components/layout/header";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
-import {
-  Calendar,
-  Users,
-  Stethoscope,
-  Pill,
-  MessageCircle,
-  ScrollText,
-  ClipboardList,
-  CheckCircle2,
-  ArrowRight,
-} from "lucide-react";
+import { Header } from "@/core/components/layout/header";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 const dailyFlow = [
   {

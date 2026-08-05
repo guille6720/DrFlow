@@ -2,18 +2,21 @@
  * Internal batch processor for consumers import (jobs / authenticated actions).
  * Not a Server Action — not callable from the client.
  */
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+
 import { logAudit } from "@/core/auth/session";
-import { CONSUMERS_IMPORT_MAX_ROWS } from "@/lib/constants/clinical-documents";
-import { parseConsumersUpload } from "@/lib/utils/consumers-import.server";
-import { findOrCreatePatientFromExtract } from "@/lib/utils/clinical-pdf-import";
+import { sanitizeText } from "@/core/validations/schemas";
+
 import {
   loadPatientClinicalProfile,
   upsertPatientClinicalProfile,
 } from "@/features/pacientes/server/patient-clinical-profile";
-import { sanitizeText } from "@/core/validations/schemas";
+
+import { CONSUMERS_IMPORT_MAX_ROWS } from "@/lib/constants/clinical-documents";
+import { findOrCreatePatientFromExtract } from "@/lib/utils/clinical-pdf-import";
+import { parseConsumersUpload } from "@/lib/utils/consumers-import.server";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
-import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type ImportConsumersResult =
   | {

@@ -1,6 +1,7 @@
+import { STANDARD_VACCINE_NAMES } from "@/features/pacientes/utils/patient-chart-notes";
+
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { STANDARD_VACCINE_NAMES } from "@/features/pacientes/utils/patient-chart-notes";
 
 function vaccineSlug(name: string) {
   return name.toLowerCase().replace(/\s+/g, "_").replace(/ó/g, "o");

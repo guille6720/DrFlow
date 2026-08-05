@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   addDays,
   addMonths,
@@ -13,6 +11,9 @@ import {
   subMonths,
   subWeeks,
 } from "date-fns";
+import { useRouter } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
+
 import { createAppointment } from "@/lib/actions/appointments";
 import type { Appointment } from "@/types/database";
 
@@ -121,32 +122,53 @@ export function useAgendaView({
     [closeForm, defaultDuration, router]
   );
 
-  return {
-    view,
-    setView,
-    currentDate,
-    setCurrentDate,
-    showForm,
-    filterProfessional,
-    setFilterProfessional,
-    filterSpecialty,
-    setFilterSpecialty,
-    error,
-    loading,
-    startAt,
-    setStartAt,
-    formProfessionalId,
-    setFormProfessionalId,
-    editingAppointment,
-    setEditingAppointment,
-    filtered,
-    weekDays,
-    openNewAppointmentForm,
-    closeForm,
-    shiftCalendar,
-    handleSlotClick,
-    handleCreate,
-  };
+  return useMemo(
+    () => ({
+      view,
+      setView,
+      currentDate,
+      setCurrentDate,
+      showForm,
+      filterProfessional,
+      setFilterProfessional,
+      filterSpecialty,
+      setFilterSpecialty,
+      error,
+      loading,
+      startAt,
+      setStartAt,
+      formProfessionalId,
+      setFormProfessionalId,
+      editingAppointment,
+      setEditingAppointment,
+      filtered,
+      weekDays,
+      openNewAppointmentForm,
+      closeForm,
+      shiftCalendar,
+      handleSlotClick,
+      handleCreate,
+    }),
+    [
+      view,
+      currentDate,
+      showForm,
+      filterProfessional,
+      filterSpecialty,
+      error,
+      loading,
+      startAt,
+      formProfessionalId,
+      editingAppointment,
+      filtered,
+      weekDays,
+      openNewAppointmentForm,
+      closeForm,
+      shiftCalendar,
+      handleSlotClick,
+      handleCreate,
+    ]
+  );
 }
 
 export type AgendaViewState = ReturnType<typeof useAgendaView>;

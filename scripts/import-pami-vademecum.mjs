@@ -12,9 +12,9 @@
  * Con service role (sin DATABASE_URL):
  *   npm run import:pami-vademecum -- --apply-api
  */
-import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync } from "fs";
-import { resolve, basename, join } from "path";
 import { spawnSync } from "child_process";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
+import { basename, join, resolve } from "path";
 import XLSX from "xlsx";
 
 const DEFAULT_XLSX = resolve(process.cwd(), "data/pami/gavade_20230829_102140.xlsx");

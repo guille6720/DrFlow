@@ -1,6 +1,7 @@
 import type { PatientChartViewProps } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
-import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
 import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
+import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
+
 import type { Patient } from "@/types/database";
 
 export type ClinicalTemplateRow = {

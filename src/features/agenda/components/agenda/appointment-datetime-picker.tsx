@@ -1,10 +1,13 @@
 "use client";
 
-import { format, addMonths, subMonths, isBefore, isSameDay, isSameMonth, startOfDay } from "date-fns";
+import { addMonths, format, isBefore, isSameDay, isSameMonth, startOfDay, subMonths } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
+
 import { cn } from "@/shared/utils/cn";
+
 import { useAppointmentDatetimePicker } from "@/features/agenda/hooks/use-appointment-datetime-picker";
+
 import { APPOINTMENT_TIME_SLOTS } from "@/lib/utils/appointment-datetime";
 
 interface OccupiedSlot {

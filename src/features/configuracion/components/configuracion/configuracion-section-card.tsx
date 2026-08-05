@@ -1,10 +1,12 @@
 "use client";
 
 import { ChevronRight } from "lucide-react";
+
 import { cn } from "@/shared/utils/cn";
+
 import {
-  getSectionMeta,
   type ConfiguracionSectionId,
+  getSectionMeta,
 } from "@/features/configuracion/components/configuracion/configuracion-sections";
 
 export function ConfiguracionSectionCard({

@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+
 import { cn } from "@/shared/utils/cn";
 
 type Props = {

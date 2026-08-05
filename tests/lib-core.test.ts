@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cn } from "@/shared/utils/cn";
+
 import {
   backHrefFromClinicalSubpage,
   FROM_CLINICAL_HISTORY,
@@ -7,17 +7,20 @@ import {
   patientClinicalHistoryPath,
   withClinicalHistoryReturn,
 } from "@/shared/utils/clinical-navigation";
-import { normalizeDni } from "@/lib/utils/normalize-dni";
+import { cn } from "@/shared/utils/cn";
 import {
   buildWhatsAppShareUrl,
   buildWhatsAppUrl,
   normalizeArgentinaPhone,
 } from "@/shared/utils/whatsapp";
+
 import {
   applyPatientSearchFilter,
   patientSearchTokens,
   sanitizePatientSearchTerm,
 } from "@/features/pacientes/utils/patient-search";
+
+import { normalizeDni } from "@/lib/utils/normalize-dni";
 
 describe("cn", () => {
   it("merges tailwind classes", () => {

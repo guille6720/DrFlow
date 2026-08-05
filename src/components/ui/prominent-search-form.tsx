@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import type { ReactNode } from "react";
+
+import { Button } from "@/components/ui/button";
 
 interface Props {
   action: string;

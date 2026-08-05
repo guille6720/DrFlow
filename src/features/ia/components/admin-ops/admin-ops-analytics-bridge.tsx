@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAdminOpsCopilot } from "@/features/ia/components/admin-ops/admin-ops-copilot-context";
-import type { AdminAnalyticsSnapshot } from "@/lib/utils/admin-analytics-types";
+
 import type { AdminOpsPageHint } from "@/features/dashboard/utils/admin-ops-types";
+import { useAdminOpsCopilot } from "@/features/ia/components/admin-ops/admin-ops-copilot-context";
+
+import type { AdminAnalyticsSnapshot } from "@/lib/utils/admin-analytics-types";
 
 type Props = {
   analytics: AdminAnalyticsSnapshot;

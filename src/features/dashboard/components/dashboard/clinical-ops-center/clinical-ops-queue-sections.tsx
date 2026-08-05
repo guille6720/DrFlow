@@ -1,19 +1,20 @@
-"use client";
-
-import Link from "next/link";
 import { AlertTriangle, Stethoscope } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ClinicalOpsEmpty } from "@/features/dashboard/components/dashboard/clinical-ops-empty";
+import Link from "next/link";
+
+import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
+import { cn } from "@/shared/utils/cn";
+
 import {
   OpsSection,
   PatientAvatar,
   PriorityBadge,
 } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-shared";
+import { ClinicalOpsEmpty } from "@/features/dashboard/components/dashboard/clinical-ops-empty";
 import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
-import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
-import { cn } from "@/shared/utils/cn";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
+import { Button } from "@/components/ui/button";
 
 export function WaitingQueueSection({
   rows,

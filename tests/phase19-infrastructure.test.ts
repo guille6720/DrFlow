@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
+import { describe, expect, it } from "vitest";
+
 import { COVERAGE_INCLUDE } from "./coverage-scope";
 
 describe("Phase 19 testing infrastructure", () => {

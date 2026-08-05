@@ -1,6 +1,7 @@
-import type { MedicalOrder } from "@/types/medical-order";
 import type { DbClient, RepoResult } from "@/core/repositories/types";
 import { mapDbError, repoErr, repoOk } from "@/core/repositories/types";
+
+import type { MedicalOrder } from "@/types/medical-order";
 
 export type MedicalOrderInsertRow = {
   clinic_id: string;

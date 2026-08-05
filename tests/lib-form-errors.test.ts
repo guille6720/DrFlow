@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { firstFieldError, normalizeSlug, zodFieldErrors } from "@/core/validations/form-errors";
 import { z } from "zod";
+
+import { firstFieldError, normalizeSlug, zodFieldErrors } from "@/core/validations/form-errors";
 
 describe("form-errors", () => {
   it("maps zod issues to field errors", () => {

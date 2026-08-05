@@ -1,8 +1,10 @@
+import { Plus, Trash2 } from "lucide-react";
+
+import { emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
 import type { PrescriptionMedication } from "@/types/prescription";
-import { Plus, Trash2 } from "lucide-react";
 
 interface Props {
   medications: PrescriptionMedication[];

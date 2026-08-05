@@ -1,22 +1,26 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar, Plus } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useMemo } from "react";
+
 import { Header } from "@/core/components/layout/header";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
+import { hasPermission } from "@/core/permissions/roles";
+
+import { AgendaCreateForm } from "@/features/agenda/components/agenda/agenda-create-form";
+import { AgendaToolbar } from "@/features/agenda/components/agenda/agenda-toolbar";
 import { AppointmentRow, filterAppointmentsForDay } from "@/features/agenda/components/agenda/appointment-row";
 import { CalendarGrid } from "@/features/agenda/components/agenda/calendar-grid";
-import { MonthOverviewGrid } from "@/features/agenda/components/agenda/month-overview-grid";
 import { EditAppointmentDialog } from "@/features/agenda/components/agenda/edit-appointment-dialog";
-import { AgendaToolbar } from "@/features/agenda/components/agenda/agenda-toolbar";
-import { AgendaCreateForm } from "@/features/agenda/components/agenda/agenda-create-form";
+import { MonthOverviewGrid } from "@/features/agenda/components/agenda/month-overview-grid";
 import { useAgendaView } from "@/features/agenda/hooks/use-agenda-view";
-import { hasPermission } from "@/core/permissions/roles";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { Appointment, Clinic, Patient, Professional, UserRole } from "@/types/database";
 
 interface AgendaPageProps {
@@ -60,10 +64,45 @@ export function AgendaView({
     defaultDuration,
   });
 
+  const {
+    view,
+    filtered,
+    currentDate,
+    setCurrentDate,
+    setView,
+    weekDays,
+    showForm,
+    openNewAppointmentForm,
+    handleSlotClick,
+    editingAppointment,
+    setEditingAppointment,
+  } = agenda;
+
   const canManage = hasPermission(role, "manageAppointments", false);
   const canStartClinical = hasPermission(role, "editClinicalRecords", false);
-  const dayAppointments =
-    agenda.view === "day" ? filterAppointmentsForDay(agenda.filtered, agenda.currentDate) : agenda.filtered;
+  const handleEditAppointment = canManage ? setEditingAppointment : undefined;
+
+  const dayAppointments = useMemo(
+    () =>
+      view === "day" ? filterAppointmentsForDay(filtered, currentDate) : filtered,
+    [view, filtered, currentDate]
+  );
+
+  const handleDayClick = useCallback(
+    (day: Date) => {
+      setCurrentDate(day);
+      setView("day");
+    },
+    [setCurrentDate, setView]
+  );
+
+  const handleOpenNewAppointment = useCallback(() => {
+    openNewAppointmentForm();
+  }, [openNewAppointmentForm]);
+
+  const handleCloseEdit = useCallback(() => {
+    setEditingAppointment(null);
+  }, [setEditingAppointment]);
 
   return (
     <>
@@ -79,7 +118,7 @@ export function AgendaView({
       <div className="space-y-4 p-4 sm:p-6">
         <AgendaToolbar agenda={agenda} professionals={professionals} specialties={specialties} />
 
-        {agenda.showForm ? (
+        {showForm ? (
           <AgendaCreateForm
             agenda={agenda}
             patients={patients}
@@ -92,37 +131,34 @@ export function AgendaView({
           />
         ) : null}
 
-        {agenda.filtered.length === 0 && agenda.view === "day" ? (
+        {filtered.length === 0 && view === "day" ? (
           <EmptyState
             icon={Calendar}
             title="No hay turnos en este período"
             description="Creá un turno o ajustá los filtros para ver más resultados."
             action={
-              <Button onClick={() => agenda.openNewAppointmentForm()}>
+              <Button onClick={handleOpenNewAppointment}>
                 <Plus className="h-4 w-4" />
                 Nuevo turno
               </Button>
             }
           />
-        ) : agenda.view === "week" ? (
+        ) : view === "week" ? (
           <CalendarGrid
-            weekDays={agenda.weekDays}
-            appointments={agenda.filtered}
+            weekDays={weekDays}
+            appointments={filtered}
             blocks={scheduleBlocks}
-            onSlotClick={agenda.handleSlotClick}
+            onSlotClick={handleSlotClick}
           />
-        ) : agenda.view === "month" ? (
+        ) : view === "month" ? (
           <MonthOverviewGrid
-            monthDate={agenda.currentDate}
-            appointments={agenda.filtered}
-            onDayClick={(day) => {
-              agenda.setCurrentDate(day);
-              agenda.setView("day");
-            }}
+            monthDate={currentDate}
+            appointments={filtered}
+            onDayClick={handleDayClick}
           />
         ) : (
           <Card
-            title={format(agenda.currentDate, "EEEE d 'de' MMMM", { locale: es })}
+            title={format(currentDate, "EEEE d 'de' MMMM", { locale: es })}
             className="border-slate-600/80 bg-slate-800/95 [&_h3]:text-slate-100 [&_.font-medium]:text-slate-50"
           >
             {dayAppointments.length === 0 ? (
@@ -136,7 +172,7 @@ export function AgendaView({
                     showDate
                     canManage={canManage}
                     canStartClinical={canStartClinical}
-                    onEdit={canManage ? agenda.setEditingAppointment : undefined}
+                    onEdit={handleEditAppointment}
                   />
                 ))}
               </ul>
@@ -158,10 +194,10 @@ export function AgendaView({
           </p>
         ) : null}
 
-        {agenda.editingAppointment ? (
+        {editingAppointment ? (
           <EditAppointmentDialog
-            key={agenda.editingAppointment.id}
-            appointment={agenda.editingAppointment}
+            key={editingAppointment.id}
+            appointment={editingAppointment}
             patients={patients}
             professionals={professionals}
             locations={locations}
@@ -170,7 +206,7 @@ export function AgendaView({
             scheduleBlocks={scheduleBlocks}
             defaultDuration={defaultDuration}
             open
-            onClose={() => agenda.setEditingAppointment(null)}
+            onClose={handleCloseEdit}
             onSaved={() => router.refresh()}
           />
         ) : null}

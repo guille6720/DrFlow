@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
 import {
   Calendar,
   ClipboardList,
@@ -12,9 +10,14 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { cn } from "@/shared/utils/cn";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
+import Link from "next/link";
+import { useState } from "react";
+
 import { useCommandPalette } from "@/core/components/command-palette/command-palette-provider";
+
+import { cn } from "@/shared/utils/cn";
+
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
 const ACTIONS = [
   { href: "/pacientes/nuevo", label: "Nuevo paciente", icon: Users },

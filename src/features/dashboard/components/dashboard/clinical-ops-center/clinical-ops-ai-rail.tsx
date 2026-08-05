@@ -1,11 +1,13 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useAdminOpsCopilot } from "@/features/ia/components/admin-ops/admin-ops-copilot-context";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
-import { Button } from "@/components/ui/button";
-import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
 import { Sparkles } from "lucide-react";
+import dynamic from "next/dynamic";
+
+import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+import { useAdminOpsCopilot } from "@/features/ia/components/admin-ops/admin-ops-copilot-context";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+
+import { Button } from "@/components/ui/button";
 
 const ClinicalOpsAiRailInner = dynamic(
   () => import("./clinical-ops-ai-rail-inner").then((m) => m.ClinicalOpsAiRailInner),

@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+
 import { InlinePhysicianAssist } from "@/features/ia/components/clinical-workflow/inline-physician-assist";
 import type { PhysicianAssistContext, PhysicianAssistItem } from "@/features/ia/types/physician-assist-types";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
+import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 type DocKind = "discharge_summary" | "medical_certificate";
 

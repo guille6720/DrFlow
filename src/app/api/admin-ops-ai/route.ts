@@ -1,41 +1,14 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
-import { requireSameOriginMutation } from "@/core/security/csrf";
+
 import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
 import { hasPermission } from "@/core/permissions/roles";
+import { requireSameOriginMutation } from "@/core/security/csrf";
+import { adminOpsAiRequestSchema } from "@/core/validations/admin-ops-ai-api";
+
 import {
-  runAdminOpsOrchestrator,
   listAdminOpsAgents,
-  type AdminOpsTask,
+  runAdminOpsOrchestrator,
 } from "@/features/dashboard/utils/admin-ops-orchestrator";
-
-const TASK_VALUES = [
-  "daily_ops_summary",
-  "waiting_queue",
-  "cash_help",
-  "admin_help",
-  "revenue_today",
-  "revenue_month",
-  "authorizations_list",
-  "admin_ops_query",
-] as const satisfies readonly AdminOpsTask[];
-
-const bodySchema = z.object({
-  task: z.enum(TASK_VALUES),
-  message: z.string().max(8000).optional(),
-  context: z
-    .object({
-      page: z
-        .enum(["dashboard", "caja", "caja_reportes", "waiting_room", "agenda", "settings", "documentos"])
-        .optional(),
-      canManageCash: z.boolean().optional(),
-      canManageWaitingRoom: z.boolean().optional(),
-      canManageSettings: z.boolean().optional(),
-      canViewReports: z.boolean().optional(),
-    })
-    .optional(),
-});
-
 /** POST /api/admin-ops-ai — admin/ops orchestrator (Phase G/H). */
 export async function POST(request: Request) {
   const csrfBlock = requireSameOriginMutation(request);
@@ -65,7 +38,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
 
-  const parsed = bodySchema.safeParse(json);
+  const parsed = adminOpsAiRequestSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
   }

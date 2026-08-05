@@ -1,6 +1,4 @@
-"use client";
-
-import { ActivityStrip } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-activity-strip";
+import { ClinicalOpsActivityStrip } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-activity-strip";
 import {
   CriticalAlertsSection,
   WaitingQueueSection,
@@ -8,9 +6,8 @@ import {
 import {
   NotificationsSection,
   TodayScheduleSection,
-  TodayTasksSection,
 } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-tasks-sections";
-import { useCompletedOpsTasks } from "@/core/hooks/use-completed-ops-tasks";
+import { ClinicalOpsTodayTasksSection } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-today-tasks-section";
 import {
   LabResultsSection,
   PrescriptionsAndOrdersSections,
@@ -23,11 +20,9 @@ type Props = {
 };
 
 export function ClinicalOpsMainSections({ ops, canManageAppointments }: Props) {
-  const { openTasks, markDone } = useCompletedOpsTasks(ops.tasks);
-
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <ActivityStrip activity={ops.activity} />
+      <ClinicalOpsActivityStrip activity={ops.activity} />
       <WaitingQueueSection rows={ops.enrichedWaiting} />
       <CriticalAlertsSection alerts={ops.actionableAlerts} />
       <PrescriptionsAndOrdersSections
@@ -35,7 +30,7 @@ export function ClinicalOpsMainSections({ ops, canManageAppointments }: Props) {
         pendingOrders={ops.pendingOrders}
       />
       <LabResultsSection items={ops.recentLabs} />
-      <TodayTasksSection tasks={openTasks} onComplete={markDone} />
+      <ClinicalOpsTodayTasksSection tasks={ops.tasks} />
       <TodayScheduleSection
         appointments={ops.todayAppointments}
         canManageAppointments={canManageAppointments}

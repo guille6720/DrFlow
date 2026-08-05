@@ -1,5 +1,6 @@
-import type { PrescriptionMedication } from "@/types/prescription";
 import type { LabPanelRow } from "@/features/pacientes/utils/patient-chart-notes";
+
+import type { PrescriptionMedication } from "@/types/prescription";
 
 export type PatientChartExtras = {
   sex?: string | null;

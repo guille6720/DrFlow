@@ -1,16 +1,17 @@
 import { describe, expect, it } from "vitest";
+
 import {
   getPluginDefinition,
   listToggleablePlugins,
-  pluginForPath,
   PLUGIN_REGISTRY,
+  pluginForPath,
 } from "@/plugins/registry";
+import { NAV_PLUGIN_BY_FEATURE } from "@/plugins/registry";
 import {
   filterNavByPlugins,
   isRouteAllowedByPlugins,
   resolveClinicPlugins,
 } from "@/plugins/resolve";
-import { NAV_PLUGIN_BY_FEATURE } from "@/plugins/registry";
 
 describe("plugin registry", () => {
   it("lists toggleable optional and lab plugins", () => {

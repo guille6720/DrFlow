@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { PharmacologySearchView } from "@/features/pharmacology";
+
 import {
   getActiveClinic,
   getActiveClinicId,
@@ -7,6 +7,9 @@ import {
   getUserClinics,
 } from "@/core/auth/session";
 import { hasPermission } from "@/core/permissions/roles";
+
+import { PharmacologySearchView } from "@/features/pharmacology";
+
 import type { PharmacologySearchMode } from "@/types/pharmacology";
 
 export default async function FarmacologiaPage({

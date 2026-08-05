@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import { getDrugsByPathology, getPathologiesBySymptoms } from "@/lib/actions/pharmacology";
 import type {
   PathologyBySymptomResult,

@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
+
 import {
+  isWithinStabilizationLimit,
   STABILIZATION_COMPONENT_MAX_LINES,
   STABILIZATION_HOOK_MAX_LINES,
-  isWithinStabilizationLimit,
   stabilizationLimit,
 } from "@/shared/utils/stabilization-limits";
 

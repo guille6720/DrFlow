@@ -1,7 +1,8 @@
 "use client";
 
 import { MessageCircle } from "lucide-react";
-import { PatientWhatsAppButton } from "@/features/pacientes/components/patient-whatsapp-button";
+
+import { PatientWhatsAppButton } from "@/features/pacientes/components/pacientes/patient-whatsapp-button";
 import type { PatientPortalState } from "@/features/pacientes/hooks/use-patient-portal";
 
 type Props = Pick<PatientPortalState, "doctorName" | "logWhatsappRequest"> & {

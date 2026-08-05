@@ -1,13 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CLINICAL_DOCUMENT_MAX_BYTES } from "@/lib/constants/clinical-documents";
+import { useRef, useState } from "react";
+
 import {
   deletePatientClinicalDocument,
   getPatientClinicalDocumentUrl,
   uploadPatientClinicalDocument,
 } from "@/features/pacientes/actions/patient-attachments";
+
+import { CLINICAL_DOCUMENT_MAX_BYTES } from "@/lib/constants/clinical-documents";
 
 export function useClinicalDocumentsPanel(patientId: string) {
   const router = useRouter();

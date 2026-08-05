@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+
 import { clearDrFlowClientStorage } from "@/lib/utils/clear-client-storage";
 
 export function AccountDeletedCleanup() {

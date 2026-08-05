@@ -4,7 +4,8 @@ import {
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
-import NuevoPacienteForm from "./patient-form";
+
+import NuevoPacienteForm from "./nuevo-paciente-form";
 
 export default async function NuevoPacientePage() {
   const profile = await getProfile();

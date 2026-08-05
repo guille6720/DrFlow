@@ -1,22 +1,25 @@
 "use server";
 
-import { after } from "next/server";
-import { revalidatePath } from "next/cache";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { createClient } from "@/core/supabase/server";
-import { getSession } from "@/core/auth/session";
-import { recordAudit } from "@/core/security/audit-service";
-import { reminderService, buildAppointmentReminderMessage } from "@/lib/services/reminders";
-import { buildPamiReminderMessage } from "@/lib/constants/pami-cabecera";
-import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
-import { paymentService } from "@/lib/services/payments";
-import { telemedicineService } from "@/lib/services/telemedicine";
+import { revalidatePath } from "next/cache";
+
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { parseEntityId, reminderChannelSchema, firstZodIssue } from "@/core/validations/params";
-import { mockPaymentSchema } from "@/core/validations/cash-schemas";
+import { getSession } from "@/core/auth/session";
+import { scheduleAfterTask } from "@/core/errors/background.server";
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
 import { processPendingClinicJobs } from "@/core/jobs/process";
+import { recordAudit } from "@/core/security/audit-service";
+import { createClient } from "@/core/supabase/server";
+import { mockPaymentSchema } from "@/core/validations/cash-schemas";
+import { firstZodIssue, parseEntityId, reminderChannelSchema } from "@/core/validations/params";
+
+import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
+
+import { buildPamiReminderMessage } from "@/lib/constants/pami-cabecera";
+import { paymentService } from "@/lib/services/payments";
+import { buildAppointmentReminderMessage, reminderService } from "@/lib/services/reminders";
+import { telemedicineService } from "@/lib/services/telemedicine";
 
 export async function sendReminder(appointmentId: string, channel: "email" | "whatsapp" | "internal") {
   const access = await requireClinicPermission("manageAppointments");
@@ -142,13 +145,11 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
     createdBy: user?.id,
   });
 
-  after(async () => {
-    try {
-      await processPendingClinicJobs({ limit: 3, clinicId });
-    } catch (err) {
-      console.error("[sendReminder] background worker failed", err);
-    }
-  });
+  scheduleAfterTask(
+    "sendReminder.background-worker",
+    () => processPendingClinicJobs({ limit: 3, clinicId }),
+    { clinicId }
+  );
 
   await recordAudit({
     clinicId,

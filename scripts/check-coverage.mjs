@@ -3,7 +3,7 @@
  * Uso: node scripts/check-coverage.mjs
  */
 import { spawnSync } from "child_process";
-import { readFileSync, existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
 
 const SUMMARY_PATH = resolve(process.cwd(), "coverage/coverage-summary.json");

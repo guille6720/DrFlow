@@ -1,9 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/core/supabase/server";
-import { getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { revalidateClinicPluginsCache } from "@/core/cache/revalidate-clinic-cache";
+import { createClient } from "@/core/supabase/server";
+
+import { getCachedClinicPlugins } from "@/lib/server/cached-clinic-queries";
 import {
   getPluginDefinition,
   listToggleablePlugins,
@@ -56,6 +60,7 @@ export async function updateClinicPlugin(
     metadata: { plugin_id: pluginId, enabled },
   });
 
+  revalidateClinicPluginsCache(clinicId);
   revalidatePath("/configuracion");
   revalidatePath("/", "layout");
 
@@ -72,22 +77,17 @@ export async function getClinicPluginSettings(): Promise<{
   const clinicId = await getActiveClinicId();
   if (!clinicId) return { error: "Sin clínica activa" };
 
-  const supabase = await createClient();
-  const { data: rows } = await supabase
-    .from("clinic_plugins")
-    .select("plugin_id, enabled")
-    .eq("clinic_id", clinicId);
-
+  const plugins = await getCachedClinicPlugins(clinicId);
   const toggleable = listToggleablePlugins();
   return {
     data: toggleable.map((def) => {
-      const row = rows?.find((r) => r.plugin_id === def.id);
+      const row = plugins[def.id as PluginId];
       return {
         id: def.id,
         label: def.label,
         description: def.description,
         tier: def.tier,
-        enabled: row?.enabled ?? def.defaultEnabled,
+        enabled: row ?? def.defaultEnabled,
       };
     }),
   };

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+
 import { focusFirstElement, getFocusableElements } from "@/core/accessibility/focus";
 
 describe("accessibility focus utils", () => {

@@ -3,9 +3,10 @@
  * Usage: node scripts/performance-gate.mjs
  */
 import { spawnSync } from "child_process";
-import { writeFileSync, mkdirSync } from "fs";
+import { mkdirSync, writeFileSync } from "fs";
 import { resolve } from "path";
-import { walkComponentFiles, rel, lineCount, failGate, passGate } from "./lib/quality-scan.mjs";
+
+import { failGate, lineCount, passGate, rel, walkComponentFiles } from "./lib/quality-scan.mjs";
 
 const METRICS_PATH = resolve(process.cwd(), "coverage/performance-metrics.json");
 const LARGE_COMPONENT_THRESHOLD = 250;

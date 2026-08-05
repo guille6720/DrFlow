@@ -1,17 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/core/supabase/server";
-import { logAudit } from "@/core/auth/session";
-import { patientSchema, sanitizePatientFields } from "@/core/validations/schemas";
-import { parseEntityId } from "@/core/validations/params";
-import { patientAdminSchema } from "@/core/validations/cash-schemas";
+
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { logAudit } from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
+import { patientAdminSchema } from "@/core/validations/cash-schemas";
+import { firstZodIssue, parseEntityId } from "@/core/validations/params";
+import { patientSchema, sanitizePatientFields } from "@/core/validations/schemas";
+
 import {
   createPatientRecord,
   isAdminOnlyPatientRole,
-  updatePatientRecord,
   type SanitizedPatient,
+  updatePatientRecord,
 } from "@/features/pacientes/services/patients.service";
 
 export async function createPatient(formData: FormData) {
@@ -25,7 +27,7 @@ export async function createPatient(formData: FormData) {
     ? patientAdminSchema.safeParse(raw)
     : patientSchema.safeParse(raw);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message };
+    return { error: firstZodIssue(parsed.error) };
   }
 
   const sanitized = sanitizePatientFields(
@@ -70,7 +72,7 @@ export async function updatePatient(id: string, formData: FormData) {
   const parsed = adminOnly
     ? patientAdminSchema.safeParse(raw)
     : patientSchema.safeParse(raw);
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   const sanitized = sanitizePatientFields(
     parsed.data as Parameters<typeof sanitizePatientFields>[0]

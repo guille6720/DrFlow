@@ -1,12 +1,12 @@
 "use server";
 
-import { createClient } from "@/core/supabase/server";
-import { getActiveClinicId, getSession, getActiveClinic } from "@/core/auth/session";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
 import { hasPermission } from "@/core/permissions/roles";
 import {
   mergePatientAuditEvents,
   type PatientAuditEvent,
 } from "@/core/security/audit-types";
+import { createClient } from "@/core/supabase/server";
 import { parseEntityId } from "@/core/validations/params";
 
 const AUDIT_LIMIT = 120;

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAdminOpsCopilot } from "@/features/ia/components/admin-ops/admin-ops-copilot-context";
+
 import {
-  buildAdminOpsSnapshotFromDashboard,
   type AdminOpsContext,
+  buildAdminOpsSnapshotFromDashboard,
 } from "@/features/dashboard/utils/admin-ops-types";
 import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+import { useAdminOpsCopilot } from "@/features/ia/components/admin-ops/admin-ops-copilot-context";
 
 type Props = {
   ops: ClinicalOperationsDashboardPayload;

@@ -1,17 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Plus, Shield, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/ui/card";
+import { useMemo, useState } from "react";
+
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { updateClinicCoverages } from "@/lib/actions/coverages";
 import {
-  STANDARD_COVERAGES,
   normalizeCoverages,
+  STANDARD_COVERAGES,
 } from "@/lib/constants/coverages";
-import { Shield, Plus, X } from "lucide-react";
 
 interface CoveragesPanelProps {
   acceptedCoverages: string[] | null;

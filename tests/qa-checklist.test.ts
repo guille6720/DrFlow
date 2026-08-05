@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { QA_CHECKLIST, qaStats } from "@/core/qa/checklist-data";
 
 describe("qa checklist", () => {

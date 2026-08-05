@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
+
 import { LabInterpretationPanel } from "@/features/ia/components/clinical-workflow/lab-interpretation-panel";
-import { Button } from "@/components/ui/button";
+import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
 import type { PatientChartExtras } from "@/features/pacientes/utils/patient-chart-model-types";
+
+import { Button } from "@/components/ui/button";
 
 type Props = {
   open: boolean;

@@ -1,10 +1,10 @@
-"use client";
-
 import Link from "next/link";
-import { VitalsSparkline } from "@/features/pacientes/components/pacientes/patient-chart-primitives";
+
+import { cn } from "@/shared/utils/cn";
+
+import { VitalsSparkline } from "@/features/pacientes/components/pacientes/vitals-sparkline";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
-import { cn } from "@/shared/utils/cn";
 
 function isAbnormalVital(label: string, value: string | undefined): boolean {
   if (!value || value === "—") return false;
@@ -80,7 +80,9 @@ export function ClinicalWorkspaceVitalsSection({
       </dl>
       {previous ? (
         <p className="mt-1 text-[11px] text-slate-500">
-          Visita anterior: TA {previous.systolic && previous.diastolic ? `${previous.systolic}/${previous.diastolic}` : "—"} · FC {previous.heartRate ?? "—"}
+          Visita anterior: TA{" "}
+          {previous.systolic && previous.diastolic ? `${previous.systolic}/${previous.diastolic}` : "—"} · FC{" "}
+          {previous.heartRate ?? "—"}
         </p>
       ) : null}
       <VitalsSparkline vitals={chart.vitals} />

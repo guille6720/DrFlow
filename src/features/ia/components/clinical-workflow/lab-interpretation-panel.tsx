@@ -1,17 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { AlertTriangle, Copy, FlaskConical, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
+
+import { PHYSICIAN_ASSIST_DISCLAIMER } from "@/features/ia/types/physician-assist-types";
+import type { PatientChartExtras } from "@/features/pacientes/utils/patient-chart-model-types";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
 import {
   buildLabInterpretationItem,
   compareLabsWithHistory,
   parseLabValuesFromText,
 } from "@/lib/utils/lab-interpretation";
-import type { PatientChartExtras } from "@/features/pacientes/utils/patient-chart-model-types";
-import { PHYSICIAN_ASSIST_DISCLAIMER } from "@/features/ia/types/physician-assist-types";
 
 type Props = {
   previousLabs?: PatientChartExtras["labs"];

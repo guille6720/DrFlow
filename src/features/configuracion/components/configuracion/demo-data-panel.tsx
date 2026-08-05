@@ -1,11 +1,12 @@
 "use client";
 
+import { Database, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { seedDemoPatientsForActiveClinic } from "@/lib/actions/demo-data";
-import { Database, Loader2 } from "lucide-react";
 
 interface DemoDataPanelProps {
   patientCount: number;

@@ -1,9 +1,11 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { UserPlus } from "lucide-react";
+
 import { DoctorSetupFields } from "@/core/components/onboarding/doctor-setup-fields";
+
+import { cn } from "@/shared/utils/cn";
+
 import { ProfessionalIntakeFormMessages } from "@/features/profesionales/components/profesionales/professional-intake-form-messages";
 import { ProfessionalIntakeOfficeFields } from "@/features/profesionales/components/profesionales/professional-intake-office-fields";
 import {
@@ -14,9 +16,11 @@ import {
 import {
   ProfessionalScheduleEditor,
 } from "@/features/profesionales/components/profesionales/professional-schedule-editor";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import type { AgendaRuleDraft } from "@/lib/constants/professional-intake-checklist";
-import { UserPlus } from "lucide-react";
-import { cn } from "@/shared/utils/cn";
 
 type Props = {
   locations: ProfessionalIntakeLocation[];

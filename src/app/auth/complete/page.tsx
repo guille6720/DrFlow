@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/core/supabase/server";
+
 import { setActiveClinic } from "@/core/auth/session";
+import { createClient } from "@/core/supabase/server";
 
 /**
  * Destino post-OAuth (Google): si ya tiene clínica → dashboard; si no → onboarding.

@@ -2,7 +2,7 @@
  * Verifica si un email existe en Supabase Auth (sin crear usuarios).
  * Uso: node scripts/check-auth-email.mjs email@ejemplo.com
  */
-import { readFileSync, existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
 
 function loadEnv() {

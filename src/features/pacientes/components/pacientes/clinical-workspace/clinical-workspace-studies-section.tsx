@@ -1,12 +1,12 @@
-"use client";
-
-import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { FlaskConical } from "lucide-react";
-import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
-import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
+import Link from "next/link";
+
 import { cn } from "@/shared/utils/cn";
+
+import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 
 const LAB_RE = /lab|hemograma|glucosa|bioquim|orina|sangre/i;
 const IMAGING_RE = /rx|ecograf|tac|rmn|resonancia|tomograf|ecg/i;

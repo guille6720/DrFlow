@@ -1,16 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ExternalLink, Loader2, Plus } from "lucide-react";
+import Link from "next/link";
+
+import { withClinicalHistoryReturn } from "@/shared/utils/clinical-navigation";
+
 import type {
   PatientEhrAttachment,
   PatientEhrConsultation,
   PatientEhrPrescription,
 } from "@/features/pacientes/utils/patient-ehr-model";
+
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
-import { withClinicalHistoryReturn } from "@/shared/utils/clinical-navigation";
 
 type Props = {
   patientId: string;

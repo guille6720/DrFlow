@@ -1,14 +1,17 @@
-import type { Patient, UserRole } from "@/types/database";
+import type { z } from "zod";
+
 import type { DbClient } from "@/core/repositories/types";
+import type { ServiceResult } from "@/core/services/types";
+import { serviceErr, serviceOk } from "@/core/services/types";
+import { patientSchema } from "@/core/validations/schemas";
+
 import { findClinicInsuranceDefaults } from "@/features/configuracion/repositories/clinics.repository";
 import {
   extractClinicalProfileFields,
   type PatientClinicalProfileFields,
 } from "@/features/pacientes/repositories/patient-clinical-profile.repository";
-import type { ServiceResult } from "@/core/services/types";
-import { serviceErr, serviceOk } from "@/core/services/types";
-import type { z } from "zod";
-import { patientSchema } from "@/core/validations/schemas";
+
+import type { Patient, UserRole } from "@/types/database";
 
 type PatientFormData = z.infer<typeof patientSchema>;
 export type SanitizedPatient = PatientFormData;

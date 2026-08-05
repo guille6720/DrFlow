@@ -1,6 +1,6 @@
 "use client";
 
-import { jsPDF } from "jspdf";
+import { type JsPdfDocument, loadJsPdf } from "@/lib/utils/jspdf-loader";
 
 export function downloadCsv(filename: string, rows: string[][]) {
   const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
@@ -72,16 +72,24 @@ export function downloadPatientsCsv(filename: string, patients: PatientExportRow
   downloadCsv(filename, [header, ...rows]);
 }
 
-function appendWrappedText(doc: jsPDF, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
+function appendWrappedText(
+  doc: JsPdfDocument,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number
+) {
   const lines = doc.splitTextToSize(text || "—", maxWidth);
   doc.text(lines, x, y);
   return y + lines.length * lineHeight;
 }
 
-export function downloadClinicalHistoryPdf(
+export async function downloadClinicalHistoryPdf(
   patient: { first_name: string; last_name: string; document_number: string },
   records: ClinicalRecordExportRow[]
 ) {
+  const jsPDF = await loadJsPdf();
   const doc = new jsPDF();
   doc.setFontSize(16);
   doc.text("DrFlow — Historia clínica", 20, 20);
@@ -112,7 +120,8 @@ export function downloadClinicalHistoryPdf(
   doc.save(`historia-clinica-${patient.document_number}.pdf`);
 }
 
-export function downloadPatientsPdf(patients: PatientExportRow[]) {
+export async function downloadPatientsPdf(patients: PatientExportRow[]) {
+  const jsPDF = await loadJsPdf();
   const doc = new jsPDF();
   doc.setFontSize(16);
   doc.text("DrFlow — Listado de pacientes", 20, 20);
@@ -131,7 +140,8 @@ export function downloadPatientsPdf(patients: PatientExportRow[]) {
   doc.save("pacientes-drflow.pdf");
 }
 
-export function downloadClinicalRecordsListPdf(records: ClinicalRecordExportRow[], title: string) {
+export async function downloadClinicalRecordsListPdf(records: ClinicalRecordExportRow[], title: string) {
+  const jsPDF = await loadJsPdf();
   const doc = new jsPDF();
   doc.setFontSize(16);
   doc.text("DrFlow — Consultas clínicas", 20, 20);

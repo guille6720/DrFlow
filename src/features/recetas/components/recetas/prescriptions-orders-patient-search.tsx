@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
+
 import {
   PatientSearchCombobox,
   type PatientSearchOption,
 } from "@/features/pacientes/components/pacientes/patient-search-combobox";
+
+import { Card } from "@/components/ui/card";
 
 type Props = {
   patients: PatientSearchOption[];

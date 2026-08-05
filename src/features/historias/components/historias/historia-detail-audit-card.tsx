@@ -1,7 +1,9 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Card } from "@/components/ui/card";
+
 import type { HistoriaDetailPageData } from "@/features/historias/server/load-historia-detail-page";
+
+import { Card } from "@/components/ui/card";
 
 type Props = {
   audit: HistoriaDetailPageData["audit"];

@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { logClientError } from "@/core/errors";
+
 /**
  * Registra el SW del portal pacientes (scope /portal/) y quita el SW del consultorio
  * para que Chrome trate la app verde como PWA separada de la azul del médico.
@@ -27,8 +29,8 @@ export function PortalPwaRegister() {
         await navigator.serviceWorker.register("/sw-portal.js", {
           scope: "/portal/",
         });
-      } catch {
-        /* SW no disponible en este contexto */
+      } catch (err) {
+        logClientError("portal-pwa.setup", err);
       }
     }
 

@@ -1,9 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { readFileSync, existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
+import { describe, expect, it } from "vitest";
+
 import {
-  ENTERPRISE_PHASES,
   ENTERPRISE_PHASE_COUNT,
+  ENTERPRISE_PHASES,
   getCompletedPhases,
   isEnterpriseRoadmapComplete,
 } from "@/core/enterprise/phases";

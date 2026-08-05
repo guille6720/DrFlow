@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { logClientError } from "@/core/errors";
+
 /** Registra el service worker y busca actualizaciones (PWA / celular). */
 export function PwaRegister() {
   useEffect(() => {
@@ -11,7 +13,7 @@ export function PwaRegister() {
     let registration: ServiceWorkerRegistration | undefined;
 
     const ping = () => {
-      void registration?.update().catch(() => undefined);
+      void registration?.update().catch((err) => logClientError("pwa.service-worker-update", err));
     };
 
     const onFocus = () => ping();
@@ -28,8 +30,8 @@ export function PwaRegister() {
         document.addEventListener("visibilitychange", onVisible);
         intervalId = window.setInterval(ping, 5 * 60 * 1000);
       })
-      .catch(() => {
-        /* El navegador puede rechazar SW en contextos no seguros. */
+      .catch((err) => {
+        logClientError("pwa.service-worker-register", err);
       });
 
     return () => {

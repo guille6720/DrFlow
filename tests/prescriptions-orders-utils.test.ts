@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+
 import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
+
 import { orderTypeLabel } from "@/features/recetas/utils/order-type-label";
 
 describe("orderTypeLabel", () => {

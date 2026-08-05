@@ -1,4 +1,5 @@
 import type { PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
+
 import type { MedicalOrder } from "@/types/medical-order";
 import type { ElectronicPrescription, PrescriptionMedication } from "@/types/prescription";
 

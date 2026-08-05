@@ -1,14 +1,15 @@
 "use server";
 
-import { createClient } from "@/core/supabase/server";
-import { entityIdArraySchema, entityIdSchema, searchQuerySchema } from "@/core/validations/params";
 import { getActiveClinic, getSession } from "@/core/auth/session";
 import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+import { entityIdArraySchema, entityIdSchema, searchQuerySchema } from "@/core/validations/params";
+
 import type {
+  PamiVademecumResult,
   PathologyBySymptomResult,
   PathologyDrug,
   PathologySearchResult,
-  PamiVademecumResult,
   SymptomSearchResult,
 } from "@/types/pharmacology";
 
@@ -131,20 +132,11 @@ export async function getDrugsByPathology(
   const idParsed = entityIdSchema.safeParse(pathologyId);
   if (!idParsed.success) return { error: "Patología inválida" };
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("pathology_drugs")
-    .select(
-      "id, pathology_id, drug_id, treatment_line, priority, indication_notes, dosage_reference, drugs(id, name, active_ingredient, atc_code, atc_description, presentation, route)"
-    )
-    .eq("pathology_id", idParsed.data)
-    .eq("is_active", true)
-    .order("treatment_line")
-    .order("priority");
-
-  if (error) {
+  try {
+    const { loadPathologyDrugsCached } = await import("@/lib/server/cached-reference-data");
+    const data = await loadPathologyDrugsCached(idParsed.data);
+    return { data };
+  } catch {
     return { error: "No se pudieron cargar los fármacos asociados." };
   }
-
-  return { data: (data ?? []) as unknown as PathologyDrug[] };
 }

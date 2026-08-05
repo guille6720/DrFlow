@@ -1,18 +1,21 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import type { ReactNode } from "react";
+
 import { cn } from "@/shared/utils/cn";
+
 import { ConfiguracionSectionCard } from "@/features/configuracion/components/configuracion/configuracion-section-card";
 import {
   CONFIGURACION_GROUPS,
+  type ConfiguracionGroupId,
+  type ConfiguracionSectionId,
   getGroupMeta,
   getSectionMeta,
   getSectionsForGroup,
-  type ConfiguracionGroupId,
-  type ConfiguracionSectionId,
 } from "@/features/configuracion/components/configuracion/configuracion-sections";
+
+import { Button } from "@/components/ui/button";
 
 export function ConfiguracionNavigatorSectionView({
   activeSection,

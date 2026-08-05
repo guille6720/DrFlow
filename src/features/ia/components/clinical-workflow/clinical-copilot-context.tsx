@@ -2,12 +2,13 @@
 
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useMemo,
   useState,
-  type ReactNode,
 } from "react";
+
 import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
 
 type CopilotUiContextValue = {

@@ -1,19 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Shield } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { loadPatientAuditTrail } from "@/features/pacientes/server/load-patient-audit-trail";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+import { auditModuleLabel } from "@/core/security/audit-log";
 import {
   auditActionLabel,
   auditEntityLabel,
   type PatientAuditEvent,
 } from "@/core/security/audit-types";
-import { auditModuleLabel } from "@/core/security/audit-log";
+
+import { loadPatientAuditTrail } from "@/features/pacientes/server/load-patient-audit-trail";
+
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 type Props = {
   patientId: string;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import { isSpeechRecognitionSupported } from "@/features/voice/lib/voice-input";
 
 type SpeechRecognitionInstance = {

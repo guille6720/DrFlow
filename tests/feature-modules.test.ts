@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
+
 import {
   FEATURE_MODULES,
   FEATURE_NAV_ITEMS,
   getFeatureModule,
   listReadyFeatureModules,
 } from "@/features/_shared";
-import { LABORATORIO_MODULE_PLANNED } from "@/features/laboratorio";
-import { IMAGENES_MODULE_PLANNED } from "@/features/imagenes";
 import { buildClinicalSummary } from "@/features/ia";
+import { IMAGENES_MODULE_PLANNED } from "@/features/imagenes";
+import { LABORATORIO_MODULE_PLANNED } from "@/features/laboratorio";
 
 describe("feature registry", () => {
   it("lists all roadmap modules", () => {

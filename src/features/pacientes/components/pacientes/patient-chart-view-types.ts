@@ -1,7 +1,8 @@
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
-import type { PrescriptionMedication } from "@/types/prescription";
+
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 export type PatientChartProfessional = {
   id: string;

@@ -7,8 +7,9 @@
  *   node scripts/backup-supabase.mjs --out=backups/custom.sql
  */
 import { spawnSync } from "child_process";
-import { mkdirSync, existsSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 import { resolve } from "path";
+
 import { loadEnv, readArg } from "./_env.mjs";
 
 function resolveDatabaseUrl() {

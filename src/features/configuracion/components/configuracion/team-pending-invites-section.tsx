@@ -1,10 +1,12 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Mail, X } from "lucide-react";
+
 import { ROLE_LABELS } from "@/core/permissions/roles";
+
+import { Button } from "@/components/ui/button";
 import type { TeamInvitation } from "@/lib/hooks/use-team-invite-panel";
 import type { UserRole } from "@/types/database";
-import { Mail, X } from "lucide-react";
 
 type Props = {
   pending: TeamInvitation[];

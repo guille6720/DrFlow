@@ -1,19 +1,19 @@
 export {
-  matchCopilotIntent,
   buildCopilotResponse,
   buildCopilotSuggestedPrompts,
-  type CopilotIntentId,
-  type CopilotAction,
-  type CopilotResponse,
   type ClinicalCopilotContext,
+  type CopilotAction,
+  type CopilotIntentId,
+  type CopilotResponse,
+  matchCopilotIntent,
 } from "@/lib/utils/clinical-copilot-responses";
-import { matchCopilotIntent } from "@/lib/utils/clinical-copilot-responses";
-import type { ClinicalCopilotContext, CopilotResponse } from "@/lib/utils/clinical-copilot-responses";
 import {
-  runClinicalAiOrchestrator,
   type ClinicalAiAgentId,
   type ClinicalAiEngine,
+  runClinicalAiOrchestrator,
 } from "@/lib/utils/clinical-ai-orchestrator";
+import type { ClinicalCopilotContext, CopilotResponse } from "@/lib/utils/clinical-copilot-responses";
+import { matchCopilotIntent } from "@/lib/utils/clinical-copilot-responses";
 
 export type { ClinicalAiAgentId, ClinicalAiEngine };
 

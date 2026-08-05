@@ -1,16 +1,17 @@
-"use client";
-
-import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { FileText, FlaskConical, Pill } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ClinicalOpsEmpty } from "@/features/dashboard/components/dashboard/clinical-ops-empty";
-import { OpsSection } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-shared";
-import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
-import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
+import Link from "next/link";
+
 import { cn } from "@/shared/utils/cn";
+
+import { OpsSection } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-shared";
+import { ClinicalOpsEmpty } from "@/features/dashboard/components/dashboard/clinical-ops-empty";
+import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
+import { Button } from "@/components/ui/button";
 
 export function PrescriptionsAndOrdersSections({
   draftPrescriptions,

@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { readFileSync, readdirSync } from "fs";
+import { readdirSync, readFileSync } from "fs";
 import { resolve } from "path";
+import { describe, expect, it } from "vitest";
+
 import {
   SECURITY_DEFINER_RPC_CHECKS,
   TABLES_REQUIRING_RLS,

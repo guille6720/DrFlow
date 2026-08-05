@@ -1,16 +1,18 @@
 "use client";
 
 import { Pill } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
+
 import { MedicalOrderForm } from "@/features/recetas/components/recetas/medical-order-form";
+import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
 import type {
   PrescriptionsOrdersPatient,
   PrescriptionsOrdersProfessional,
   PrescriptionsOrdersTab,
 } from "@/features/recetas/components/recetas/prescriptions-orders-types";
-import type { PrescriptionMedication } from "@/types/prescription";
+
+import { Card } from "@/components/ui/card";
 import type { ConsultationDraftContext } from "@/lib/utils/consultation-draft";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 type Props = {
   activeTab: PrescriptionsOrdersTab;

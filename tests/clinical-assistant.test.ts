@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
+
 import {
   buildClinicalSummary,
   buildDifferentialDiagnosisSuggestions,
-  buildLightweightPatientWarnings,
-  buildMedicationSafetyWarnings,
-  buildPhysicianAssistItems,
-  buildSoapDraftSuggestion,
-  buildPrescriptionDraftSuggestion,
-  buildOrderDraftSuggestion,
   buildDischargeSummarySuggestion,
-  buildMedicalCertificateDraft,
   buildInteractionAlertItems,
-  buildClinicalSummaryAssistItem,
+  buildLightweightPatientWarnings,
+  buildMedicalCertificateDraft,
+  buildMedicationSafetyWarnings,
+  buildOrderDraftSuggestion,
+  buildPhysicianAssistItems,
+  buildPrescriptionDraftSuggestion,
+  buildSoapDraftSuggestion,
   extractPathologySearchQuery,
 } from "@/lib/utils/clinical-assistant";
 

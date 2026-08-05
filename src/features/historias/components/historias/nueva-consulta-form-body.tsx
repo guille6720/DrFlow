@@ -1,18 +1,19 @@
 "use client";
 
+import { Pill, ScrollText } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
+
+import type { NuevaConsultaFormState } from "@/features/historias/hooks/use-nueva-consulta-form";
+import { ConsultationPhysicianAssist } from "@/features/ia/components/clinical-workflow/consultation-physician-assist";
+
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { ConsultationPhysicianAssist } from "@/features/ia/components/clinical-workflow/consultation-physician-assist";
-import type { NuevaConsultaFormState } from "@/features/historias/hooks/use-nueva-consulta-form";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { Patient } from "@/types/database";
-
-import { Pill, ScrollText } from "lucide-react";
 
 type FormProfessional = {
   id: string;

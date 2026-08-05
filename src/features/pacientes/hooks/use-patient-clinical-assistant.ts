@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useEffect, useMemo, useState } from "react";
+
 import type { PatientChartViewProps } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
+
 import { getDrugsByPathology } from "@/lib/actions/pharmacology";
 import { useDeferredPathologySearch } from "@/lib/hooks/use-deferred-pathology-search";
 import {

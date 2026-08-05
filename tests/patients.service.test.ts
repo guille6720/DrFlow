@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { isAdminOnlyPatientRole } from "@/features/pacientes/services/patients.service";
 
 describe("patients.service", () => {

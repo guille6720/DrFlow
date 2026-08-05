@@ -1,8 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { runClinicalAiOrchestrator } from "@/lib/utils/clinical-ai-orchestrator";
-import { enhanceClinicalAiBodyIfConfigured } from "@/lib/utils/clinical-ai-llm-provider.server";
+
 import type { ClinicJobRow, RunAiTaskJobPayload } from "@/core/jobs/types";
+
 import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
+
+import { enhanceClinicalAiBodyIfConfigured } from "@/lib/utils/clinical-ai-llm-provider.server";
+import { runClinicalAiOrchestrator } from "@/lib/utils/clinical-ai-orchestrator";
 
 export async function handleRunAiTaskJob(
   supabase: SupabaseClient,

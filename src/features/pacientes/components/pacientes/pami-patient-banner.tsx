@@ -1,7 +1,9 @@
-import { Badge } from "@/components/ui/badge";
+import { AlertTriangle, Heart, Pill } from "lucide-react";
+
 import { calculateAge, formatAgeLabel, isPamiPatient } from "@/features/pacientes/utils/patient-age";
+
+import { Badge } from "@/components/ui/badge";
 import { insuranceNumberLabel } from "@/lib/constants/coverages";
-import { AlertTriangle, Pill, Heart } from "lucide-react";
 import type { Patient } from "@/types/database";
 
 interface PamiPatientBannerProps {

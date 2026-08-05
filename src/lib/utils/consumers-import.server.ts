@@ -1,5 +1,7 @@
 import "server-only";
 
+import { logServerError } from "@/core/errors/log-error.server";
+
 import {
   isConsumersImportHeaderCell,
   parseConsumerImportLines,
@@ -95,7 +97,7 @@ export async function parseConsumersUpload(buffer: Buffer, fileName: string, max
     const { records, errors } = parseConsumerImportLines(extracted.lines, maxRows);
     return { records, errors, format: extracted.format };
   } catch (err) {
-    console.error("[consumers-import] parse failed:", err);
+    logServerError("consumers-import.parse", err, { metadata: { fileName } });
     return {
       records: [] as ReturnType<typeof parseConsumerImportLines>["records"],
       errors: [

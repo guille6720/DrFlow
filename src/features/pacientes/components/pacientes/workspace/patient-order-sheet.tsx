@@ -1,7 +1,7 @@
 "use client";
 
-import { MedicalOrderForm } from "@/features/recetas/components/recetas/medical-order-form";
 import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
+import { MedicalOrderForm } from "@/features/recetas/components/recetas/medical-order-form";
 
 type Professional = {
   id: string;

@@ -1,9 +1,10 @@
 "use server";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { loadObservabilitySnapshot } from "@/lib/server/load-observability";
-import { createClient } from "@/core/supabase/server";
 import { getHealthStatus } from "@/core/observability/health";
+import { createClient } from "@/core/supabase/server";
+
+import { loadObservabilitySnapshot } from "@/lib/server/load-observability";
 
 export async function getClinicObservabilityDashboard() {
   const access = await requireClinicPermission("manageSettings");

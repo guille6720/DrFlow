@@ -2,10 +2,12 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+
+import { recordAudit } from "@/core/security/audit-service";
+import { createClient } from "@/core/supabase/server";
+
 import { purgeSoleOwnerClinicsForUser } from "@/lib/actions/clinic-purge";
 import { DELETE_ACCOUNT_CONFIRM_PHRASE } from "@/lib/constants/account";
-import { createClient } from "@/core/supabase/server";
-import { recordAudit } from "@/core/security/audit-service";
 
 const CLINIC_COOKIE = "drflow_clinic_id";
 

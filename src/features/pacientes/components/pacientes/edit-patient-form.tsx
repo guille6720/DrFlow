@@ -1,22 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import { Header } from "@/core/components/layout/header";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { PatientFormFields } from "@/features/pacientes/components/pacientes/patient-form-fields";
+
+import { updatePatient } from "@/features/pacientes/actions/patients";
+import { DeletePatientButton } from "@/features/pacientes/components/pacientes/delete-patient-button";
 import { PatientAdminFormFields } from "@/features/pacientes/components/pacientes/patient-admin-form-fields";
 import { PatientClinicalProfileFields } from "@/features/pacientes/components/pacientes/patient-clinical-profile-fields";
+import { PatientFormFields } from "@/features/pacientes/components/pacientes/patient-form-fields";
 import {
   chartExtrasFromFormData,
   mergeNotesWithChartExtras,
 } from "@/features/pacientes/utils/patient-chart-notes";
-import { DeletePatientButton } from "@/features/pacientes/components/pacientes/delete-patient-button";
-import { updatePatient } from "@/features/pacientes/actions/patients";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import type { Clinic, Patient, UserRole } from "@/types/database";
-import { ArrowLeft } from "lucide-react";
 
 interface Props {
   patient: Patient;

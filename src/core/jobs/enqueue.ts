@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { getClinicJobDefinition } from "@/core/jobs/registry";
 import type { EnqueueClinicJobInput } from "@/core/jobs/types";
 

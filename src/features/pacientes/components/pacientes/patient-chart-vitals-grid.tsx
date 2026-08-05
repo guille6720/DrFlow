@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { ChartSection, VitalsSparkline } from "@/features/pacientes/components/pacientes/patient-chart-primitives";
+
 import { patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
+import { ChartSection, VitalsSparkline } from "@/features/pacientes/components/pacientes/patient-chart-primitives";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 export function PatientChartVitalsGrid({
   chart,

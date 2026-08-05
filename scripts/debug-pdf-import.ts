@@ -1,14 +1,16 @@
-import fs from "fs";
 import { access } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { extractPatientFromPdfText } from "../src/lib/utils/pdf-patient-extract";
+
+import fs from "fs";
+
 import {
   isLegacyClinicalPdfExport,
+  parseLegacyClinicalChronicDiagnoses,
   parseLegacyClinicalDemographics,
   parseLegacyClinicalEvolutionsWithFallback,
-  parseLegacyClinicalChronicDiagnoses,
 } from "../src/lib/utils/clinical-export-pdf-parse";
+import { extractPatientFromPdfText } from "../src/lib/utils/pdf-patient-extract";
 
 async function extractText(buffer: Buffer): Promise<string> {
   try {

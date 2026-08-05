@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ComponentProps } from "react";
+
 import { sanitizeExternalUrl, sanitizeInternalPath } from "@/core/security/xss";
 
 type SafeExternalLinkProps = Omit<ComponentProps<"a">, "href"> & {

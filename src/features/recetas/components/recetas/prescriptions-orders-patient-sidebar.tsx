@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
@@ -11,19 +10,23 @@ import {
   ScrollText,
   Stethoscope,
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ExportPrescriptionPdfButton } from "@/features/recetas/components/recetas/export-prescription-pdf";
-import { SharePrescriptionButtons } from "@/features/recetas/components/recetas/share-prescription-buttons";
-import { orderTypeLabel } from "@/features/recetas/utils/order-type-label";
+import Link from "next/link";
+
 import { buildWhatsAppShareUrl, buildWhatsAppUrl } from "@/shared/utils/whatsapp";
+
+import { ExportPrescriptionPdfButton } from "@/features/recetas/components/recetas/export-prescription-pdf-button";
 import type {
   PrescriptionsOrdersPatient,
   PrescriptionsOrdersPatientPrescription,
 } from "@/features/recetas/components/recetas/prescriptions-orders-types";
-import { PRESCRIPTION_STATUS_LABELS } from "@/types/prescription";
+import { SharePrescriptionButtons } from "@/features/recetas/components/recetas/share-prescription-buttons";
+import { orderTypeLabel } from "@/features/recetas/utils/order-type-label";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import type { MedicalOrder } from "@/types/medical-order";
+import { PRESCRIPTION_STATUS_LABELS } from "@/types/prescription";
 
 type Props = {
   patient: PrescriptionsOrdersPatient;

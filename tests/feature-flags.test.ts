@@ -1,16 +1,18 @@
 import { describe, expect, it } from "vitest";
+
 import {
+  FEATURE_FLAG_REGISTRY,
   getFeatureFlagDefinition,
   listFeatureFlags,
   NAV_FLAG_BY_HREF,
-  FEATURE_FLAG_REGISTRY,
 } from "@/features/flags/lib/registry";
 import {
+  buildClinicFeaturesContext,
   filterNavByFeatureFlags,
   isFeatureFlagEnabled,
   resolveClinicFeatureFlags,
-  buildClinicFeaturesContext,
 } from "@/features/flags/lib/resolve";
+
 import { resolveClinicPlugins } from "@/plugins/resolve";
 
 describe("feature flag registry", () => {

@@ -1,13 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import Link from "next/link";
-import type { Clinic } from "@/types/database";
-import { TeamInvitePanel } from "@/features/configuracion/components/configuracion/team-invite-panel";
-import { SettingsClinicSection } from "@/features/configuracion/components/configuracion/settings-clinic-section";
-import { SettingsAppsSection } from "@/features/configuracion/components/configuracion/settings-apps-section";
+
 import { SettingsAgendaSection } from "@/features/configuracion/components/configuracion/settings-agenda-section";
+import { SettingsAppsSection } from "@/features/configuracion/components/configuracion/settings-apps-section";
+import { SettingsClinicSection } from "@/features/configuracion/components/configuracion/settings-clinic-section";
+import { TeamInvitePanel } from "@/features/configuracion/components/configuracion/team-invite-panel";
+
+import type { Clinic } from "@/types/database";
 
 export type SettingsSectionId = "clinica" | "apps" | "agenda" | "equipo";
 

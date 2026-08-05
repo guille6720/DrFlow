@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { Copy, ExternalLink } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { AppInstallCard } from "@/features/portal/components/portal/app-install-card";
+import Link from "next/link";
+
 import { buildPatientAppInstallUrl } from "@/features/pacientes/utils/patient-portal-ready";
+import { AppInstallCard } from "@/features/portal/components/portal/app-install-card";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import type { Clinic } from "@/types/database";
 
 type Props = {

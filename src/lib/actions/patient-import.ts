@@ -1,43 +1,47 @@
 "use server";
 
-import { createClient } from "@/core/supabase/server";
-import { validateSpreadsheetImportUpload } from "@/core/security/file-upload";
+import { resolveImportAccess } from "@/core/actions/action-response";
+import { withActionErrorBoundary } from "@/core/errors/action-boundary.server";
 import { recordAudit } from "@/core/security/audit-service";
+import { validateSpreadsheetImportUpload } from "@/core/security/file-upload";
 import { requirePatientImportAccess } from "@/core/services/import-access.service";
-import { CONSUMERS_IMPORT_MAX_BYTES } from "@/lib/constants/clinical-documents";
+import { createClient } from "@/core/supabase/server";
+
 import {
-  processConsumersImportBatchFromBuffer,
-  type ImportConsumersResult,
   IMPORT_BATCH_SIZE,
+  type ImportConsumersResult,
+  processConsumersImportBatchFromBuffer,
 } from "@/features/pacientes/server/consumers-import-batch";
 
-export type { ImportConsumersResult };
+import { CONSUMERS_IMPORT_MAX_BYTES } from "@/lib/constants/clinical-documents";
 
 export async function importConsumersFile(
   formData: FormData
 ): Promise<ImportConsumersResult> {
-  try {
-    return await importConsumersFileInner(formData);
-  } catch (err) {
-    console.error("[patient-import] consumers failed:", err);
-    const f = formData.get("file");
-    const fileName = f instanceof File ? f.name : "archivo";
-    return {
+  return withActionErrorBoundary(
+    "patient-import.consumers",
+    (fileName) => ({
       success: false,
       fileName,
       error:
         "La importación se interrumpió (tiempo de servidor o error interno). Probá de nuevo; si persiste, contactá soporte.",
-    };
-  }
+    }),
+    () => importConsumersFileInner(formData),
+    {
+      getFileName: () => {
+        const f = formData.get("file");
+        return f instanceof File ? f.name : "archivo";
+      },
+    }
+  );
 }
 
 async function importConsumersFileInner(
   formData: FormData
 ): Promise<ImportConsumersResult> {
   const access = await requirePatientImportAccess();
-  if (access.error || !access.clinicId || !access.userId) {
-    return { success: false, fileName: "", error: access.error ?? "Sin permisos" };
-  }
+  const auth = resolveImportAccess(access);
+  if (!auth.ok) return { success: false, fileName: "", error: auth.error };
 
   const file = formData.get("file");
   const originalName = file instanceof File ? file.name : "consumers.xlsx";
@@ -64,8 +68,8 @@ async function importConsumersFileInner(
 
   const supabase = await createClient();
   const result = await processConsumersImportBatchFromBuffer(supabase, {
-    clinicId: access.clinicId,
-    userId: access.userId,
+    clinicId: auth.clinicId,
+    userId: auth.userId,
     buffer,
     originalName,
     offset,
@@ -74,10 +78,10 @@ async function importConsumersFileInner(
 
   if (result.success) {
     await recordAudit({
-      clinicId: access.clinicId,
+      clinicId: auth.clinicId,
       module: "imports",
       entityType: "patient",
-      entityId: access.clinicId,
+      entityId: auth.clinicId,
       action: "create",
       what: "Importó lote de pacientes",
       metadata: {

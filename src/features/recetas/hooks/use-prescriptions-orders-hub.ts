@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { PrescriptionMedication } from "@/types/prescription";
+import { useEffect, useMemo, useState } from "react";
+
 import type { PrescriptionsOrdersTab } from "@/features/recetas/components/recetas/prescriptions-orders-types";
+
 import {
   consultationDraftKey,
   parseConsultationDraftContext,
@@ -13,6 +14,7 @@ import {
   extractEvolutionDiagnosis,
   parseEvolutionMedications,
 } from "@/lib/utils/parse-evolution-medications";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 type Params = {
   prefillDiagnosis?: string;

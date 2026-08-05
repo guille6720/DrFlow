@@ -1,14 +1,16 @@
 "use server";
 
-import { cache } from "react";
 import { cookies } from "next/headers";
-import { createClient } from "@/core/supabase/server";
-import type { Clinic, ClinicMember, Profile, UserRole } from "@/types/database";
+import { cache } from "react";
+
 import {
   recordAudit,
   type RecordAuditParams,
 } from "@/core/security/audit-service";
 import { CLINIC_COLUMNS, PROFILE_COLUMNS } from "@/core/supabase/select-columns";
+import { createClient } from "@/core/supabase/server";
+
+import type { Clinic, ClinicMember, Profile, UserRole } from "@/types/database";
 
 const CLINIC_COOKIE = "drflow_clinic_id";
 

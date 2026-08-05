@@ -1,9 +1,19 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
-import type { UserRole } from "@/types/database";
-import { CommandPaletteDialog } from "@/core/components/command-palette/command-palette-dialog";
+import dynamic from "next/dynamic";
+import { createContext, type ReactNode, useContext, useMemo } from "react";
+
 import { useCommandPaletteState } from "@/core/hooks/use-command-palette-state";
+
+import type { UserRole } from "@/types/database";
+
+const CommandPaletteDialog = dynamic(
+  () =>
+    import("@/core/components/command-palette/command-palette-dialog").then((mod) => ({
+      default: mod.CommandPaletteDialog,
+    })),
+  { ssr: false }
+);
 
 type CommandPaletteContextValue = {
   open: boolean;
@@ -40,10 +50,13 @@ export function CommandPaletteProvider({
 }: ProviderProps) {
   const state = useCommandPaletteState({ role, isSuperadmin, enabled });
 
+  const contextValue = useMemo(
+    () => ({ open: state.open, setOpen: state.setOpen, toggle: state.toggle }),
+    [state.open, state.setOpen, state.toggle]
+  );
+
   return (
-    <CommandPaletteContext.Provider
-      value={{ open: state.open, setOpen: state.setOpen, toggle: state.toggle }}
-    >
+    <CommandPaletteContext.Provider value={contextValue}>
       {children}
       {enabled ? (
         <CommandPaletteDialog

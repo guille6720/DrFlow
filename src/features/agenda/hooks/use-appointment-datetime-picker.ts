@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import {
   eachDayOfInterval,
   endOfMonth,
@@ -11,6 +10,8 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
+import { useMemo, useState } from "react";
+
 import {
   APPOINTMENT_SLOT_MINUTES,
   parseLocalDatetimeValue,

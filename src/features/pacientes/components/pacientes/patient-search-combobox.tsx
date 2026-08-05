@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
 import { Search } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+
 import { cn } from "@/shared/utils/cn";
 
 export type PatientSearchOption = {

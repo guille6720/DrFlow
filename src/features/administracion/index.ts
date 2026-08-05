@@ -1,9 +1,9 @@
 export { WaitingRoomView } from "@/features/administracion/components/secretaria/waiting-room-view";
 export {
-  updateWaitingRoomStatus,
-  confirmAppointmentFromWaitingRoom,
-} from "@/lib/actions/waiting-room";
-export {
-  uploadPatientAdminDocument,
   deletePatientAdminDocument,
+  uploadPatientAdminDocument,
 } from "@/lib/actions/admin-documents";
+export {
+  confirmAppointmentFromWaitingRoom,
+  updateWaitingRoomStatus,
+} from "@/lib/actions/waiting-room";

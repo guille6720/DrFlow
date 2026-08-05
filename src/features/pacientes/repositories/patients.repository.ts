@@ -1,6 +1,7 @@
-import type { Patient } from "@/types/database";
 import type { DbClient, RepoResult } from "@/core/repositories/types";
 import { mapDbError, repoErr, repoOk } from "@/core/repositories/types";
+
+import type { Patient } from "@/types/database";
 
 export type PatientInsertRow = {
   clinic_id: string;

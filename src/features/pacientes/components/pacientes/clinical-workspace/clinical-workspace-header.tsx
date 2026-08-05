@@ -1,21 +1,25 @@
-"use client";
-
-import Link from "next/link";
 import {
   CalendarPlus,
   ClipboardList,
   FileText,
   Pill,
-  Printer,
   Stethoscope,
   Upload,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+import { PrintPageButton } from "@/core/components/ui/print-page-button";
+
 import { patientInitials } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-shared";
 import type { PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
+import type {
+  PatientChartAppointment,
+  PatientChartProfessional,
+} from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
-import type { PatientChartAppointment, PatientChartProfessional } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
+import { Button } from "@/components/ui/button";
 
 type Props = {
   patient: PatientChartPatient;
@@ -54,10 +58,7 @@ export function ClinicalWorkspaceHeader({
       aria-label="Encabezado del paciente"
     >
       <div className="drflow-clinical-workspace-header-main">
-        <div
-          className="drflow-clinical-workspace-avatar"
-          aria-hidden
-        >
+        <div className="drflow-clinical-workspace-avatar" aria-hidden>
           {patientInitials(patient.first_name, patient.last_name)}
         </div>
         <div className="min-w-0 flex-1">
@@ -100,7 +101,11 @@ export function ClinicalWorkspaceHeader({
         </div>
       </div>
 
-      <div className="drflow-clinical-workspace-header-actions" role="toolbar" aria-label="Acciones clínicas">
+      <div
+        className="drflow-clinical-workspace-header-actions"
+        role="toolbar"
+        aria-label="Acciones clínicas"
+      >
         {canEditClinical ? (
           <Link href={buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })}>
             <Button size="sm" type="button">
@@ -140,16 +145,7 @@ export function ClinicalWorkspaceHeader({
             </Button>
           </Link>
         ) : null}
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="inline-flex"
-        >
-          <Button size="sm" variant="ghost" type="button">
-            <Printer className="h-4 w-4" aria-hidden />
-            Imprimir
-          </Button>
-        </button>
+        <PrintPageButton />
         {canIssue ? (
           <Link href={buildPatientWorkspaceUrl(patientId, { action: "certificado" })}>
             <Button size="sm" variant="ghost" type="button">

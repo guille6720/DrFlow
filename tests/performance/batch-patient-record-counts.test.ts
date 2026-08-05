@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { batchPatientRecordCounts } from "@/lib/utils/batch-patient-record-counts";
 
 describe("batchPatientRecordCounts", () => {

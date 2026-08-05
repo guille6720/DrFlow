@@ -1,22 +1,24 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
-import { buildEhrPayloadFromRecords } from "@/features/pacientes/utils/patient-ehr-model";
-import { filterRecordsForEhrSupplement } from "@/lib/utils/hce-export-parse";
 import {
   buildEhrPayloadFromHceRows,
   loadPatientHceSummaryRows,
   mergeEhrPayload,
 } from "@/features/pacientes/utils/patient-ehr-from-hce";
-import type { HceExportRow } from "@/lib/utils/hce-export-parse";
-import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
 import type {
   PatientEhrAttachment,
   PatientEhrConsultation,
+  PatientEhrDiagnosisRow,
   PatientEhrPrescription,
   PatientEhrTreatmentRow,
-  PatientEhrDiagnosisRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
+import { buildEhrPayloadFromRecords } from "@/features/pacientes/utils/patient-ehr-model";
+
 import type { PatientEhrAppointment } from "@/lib/utils/build-clinical-timeline";
+import type { HceExportRow } from "@/lib/utils/hce-export-parse";
+import { filterRecordsForEhrSupplement } from "@/lib/utils/hce-export-parse";
 import type { MedicalOrder } from "@/types/medical-order";
 
 export const PATIENT_EHR_RECORD_LIMIT = 2000;

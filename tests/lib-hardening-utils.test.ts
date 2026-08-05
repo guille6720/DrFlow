@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { buildStaticPaletteSections } from "@/lib/utils/command-palette-layout";
 import { resolveConsultationPathologyQuery } from "@/lib/utils/consultation-pathology-query";
 

@@ -1,11 +1,13 @@
 "use client";
 
-import { cn } from "@/shared/utils/cn";
-import { appendSpeechToTextarea } from "@/features/voice/lib/voice-input";
-import { useSpeechToText } from "@/features/voice/hooks/use-speech-to-text";
-import { useVoiceInputOptional } from "@/features/voice/components/voice/voice-input-provider";
-import { forwardRef, useRef, type TextareaHTMLAttributes } from "react";
 import { Mic, MicOff } from "lucide-react";
+import { forwardRef, type TextareaHTMLAttributes, useRef } from "react";
+
+import { cn } from "@/shared/utils/cn";
+
+import { useVoiceInputOptional } from "@/features/voice/components/voice/voice-input-provider";
+import { useSpeechToText } from "@/features/voice/hooks/use-speech-to-text";
+import { appendSpeechToTextarea } from "@/features/voice/lib/voice-input";
 
 interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;

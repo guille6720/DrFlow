@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
+
 import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
 
 export type HistoriaDetailPatient = {
@@ -78,7 +80,7 @@ export async function loadHistoriaDetailPageData(
   if (!record) return null;
 
   const patient = record.patients as unknown as HistoriaDetailPatient;
-  const { portalSlug, doctorInfo } = await getPortalContextForClinic(clinicId, supabase);
+  const { portalSlug, doctorInfo } = await getPortalContextForClinic(clinicId);
 
   const [
     { data: audit },

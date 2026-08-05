@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { getHealthStatus, getPublicHealthStatus } from "@/core/observability/health";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { getReleasePayload } from "@/core/app-release";
+import { getHealthStatus, getPublicHealthStatus } from "@/core/observability/health";
 import { createTraceId } from "@/core/observability/trace-id";
 
 describe("getHealthStatus", () => {

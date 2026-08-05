@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+
 import { SECURITY_RESPONSE_HEADERS } from "@/core/security/response-headers";
 
 describe("Security response headers", () => {

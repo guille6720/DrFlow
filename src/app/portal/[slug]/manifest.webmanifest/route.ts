@@ -1,5 +1,6 @@
 import { createClient } from "@/core/supabase/server";
 import { bookingSlugSchema } from "@/core/validations/params";
+
 import {
   getPatientPwaIcons,
   PATIENT_THEME_COLOR,

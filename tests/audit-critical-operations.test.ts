@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { readFileSync, readdirSync, statSync } from "fs";
-import { resolve, join } from "path";
+import { readFileSync } from "fs";
+import {resolve } from "path";
+import {describe, expect, it } from "vitest";
+
 import {
   auditFieldChanges,
   buildAuditLogRow,

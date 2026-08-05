@@ -1,15 +1,17 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect } from "react";
+
+import { clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
 import { finalizeConsultation } from "@/lib/actions/appointments";
-import { isEditableTarget } from "@/lib/utils/command-palette-search";
 import {
   parsePatientIdFromPath,
   patientWorkflowHref,
 } from "@/lib/utils/clinical-workflow-context";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
-import { clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
+import { isEditableTarget } from "@/lib/utils/command-palette-search";
 
 /** Global keyboard shortcuts for patient-centered clinical workflows. */
 export function ClinicalWorkflowShortcuts() {

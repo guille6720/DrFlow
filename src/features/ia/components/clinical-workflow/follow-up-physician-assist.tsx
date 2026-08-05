@@ -1,8 +1,8 @@
 "use client";
 
 import { InlinePhysicianAssist } from "@/features/ia/components/clinical-workflow/inline-physician-assist";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
 import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
 type Props = {
   context: PhysicianAssistContext;

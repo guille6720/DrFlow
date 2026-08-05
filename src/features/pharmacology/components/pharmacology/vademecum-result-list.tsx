@@ -1,9 +1,10 @@
 "use client";
 
+import { AlertTriangle, Check, Loader2, Pill, Plus } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { PamiVademecumResult } from "@/types/pharmacology";
-import { AlertTriangle, Check, Loader2, Pill, Plus } from "lucide-react";
 
 interface VademecumResultListProps {
   items: PamiVademecumResult[];

@@ -1,6 +1,5 @@
-"use client";
-
 import Link from "next/link";
+
 import type { LastConsultSummary } from "@/features/pacientes/utils/clinical-workspace-alerts";
 
 export function ClinicalWorkspaceLastConsultSection({

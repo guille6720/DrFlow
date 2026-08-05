@@ -1,18 +1,20 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import {
-  ProfessionalIntakeView,
-  type AvailabilityRuleRow,
-  type ProfessionalIntakeDetail,
-} from "@/features/profesionales";
+
 import {
   getActiveClinic,
   getActiveClinicId,
   getProfile,
   getUserClinics,
 } from "@/core/auth/session";
-import { createClient } from "@/core/supabase/server";
 import { hasPermission } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
+
+import {
+  type AvailabilityRuleRow,
+  type ProfessionalIntakeDetail,
+  ProfessionalIntakeView,
+} from "@/features/profesionales";
 
 export default async function IngresoProfesionalesPage({
   searchParams,

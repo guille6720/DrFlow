@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Accessibility, Keyboard } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
+
 import {
   APP_KEYBOARD_SHORTCUTS,
   REDUCED_MOTION_STORAGE_KEY,
@@ -11,6 +10,9 @@ import {
   type WcagFeatureStatus,
 } from "@/core/accessibility/constants";
 import { readReducedMotionPreference } from "@/core/accessibility/read-reduced-motion";
+
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 const STATUS_LABEL: Record<WcagFeatureStatus, string> = {
   done: "Implementado",

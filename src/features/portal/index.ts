@@ -1,2 +1,1 @@
-export { submitPublicBooking } from "@/lib/actions/public-booking";
-export { recordPatientAppShare } from "@/features/pacientes/actions/patient-app-share";
+export { PatientPortalView } from "@/features/portal/components/portal/patient-portal-view";

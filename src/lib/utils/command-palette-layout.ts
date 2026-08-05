@@ -1,4 +1,4 @@
-import type { CommandPaletteItemDef, CommandPaletteGroup } from "@/lib/constants/command-palette-items";
+import type { CommandPaletteGroup, CommandPaletteItemDef } from "@/lib/constants/command-palette-items";
 
 export type StaticPaletteRow = {
   item: CommandPaletteItemDef;

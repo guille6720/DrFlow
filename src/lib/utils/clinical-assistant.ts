@@ -1,15 +1,16 @@
-import type { ChartAlert, MedicationCard } from "@/features/pacientes/utils/patient-chart-model-types";
-import { extractEvolutionDiagnosis } from "@/lib/utils/parse-evolution-medications";
-import { buildConsultationDocumentationItems } from "@/lib/utils/consultation-documentation";
-import {
-  buildMedicationOrderAssistItems,
-  buildOrderDraftSuggestion,
-} from "@/lib/utils/medication-order-assist";
 import type {
   PhysicianAssistContext,
   PhysicianAssistItem,
   PhysicianAssistKind,
 } from "@/features/ia/types/physician-assist-types";
+import type { ChartAlert, MedicationCard } from "@/features/pacientes/utils/patient-chart-model-types";
+
+import { buildConsultationDocumentationItems } from "@/lib/utils/consultation-documentation";
+import {
+  buildMedicationOrderAssistItems,
+  buildOrderDraftSuggestion,
+} from "@/lib/utils/medication-order-assist";
+import { extractEvolutionDiagnosis } from "@/lib/utils/parse-evolution-medications";
 
 function containsAny(hay: string, terms: string[]): boolean {
   const h = hay.toLowerCase();

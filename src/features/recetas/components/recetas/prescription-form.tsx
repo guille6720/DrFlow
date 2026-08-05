@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
+
+import { PrescriptionPhysicianAssist } from "@/features/ia/components/clinical-workflow/prescription-physician-assist";
+import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
+import { PrescriptionMedicationsSection } from "@/features/recetas/components/recetas/prescription-medications-section";
+import { PrescriptionPharmacologyPicker } from "@/features/recetas/components/recetas/prescription-pharmacology-picker";
+import { usePrescriptionForm } from "@/features/recetas/hooks/use-prescription-form";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { PrescriptionPharmacologyPicker } from "@/features/recetas/components/recetas/prescription-pharmacology-picker";
-import { PrescriptionMedicationsSection } from "@/features/recetas/components/recetas/prescription-medications-section";
-import { PrescriptionPhysicianAssist } from "@/features/ia/components/clinical-workflow/prescription-physician-assist";
-import { usePrescriptionForm } from "@/features/recetas/hooks/use-prescription-form";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
-import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
 import type { PrescriptionMedication } from "@/types/prescription";
 import { ARGENTINA_PRESCRIPTION_DISCLAIMER } from "@/types/prescription";
 

@@ -1,8 +1,10 @@
 "use client";
 
 import { ClipboardList, ScrollText } from "lucide-react";
-import type { PrescriptionsOrdersTab } from "@/features/recetas/components/recetas/prescriptions-orders-types";
+
 import { cn } from "@/shared/utils/cn";
+
+import type { PrescriptionsOrdersTab } from "@/features/recetas/components/recetas/prescriptions-orders-types";
 
 type Props = {
   activeTab: PrescriptionsOrdersTab;

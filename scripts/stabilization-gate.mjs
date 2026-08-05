@@ -5,9 +5,10 @@
  * - Hooks under src/components/** must live in src/lib/hooks/
  */
 import { readFileSync } from "fs";
-import { join, dirname, sep } from "path";
+import { dirname, join, sep } from "path";
 import { fileURLToPath } from "url";
-import { walkComponentFiles, rel, lineCount, failGate, passGate, SRC_ROOT, walkDir, readSource } from "./lib/quality-scan.mjs";
+
+import { failGate, lineCount, passGate, readSource, rel, SRC_ROOT, walkComponentFiles, walkDir } from "./lib/quality-scan.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASELINE_PATH = join(__dirname, "stabilization-baseline.json");

@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { CheckCircle2, ClipboardList, FileText, FlaskConical, LogOut, MessageSquare, Pill, Sparkles, Stethoscope } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { patientWorkflowHref } from "@/lib/utils/clinical-workflow-context";
+import Link from "next/link";
+
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
+import { Button } from "@/components/ui/button";
 import { CLINICAL_WORKFLOW_SHORTCUTS } from "@/lib/constants/clinical-workflow-shortcuts";
+import { patientWorkflowHref } from "@/lib/utils/clinical-workflow-context";
 
 type Props = {
   patientId: string;

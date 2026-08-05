@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { reminderService } from "@/lib/services/reminders";
+
 import type { ClinicJobRow, SendReminderJobPayload } from "@/core/jobs/types";
+
+import { reminderService } from "@/lib/services/reminders";
 
 export async function handleSendReminderJob(
   supabase: SupabaseClient,

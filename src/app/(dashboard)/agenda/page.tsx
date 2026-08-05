@@ -1,13 +1,19 @@
-import { AgendaView } from "@/features/agenda";
+import { addDays, subDays } from "date-fns";
+
 import {
   getDashboardPageContext,
 } from "@/core/auth/dashboard-page";
+import { APPOINTMENT_AGENDA_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
+
+import { AgendaView } from "@/features/agenda";
+
 import {
-  APPOINTMENT_AGENDA_COLUMNS,
-  PROFESSIONAL_AGENDA_COLUMNS,
-} from "@/core/supabase/select-columns";
-import { subDays, addDays } from "date-fns";
+  getCachedActiveBookingSlug,
+  getCachedClinicLocations,
+  getCachedClinicProfessionalsAgenda,
+  getCachedClinicSpecialties,
+} from "@/lib/server/cached-clinic-queries";
 
 async function AgendaContent({
   initialView,
@@ -22,7 +28,7 @@ async function AgendaContent({
   const rangeStart = subDays(new Date(), 7).toISOString();
   const rangeEnd = addDays(new Date(), 30).toISOString();
 
-  const [appointments, patients, professionals, locations, specialties, blocks, booking] =
+  const [appointments, patients, professionals, locations, specialties, blocks, bookingSlug] =
     clinicId
       ? await Promise.all([
           supabase
@@ -41,27 +47,18 @@ async function AgendaContent({
             .eq("is_active", true)
             .order("last_name")
             .limit(200),
-          supabase
-            .from("professionals")
-            .select(`${PROFESSIONAL_AGENDA_COLUMNS}, profiles(full_name), specialties(name)`)
-            .eq("clinic_id", clinicId)
-            .eq("is_active", true),
-          supabase.from("locations").select("id, name").eq("clinic_id", clinicId),
-          supabase.from("specialties").select("id, name").eq("clinic_id", clinicId),
+          getCachedClinicProfessionalsAgenda(clinicId),
+          getCachedClinicLocations(clinicId),
+          getCachedClinicSpecialties(clinicId),
           supabase
             .from("schedule_blocks")
             .select("start_at, end_at, reason")
             .eq("clinic_id", clinicId)
             .gte("start_at", rangeStart)
             .lte("start_at", rangeEnd),
-          supabase
-            .from("public_booking_links")
-            .select("slug")
-            .eq("clinic_id", clinicId)
-            .eq("is_active", true)
-            .maybeSingle(),
+          getCachedActiveBookingSlug(clinicId),
         ])
-      : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: null }];
+      : [{ data: [] }, { data: [] }, [], [], [], { data: [] }, null];
 
   return (
     <AgendaView
@@ -69,16 +66,16 @@ async function AgendaContent({
       initialShowForm={initialShowForm}
       appointments={(appointments.data ?? []) as never}
       patients={patients.data ?? []}
-      professionals={(professionals.data ?? []) as never}
-      locations={locations.data ?? []}
-      specialties={specialties.data ?? []}
+      professionals={professionals as never}
+      locations={locations}
+      specialties={specialties}
       clinics={clinics}
       clinicId={clinicId}
       role={role}
       userName={profile?.full_name}
       defaultDuration={clinic?.default_appointment_duration ?? 30}
       scheduleBlocks={blocks.data ?? []}
-      bookingSlug={booking.data?.slug ?? clinic?.slug ?? null}
+      bookingSlug={bookingSlug ?? clinic?.slug ?? null}
     />
   );
 }

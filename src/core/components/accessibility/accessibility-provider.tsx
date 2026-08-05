@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+
 import { REDUCED_MOTION_STORAGE_KEY } from "@/core/accessibility/constants";
 
 function applyReducedMotionPreference() {

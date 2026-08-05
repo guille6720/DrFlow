@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+
 import { logAudit } from "@/core/auth/session";
 import { recordAudit } from "@/core/security/audit-service";
-import { createClient } from "@/core/supabase/server";
-import { prescriptionDraftSchema } from "@/core/validations/schemas";
-import { optionalEntityIdSchema, parseEntityId } from "@/core/validations/params";
 import { requireClinicalIssueAccess } from "@/core/services/clinical-access.service";
+import { createClient } from "@/core/supabase/server";
+import { firstZodIssue, optionalEntityIdSchema, parseEntityId } from "@/core/validations/params";
+import { prescriptionDraftSchema } from "@/core/validations/schemas";
+
 import {
   buildPrescriptionPayload,
   issuePrescriptionRecord,
@@ -20,7 +22,7 @@ export async function savePrescriptionDraft(formData: FormData) {
   const { userId, clinicId } = access.data;
 
   const parsed = prescriptionDraftSchema.safeParse(buildPrescriptionPayload(formData));
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   const rawId = formData.get("id");
   const existingParsed = optionalEntityIdSchema.safeParse(

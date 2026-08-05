@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
+
 import { useClinicalCopilot } from "@/features/ia/components/clinical-workflow/clinical-copilot-context";
+
+import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
 
 type Props = ClinicalCopilotContext;
 

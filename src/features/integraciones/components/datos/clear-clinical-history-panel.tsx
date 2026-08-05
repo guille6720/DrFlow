@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  CLEAR_CLINICAL_HISTORY_CONFIRM_PHRASE,
-  CLEAR_FULL_MIGRATION_CONFIRM_PHRASE,
-} from "@/lib/constants/migration-reset";
 import {
   clearClinicClinicalHistory,
   clearClinicFullMigrationReset,
 } from "@/lib/actions/clinical-reset";
+import {
+  CLEAR_CLINICAL_HISTORY_CONFIRM_PHRASE,
+  CLEAR_FULL_MIGRATION_CONFIRM_PHRASE,
+} from "@/lib/constants/migration-reset";
 
 interface Props {
   clinicName: string;

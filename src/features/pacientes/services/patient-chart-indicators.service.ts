@@ -1,18 +1,20 @@
 import type { DbClient } from "@/core/repositories/types";
+import type { ServiceResult } from "@/core/services/types";
+import { fromRepo, serviceErr } from "@/core/services/types";
+
 import {
   findPatientClinicalProfile,
   upsertPatientClinicalProfileRow,
 } from "@/features/pacientes/repositories/patient-clinical-profile.repository";
 import { patientExists } from "@/features/pacientes/repositories/patients.repository";
-import type { ServiceResult } from "@/core/services/types";
-import { fromRepo, serviceErr } from "@/core/services/types";
-import { calculatePackYears } from "@/lib/utils/clinical-indicators";
+import type { PatientChartExtras } from "@/features/pacientes/utils/patient-chart-model-types";
 import {
   mergeNotesWithChartExtras,
   parsePatientChartExtras,
   stripChartJsonFromNotes,
 } from "@/features/pacientes/utils/patient-chart-notes";
-import type { PatientChartExtras } from "@/features/pacientes/utils/patient-chart-model-types";
+
+import { calculatePackYears } from "@/lib/utils/clinical-indicators";
 
 export type ClinicalIndicatorsInput = {
   weightKg?: number | null;

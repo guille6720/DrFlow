@@ -1,21 +1,23 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { createClient } from "@/core/supabase/server";
-import { applyClinicLegalAcceptanceInternal } from "@/core/legal/apply-clinic-legal-acceptance";
+import { redirect } from "next/navigation";
+
 import { logAudit, setActiveClinic } from "@/core/auth/session";
-import { loginSchema, registerClinicSchema, setupClinicSchema } from "@/core/validations/schemas";
+import { logServerError } from "@/core/errors/log-error.server";
+import { applyClinicLegalAcceptanceInternal } from "@/core/legal/apply-clinic-legal-acceptance";
+import { createClient } from "@/core/supabase/server";
+import {
+  parseTrialDays,
+  resolveTrialDays,
+  TRIAL_REGISTRATION_COOKIE,
+} from "@/core/trial/clinic-trial";
 import {
   parseDoctorSetupFromForm,
   validateDoctorSetup,
 } from "@/core/validations/doctor-setup";
 import { zodFieldErrors } from "@/core/validations/form-errors";
-import {
-  TRIAL_REGISTRATION_COOKIE,
-  parseTrialDays,
-  resolveTrialDays,
-} from "@/core/trial/clinic-trial";
+import { loginSchema, registerClinicSchema, setupClinicSchema } from "@/core/validations/schemas";
 
 export type AuthActionResult = {
   success?: boolean;
@@ -189,7 +191,7 @@ async function applyTrialAfterSetup(
     .eq("id", clinicId);
 
   if (error) {
-    console.error("trial_ends_at update failed:", error.message);
+    logServerError("auth.trial-ends-at-update", error, { clinicId });
     return;
   }
 

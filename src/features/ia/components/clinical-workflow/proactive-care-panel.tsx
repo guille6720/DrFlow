@@ -1,16 +1,19 @@
 "use client";
 
-import { useMemo } from "react";
-import { SafeInternalLink } from "@/core/components/safe-link";
 import { AlertTriangle, BellRing, ChevronDown } from "lucide-react";
+import { useMemo } from "react";
+
+import { SafeInternalLink } from "@/core/components/safe-link";
+
+import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+
 import { Button } from "@/components/ui/button";
-import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
 import {
   buildProactiveCareItems,
   countProactiveCareBySeverity,
   type ProactiveCareItem,
 } from "@/lib/utils/proactive-follow-up";
-import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 
 type Props = {
   patientId: string;

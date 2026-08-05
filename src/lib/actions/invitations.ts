@@ -1,19 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireStaffManagerAccess } from "@/core/services/staff-access.service";
-import { inviteSchema } from "@/core/validations/staff-schemas";
-import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
-import { createClient } from "@/core/supabase/server";
-import { getPublicSiteUrl } from "@/core/supabase/env";
+
+import { requireStaffManagerWithUser } from "@/core/actions/guard-adapters";
 import { recordAudit, recordAuditChange } from "@/core/security/audit-service";
+import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
+import { getPublicSiteUrl } from "@/core/supabase/env";
+import { createClient } from "@/core/supabase/server";
+import { firstZodIssue, parseEntityId, staffRoleSchema } from "@/core/validations/params";
+import { inviteSchema } from "@/core/validations/staff-schemas";
+
 import type { UserRole } from "@/types/database";
-import { parseEntityId, staffRoleSchema } from "@/core/validations/params";
 
 async function requireStaffManager() {
-  const access = await requireStaffManagerAccess();
-  if (!access.ok) return { error: access.error };
-  return { user: access.user, clinicId: access.clinicId };
+  return requireStaffManagerWithUser();
 }
 
 export async function acceptPendingInvitations() {
@@ -39,7 +39,7 @@ async function findAuthUserIdByEmail(email: string): Promise<string | null> {
 
 export async function inviteClinicMember(formData: FormData) {
   const access = await requireStaffManager();
-  if ("error" in access && access.error) return { error: access.error };
+  if (!access.ok) return { error: access.error };
   const { user, clinicId } = access;
 
   const parsed = inviteSchema.safeParse({
@@ -48,7 +48,7 @@ export async function inviteClinicMember(formData: FormData) {
     role: String(formData.get("role") ?? ""),
   });
 
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   if (parsed.data.email === user!.email?.toLowerCase()) {
     return { error: "No podés invitarte a vos mismo." };
@@ -167,7 +167,7 @@ export async function inviteClinicMember(formData: FormData) {
 
 export async function revokeClinicInvitation(invitationId: string) {
   const access = await requireStaffManager();
-  if ("error" in access && access.error) return { error: access.error };
+  if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
   const idParsed = parseEntityId(invitationId, "Invitación");
@@ -206,7 +206,7 @@ export async function revokeClinicInvitation(invitationId: string) {
 
 export async function updateClinicMemberRole(memberId: string, role: UserRole) {
   const access = await requireStaffManager();
-  if ("error" in access && access.error) return { error: access.error };
+  if (!access.ok) return { error: access.error };
   const { clinicId, user } = access;
 
   const idParsed = parseEntityId(memberId, "Miembro");
@@ -251,7 +251,7 @@ export async function updateClinicMemberRole(memberId: string, role: UserRole) {
 
 export async function deactivateClinicMember(memberId: string) {
   const access = await requireStaffManager();
-  if ("error" in access && access.error) return { error: access.error };
+  if (!access.ok) return { error: access.error };
   const { clinicId, user } = access;
 
   const idParsed = parseEntityId(memberId, "Miembro");
@@ -306,7 +306,7 @@ export async function deactivateClinicMember(memberId: string) {
 
 export async function removeClinicMemberPermanently(memberId: string) {
   const access = await requireStaffManager();
-  if ("error" in access && access.error) return { error: access.error };
+  if (!access.ok) return { error: access.error };
   const { clinicId, user } = access;
 
   const idParsed = parseEntityId(memberId, "Miembro");

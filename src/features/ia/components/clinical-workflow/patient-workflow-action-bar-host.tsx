@@ -1,11 +1,13 @@
 "use client";
 
-import { Suspense, useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { PatientWorkflowActionBar } from "@/features/ia/components/clinical-workflow/patient-workflow-action-bar";
+import { Suspense, useCallback, useState } from "react";
+
 import { clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
-import { finalizeConsultation } from "@/lib/actions/appointments";
+import { PatientWorkflowActionBar } from "@/features/ia/components/clinical-workflow/patient-workflow-action-bar";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+
+import { finalizeConsultation } from "@/lib/actions/appointments";
 
 type Props = {
   patientId: string;
