@@ -24,9 +24,9 @@ export async function ComplianceLegalPanel() {
     >
       <div className="space-y-4 text-sm">
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-xl border border-slate-600/50 bg-slate-800/40 p-4">
-            <p className="font-semibold text-slate-100">Términos del servicio</p>
-            <p className="mt-1 text-slate-300">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="font-semibold text-slate-900">Términos del servicio</p>
+            <p className="mt-1 text-slate-600">
               Versión vigente: {LEGAL_TERMS_VERSION}
               <br />
               Aceptada:{" "}
@@ -36,41 +36,41 @@ export async function ComplianceLegalPanel() {
               <br />
               Registrada: {clinic?.legal_terms_version ?? "—"}{" "}
               {termsOk ? (
-                <span className="text-emerald-400">(actualizada)</span>
+                <span className="text-emerald-700">(actualizada)</span>
               ) : (
-                <span className="text-amber-300">(revisar / re-aceptar en próximo login)</span>
+                <span className="text-amber-700">(revisar / re-aceptar en próximo login)</span>
               )}
             </p>
-            <Link href="/terminos" className="drflow-link mt-2 inline-block text-xs">
+            <Link href="/terminos" className="mt-2 inline-block text-xs text-blue-700 hover:text-blue-800">
               Ver términos
             </Link>
           </div>
-          <div className="rounded-xl border border-slate-600/50 bg-slate-800/40 p-4">
-            <p className="font-semibold text-slate-100">Privacidad</p>
-            <p className="mt-1 text-slate-300">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="font-semibold text-slate-900">Privacidad</p>
+            <p className="mt-1 text-slate-600">
               Versión vigente: {LEGAL_PRIVACY_VERSION}
               <br />
               Registrada en clínica: {clinic?.legal_privacy_version ?? "—"}{" "}
               {privacyOk ? (
-                <span className="text-emerald-400">(actualizada)</span>
+                <span className="text-emerald-700">(actualizada)</span>
               ) : (
-                <span className="text-amber-300">(actualizar aceptación)</span>
+                <span className="text-amber-700">(actualizar aceptación)</span>
               )}
             </p>
-            <Link href="/privacidad" className="drflow-link mt-2 inline-block text-xs">
+            <Link href="/privacidad" className="mt-2 inline-block text-xs text-blue-700 hover:text-blue-800">
               Ver política
             </Link>
           </div>
         </div>
 
-        <ul className="list-disc space-y-2 pl-5 text-slate-300">
+        <ul className="list-disc space-y-2 pl-5 text-slate-700">
           <li>
-            <strong className="text-slate-100">Responsable del tratamiento:</strong> este consultorio
+            <strong className="text-slate-900">Responsable del tratamiento:</strong> este consultorio
             ({clinic?.name}). DrFlow actúa como encargado de procesamiento técnico.
           </li>
           <li>
             Consentimientos de pacientes registrados (turnos web):{" "}
-            <strong className="text-teal-300">{summary.consentCount}</strong>
+            <strong className="text-blue-700">{summary.consentCount}</strong>
           </li>
           <li>
             Conservación de historias clínicas: mínimo recomendado{" "}
@@ -85,9 +85,9 @@ export async function ComplianceLegalPanel() {
           </li>
         </ul>
 
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-slate-600">
           Documentación interna:{" "}
-          <code className="rounded bg-slate-800 px-1">docs/CUMPLIMIENTO_LEGAL.md</code> en el repositorio.
+          <code className="rounded bg-slate-100 px-1 text-slate-800">docs/CUMPLIMIENTO_LEGAL.md</code> en el repositorio.
           Ante reclamos del paciente, derivá a la autoridad de aplicación (AAIP) y conservá evidencia de
           consentimientos.
         </p>

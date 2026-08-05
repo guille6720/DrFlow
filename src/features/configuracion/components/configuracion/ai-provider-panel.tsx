@@ -120,7 +120,7 @@ export function AiProviderPanel() {
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="ai-provider" className="text-sm font-medium text-slate-200">
+          <label htmlFor="ai-provider" className="text-sm font-medium text-slate-700">
             Proveedor
           </label>
           <select
@@ -140,7 +140,7 @@ export function AiProviderPanel() {
         </div>
 
         <div>
-          <label htmlFor="ai-api-key" className="text-sm font-medium text-slate-200">
+          <label htmlFor="ai-api-key" className="text-sm font-medium text-slate-700">
             <KeyRound className="mr-1 inline h-3.5 w-3.5" />
             API key
           </label>
@@ -157,7 +157,7 @@ export function AiProviderPanel() {
         </div>
 
         <div>
-          <label htmlFor="ai-model" className="text-sm font-medium text-slate-200">
+          <label htmlFor="ai-model" className="text-sm font-medium text-slate-700">
             Modelo
           </label>
           <Input
@@ -172,7 +172,7 @@ export function AiProviderPanel() {
 
         {providerMeta.baseUrlRequired || provider !== "openai" ? (
           <div>
-            <label htmlFor="ai-base-url" className="text-sm font-medium text-slate-200">
+            <label htmlFor="ai-base-url" className="text-sm font-medium text-slate-700">
               URL base (opcional)
             </label>
             <Input
@@ -187,7 +187,7 @@ export function AiProviderPanel() {
         ) : null}
 
         <div>
-          <label htmlFor="ai-label" className="text-sm font-medium text-slate-200">
+          <label htmlFor="ai-label" className="text-sm font-medium text-slate-700">
             Etiqueta (opcional)
           </label>
           <Input

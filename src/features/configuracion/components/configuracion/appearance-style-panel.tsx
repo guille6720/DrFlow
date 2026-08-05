@@ -46,7 +46,7 @@ export function AppearanceStylePanel() {
     >
       <div className="space-y-6">
         <div>
-          <p className="mb-3 text-sm font-medium text-slate-200">Preset de estilo</p>
+          <p className="mb-3 text-sm font-medium text-slate-700">Preset de estilo</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {(["1", "2", "3", "4"] as UiStyleId[]).map((id) => {
               const active = style === id;
@@ -60,14 +60,19 @@ export function AppearanceStylePanel() {
                     "rounded-xl border p-4 text-left transition",
                     active
                       ? cn("ring-2", STYLE_ACTIVE_RING[id])
-                      : "border-slate-500/50 bg-slate-800/40 hover:border-slate-400"
+                      : "border-slate-200 bg-slate-50 hover:border-blue-300 hover:bg-blue-50/50"
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    <Icon className={cn("h-5 w-5", STYLE_ICON_COLOR[id])} />
-                    <span className="font-semibold text-slate-50">Estilo {id}</span>
+                    <Icon
+                      className={cn(
+                        "h-5 w-5",
+                        active ? STYLE_ICON_COLOR[id] : "text-slate-500"
+                      )}
+                    />
+                    <span className="font-semibold text-slate-900">Estilo {id}</span>
                   </div>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-300">
+                  <p className="mt-2 text-xs leading-relaxed text-slate-600">
                     {UI_STYLE_LABELS[id]}
                   </p>
                 </button>
@@ -77,18 +82,18 @@ export function AppearanceStylePanel() {
         </div>
 
         {BENTO_STYLES.includes(style) && (
-          <div className="rounded-xl border border-slate-500/50 bg-slate-800/30 p-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="flex items-center gap-2 font-semibold text-slate-50">
+                <p className="flex items-center gap-2 font-semibold text-slate-900">
                   {clinicalDark ? (
-                    <Moon className="h-4 w-4 text-teal-300" />
+                    <Moon className="h-4 w-4 text-blue-600" />
                   ) : (
-                    <Sun className="h-4 w-4 text-amber-300" />
+                    <Sun className="h-4 w-4 text-amber-500" />
                   )}
                   Clinical Dark Mode
                 </p>
-                <p className="mt-1 text-xs text-slate-300">
+                <p className="mt-1 text-xs text-slate-600">
                   {style === "4"
                     ? clinicalDark
                       ? "Azul profundo nocturno; tarjetas claras con texto oscuro nítido."
@@ -111,21 +116,21 @@ export function AppearanceStylePanel() {
         )}
 
         {voice ? (
-          <div className="rounded-xl border border-slate-500/50 bg-slate-800/30 p-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="flex items-center gap-2 font-semibold text-slate-50">
-                  <Mic className="h-4 w-4 text-teal-300" />
+                <p className="flex items-center gap-2 font-semibold text-slate-900">
+                  <Mic className="h-4 w-4 text-blue-600" />
                   Dictado por voz (historias clínicas)
                 </p>
-                <p className="mt-1 text-xs text-slate-300">
+                <p className="mt-1 text-xs text-slate-600">
                   {voice.clinicEnabled
                     ? voice.userEnabled
                       ? "Activo en este navegador. Usá el botón Dictar junto a cada campo de texto."
                       : "Desactivado en este navegador. Podés volver a activarlo cuando quieras."
                     : "El administrador del consultorio desactivó el dictado por voz."}
                   {!voice.browserSupported && voice.clinicEnabled ? (
-                    <span className="mt-1 block text-amber-300/90">
+                    <span className="mt-1 block text-amber-700">
                       Tu navegador no soporta reconocimiento de voz (probá Chrome o Edge).
                     </span>
                   ) : null}
@@ -144,7 +149,7 @@ export function AppearanceStylePanel() {
           </div>
         ) : null}
 
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-slate-600">
           La preferencia se guarda en este navegador. Estilo 4 usa el azul de acción (#2563eb) como
           fondo principal y mantiene formularios y tarjetas en superficies claras para lectura nítida.
         </p>

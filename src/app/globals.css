@@ -2658,6 +2658,91 @@ html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-500, .text-slate-
   color: #475569 !important;
 }
 
+/* Islas claras: anula reglas de clinical-dark sobre tarjetas blancas */
+html[data-ui-palette="cobalt"] .drflow-ui-card,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-card-body,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-card-body {
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-50, .text-slate-100, .text-slate-200) {
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-300, .text-slate-400) {
+  color: #475569 !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-card-body :is(.text-slate-50, .text-slate-100, .text-slate-200),
+html[data-ui-palette="cobalt"] .drflow-card-body :is(.text-slate-300, .text-slate-400) {
+  color: #475569 !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-card-body :is(.text-slate-500, .text-slate-600, .text-slate-700),
+html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-500, .text-slate-600, .text-slate-700) {
+  color: #64748b !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-card-body dt,
+html[data-ui-palette="cobalt"] .drflow-ui-card dt {
+  color: #1d4ed8 !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-card-body dd {
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-card-body label.drflow-ui-label,
+html[data-ui-palette="cobalt"] .drflow-card-body .drflow-ui-label,
+html[data-ui-palette="cobalt"] .drflow-ui-card label {
+  color: #334155 !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-card :is([class*="bg-slate-800"], [class*="bg-slate-900"]) {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-button.border-slate-200,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-button.bg-white,
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-ui-card .drflow-ui-button.text-slate-700,
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-ui-card .drflow-ui-button.text-slate-800 {
+  background-color: #ffffff !important;
+  border-color: #93c5fd !important;
+  color: #1e40af !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-ui-card .drflow-ui-button.border-slate-200:hover,
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-ui-card .drflow-ui-button.bg-white:hover {
+  background-color: #eff6ff !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-card-light,
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-card-light {
+  background: #ffffff !important;
+  border-color: #bfdbfe !important;
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-card-light :is(.text-slate-900, .text-slate-800, .text-slate-700, .font-semibold, .font-bold),
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-card-light :is(.text-slate-900, .text-slate-800, .text-slate-700, .font-semibold, .font-bold) {
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-card-light :is(.text-slate-500, .text-slate-600, .text-slate-400),
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-card-light :is(.text-slate-500, .text-slate-600, .text-slate-400) {
+  color: #64748b !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-card-light a:not([class*="from-cyan"]):not([class*="bg-gradient"]) {
+  color: #1d4ed8 !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-card-light .text-teal-800,
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-card-light .text-teal-800 {
+  color: #1e40af !important;
+}
+
 html[data-ui-palette="cobalt"] .drflow-card-body .drflow-ui-label,
 html[data-ui-palette="cobalt"] .drflow-card-body label.drflow-ui-label {
   color: #334155 !important;
@@ -2737,12 +2822,91 @@ html[data-ui-palette="cobalt"] .drflow-link {
   color: #bfdbfe !important;
 }
 
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-link,
+html[data-ui-palette="cobalt"] .drflow-card-light .drflow-link,
+html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-link {
+  color: #2563eb !important;
+}
+
 html[data-ui-palette="cobalt"] .drflow-link:hover {
   color: #ffffff !important;
 }
 
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-link:hover,
+html[data-ui-palette="cobalt"] .drflow-card-light .drflow-link:hover {
+  color: #1d4ed8 !important;
+}
+
 html[data-ui-palette="cobalt"] .drflow-card-body dt {
   color: #1d4ed8 !important;
+}
+
+/* Paneles clínicos dentro de tarjetas blancas */
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-physician-assist-panel,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-previsit-panel,
+html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-physician-assist-panel {
+  border-color: #bfdbfe !important;
+  background: #eff6ff !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-physician-assist-title,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-previsit-title {
+  color: #1e3a8a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-physician-assist-disclaimer,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-previsit-footer {
+  color: #475569 !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-physician-assist-card,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-previsit-headline {
+  border-color: #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-physician-assist-card-body,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-previsit-value {
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-physician-assist-card-label,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-previsit-label {
+  color: #64748b !important;
+}
+
+/* Tablas y listas en tarjetas */
+html[data-ui-palette="cobalt"] .drflow-ui-card table,
+html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel table {
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-card thead.bg-slate-50,
+html[data-ui-palette="cobalt"] .drflow-ui-card tr.bg-slate-50 {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-card :is(.divide-slate-100, .divide-slate-200) > * {
+  border-color: #e2e8f0 !important;
+}
+
+/* Selects y dropdowns */
+html[data-ui-palette="cobalt"] .drflow-ui-card select,
+html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel select {
+  background: #ffffff !important;
+  border-color: #93c5fd !important;
+  color: #0f172a !important;
+}
+
+/* Texto suelto en mesh (fuera de islas claras) */
+html[data-ui-palette="cobalt"] .drflow-mesh main .text-slate-400:not(.drflow-ui-card *):not(.drflow-card-light *) {
+  color: #dbeafe !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-config-hub > .space-y-4 .text-slate-400 {
+  color: #dbeafe !important;
 }
 
 /* Botones primarios */
