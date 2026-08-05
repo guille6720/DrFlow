@@ -9,11 +9,13 @@ const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 import { UiThemeBootstrapScript } from "@/core/components/theme/ui-theme-bootstrap-script";
@@ -61,6 +63,14 @@ export const metadata: Metadata = {
     title: "DrFlow — Gestión clínica para consultorios",
     description: "Agenda, historia clínica, recetas y app para pacientes.",
     images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  alternates: {
+    canonical: "/",
   },
 };
 

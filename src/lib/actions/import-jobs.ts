@@ -12,6 +12,7 @@ import {
   validatePdfUpload,
   validateSpreadsheetImportUpload,
 } from "@/core/security/file-upload";
+import { verifyPatientInClinic } from "@/core/security/ownership-guard";
 import {
   requireClinicalImportAccess,
   requirePatientImportAccess,
@@ -223,6 +224,9 @@ export async function enqueuePatientAiSummaryJob(patientId: string): Promise<{
   if (!idParsed.ok) return { error: idParsed.error };
 
   const supabase = await createClient();
+  const ownership = await verifyPatientInClinic(supabase, auth.clinicId, idParsed.data);
+  if (!ownership.ok) return { error: ownership.error };
+
   const { id } = await enqueueClinicJob(supabase, {
     clinicId: auth.clinicId,
     jobType: "run_ai_task",

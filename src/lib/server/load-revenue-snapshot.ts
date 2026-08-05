@@ -103,6 +103,8 @@ async function sumCollectedCharges(
   return aggregateCharges(data ?? []);
 }
 
+const TODAY_CHARGES_MAX = 3000;
+
 async function loadTodayBreakdown(
   supabase: SupabaseClient,
   clinicId: string,
@@ -115,7 +117,8 @@ async function loadTodayBreakdown(
     .eq("clinic_id", clinicId)
     .eq("status", "collected")
     .gte("charged_at", from)
-    .lte("charged_at", to);
+    .lte("charged_at", to)
+    .limit(TODAY_CHARGES_MAX);
 
   return aggregateCharges(data ?? []);
 }

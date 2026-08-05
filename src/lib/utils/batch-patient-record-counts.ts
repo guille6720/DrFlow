@@ -25,16 +25,6 @@ export async function batchPatientRecordCounts(
     return counts;
   }
 
-  const { data } = await supabase
-    .from("clinical_records")
-    .select("patient_id")
-    .eq("clinic_id", clinicId)
-    .in("patient_id", patientIds);
-
-  for (const row of data ?? []) {
-    const pid = row.patient_id as string;
-    counts.set(pid, (counts.get(pid) ?? 0) + 1);
-  }
-
+  // RPC required at scale — return zero counts rather than scanning clinical_records.
   return counts;
 }

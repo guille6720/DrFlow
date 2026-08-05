@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
+import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { hasPermission } from "@/core/permissions/roles";
 import { requireSameOriginMutation } from "@/core/security/csrf";
 import { adminOpsAiRequestSchema } from "@/core/validations/admin-ops-ai-api";
@@ -9,12 +10,14 @@ import {
   listAdminOpsAgents,
   runAdminOpsOrchestrator,
 } from "@/features/dashboard/utils/admin-ops-orchestrator";
+
 /** POST /api/admin-ops-ai — admin/ops orchestrator (Phase G/H). */
-export async function POST(request: Request) {
+export const POST = withObservabilityApiRoute("admin_ops_ai", async (request, ctx) => {
   const csrfBlock = requireSameOriginMutation(request);
   if (csrfBlock) return csrfBlock;
 
   const clinicId = await getActiveClinicId();
+  ctx.clinicId = clinicId;
   const { role, isSuperadmin } = await getActiveClinic();
 
   if (!clinicId) {
@@ -51,9 +54,11 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json({ result });
-}
+});
 
-export async function GET() {
+export const GET = withObservabilityApiRoute("admin_ops_ai_meta", async (_request, ctx) => {
+  const clinicId = await getActiveClinicId();
+  ctx.clinicId = clinicId;
   const { role, isSuperadmin } = await getActiveClinic();
   const canUse =
     hasPermission(role, "manageAppointments", isSuperadmin) ||
@@ -69,4 +74,4 @@ export async function GET() {
     agents: listAdminOpsAgents(),
     disclaimer: "Asistencia operativa — verificá datos antes de actuar.",
   });
-}
+});

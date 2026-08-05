@@ -39,23 +39,17 @@ describe("batchPatientRecordCounts", () => {
     expect(counts.get("p3")).toBe(0);
   });
 
-  it("falls back to row scan when RPC is unavailable", async () => {
+  it("returns zero counts when RPC is unavailable (no table scan)", async () => {
     const supabase = {
       rpc: async () => ({ data: null, error: { message: "function not found" } }),
-      from: () => ({
-        select: () => ({
-          eq: () => ({
-            in: async () => ({
-              data: [{ patient_id: "p1" }, { patient_id: "p1" }, { patient_id: "p2" }],
-            }),
-          }),
-        }),
-      }),
+      from: () => {
+        throw new Error("should not scan rows when RPC fails");
+      },
     } as never;
 
     const counts = await batchPatientRecordCounts(supabase, "clinic-1", ["p1", "p2", "p3"]);
-    expect(counts.get("p1")).toBe(2);
-    expect(counts.get("p2")).toBe(1);
+    expect(counts.get("p1")).toBe(0);
+    expect(counts.get("p2")).toBe(0);
     expect(counts.get("p3")).toBe(0);
   });
 });

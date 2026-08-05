@@ -8,6 +8,8 @@ export type LogServerErrorOptions = {
   clinicId?: string | null;
   metadata?: Record<string, unknown>;
   category?: ObservabilityCategory;
+  traceId?: string;
+  path?: string;
   /** When false, skip observability persistence (e.g. observability layer itself). */
   persist?: boolean;
 };
@@ -36,6 +38,8 @@ export function logServerError(
     category: options?.category ?? "error",
     name: scope,
     status: "error",
+    path: options?.path,
+    traceId: options?.traceId,
     errorMessage: message,
     metadata,
   });

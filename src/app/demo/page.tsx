@@ -7,12 +7,19 @@ import {
   Stethoscope,
   Users,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { ButtonLink, buttonSurfaceClassName } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Probar DrFlow gratis",
+  description:
+    "Guía paso a paso para probar agenda, pacientes, historia clínica y app para pacientes en DrFlow.",
+  alternates: { canonical: "/demo" },
+};
 
 const PRODUCTION_URL = "https://drflow-app-rho.vercel.app";
 
@@ -61,16 +68,12 @@ export default function DemoPage() {
       <header className="border-b border-blue-100/80 bg-white/85 backdrop-blur-md">
         <div className="relative mx-auto flex max-w-4xl items-center justify-between px-4 py-5">
           <DrFlowLogo size="md" href="/" />
-          <div className="flex gap-2">
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                Ingresar
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm">Probar gratis</Button>
-            </Link>
-          </div>
+          <nav aria-label="Acciones" className="flex gap-2">
+            <ButtonLink href="/login" variant="ghost">
+              Ingresar
+            </ButtonLink>
+            <ButtonLink href="/register">Probar gratis</ButtonLink>
+          </nav>
         </div>
       </header>
 
@@ -85,14 +88,15 @@ export default function DemoPage() {
             app para el paciente.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <a href={PRODUCTION_URL + "/register"}>
-              <Button size="lg">Empezar en producción</Button>
+            <ButtonLink href="/register" size="lg">
+              Empezar prueba gratis
+            </ButtonLink>
+            <a
+              href={`${PRODUCTION_URL}/register`}
+              className={buttonSurfaceClassName("outline", "lg")}
+            >
+              Empezar en producción
             </a>
-            <Link href="/register">
-              <Button size="lg" variant="outline">
-                Empezar en local
-              </Button>
-            </Link>
           </div>
           <p className="mt-3 text-xs text-slate-500">
             Link para compartir:{" "}
@@ -108,7 +112,7 @@ export default function DemoPage() {
         <ol className="mt-14 space-y-6">
           {STEPS.map((step) => (
             <li key={step.n}>
-              <Card className="border-blue-100/80">
+              <div className="rounded-2xl border border-blue-100/80 bg-white p-6 shadow-sm">
                 <div className="flex gap-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-lg font-bold text-white">
                     {step.n}
@@ -117,21 +121,24 @@ export default function DemoPage() {
                     <h2 className="font-semibold text-slate-900">{step.title}</h2>
                     <p className="mt-1 text-sm leading-relaxed text-slate-600">{step.body}</p>
                     {step.href && !step.afterLogin && (
-                      <Link href={step.href} className="mt-3 inline-block">
-                        <Button size="sm">{step.cta}</Button>
-                      </Link>
+                      <ButtonLink href={step.href} size="sm" className="mt-3">
+                        {step.cta}
+                      </ButtonLink>
                     )}
                     {step.afterLogin && step.href && (
                       <p className="mt-2 text-xs text-slate-500">
                         Disponible después de iniciar sesión →{" "}
-                        <Link href={step.href} className="text-blue-700 hover:underline">
+                        <Link
+                          href={step.href}
+                          className="font-medium text-blue-800 underline decoration-blue-400 underline-offset-2 hover:text-blue-900"
+                        >
                           {step.cta}
                         </Link>
                       </p>
                     )}
                   </div>
                 </div>
-              </Card>
+              </div>
             </li>
           ))}
         </ol>
@@ -151,8 +158,9 @@ export default function DemoPage() {
           </div>
         </section>
 
-        <Card className="mt-14 border-emerald-200 bg-emerald-50/50" title="Mensaje para WhatsApp">
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
+        <div className="mt-14 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-6">
+          <h2 className="font-semibold text-slate-900">Mensaje para WhatsApp</h2>
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
             {`Hola, te comparto DrFlow para que pruebes el consultorio digital.
 
 1. Entrá a ${PRODUCTION_URL}/demo
@@ -162,7 +170,7 @@ export default function DemoPage() {
 
 Cualquier duda, avisame.`}
           </p>
-        </Card>
+        </div>
 
         <section className="mt-14 rounded-2xl border border-slate-200 bg-white/70 p-6">
           <h2 className="flex items-center gap-2 font-semibold text-slate-900">

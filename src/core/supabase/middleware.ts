@@ -32,7 +32,9 @@ function isPwaAsset(path: string): boolean {
     path === "/sw.js" ||
     path === "/sw-portal.js" ||
     path === "/manifest.webmanifest" ||
-    path.endsWith("/manifest.webmanifest")
+    path.endsWith("/manifest.webmanifest") ||
+    path === "/robots.txt" ||
+    path === "/sitemap.xml"
   );
 }
 

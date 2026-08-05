@@ -12,10 +12,10 @@ import { ClinicalTopNav } from "@/core/components/layout/clinical-top-nav";
 import { DashboardMain } from "@/core/components/layout/dashboard-main";
 import { DashboardSidebarProvider } from "@/core/components/layout/dashboard-sidebar-context";
 import { DashboardSidebarReveal } from "@/core/components/layout/dashboard-sidebar-reveal";
-import { FloatingActions } from "@/core/components/layout/floating-actions";
 import { LazyDashboardCopilotHosts } from "@/core/components/layout/lazy-dashboard-copilot-hosts";
-import { RoutePrefetcher } from "@/core/components/layout/route-prefetcher";
+import { LazyDashboardInteractionHosts } from "@/core/components/layout/lazy-dashboard-interaction-hosts";
 import { Sidebar } from "@/core/components/layout/sidebar";
+import { PerformanceMonitor } from "@/core/components/observability/performance-monitor";
 import { PwaRegister } from "@/core/components/pwa/pwa-register";
 import { UiThemeProvider } from "@/core/components/theme/ui-theme-provider";
 import { TrialBanner } from "@/core/components/trial/trial-banner";
@@ -28,10 +28,6 @@ import {
 } from "@/core/trial/clinic-trial";
 
 import { AdminOpsCopilotProvider } from "@/features/ia/components/admin-ops/admin-ops-copilot-context";
-import {
-  ClinicalContextMenuHost,
-  ClinicalWorkflowShortcuts,
-} from "@/features/ia/components/clinical-workflow";
 import { ClinicalCopilotProvider } from "@/features/ia/components/clinical-workflow/clinical-copilot-context";
 import { PWA_APPLE_ICON } from "@/features/pacientes/utils/patient-portal-ready";
 import { ClinicFeaturesProvider } from "@/features/plugins/components/plugins/clinic-features-provider";
@@ -123,7 +119,8 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen drflow-mesh">
       <PwaRegister />
-      <RoutePrefetcher />
+      <PerformanceMonitor />
+      <LazyDashboardInteractionHosts />
       <UpdateBanner />
       {showTrialBanner && clinic?.trial_ends_at && (
         <TrialBanner trialEndsAt={clinic.trial_ends_at} daysRemaining={daysLeft} />
@@ -149,10 +146,6 @@ export default async function DashboardLayout({
         >
         <SkipToContent />
         <RouteAnnouncer />
-        <ClinicalContextMenuHost />
-        <Suspense fallback={null}>
-          <ClinicalWorkflowShortcuts />
-        </Suspense>
         <Sidebar
           clinicName={clinic?.name}
           role={role}
@@ -165,7 +158,6 @@ export default async function DashboardLayout({
           </Suspense>
           {children}
         </DashboardMain>
-        <FloatingActions />
         <LazyDashboardCopilotHosts />
         </VoiceInputProvider>
         </UiThemeProvider>

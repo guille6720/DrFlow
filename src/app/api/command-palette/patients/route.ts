@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
+import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { hasPermission } from "@/core/permissions/roles";
 import { PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
@@ -13,7 +14,7 @@ import { mapPatientHits } from "@/lib/utils/command-palette-search";
 
 const limitSchema = z.coerce.number().int().min(1).max(50).optional();
 
-export async function GET(request: Request) {
+export const GET = withObservabilityApiRoute("command_palette_patients", async (request, ctx) => {
   const user = await getSession();
   if (!user) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -31,6 +32,7 @@ export async function GET(request: Request) {
   const limit = limitParsed.success ? limitParsed.data : PATIENT_SEARCH_API_LIMIT;
 
   const clinicId = await getActiveClinicId();
+  ctx.clinicId = clinicId;
   const { role, isSuperadmin } = await getActiveClinic();
   if (!clinicId) {
     return NextResponse.json({ error: "Sin clínica activa" }, { status: 403 });
@@ -70,4 +72,4 @@ export async function GET(request: Request) {
   const patients = extended ? (data ?? []) : mapPatientHits((data ?? []) as never);
 
   return NextResponse.json({ patients });
-}
+});

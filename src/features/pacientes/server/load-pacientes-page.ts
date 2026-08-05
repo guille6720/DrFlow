@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { observeQuery } from "@/core/observability/observe-query";
 import { PACIENTES_PAGE_SIZE } from "@/core/supabase/pagination";
 
 import { applyPatientSearchFilter } from "@/features/pacientes/utils/patient-search";
@@ -39,6 +40,33 @@ export async function loadPacientesPageData(
   page: number,
   cobertura?: string
 ): Promise<PacientesPageData> {
+  if (!clinicId) {
+    return {
+      patients: [],
+      total: 0,
+      portalSlug: null,
+      doctorInfo: null,
+      shareByPatient: new Map(),
+      totalPages: 1,
+      page,
+    };
+  }
+
+  return observeQuery(
+    "load_pacientes_page",
+    clinicId,
+    async () => loadPacientesPageDataInner(supabase, clinicId, q, page, cobertura),
+    "/pacientes"
+  );
+}
+
+async function loadPacientesPageDataInner(
+  supabase: SupabaseClient,
+  clinicId: string,
+  q: string,
+  page: number,
+  cobertura?: string
+): Promise<PacientesPageData> {
   let patients: PacientesPagePatient[] = [];
   let total = 0;
   let portalSlug: string | null = null;
@@ -48,8 +76,7 @@ export async function loadPacientesPageData(
     { sharedAt: string; sharedByName?: string | null; channel?: string | null }
   >();
 
-  if (clinicId) {
-    let query = supabase
+  let query = supabase
       .from("patients")
       .select(
         "id, first_name, last_name, document_number, birth_date, phone, email, insurance_provider",
@@ -95,7 +122,6 @@ export async function loadPacientesPageData(
         });
       }
     }
-  }
 
   const totalPages = Math.max(1, Math.ceil(total / PACIENTES_PAGE_SIZE));
 

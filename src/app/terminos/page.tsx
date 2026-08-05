@@ -1,10 +1,18 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import { LegalDocumentView } from "@/core/components/legal/legal-document-view";
 import { LEGAL_CONTENT_VERSION, legalDocuments } from "@/core/legal/content";
 
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Términos y condiciones",
+  description:
+    "Términos del servicio, privacidad, cookies, seguridad y licencias de DrFlow para consultorios médicos.",
+  alternates: { canonical: "/terminos" },
+  robots: { index: true, follow: true },
+};
 
 export default function TerminosPage() {
   return (
@@ -30,7 +38,10 @@ export default function TerminosPage() {
           <ul className="mt-2 space-y-1 text-sm">
             {legalDocuments.map((doc) => (
               <li key={doc.id}>
-                <a href={`#${doc.id}`} className="text-teal-700 hover:underline">
+                <a
+                  href={`#${doc.id}`}
+                  className="inline-flex min-h-11 items-center py-2 text-teal-700 hover:underline"
+                >
                   {doc.title}
                 </a>
               </li>
@@ -45,12 +56,12 @@ export default function TerminosPage() {
         </div>
 
         <div className="mt-10 flex flex-wrap gap-3">
-          <Link href="/login">
-            <Button variant="outline">Iniciar sesión</Button>
-          </Link>
-          <Link href="/">
-            <Button variant="outline">Volver al inicio</Button>
-          </Link>
+          <ButtonLink href="/login" variant="outline">
+            Iniciar sesión
+          </ButtonLink>
+          <ButtonLink href="/" variant="outline">
+            Volver al inicio
+          </ButtonLink>
         </div>
       </main>
     </div>

@@ -13,6 +13,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import { useCopilotFabVisible } from "@/core/components/layout/unified-copilot-fab";
+
 import { cn } from "@/shared/utils/cn";
 
 import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
@@ -83,6 +85,7 @@ export function FloatingActions() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const enabled = useFeatureFlag("floating_actions");
+  const copilotFabVisible = useCopilotFabVisible();
   const patientId = parsePatientIdFromPath(pathname);
   const actions = patientId ? patientActions(patientId) : globalActions;
 
@@ -91,7 +94,12 @@ export function FloatingActions() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div
+      className={cn(
+        "fixed z-50 flex flex-col items-end gap-3",
+        copilotFabVisible ? "bottom-24 right-6" : "bottom-6 right-6"
+      )}
+    >
       {open && (
         <div className="flex flex-col items-end gap-2">
           {actions.map((action, i) => (

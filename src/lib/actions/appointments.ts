@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { getSession, logAudit } from "@/core/auth/session";
 import { recordAudit } from "@/core/security/audit-service";
+import { verifyAppointmentForeignKeys } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
 import {
   appointmentStatusSchema,
@@ -40,6 +41,14 @@ export async function createAppointment(formData: FormData) {
   };
 
   const supabase = await createClient();
+  const ownership = await verifyAppointmentForeignKeys(supabase, clinicId, {
+    patientId: parsed.data.patient_id,
+    professionalId: parsed.data.professional_id,
+    locationId: parsed.data.location_id,
+    specialtyId: parsed.data.specialty_id,
+  });
+  if (!ownership.ok) return { error: ownership.error };
+
   const { data, error } = await supabase
     .from("appointments")
     .insert({
@@ -100,6 +109,14 @@ export async function updateAppointment(id: string, formData: FormData) {
   if (existing.status === "cancelled" || existing.status === "attended") {
     return { error: "No se puede modificar un turno cancelado o ya atendido." };
   }
+
+  const ownership = await verifyAppointmentForeignKeys(supabase, clinicId, {
+    patientId: bodyParsed.data.patient_id,
+    professionalId: bodyParsed.data.professional_id,
+    locationId: bodyParsed.data.location_id,
+    specialtyId: bodyParsed.data.specialty_id,
+  });
+  if (!ownership.ok) return { error: ownership.error };
 
   const payload = {
     patient_id: bodyParsed.data.patient_id,

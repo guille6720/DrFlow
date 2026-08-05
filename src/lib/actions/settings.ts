@@ -14,6 +14,10 @@ import {
 } from "@/core/cache/revalidate-clinic-cache";
 import { hasPermission } from "@/core/permissions/roles";
 import { recordAuditChange } from "@/core/security/audit-service";
+import {
+  verifyOptionalSpecialtyInClinic,
+  verifyProfessionalInClinic,
+} from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
 import {
@@ -312,6 +316,13 @@ export async function createProfessional(formData: FormData) {
 
   const supabase = await createClient();
 
+  const specialtyOwnership = await verifyOptionalSpecialtyInClinic(
+    supabase,
+    clinicId,
+    parsed.data.specialty_id
+  );
+  if (!specialtyOwnership.ok) return { error: specialtyOwnership.error };
+
   const { error } = await supabase.from("professionals").insert({
 
     clinic_id: clinicId,
@@ -428,6 +439,13 @@ export async function createScheduleBlock(formData: FormData) {
 
   const supabase = await createClient();
 
+  const professionalOwnership = await verifyProfessionalInClinic(
+    supabase,
+    clinicId,
+    parsed.data.professional_id
+  );
+  if (!professionalOwnership.ok) return { error: professionalOwnership.error };
+
   const { error } = await supabase.from("schedule_blocks").insert({
 
     clinic_id: clinicId,
@@ -469,6 +487,13 @@ export async function createAvailabilityRule(formData: FormData) {
 
 
   const supabase = await createClient();
+
+  const professionalOwnership = await verifyProfessionalInClinic(
+    supabase,
+    clinicId,
+    parsed.data.professional_id
+  );
+  if (!professionalOwnership.ok) return { error: professionalOwnership.error };
 
   const { error } = await supabase.from("availability_rules").insert({
 

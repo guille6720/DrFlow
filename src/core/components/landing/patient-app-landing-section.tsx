@@ -1,12 +1,11 @@
 "use client";
 
 import { Calendar, MessageCircle, Pill, Smartphone } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 
 import { AppInstallCard } from "@/features/portal/components/portal/app-install-card";
 
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function PatientAppLandingSection() {
@@ -61,7 +60,7 @@ export function PatientAppLandingSection() {
             <h3 className="font-semibold text-slate-900">Acceder al portal del consultorio</h3>
             <p className="mt-1 text-sm text-slate-500">
               Ingresá el identificador que te dio tu médico (el slug del portal, ej.{" "}
-              <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">mi-consultorio</code>).
+              <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-800">mi-consultorio</code>).
             </p>
             <div className="mt-4">
               <Input
@@ -73,12 +72,10 @@ export function PatientAppLandingSection() {
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               {portalUrl ? (
-                <Link href={portalUrl}>
-                  <Button>
-                    <Smartphone className="h-4 w-4" />
-                    Abrir app pacientes
-                  </Button>
-                </Link>
+                <ButtonLink href={portalUrl}>
+                  <Smartphone className="h-4 w-4" />
+                  Abrir app pacientes
+                </ButtonLink>
               ) : (
                 <Button disabled>Ingresá el identificador</Button>
               )}

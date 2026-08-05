@@ -1,10 +1,17 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import { LegalDocumentView } from "@/core/components/legal/legal-document-view";
 import { LEGAL_CONTENT_VERSION, privacyPolicyDocument } from "@/core/legal/content";
 
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Política de privacidad",
+  description: "Política de privacidad y tratamiento de datos de DrFlow para consultorios en Argentina.",
+  alternates: { canonical: "/privacidad" },
+  robots: { index: true, follow: true },
+};
 
 export default function PrivacidadPage() {
   return (
@@ -26,12 +33,12 @@ export default function PrivacidadPage() {
         </div>
 
         <div className="mt-10 flex flex-wrap gap-3">
-          <Link href="/terminos">
-            <Button variant="outline">Ver toda la documentación legal</Button>
-          </Link>
-          <Link href="/login">
-            <Button variant="outline">Iniciar sesión</Button>
-          </Link>
+          <ButtonLink href="/terminos" variant="outline">
+            Ver toda la documentación legal
+          </ButtonLink>
+          <ButtonLink href="/login" variant="outline">
+            Iniciar sesión
+          </ButtonLink>
         </div>
       </main>
     </div>

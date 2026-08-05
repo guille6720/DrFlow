@@ -4,7 +4,6 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import * as XLSX from "xlsx";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -33,7 +32,8 @@ export function CashClosureView({
 
   const general = totals.general ?? 0;
 
-  function exportExcel() {
+  async function exportExcel() {
+    const XLSX = await import("xlsx");
     const rows = [
       ["Cierre de caja", date],
       ["Total general", general],

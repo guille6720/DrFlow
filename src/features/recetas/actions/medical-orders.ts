@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { recordAudit, recordAuditChange } from "@/core/security/audit-service";
+import { verifyMedicalOrderForeignKeys } from "@/core/security/ownership-guard";
 import { requireMedicalOrderAccess } from "@/core/services/clinical-access.service";
 import { createClient } from "@/core/supabase/server";
 import { parseEntityId } from "@/core/validations/params";
@@ -24,6 +25,13 @@ export async function createMedicalOrder(formData: FormData) {
   if (validationError) return { error: validationError };
 
   const supabase = await createClient();
+  const ownership = await verifyMedicalOrderForeignKeys(supabase, clinicId, {
+    patientId: input.patient_id,
+    professionalId: input.professional_id,
+    clinicalRecordId: input.clinical_record_id,
+  });
+  if (!ownership.ok) return { error: ownership.error };
+
   const result = await createMedicalOrderRecord(supabase, {
     ...input,
     clinicId,

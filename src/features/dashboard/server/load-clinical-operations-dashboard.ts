@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { endOfDay, startOfDay } from "date-fns";
 
+import { observeQuery } from "@/core/observability/observe-query";
+
 import {
   buildAllergiesByPatient,
   buildAppointmentNotifications,
@@ -28,6 +30,18 @@ import {
 
 /** Single parallel fetch for the clinical operations dashboard (<2s target). */
 export async function loadClinicalOperationsDashboard(
+  supabase: SupabaseClient,
+  clinicId: string
+): Promise<ClinicalOperationsDashboardPayload> {
+  return observeQuery(
+    "load_clinical_operations_dashboard",
+    clinicId,
+    () => loadClinicalOperationsDashboardInner(supabase, clinicId),
+    "/dashboard"
+  );
+}
+
+async function loadClinicalOperationsDashboardInner(
   supabase: SupabaseClient,
   clinicId: string
 ): Promise<ClinicalOperationsDashboardPayload> {

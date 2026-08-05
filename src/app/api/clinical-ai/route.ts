@@ -1,21 +1,27 @@
 import { NextResponse } from "next/server";
 
 import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
+import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { hasPermission } from "@/core/permissions/roles";
 import { requireSameOriginMutation } from "@/core/security/csrf";
 import { clinicalAiRequestSchema } from "@/core/validations/clinical-ai-api";
 
-import { enhanceClinicalAiBodyIfConfigured, isClinicalLlmConfigured } from "@/lib/utils/clinical-ai-llm-provider.server";
+import {
+  enhanceClinicalAiBodyIfConfigured,
+  isClinicalLlmConfigured,
+} from "@/lib/utils/clinical-ai-llm-provider.server";
 import {
   listClinicalAiAgents,
   runClinicalAiOrchestrator,
 } from "@/lib/utils/clinical-ai-orchestrator";
+
 /** POST /api/clinical-ai — unified orchestrator endpoint (Phase F). */
-export async function POST(request: Request) {
+export const POST = withObservabilityApiRoute("clinical_ai", async (request, ctx) => {
   const csrfBlock = requireSameOriginMutation(request);
   if (csrfBlock) return csrfBlock;
 
   const clinicId = await getActiveClinicId();
+  ctx.clinicId = clinicId;
   const { role, isSuperadmin } = await getActiveClinic();
 
   if (!clinicId) {
@@ -65,9 +71,11 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ result });
-}
+});
 
-export async function GET() {
+export const GET = withObservabilityApiRoute("clinical_ai_meta", async (_request, ctx) => {
+  const clinicId = await getActiveClinicId();
+  ctx.clinicId = clinicId;
   const { role, isSuperadmin } = await getActiveClinic();
   const canUse =
     hasPermission(role, "viewClinicalRecords", isSuperadmin) ||
@@ -82,4 +90,4 @@ export async function GET() {
     disclaimer:
       "Sugerencia asistida — requiere confirmación del médico. No reemplaza criterio clínico.",
   });
-}
+});

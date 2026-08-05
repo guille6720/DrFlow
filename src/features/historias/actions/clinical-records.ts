@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { getSession, logAudit } from "@/core/auth/session";
 import { getAuditRequestContext } from "@/core/security/audit-context";
+import { verifyClinicalRecordForeignKeys } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
 import { clinicalRecordSchema } from "@/core/validations/schemas";
@@ -30,6 +31,13 @@ export async function createClinicalRecord(formData: FormData) {
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   const supabase = await createClient();
+  const ownership = await verifyClinicalRecordForeignKeys(supabase, clinicId, {
+    patientId: parsed.data.patient_id,
+    professionalId: parsed.data.professional_id,
+    appointmentId: parsed.data.appointment_id,
+  });
+  if (!ownership.ok) return { error: ownership.error };
+
   const ctx = await getAuditRequestContext();
 
   const result = await createClinicalRecordEntry(supabase, {
@@ -81,6 +89,13 @@ export async function updateClinicalRecord(id: string, formData: FormData) {
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   const supabase = await createClient();
+  const ownership = await verifyClinicalRecordForeignKeys(supabase, clinicId, {
+    patientId: parsed.data.patient_id,
+    professionalId: parsed.data.professional_id,
+    appointmentId: parsed.data.appointment_id,
+  });
+  if (!ownership.ok) return { error: ownership.error };
+
   const ctx = await getAuditRequestContext();
 
   const result = await updateClinicalRecordEntry(supabase, {

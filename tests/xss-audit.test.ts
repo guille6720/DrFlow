@@ -53,8 +53,12 @@ describe("XSS audit static checks", () => {
         if (!/\.(tsx|ts|jsx|js)$/.test(entry)) continue;
         const content = readFileSync(full, "utf8");
         if (!content.includes("dangerouslySetInnerHTML")) continue;
-        if (!full.includes("ui-theme-bootstrap-script")) {
-          offenders.push(full.replace(process.cwd(), ""));
+        const rel = full.replace(process.cwd(), "");
+        const allowed =
+          rel.includes("ui-theme-bootstrap-script") ||
+          rel.includes("marketing-json-ld");
+        if (!allowed) {
+          offenders.push(rel);
         }
       }
     }

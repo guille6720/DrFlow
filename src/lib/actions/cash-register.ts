@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { getSession, logAudit } from "@/core/auth/session";
+import { verifyCashChargeForeignKeys } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
 import {
   cashClosureSchema,
@@ -31,6 +32,13 @@ export async function createCashCharge(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const ownership = await verifyCashChargeForeignKeys(supabase, clinicId, {
+    patientId: parsed.data.patient_id,
+    professionalId: parsed.data.professional_id,
+    appointmentId: parsed.data.appointment_id,
+  });
+  if (!ownership.ok) return { error: ownership.error };
+
   const { data: charge, error } = await supabase.rpc("create_cash_charge_atomic", {
     p_clinic_id: clinicId,
     p_patient_id: parsed.data.patient_id,
@@ -119,6 +127,12 @@ export async function addLedgerEntry(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const ownership = await verifyCashChargeForeignKeys(supabase, clinicId, {
+    patientId: parsed.data.patient_id,
+    professionalId: parsed.data.professional_id,
+  });
+  if (!ownership.ok) return { error: ownership.error };
+
   const { data, error } = await supabase.rpc("add_patient_ledger_entry_atomic", {
     p_clinic_id: clinicId,
     p_patient_id: parsed.data.patient_id,

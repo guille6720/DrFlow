@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { getActiveClinic } from "@/core/auth/session";
+import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
+import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
 import { pharmacologyApiQuerySchema } from "@/core/validations/pharmacology-api";
 
-export async function GET(request: Request) {
+export const GET = withObservabilityApiRoute("pharmacology", async (request, ctx) => {
   const { searchParams } = new URL(request.url);
   const parsed = pharmacologyApiQuerySchema.safeParse({
     q: searchParams.get("q")?.trim() || undefined,
@@ -33,6 +34,8 @@ export async function GET(request: Request) {
   }
 
   const { role, isSuperadmin } = await getActiveClinic();
+  ctx.clinicId = await getActiveClinicId();
+
   if (!hasPermission(role, "viewPharmacology", isSuperadmin)) {
     return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
   }
@@ -89,4 +92,4 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.json({ data });
-}
+});

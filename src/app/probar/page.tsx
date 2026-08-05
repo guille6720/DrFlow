@@ -11,7 +11,7 @@ import Link from "next/link";
 
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Probar DrFlow 10 días gratis | Consultorio",
@@ -73,16 +73,21 @@ export default function ProbarPage() {
         </p>
 
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <Link href="/register?trial=10&utm_source=whatsapp&utm_medium=invite">
-            <Button size="lg" className="w-full min-w-[240px] sm:w-auto">
-              Crear mi consultorio gratis
-            </Button>
-          </Link>
-          <Link href="/demo?utm_source=whatsapp">
-            <Button size="lg" variant="outline" className="w-full sm:w-auto">
-              Ver cómo funciona
-            </Button>
-          </Link>
+          <ButtonLink
+            href="/register?trial=10&utm_source=whatsapp&utm_medium=invite"
+            size="lg"
+            className="w-full min-w-[240px] sm:w-auto"
+          >
+            Crear mi consultorio gratis
+          </ButtonLink>
+          <ButtonLink
+            href="/demo?utm_source=whatsapp"
+            size="lg"
+            variant="outline"
+            className="w-full sm:w-auto"
+          >
+            Ver cómo funciona
+          </ButtonLink>
         </div>
 
         <ul className="mt-10 space-y-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

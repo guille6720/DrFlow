@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Activity, AlertTriangle, Clock, Database, Server } from "lucide-react";
+import { Activity, AlertTriangle, Clock, Database, Gauge, Server, Zap } from "lucide-react";
 
 import type { HealthStatus } from "@/core/observability/health";
 import {
@@ -35,8 +35,9 @@ export function ClinicObservabilityPanel({ snapshot, health }: Props) {
       <div className="mb-4 flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
         <Activity className="mt-0.5 h-4 w-4 shrink-0" />
         <p>
-          Logs estructurados, métricas de jobs/API, consultas lentas y errores. Retención 30 días.
-          Health check en <code className="rounded bg-white px-1">/api/health</code>.
+          Logs estructurados, tiempos de API/consultas, Web Vitals, memoria heap y errores.
+          Retención 30 días. Health check en{" "}
+          <code className="rounded bg-white px-1">/api/health</code>.
         </p>
       </div>
 
@@ -54,6 +55,24 @@ export function ClinicObservabilityPanel({ snapshot, health }: Props) {
           tone={last24h.slowQueries > 0 ? "warn" : "ok"}
         />
         <StatTile
+          icon={Zap}
+          label="API lentas"
+          value={String(last24h.slowApiRequests)}
+          tone={last24h.slowApiRequests > 0 ? "warn" : "ok"}
+        />
+        <StatTile
+          icon={Gauge}
+          label="Web Vitals (p75 LCP)"
+          value={last24h.p75LcpMs != null ? `${last24h.p75LcpMs} ms` : "—"}
+          tone={
+            last24h.p75LcpMs != null && last24h.p75LcpMs >= 2500
+              ? "warn"
+              : last24h.webVitalsPoor > 0
+                ? "warn"
+                : "ok"
+          }
+        />
+        <StatTile
           icon={Server}
           label="Jobs lentos"
           value={String(last24h.slowJobs)}
@@ -64,6 +83,18 @@ export function ClinicObservabilityPanel({ snapshot, health }: Props) {
           label="Avg job (ms)"
           value={last24h.avgJobDurationMs != null ? String(last24h.avgJobDurationMs) : "—"}
           tone="ok"
+        />
+        <StatTile
+          icon={Activity}
+          label="Avg API (ms)"
+          value={last24h.avgApiDurationMs != null ? String(last24h.avgApiDurationMs) : "—"}
+          tone="ok"
+        />
+        <StatTile
+          icon={Gauge}
+          label="Web Vitals pobres"
+          value={String(last24h.webVitalsPoor)}
+          tone={last24h.webVitalsPoor > 0 ? "warn" : "ok"}
         />
       </div>
 

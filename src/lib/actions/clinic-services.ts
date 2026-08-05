@@ -10,6 +10,7 @@ import { scheduleAfterTask } from "@/core/errors/background.server";
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
 import { processPendingClinicJobs } from "@/core/jobs/process";
 import { recordAudit } from "@/core/security/audit-service";
+import { verifyPaymentForeignKeys } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
 import { mockPaymentSchema } from "@/core/validations/cash-schemas";
 import { firstZodIssue, parseEntityId, reminderChannelSchema } from "@/core/validations/params";
@@ -238,6 +239,13 @@ export async function createMockPayment(formData: FormData) {
   const { patient_id: patientId, appointment_id: appointmentId, amount, deposit_amount: depositAmount } =
     parsed.data;
 
+  const supabase = await createClient();
+  const ownership = await verifyPaymentForeignKeys(supabase, clinicId, {
+    patientId,
+    appointmentId,
+  });
+  if (!ownership.ok) return { error: ownership.error };
+
   const result = await paymentService.createPayment({
     clinicId,
     patientId,
@@ -246,7 +254,6 @@ export async function createMockPayment(formData: FormData) {
     depositAmount,
   });
 
-  const supabase = await createClient();
   const { data, error } = await supabase
     .from("payments")
     .insert({

@@ -1,15 +1,21 @@
 "use client";
 
 import { AlertCircle, CheckCircle2 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 
-import { GoogleLoginButton } from "@/core/components/auth/google-login-button";
 import { LoginBrandPanel } from "@/core/components/auth/login-brand-panel";
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import { useLoginForm } from "@/core/hooks/use-login-form";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+const GoogleLoginButton = dynamic(
+  () =>
+    import("@/core/components/auth/google-login-button").then((m) => m.GoogleLoginButton),
+  { ssr: false, loading: () => null }
+);
 
 export function LoginFormView() {
   const {
@@ -29,7 +35,7 @@ export function LoginFormView() {
     <div className="flex min-h-screen">
       <LoginBrandPanel />
 
-      <div className="flex flex-1 items-center justify-center bg-gradient-to-br from-blue-50/50 to-white p-6">
+      <main id="main-content" className="flex flex-1 items-center justify-center bg-gradient-to-br from-blue-50/50 to-white p-6">
         <div className="w-full max-w-md">
           <div className="mb-8 flex justify-center lg:hidden">
             <DrFlowLogo size="lg" href="/" centered />
@@ -133,7 +139,7 @@ export function LoginFormView() {
             </Button>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

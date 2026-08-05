@@ -14,8 +14,9 @@ import { Suspense } from "react";
 import { AccountDeletedCleanup } from "@/core/components/auth/account-deleted-cleanup";
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import { PatientAppLandingSection } from "@/core/components/landing/patient-app-landing-section";
+import { MarketingJsonLd } from "@/core/components/seo/marketing-json-ld";
 
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 
 const differentiators = [
   {
@@ -47,22 +48,22 @@ const differentiators = [
 export default function HomePage() {
   return (
     <div className="min-h-screen drflow-marketing">
+      <MarketingJsonLd />
       <header className="border-b border-blue-100/80 bg-white/85 backdrop-blur-md">
         <div className="relative mx-auto flex max-w-6xl items-center justify-end px-4 py-5">
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <DrFlowLogo size="lg" href="/" priority />
           </div>
-          <div className="relative z-10 flex gap-3">
-            <Link href="/login">
-              <Button variant="ghost">Ingresar</Button>
-            </Link>
-            <Link href="/register">
-              <Button>Registrar consultorio</Button>
-            </Link>
-          </div>
+          <nav aria-label="Acciones principales" className="relative z-10 flex gap-3">
+            <ButtonLink href="/login" variant="ghost">
+              Ingresar
+            </ButtonLink>
+            <ButtonLink href="/register">Registrar consultorio</ButtonLink>
+          </nav>
         </div>
       </header>
 
+      <main id="main-content">
       <section className="mx-auto max-w-6xl px-4 py-16 text-center sm:py-24">
         <Suspense fallback={null}>
           <AccountDeletedCleanup />
@@ -82,19 +83,15 @@ export default function HomePage() {
           complejidad de un ERP médico ni la limitación de una turnera simple.
         </p>
         <div className="mt-10 flex flex-wrap justify-center gap-4">
-          <Link href="/demo">
-            <Button size="lg">Probar gratis</Button>
-          </Link>
-          <Link href="/register">
-            <Button size="lg" variant="outline">
-              Registrar consultorio
-            </Button>
-          </Link>
-          <Link href="/login">
-            <Button size="lg" variant="ghost">
-              Ya tengo cuenta
-            </Button>
-          </Link>
+          <ButtonLink href="/demo" size="lg">
+            Probar gratis
+          </ButtonLink>
+          <ButtonLink href="/register" size="lg" variant="outline">
+            Registrar consultorio
+          </ButtonLink>
+          <ButtonLink href="/login" size="lg" variant="ghost">
+            Ya tengo cuenta
+          </ButtonLink>
         </div>
       </section>
 
@@ -143,6 +140,7 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      </main>
 
       <footer className="border-t border-blue-100 py-8 text-center text-sm text-slate-500">
         <p>DrFlow — Gestión clínica con identidad propia. Argentina.</p>

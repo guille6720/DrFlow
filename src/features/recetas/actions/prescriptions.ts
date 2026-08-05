@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/core/auth/session";
 import { recordAudit } from "@/core/security/audit-service";
+import { verifyPrescriptionForeignKeys } from "@/core/security/ownership-guard";
 import { requireClinicalIssueAccess } from "@/core/services/clinical-access.service";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue, optionalEntityIdSchema, parseEntityId } from "@/core/validations/params";
@@ -31,6 +32,13 @@ export async function savePrescriptionDraft(formData: FormData) {
   if (!existingParsed.success) return { error: "Borrador inválido" };
 
   const supabase = await createClient();
+  const ownership = await verifyPrescriptionForeignKeys(supabase, clinicId, {
+    patientId: parsed.data.patient_id,
+    professionalId: parsed.data.professional_id,
+    clinicalRecordId: parsed.data.clinical_record_id,
+  });
+  if (!ownership.ok) return { error: ownership.error };
+
   const result = await savePrescriptionDraftRecord(supabase, {
     clinicId,
     userId,

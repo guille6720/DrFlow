@@ -52,6 +52,8 @@
     "import:pami-vademecum:split": "node scripts/import-pami-vademecum.mjs --split-dir supabase/seeds/pami_batches",
     "deploy:checklist": "node scripts/print-supabase-redirects.mjs",
     "analyze:bundle": "node scripts/analyze-bundle.mjs",
+    "lighthouse:audit": "node scripts/lighthouse-audit.mjs",
+    "performance:audit": "node scripts/performance-audit.mjs",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -79,6 +81,7 @@
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.6.0",
     "unpdf": "^1.8.0",
+    "web-vitals": "^5.3.0",
     "xlsx": "^0.18.5",
     "zod": "^4.4.3"
   },
@@ -100,6 +103,7 @@
     "eslint-plugin-unused-imports": "^4.4.1",
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",
+    "lighthouse": "^12.8.2",
     "lint-staged": "^15.4.3",
     "tailwindcss": "^4",
     "typescript": "^5",
