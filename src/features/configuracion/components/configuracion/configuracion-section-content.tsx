@@ -1,4 +1,5 @@
 import { SettingsPanel } from "@/features/configuracion";
+import { AiProviderPanel } from "@/features/configuracion/components/configuracion/ai-provider-panel";
 import { AppearanceStylePanel } from "@/features/configuracion/components/configuracion/appearance-style-panel";
 import { ClinicAccessibilityPanel } from "@/features/configuracion/components/configuracion/clinic-accessibility-panel";
 import { ClinicFeatureFlagsPanel } from "@/features/configuracion/components/configuracion/clinic-feature-flags-panel";
@@ -67,6 +68,8 @@ export function renderConfiguracionSectionContent(
       return <ComplianceLegalPanel />;
     case "apariencia":
       return <AppearanceStylePanel />;
+    case "asistente-ia":
+      return <AiProviderPanel />;
     case "coberturas":
       return (
         <CoveragesPanel

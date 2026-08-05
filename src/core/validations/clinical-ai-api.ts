@@ -14,6 +14,11 @@ const TASK_VALUES = [
   "soap_draft",
 ] as const satisfies readonly ClinicalAiTask[];
 
+const chatMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().max(16000),
+});
+
 export const clinicalAiRequestSchema = z.object({
   task: z.enum(TASK_VALUES),
   message: z.string().max(8000).optional(),
@@ -25,6 +30,10 @@ export const clinicalAiRequestSchema = z.object({
   chart: z.record(z.string(), z.unknown()).optional(),
   lastConsultAt: z.string().nullable().optional(),
   enhanceWithLlm: z.boolean().optional(),
+  /** Prioritize the authenticated user's AI provider when configured. */
+  useUserProvider: z.boolean().optional(),
+  /** Prior turns for conversational copilot (excludes the current message). */
+  chatHistory: z.array(chatMessageSchema).max(40).optional(),
 });
 
 export type ClinicalAiRequest = z.infer<typeof clinicalAiRequestSchema>;

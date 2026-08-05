@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Accessibility,
   Activity,
+  Bot,
   BriefcaseMedical,
   Building2,
   CalendarClock,
@@ -27,6 +28,7 @@ export type ConfiguracionSectionId =
   | "coberturas"
   | "pami"
   | "apariencia"
+  | "asistente-ia"
   | "legal"
   | "demo"
   | "plugins"
@@ -94,6 +96,12 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
     title: "Apariencia",
     description: "Estilo visual y modo oscuro clínico.",
     icon: Palette,
+  },
+  {
+    id: "asistente-ia",
+    title: "Asistente IA",
+    description: "Conectá OpenAI, Anthropic u otro proveedor para el copilot clínico.",
+    icon: Bot,
   },
   {
     id: "legal",
@@ -168,6 +176,7 @@ export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
     icon: Settings2,
     sections: [
       "apariencia",
+      "asistente-ia",
       "legal",
       "plugins",
       "flags",

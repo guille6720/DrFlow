@@ -128,3 +128,23 @@ export function buildCopilotResponse(
 
   return buildCopilotResponseForIntent(intent, ctx, ctx.patientId!, buildCopilotSuggestedPrompts(ctx));
 }
+
+/** Compact context string for LLM system prompt (server + client). */
+export function buildClinicalCopilotContextSummary(ctx: ClinicalCopilotContext): string {
+  const parts: string[] = [];
+  if (ctx.patientName) parts.push(`Paciente: ${ctx.patientName}`);
+  if (ctx.lastConsultAt) parts.push(`Última consulta: ${ctx.lastConsultAt}`);
+  if (ctx.recentConsultations?.length) {
+    const lines = ctx.recentConsultations
+      .slice(0, 5)
+      .map((c) => `${c.dateLabel}: ${c.motive}${c.diagnosis ? ` (${c.diagnosis})` : ""}`);
+    parts.push(`Consultas recientes:\n${lines.join("\n")}`);
+  }
+  if (ctx.lastPrescriptionLines?.length) {
+    parts.push(`Última receta:\n${ctx.lastPrescriptionLines.slice(0, 8).join("\n")}`);
+  }
+  if (ctx.assistContext?.activeProblems?.length) {
+    parts.push(`Problemas activos: ${ctx.assistContext.activeProblems.join(", ")}`);
+  }
+  return parts.join("\n\n");
+}

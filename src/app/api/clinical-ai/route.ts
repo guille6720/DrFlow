@@ -7,13 +7,31 @@ import { requireSameOriginMutation } from "@/core/security/csrf";
 import { clinicalAiRequestSchema } from "@/core/validations/clinical-ai-api";
 
 import {
+  getUserAiConnectionPublic,
+  getUserAiCredentialsForSession,
+} from "@/lib/ai/user-ai-credentials.server";
+import type { AiChatMessage } from "@/lib/ai/user-ai-provider-types";
+import {
   enhanceClinicalAiBodyIfConfigured,
   isClinicalLlmConfigured,
+  resolveAiCredentialsForRequest,
+  runUserAiChat,
 } from "@/lib/utils/clinical-ai-llm-provider.server";
 import {
   listClinicalAiAgents,
   runClinicalAiOrchestrator,
 } from "@/lib/utils/clinical-ai-orchestrator";
+import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
+import { buildClinicalCopilotContextSummary } from "@/lib/utils/clinical-copilot-responses";
+
+function buildCopilotChatMessages(
+  history: AiChatMessage[] | undefined,
+  message: string | undefined
+): AiChatMessage[] {
+  const prior = history ?? [];
+  if (!message?.trim()) return prior;
+  return [...prior, { role: "user", content: message.trim() }];
+}
 
 /** POST /api/clinical-ai — unified orchestrator endpoint (Phase F). */
 export const POST = withObservabilityApiRoute("clinical_ai", async (request, ctx) => {
@@ -60,14 +78,38 @@ export const POST = withObservabilityApiRoute("clinical_ai", async (request, ctx
     chart: payload.chart as never,
   });
 
-  if (payload.enhanceWithLlm) {
-    const enhanced = await enhanceClinicalAiBodyIfConfigured({
-      agentId: result.agentId,
-      body: result.body,
-      contextSummary: payload.patientName,
-    });
-    result.body = enhanced.body;
-    result.engine = enhanced.engine;
+  const userCredentials = payload.useUserProvider
+    ? await getUserAiCredentialsForSession()
+    : null;
+  const credentials = resolveAiCredentialsForRequest(userCredentials);
+  const wantsLlm =
+    Boolean(credentials) &&
+    (payload.enhanceWithLlm || payload.useUserProvider || payload.task === "copilot_query");
+
+  if (wantsLlm && credentials) {
+    const copilotCtx = (payload.copilotContext ?? {}) as ClinicalCopilotContext;
+    const contextSummary =
+      buildClinicalCopilotContextSummary(copilotCtx) || payload.patientName || undefined;
+
+    if (payload.task === "copilot_query" && payload.message?.trim()) {
+      const chatResult = await runUserAiChat({
+        credentials,
+        messages: buildCopilotChatMessages(payload.chatHistory, payload.message),
+        contextSummary,
+        ruleBasedFallback: result.body,
+      });
+      result.body = chatResult.body;
+      result.engine = chatResult.engine;
+    } else {
+      const enhanced = await enhanceClinicalAiBodyIfConfigured({
+        agentId: result.agentId,
+        body: result.body,
+        contextSummary,
+        credentials,
+      });
+      result.body = enhanced.body;
+      result.engine = enhanced.engine;
+    }
   }
 
   return NextResponse.json({ result });
@@ -84,9 +126,12 @@ export const GET = withObservabilityApiRoute("clinical_ai_meta", async (_request
     return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
   }
 
+  const userConnection = await getUserAiConnectionPublic();
+
   return NextResponse.json({
     agents: listClinicalAiAgents(),
     llmConfigured: isClinicalLlmConfigured(),
+    userConnection,
     disclaimer:
       "Sugerencia asistida — requiere confirmación del médico. No reemplaza criterio clínico.",
   });
