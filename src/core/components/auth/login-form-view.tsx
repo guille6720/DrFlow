@@ -48,12 +48,7 @@ export function LoginFormView() {
             </Link>
           </p>
 
-          <form
-            action="/api/auth/login"
-            method="post"
-            onSubmit={handleLoginSubmit}
-            className="mt-8 space-y-4"
-          >
+          <form onSubmit={handleLoginSubmit} className="mt-8 space-y-4">
             {(info || resetMessage) && (
               <div
                 role="status"

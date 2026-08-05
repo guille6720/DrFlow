@@ -9,8 +9,6 @@ import { resolveClientPublicSiteUrl } from "@/core/supabase/client-public-url";
 import { firstZodIssue } from "@/core/validations/params";
 import { loginSchema } from "@/core/validations/schemas";
 
-import { isConsultorioStandalone } from "@/features/pacientes/utils/patient-portal-ready";
-
 function mapAuthError(message: string): string {
   const lower = message.toLowerCase();
   if (lower.includes("email not confirmed") || lower.includes("confirm")) {
@@ -93,11 +91,6 @@ export function useLoginForm() {
   }, [bootstrap.passwordLeakError, searchParams, submitError]);
 
   async function handleLoginSubmit(event: FormEvent<HTMLFormElement>) {
-    if (!isConsultorioStandalone()) {
-      setLoading(true);
-      return;
-    }
-
     event.preventDefault();
     setSubmitError(null);
     setLoading(true);
@@ -178,7 +171,6 @@ export function useLoginForm() {
     email,
     setEmail,
     loading,
-    setLoading,
     resetLoading,
     resetMessage,
     resetError,
