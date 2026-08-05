@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { SECURITY_RESPONSE_HEADERS } from "./src/lib/security/response-headers";
+import { SECURITY_RESPONSE_HEADERS } from "./src/core/security/response-headers";
 
 const nextConfig: NextConfig = {
   // Solo para imagen Docker; Vercel no debe usar standalone.

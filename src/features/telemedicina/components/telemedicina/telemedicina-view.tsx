@@ -13,6 +13,7 @@ import { Video, ExternalLink } from "lucide-react";
 import { SafeExternalLink } from "@/core/components/safe-link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { formatPatientName } from "@/shared/utils/patient-display";
 
 interface Session {
   id: string;
@@ -23,14 +24,6 @@ interface Session {
     start_at: string;
     patients?: { first_name: string; last_name: string } | { first_name: string; last_name: string }[] | null;
   } | null;
-}
-
-function formatPatientName(
-  patients?: { first_name: string; last_name: string } | { first_name: string; last_name: string }[] | null
-) {
-  if (!patients) return "Paciente";
-  const p = Array.isArray(patients) ? patients[0] : patients;
-  return p ? `${p.last_name}, ${p.first_name}` : "Paciente";
 }
 
 interface Props {

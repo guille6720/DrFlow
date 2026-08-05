@@ -1,9 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/core/supabase/server";
-import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
-import { hasPermission } from "@/core/permissions/roles";
+import { logAudit } from "@/core/auth/session";
+import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
+import { requireClinicalImportAccess } from "@/core/services/import-access.service";
 import {
   CLINICAL_CSV_MAX_BYTES,
   CLINICAL_CSV_MAX_ROWS,
@@ -16,20 +16,6 @@ import {
 import { parseClinicalCsvContent } from "@/lib/utils/clinical-csv-parse";
 import { sanitizeText } from "@/core/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
-
-async function requireClinicalImportAccess() {
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
-  const canImport =
-    hasPermission(role, "editClinicalRecords", isSuperadmin) ||
-    hasPermission(role, "managePatients", isSuperadmin);
-  if (!clinicId || !canImport) {
-    return { error: "Sin permisos" as const, clinicId: null, userId: null };
-  }
-  const user = await getSession();
-  if (!user) return { error: "Sesión requerida" as const, clinicId: null, userId: null };
-  return { error: null, clinicId, userId: user.id };
-}
 
 function validateCsvFile(file: File, buffer: Buffer): boolean {
   return validateCsvImportUpload(file, buffer, CLINICAL_CSV_MAX_BYTES).ok;
@@ -276,8 +262,7 @@ export async function importClinicalCsv(formData: FormData): Promise<ImportClini
     },
   });
 
-  revalidatePath("/historias");
-  revalidatePath("/pacientes");
+  revalidateClinicalSurfaces();
 
   if (recordsCreated === 0 && recordsSkipped === 0) {
     return {

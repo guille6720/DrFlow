@@ -14,6 +14,13 @@ export async function requireClinicPermission(permission: keyof typeof PERMISSIO
   return { ok: true as const, clinicId, role, isSuperadmin };
 }
 
+/** Settings admin gate — same shape as legacy requireAdmin(). */
+export async function requireSettingsAccess() {
+  const access = await requireClinicPermission("manageSettings");
+  if (!access.ok) return { error: access.error, clinicId: null as string | null };
+  return { clinicId: access.clinicId, error: null };
+}
+
 export async function requireActiveClinic() {
   const clinicId = await getActiveClinicId();
   if (!clinicId) {

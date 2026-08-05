@@ -1,9 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
-import { hasPermission } from "@/core/permissions/roles";
+import { requireStaffManagerAccess } from "@/core/services/staff-access.service";
+import { inviteSchema } from "@/core/validations/staff-schemas";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { createClient } from "@/core/supabase/server";
 import { getPublicSiteUrl } from "@/core/supabase/env";
@@ -11,21 +10,10 @@ import { recordAudit, recordAuditChange } from "@/core/security/audit-service";
 import type { UserRole } from "@/types/database";
 import { parseEntityId, staffRoleSchema } from "@/core/validations/params";
 
-const inviteSchema = z.object({
-  email: z.string().email("Email inválido"),
-  full_name: z.string().min(2, "Nombre requerido"),
-  role: z.enum(["clinic_admin", "doctor", "secretary"]),
-});
-
 async function requireStaffManager() {
-  const user = await getSession();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
-  if (!user || !clinicId) return { error: "Sesión requerida" as const };
-  if (!hasPermission(role, "manageStaff", isSuperadmin)) {
-    return { error: "Solo administradores pueden gestionar el equipo" as const };
-  }
-  return { user, clinicId };
+  const access = await requireStaffManagerAccess();
+  if (!access.ok) return { error: access.error };
+  return { user: access.user, clinicId: access.clinicId };
 }
 
 export async function acceptPendingInvitations() {

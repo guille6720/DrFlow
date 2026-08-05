@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
 import { assertStoragePathInClinic } from "@/core/security/tenant-scope";
 import {
   downloadImportStagingFile,
@@ -31,8 +32,7 @@ export async function handleImportClinicalPdfJob(
 
   if (result.success) {
     await removeImportStagingFile(supabase, payload.storagePath);
-    revalidatePath("/historias");
-    revalidatePath("/pacientes");
+    revalidateClinicalSurfaces();
     revalidatePath(`/pacientes/${result.patientId}`);
   }
 

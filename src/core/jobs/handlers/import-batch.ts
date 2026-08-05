@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
 import { assertStoragePathInClinic } from "@/core/security/tenant-scope";
 import { HCE_IMPORT_BATCH_SIZE } from "@/lib/constants/clinical-documents";
 import { processHceImportBatchFromContent } from "@/features/integraciones/server/hce-import-batch";
@@ -64,8 +65,7 @@ export async function handleImportBatchJob(
       await removeImportStagingFile(supabase, payload.storagePath);
     }
 
-    revalidatePath("/historias");
-    revalidatePath("/pacientes");
+    revalidateClinicalSurfaces();
     revalidatePath("/datos");
 
     return result as unknown as Record<string, unknown>;

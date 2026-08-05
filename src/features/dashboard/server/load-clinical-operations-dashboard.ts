@@ -15,16 +15,12 @@ import {
 } from "@/features/dashboard/utils/clinical-ops-metrics";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
+import { unwrapJoin } from "@/core/supabase/unwrap-join";
 
 const APPOINTMENT_SELECT =
   "id, start_at, status, booking_source, notes, patient_id, professional_id, waiting_room_status, patients(first_name, last_name, phone, document_number, birth_date), professionals(profiles(full_name))";
 
 const LIST_LIMIT = 8;
-
-function mapPatient<T>(value: T | T[] | null): T | null {
-  if (value == null) return null;
-  return Array.isArray(value) ? value[0] ?? null : value;
-}
 
 function buildTasks(input: {
   todayAppointments: LiveAppointment[];
@@ -108,7 +104,7 @@ function buildTasks(input: {
 
   for (const log of input.queuedReminders) {
     const appt = log.appointments;
-    const p = mapPatient(appt?.patients ?? null);
+    const p = unwrapJoin(appt?.patients ?? null);
     const name = p ? `${p.last_name}, ${p.first_name}` : "Paciente";
     tasks.push({
       id: `task-reminder-${log.id}`,
@@ -304,7 +300,7 @@ export async function loadClinicalOperationsDashboard(
 
   const criticalPatients = (criticalRows.data ?? [])
     .map((row) => {
-      const patient = mapPatient(row.patients as
+      const patient = unwrapJoin(row.patients as
         | { first_name: string; last_name: string; document_number: string }
         | { first_name: string; last_name: string; document_number: string }[]
         | null);
@@ -329,7 +325,7 @@ export async function loadClinicalOperationsDashboard(
 
   const draftPrescriptions: ClinicalOperationsPayload["draftPrescriptions"] = (draftRx.data ?? []).map(
     (row) => {
-      const patient = mapPatient(row.patients as
+      const patient = unwrapJoin(row.patients as
         | { first_name: string; last_name: string; document_number: string }
         | { first_name: string; last_name: string; document_number: string }[]
         | null);
@@ -347,7 +343,7 @@ export async function loadClinicalOperationsDashboard(
   const pendingStudiesMapped: ClinicalOperationsPayload["pendingStudies"] = (
     pendingStudies.data ?? []
   ).map((row) => {
-    const patient = mapPatient(row.patients as
+    const patient = unwrapJoin(row.patients as
       | { first_name: string; last_name: string }
       | { first_name: string; last_name: string }[]
       | null);
@@ -365,8 +361,8 @@ export async function loadClinicalOperationsDashboard(
       | { start_at: string; patients?: { first_name: string; last_name: string } | { first_name: string; last_name: string }[] | null }
       | { start_at: string; patients?: { first_name: string; last_name: string } | { first_name: string; last_name: string }[] | null }[]
       | null;
-    const appt = mapPatient(apptRaw);
-    const patient = mapPatient(appt?.patients ?? null);
+    const appt = unwrapJoin(apptRaw);
+    const patient = unwrapJoin(appt?.patients ?? null);
     return {
       id: String(row.id),
       created_at: String(row.created_at),
@@ -408,7 +404,7 @@ export async function loadClinicalOperationsDashboard(
   });
 
   const pendingOrders = (pendingOrdersResult.data ?? []).map((row) => {
-    const patient = mapPatient(row.patients as
+    const patient = unwrapJoin(row.patients as
       | { first_name: string; last_name: string }
       | { first_name: string; last_name: string }[]
       | null);

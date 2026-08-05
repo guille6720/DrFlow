@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/core/supabase/server";
-import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
-import { hasPermission } from "@/core/permissions/roles";
+import { logAudit } from "@/core/auth/session";
+import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
+import { requireClinicalRecordAccess } from "@/core/services/clinical-access.service";
+import { requireClinicalImportAccess } from "@/core/services/import-access.service";
 import {
   buildPatientFilePath,
   validatePdfUpload,
@@ -23,34 +25,8 @@ const VALID_CATEGORIES = new Set<ClinicalDocumentCategory>([
   "otro",
 ]);
 
-async function requireClinicalAccess(mode: "view" | "edit") {
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
-  const permission = mode === "edit" ? "editClinicalRecords" : "viewClinicalRecords";
-  if (!clinicId || !hasPermission(role, permission, isSuperadmin)) {
-    return { error: "Sin permisos" as const, clinicId: null, userId: null };
-  }
-  const user = await getSession();
-  if (!user) return { error: "Sesión requerida" as const, clinicId: null, userId: null };
-  return { error: null, clinicId, userId: user.id };
-}
-
-async function requireClinicalImportAccess() {
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
-  const canImport =
-    hasPermission(role, "editClinicalRecords", isSuperadmin) ||
-    hasPermission(role, "managePatients", isSuperadmin);
-  if (!clinicId || !canImport) {
-    return { error: "Sin permisos" as const, clinicId: null, userId: null };
-  }
-  const user = await getSession();
-  if (!user) return { error: "Sesión requerida" as const, clinicId: null, userId: null };
-  return { error: null, clinicId, userId: user.id };
-}
-
 export async function uploadPatientClinicalDocument(formData: FormData) {
-  const access = await requireClinicalAccess("edit");
+  const access = await requireClinicalRecordAccess("edit");
   if (access.error || !access.clinicId || !access.userId) {
     return { error: access.error ?? "Sin permisos" };
   }
@@ -141,7 +117,7 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
 }
 
 export async function deletePatientClinicalDocument(id: string) {
-  const access = await requireClinicalAccess("edit");
+  const access = await requireClinicalRecordAccess("edit");
   if (access.error || !access.clinicId) {
     return { error: access.error ?? "Sin permisos" };
   }
@@ -187,7 +163,7 @@ export async function deletePatientClinicalDocument(id: string) {
 }
 
 export async function getPatientClinicalDocumentUrl(id: string) {
-  const access = await requireClinicalAccess("view");
+  const access = await requireClinicalRecordAccess("view");
   if (access.error || !access.clinicId) {
     return { error: access.error ?? "Sin permisos" };
   }
@@ -268,8 +244,7 @@ export async function importClinicalPdfDocument(
   });
 
   if (result.success) {
-    revalidatePath("/historias");
-    revalidatePath("/pacientes");
+    revalidateClinicalSurfaces();
     revalidatePath(`/pacientes/${result.patientId}`);
   }
 

@@ -12,6 +12,7 @@ import type { Clinic, ReminderLog, UserRole } from "@/types/database";
 import { Bell, Mail, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { formatPatientName } from "@/shared/utils/patient-display";
 
 interface Props {
   logs: ReminderLog[];
@@ -28,14 +29,6 @@ interface Props {
 
 const channelLabels = { email: "Email", whatsapp: "WhatsApp", internal: "Interna" };
 const statusVariant = { queued: "warning", sent: "success", failed: "danger", simulated: "info" } as const;
-
-function formatPatientName(
-  patients?: { first_name: string; last_name: string } | { first_name: string; last_name: string }[] | null
-) {
-  if (!patients) return "Paciente";
-  const p = Array.isArray(patients) ? patients[0] : patients;
-  return p ? `${p.last_name}, ${p.first_name}` : "Paciente";
-}
 
 function statusLabel(log: ReminderLog): string {
   if (log.status === "queued") return "En cola";

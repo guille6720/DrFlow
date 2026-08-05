@@ -3,7 +3,7 @@
  * Not a Server Action — not callable from the client.
  */
 import { randomUUID } from "crypto";
-import { revalidatePath } from "next/cache";
+import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
 import { logAudit } from "@/core/auth/session";
 import {
   HCE_EXPORT_MAX_ROWS,
@@ -297,8 +297,7 @@ export async function processHceImportBatchFromContent(
     },
   });
 
-  revalidatePath("/historias");
-  revalidatePath("/pacientes");
+  revalidateClinicalSurfaces();
 
   return {
     success: true,

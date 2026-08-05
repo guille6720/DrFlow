@@ -1,3 +1,5 @@
+import { formatCurrencyAr } from "@/shared/utils/currency";
+
 /** Revenue and authorization analytics snapshot for Phase H. */
 
 export type AdminAnalyticsBreakdownRow = {
@@ -29,9 +31,8 @@ export type AdminAnalyticsSnapshot = {
   recentAuthorizations: AdminAuthorizationDocRow[];
 };
 
-export function formatCurrencyAr(amount: number): string {
-  return `$${amount.toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-}
+/** @deprecated Use formatCurrencyAr from @/shared/utils/currency */
+export { formatCurrencyAr };
 
 export function formatBreakdownLines(rows: AdminAnalyticsBreakdownRow[]): string {
   if (rows.length === 0) return "Sin datos en el período.";

@@ -27,7 +27,7 @@ import { RouteAnnouncer } from "@/core/components/accessibility/route-announcer"
 import {
   ClinicalContextMenuHost,
   ClinicalWorkflowShortcuts,
-} from "@/components/clinical-workflow";
+} from "@/features/ia/components/clinical-workflow";
 import { ClinicalCopilotProvider } from "@/features/ia/components/clinical-workflow/clinical-copilot-context";
 import { ClinicalCopilotHost } from "@/features/ia/components/clinical-workflow/clinical-copilot-host";
 import { AdminOpsCopilotProvider } from "@/features/ia/components/admin-ops/admin-ops-copilot-context";

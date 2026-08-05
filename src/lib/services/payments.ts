@@ -39,11 +39,6 @@ class MockMercadoPagoService implements PaymentService {
 
 export const paymentService: PaymentService = new MockMercadoPagoService();
 
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-  }).format(amount);
-}
+export { formatCurrency } from "@/shared/utils/currency";
 
 export type { Payment };

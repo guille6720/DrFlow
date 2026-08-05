@@ -1,29 +1,14 @@
 "use server";
 
 import { createClient } from "@/core/supabase/server";
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
-import { hasPermission } from "@/core/permissions/roles";
 import { validateCsvImportUpload } from "@/core/security/file-upload";
 import { recordAudit } from "@/core/security/audit-service";
+import { requireClinicalImportAccess } from "@/core/services/import-access.service";
 import { HCE_EXPORT_MAX_BYTES } from "@/lib/constants/clinical-documents";
 import {
   processHceImportBatchFromContent,
   type ImportHceExportResult,
 } from "@/features/integraciones/server/hce-import-batch";
-
-async function requireHceImportAccess() {
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
-  const canImport =
-    hasPermission(role, "editClinicalRecords", isSuperadmin) ||
-    hasPermission(role, "managePatients", isSuperadmin);
-  if (!clinicId || !canImport) {
-    return { error: "Sin permisos" as const, clinicId: null, userId: null };
-  }
-  const user = await getSession();
-  if (!user) return { error: "Sesión requerida" as const, clinicId: null, userId: null };
-  return { error: null, clinicId, userId: user.id };
-}
 
 export type { ImportHceExportResult };
 
@@ -42,7 +27,7 @@ export async function importHceExportCsv(formData: FormData): Promise<ImportHceE
 }
 
 async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExportResult> {
-  const access = await requireHceImportAccess();
+  const access = await requireClinicalImportAccess();
   if (access.error || !access.clinicId || !access.userId) {
     return { success: false, fileName: "", error: access.error ?? "Sin permisos" };
   }

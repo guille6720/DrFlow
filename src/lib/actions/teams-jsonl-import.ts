@@ -1,9 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/core/supabase/server";
-import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
-import { hasPermission } from "@/core/permissions/roles";
+import { logAudit } from "@/core/auth/session";
+import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
+import { requireClinicalImportAccess } from "@/core/services/import-access.service";
 import { TEAMS_JSONL_IMPORT_BATCH_SIZE } from "@/lib/constants/clinical-documents";
 import { findOrCreatePatientFromExtract, resolveImportProfessionalId } from "@/lib/utils/clinical-pdf-import";
 import {
@@ -14,20 +14,6 @@ import {
 import { sanitizeText } from "@/core/validations/schemas";
 import type { ExtractedPatientInfo } from "@/lib/utils/pdf-patient-extract";
 import { upsertPatientClinicalProfile } from "@/features/pacientes/server/patient-clinical-profile";
-
-async function requireTeamsJsonlImportAccess() {
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
-  const canImport =
-    hasPermission(role, "editClinicalRecords", isSuperadmin) ||
-    hasPermission(role, "managePatients", isSuperadmin);
-  if (!clinicId || !canImport) {
-    return { error: "Sin permisos" as const, clinicId: null, userId: null };
-  }
-  const user = await getSession();
-  if (!user) return { error: "Sesión requerida" as const, clinicId: null, userId: null };
-  return { error: null, clinicId, userId: user.id };
-}
 
 async function findPatientByConsumerRef(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -127,7 +113,7 @@ export async function importTeamsJsonlBatch(
 async function importTeamsJsonlBatchInner(
   formData: FormData
 ): Promise<ImportTeamsJsonlBatchResult> {
-  const access = await requireTeamsJsonlImportAccess();
+  const access = await requireClinicalImportAccess();
   if (access.error || !access.clinicId || !access.userId) {
     return { success: false, fileName: "", error: access.error ?? "Sin permisos" };
   }
@@ -266,8 +252,7 @@ async function importTeamsJsonlBatchInner(
     },
   });
 
-  revalidatePath("/historias");
-  revalidatePath("/pacientes");
+  revalidateClinicalSurfaces();
 
   return {
     success: true,

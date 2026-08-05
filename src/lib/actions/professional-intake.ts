@@ -1,10 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { createClient } from "@/core/supabase/server";
-import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
-import { hasPermission } from "@/core/permissions/roles";
+import { requireStaffManagerAccess } from "@/core/services/staff-access.service";
 import {
   MEDICAL_SPECIALTIES,
   SPECIALTY_OTHER_VALUE,
@@ -16,21 +14,16 @@ import {
   professionalIntakeFormSchema,
   resolveIntakeSpecialtyName,
 } from "@/core/validations/professional-intake";
-
-const agendaRuleSchema = z.object({
-  day_of_week: z.number().int().min(0).max(6),
-  start_time: z.string().regex(/^\d{2}:\d{2}$/),
-  end_time: z.string().regex(/^\d{2}:\d{2}$/),
-  slot_duration: z.number().int().min(10).max(120),
-});
+import { agendaRuleSchema } from "@/core/validations/settings-schemas";
 
 async function requireStaffManager() {
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
-  if (!clinicId || !hasPermission(role, "manageStaff", isSuperadmin)) {
-    return { error: "Sin permisos para ingreso de profesionales" as const, clinicId: null };
+  const access = await requireStaffManagerAccess({
+    deniedMessage: "Sin permisos para ingreso de profesionales",
+  });
+  if (!access.ok) {
+    return { error: access.error, clinicId: null };
   }
-  return { clinicId, error: null as null };
+  return { clinicId: access.clinicId, error: null as null };
 }
 
 function parseAgendaRules(raw: string): AgendaRuleDraft[] {

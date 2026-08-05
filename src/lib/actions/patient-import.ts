@@ -1,27 +1,15 @@
 "use server";
 
 import { createClient } from "@/core/supabase/server";
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
-import { hasPermission } from "@/core/permissions/roles";
 import { validateSpreadsheetImportUpload } from "@/core/security/file-upload";
 import { recordAudit } from "@/core/security/audit-service";
+import { requirePatientImportAccess } from "@/core/services/import-access.service";
 import { CONSUMERS_IMPORT_MAX_BYTES } from "@/lib/constants/clinical-documents";
 import {
   processConsumersImportBatchFromBuffer,
   type ImportConsumersResult,
   IMPORT_BATCH_SIZE,
 } from "@/features/pacientes/server/consumers-import-batch";
-
-async function requirePatientImportAccess() {
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
-  if (!clinicId || !hasPermission(role, "managePatients", isSuperadmin)) {
-    return { error: "Sin permisos" as const, clinicId: null, userId: null };
-  }
-  const user = await getSession();
-  if (!user) return { error: "Sesión requerida" as const, clinicId: null, userId: null };
-  return { error: null, clinicId, userId: user.id };
-}
 
 export type { ImportConsumersResult };
 

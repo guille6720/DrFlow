@@ -3,8 +3,11 @@
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/core/supabase/server";
-import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
-import { hasPermission } from "@/core/permissions/roles";
+import { logAudit } from "@/core/auth/session";
+import {
+  requireClinicalImportAccess,
+  requirePatientImportAccess,
+} from "@/core/services/import-access.service";
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
 import { processPendingClinicJobs } from "@/core/jobs/process";
 import {
@@ -21,31 +24,6 @@ import {
 import { HCE_IMPORT_BATCH_SIZE } from "@/lib/constants/clinical-documents";
 import { uploadImportStagingFile } from "@/lib/server/import-staging";
 import { parseEntityId } from "@/core/validations/params";
-
-async function requireClinicalImportAccess() {
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
-  const canImport =
-    hasPermission(role, "editClinicalRecords", isSuperadmin) ||
-    hasPermission(role, "managePatients", isSuperadmin);
-  if (!clinicId || !canImport) {
-    return { error: "Sin permisos" as const, clinicId: null, userId: null };
-  }
-  const user = await getSession();
-  if (!user) return { error: "Sesión requerida" as const, clinicId: null, userId: null };
-  return { error: null, clinicId, userId: user.id };
-}
-
-async function requirePatientImportAccess() {
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
-  if (!clinicId || !hasPermission(role, "managePatients", isSuperadmin)) {
-    return { error: "Sin permisos" as const, clinicId: null, userId: null };
-  }
-  const user = await getSession();
-  if (!user) return { error: "Sesión requerida" as const, clinicId: null, userId: null };
-  return { error: null, clinicId, userId: user.id };
-}
 
 function scheduleWorker(clinicId: string) {
   after(async () => {

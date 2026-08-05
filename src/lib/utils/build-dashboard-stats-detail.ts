@@ -2,6 +2,8 @@ import { appointmentStatusBadge } from "@/components/ui/badge";
 import { absenteeismRate } from "@/lib/utils/absenteeism-stats";
 import { getAttendancePeriodBounds } from "@/lib/utils/attendance-stats";
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
+import { formatPatientName } from "@/shared/utils/patient-display";
+import { unwrapJoin } from "@/core/supabase/unwrap-join";
 import type { DashboardStatRow, DashboardStatsDetail } from "@/lib/utils/dashboard-stats-types";
 
 type PatientRef = {
@@ -24,8 +26,7 @@ type AppointmentDetailRow = {
 };
 
 function firstRelation<T>(value: T | T[] | null | undefined): T | null {
-  if (!value) return null;
-  return Array.isArray(value) ? (value[0] ?? null) : value;
+  return unwrapJoin(value);
 }
 
 type NormalizedAppointmentDetailRow = {
@@ -62,9 +63,8 @@ type NewPatientRow = {
   created_at: string;
 };
 
-function formatPatientName(patient: PatientRef | null | undefined): string {
-  if (!patient) return "Sin paciente";
-  return `${patient.last_name}, ${patient.first_name}`;
+function formatPatientNameLocal(patient: PatientRef | null | undefined): string {
+  return formatPatientName(patient, "Sin paciente");
 }
 
 function mapAppointmentRow(
@@ -75,7 +75,7 @@ function mapAppointmentRow(
   return {
     id: row.id,
     patientId: row.patient_id,
-    patientName: formatPatientName(row.patients),
+    patientName: formatPatientNameLocal(row.patients),
     documentNumber: row.patients?.document_number ?? undefined,
     dateLabel: formatClinicDateTime(row.start_at, "d MMM yyyy", timeZone),
     timeLabel: formatClinicDateTime(row.start_at, "HH:mm 'hs'", timeZone),

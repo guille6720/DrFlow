@@ -70,6 +70,13 @@ export function parseCreateProfessionalForm(formData: FormData) {
   };
 }
 
+export const agendaRuleSchema = z.object({
+  day_of_week: z.number().int().min(0).max(6),
+  start_time: z.string().regex(/^\d{2}:\d{2}$/),
+  end_time: z.string().regex(/^\d{2}:\d{2}$/),
+  slot_duration: z.number().int().min(10).max(120),
+});
+
 export function parseScheduleBlockForm(formData: FormData) {
   return {
     professional_id: String(formData.get("professional_id") ?? ""),

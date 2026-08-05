@@ -1,5 +1,5 @@
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
-import { runClinicJobHandler } from "@/lib/jobs/handlers";
+import { runClinicJobHandler } from "@/core/jobs/handlers";
 import { recordObservabilityEvent, createTraceId } from "@/core/observability/record";
 import type { ClinicJobRow } from "@/core/jobs/types";
 

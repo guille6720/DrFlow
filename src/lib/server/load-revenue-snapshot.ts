@@ -21,10 +21,7 @@ type ChargeAgg = {
   coseguro: number;
 };
 
-function mapPatient<T>(value: T | T[] | null): T | null {
-  if (value == null) return null;
-  return Array.isArray(value) ? value[0] ?? null : value;
-}
+import { unwrapJoin } from "@/core/supabase/unwrap-join";
 
 function aggregateCharges(charges: Array<{
   amount: number;
@@ -158,7 +155,7 @@ export async function loadRevenueSnapshot(
   ]);
 
   const recentAuthorizations: AdminAuthorizationDocRow[] = (authDocsRes.data ?? []).map((d) => {
-    const p = mapPatient(d.patients ?? null);
+    const p = unwrapJoin(d.patients ?? null);
     return {
       title: d.title || d.file_name,
       patientName: p ? `${p.last_name}, ${p.first_name}` : "Paciente",

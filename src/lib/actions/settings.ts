@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/core/supabase/server";
 
 import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { requireSettingsAccess } from "@/core/actions/clinic-guard";
 
 import { recordAuditChange } from "@/core/security/audit-service";
 
@@ -34,29 +35,8 @@ import {
 
 } from "@/core/validations/settings-schemas";
 
-
-
-async function requireAdmin() {
-
-  const clinicId = await getActiveClinicId();
-
-  const { role, isSuperadmin } = await getActiveClinic();
-
-  if (!clinicId || !hasPermission(role, "manageSettings", isSuperadmin)) {
-
-    return { error: "Sin permisos", clinicId: null as string | null };
-
-  }
-
-  return { clinicId, error: null };
-
-}
-
-
-
 export async function updateClinicSettings(formData: FormData) {
-
-  const { clinicId, error: permErr } = await requireAdmin();
+  const { clinicId, error: permErr } = await requireSettingsAccess();
 
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
@@ -130,7 +110,7 @@ export async function updateClinicSettings(formData: FormData) {
 
 export async function createSpecialty(name: string) {
 
-  const { clinicId, error: permErr } = await requireAdmin();
+  const { clinicId, error: permErr } = await requireSettingsAccess();
 
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
@@ -162,7 +142,7 @@ export async function createSpecialty(name: string) {
 
 export async function deleteSpecialty(id: string) {
 
-  const { clinicId, error: permErr } = await requireAdmin();
+  const { clinicId, error: permErr } = await requireSettingsAccess();
 
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
@@ -198,7 +178,7 @@ export async function deleteSpecialty(id: string) {
 
 export async function createLocation(name: string, address?: string) {
 
-  const { clinicId, error: permErr } = await requireAdmin();
+  const { clinicId, error: permErr } = await requireSettingsAccess();
 
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
@@ -234,7 +214,7 @@ export async function createLocation(name: string, address?: string) {
 
 export async function deleteLocation(id: string) {
 
-  const { clinicId, error: permErr } = await requireAdmin();
+  const { clinicId, error: permErr } = await requireSettingsAccess();
 
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
@@ -270,7 +250,7 @@ export async function deleteLocation(id: string) {
 
 export async function createConsultationReason(name: string) {
 
-  const { clinicId, error: permErr } = await requireAdmin();
+  const { clinicId, error: permErr } = await requireSettingsAccess();
 
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
@@ -302,7 +282,7 @@ export async function createConsultationReason(name: string) {
 
 export async function createProfessional(formData: FormData) {
 
-  const { clinicId, error: permErr } = await requireAdmin();
+  const { clinicId, error: permErr } = await requireSettingsAccess();
 
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
@@ -354,7 +334,7 @@ export async function createProfessional(formData: FormData) {
 
 export async function enablePublicBooking() {
 
-  const { clinicId, error: permErr } = await requireAdmin();
+  const { clinicId, error: permErr } = await requireSettingsAccess();
 
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
@@ -424,7 +404,7 @@ export async function enablePublicBooking() {
 
 export async function createScheduleBlock(formData: FormData) {
 
-  const { clinicId, error: permErr } = await requireAdmin();
+  const { clinicId, error: permErr } = await requireSettingsAccess();
 
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
@@ -468,7 +448,7 @@ export async function createScheduleBlock(formData: FormData) {
 
 export async function createAvailabilityRule(formData: FormData) {
 
-  const { clinicId, error: permErr } = await requireAdmin();
+  const { clinicId, error: permErr } = await requireSettingsAccess();
 
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
