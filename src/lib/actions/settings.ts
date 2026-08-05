@@ -8,6 +8,8 @@ import { createClient } from "@/core/supabase/server";
 
 import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
 
+import { recordAuditChange } from "@/core/security/audit-service";
+
 import { hasPermission } from "@/core/permissions/roles";
 import { z } from "zod";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
@@ -68,6 +70,12 @@ export async function updateClinicSettings(formData: FormData) {
 
   const supabase = await createClient();
 
+  const { data: before } = await supabase
+    .from("clinics")
+    .select("name, phone, email, address, default_appointment_duration, voice_input_enabled")
+    .eq("id", clinicId)
+    .single();
+
   const { error } = await supabase
 
     .from("clinics")
@@ -93,6 +101,18 @@ export async function updateClinicSettings(formData: FormData) {
 
 
   if (error) return { error: error.message };
+
+  await recordAuditChange({
+    clinicId,
+    module: "settings",
+    entityType: "clinic",
+    entityId: clinicId,
+    action: "update",
+    what: "Actualizó configuración del consultorio",
+    before: before ?? null,
+    after: parsed.data,
+    keys: ["name", "phone", "email", "address", "default_appointment_duration", "voice_input_enabled"],
+  });
 
   revalidatePath("/configuracion");
 

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/core/supabase/server";
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { recordAudit } from "@/core/security/audit-service";
 import { parseEntityId, firstZodIssue } from "@/core/validations/params";
 import { clinicalIndicatorsSchema } from "@/core/validations/clinical-indicators";
 import { saveClinicalIndicators } from "@/features/pacientes/services/patient-chart-indicators.service";
@@ -30,6 +31,16 @@ export async function savePatientClinicalIndicators(
     parsed.data
   );
   if (!result.ok) return { error: result.error };
+
+  await recordAudit({
+    clinicId: access.clinicId,
+    module: "clinical",
+    entityType: "patient",
+    entityId: idParsed.data,
+    patientId: idParsed.data,
+    action: "update",
+    what: "Actualizó indicadores clínicos del paciente",
+  });
 
   revalidatePath(`/pacientes/${idParsed.data}`);
   revalidatePath(`/pacientes/${idParsed.data}?tab=soap`);

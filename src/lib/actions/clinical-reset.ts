@@ -45,7 +45,7 @@ async function requireClinicalResetAccess() {
   if (!user) return { error: "Sesión requerida" as const, clinicId: null, userId: null };
   if (!hasAdminClient()) {
     return {
-      error: "Falta SUPABASE_SERVICE_ROLE_KEY en el servidor (necesario para borrado masivo).",
+      error: "El servidor no está configurado para borrado masivo de datos clínicos.",
       clinicId: null,
       userId: null,
     };

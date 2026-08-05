@@ -8,6 +8,11 @@ import { hasPermission } from "@/core/permissions/roles";
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
 import { processPendingClinicJobs } from "@/core/jobs/process";
 import {
+  validateCsvImportUpload,
+  validatePdfUpload,
+  validateSpreadsheetImportUpload,
+} from "@/core/security/file-upload";
+import {
   CLINICAL_DOCUMENT_MAX_BYTES,
   CLINICAL_PDF_IMPORT_MAX_FILES,
   CONSUMERS_IMPORT_MAX_BYTES,
@@ -78,11 +83,12 @@ export async function enqueueClinicalPdfImports(formData: FormData): Promise<{
   const jobIds: string[] = [];
 
   for (const file of files) {
-    if (file.size <= 0 || file.size > CLINICAL_DOCUMENT_MAX_BYTES) {
-      return { error: `"${file.name}" inválido o mayor a 10 MB` };
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const validated = validatePdfUpload(file, buffer, CLINICAL_DOCUMENT_MAX_BYTES);
+    if (!validated.ok) {
+      return { error: `"${file.name}": ${validated.error}` };
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
     const { storagePath } = await uploadImportStagingFile(
       supabase,
       access.clinicId,
@@ -130,11 +136,14 @@ export async function enqueueHceImportJob(formData: FormData): Promise<{
   }
 
   const file = formData.get("file");
-  if (!(file instanceof File) || file.size === 0 || file.size > HCE_EXPORT_MAX_BYTES) {
+  if (!(file instanceof File)) {
     return { error: "CSV HCE inválido o mayor a 15 MB" };
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
+  const validated = validateCsvImportUpload(file, buffer, HCE_EXPORT_MAX_BYTES);
+  if (!validated.ok) return { error: validated.error };
+
   const supabase = await createClient();
   const { storagePath } = await uploadImportStagingFile(
     supabase,
@@ -182,19 +191,15 @@ export async function enqueueConsumersImportJob(formData: FormData): Promise<{
   }
 
   const file = formData.get("file");
-  const originalName = file instanceof File ? file.name : "consumers.xlsx";
-  const lower = originalName.toLowerCase();
-  const okExt =
-    lower.endsWith(".xlsx") ||
-    lower.endsWith(".xls") ||
-    lower.endsWith(".csv") ||
-    lower.endsWith(".csv.xlsx");
 
-  if (!(file instanceof File) || !okExt || file.size === 0 || file.size > CONSUMERS_IMPORT_MAX_BYTES) {
+  if (!(file instanceof File)) {
     return { error: "Archivo inválido (máx. 15 MB)" };
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
+  const validated = validateSpreadsheetImportUpload(file, buffer, CONSUMERS_IMPORT_MAX_BYTES);
+  if (!validated.ok) return { error: validated.error };
+
   const supabase = await createClient();
   const { storagePath } = await uploadImportStagingFile(
     supabase,

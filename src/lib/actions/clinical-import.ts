@@ -8,6 +8,7 @@ import {
   CLINICAL_CSV_MAX_BYTES,
   CLINICAL_CSV_MAX_ROWS,
 } from "@/lib/constants/clinical-documents";
+import { validateCsvImportUpload } from "@/core/security/file-upload";
 import {
   findOrCreatePatientFromExtract,
   resolveImportProfessionalId,
@@ -30,16 +31,8 @@ async function requireClinicalImportAccess() {
   return { error: null, clinicId, userId: user.id };
 }
 
-function validateCsvFile(file: unknown): file is File {
-  if (!(file instanceof File) || file.size === 0) return false;
-  const name = file.name.toLowerCase();
-  const type = file.type.toLowerCase();
-  const okType =
-    type === "text/csv" ||
-    type === "application/vnd.ms-excel" ||
-    type === "text/plain" ||
-    name.endsWith(".csv");
-  return okType && file.size <= CLINICAL_CSV_MAX_BYTES;
+function validateCsvFile(file: File, buffer: Buffer): boolean {
+  return validateCsvImportUpload(file, buffer, CLINICAL_CSV_MAX_BYTES).ok;
 }
 
 export type ImportClinicalCsvResult =
@@ -66,7 +59,7 @@ export async function importClinicalCsv(formData: FormData): Promise<ImportClini
   const file = formData.get("file");
   const originalName = file instanceof File ? file.name : "consultas.csv";
 
-  if (!validateCsvFile(file)) {
+  if (!(file instanceof File)) {
     const lower = originalName.toLowerCase();
     if (
       lower.endsWith(".xlsx") ||
@@ -87,7 +80,29 @@ export async function importClinicalCsv(formData: FormData): Promise<ImportClini
     };
   }
 
-  const content = await file.text();
+  const buffer = Buffer.from(await file.arrayBuffer());
+  if (!validateCsvFile(file, buffer)) {
+    const lower = originalName.toLowerCase();
+    if (
+      lower.endsWith(".xlsx") ||
+      lower.endsWith(".xls") ||
+      lower.endsWith(".csv.xlsx")
+    ) {
+      return {
+        success: false,
+        fileName: originalName,
+        error:
+          "Este archivo Excel es el export de pacientes (consumers). No va acá: andá a Pacientes → Importar pacientes (Excel).",
+      };
+    }
+    return {
+      success: false,
+      fileName: originalName,
+      error: "Archivo CSV inválido o mayor a 8 MB. Usá extensión .csv",
+    };
+  }
+
+  const content = buffer.toString("utf-8");
   const { isHceExportCsv } = await import("@/lib/utils/hce-export-parse");
   if (isHceExportCsv(content, originalName)) {
     return {

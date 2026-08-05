@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { logAudit } from "@/core/auth/session";
+import { recordAudit } from "@/core/security/audit-service";
 import { createClient } from "@/core/supabase/server";
 import { prescriptionDraftSchema } from "@/core/validations/schemas";
 import { optionalEntityIdSchema, parseEntityId } from "@/core/validations/params";
@@ -62,8 +63,26 @@ export async function issuePrescription(id: string) {
   if (!idParsed.ok) return { error: idParsed.error };
 
   const supabase = await createClient();
+  const { data: before } = await supabase
+    .from("prescription_drafts")
+    .select("id, patient_id, status")
+    .eq("id", idParsed.data)
+    .eq("clinic_id", access.data.clinicId)
+    .maybeSingle();
+
   const result = await issuePrescriptionRecord(supabase, idParsed.data, access.data.clinicId);
   if (!result.ok) return { error: result.error };
+
+  await recordAudit({
+    clinicId: access.data.clinicId,
+    module: "prescriptions",
+    entityType: "prescription",
+    entityId: idParsed.data,
+    patientId: before?.patient_id ?? undefined,
+    action: "update",
+    what: "Emitió receta electrónica",
+    metadata: { status: "issued" },
+  });
 
   revalidatePath("/recetas");
   revalidatePath("/historias");
@@ -78,8 +97,26 @@ export async function voidPrescription(id: string) {
   if (!idParsed.ok) return { error: idParsed.error };
 
   const supabase = await createClient();
+  const { data: before } = await supabase
+    .from("prescription_drafts")
+    .select("id, patient_id, status")
+    .eq("id", idParsed.data)
+    .eq("clinic_id", access.data.clinicId)
+    .maybeSingle();
+
   const result = await voidPrescriptionRecord(supabase, idParsed.data, access.data.clinicId);
   if (!result.ok) return { error: result.error };
+
+  await recordAudit({
+    clinicId: access.data.clinicId,
+    module: "prescriptions",
+    entityType: "prescription",
+    entityId: idParsed.data,
+    patientId: before?.patient_id ?? undefined,
+    action: "delete",
+    what: "Anuló receta",
+    metadata: { previousStatus: before?.status },
+  });
 
   revalidatePath("/recetas");
   revalidatePath("/historias");

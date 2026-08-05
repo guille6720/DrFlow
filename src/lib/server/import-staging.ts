@@ -1,11 +1,11 @@
 import { randomUUID } from "crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { sanitizeStorageFileName } from "@/core/security/file-upload";
 
 const BUCKET = "clinical-files";
 
 function sanitizeStagingName(name: string): string {
-  const base = name.split(/[/\\]/).pop() ?? "import";
-  return base.replace(/[^a-zA-Z0-9._-]/g, "_");
+  return sanitizeStorageFileName(name, "import");
 }
 
 export function buildImportStagingPath(

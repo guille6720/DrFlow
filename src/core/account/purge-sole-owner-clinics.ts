@@ -17,7 +17,7 @@ export async function purgeSoleOwnerClinicsForUserInternal(
   userId: string
 ): Promise<{ error?: string }> {
   if (!hasAdminClient()) {
-    return { error: "Falta SUPABASE_SERVICE_ROLE_KEY para borrar el consultorio por completo." };
+    return { error: "El servidor no está configurado para borrar el consultorio por completo." };
   }
 
   const admin = createAdminClient();

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Copy, Send, Building2 } from "lucide-react";
-import Link from "next/link";
+import { SafeInternalLink } from "@/core/components/safe-link";
 import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -133,11 +133,11 @@ export function AdminOpsCopilotSheet({ open, onClose, context }: Props) {
                       <div className="mt-2 flex flex-wrap gap-2">
                         {turn.response.actions.map((action) =>
                           action.href ? (
-                            <Link key={action.label} href={action.href} onClick={onClose}>
+                            <SafeInternalLink key={action.label} href={action.href} onClick={onClose}>
                               <Button type="button" size="sm" variant="outline">
                                 {action.label}
                               </Button>
-                            </Link>
+                            </SafeInternalLink>
                           ) : action.copyText ? (
                             <Button
                               key={action.label}

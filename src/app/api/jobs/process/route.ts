@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { processPendingClinicJobs } from "@/core/jobs/process";
+import { authorizeCronRequest } from "@/core/observability/cron-auth";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -7,16 +8,8 @@ export const maxDuration = 60;
 
 const jobLimitSchema = z.coerce.number().int().min(1).max(50).default(10);
 
-function authorizeWorker(request: Request): boolean {
-  const cronSecret = process.env.CRON_SECRET?.trim();
-  if (process.env.NODE_ENV === "production" && !cronSecret) return false;
-  if (!cronSecret) return true;
-  const auth = request.headers.get("authorization");
-  return auth === `Bearer ${cronSecret}`;
-}
-
 async function runWorker(request: Request) {
-  if (!authorizeWorker(request)) {
+  if (!authorizeCronRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

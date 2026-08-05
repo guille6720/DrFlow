@@ -150,6 +150,7 @@ export function AgendaView({
             <Link
               href={`/solicitar-turno/${bookingSlug}`}
               target="_blank"
+              rel="noopener noreferrer"
               className="font-medium text-teal-300 hover:underline"
             >
               /solicitar-turno/{bookingSlug}

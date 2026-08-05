@@ -12,6 +12,14 @@ const SECRET_PATTERNS = [
   { re: /eyJ[a-zA-Z0-9_-]{20,}\.[a-zA-Z0-9_-]{20,}/, label: "JWT token literal" },
   { re: /SUPABASE_SERVICE_ROLE_KEY\s*=\s*["'][^"']{20,}["']/, label: "Hardcoded service role" },
   { re: /CRON_SECRET\s*=\s*["'][^"']{8,}["']/, label: "Hardcoded CRON_SECRET" },
+  { re: /CLINICAL_AI_LLM_API_KEY\s*=\s*["'][^"']{8,}["']/, label: "Hardcoded LLM API key" },
+  { re: /OPENAI_API_KEY\s*=\s*["'][^"']{8,}["']/, label: "Hardcoded OpenAI API key" },
+];
+
+const SERVER_ONLY_MODULES = [
+  "src/core/supabase/admin.ts",
+  "src/core/env.server.ts",
+  "src/lib/utils/clinical-ai-llm-provider.server.ts",
 ];
 
 const DANGEROUS_PATTERNS = [
@@ -56,6 +64,22 @@ function scanSourceFiles() {
       /\.from\s*\(\s*["'][a-z_]+["']\s*\)\.(insert|update|delete|upsert)/.test(content)
     ) {
       violations.push(`${r} — direct Supabase mutation in UI component`);
+    }
+  }
+  return violations;
+}
+
+function checkServerOnlyModules() {
+  const violations = [];
+  for (const relPath of SERVER_ONLY_MODULES) {
+    const filePath = resolve(SRC_ROOT, relPath.replace(/^src\//, ""));
+    if (!existsSync(filePath)) {
+      violations.push(`${relPath} — missing server-only module`);
+      continue;
+    }
+    const content = readSource(filePath);
+    if (!content.includes('import "server-only"')) {
+      violations.push(`${relPath} — must import "server-only"`);
     }
   }
   return violations;
@@ -117,7 +141,12 @@ function runNpmAudit() {
 function main() {
   console.log("\n🔒 DrFlow — Security gate\n");
 
-  const violations = [...scanSourceFiles(), ...checkRlsManifest(), ...runNpmAudit()];
+  const violations = [
+    ...scanSourceFiles(),
+    ...checkServerOnlyModules(),
+    ...checkRlsManifest(),
+    ...runNpmAudit(),
+  ];
 
   if (violations.length) {
     failGate("Security gate failed", violations);

@@ -1,10 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { randomUUID } from "crypto";
 import { createClient } from "@/core/supabase/server";
 import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
 import { hasPermission } from "@/core/permissions/roles";
+import {
+  buildPatientFilePath,
+  validatePdfUpload,
+} from "@/core/security/file-upload";
 import {
   CLINICAL_DOCUMENT_MAX_BYTES,
   type ClinicalDocumentCategory,
@@ -19,16 +22,6 @@ const VALID_CATEGORIES = new Set<ClinicalDocumentCategory>([
   "estudio",
   "otro",
 ]);
-
-function sanitizeFileName(name: string): string {
-  const base = name.split(/[/\\]/).pop() ?? "documento.pdf";
-  const cleaned = base.replace(/[^a-zA-Z0-9._-]/g, "_");
-  return cleaned.toLowerCase().endsWith(".pdf") ? cleaned : `${cleaned}.pdf`;
-}
-
-function buildStoragePath(clinicId: string, patientId: string, fileName: string): string {
-  return `${clinicId}/patients/${patientId}/${randomUUID()}-${fileName}`;
-}
 
 async function requireClinicalAccess(mode: "view" | "edit") {
   const clinicId = await getActiveClinicId();
@@ -56,15 +49,6 @@ async function requireClinicalImportAccess() {
   return { error: null, clinicId, userId: user.id };
 }
 
-function validatePdfFile(file: unknown): file is File {
-  return (
-    file instanceof File &&
-    file.size > 0 &&
-    (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) &&
-    file.size <= CLINICAL_DOCUMENT_MAX_BYTES
-  );
-}
-
 export async function uploadPatientClinicalDocument(formData: FormData) {
   const access = await requireClinicalAccess("edit");
   if (access.error || !access.clinicId || !access.userId) {
@@ -79,16 +63,13 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
     ? (categoryRaw as ClinicalDocumentCategory)
     : "otro";
   const file = formData.get("file");
-
-  if (!(file instanceof File) || file.size === 0) {
+  if (!(file instanceof File)) {
     return { error: "Seleccioná un archivo PDF" };
   }
-  if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-    return { error: "Solo se permiten archivos PDF" };
-  }
-  if (file.size > CLINICAL_DOCUMENT_MAX_BYTES) {
-    return { error: "El PDF no puede superar 10 MB" };
-  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const validated = validatePdfUpload(file, buffer, CLINICAL_DOCUMENT_MAX_BYTES);
+  if (!validated.ok) return { error: validated.error };
 
   const supabase = await createClient();
 
@@ -101,14 +82,13 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
 
   if (!patient) return { error: "Paciente no encontrado" };
 
-  const fileName = sanitizeFileName(file.name);
-  const filePath = buildStoragePath(access.clinicId, patientParsed.data, fileName);
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const fileName = validated.sanitizedName;
+  const filePath = buildPatientFilePath(access.clinicId, patientParsed.data, fileName);
 
   const { error: uploadError } = await supabase.storage
     .from(BUCKET)
     .upload(filePath, buffer, {
-      contentType: "application/pdf",
+      contentType: validated.contentType,
       upsert: false,
     });
 
@@ -269,15 +249,15 @@ export async function importClinicalPdfDocument(
   const file = formData.get("file");
   const originalName = file instanceof File ? file.name : "documento.pdf";
 
-  if (!validatePdfFile(file)) {
-    return {
-      success: false,
-      fileName: originalName,
-      error: "Archivo PDF inválido o mayor a 10 MB",
-    };
+  if (!(file instanceof File)) {
+    return { success: false, fileName: originalName, error: "Archivo PDF inválido o mayor a 10 MB" };
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
+  const validated = validatePdfUpload(file, buffer, CLINICAL_DOCUMENT_MAX_BYTES);
+  if (!validated.ok) {
+    return { success: false, fileName: originalName, error: validated.error };
+  }
   const supabase = await createClient();
   const result = await processClinicalPdfImport(supabase, {
     clinicId: access.clinicId,

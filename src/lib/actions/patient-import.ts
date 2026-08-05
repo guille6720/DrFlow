@@ -3,7 +3,10 @@
 import { createClient } from "@/core/supabase/server";
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
 import { hasPermission } from "@/core/permissions/roles";
-import { CONSUMERS_IMPORT_MAX_BYTES } from "@/lib/constants/clinical-documents";import {
+import { validateSpreadsheetImportUpload } from "@/core/security/file-upload";
+import { recordAudit } from "@/core/security/audit-service";
+import { CONSUMERS_IMPORT_MAX_BYTES } from "@/lib/constants/clinical-documents";
+import {
   processConsumersImportBatchFromBuffer,
   type ImportConsumersResult,
   IMPORT_BATCH_SIZE,
@@ -18,17 +21,6 @@ async function requirePatientImportAccess() {
   const user = await getSession();
   if (!user) return { error: "Sesión requerida" as const, clinicId: null, userId: null };
   return { error: null, clinicId, userId: user.id };
-}
-
-function validateConsumersImportFile(file: unknown, fileName: string): file is File {
-  if (!(file instanceof File) || file.size === 0) return false;
-  const lower = fileName.toLowerCase();
-  const okExt =
-    lower.endsWith(".xlsx") ||
-    lower.endsWith(".xls") ||
-    lower.endsWith(".csv") ||
-    lower.endsWith(".csv.xlsx");
-  return okExt && file.size <= CONSUMERS_IMPORT_MAX_BYTES;
 }
 
 export type { ImportConsumersResult };
@@ -62,7 +54,7 @@ async function importConsumersFileInner(
   const file = formData.get("file");
   const originalName = file instanceof File ? file.name : "consumers.xlsx";
 
-  if (!validateConsumersImportFile(file, originalName)) {
+  if (!(file instanceof File)) {
     return {
       success: false,
       fileName: originalName,
@@ -71,6 +63,11 @@ async function importConsumersFileInner(
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
+  const validated = validateSpreadsheetImportUpload(file, buffer, CONSUMERS_IMPORT_MAX_BYTES);
+  if (!validated.ok) {
+    return { success: false, fileName: originalName, error: validated.error };
+  }
+
   const offset = Math.max(0, Number(formData.get("offset") ?? 0) || 0);
   const limit = Math.min(
     IMPORT_BATCH_SIZE,
@@ -78,7 +75,7 @@ async function importConsumersFileInner(
   );
 
   const supabase = await createClient();
-  return processConsumersImportBatchFromBuffer(supabase, {
+  const result = await processConsumersImportBatchFromBuffer(supabase, {
     clinicId: access.clinicId,
     userId: access.userId,
     buffer,
@@ -86,4 +83,23 @@ async function importConsumersFileInner(
     offset,
     limit,
   });
+
+  if (result.success) {
+    await recordAudit({
+      clinicId: access.clinicId,
+      module: "imports",
+      entityType: "patient",
+      entityId: access.clinicId,
+      action: "create",
+      what: "Importó lote de pacientes",
+      metadata: {
+        fileName: originalName,
+        patientsCreated: result.patientsCreated,
+        patientsUpdated: result.patientsUpdated,
+        offset,
+      },
+    });
+  }
+
+  return result;
 }

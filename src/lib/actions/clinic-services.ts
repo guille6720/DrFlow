@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { createClient } from "@/core/supabase/server";
 import { getSession } from "@/core/auth/session";
+import { recordAudit } from "@/core/security/audit-service";
 import { reminderService, buildAppointmentReminderMessage } from "@/lib/services/reminders";
 import { buildPamiReminderMessage } from "@/lib/constants/pami-cabecera";
 import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
@@ -95,6 +96,17 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
       sent_at: result.sent_at,
     });
 
+    await recordAudit({
+      clinicId,
+      module: "appointments",
+      entityType: "appointment",
+      entityId: idParsed.data,
+      patientId: appointment.patient_id as string | undefined,
+      action: "update",
+      what: "Envió recordatorio de turno",
+      metadata: { channel: selectedChannel },
+    });
+
     revalidatePath("/recordatorios");
     return {
       success: true,
@@ -136,6 +148,17 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
     } catch (err) {
       console.error("[sendReminder] background worker failed", err);
     }
+  });
+
+  await recordAudit({
+    clinicId,
+    module: "appointments",
+    entityType: "appointment",
+    entityId: idParsed.data,
+    patientId: appointment.patient_id as string | undefined,
+    action: "update",
+    what: "Encoló recordatorio de turno",
+    metadata: { channel: selectedChannel, jobId },
   });
 
   revalidatePath("/recordatorios");
@@ -192,6 +215,17 @@ export async function createTelemedicineSession(appointmentId: string) {
     .eq("id", idParsed.data)
     .eq("clinic_id", clinicId);
 
+  await recordAudit({
+    clinicId,
+    module: "appointments",
+    entityType: "appointment",
+    entityId: idParsed.data,
+    patientId: appointment.patient_id as string | undefined,
+    action: "create",
+    what: "Creó sesión de telemedicina",
+    metadata: { session_id: data.id },
+  });
+
   revalidatePath("/telemedicina");
   revalidatePath("/atenciones");
   return { data };
@@ -238,6 +272,16 @@ export async function createMockPayment(formData: FormData) {
     .single();
 
   if (error) return { error: error.message };
+
+  await recordAudit({
+    clinicId,
+    module: "cash",
+    entityType: "payment",
+    entityId: data.id,
+    patientId,
+    action: "create",
+    metadata: { amount, appointment_id: appointmentId ?? null },
+  });
 
   revalidatePath("/pagos");
   return { data };

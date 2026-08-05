@@ -22,10 +22,10 @@ function loadEnv() {
 async function main() {
   const env = loadEnv();
   const url = env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = env.SUPABASE_SERVICE_ROLE_KEY ?? env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const key = env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !key) {
-    console.error("❌ Faltan NEXT_PUBLIC_SUPABASE_URL o clave API en .env.local");
+    console.error("❌ Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env.local");
     process.exit(1);
   }
 

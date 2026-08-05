@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
 import { createClient } from "@/core/supabase/server";
+import { recordAuditChange } from "@/core/security/audit-service";
 import { hasPermission } from "@/core/permissions/roles";
 import { normalizeCoverages } from "@/lib/constants/coverages";
 import { clinicCoveragesSchema } from "@/core/validations/settings-schemas";
@@ -52,6 +53,13 @@ export async function updateClinicCoverages(formData: FormData): Promise<{
   }
 
   const supabase = await createClient();
+
+  const { data: before } = await supabase
+    .from("clinics")
+    .select("accepted_coverages, default_insurance_provider")
+    .eq("id", clinicId)
+    .single();
+
   const { error } = await supabase
     .from("clinics")
     .update({
@@ -69,6 +77,21 @@ export async function updateClinicCoverages(formData: FormData): Promise<{
     }
     return { error: error.message || "No se pudieron guardar las coberturas." };
   }
+
+  await recordAuditChange({
+    clinicId,
+    module: "settings",
+    entityType: "clinic",
+    entityId: clinicId,
+    action: "update",
+    what: "Actualizó coberturas aceptadas",
+    before: before ?? null,
+    after: {
+      accepted_coverages: accepted,
+      default_insurance_provider: resolvedDefault,
+    },
+    keys: ["accepted_coverages", "default_insurance_provider"],
+  });
 
   revalidatePath("/configuracion");
   revalidatePath("/pacientes");

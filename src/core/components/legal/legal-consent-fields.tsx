@@ -23,11 +23,11 @@ export function LegalAcceptanceCheckbox({ name = "legal_accepted", className }: 
       />
       <span>
         Acepto los{" "}
-        <Link href="/terminos" className="font-medium text-teal-700 underline" target="_blank">
+        <Link href="/terminos" className="font-medium text-teal-700 underline" target="_blank" rel="noopener noreferrer">
           Términos del servicio
         </Link>{" "}
         (v{LEGAL_TERMS_VERSION}) y la{" "}
-        <Link href="/privacidad" className="font-medium text-teal-700 underline" target="_blank">
+        <Link href="/privacidad" className="font-medium text-teal-700 underline" target="_blank" rel="noopener noreferrer">
           Política de privacidad
         </Link>{" "}
         (v{LEGAL_PRIVACY_VERSION}). Declaro ser titular o representante autorizado del consultorio y
@@ -55,11 +55,12 @@ export function PatientDataConsentCheckbox({ slug }: { slug: string }) {
           href={`/aviso-paciente?clinic=${encodeURIComponent(slug)}`}
           className="font-medium text-emerald-800 underline"
           target="_blank"
+          rel="noopener noreferrer"
         >
           información al paciente
         </Link>{" "}
         y la{" "}
-        <Link href="/privacidad" className="font-medium text-emerald-800 underline" target="_blank">
+        <Link href="/privacidad" className="font-medium text-emerald-800 underline" target="_blank" rel="noopener noreferrer">
           política de privacidad
         </Link>
         . (Ley 25.326 / Ley 26.529)

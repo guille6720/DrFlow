@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { purgeSoleOwnerClinicsForUser } from "@/lib/actions/clinic-purge";
 import { DELETE_ACCOUNT_CONFIRM_PHRASE } from "@/lib/constants/account";
 import { createClient } from "@/core/supabase/server";
+import { recordAudit } from "@/core/security/audit-service";
 
 const CLINIC_COOKIE = "drflow_clinic_id";
 
@@ -42,6 +43,15 @@ export async function deleteMyAccount(confirmPhrase: string) {
     }
     return { error: error.message };
   }
+
+  await recordAudit({
+    entityType: "user",
+    entityId: user.id,
+    action: "delete",
+    module: "auth",
+    what: "Eliminó su cuenta de usuario",
+    userId: user.id,
+  });
 
   const cookieStore = await cookies();
   cookieStore.delete(CLINIC_COOKIE);

@@ -7,6 +7,7 @@ import { hasPermission } from "@/core/permissions/roles";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { createClient } from "@/core/supabase/server";
 import { getPublicSiteUrl } from "@/core/supabase/env";
+import { recordAudit, recordAuditChange } from "@/core/security/audit-service";
 import type { UserRole } from "@/types/database";
 import { parseEntityId, staffRoleSchema } from "@/core/validations/params";
 
@@ -68,8 +69,7 @@ export async function inviteClinicMember(formData: FormData) {
   if (!hasAdminClient()) {
     return {
       error:
-        "Falta SUPABASE_SERVICE_ROLE_KEY en .env.local para enviar invitaciones por email. " +
-        "Project Settings → API → service_role.",
+        "El servidor no está configurado para enviar invitaciones por email. Contactá al administrador del sistema.",
     };
   }
 
@@ -131,6 +131,15 @@ export async function inviteClinicMember(formData: FormData) {
 
     if (memberErr) return { error: memberErr.message };
 
+    await recordAudit({
+      clinicId,
+      module: "settings",
+      entityType: "clinic_member",
+      entityId: existingUserId,
+      action: "create",
+      metadata: { email, role: parsed.data.role, via: "existing_user" },
+    });
+
     await supabase
       .from("clinic_invitations")
       .update({ status: "accepted", accepted_at: new Date().toISOString() })
@@ -159,6 +168,14 @@ export async function inviteClinicMember(formData: FormData) {
     };
   }
 
+  await recordAudit({
+    clinicId,
+    module: "settings",
+    entityType: "clinic_invitation",
+    action: "create",
+    metadata: { email, role: parsed.data.role, full_name: parsed.data.full_name },
+  });
+
   revalidatePath("/configuracion");
   return {
     success: true,
@@ -175,6 +192,14 @@ export async function revokeClinicInvitation(invitationId: string) {
   if (!idParsed.ok) return { error: idParsed.error };
 
   const supabase = await createClient();
+  const { data: invitation } = await supabase
+    .from("clinic_invitations")
+    .select("email, role")
+    .eq("id", idParsed.data)
+    .eq("clinic_id", clinicId)
+    .eq("status", "pending")
+    .maybeSingle();
+
   const { error } = await supabase
     .from("clinic_invitations")
     .update({ status: "revoked" })
@@ -183,6 +208,16 @@ export async function revokeClinicInvitation(invitationId: string) {
     .eq("status", "pending");
 
   if (error) return { error: error.message };
+
+  await recordAudit({
+    clinicId,
+    module: "settings",
+    entityType: "clinic_invitation",
+    entityId: idParsed.data,
+    action: "delete",
+    metadata: invitation ? { email: invitation.email, role: invitation.role } : undefined,
+  });
+
   revalidatePath("/configuracion");
   return { success: true };
 }
@@ -201,7 +236,7 @@ export async function updateClinicMemberRole(memberId: string, role: UserRole) {
   const supabase = await createClient();
   const { data: target } = await supabase
     .from("clinic_members")
-    .select("user_id")
+    .select("user_id, role")
     .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
@@ -216,6 +251,18 @@ export async function updateClinicMemberRole(memberId: string, role: UserRole) {
     .eq("clinic_id", clinicId);
 
   if (error) return { error: error.message };
+
+  await recordAuditChange({
+    clinicId,
+    module: "settings",
+    entityType: "clinic_member",
+    entityId: idParsed.data,
+    action: "update",
+    before: { role: target.role },
+    after: { role: roleParsed.data },
+    keys: ["role"],
+  });
+
   revalidatePath("/configuracion");
   return { success: true };
 }
@@ -231,7 +278,7 @@ export async function deactivateClinicMember(memberId: string) {
   const supabase = await createClient();
   const { data: target } = await supabase
     .from("clinic_members")
-    .select("user_id")
+    .select("user_id, role, is_active")
     .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
@@ -246,6 +293,18 @@ export async function deactivateClinicMember(memberId: string) {
     .eq("clinic_id", clinicId);
 
   if (error) return { error: error.message };
+
+  await recordAuditChange({
+    clinicId,
+    module: "settings",
+    entityType: "clinic_member",
+    entityId: idParsed.data,
+    action: "update",
+    before: { is_active: target.is_active },
+    after: { is_active: false },
+    keys: ["is_active"],
+    metadata: { user_id: target.user_id },
+  });
 
   if (hasAdminClient()) {
     const admin = createAdminClient();
@@ -296,6 +355,21 @@ export async function removeClinicMemberPermanently(memberId: string) {
     }
     return { error: error.message };
   }
+
+  await recordAudit({
+    clinicId,
+    module: "settings",
+    entityType: "clinic_member",
+    entityId: idParsed.data,
+    action: "delete",
+    metadata: {
+      user_id: target.user_id,
+      email: (() => {
+        const p = target.profiles as { email?: string } | { email?: string }[] | null;
+        return Array.isArray(p) ? p[0]?.email : p?.email;
+      })(),
+    },
+  });
 
   revalidatePath("/configuracion");
   return { success: true };

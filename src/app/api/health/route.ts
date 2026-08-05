@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getHealthStatus, recordHealthCheckEvent } from "@/core/observability/health";
+import { getPublicHealthStatus, recordHealthCheckEvent } from "@/core/observability/health";
 import { authorizeCronRequest } from "@/core/observability/cron-auth";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const status = persist ? await recordHealthCheckEvent() : await getHealthStatus();
+  const status = persist ? await recordHealthCheckEvent() : await getPublicHealthStatus();
 
   return NextResponse.json(status, {
     status: status.ok ? 200 : 503,

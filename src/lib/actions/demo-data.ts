@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { createClient } from "@/core/supabase/server";
+import { recordAudit } from "@/core/security/audit-service";
 
 export type DemoSeedResult = {
   success?: boolean;
@@ -43,6 +44,16 @@ export async function seedDemoPatientsForActiveClinic(): Promise<DemoSeedResult>
     clinical_records?: number;
     appointments?: number;
   };
+
+  await recordAudit({
+    clinicId,
+    module: "settings",
+    entityType: "clinic",
+    entityId: clinicId,
+    action: "create",
+    what: "Cargó datos demo en la clínica",
+    metadata: result,
+  });
 
   revalidatePath("/pacientes");
   revalidatePath("/historias");

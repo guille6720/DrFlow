@@ -9,6 +9,7 @@ import {
   type PamiPlanillaTemplate,
 } from "@/lib/constants/pami-planillas";
 import { createMedicalOrder } from "@/features/recetas/actions/medical-orders";
+import { escapeHtml } from "@/core/security/xss";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 
 interface Patient {
@@ -87,7 +88,7 @@ export function usePamiPlanillas(
     const w = window.open("", "_blank");
     if (!w) return;
     w.document.write(
-      `<pre style="font-family:system-ui;padding:24px;white-space:pre-wrap">${rendered.replace(/</g, "&lt;")}</pre>`
+      `<pre style="font-family:system-ui;padding:24px;white-space:pre-wrap">${escapeHtml(rendered)}</pre>`
     );
     w.document.close();
     w.print();

@@ -1,10 +1,12 @@
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+
+type RequestLike = Pick<Request, "headers">;
 
 /**
  * Validates that a state-changing request originated from the same site (CSRF mitigation).
  * Accepts matching Origin or Referer host against the request Host header.
  */
-export function isSameOriginPost(request: NextRequest): boolean {
+export function isSameOriginRequest(request: RequestLike): boolean {
   const host = normalizeHost(request.headers.get("host"));
   if (!host) return false;
 
@@ -27,6 +29,17 @@ export function isSameOriginPost(request: NextRequest): boolean {
   }
 
   return false;
+}
+
+/** @deprecated Prefer {@link isSameOriginRequest} — works with Request and NextRequest. */
+export function isSameOriginPost(request: NextRequest): boolean {
+  return isSameOriginRequest(request);
+}
+
+/** Returns 403 JSON when Origin/Referer do not match Host; null when the request is same-origin. */
+export function requireSameOriginMutation(request: RequestLike): NextResponse | null {
+  if (isSameOriginRequest(request)) return null;
+  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 }
 
 function normalizeHost(value: string | null): string | null {

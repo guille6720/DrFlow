@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/core/supabase/server";
+import { recordAudit } from "@/core/security/audit-service";
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
 import {
   parseDoctorSetupFromForm,
@@ -139,6 +140,15 @@ export async function updateMyDoctorProfile(formData: FormData) {
     }
     return { error: error.message };
   }
+
+  await recordAudit({
+    clinicId,
+    module: "settings",
+    entityType: "professional",
+    action: "update",
+    what: "Actualizó perfil profesional propio",
+    userId: access.user.id,
+  });
 
   revalidatePath("/", "layout");
   revalidatePath("/dashboard");

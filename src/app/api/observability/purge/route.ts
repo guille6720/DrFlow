@@ -1,23 +1,17 @@
 import { NextResponse } from "next/server";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
+import { authorizeCronRequest } from "@/core/observability/cron-auth";
 
 export const dynamic = "force-dynamic";
 
-function authorizeCron(request: Request): boolean {
-  const cronSecret = process.env.CRON_SECRET?.trim();
-  if (process.env.NODE_ENV === "production" && !cronSecret) return false;
-  if (!cronSecret) return true;
-  return request.headers.get("authorization") === `Bearer ${cronSecret}`;
-}
-
 /** Purge observability events older than 30 days (cron GET). */
 export async function GET(request: Request) {
-  if (!authorizeCron(request)) {
+  if (!authorizeCronRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   if (!hasAdminClient()) {
-    return NextResponse.json({ ok: false, error: "No service role" }, { status: 503 });
+    return NextResponse.json({ ok: false, error: "Admin client unavailable" }, { status: 503 });
   }
 
   const supabase = createAdminClient();

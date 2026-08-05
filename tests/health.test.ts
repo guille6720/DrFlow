@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { getHealthStatus } from "@/core/observability/health";
+import { getHealthStatus, getPublicHealthStatus } from "@/core/observability/health";
 import { getReleasePayload } from "@/core/app-release";
 import { createTraceId } from "@/core/observability/trace-id";
 
@@ -23,14 +23,22 @@ describe("getHealthStatus", () => {
     vi.unstubAllGlobals();
   });
 
-  it("returns structured health payload", async () => {
-    const status = await getHealthStatus();
+  it("returns structured public health payload without internal fields", async () => {
+    const status = await getPublicHealthStatus();
 
     expect(status.ok).toBe(true);
     expect(status.version).toMatch(/^\d+\.\d+\.\d+$/);
     expect(status.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(status.checks.supabase.ok).toBe(true);
     expect(status.checks.supabase.latencyMs).toBeTypeOf("number");
+    expect(status.checks.memory.ok).toBe(true);
+    expect(status.checks.memory).not.toHaveProperty("heapUsedMb");
+    expect(status.checks).not.toHaveProperty("serviceRole");
+  });
+
+  it("returns internal health payload for admin probes", async () => {
+    const status = await getHealthStatus();
+
     expect(status.checks.memory.heapUsedMb).toBeGreaterThan(0);
     expect(status.checks.memory.heapTotalMb).toBeGreaterThan(0);
     expect(status.checks.serviceRole).toHaveProperty("configured");

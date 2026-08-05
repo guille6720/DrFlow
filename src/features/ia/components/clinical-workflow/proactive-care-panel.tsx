@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
+import { SafeInternalLink } from "@/core/components/safe-link";
 import { AlertTriangle, BellRing, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-plugins-provider";
@@ -74,11 +74,11 @@ export function ProactiveCarePanel({ patientId, chart, lastConsultAt, className 
                   <p className="font-medium text-slate-900">{item.title}</p>
                   <p className="text-slate-700">{item.detail}</p>
                   {item.actionHref ? (
-                    <Link href={item.actionHref} className="mt-1 inline-block">
+                    <SafeInternalLink href={item.actionHref} className="mt-1 inline-block">
                       <Button type="button" size="sm" variant="outline">
                         {item.actionLabel ?? "Ver"}
                       </Button>
-                    </Link>
+                    </SafeInternalLink>
                   ) : null}
                 </div>
               </div>

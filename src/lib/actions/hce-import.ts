@@ -3,6 +3,8 @@
 import { createClient } from "@/core/supabase/server";
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
 import { hasPermission } from "@/core/permissions/roles";
+import { validateCsvImportUpload } from "@/core/security/file-upload";
+import { recordAudit } from "@/core/security/audit-service";
 import { HCE_EXPORT_MAX_BYTES } from "@/lib/constants/clinical-documents";
 import {
   processHceImportBatchFromContent,
@@ -48,7 +50,7 @@ async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExp
   const file = formData.get("file");
   const originalName = file instanceof File ? file.name : "HCE_export.csv";
 
-  if (!(file instanceof File) || file.size === 0 || file.size > HCE_EXPORT_MAX_BYTES) {
+  if (!(file instanceof File)) {
     return {
       success: false,
       fileName: originalName,
@@ -56,15 +58,40 @@ async function importHceExportCsvInner(formData: FormData): Promise<ImportHceExp
     };
   }
 
-  const content = await file.text();
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const validated = validateCsvImportUpload(file, buffer, HCE_EXPORT_MAX_BYTES);
+  if (!validated.ok) {
+    return { success: false, fileName: originalName, error: validated.error };
+  }
+
+  const content = buffer.toString("utf-8");
   const offset = Math.max(0, Number(formData.get("offset") ?? 0) || 0);
 
   const supabase = await createClient();
-  return processHceImportBatchFromContent(supabase, {
+  const result = await processHceImportBatchFromContent(supabase, {
     clinicId: access.clinicId,
     userId: access.userId,
     content,
     originalName,
     offset,
   });
+
+  if (result.success) {
+    await recordAudit({
+      clinicId: access.clinicId,
+      module: "imports",
+      entityType: "clinical_record",
+      entityId: access.clinicId,
+      action: "create",
+      what: "Importó lote HCE CSV",
+      metadata: {
+        fileName: originalName,
+        recordsCreated: result.recordsCreated,
+        patientsCreated: result.patientsCreated,
+        offset,
+      },
+    });
+  }
+
+  return result;
 }

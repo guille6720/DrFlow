@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/core/supabase/server";
 import { getSession, logAudit } from "@/core/auth/session";
+import { recordAudit } from "@/core/security/audit-service";
 import { appointmentSchema, sanitizeText, updateAppointmentBodySchema } from "@/core/validations/schemas";
 import {
   appointmentStatusSchema,
@@ -255,6 +256,17 @@ export async function startConsultationFromAppointment(appointmentId: string) {
       .eq("clinic_id", clinicId);
   }
 
+  await recordAudit({
+    clinicId,
+    module: "appointments",
+    entityType: "appointment",
+    entityId: idParsed.data,
+    patientId: appointment.patient_id as string,
+    action: "update",
+    what: "Inició consulta desde turno",
+    metadata: { from_status: appointment.status },
+  });
+
   revalidatePath("/agenda");
   return {
     patientId: appointment.patient_id as string,
@@ -289,6 +301,16 @@ export async function finalizeConsultation(
     .eq("clinic_id", clinicId);
 
   if (error) return { error: error.message };
+
+  await recordAudit({
+    clinicId,
+    module: "appointments",
+    entityType: "appointment",
+    entityId: idParsed.data,
+    action: "update",
+    what: "Finalizó consulta",
+    metadata: { status: "attended", consultation_modality: modalityParsed.data },
+  });
 
   revalidatePath("/agenda");
   revalidatePath("/dashboard");

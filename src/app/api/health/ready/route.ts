@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getHealthStatus } from "@/core/observability/health";
+import { getPublicHealthStatus } from "@/core/observability/health";
 import { validateProductionEnv } from "@/core/env.server";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +11,7 @@ export async function GET() {
       ? validateProductionEnv({ throwOnError: false })
       : { ok: true, environment: process.env.NODE_ENV ?? "development", missing: [], warnings: [] };
 
-  const status = await getHealthStatus();
+  const status = await getPublicHealthStatus();
   const ready = status.ok && envCheck.ok;
 
   return NextResponse.json(
@@ -21,7 +21,7 @@ export async function GET() {
       version: status.version,
       timestamp: status.timestamp,
       checks: status.checks,
-      env: envCheck,
+      env: { ok: envCheck.ok },
     },
     {
       status: ready ? 200 : 503,

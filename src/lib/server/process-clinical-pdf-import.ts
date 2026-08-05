@@ -1,7 +1,12 @@
-import { randomUUID } from "crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { logAudit } from "@/core/auth/session";
 import { CLINICAL_DOCUMENT_MAX_BYTES } from "@/lib/constants/clinical-documents";
+import {
+  buildPatientFilePath,
+  ensureExtension,
+  isPdfBuffer,
+  sanitizeStorageFileName,
+} from "@/core/security/file-upload";
 import {
   extractTextFromPdfBuffer,
   findOrCreatePatientFromExtract,
@@ -24,16 +29,6 @@ import type { ImportClinicalPdfResult } from "@/features/pacientes/actions/patie
 
 const BUCKET = "clinical-files";
 
-function sanitizeFileName(name: string): string {
-  const base = name.split(/[/\\]/).pop() ?? "documento.pdf";
-  const cleaned = base.replace(/[^a-zA-Z0-9._-]/g, "_");
-  return cleaned.toLowerCase().endsWith(".pdf") ? cleaned : `${cleaned}.pdf`;
-}
-
-function buildStoragePath(clinicId: string, patientId: string, fileName: string): string {
-  return `${clinicId}/patients/${patientId}/${randomUUID()}-${fileName}`;
-}
-
 export async function processClinicalPdfImport(
   supabase: SupabaseClient,
   params: {
@@ -51,6 +46,14 @@ export async function processClinicalPdfImport(
       success: false,
       fileName: originalName,
       error: "Archivo PDF inválido o mayor a 10 MB",
+    };
+  }
+
+  if (!isPdfBuffer(buffer)) {
+    return {
+      success: false,
+      fileName: originalName,
+      error: "El contenido no es un PDF válido",
     };
   }
 
@@ -88,8 +91,11 @@ export async function processClinicalPdfImport(
     return { success: false, fileName: originalName, error: patientResult.error };
   }
 
-  const fileName = sanitizeFileName(originalName);
-  const filePath = buildStoragePath(clinicId, patientResult.patientId, fileName);
+  const fileName = ensureExtension(
+    sanitizeStorageFileName(originalName, "documento.pdf"),
+    ".pdf"
+  );
+  const filePath = buildPatientFilePath(clinicId, patientResult.patientId, fileName);
 
   const { error: uploadError } = await supabase.storage.from(BUCKET).upload(filePath, buffer, {
     contentType: "application/pdf",

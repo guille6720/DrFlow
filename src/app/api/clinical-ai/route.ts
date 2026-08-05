@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { requireSameOriginMutation } from "@/core/security/csrf";
 import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
 import { hasPermission } from "@/core/permissions/roles";
 import {
@@ -36,6 +37,9 @@ const bodySchema = z.object({
 
 /** POST /api/clinical-ai — unified orchestrator endpoint (Phase F). */
 export async function POST(request: Request) {
+  const csrfBlock = requireSameOriginMutation(request);
+  if (csrfBlock) return csrfBlock;
+
   const clinicId = await getActiveClinicId();
   const { role, isSuperadmin } = await getActiveClinic();
 

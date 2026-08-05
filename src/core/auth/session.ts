@@ -5,12 +5,9 @@ import { cookies } from "next/headers";
 import { createClient } from "@/core/supabase/server";
 import type { Clinic, ClinicMember, Profile, UserRole } from "@/types/database";
 import {
-  getAuditRequestContext,
-} from "@/core/security/audit-context";
-import {
-  buildAuditLogRow,
-} from "@/core/security/audit-log";
-import type { AuditAction } from "@/core/security/audit-types";
+  recordAudit,
+  type RecordAuditParams,
+} from "@/core/security/audit-service";
 
 const CLINIC_COOKIE = "drflow_clinic_id";
 
@@ -139,30 +136,6 @@ export async function setActiveClinic(clinicId: string) {
   });
 }
 
-export async function logAudit(params: {
-  clinicId?: string;
-  module?: import("@/core/security/audit-log").AuditModule;
-  what?: string;
-  entityType: string;
-  entityId?: string;
-  patientId?: string;
-  action: AuditAction;
-  metadata?: Record<string, unknown>;
-  oldValues?: Record<string, unknown> | null;
-  newValues?: Record<string, unknown> | null;
-}) {
-  const supabase = await createClient();
-  const user = await getSession();
-  if (!user) return;
-
-  const ctx = await getAuditRequestContext();
-
-  await supabase.from("audit_logs").insert(
-    buildAuditLogRow({
-      ...params,
-      userId: user.id,
-      ipAddress: ctx.ip_address,
-      userAgent: ctx.user_agent,
-    })
-  );
+export async function logAudit(params: Omit<RecordAuditParams, "userId">) {
+  await recordAudit(params);
 }

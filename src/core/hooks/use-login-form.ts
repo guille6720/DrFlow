@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/core/supabase/client";
 import { resolveClientPublicSiteUrl } from "@/core/supabase/client-public-url";
+import { sanitizeAuthErrorParam } from "@/core/security/xss";
 
 function readPasswordLeakFromUrl(): { email: string; error: string } | null {
   if (typeof window === "undefined") return null;
@@ -66,12 +67,7 @@ export function useLoginForm() {
     }
 
     return {
-      formError: errorParam
-        ? decodeURIComponent(errorParam).includes("access_denied") ||
-          decodeURIComponent(errorParam).toLowerCase() === "access denied"
-          ? "El link de recuperación expiró o no es válido. Pedí uno nuevo abajo."
-          : decodeURIComponent(errorParam)
-        : null,
+      formError: sanitizeAuthErrorParam(errorParam),
       info: infoMessage,
     };
   }, [bootstrap.passwordLeakError, searchParams]);

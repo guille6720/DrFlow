@@ -4,10 +4,15 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/core/supabase/server";
 import { getSession, logAudit } from "@/core/auth/session";
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import {
+  buildPatientFilePath,
+  validateAdminDocumentUpload,
+} from "@/core/security/file-upload";
 import { adminDocumentUploadSchema } from "@/core/validations/admin-documents";
 import { parseEntityId, firstZodIssue } from "@/core/validations/params";
 
 const MAX_BYTES = 10 * 1024 * 1024;
+const BUCKET = "clinical-files";
 
 export async function uploadPatientAdminDocument(formData: FormData) {
   const access = await requireClinicPermission("manageAdminDocuments");
@@ -24,7 +29,10 @@ export async function uploadPatientAdminDocument(formData: FormData) {
 
   const file = formData.get("file");
   if (!(file instanceof File)) return { error: "Archivo requerido" };
-  if (file.size > MAX_BYTES) return { error: "Máximo 10 MB" };
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const validated = validateAdminDocumentUpload(file, buffer, MAX_BYTES);
+  if (!validated.ok) return { error: validated.error };
 
   const supabase = await createClient();
   const { data: patient } = await supabase
@@ -36,13 +44,12 @@ export async function uploadPatientAdminDocument(formData: FormData) {
 
   if (!patient) return { error: "Paciente no encontrado en este consultorio" };
 
-  const safeName = file.name.replace(/[^\w.\-() ]+/g, "_");
-  const path = `${clinicId}/${parsed.data.patient_id}/admin/${Date.now()}-${safeName}`;
+  const safeName = validated.sanitizedName;
+  const path = buildPatientFilePath(clinicId, parsed.data.patient_id, safeName, "admin");
 
-  const buffer = Buffer.from(await file.arrayBuffer());
   const { error: uploadError } = await supabase.storage
-    .from("clinical-files")
-    .upload(path, buffer, { contentType: file.type || "application/pdf", upsert: false });
+    .from(BUCKET)
+    .upload(path, buffer, { contentType: validated.contentType, upsert: false });
 
   if (uploadError) return { error: uploadError.message };
 
@@ -61,7 +68,10 @@ export async function uploadPatientAdminDocument(formData: FormData) {
     .select()
     .single();
 
-  if (error) return { error: error.message };
+  if (error) {
+    await supabase.storage.from(BUCKET).remove([path]);
+    return { error: error.message };
+  }
 
   await logAudit({
     clinicId,

@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { createTelemedicineSession } from "@/lib/actions/clinic-services";
 import type { Clinic, UserRole } from "@/types/database";
 import { Video, ExternalLink } from "lucide-react";
+import { SafeExternalLink } from "@/core/components/safe-link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -112,11 +113,11 @@ export function TelemedicinaView({ sessions, appointments, clinics, clinicId, ro
                     </p>
                     <Badge variant="info">{s.status}</Badge>
                   </div>
-                  <a href={s.room_url} target="_blank" rel="noopener noreferrer">
-                    <Button size="sm" variant="outline">
+                  <SafeExternalLink href={s.room_url}>
+                    <Button size="sm" variant="outline" type="button">
                       <ExternalLink className="h-4 w-4" /> Abrir sala
                     </Button>
-                  </a>
+                  </SafeExternalLink>
                 </li>
               ))}
             </ul>

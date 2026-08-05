@@ -1,3 +1,5 @@
+import "server-only";
+
 import type { ClinicalAiAgentId, ClinicalAiEngine } from "@/lib/utils/clinical-ai-orchestrator";
 
 type LlmEnhanceInput = {
