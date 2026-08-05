@@ -1,29 +1,23 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import { safeClientDynamic } from "@/core/components/layout/safe-client-dynamic";
 
-const ClinicalCopilotHost = dynamic(
-  () =>
-    import("@/features/ia/components/clinical-workflow/clinical-copilot-host").then(
-      (mod) => ({ default: mod.ClinicalCopilotHost })
-    ),
-  { ssr: false }
+const ClinicalCopilotHost = safeClientDynamic(() =>
+  import("@/features/ia/components/clinical-workflow/clinical-copilot-host").then((mod) => ({
+    default: mod.ClinicalCopilotHost,
+  }))
 );
 
-const AdminOpsCopilotHost = dynamic(
-  () =>
-    import("@/features/ia/components/admin-ops/admin-ops-copilot-host").then(
-      (mod) => ({ default: mod.AdminOpsCopilotHost })
-    ),
-  { ssr: false }
+const AdminOpsCopilotHost = safeClientDynamic(() =>
+  import("@/features/ia/components/admin-ops/admin-ops-copilot-host").then((mod) => ({
+    default: mod.AdminOpsCopilotHost,
+  }))
 );
 
-const UnifiedCopilotFab = dynamic(
-  () =>
-    import("@/core/components/layout/unified-copilot-fab").then((mod) => ({
-      default: mod.UnifiedCopilotFab,
-    })),
-  { ssr: false }
+const UnifiedCopilotFab = safeClientDynamic(() =>
+  import("@/core/components/layout/unified-copilot-fab").then((mod) => ({
+    default: mod.UnifiedCopilotFab,
+  }))
 );
 
 /** IA copilot overlays — lazy-loaded to keep dashboard layout JS lean. */

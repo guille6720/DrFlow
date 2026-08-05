@@ -37,6 +37,16 @@ import {
 } from "@/lib/server/cached-clinic-queries";
 import { isRouteAllowedByPlugins } from "@/plugins/resolve";
 
+function isNextNavigationError(err: unknown): boolean {
+  if (typeof err !== "object" || err === null || !("digest" in err)) return false;
+  const digest = String((err as { digest: string }).digest);
+  return digest.startsWith("NEXT_REDIRECT") || digest.startsWith("NEXT_NOT_FOUND");
+}
+
+function isDynamicServerUsageError(err: unknown): boolean {
+  return err instanceof Error && err.message.includes("Dynamic server usage");
+}
+
 /** Async dashboard shell — lives in a child so (dashboard)/error.tsx can catch failures. */
 export async function DashboardDataShell({ children }: { children: React.ReactNode }) {
   let profile: Awaited<ReturnType<typeof getDashboardShell>>["profile"];
@@ -49,6 +59,7 @@ export async function DashboardDataShell({ children }: { children: React.ReactNo
   try {
     ({ profile, clinics, clinicId, clinic, role, isSuperadmin } = await getDashboardShell());
   } catch (err) {
+    if (isNextNavigationError(err) || isDynamicServerUsageError(err)) throw err;
     console.error("[dashboard-shell] getDashboardShell failed:", err);
     redirect("/login");
   }

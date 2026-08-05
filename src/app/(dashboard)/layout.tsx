@@ -5,6 +5,9 @@ import { DashboardDataShell } from "@/core/components/layout/dashboard-data-shel
 
 import { PWA_APPLE_ICON } from "@/features/pacientes/utils/patient-portal-ready";
 
+/** Auth + cookies — must never be statically prerendered. */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {

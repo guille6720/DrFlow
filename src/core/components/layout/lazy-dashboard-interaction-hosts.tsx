@@ -1,37 +1,29 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import { safeClientDynamic } from "@/core/components/layout/safe-client-dynamic";
 
-const ClinicalContextMenuHost = dynamic(
-  () =>
-    import("@/features/ia/components/clinical-workflow/clinical-context-menu").then(
-      (mod) => ({ default: mod.ClinicalContextMenuHost })
-    ),
-  { ssr: false }
+const ClinicalContextMenuHost = safeClientDynamic(() =>
+  import("@/features/ia/components/clinical-workflow/clinical-context-menu").then((mod) => ({
+    default: mod.ClinicalContextMenuHost,
+  }))
 );
 
-const ClinicalWorkflowShortcuts = dynamic(
-  () =>
-    import("@/features/ia/components/clinical-workflow/clinical-workflow-shortcuts").then(
-      (mod) => ({ default: mod.ClinicalWorkflowShortcuts })
-    ),
-  { ssr: false }
+const ClinicalWorkflowShortcuts = safeClientDynamic(() =>
+  import("@/features/ia/components/clinical-workflow/clinical-workflow-shortcuts").then((mod) => ({
+    default: mod.ClinicalWorkflowShortcuts,
+  }))
 );
 
-const FloatingActions = dynamic(
-  () =>
-    import("@/core/components/layout/floating-actions").then((mod) => ({
-      default: mod.FloatingActions,
-    })),
-  { ssr: false }
+const FloatingActions = safeClientDynamic(() =>
+  import("@/core/components/layout/floating-actions").then((mod) => ({
+    default: mod.FloatingActions,
+  }))
 );
 
-const RoutePrefetcher = dynamic(
-  () =>
-    import("@/core/components/layout/route-prefetcher").then((mod) => ({
-      default: mod.RoutePrefetcher,
-    })),
-  { ssr: false }
+const RoutePrefetcher = safeClientDynamic(() =>
+  import("@/core/components/layout/route-prefetcher").then((mod) => ({
+    default: mod.RoutePrefetcher,
+  }))
 );
 
 /** Non-critical dashboard interactions — deferred to reduce first-load JS. */
