@@ -60,8 +60,19 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { profile, clinics, clinicId, clinic, role, isSuperadmin } =
-    await getDashboardShell();
+  let profile: Awaited<ReturnType<typeof getDashboardShell>>["profile"];
+  let clinics: Awaited<ReturnType<typeof getDashboardShell>>["clinics"];
+  let clinicId: Awaited<ReturnType<typeof getDashboardShell>>["clinicId"];
+  let clinic: Awaited<ReturnType<typeof getDashboardShell>>["clinic"];
+  let role: Awaited<ReturnType<typeof getDashboardShell>>["role"];
+  let isSuperadmin: Awaited<ReturnType<typeof getDashboardShell>>["isSuperadmin"];
+
+  try {
+    ({ profile, clinics, clinicId, clinic, role, isSuperadmin } = await getDashboardShell());
+  } catch (err) {
+    console.error("[dashboard-layout] getDashboardShell failed:", err);
+    redirect("/login");
+  }
 
   if (!profile) redirect("/login");
   if (clinics.length === 0 && !isSuperadmin) redirect("/onboarding");
