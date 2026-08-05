@@ -37,7 +37,7 @@ export function UiThemeProvider({ children }: { children: ReactNode }) {
     applyUiThemeToDocument(nextStyle, nextDark);
     try {
       localStorage.setItem(UI_STYLE_STORAGE_KEY, nextStyle);
-      if (nextStyle === "2") {
+      if (nextStyle === "2" || nextStyle === "3") {
         localStorage.setItem(CLINICAL_DARK_STORAGE_KEY, nextDark ? "1" : "0");
       }
     } catch {
@@ -48,7 +48,7 @@ export function UiThemeProvider({ children }: { children: ReactNode }) {
   const setStyle = useCallback(
     (next: UiStyleId) => {
       setStyleState(next);
-      const dark = next === "2" ? clinicalDark : false;
+      const dark = next === "2" || next === "3" ? clinicalDark : false;
       if (next === "1") setClinicalDarkState(false);
       persist(next, dark);
     },
@@ -57,9 +57,9 @@ export function UiThemeProvider({ children }: { children: ReactNode }) {
 
   const setClinicalDark = useCallback(
     (on: boolean) => {
-      if (style !== "2") return;
+      if (style !== "2" && style !== "3") return;
       setClinicalDarkState(on);
-      persist("2", on);
+      persist(style, on);
     },
     [persist, style]
   );
@@ -80,7 +80,7 @@ export function UiThemeProvider({ children }: { children: ReactNode }) {
       clinicalDark,
       setStyle,
       setClinicalDark,
-      isStyle2: style === "2",
+      isStyle2: style === "2" || style === "3",
     }),
     [style, clinicalDark, setStyle, setClinicalDark]
   );

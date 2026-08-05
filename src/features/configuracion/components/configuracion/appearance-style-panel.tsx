@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutGrid, Mic, Moon, Sun } from "lucide-react";
+import { Droplets, LayoutGrid, Mic, Moon, Sun } from "lucide-react";
 
 import { useUiTheme } from "@/core/components/theme/ui-theme-provider";
 import { UI_STYLE_LABELS, type UiStyleId } from "@/core/theme/ui-theme";
@@ -12,6 +12,24 @@ import { useVoiceInputOptional } from "@/features/voice/components/voice/voice-i
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
+const STYLE_ICONS: Record<UiStyleId, typeof LayoutGrid> = {
+  "1": LayoutGrid,
+  "2": LayoutGrid,
+  "3": Droplets,
+};
+
+const STYLE_ACTIVE_RING: Record<UiStyleId, string> = {
+  "1": "border-teal-400 bg-teal-500/10 ring-teal-400/40",
+  "2": "border-teal-400 bg-teal-500/10 ring-teal-400/40",
+  "3": "border-sky-400 bg-sky-500/10 ring-sky-400/40",
+};
+
+const STYLE_ICON_COLOR: Record<UiStyleId, string> = {
+  "1": "text-teal-300",
+  "2": "text-teal-300",
+  "3": "text-sky-300",
+};
+
 export function AppearanceStylePanel() {
   const { style, clinicalDark, setStyle, setClinicalDark } = useUiTheme();
   const voice = useVoiceInputOptional();
@@ -19,14 +37,15 @@ export function AppearanceStylePanel() {
   return (
     <Card
       title="Apariencia de la interfaz"
-      description="Estilo 2: diseño plano minimalista con distribución Bento. Podés activar Clinical Dark Mode solo en Estilo 2."
+      description="Estilo 2 y 3 usan diseño plano con rejilla Bento. El Estilo 3 aplica una paleta azul y celeste con texto de alto contraste. Podés activar modo oscuro en Estilo 2 y 3."
     >
       <div className="space-y-6">
         <div>
           <p className="mb-3 text-sm font-medium text-slate-200">Preset de estilo</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {(["1", "2"] as UiStyleId[]).map((id) => {
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {(["1", "2", "3"] as UiStyleId[]).map((id) => {
               const active = style === id;
+              const Icon = STYLE_ICONS[id];
               return (
                 <button
                   key={id}
@@ -35,12 +54,12 @@ export function AppearanceStylePanel() {
                   className={cn(
                     "rounded-xl border p-4 text-left transition",
                     active
-                      ? "border-teal-400 bg-teal-500/10 ring-2 ring-teal-400/40"
+                      ? cn("ring-2", STYLE_ACTIVE_RING[id])
                       : "border-slate-500/50 bg-slate-800/40 hover:border-slate-400"
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    <LayoutGrid className="h-5 w-5 text-teal-300" />
+                    <Icon className={cn("h-5 w-5", STYLE_ICON_COLOR[id])} />
                     <span className="font-semibold text-slate-50">Estilo {id}</span>
                   </div>
                   <p className="mt-2 text-xs leading-relaxed text-slate-300">
@@ -52,7 +71,7 @@ export function AppearanceStylePanel() {
           </div>
         </div>
 
-        {style === "2" && (
+        {(style === "2" || style === "3") && (
           <div className="rounded-xl border border-slate-500/50 bg-slate-800/30 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -117,8 +136,8 @@ export function AppearanceStylePanel() {
         ) : null}
 
         <p className="text-xs text-slate-400">
-          La preferencia se guarda en este navegador (Estilo 2 + dark mode). Estilo 1 mantiene el
-          look clínico teal actual.
+          La preferencia se guarda en este navegador. Estilo 1 mantiene el look clínico teal; Estilo 3
+          usa azules y celestes con tipografía nítida.
         </p>
       </div>
     </Card>
