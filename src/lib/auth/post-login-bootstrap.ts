@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { acceptPendingInvitations } from "@/lib/actions/invitations";
+import { logServerError } from "@/core/errors/log-error.server";
 
 export async function ensureUserProfile(
   supabase: SupabaseClient,
@@ -23,6 +23,14 @@ export async function ensureUserProfile(
   }
 }
 
+/** Best-effort: attach pending clinic invitations to the signed-in user. */
+export async function acceptPendingInvitationsForUser(supabase: SupabaseClient) {
+  const { error } = await supabase.rpc("accept_clinic_invitations_for_user");
+  if (error && !error.message.includes("accept_clinic_invitations")) {
+    logServerError("post-login-bootstrap.accept-invitations", error);
+  }
+}
+
 /** Profile row + pending clinic invitations after a successful sign-in. */
 export async function runPostLoginBootstrap(
   supabase: SupabaseClient,
@@ -35,5 +43,5 @@ export async function runPostLoginBootstrap(
     email,
     user.user_metadata?.full_name as string | undefined
   );
-  await acceptPendingInvitations();
+  await acceptPendingInvitationsForUser(supabase);
 }

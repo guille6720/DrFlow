@@ -68,9 +68,14 @@ export default async function DashboardLayout({
 
   const path = (await headers()).get("x-drflow-path") ?? "";
 
-  const clinicFeatures = clinicId
-    ? await getCachedClinicFeatures(clinicId)
-    : emptyClinicFeaturesContext();
+  let clinicFeatures = emptyClinicFeaturesContext();
+  if (clinicId) {
+    try {
+      clinicFeatures = await getCachedClinicFeatures(clinicId);
+    } catch (err) {
+      console.error("[dashboard-layout] getCachedClinicFeatures failed:", err);
+    }
+  }
 
   if (path && !canAccessRoute(role, path, isSuperadmin)) {
     await logAudit({

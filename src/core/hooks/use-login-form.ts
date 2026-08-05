@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useMemo, useState } from "react";
 
+import { logClientError } from "@/core/errors/log-error.client";
 import { sanitizeAuthErrorParam } from "@/core/security/xss";
 import { createClient } from "@/core/supabase/client";
 import { resolveClientPublicSiteUrl } from "@/core/supabase/client-public-url";
@@ -116,7 +117,24 @@ export function useLoginForm() {
         return;
       }
 
-      await fetch("/api/auth/bootstrap", { method: "POST", credentials: "same-origin" });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        setSubmitError("No se pudo establecer la sesión. Probá de nuevo.");
+        setLoading(false);
+        return;
+      }
+
+      const bootstrap = await fetch("/api/auth/bootstrap", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      if (!bootstrap.ok) {
+        logClientError("login.bootstrap", new Error(`HTTP ${bootstrap.status}`));
+      }
+
+      router.refresh();
       window.location.assign("/dashboard");
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "No se pudo iniciar sesión.");

@@ -22,7 +22,14 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const now = new Date();
 
-  const ops = clinicId ? await loadClinicalOperationsDashboard(supabase, clinicId) : null;
+  let ops: Awaited<ReturnType<typeof loadClinicalOperationsDashboard>> | null = null;
+  if (clinicId) {
+    try {
+      ops = await loadClinicalOperationsDashboard(supabase, clinicId);
+    } catch (err) {
+      console.error("[dashboard] loadClinicalOperationsDashboard failed:", err);
+    }
+  }
 
   return (
     <>
@@ -48,6 +55,10 @@ export default async function DashboardPage() {
             canManageWaitingRoom={hasPermission(role, "manageWaitingRoom", isSuperadmin)}
             canManageSettings={hasPermission(role, "manageSettings", isSuperadmin)}
           />
+        ) : clinicId ? (
+          <p className="text-sm text-amber-700">
+            No pudimos cargar operaciones del día. Refrescá la página o probá de nuevo en unos segundos.
+          </p>
         ) : (
           <p className="text-sm text-slate-500">Seleccioná un consultorio para ver operaciones del día.</p>
         )}
