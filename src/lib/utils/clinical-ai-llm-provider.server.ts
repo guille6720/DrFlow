@@ -125,6 +125,51 @@ async function callAnthropicChat(
   return text || null;
 }
 
+async function callGeminiChat(
+  credentials: UserAiCredentials,
+  messages: AiChatMessage[],
+  contextSummary?: string
+): Promise<string | null> {
+  const baseUrl = (
+    credentials.baseUrl ?? "https://generativelanguage.googleapis.com/v1beta"
+  ).replace(/\/$/, "");
+  const model = credentials.model.trim();
+  if (!model) return null;
+
+  const systemParts = [SYSTEM_PROMPT];
+  if (contextSummary) systemParts.push(`Contexto clínico: ${contextSummary}`);
+
+  const contents = messages.map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
+
+  const url = `${baseUrl}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(credentials.apiKey)}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: {
+        parts: [{ text: systemParts.join("\n\n") }],
+      },
+      contents,
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 1200,
+      },
+    }),
+  });
+
+  if (!response.ok) return null;
+
+  const json = (await response.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  };
+  const text = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  return text || null;
+}
+
 async function callUserAiChatInternal(
   credentials: UserAiCredentials,
   messages: AiChatMessage[],
@@ -132,6 +177,9 @@ async function callUserAiChatInternal(
 ): Promise<string | null> {
   if (credentials.provider === "anthropic") {
     return callAnthropicChat(credentials, messages, contextSummary);
+  }
+  if (credentials.provider === "gemini") {
+    return callGeminiChat(credentials, messages, contextSummary);
   }
   return callOpenAiCompatibleChat(credentials, messages, contextSummary);
 }

@@ -16,6 +16,7 @@ import {
 
 import {
   applyPatientSearchFilter,
+  buildPostgrestIlikePattern,
   patientSearchTokens,
   sanitizePatientSearchTerm,
 } from "@/features/pacientes/utils/patient-search";
@@ -83,6 +84,11 @@ describe("patient-search", () => {
     expect(patientSearchTokens("a b  c")).toEqual(["a", "b", "c"]);
   });
 
+  it("builds postgrest ilike patterns with asterisk wildcards", () => {
+    expect(buildPostgrestIlikePattern("zap")).toBe("*zap*");
+    expect(buildPostgrestIlikePattern("a,b")).toBe("*a\\,b*");
+  });
+
   it("applies postgrest or filters per token", () => {
     const calls: string[] = [];
     const query = {
@@ -93,6 +99,8 @@ describe("patient-search", () => {
     };
     applyPatientSearchFilter(query, "Juan 123");
     expect(calls).toHaveLength(2);
-    expect(calls[0]).toContain("first_name.ilike");
+    expect(calls[0]).toContain("first_name.ilike.*Juan*");
+    expect(calls[0]).not.toContain("%");
+    expect(calls[1]).toContain("document_number.ilike.*123*");
   });
 });

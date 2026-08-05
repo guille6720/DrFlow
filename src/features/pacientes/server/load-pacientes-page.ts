@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { observeQuery } from "@/core/observability/observe-query";
 import { PACIENTES_PAGE_SIZE } from "@/core/supabase/pagination";
 
-import { applyPatientSearchFilter } from "@/features/pacientes/utils/patient-search";
+import { applyPatientSearchFilter, findPatientIdsByPathologySearch } from "@/features/pacientes/utils/patient-search";
 
 import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
 
@@ -38,7 +38,8 @@ export async function loadPacientesPageData(
   clinicId: string | null,
   q: string,
   page: number,
-  cobertura?: string
+  cobertura?: string,
+  patologia?: string
 ): Promise<PacientesPageData> {
   if (!clinicId) {
     return {
@@ -55,7 +56,7 @@ export async function loadPacientesPageData(
   return observeQuery(
     "load_pacientes_page",
     clinicId,
-    async () => loadPacientesPageDataInner(supabase, clinicId, q, page, cobertura),
+    async () => loadPacientesPageDataInner(supabase, clinicId, q, page, cobertura, patologia),
     "/pacientes"
   );
 }
@@ -65,7 +66,8 @@ async function loadPacientesPageDataInner(
   clinicId: string,
   q: string,
   page: number,
-  cobertura?: string
+  cobertura?: string,
+  patologia?: string
 ): Promise<PacientesPageData> {
   let patients: PacientesPagePatient[] = [];
   let total = 0;
@@ -84,7 +86,39 @@ async function loadPacientesPageDataInner(
       )
       .eq("clinic_id", clinicId)
       .eq("is_active", true)
-      .order("last_name");
+      .order("last_name")
+      .order("first_name");
+
+    if (patologia) {
+      const { patientIds, error: pathologyError } = await findPatientIdsByPathologySearch(
+        supabase,
+        clinicId,
+        patologia
+      );
+      if (pathologyError) {
+        return {
+          patients: [],
+          total: 0,
+          portalSlug: null,
+          doctorInfo: null,
+          shareByPatient: new Map(),
+          totalPages: 1,
+          page,
+        };
+      }
+      if (patientIds.length === 0) {
+        return {
+          patients: [],
+          total: 0,
+          portalSlug: null,
+          doctorInfo: null,
+          shareByPatient: new Map(),
+          totalPages: 1,
+          page,
+        };
+      }
+      query = query.in("id", patientIds);
+    }
 
     if (q) {
       query = applyPatientSearchFilter(query, q);
@@ -94,10 +128,21 @@ async function loadPacientesPageDataInner(
     }
 
     const from = (page - 1) * PACIENTES_PAGE_SIZE;
-    const [{ data, count }, portalContext] = await Promise.all([
+    const [{ data, count, error }, portalContext] = await Promise.all([
       query.range(from, from + PACIENTES_PAGE_SIZE - 1),
       getPortalContextForClinic(clinicId),
     ]);
+    if (error) {
+      return {
+        patients: [],
+        total: 0,
+        portalSlug: null,
+        doctorInfo: null,
+        shareByPatient: new Map(),
+        totalPages: 1,
+        page,
+      };
+    }
     patients = data ?? [];
     total = count ?? 0;
     portalSlug = portalContext.portalSlug;
@@ -139,14 +184,22 @@ async function loadPacientesPageDataInner(
 export function buildPacientesPageQuery(
   page: number,
   q: string,
-  cobertura?: string
+  cobertura?: string,
+  patologia?: string
 ): string {
-  return `/pacientes?page=${page}${q ? `&q=${encodeURIComponent(q)}` : ""}${cobertura === "pami" ? "&cobertura=pami" : ""}`;
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  if (q) params.set("q", q);
+  if (patologia) params.set("patologia", patologia);
+  if (cobertura === "pami") params.set("cobertura", "pami");
+  return `/pacientes?${params.toString()}`;
 }
 
-export function resolvePacientesClearHref(q: string, cobertura?: string): string | undefined {
-  if (!q && cobertura !== "pami") return undefined;
-  if (cobertura === "pami" && !q) return "/pacientes";
-  if (q && cobertura === "pami") return "/pacientes?cobertura=pami";
-  return "/pacientes";
+export function resolvePacientesClearHref(
+  q: string,
+  cobertura?: string,
+  patologia?: string
+): string | undefined {
+  if (!q && !patologia && cobertura !== "pami") return undefined;
+  return cobertura === "pami" ? "/pacientes?cobertura=pami" : "/pacientes";
 }

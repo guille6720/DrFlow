@@ -58,11 +58,7 @@ export function ClinicalRecordsGroupedList({ groups, defaultOpenPatientId }: Pro
                     : ""}
                 </p>
               </div>
-              <ClinicalRecordsGroupSummaryActions
-                patientId={group.patientId}
-                phone={group.phone}
-                whatsappName={whatsappName}
-              />
+              <ClinicalRecordsGroupSummaryActions group={group} whatsappName={whatsappName} />
             </summary>
 
             <ul className="divide-y divide-slate-100 border-t border-slate-100 px-2 pb-2">

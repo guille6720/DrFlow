@@ -16,6 +16,7 @@ export {
 export type { AdminOpsContext, AdminOpsSnapshot } from "@/features/dashboard/utils/admin-ops-types";
 export { AdminOpsCopilotHost } from "@/features/ia/components/admin-ops/admin-ops-copilot-host";
 export { AdminOpsCopilotSheet } from "@/features/ia/components/admin-ops/admin-ops-copilot-sheet";
+export { ClinicalCopilotAccessButton } from "@/features/ia/components/clinical-workflow/clinical-copilot-access-button";
 export { ClinicalCopilotHost } from "@/features/ia/components/clinical-workflow/clinical-copilot-host";
 export { ClinicalCopilotSheet } from "@/features/ia/components/clinical-workflow/clinical-copilot-sheet";
 export { ClinicalSummaryPhysicianAssist } from "@/features/ia/components/clinical-workflow/clinical-summary-physician-assist";

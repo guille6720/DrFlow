@@ -16,9 +16,11 @@ describe("user-ai-provider-types", () => {
     expect(USER_AI_PROVIDER_OPTIONS.map((p) => p.id)).toEqual([
       "openai",
       "anthropic",
+      "gemini",
       "openai_compatible",
     ]);
     expect(getDefaultModelForProvider("anthropic")).toContain("claude");
+    expect(getDefaultModelForProvider("gemini")).toContain("gemini");
   });
 });
 

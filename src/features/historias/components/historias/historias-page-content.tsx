@@ -3,6 +3,8 @@ import Link from "next/link";
 
 import { ClinicalRecordsGroupedList } from "@/features/historias";
 import { buildHistoriasUrl, type HistoriasPageData } from "@/features/historias/server/load-historias-page";
+import { ClinicalCopilotAccessButton } from "@/features/ia/components/clinical-workflow/clinical-copilot-access-button";
+import { HistoriasCopilotSessionBridge } from "@/features/ia/components/clinical-workflow/historias-copilot-session-bridge";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -27,10 +29,15 @@ export function HistoriasPageContent({
 }: Props) {
   return (
     <div className="space-y-6 p-4 sm:p-6">
+      <HistoriasCopilotSessionBridge
+        groups={groups}
+        singlePatientFromSearch={singlePatientFromSearch}
+      />
+
       <SectorHero
         icon={FileText}
         title="Historia clínica"
-        subtitle="Buscá por paciente y abrí «Toda su historia» para la línea de tiempo completa. Importación masiva en Importar / Exportar."
+        subtitle="Buscá por paciente, abrí «Toda su historia» o consultá con el asistente IA. Importación masiva en Importar / Exportar."
       />
 
       <div className="flex flex-wrap gap-4 rounded-xl border border-slate-500/70 bg-slate-700/90 px-4 py-3 text-sm shadow-lg">
@@ -56,12 +63,18 @@ export function HistoriasPageContent({
         submitLabel="Buscar historia"
         clearHref={q ? "/historias" : undefined}
         trailing={
-          <Link href="/historias/nueva">
+          <>
+            <ClinicalCopilotAccessButton
+              label="Asistente IA"
+              className="border-violet-200 bg-white/90 text-violet-900 hover:bg-violet-50"
+            />
+            <Link href="/historias/nueva">
             <Button>
               <Plus className="h-4 w-4" />
               Nueva consulta
             </Button>
-          </Link>
+            </Link>
+          </>
         }
       />
 

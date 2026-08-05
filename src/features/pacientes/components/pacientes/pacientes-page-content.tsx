@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Stethoscope, Users } from "lucide-react";
 import Link from "next/link";
 
 import { PatientsListCards } from "@/features/pacientes";
@@ -18,6 +18,7 @@ import { SectorHero } from "@/components/ui/sector-hero";
 
 type Props = PacientesPageData & {
   q: string;
+  patologia?: string;
   cobertura?: string;
   canIssuePrescriptions: boolean;
 };
@@ -31,17 +32,19 @@ export function PacientesPageContent({
   totalPages,
   page,
   q,
+  patologia = "",
   cobertura,
   canIssuePrescriptions,
 }: Props) {
-  const clearHref = resolvePacientesClearHref(q, cobertura);
+  const clearHref = resolvePacientesClearHref(q, cobertura, patologia);
+  const hasSearch = Boolean(q || patologia);
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
       <SectorHero
         icon={Users}
         title="Pacientes"
-        subtitle="Buscá por nombre o DNI. Desde cada fila abrís la historia clínica o la ficha. Importación masiva en Importar / Exportar."
+        subtitle="Buscá por nombre, DNI o patología/diagnóstico. Desde cada fila abrís la historia clínica o la ficha. Importación masiva en Importar / Exportar."
       />
 
       <div className="flex flex-wrap gap-4 rounded-xl border border-slate-500/70 bg-slate-700/90 px-4 py-3 text-sm shadow-lg">
@@ -53,7 +56,15 @@ export function PacientesPageContent({
           <>
             <span className="text-slate-500">|</span>
             <p className="text-slate-200">
-              Búsqueda: <span className="font-semibold text-teal-200">{q}</span>
+              Nombre/DNI: <span className="font-semibold text-teal-200">{q}</span>
+            </p>
+          </>
+        ) : null}
+        {patologia ? (
+          <>
+            <span className="text-slate-500">|</span>
+            <p className="text-slate-200">
+              Patología: <span className="font-semibold text-teal-200">{patologia}</span>
             </p>
           </>
         ) : null}
@@ -63,10 +74,24 @@ export function PacientesPageContent({
         action="/pacientes"
         placeholder="Nombre, apellido o DNI del paciente…"
         defaultValue={q}
-        submitLabel="Buscar paciente"
+        submitLabel="Buscar"
         clearHref={clearHref}
         hiddenFields={
           cobertura === "pami" ? <input type="hidden" name="cobertura" value="pami" /> : undefined
+        }
+        extraFields={
+          <div className="relative min-w-[200px] flex-1">
+            <Stethoscope className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-amber-600" />
+            <input
+              key={patologia || "patologia-empty"}
+              name="patologia"
+              type="search"
+              autoComplete="off"
+              defaultValue={patologia}
+              placeholder="Patología o diagnóstico en historias…"
+              className="drflow-ui-input drflow-prominent-search-input w-full rounded-xl border-2 border-amber-300/90 bg-white py-2.5 pl-11 pr-3 text-sm font-medium text-slate-900 shadow-inner placeholder:font-normal placeholder:text-slate-400 focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-400/35"
+            />
+          </div>
         }
         trailing={
           <>
@@ -88,14 +113,18 @@ export function PacientesPageContent({
       {patients.length === 0 ? (
         <EmptyState
           icon={Users}
-          title={q ? "Sin resultados" : "No hay pacientes registrados"}
+          title={hasSearch ? "Sin resultados" : "No hay pacientes registrados"}
           description={
-            q
-              ? `No hay pacientes que coincidan con “${q}”.`
+            hasSearch
+              ? patologia && q
+                ? `No hay pacientes que coincidan con “${q}” y la patología “${patologia}”.`
+                : patologia
+                  ? `No hay pacientes con patología o diagnóstico que coincida con “${patologia}”.`
+                  : `No hay pacientes que coincidan con “${q}”.`
               : "Podés cargar 12 pacientes ficticios desde Configuración → Datos de prueba, o crear el primero manualmente."
           }
           action={
-            !q ? (
+            !hasSearch ? (
               <div className="flex flex-wrap justify-center gap-2">
                 <Link href="/configuracion?grupo=sistema&seccion=demo">
                   <Button variant="secondary">Cargar pacientes demo</Button>
@@ -129,7 +158,7 @@ export function PacientesPageContent({
           {(totalPages > 1 || total > 0) && (
             <ListPagination>
               {page > 1 && (
-                <Link href={buildPacientesPageQuery(page - 1, q, cobertura)}>
+                <Link href={buildPacientesPageQuery(page - 1, q, cobertura, patologia)}>
                   <Button variant="outline" size="sm" className="border-slate-500 bg-slate-700/80 text-slate-100 hover:bg-slate-600">
                     <ChevronLeft className="h-4 w-4" /> Anterior
                   </Button>
@@ -141,7 +170,7 @@ export function PacientesPageContent({
                 suffix={`${total} pacientes`}
               />
               {page < totalPages && (
-                <Link href={buildPacientesPageQuery(page + 1, q, cobertura)}>
+                <Link href={buildPacientesPageQuery(page + 1, q, cobertura, patologia)}>
                   <Button variant="outline" size="sm" className="border-slate-500 bg-slate-700/80 text-slate-100 hover:bg-slate-600">
                     Siguiente <ChevronRight className="h-4 w-4" />
                   </Button>

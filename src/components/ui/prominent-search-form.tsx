@@ -13,6 +13,7 @@ interface Props {
   hiddenFields?: ReactNode;
   clearHref?: string;
   trailing?: ReactNode;
+  extraFields?: ReactNode;
 }
 
 export function ProminentSearchForm({
@@ -24,6 +25,7 @@ export function ProminentSearchForm({
   hiddenFields,
   clearHref,
   trailing,
+  extraFields,
 }: Props) {
   return (
     <div className="drflow-card-light rounded-2xl border-2 border-amber-400/90 bg-gradient-to-br from-amber-50 via-orange-50/40 to-blue-50 p-4 text-slate-900 shadow-md shadow-amber-200/40 ring-1 ring-amber-300/50">
@@ -45,6 +47,7 @@ export function ProminentSearchForm({
               className="drflow-ui-input drflow-prominent-search-input w-full rounded-xl border-2 border-amber-300/90 bg-white py-2.5 pl-11 pr-3 text-sm font-medium text-slate-900 shadow-inner placeholder:font-normal placeholder:text-slate-400 focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-400/35"
             />
           </div>
+          {extraFields}
           <Button
             type="submit"
             className="bg-amber-500 text-white hover:bg-amber-600 focus-visible:ring-amber-400"

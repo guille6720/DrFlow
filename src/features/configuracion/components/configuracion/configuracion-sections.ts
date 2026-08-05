@@ -100,7 +100,7 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
   {
     id: "asistente-ia",
     title: "Asistente IA",
-    description: "Conectá OpenAI, Anthropic u otro proveedor para el copilot clínico.",
+    description: "Conectá OpenAI, Anthropic, Google Gemini u otro proveedor para el copilot clínico.",
     icon: Bot,
   },
   {

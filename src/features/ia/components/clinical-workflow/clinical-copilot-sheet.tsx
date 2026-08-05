@@ -82,7 +82,7 @@ export function ClinicalCopilotSheet({ open, onClose, context }: Props) {
             <p className="text-xs text-violet-800">{PHYSICIAN_ASSIST_DISCLAIMER}</p>
             {!hasLlm ? (
               <p className="mt-2 text-xs text-violet-700">
-                Modo local (sin modelo). Configurá OpenAI, Anthropic u otro proveedor en{" "}
+                Modo local (sin modelo). Configurá OpenAI, Anthropic, Gemini u otro proveedor en{" "}
                 <SafeInternalLink
                   href="/configuracion?grupo=sistema&seccion=asistente-ia"
                   className="font-medium underline underline-offset-2"

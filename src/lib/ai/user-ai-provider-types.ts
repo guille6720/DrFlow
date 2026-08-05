@@ -1,4 +1,4 @@
-export type UserAiProviderId = "openai" | "anthropic" | "openai_compatible";
+export type UserAiProviderId = "openai" | "anthropic" | "openai_compatible" | "gemini";
 
 export type UserAiConnectionPublic = {
   provider: UserAiProviderId;
@@ -28,6 +28,9 @@ export const USER_AI_PROVIDER_OPTIONS: Array<{
   defaultModel: string;
   defaultBaseUrl: string | null;
   baseUrlRequired?: boolean;
+  hideBaseUrl?: boolean;
+  apiKeyPlaceholder?: string;
+  apiKeyHelpUrl?: string;
 }> = [
   {
     id: "openai",
@@ -35,6 +38,8 @@ export const USER_AI_PROVIDER_OPTIONS: Array<{
     description: "ChatGPT API (GPT-4o, GPT-4o mini, etc.)",
     defaultModel: "gpt-4o-mini",
     defaultBaseUrl: "https://api.openai.com/v1",
+    hideBaseUrl: true,
+    apiKeyPlaceholder: "sk-…",
   },
   {
     id: "anthropic",
@@ -42,6 +47,17 @@ export const USER_AI_PROVIDER_OPTIONS: Array<{
     description: "Claude (Haiku, Sonnet, Opus)",
     defaultModel: "claude-3-5-haiku-latest",
     defaultBaseUrl: "https://api.anthropic.com/v1",
+    apiKeyPlaceholder: "sk-ant-…",
+  },
+  {
+    id: "gemini",
+    label: "Google Gemini",
+    description: "Gemini (Flash, Pro) vía Google AI Studio",
+    defaultModel: "gemini-2.0-flash",
+    defaultBaseUrl: "https://generativelanguage.googleapis.com/v1beta",
+    hideBaseUrl: true,
+    apiKeyPlaceholder: "AIza…",
+    apiKeyHelpUrl: "https://aistudio.google.com/apikey",
   },
   {
     id: "openai_compatible",
@@ -50,6 +66,7 @@ export const USER_AI_PROVIDER_OPTIONS: Array<{
     defaultModel: "gpt-4o-mini",
     defaultBaseUrl: null,
     baseUrlRequired: true,
+    apiKeyPlaceholder: "sk-…",
   },
 ];
 

@@ -10,17 +10,18 @@ import { createClient } from "@/core/supabase/server";
 
 import { PacientesPageContent } from "@/features/pacientes/components/pacientes/pacientes-page-content";
 import { loadPacientesPageData } from "@/features/pacientes/server/load-pacientes-page";
-import { sanitizePatientSearchTerm } from "@/features/pacientes/utils/patient-search";
+import { sanitizePatientPathologySearchTerm, sanitizePatientSearchTerm } from "@/features/pacientes/utils/patient-search";
 
 export const maxDuration = 300;
 
 export default async function PacientesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string; cobertura?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; cobertura?: string; patologia?: string }>;
 }) {
-  const { q: qRaw, page: pageStr, cobertura } = await searchParams;
+  const { q: qRaw, page: pageStr, cobertura, patologia: patologiaRaw } = await searchParams;
   const q = sanitizePatientSearchTerm(qRaw);
+  const patologia = sanitizePatientPathologySearchTerm(patologiaRaw);
   const page = Math.max(1, parseInt(pageStr ?? "1", 10) || 1);
   const profile = await getProfile();
   const clinics = await getUserClinics();
@@ -28,7 +29,7 @@ export default async function PacientesPage({
   const { role, isSuperadmin } = await getActiveClinic();
   const canIssuePrescriptions = hasPermission(role, "issuePrescriptions", isSuperadmin);
   const supabase = await createClient();
-  const pageData = await loadPacientesPageData(supabase, clinicId, q, page, cobertura);
+  const pageData = await loadPacientesPageData(supabase, clinicId, q, page, cobertura, patologia);
 
   return (
     <>
@@ -42,6 +43,7 @@ export default async function PacientesPage({
       />
       <PacientesPageContent
         q={q}
+        patologia={patologia}
         cobertura={cobertura}
         canIssuePrescriptions={canIssuePrescriptions}
         {...pageData}
