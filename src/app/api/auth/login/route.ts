@@ -6,7 +6,7 @@ import { getSupabaseAnonKey, getSupabaseUrl } from "@/core/supabase/env";
 import { firstZodIssue } from "@/core/validations/params";
 import { loginSchema } from "@/core/validations/schemas";
 
-import { acceptPendingInvitations } from "@/lib/actions/invitations";
+import { runPostLoginBootstrap } from "@/lib/auth/post-login-bootstrap";
 
 function mapAuthError(message: string): string {
   const lower = message.toLowerCase();
@@ -30,27 +30,6 @@ function redirectToLogin(request: NextRequest, error: string, email?: string) {
   if (email) url.searchParams.set("email", email);
   // 303 fuerza GET tras POST (evita HTTP 405 en /login)
   return NextResponse.redirect(url, 303);
-}
-
-async function ensureProfile(
-  supabase: ReturnType<typeof createServerClient>,
-  userId: string,
-  email: string,
-  fullName?: string
-) {
-  const { data: existing } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (!existing) {
-    await supabase.from("profiles").insert({
-      id: userId,
-      email,
-      full_name: fullName ?? email.split("@")[0],
-    });
-  }
 }
 
 export async function POST(request: NextRequest) {
@@ -100,14 +79,7 @@ export async function POST(request: NextRequest) {
     return redirectToLogin(request, "No se pudo iniciar sesión.", email);
   }
 
-  await ensureProfile(
-    supabase,
-    data.user.id,
-    data.user.email ?? email,
-    data.user.user_metadata?.full_name as string | undefined
-  );
-
-  await acceptPendingInvitations();
+  await runPostLoginBootstrap(supabase, data.user);
 
   return response;
 }

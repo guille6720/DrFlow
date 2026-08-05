@@ -22,13 +22,13 @@ export function LoginFormView() {
     email,
     setEmail,
     loading,
-    setLoading,
     resetLoading,
     resetMessage,
     resetError,
     formError,
     info,
     handleResetPassword,
+    handleLoginSubmit,
   } = useLoginForm();
 
   return (
@@ -51,7 +51,7 @@ export function LoginFormView() {
           <form
             action="/api/auth/login"
             method="post"
-            onSubmit={() => setLoading(true)}
+            onSubmit={handleLoginSubmit}
             className="mt-8 space-y-4"
           >
             {(info || resetMessage) && (
