@@ -5,7 +5,7 @@ import {
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/core/auth/session";
+} from "@/core/auth/session.server";
 import { Header } from "@/core/components/layout/header";
 import { createClient } from "@/core/supabase/server";
 

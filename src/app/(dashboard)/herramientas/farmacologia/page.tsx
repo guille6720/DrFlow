@@ -5,7 +5,7 @@ import {
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/core/auth/session";
+} from "@/core/auth/session.server";
 import { hasPermission } from "@/core/permissions/roles";
 
 import { PharmacologySearchView } from "@/features/pharmacology";

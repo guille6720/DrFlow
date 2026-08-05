@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { setActiveClinic } from "@/core/auth/session";
+import { setActiveClinic } from "@/core/auth/session.actions";
 import { createClient } from "@/core/supabase/server";
 
 /**

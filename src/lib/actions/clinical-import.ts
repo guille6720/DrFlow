@@ -1,7 +1,7 @@
 "use server";
 
 import { resolveImportAccess } from "@/core/actions/action-response";
-import { logAudit } from "@/core/auth/session";
+import { logAudit } from "@/core/auth/session.server";
 import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
 import { requireClinicalImportAccess } from "@/core/services/import-access.service";
 import { createClient } from "@/core/supabase/server";

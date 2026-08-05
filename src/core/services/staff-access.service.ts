@@ -1,6 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { hasPermission } from "@/core/permissions/roles";
 
 const DEFAULT_DENIED = "Solo administradores pueden gestionar el equipo";

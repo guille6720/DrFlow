@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
-import { setActiveClinic } from "@/core/auth/session";
+import { setActiveClinic } from "@/core/auth/session.actions";
 
 import type { Clinic } from "@/types/database";
 

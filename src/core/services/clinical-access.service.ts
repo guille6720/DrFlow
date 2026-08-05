@@ -1,4 +1,4 @@
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { hasPermission } from "@/core/permissions/roles";
 import type { ServiceResult } from "@/core/services/types";
 import { serviceErr, serviceOk } from "@/core/services/types";

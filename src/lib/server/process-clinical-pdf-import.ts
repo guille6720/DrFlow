@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { logAudit } from "@/core/auth/session";
+import { logAudit } from "@/core/auth/session.server";
 import {
   buildPatientFilePath,
   ensureExtension,

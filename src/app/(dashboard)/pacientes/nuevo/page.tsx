@@ -3,7 +3,7 @@ import {
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/core/auth/session";
+} from "@/core/auth/session.server";
 
 import NuevoPacienteForm from "./nuevo-paciente-form";
 

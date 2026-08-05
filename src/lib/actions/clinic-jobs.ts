@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { getSession, logAudit } from "@/core/auth/session";
+import { getSession, logAudit } from "@/core/auth/session.server";
 import { scheduleAfterTask } from "@/core/errors/background.server";
 import { logServerError } from "@/core/errors/log-error.server";
 import { enqueueClinicJob } from "@/core/jobs/enqueue";

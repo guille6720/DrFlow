@@ -1,7 +1,7 @@
 "use server";
 
 import { purgeSoleOwnerClinicsForUserInternal } from "@/core/account/purge-sole-owner-clinics";
-import { getSession } from "@/core/auth/session";
+import { getSession } from "@/core/auth/session.server";
 import { entityIdSchema } from "@/core/validations/params";
 
 /** Borra clínicas donde el usuario es el único miembro activo. Solo el propio usuario autenticado. */

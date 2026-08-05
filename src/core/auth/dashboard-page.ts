@@ -1,4 +1,4 @@
-import { getDashboardShell } from "@/core/auth/session";
+import { getDashboardShell } from "@/core/auth/session.server";
 
 import type { ClinicMember, UserRole } from "@/types/database";
 

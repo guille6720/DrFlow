@@ -6,7 +6,7 @@ import {
   resolveClinicalRecordAccess,
   resolveImportAccess,
 } from "@/core/actions/action-response";
-import { logAudit } from "@/core/auth/session";
+import { logAudit } from "@/core/auth/session.server";
 import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
 import {
   buildPatientFilePath,

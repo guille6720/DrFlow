@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getActiveClinic, getActiveClinicId } from "@/core/auth/session";
+import { getActiveClinic, getActiveClinicId } from "@/core/auth/session.server";
 import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { hasPermission } from "@/core/permissions/roles";
 import { requireSameOriginMutation } from "@/core/security/csrf";

@@ -3,7 +3,7 @@ import {
   getActiveClinicId,
   getProfile,
   getUserClinics,
-} from "@/core/auth/session";
+} from "@/core/auth/session.server";
 import { createClient } from "@/core/supabase/server";
 
 import { RecordatoriosView } from "@/features/agenda/components/recordatorios/recordatorios-view";

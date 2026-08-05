@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { hasPermission } from "@/core/permissions/roles";
 import { PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";

@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { logAudit, setActiveClinic } from "@/core/auth/session";
+import { logAudit, setActiveClinic } from "@/core/auth/session.actions";
 import { logServerError } from "@/core/errors/log-error.server";
 import { applyClinicLegalAcceptanceInternal } from "@/core/legal/apply-clinic-legal-acceptance";
 import { createClient } from "@/core/supabase/server";

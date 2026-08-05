@@ -1,6 +1,6 @@
 "use server";
 
-import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session.server";
 import { applyClinicLegalAcceptanceInternal } from "@/core/legal/apply-clinic-legal-acceptance";
 import {
   LEGAL_PRIVACY_VERSION,

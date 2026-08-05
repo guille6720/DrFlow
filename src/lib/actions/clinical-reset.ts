@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
 import { resolveAccessFields } from "@/core/actions/action-response";
-import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session.server";
 import { logServerError } from "@/core/errors/log-error.server";
 import { hasPermission } from "@/core/permissions/roles";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";

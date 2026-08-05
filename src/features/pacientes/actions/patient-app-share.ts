@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 
-import { getActiveClinicId, getSession } from "@/core/auth/session";
-import { getActiveClinic } from "@/core/auth/session";
+import { getActiveClinicId, getSession } from "@/core/auth/session.server";
+import { getActiveClinic } from "@/core/auth/session.server";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 import { appShareChannelSchema, parseEntityId } from "@/core/validations/params";

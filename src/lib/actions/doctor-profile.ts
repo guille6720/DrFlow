@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { recordAudit } from "@/core/security/audit-service";
 import { createClient } from "@/core/supabase/server";
 import {

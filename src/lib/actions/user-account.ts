@@ -1,6 +1,6 @@
 "use server";
 
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { hasPermission, PERMISSIONS } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 

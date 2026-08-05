@@ -5,7 +5,7 @@ import { es } from "date-fns/locale";
 import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { getSession } from "@/core/auth/session";
+import { getSession } from "@/core/auth/session.server";
 import { scheduleAfterTask } from "@/core/errors/background.server";
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
 import { processPendingClinicJobs } from "@/core/jobs/process";

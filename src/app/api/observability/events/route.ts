@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getActiveClinicId, getSession } from "@/core/auth/session";
+import { getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { clientObservabilityBatchSchema } from "@/core/observability/client-ingest-schema";
 import { recordObservabilityEvent } from "@/core/observability/record";
 import { inferWebVitalStatus } from "@/core/observability/web-vitals-thresholds";

@@ -1,6 +1,6 @@
 "use server";
 
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { hasPermission } from "@/core/permissions/roles";
 import {
   mergePatientAuditEvents,

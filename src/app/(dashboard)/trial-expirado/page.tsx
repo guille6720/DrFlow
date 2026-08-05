@@ -2,7 +2,7 @@ import { CalendarX2 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { getDashboardShell } from "@/core/auth/session";
+import { getDashboardShell } from "@/core/auth/session.server";
 import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
 import { isClinicTrialExpired, TRIAL_PROMO_DAYS } from "@/core/trial/clinic-trial";
 

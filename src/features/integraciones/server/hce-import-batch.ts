@@ -5,7 +5,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
 
-import { logAudit } from "@/core/auth/session";
+import { logAudit } from "@/core/auth/session.server";
 import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
 import { sanitizeText } from "@/core/validations/schemas";
 

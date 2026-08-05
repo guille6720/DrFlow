@@ -1,4 +1,4 @@
-import { logAudit } from "@/core/auth/session";
+import { logAudit } from "@/core/auth/session.server";
 import { logServerError } from "@/core/errors/log-error.server";
 import {
   LEGAL_PRIVACY_VERSION,

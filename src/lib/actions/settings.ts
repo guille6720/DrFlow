@@ -5,7 +5,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireSettingsAccess } from "@/core/actions/clinic-guard";
-import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session";
+import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session.server";
 import {
   revalidateClinicLocationsCache,
   revalidateClinicPortalCache,

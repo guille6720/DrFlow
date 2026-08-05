@@ -1,8 +1,10 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import { getDashboardShell, logAudit } from "@/core/auth/session";
+import { getDashboardShell } from "@/core/auth/session";
+import { logAudit } from "@/core/auth/session.actions";
 import { AccessibilityProvider } from "@/core/components/accessibility/accessibility-provider";
 import { RouteAnnouncer } from "@/core/components/accessibility/route-announcer";
 import { SkipToContent } from "@/core/components/accessibility/skip-to-content";
@@ -43,26 +45,32 @@ function isNextNavigationError(err: unknown): boolean {
   return digest.startsWith("NEXT_REDIRECT") || digest.startsWith("NEXT_NOT_FOUND");
 }
 
-function isDynamicServerUsageError(err: unknown): boolean {
-  return err instanceof Error && err.message.includes("Dynamic server usage");
+function DashboardShellFallback({ message }: { message: string }) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 drflow-mesh p-6 text-center">
+      <h1 className="text-lg font-semibold text-slate-900">No pudimos cargar el panel</h1>
+      <p className="max-w-md text-sm text-slate-600">{message}</p>
+      <div className="flex flex-wrap justify-center gap-3">
+        <Link
+          href="/dashboard"
+          className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
+        >
+          Reintentar
+        </Link>
+        <Link
+          href="/login"
+          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Ir al login
+        </Link>
+      </div>
+    </div>
+  );
 }
 
-/** Async dashboard shell — lives in a child so (dashboard)/error.tsx can catch failures. */
-export async function DashboardDataShell({ children }: { children: React.ReactNode }) {
-  let profile: Awaited<ReturnType<typeof getDashboardShell>>["profile"];
-  let clinics: Awaited<ReturnType<typeof getDashboardShell>>["clinics"];
-  let clinicId: Awaited<ReturnType<typeof getDashboardShell>>["clinicId"];
-  let clinic: Awaited<ReturnType<typeof getDashboardShell>>["clinic"];
-  let role: Awaited<ReturnType<typeof getDashboardShell>>["role"];
-  let isSuperadmin: Awaited<ReturnType<typeof getDashboardShell>>["isSuperadmin"];
-
-  try {
-    ({ profile, clinics, clinicId, clinic, role, isSuperadmin } = await getDashboardShell());
-  } catch (err) {
-    if (isNextNavigationError(err) || isDynamicServerUsageError(err)) throw err;
-    console.error("[dashboard-shell] getDashboardShell failed:", err);
-    redirect("/login");
-  }
+async function DashboardDataShellInner({ children }: { children: React.ReactNode }) {
+  const shell = await getDashboardShell();
+  const { profile, clinics, clinicId, clinic, role, isSuperadmin } = shell;
 
   if (!profile) redirect("/login");
   if (clinics.length === 0 && !isSuperadmin) redirect("/onboarding");
@@ -172,4 +180,17 @@ export async function DashboardDataShell({ children }: { children: React.ReactNo
       </DashboardSidebarProvider>
     </div>
   );
+}
+
+/** Async dashboard shell — must not throw (layout-level); redirects only. */
+export async function DashboardDataShell({ children }: { children: React.ReactNode }) {
+  try {
+    return await DashboardDataShellInner({ children });
+  } catch (err) {
+    if (isNextNavigationError(err)) throw err;
+    console.error("[dashboard-shell] render failed:", err);
+    return (
+      <DashboardShellFallback message="Hubo un error al cargar tu sesión o el consultorio. Probá de nuevo." />
+    );
+  }
 }

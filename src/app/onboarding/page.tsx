@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { getProfile, getUserClinics } from "@/core/auth/session";
+import { getProfile, getUserClinics } from "@/core/auth/session.server";
 import { parseTrialDays, TRIAL_REGISTRATION_COOKIE } from "@/core/trial/clinic-trial";
 
 import { OnboardingForm } from "./onboarding-form";

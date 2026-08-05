@@ -1,12 +1,8 @@
-"use server";
+import "server-only";
 
 import { cookies } from "next/headers";
 import { cache } from "react";
 
-import {
-  recordAudit,
-  type RecordAuditParams,
-} from "@/core/security/audit-service";
 import { CLINIC_COLUMNS, PROFILE_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
@@ -105,7 +101,6 @@ export const getActiveClinic = cache(async (): Promise<{
   };
 });
 
-/** Una sola llamada para layout + header (menos round-trips por página). */
 export const getDashboardShell = cache(async () => {
   const [profile, clinics, clinicId, active] = await Promise.all([
     getProfile(),
@@ -115,21 +110,3 @@ export const getDashboardShell = cache(async () => {
   ]);
   return { profile, clinics, clinicId, ...active };
 });
-
-export async function setActiveClinic(clinicId: string) {
-  const cookieStore = await cookies();
-  const clinics = await getUserClinics();
-  if (!clinics.some((c) => c.clinic_id === clinicId)) {
-    throw new Error("No tenés acceso a esta clínica");
-  }
-  cookieStore.set(CLINIC_COOKIE, clinicId, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 365,
-  });
-}
-
-export async function logAudit(params: Omit<RecordAuditParams, "userId">) {
-  await recordAudit(params);
-}
