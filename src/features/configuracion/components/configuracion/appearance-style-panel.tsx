@@ -1,6 +1,6 @@
 "use client";
 
-import { Droplets, LayoutGrid, Mic, Moon, Sun } from "lucide-react";
+import { Droplets, Layers, LayoutGrid, Mic, Moon, Sun } from "lucide-react";
 
 import { useUiTheme } from "@/core/components/theme/ui-theme-provider";
 import { UI_STYLE_LABELS, type UiStyleId } from "@/core/theme/ui-theme";
@@ -16,19 +16,24 @@ const STYLE_ICONS: Record<UiStyleId, typeof LayoutGrid> = {
   "1": LayoutGrid,
   "2": LayoutGrid,
   "3": Droplets,
+  "4": Layers,
 };
 
 const STYLE_ACTIVE_RING: Record<UiStyleId, string> = {
   "1": "border-teal-400 bg-teal-500/10 ring-teal-400/40",
   "2": "border-teal-400 bg-teal-500/10 ring-teal-400/40",
   "3": "border-sky-400 bg-sky-500/10 ring-sky-400/40",
+  "4": "border-blue-400 bg-blue-500/10 ring-blue-400/40",
 };
 
 const STYLE_ICON_COLOR: Record<UiStyleId, string> = {
   "1": "text-teal-300",
   "2": "text-teal-300",
   "3": "text-sky-300",
+  "4": "text-blue-300",
 };
+
+const BENTO_STYLES: UiStyleId[] = ["2", "3", "4"];
 
 export function AppearanceStylePanel() {
   const { style, clinicalDark, setStyle, setClinicalDark } = useUiTheme();
@@ -37,13 +42,13 @@ export function AppearanceStylePanel() {
   return (
     <Card
       title="Apariencia de la interfaz"
-      description="Estilo 2 y 3 usan diseño plano con rejilla Bento. El Estilo 3 aplica una paleta azul y celeste con texto de alto contraste. Podés activar modo oscuro en Estilo 2 y 3."
+      description="Estilos 2–4 usan diseño plano con rejilla Bento. El Estilo 4 aplica fondo azul cobalto (#2563eb) con tarjetas claras para máxima nitidez. Podés activar modo oscuro en Estilos 2–4."
     >
       <div className="space-y-6">
         <div>
           <p className="mb-3 text-sm font-medium text-slate-200">Preset de estilo</p>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {(["1", "2", "3"] as UiStyleId[]).map((id) => {
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {(["1", "2", "3", "4"] as UiStyleId[]).map((id) => {
               const active = style === id;
               const Icon = STYLE_ICONS[id];
               return (
@@ -71,7 +76,7 @@ export function AppearanceStylePanel() {
           </div>
         </div>
 
-        {(style === "2" || style === "3") && (
+        {BENTO_STYLES.includes(style) && (
           <div className="rounded-xl border border-slate-500/50 bg-slate-800/30 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -84,9 +89,13 @@ export function AppearanceStylePanel() {
                   Clinical Dark Mode
                 </p>
                 <p className="mt-1 text-xs text-slate-300">
-                  {clinicalDark
-                    ? "Fondo oscuro clínico, bordes planos y alto contraste para turnos nocturnos."
-                    : "Modo claro plano: fondo gris muy suave, tarjetas blancas y rejilla Bento."}
+                  {style === "4"
+                    ? clinicalDark
+                      ? "Azul profundo nocturno; tarjetas claras con texto oscuro nítido."
+                      : "Fondo azul cobalto saturado; tarjetas blancas de alto contraste."
+                    : clinicalDark
+                      ? "Fondo oscuro clínico, bordes planos y alto contraste para turnos nocturnos."
+                      : "Modo claro plano: fondo gris muy suave, tarjetas blancas y rejilla Bento."}
                 </p>
               </div>
               <Button
@@ -136,8 +145,8 @@ export function AppearanceStylePanel() {
         ) : null}
 
         <p className="text-xs text-slate-400">
-          La preferencia se guarda en este navegador. Estilo 1 mantiene el look clínico teal; Estilo 3
-          usa azules y celestes con tipografía nítida.
+          La preferencia se guarda en este navegador. Estilo 4 usa el azul de acción (#2563eb) como
+          fondo principal y mantiene formularios y tarjetas en superficies claras para lectura nítida.
         </p>
       </div>
     </Card>
