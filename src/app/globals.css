@@ -1211,6 +1211,25 @@ html:not([data-ui-style="2"]) .drflow-mesh main :is(.bg-white, .bg-white\/80, .b
   color: #0f172a !important;
 }
 
+/* Tarjetas oscuras dentro de overlays/islas claras: títulos y labels legibles */
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card .drflow-ui-card-title,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card .drflow-ui-card-title,
+html:not([data-ui-style="2"]) .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card .drflow-ui-card-title {
+  color: var(--foreground, #f8fafc) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card .drflow-ui-card-desc,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card .drflow-ui-card-desc,
+html:not([data-ui-style="2"]) .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card .drflow-ui-card-desc {
+  color: var(--muted, #cbd5e1) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card label.drflow-ui-label,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card label.drflow-ui-label,
+html:not([data-ui-style="2"]) .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card label.drflow-ui-label {
+  color: #e2e8f0 !important;
+}
+
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-card-light :is(.text-slate-500, .text-slate-600, .text-slate-400),
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-surface-light :is(.text-slate-500, .text-slate-600, .text-slate-400),
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body .drflow-card-light :is(.text-slate-500, .text-slate-600, .text-slate-400),

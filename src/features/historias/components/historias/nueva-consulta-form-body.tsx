@@ -7,7 +7,7 @@ import { useState } from "react";
 import type { NuevaConsultaFormState } from "@/features/historias/hooks/use-nueva-consulta-form";
 import { ConsultationPhysicianAssist } from "@/features/ia/components/clinical-workflow/consultation-physician-assist";
 
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink, buttonSurfaceClassName } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -185,19 +185,16 @@ export function NuevaConsultaFormBody({
               <Link
                 href={recetaHref()}
                 onClick={flushEvolutionDraft}
-                className="inline-flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-4 py-2 text-sm font-medium text-teal-800 hover:bg-teal-100"
+                className={buttonSurfaceClassName("secondary", "md")}
               >
                 <ScrollText className="h-4 w-4" />
                 Generar receta
               </Link>
             ) : null}
             {fromAppointment ? (
-              <Link
-                href="/agenda?view=day"
-                className="inline-flex items-center rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-              >
+              <ButtonLink href="/agenda?view=day" variant="outline">
                 Volver a agenda
-              </Link>
+              </ButtonLink>
             ) : null}
           </div>
         </form>
