@@ -84,39 +84,46 @@ WHERE NOT EXISTS (
 );
 
 -- Lectura pública anónima (solo datos necesarios para reserva online)
+DROP POLICY IF EXISTS public_booking_links_anon_select ON public_booking_links;
 CREATE POLICY public_booking_links_anon_select ON public_booking_links
   FOR SELECT USING (is_active = true);
 
+DROP POLICY IF EXISTS clinics_anon_public_select ON clinics;
 CREATE POLICY clinics_anon_public_select ON clinics
   FOR SELECT USING (
     is_active = true
     AND id IN (SELECT clinic_id FROM public_booking_links WHERE is_active = true)
   );
 
+DROP POLICY IF EXISTS professionals_anon_public_select ON professionals;
 CREATE POLICY professionals_anon_public_select ON professionals
   FOR SELECT USING (
     is_active = true
     AND clinic_id IN (SELECT clinic_id FROM public_booking_links WHERE is_active = true)
   );
 
+DROP POLICY IF EXISTS specialties_anon_public_select ON specialties;
 CREATE POLICY specialties_anon_public_select ON specialties
   FOR SELECT USING (
     is_active = true
     AND clinic_id IN (SELECT clinic_id FROM public_booking_links WHERE is_active = true)
   );
 
+DROP POLICY IF EXISTS locations_anon_public_select ON locations;
 CREATE POLICY locations_anon_public_select ON locations
   FOR SELECT USING (
     is_active = true
     AND clinic_id IN (SELECT clinic_id FROM public_booking_links WHERE is_active = true)
   );
 
+DROP POLICY IF EXISTS availability_rules_anon_public_select ON availability_rules;
 CREATE POLICY availability_rules_anon_public_select ON availability_rules
   FOR SELECT USING (
     is_active = true
     AND clinic_id IN (SELECT clinic_id FROM public_booking_links WHERE is_active = true)
   );
 
+DROP POLICY IF EXISTS consultation_reasons_anon_public_select ON consultation_reasons;
 CREATE POLICY consultation_reasons_anon_public_select ON consultation_reasons
   FOR SELECT USING (
     is_active = true
@@ -124,11 +131,13 @@ CREATE POLICY consultation_reasons_anon_public_select ON consultation_reasons
   );
 
 -- Turnos ocupados visibles para calcular disponibilidad (solo start/end, sin datos sensibles del paciente)
+DROP POLICY IF EXISTS appointments_anon_availability_select ON appointments;
 CREATE POLICY appointments_anon_availability_select ON appointments
   FOR SELECT USING (
     clinic_id IN (SELECT clinic_id FROM public_booking_links WHERE is_active = true)
   );
 
+DROP POLICY IF EXISTS schedule_blocks_anon_public_select ON schedule_blocks;
 CREATE POLICY schedule_blocks_anon_public_select ON schedule_blocks
   FOR SELECT USING (
     clinic_id IN (SELECT clinic_id FROM public_booking_links WHERE is_active = true)

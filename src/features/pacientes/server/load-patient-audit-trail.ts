@@ -39,18 +39,7 @@ export async function loadPatientAuditTrail(
 
   if (!patient) return { error: "Paciente no encontrado" };
 
-  const { data: recordIds } = await supabase
-    .from("clinical_records")
-    .select("id")
-    .eq("patient_id", idParsed.data)
-    .eq("clinic_id", clinicId);
-
-  const recordIdList = (recordIds ?? []).map((r) => r.id);
-
-  const entityFilter = [`entity_id.eq.${idParsed.data}`, `patient_id.eq.${idParsed.data}`];
-  if (recordIdList.length > 0) {
-    entityFilter.push(`entity_id.in.(${recordIdList.join(",")})`);
-  }
+  const patientFilter = `patient_id.eq.${idParsed.data},entity_id.eq.${idParsed.data}`;
 
   const [{ data: clinicLogs, error: logError }, { data: recordLogs, error: recordError }] =
     await Promise.all([
@@ -60,20 +49,18 @@ export async function loadPatientAuditTrail(
           "id, action, module, what, entity_type, entity_id, created_at, ip_address, user_agent, old_values, new_values, profiles(full_name)"
         )
         .eq("clinic_id", clinicId)
-        .or(entityFilter.join(","))
+        .or(patientFilter)
         .order("created_at", { ascending: false })
         .limit(AUDIT_LIMIT),
-      recordIdList.length > 0
-        ? supabase
-            .from("clinical_record_audit")
-            .select(
-              "id, action, module, what, clinical_record_id, changed_at, ip_address, user_agent, old_values, new_values, profiles:changed_by(full_name)"
-            )
-            .eq("clinic_id", clinicId)
-            .in("clinical_record_id", recordIdList)
-            .order("changed_at", { ascending: false })
-            .limit(AUDIT_LIMIT)
-        : Promise.resolve({ data: [], error: null }),
+      supabase
+        .from("clinical_record_audit")
+        .select(
+          "id, action, module, what, clinical_record_id, changed_at, ip_address, user_agent, old_values, new_values, profiles:changed_by(full_name)"
+        )
+        .eq("clinic_id", clinicId)
+        .eq("patient_id", idParsed.data)
+        .order("changed_at", { ascending: false })
+        .limit(AUDIT_LIMIT),
     ]);
 
   if (logError) return { error: "No se pudo cargar la auditoría del consultorio" };

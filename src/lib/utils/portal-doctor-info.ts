@@ -47,7 +47,7 @@ function normalizeProfessional(raw: RawProfessional | null | undefined) {
   return { ...raw, profiles: profile ?? null };
 }
 
-function doctorInfoFromBookingLink(link: {
+export function doctorInfoFromBookingLink(link: {
   clinics: unknown;
   professionals: unknown;
 }): DoctorShareInfo | null {

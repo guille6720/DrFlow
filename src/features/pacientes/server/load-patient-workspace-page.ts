@@ -149,7 +149,7 @@ export async function loadPatientWorkspacePageData(
       .limit(PATIENT_RX_FETCH_LIMIT),
     supabase
       .from("medical_orders")
-      .select("*")
+      .select("id, order_text, notes, status, issued_at, created_at, professional_id, patient_id, clinical_record_id")
       .eq("clinic_id", clinicId)
       .eq("patient_id", patientId)
       .order("issued_at", { ascending: false })

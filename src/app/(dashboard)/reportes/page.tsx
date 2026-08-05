@@ -1,12 +1,7 @@
 import { Header } from "@/core/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import {
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-  getActiveClinic,
-} from "@/core/auth/session";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { createClient } from "@/core/supabase/server";
 import { redirect } from "next/navigation";
 import { hasPermission } from "@/core/permissions/roles";
@@ -17,10 +12,7 @@ import { AsyncReportButton } from "@/features/dashboard/components/reportes/asyn
 import { formatCurrency } from "@/lib/services/payments";
 
 export default async function ReportesPage() {
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
 
   if (!hasPermission(role, "viewReports", isSuperadmin)) {
     redirect("/dashboard");
@@ -43,13 +35,40 @@ export default async function ReportesPage() {
   };
 
   if (clinicId) {
-    const [appts, noShow, cancelled, newPats, records, payments] = await Promise.all([
-      supabase.from("appointments").select("id, status, start_at, professionals(profiles(full_name))").eq("clinic_id", clinicId).gte("start_at", monthStart).lte("start_at", monthEnd),
-      supabase.from("appointments").select("id", { count: "exact", head: true }).eq("clinic_id", clinicId).eq("status", "no_show").gte("start_at", monthStart),
-      supabase.from("appointments").select("id", { count: "exact", head: true }).eq("clinic_id", clinicId).eq("status", "cancelled").gte("start_at", monthStart),
-      supabase.from("patients").select("id", { count: "exact", head: true }).eq("clinic_id", clinicId).gte("created_at", monthStart),
-      supabase.from("clinical_records").select("id, professional_id, professionals(profiles(full_name))").eq("clinic_id", clinicId).gte("created_at", monthStart),
-      supabase.from("payments").select("amount").eq("clinic_id", clinicId).eq("status", "paid").gte("created_at", monthStart),
+    const [totalAppts, noShow, cancelled, newPats, records, revenueRes] = await Promise.all([
+      supabase
+        .from("appointments")
+        .select("id", { count: "exact", head: true })
+        .eq("clinic_id", clinicId)
+        .gte("start_at", monthStart)
+        .lte("start_at", monthEnd),
+      supabase
+        .from("appointments")
+        .select("id", { count: "exact", head: true })
+        .eq("clinic_id", clinicId)
+        .eq("status", "no_show")
+        .gte("start_at", monthStart),
+      supabase
+        .from("appointments")
+        .select("id", { count: "exact", head: true })
+        .eq("clinic_id", clinicId)
+        .eq("status", "cancelled")
+        .gte("start_at", monthStart),
+      supabase
+        .from("patients")
+        .select("id", { count: "exact", head: true })
+        .eq("clinic_id", clinicId)
+        .gte("created_at", monthStart),
+      supabase
+        .from("clinical_records")
+        .select("id, professional_id, professionals(profiles(full_name))")
+        .eq("clinic_id", clinicId)
+        .gte("created_at", monthStart),
+      supabase.rpc("sum_paid_payments", {
+        p_clinic_id: clinicId,
+        p_from: monthStart,
+        p_to: monthEnd,
+      }),
     ]);
 
     const doctorCounts = new Map<string, number>();
@@ -58,10 +77,20 @@ export default async function ReportesPage() {
       doctorCounts.set(name, (doctorCounts.get(name) ?? 0) + 1);
     }
 
-    const revenue = (payments.data ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
+    const totalAppointments = totalAppts.count ?? 0;
+    let revenue = Number(revenueRes.data ?? 0);
+    if (revenueRes.error) {
+      const { data: payments } = await supabase
+        .from("payments")
+        .select("amount")
+        .eq("clinic_id", clinicId)
+        .eq("status", "paid")
+        .gte("created_at", monthStart);
+      revenue = (payments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
+    }
 
     report = {
-      totalAppointments: appts.data?.length ?? 0,
+      totalAppointments,
       noShow: noShow.count ?? 0,
       cancelled: cancelled.count ?? 0,
       newPatients: newPats.count ?? 0,
@@ -69,7 +98,7 @@ export default async function ReportesPage() {
       estimatedRevenue: revenue,
       csvRows: [
         ["Métrica", "Valor", "Período"],
-        ["Turnos totales", String(appts.data?.length ?? 0), periodLabel],
+        ["Turnos totales", String(totalAppointments), periodLabel],
         ["Ausentismo", String(noShow.count ?? 0), periodLabel],
         ["Cancelaciones", String(cancelled.count ?? 0), periodLabel],
         ["Pacientes nuevos", String(newPats.count ?? 0), periodLabel],

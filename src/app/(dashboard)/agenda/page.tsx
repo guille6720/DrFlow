@@ -3,6 +3,10 @@ import {
   getDashboardPageContext,
 } from "@/core/auth/dashboard-page";
 import { createClient } from "@/core/supabase/server";
+import {
+  APPOINTMENT_AGENDA_COLUMNS,
+  PROFESSIONAL_AGENDA_COLUMNS,
+} from "@/core/supabase/select-columns";
 import { subDays, addDays } from "date-fns";
 
 async function AgendaContent({
@@ -24,7 +28,7 @@ async function AgendaContent({
           supabase
             .from("appointments")
             .select(
-              "*, patients(first_name, last_name), professionals(profiles(full_name)), locations(name), specialties(name)"
+              `${APPOINTMENT_AGENDA_COLUMNS}, patients(first_name, last_name), professionals(profiles(full_name)), locations(name), specialties(name)`
             )
             .eq("clinic_id", clinicId)
             .gte("start_at", rangeStart)
@@ -39,7 +43,7 @@ async function AgendaContent({
             .limit(200),
           supabase
             .from("professionals")
-            .select("*, profiles(full_name), specialties(name)")
+            .select(`${PROFESSIONAL_AGENDA_COLUMNS}, profiles(full_name), specialties(name)`)
             .eq("clinic_id", clinicId)
             .eq("is_active", true),
           supabase.from("locations").select("id, name").eq("clinic_id", clinicId),
@@ -63,9 +67,9 @@ async function AgendaContent({
     <AgendaView
       initialView={initialView}
       initialShowForm={initialShowForm}
-      appointments={appointments.data ?? []}
+      appointments={(appointments.data ?? []) as never}
       patients={patients.data ?? []}
-      professionals={professionals.data ?? []}
+      professionals={(professionals.data ?? []) as never}
       locations={locations.data ?? []}
       specialties={specialties.data ?? []}
       clinics={clinics}

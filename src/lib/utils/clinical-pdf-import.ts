@@ -136,18 +136,30 @@ export async function enrichPatientFromLegacyPdfDemographics(
   });
 }
 
-export async function resolveImportProfessionalId(
+type ImportProfessional = {
+  id: string;
+  display_name?: string | null;
+  profiles?: { full_name?: string } | null;
+};
+
+export async function loadImportProfessionals(
   supabase: SupabaseClient,
-  clinicId: string,
-  professionalName: string
-): Promise<string | null> {
-  const { data: professionals } = await supabase
+  clinicId: string
+): Promise<ImportProfessional[]> {
+  const { data } = await supabase
     .from("professionals")
     .select("id, display_name, profiles(full_name)")
     .eq("clinic_id", clinicId)
     .eq("is_active", true);
 
-  if (!professionals?.length) return null;
+  return (data ?? []) as ImportProfessional[];
+}
+
+export function matchImportProfessionalId(
+  professionals: ImportProfessional[],
+  professionalName: string
+): string | null {
+  if (!professionals.length) return null;
 
   const target = professionalName.toLowerCase().replace(/\s+/g, " ").trim();
   const [targetLast, ...targetRest] = target.split(",").map((s) => s.trim());
@@ -174,6 +186,17 @@ export async function resolveImportProfessionalId(
   return professionals[0]?.id ?? null;
 }
 
+export async function resolveImportProfessionalId(
+  supabase: SupabaseClient,
+  clinicId: string,
+  professionalName: string,
+  professionalsCache?: ImportProfessional[]
+): Promise<string | null> {
+  const professionals =
+    professionalsCache ?? (await loadImportProfessionals(supabase, clinicId));
+  return matchImportProfessionalId(professionals, professionalName);
+}
+
 export async function insertLegacyPdfClinicalRecords(
   supabase: SupabaseClient,
   params: {
@@ -194,6 +217,15 @@ export async function insertLegacyPdfClinicalRecords(
   let created = 0;
   let skipped = 0;
 
+  const professionals = await loadImportProfessionals(supabase, params.clinicId);
+  if (!professionals.length) {
+    return {
+      created: 0,
+      skipped: 0,
+      error: "No hay profesionales activos en la clínica para asociar las evoluciones.",
+    };
+  }
+
   for (const entry of params.evolutions) {
     const { data: existing } = await supabase
       .from("clinical_records")
@@ -208,11 +240,7 @@ export async function insertLegacyPdfClinicalRecords(
       continue;
     }
 
-    const professionalId = await resolveImportProfessionalId(
-      supabase,
-      params.clinicId,
-      entry.professionalName
-    );
+    const professionalId = matchImportProfessionalId(professionals, entry.professionalName);
     if (!professionalId) {
       return {
         created,

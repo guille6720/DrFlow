@@ -1,5 +1,6 @@
 -- Plan de cobertura del paciente (ej. PAMI 310, PMO).
--- Idempotente: también incluido en 034_secretaria_caja.sql.
+-- REDUNDANTE con 034_secretaria_caja.sql — mantener solo por historial de deploy.
+-- Idempotente: ADD COLUMN IF NOT EXISTS.
 
 ALTER TABLE patients
   ADD COLUMN IF NOT EXISTS insurance_plan TEXT;

@@ -8,6 +8,7 @@ import {
   recordAudit,
   type RecordAuditParams,
 } from "@/core/security/audit-service";
+import { CLINIC_COLUMNS, PROFILE_COLUMNS } from "@/core/supabase/select-columns";
 
 const CLINIC_COOKIE = "drflow_clinic_id";
 
@@ -28,7 +29,7 @@ export const getProfile = cache(async (): Promise<Profile | null> => {
 
   const { data } = await supabase
     .from("profiles")
-    .select("*")
+    .select(PROFILE_COLUMNS)
     .eq("id", user.id)
     .single();
 
@@ -40,14 +41,10 @@ export const getUserClinics = cache(async (): Promise<ClinicMember[]> => {
   const user = await getSession();
   if (!user) return [];
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_superadmin")
-    .eq("id", user.id)
-    .single();
+  const profile = await getProfile();
 
   if (profile?.is_superadmin) {
-    const { data: clinics } = await supabase.from("clinics").select("*");
+    const { data: clinics } = await supabase.from("clinics").select(CLINIC_COLUMNS);
     return (clinics ?? []).map((clinic) => ({
       id: clinic.id,
       clinic_id: clinic.id,
@@ -60,11 +57,11 @@ export const getUserClinics = cache(async (): Promise<ClinicMember[]> => {
 
   const { data } = await supabase
     .from("clinic_members")
-    .select("*, clinic:clinics(*)")
+    .select(`id, clinic_id, user_id, role, is_active, clinic:clinics(${CLINIC_COLUMNS})`)
     .eq("user_id", user.id)
     .eq("is_active", true);
 
-  return (data ?? []) as ClinicMember[];
+  return (data ?? []) as unknown as ClinicMember[];
 });
 
 export const getActiveClinicId = cache(async (): Promise<string | null> => {
@@ -89,12 +86,7 @@ export const getActiveClinic = cache(async (): Promise<{
   if (!user) return { clinic: null, role: null, isSuperadmin: false };
 
   const clinics = await getUserClinics();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_superadmin")
-    .eq("id", user.id)
-    .single();
-
+  const profile = await getProfile();
   const isSuperadmin = profile?.is_superadmin ?? false;
   const clinicId = await getActiveClinicId();
   if (!clinicId) return { clinic: null, role: null, isSuperadmin };
@@ -102,7 +94,7 @@ export const getActiveClinic = cache(async (): Promise<{
   const membership = clinics.find((m) => m.clinic_id === clinicId);
   const clinic =
     membership?.clinic ??
-    (await supabase.from("clinics").select("*").eq("id", clinicId).single()).data;
+    (await supabase.from("clinics").select(CLINIC_COLUMNS).eq("id", clinicId).single()).data;
 
   return {
     clinic: clinic as Clinic | null,

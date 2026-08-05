@@ -1,5 +1,6 @@
--- Reparación si 015 falló en submit_public_booking (error p_first_name).
--- Idempotente: seguro correrlo aunque parte de 015 ya haya aplicado.
+-- Reparación idempotente de 015_drapp_inspired_features.sql.
+-- OBSOLETA en installs secuenciales completos: 015 ya aplica el mismo DDL/RPC.
+-- Mantener para entornos donde 015 falló parcialmente.
 
 ALTER TABLE appointments
   ADD COLUMN IF NOT EXISTS booking_source TEXT NOT NULL DEFAULT 'manual';

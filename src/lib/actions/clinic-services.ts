@@ -195,25 +195,15 @@ export async function createTelemedicineSession(appointmentId: string) {
     `${patient.first_name} ${patient.last_name}`
   );
 
-  const { data, error } = await supabase
-    .from("telemedicine_sessions")
-    .insert({
-      clinic_id: clinicId,
-      appointment_id: idParsed.data,
-      room_url: room.roomUrl,
-      status: room.status,
-      created_by: user?.id,
-    })
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc("create_telemedicine_session_atomic", {
+    p_clinic_id: clinicId,
+    p_appointment_id: idParsed.data,
+    p_room_url: room.roomUrl,
+    p_status: room.status,
+    p_created_by: user?.id ?? null,
+  });
 
   if (error) return { error: error.message };
-
-  await supabase
-    .from("appointments")
-    .update({ consultation_modality: "virtual", updated_at: new Date().toISOString() })
-    .eq("id", idParsed.data)
-    .eq("clinic_id", clinicId);
 
   await recordAudit({
     clinicId,
@@ -223,7 +213,7 @@ export async function createTelemedicineSession(appointmentId: string) {
     patientId: appointment.patient_id as string | undefined,
     action: "create",
     what: "Creó sesión de telemedicina",
-    metadata: { session_id: data.id },
+    metadata: { session_id: (data as { id: string }).id },
   });
 
   revalidatePath("/telemedicina");

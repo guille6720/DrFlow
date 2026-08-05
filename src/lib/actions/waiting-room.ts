@@ -23,36 +23,17 @@ export async function updateWaitingRoomStatus(
   if (!idParsed.ok) return { error: idParsed.error };
 
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("appointments")
-    .update({ waiting_room_status: parsed.data })
-    .eq("id", idParsed.data)
-    .eq("clinic_id", clinicId)
-    .select("id, waiting_room_status")
-    .single();
+  const { data, error } = await supabase.rpc("update_waiting_room_status_atomic", {
+    p_clinic_id: clinicId,
+    p_appointment_id: idParsed.data,
+    p_waiting_room_status: parsed.data,
+  });
 
-  if (error) return { error: error.message };
-
-  if (parsed.data === "absent") {
-    await supabase
-      .from("appointments")
-      .update({ status: "no_show" })
-      .eq("id", idParsed.data)
-      .eq("clinic_id", clinicId);
-  }
-  if (parsed.data === "cancelled") {
-    await supabase
-      .from("appointments")
-      .update({ status: "cancelled" })
-      .eq("id", idParsed.data)
-      .eq("clinic_id", clinicId);
-  }
-  if (parsed.data === "finished") {
-    await supabase
-      .from("appointments")
-      .update({ status: "attended" })
-      .eq("id", idParsed.data)
-      .eq("clinic_id", clinicId);
+  if (error) {
+    if (error.message.includes("APPOINTMENT_NOT_FOUND")) {
+      return { error: "Turno no encontrado" };
+    }
+    return { error: error.message };
   }
 
   await logAudit({

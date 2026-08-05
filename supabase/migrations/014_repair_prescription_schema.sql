@@ -1,7 +1,6 @@
--- Reparación: columnas de receta electrónica (Argentina)
--- Ejecutá esto si al guardar recetas ves:
---   "Could not find the 'diagnosis_cie10' column of 'prescription_drafts' in the schema cache"
--- Es idempotente: seguro correrlo más de una vez.
+-- Reparación idempotente de 013_electronic_prescriptions_argentina.sql.
+-- OBSOLETA en installs secuenciales completos: 013 ya aplica el mismo DDL.
+-- Mantener para entornos donde 013 falló parcialmente (schema cache / deploy a medias).
 
 ALTER TABLE prescription_drafts
   ADD COLUMN IF NOT EXISTS prescription_type TEXT NOT NULL DEFAULT 'ambulatoria',

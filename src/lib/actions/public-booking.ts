@@ -45,6 +45,8 @@ export async function submitPublicBooking(formData: FormData) {
     p_phone: sanitizeText(data.phone),
     p_email: data.email ? sanitizeText(data.email) : null,
     p_reason: data.reason ? sanitizeText(data.reason) : null,
+    p_consent_type: CONSENT_TYPES.patientDataProcessingBooking,
+    p_consent_document_version: LEGAL_PATIENT_NOTICE_VERSION,
   });
 
   if (error) {
@@ -60,16 +62,6 @@ export async function submitPublicBooking(formData: FormData) {
     appointment_id?: string;
     patient_id?: string;
   };
-
-  if (row.patient_id) {
-    await supabase.rpc("record_patient_data_consent", {
-      p_slug: data.slug,
-      p_document_number: data.document_number,
-      p_consent_type: CONSENT_TYPES.patientDataProcessingBooking,
-      p_document_version: LEGAL_PATIENT_NOTICE_VERSION,
-      p_granted: true,
-    });
-  }
 
   return {
     success: true,

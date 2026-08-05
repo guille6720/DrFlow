@@ -3,16 +3,8 @@ import type { DbClient } from "@/core/repositories/types";
 import { findClinicInsuranceDefaults } from "@/features/configuracion/repositories/clinics.repository";
 import {
   extractClinicalProfileFields,
-  upsertPatientClinicalProfileRow,
   type PatientClinicalProfileFields,
 } from "@/features/pacientes/repositories/patient-clinical-profile.repository";
-import {
-  findPatientById,
-  insertPatient,
-  updatePatientRow,
-  type PatientInsertRow,
-  type PatientUpdateRow,
-} from "@/features/pacientes/repositories/patients.repository";
 import type { ServiceResult } from "@/core/services/types";
 import { serviceErr, serviceOk } from "@/core/services/types";
 import type { z } from "zod";
@@ -28,66 +20,64 @@ export function isAdminOnlyPatientRole(role: UserRole | null, isSuperadmin: bool
   return role != null && ADMIN_ONLY_ROLES.includes(role);
 }
 
-function buildPatientInsertRow(
-  clinicId: string,
+function buildPatientPayload(
   sanitized: SanitizedPatient,
   insuranceProvider: string | null,
   insurancePlan: string | null
-): PatientInsertRow {
+) {
   return {
-    clinic_id: clinicId,
     first_name: sanitized.first_name,
     last_name: sanitized.last_name,
     document_number: sanitized.document_number,
-    birth_date: sanitized.birth_date || null,
-    phone: sanitized.phone || null,
-    email: sanitized.email || null,
-    address: sanitized.address || null,
-    insurance_provider: insuranceProvider,
-    insurance_plan: insurancePlan,
-    insurance_number: sanitized.insurance_number || null,
-    emergency_contact_name: sanitized.emergency_contact_name || null,
-    emergency_contact_phone: sanitized.emergency_contact_phone || null,
+    birth_date: sanitized.birth_date || "",
+    phone: sanitized.phone || "",
+    email: sanitized.email || "",
+    address: sanitized.address || "",
+    insurance_provider: insuranceProvider || "",
+    insurance_plan: insurancePlan || "",
+    insurance_number: sanitized.insurance_number || "",
+    emergency_contact_name: sanitized.emergency_contact_name || "",
+    emergency_contact_phone: sanitized.emergency_contact_phone || "",
   };
 }
 
-function buildAdminUpdateRow(
+function buildAdminUpdatePayload(
   sanitized: SanitizedPatient,
   insurancePlan: string | null
-): Partial<PatientUpdateRow> {
+) {
   return {
     first_name: sanitized.first_name,
     last_name: sanitized.last_name,
     document_number: sanitized.document_number,
-    birth_date: sanitized.birth_date || null,
-    phone: sanitized.phone || null,
-    email: sanitized.email || null,
-    address: sanitized.address || null,
-    insurance_provider: sanitized.insurance_provider || null,
-    insurance_plan: insurancePlan,
-    insurance_number: sanitized.insurance_number || null,
-    emergency_contact_name: sanitized.emergency_contact_name || null,
-    emergency_contact_phone: sanitized.emergency_contact_phone || null,
+    birth_date: sanitized.birth_date || "",
+    phone: sanitized.phone || "",
+    email: sanitized.email || "",
+    address: sanitized.address || "",
+    insurance_provider: sanitized.insurance_provider || "",
+    insurance_plan: insurancePlan || "",
+    insurance_number: sanitized.insurance_number || "",
+    emergency_contact_name: sanitized.emergency_contact_name || "",
+    emergency_contact_phone: sanitized.emergency_contact_phone || "",
   };
 }
 
-function buildClinicalStaffUpdateRow(
+function buildClinicalStaffUpdatePayload(
   sanitized: SanitizedPatient,
   insurancePlan: string | null
-): Partial<PatientUpdateRow> {
+) {
   return {
     first_name: sanitized.first_name,
     last_name: sanitized.last_name,
     document_number: sanitized.document_number,
-    phone: sanitized.phone || null,
-    email: sanitized.email || null,
-    address: sanitized.address || null,
-    insurance_provider: sanitized.insurance_provider || null,
-    insurance_plan: insurancePlan,
-    insurance_number: sanitized.insurance_number || null,
-    emergency_contact_name: sanitized.emergency_contact_name || null,
-    emergency_contact_phone: sanitized.emergency_contact_phone || null,
-    birth_date: sanitized.birth_date || null,
+    phone: sanitized.phone || "",
+    email: sanitized.email || "",
+    address: sanitized.address || "",
+    insurance_provider: sanitized.insurance_provider || "",
+    insurance_plan: insurancePlan || "",
+    insurance_number: sanitized.insurance_number || "",
+    emergency_contact_name: sanitized.emergency_contact_name || "",
+    emergency_contact_phone: sanitized.emergency_contact_phone || "",
+    birth_date: sanitized.birth_date || "",
   };
 }
 
@@ -106,23 +96,14 @@ export async function createPatientRecord(
     clinic?.default_insurance_provider ||
     null;
 
-  const insertResult = await insertPatient(
-    db,
-    buildPatientInsertRow(input.clinicId, input.sanitized, insuranceProvider, input.insurancePlan)
-  );
-  if (!insertResult.ok) return serviceErr(insertResult.error);
+  const { data, error } = await db.rpc("create_patient_with_clinical_profile", {
+    p_clinic_id: input.clinicId,
+    p_patient: buildPatientPayload(input.sanitized, insuranceProvider, input.insurancePlan),
+    p_profile: input.adminOnly ? null : extractClinicalProfileFields(input.sanitized),
+  });
 
-  if (!input.adminOnly) {
-    const profileResult = await upsertPatientClinicalProfileRow(
-      db,
-      insertResult.data.id,
-      input.clinicId,
-      extractClinicalProfileFields(input.sanitized)
-    );
-    if (!profileResult.ok) return serviceErr(profileResult.error);
-  }
-
-  return serviceOk(insertResult.data);
+  if (error) return serviceErr(error.message);
+  return serviceOk(data as Patient);
 }
 
 export async function updatePatientRecord(
@@ -135,28 +116,26 @@ export async function updatePatientRecord(
     insurancePlan: string | null;
   }
 ): Promise<ServiceResult<{ oldPatient: Patient; updatedPatient: Patient | null }>> {
-  const oldPatient = await findPatientById(db, input.patientId, input.clinicId);
-  if (!oldPatient) return serviceErr("Paciente no encontrado");
+  const payload = input.adminOnly
+    ? buildAdminUpdatePayload(input.sanitized, input.insurancePlan)
+    : buildClinicalStaffUpdatePayload(input.sanitized, input.insurancePlan);
 
-  const updateRow = input.adminOnly
-    ? buildAdminUpdateRow(input.sanitized, input.insurancePlan)
-    : buildClinicalStaffUpdateRow(input.sanitized, input.insurancePlan);
+  const { data, error } = await db.rpc("update_patient_with_clinical_profile", {
+    p_clinic_id: input.clinicId,
+    p_patient_id: input.patientId,
+    p_patient: payload,
+    p_profile: input.adminOnly ? null : extractClinicalProfileFields(input.sanitized),
+  });
 
-  const updateResult = await updatePatientRow(db, input.patientId, input.clinicId, updateRow);
-  if (!updateResult.ok) return serviceErr(updateResult.error);
-
-  if (!input.adminOnly) {
-    const profileResult = await upsertPatientClinicalProfileRow(
-      db,
-      input.patientId,
-      input.clinicId,
-      extractClinicalProfileFields(input.sanitized)
-    );
-    if (!profileResult.ok) return serviceErr(profileResult.error);
+  if (error) {
+    if (error.message.includes("PATIENT_NOT_FOUND")) {
+      return serviceErr("Paciente no encontrado");
+    }
+    return serviceErr(error.message);
   }
 
-  const updatedPatient = await findPatientById(db, input.patientId, input.clinicId);
-  return serviceOk({ oldPatient, updatedPatient });
+  const result = data as { old: Patient; data: Patient };
+  return serviceOk({ oldPatient: result.old, updatedPatient: result.data });
 }
 
 export type { PatientClinicalProfileFields };

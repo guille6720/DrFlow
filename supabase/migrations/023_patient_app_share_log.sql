@@ -15,10 +15,12 @@ CREATE INDEX IF NOT EXISTS patient_app_share_log_clinic_idx
 
 ALTER TABLE patient_app_share_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS patient_app_share_log_select ON patient_app_share_log;
 CREATE POLICY patient_app_share_log_select ON patient_app_share_log
   FOR SELECT
   USING (is_superadmin() OR clinic_id IN (SELECT user_clinic_ids()));
 
+DROP POLICY IF EXISTS patient_app_share_log_insert ON patient_app_share_log;
 CREATE POLICY patient_app_share_log_insert ON patient_app_share_log
   FOR INSERT
   WITH CHECK (is_superadmin() OR clinic_id IN (SELECT user_clinic_ids()));

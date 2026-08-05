@@ -1,18 +1,8 @@
 import type { DbClient } from "@/core/repositories/types";
-import { markAppointmentAttended } from "@/features/agenda/repositories/appointments.repository";
-import {
-  findClinicalRecordById,
-  insertClinicalRecord,
-  insertClinicalRecordAuditRow,
-  updateClinicalRecordRow,
-  type ClinicalRecordInsertRow,
-  type ClinicalRecordUpdateRow,
-} from "@/features/historias/repositories/clinical-records.repository";
-import type { ServiceResult } from "@/core/services/types";
-import { fromRepo, serviceErr, serviceOk } from "@/core/services/types";
 import { parseConsultationModality } from "@/lib/constants/consultation-modality";
-import { buildClinicalRecordAuditRow } from "@/core/security/audit-log";
 import { clinicalRecordSchema, sanitizeText } from "@/core/validations/schemas";
+import type { ServiceResult } from "@/core/services/types";
+import { serviceErr, serviceOk } from "@/core/services/types";
 import type { z } from "zod";
 
 type ClinicalRecordInput = z.infer<typeof clinicalRecordSchema>;
@@ -40,49 +30,26 @@ export async function createClinicalRecordEntry(
   }
 ): Promise<ServiceResult<ClinicalRecordRow>> {
   const sanitized = sanitizeClinicalRecordFields(input.parsed);
+  const modality = parseConsultationModality(input.consultationModalityRaw);
 
-  const insertRow: ClinicalRecordInsertRow = {
-    clinic_id: input.clinicId,
-    patient_id: sanitized.patient_id,
-    professional_id: sanitized.professional_id,
-    appointment_id: sanitized.appointment_id ?? null,
-    chief_complaint: sanitized.chief_complaint,
-    diagnosis: sanitized.diagnosis,
-    evolution: sanitized.evolution,
-    indications: sanitized.indications,
-    created_by: input.userId,
-  };
-
-  const created = await insertClinicalRecord(db, insertRow);
-  if (!created.ok) return serviceErr(created.error);
-
-  if (sanitized.appointment_id) {
-    const modality = parseConsultationModality(input.consultationModalityRaw);
-    const apptResult = await markAppointmentAttended(
-      db,
-      sanitized.appointment_id,
-      input.clinicId,
-      modality
-    );
-    if (!apptResult.ok) return serviceErr(apptResult.error);
-  }
-
-  const auditRow = buildClinicalRecordAuditRow({
-    clinicalRecordId: String(created.data.id),
-    clinicId: input.clinicId,
-    patientId: sanitized.patient_id,
-    action: "create",
-    what: "Creó consulta clínica (SOAP)",
-    changedBy: input.userId,
-    newValues: created.data,
-    ipAddress: input.auditContext.ip_address,
-    userAgent: input.auditContext.user_agent,
+  const { data, error } = await db.rpc("create_clinical_record_atomic", {
+    p_clinic_id: input.clinicId,
+    p_patient_id: sanitized.patient_id,
+    p_professional_id: sanitized.professional_id,
+    p_appointment_id: sanitized.appointment_id ?? null,
+    p_chief_complaint: sanitized.chief_complaint,
+    p_diagnosis: sanitized.diagnosis,
+    p_evolution: sanitized.evolution,
+    p_indications: sanitized.indications,
+    p_created_by: input.userId,
+    p_consultation_modality: modality,
+    p_audit_what: "Creó consulta clínica (SOAP)",
+    p_audit_ip: input.auditContext.ip_address,
+    p_audit_user_agent: input.auditContext.user_agent,
   });
 
-  const auditResult = await insertClinicalRecordAuditRow(db, auditRow);
-  if (!auditResult.ok) return serviceErr(auditResult.error);
-
-  return serviceOk(created.data as ClinicalRecordRow);
+  if (error) return serviceErr(error.message);
+  return serviceOk(data as ClinicalRecordRow);
 }
 
 export async function updateClinicalRecordEntry(
@@ -95,40 +62,31 @@ export async function updateClinicalRecordEntry(
     auditContext: { ip_address: string | null; user_agent: string | null };
   }
 ): Promise<ServiceResult<{ old: Record<string, unknown>; data: Record<string, unknown> }>> {
-  const old = await findClinicalRecordById(db, input.recordId, input.clinicId);
-  if (!old) return serviceErr("Consulta no encontrada");
-
   const sanitized = sanitizeClinicalRecordFields(input.parsed);
-  const updateRow: ClinicalRecordUpdateRow = {
-    patient_id: sanitized.patient_id,
-    professional_id: sanitized.professional_id,
-    appointment_id: sanitized.appointment_id ?? null,
-    chief_complaint: sanitized.chief_complaint,
-    diagnosis: sanitized.diagnosis,
-    evolution: sanitized.evolution,
-    indications: sanitized.indications,
-    updated_by: input.userId,
-    updated_at: new Date().toISOString(),
-  };
 
-  const updated = await updateClinicalRecordRow(db, input.recordId, input.clinicId, updateRow);
-  if (!updated.ok) return fromRepo(updated);
-
-  const auditRow = buildClinicalRecordAuditRow({
-    clinicalRecordId: input.recordId,
-    clinicId: input.clinicId,
-    patientId: String(old.patient_id),
-    action: "update",
-    what: "Modificó consulta clínica (SOAP)",
-    changedBy: input.userId,
-    oldValues: old,
-    newValues: updated.data,
-    ipAddress: input.auditContext.ip_address,
-    userAgent: input.auditContext.user_agent,
+  const { data, error } = await db.rpc("update_clinical_record_atomic", {
+    p_clinic_id: input.clinicId,
+    p_record_id: input.recordId,
+    p_patient_id: sanitized.patient_id,
+    p_professional_id: sanitized.professional_id,
+    p_appointment_id: sanitized.appointment_id ?? null,
+    p_chief_complaint: sanitized.chief_complaint,
+    p_diagnosis: sanitized.diagnosis,
+    p_evolution: sanitized.evolution,
+    p_indications: sanitized.indications,
+    p_updated_by: input.userId,
+    p_audit_what: "Modificó consulta clínica (SOAP)",
+    p_audit_ip: input.auditContext.ip_address,
+    p_audit_user_agent: input.auditContext.user_agent,
   });
 
-  const auditResult = await insertClinicalRecordAuditRow(db, auditRow);
-  if (!auditResult.ok) return serviceErr(auditResult.error);
+  if (error) {
+    if (error.message.includes("RECORD_NOT_FOUND")) {
+      return serviceErr("Consulta no encontrada");
+    }
+    return serviceErr(error.message);
+  }
 
-  return serviceOk({ old, data: updated.data });
+  const payload = data as { old: Record<string, unknown>; data: Record<string, unknown> };
+  return serviceOk(payload);
 }

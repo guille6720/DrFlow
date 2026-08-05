@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { createClient } from "@/core/supabase/server";
 import { PatientPortalView } from "@/features/portal/components/portal/patient-portal-view";
 import { notFound } from "next/navigation";
-import { resolvePortalDoctorInfo } from "@/lib/utils/portal-doctor-info";
+import {
+  doctorInfoFromBookingLink,
+  resolvePortalDoctorInfo,
+} from "@/lib/utils/portal-doctor-info";
 import { clinicOffersPami } from "@/lib/constants/coverages";
 
 export async function generateMetadata({
@@ -35,14 +38,19 @@ export default async function PatientPortalPage({
 }) {
   const { slug } = await params;
   const supabase = await createClient();
-  const doctor = await resolvePortalDoctorInfo(slug);
 
   const { data: link } = await supabase
     .from("public_booking_links")
-    .select("*, clinics(id, name, phone, address, slug, accepted_coverages, practice_profile)")
+    .select(
+      "slug, clinic_id, clinics(id, name, phone, address, slug, accepted_coverages, practice_profile), professionals(display_name, license_number, license_national, license_provincial, specialties(name), profiles(full_name, phone))"
+    )
     .eq("slug", slug)
     .eq("is_active", true)
-    .single();
+    .maybeSingle();
+
+  const doctor = link
+    ? (doctorInfoFromBookingLink(link) ?? (await resolvePortalDoctorInfo(slug)))
+    : await resolvePortalDoctorInfo(slug);
 
   if (!link) {
     const { data: clinic } = await supabase
@@ -78,7 +86,7 @@ export default async function PatientPortalPage({
     );
   }
 
-  const clinic = link.clinics as {
+  const clinic = (Array.isArray(link.clinics) ? link.clinics[0] : link.clinics) as {
     id: string;
     name: string;
     phone: string | null;

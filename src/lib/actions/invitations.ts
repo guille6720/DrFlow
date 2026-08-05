@@ -119,14 +119,14 @@ export async function inviteClinicMember(formData: FormData) {
   const existingUserId = await findAuthUserIdByEmail(email);
 
   if (existingUserId) {
-    const { error: memberErr } = await admin.from("clinic_members").upsert(
+    const { error: memberErr } = await supabase.rpc(
+      "accept_clinic_invitation_for_existing_user",
       {
-        clinic_id: clinicId,
-        user_id: existingUserId,
-        role: parsed.data.role,
-        is_active: true,
-      },
-      { onConflict: "clinic_id,user_id" }
+        p_clinic_id: clinicId,
+        p_user_id: existingUserId,
+        p_email: email,
+        p_role: parsed.data.role,
+      }
     );
 
     if (memberErr) return { error: memberErr.message };
@@ -139,12 +139,6 @@ export async function inviteClinicMember(formData: FormData) {
       action: "create",
       metadata: { email, role: parsed.data.role, via: "existing_user" },
     });
-
-    await supabase
-      .from("clinic_invitations")
-      .update({ status: "accepted", accepted_at: new Date().toISOString() })
-      .eq("clinic_id", clinicId)
-      .eq("email", email);
 
     revalidatePath("/configuracion");
     return {

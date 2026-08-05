@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
-import { getDoctorShareInfoForClinic, getPortalSlugForClinic } from "@/lib/utils/portal-doctor-info";
+import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
 
 export type HistoriaDetailPatient = {
   id: string;
@@ -42,7 +42,7 @@ export type HistoriaDetailPageData = {
   };
   patient: HistoriaDetailPatient;
   portalSlug: string | null;
-  doctorInfo: Awaited<ReturnType<typeof getDoctorShareInfoForClinic>>;
+  doctorInfo: Awaited<ReturnType<typeof getPortalContextForClinic>>["doctorInfo"];
   audit: Array<{
     id: string;
     action: string;
@@ -78,8 +78,7 @@ export async function loadHistoriaDetailPageData(
   if (!record) return null;
 
   const patient = record.patients as unknown as HistoriaDetailPatient;
-  const portalSlug = await getPortalSlugForClinic(clinicId);
-  const doctorInfo = portalSlug ? await getDoctorShareInfoForClinic(clinicId) : null;
+  const { portalSlug, doctorInfo } = await getPortalContextForClinic(clinicId, supabase);
 
   const [
     { data: audit },
@@ -91,12 +90,12 @@ export async function loadHistoriaDetailPageData(
   ] = await Promise.all([
     supabase
       .from("clinical_record_audit")
-      .select("*, profiles:changed_by(full_name)")
+      .select("id, action, changed_at, profiles:changed_by(full_name)")
       .eq("clinical_record_id", id)
       .order("changed_at", { ascending: false }),
     supabase
       .from("prescription_drafts")
-      .select("*")
+      .select("id, created_at, medications, status, diagnosis_text, issued_at, prescription_number")
       .eq("clinical_record_id", id)
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false }),
@@ -107,7 +106,7 @@ export async function loadHistoriaDetailPageData(
       .eq("is_active", true),
     supabase
       .from("medical_orders")
-      .select("*")
+      .select("id, order_text, notes, status, issued_at, created_at, professional_id, patient_id, clinical_record_id")
       .eq("clinical_record_id", id)
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false }),
@@ -145,7 +144,7 @@ export async function loadHistoriaDetailPageData(
     patient,
     portalSlug,
     doctorInfo,
-    audit: (audit ?? []) as HistoriaDetailPageData["audit"],
+    audit: (audit ?? []) as unknown as HistoriaDetailPageData["audit"],
     prescriptions: prescriptions ?? [],
     professionalList,
     medicalOrders: medicalOrders ?? [],

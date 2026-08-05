@@ -2,68 +2,36 @@
 -- Migración 034: módulo administrativo independiente de la HC
 
 -- ---------------------------------------------------------------------------
--- Enums
+-- Enums (idempotent)
 -- ---------------------------------------------------------------------------
-CREATE TYPE waiting_room_status AS ENUM (
-  'waiting',
-  'confirmed',
-  'in_consultation',
-  'finished',
-  'cancelled',
-  'absent'
-);
+DO $$ BEGIN CREATE TYPE waiting_room_status AS ENUM (
+  'waiting', 'confirmed', 'in_consultation', 'finished', 'cancelled', 'absent'
+); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TYPE cash_attention_type AS ENUM (
-  'particular',
-  'obra_social',
-  'prepaga',
-  'art',
-  'sin_cargo'
-);
+DO $$ BEGIN CREATE TYPE cash_attention_type AS ENUM (
+  'particular', 'obra_social', 'prepaga', 'art', 'sin_cargo'
+); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TYPE cash_charge_kind AS ENUM (
-  'consulta_particular',
-  'copago_autorizado',
-  'coseguro_autorizado',
-  'practica',
-  'certificado_medico',
-  'apto_fisico',
-  'vacunacion',
-  'control',
-  'procedimiento',
-  'otro'
-);
+DO $$ BEGIN CREATE TYPE cash_charge_kind AS ENUM (
+  'consulta_particular', 'copago_autorizado', 'coseguro_autorizado', 'practica',
+  'certificado_medico', 'apto_fisico', 'vacunacion', 'control', 'procedimiento', 'otro'
+); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TYPE cash_charge_status AS ENUM (
-  'pending',
-  'collected',
-  'voided',
-  'refunded'
-);
+DO $$ BEGIN CREATE TYPE cash_charge_status AS ENUM (
+  'pending', 'collected', 'voided', 'refunded'
+); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TYPE cash_payment_method AS ENUM (
-  'cash',
-  'debit',
-  'credit',
-  'transfer',
-  'mercadopago',
-  'qr',
-  'account'
-);
+DO $$ BEGIN CREATE TYPE cash_payment_method AS ENUM (
+  'cash', 'debit', 'credit', 'transfer', 'mercadopago', 'qr', 'account'
+); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TYPE admin_document_category AS ENUM (
-  'authorization',
-  'medical_order',
-  'patient_study',
-  'general',
-  'other'
-);
+DO $$ BEGIN CREATE TYPE admin_document_category AS ENUM (
+  'authorization', 'medical_order', 'patient_study', 'general', 'other'
+); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TYPE cash_invoice_status AS ENUM (
-  'draft',
-  'issued',
-  'cancelled'
-);
+DO $$ BEGIN CREATE TYPE cash_invoice_status AS ENUM (
+  'draft', 'issued', 'cancelled'
+); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ---------------------------------------------------------------------------
 -- Clínica: configuración caja
@@ -83,7 +51,7 @@ CREATE INDEX IF NOT EXISTS idx_appointments_waiting_room
 -- ---------------------------------------------------------------------------
 -- Catálogos normalizados (tipos de cobro y medios de pago)
 -- ---------------------------------------------------------------------------
-CREATE TABLE cash_charge_types (
+CREATE TABLE IF NOT EXISTS cash_charge_types (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clinic_id UUID REFERENCES clinics(id) ON DELETE CASCADE,
   code cash_charge_kind NOT NULL,
@@ -94,7 +62,7 @@ CREATE TABLE cash_charge_types (
   UNIQUE (clinic_id, code)
 );
 
-CREATE TABLE cash_payment_methods (
+CREATE TABLE IF NOT EXISTS cash_payment_methods (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clinic_id UUID REFERENCES clinics(id) ON DELETE CASCADE,
   code cash_payment_method NOT NULL,
@@ -108,7 +76,7 @@ CREATE TABLE cash_payment_methods (
 -- ---------------------------------------------------------------------------
 -- Cobros (Caja)
 -- ---------------------------------------------------------------------------
-CREATE TABLE cash_charges (
+CREATE TABLE IF NOT EXISTS cash_charges (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clinic_id UUID NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
   patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE RESTRICT,
@@ -132,15 +100,15 @@ CREATE TABLE cash_charges (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_cash_charges_clinic_date ON cash_charges (clinic_id, charged_at DESC);
-CREATE INDEX idx_cash_charges_patient ON cash_charges (patient_id, charged_at DESC);
-CREATE INDEX idx_cash_charges_professional ON cash_charges (professional_id, charged_at DESC);
-CREATE INDEX idx_cash_charges_status ON cash_charges (clinic_id, status);
+CREATE INDEX IF NOT EXISTS idx_cash_charges_clinic_date ON cash_charges (clinic_id, charged_at DESC);
+CREATE INDEX IF NOT EXISTS idx_cash_charges_patient ON cash_charges (patient_id, charged_at DESC);
+CREATE INDEX IF NOT EXISTS idx_cash_charges_professional ON cash_charges (professional_id, charged_at DESC);
+CREATE INDEX IF NOT EXISTS idx_cash_charges_status ON cash_charges (clinic_id, status);
 
 -- ---------------------------------------------------------------------------
 -- Cuenta corriente del paciente
 -- ---------------------------------------------------------------------------
-CREATE TABLE patient_ledger_entries (
+CREATE TABLE IF NOT EXISTS patient_ledger_entries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clinic_id UUID NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
   patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
@@ -157,12 +125,12 @@ CREATE TABLE patient_ledger_entries (
   CHECK (debit > 0 OR credit > 0)
 );
 
-CREATE INDEX idx_patient_ledger_patient ON patient_ledger_entries (patient_id, entry_at DESC);
+CREATE INDEX IF NOT EXISTS idx_patient_ledger_patient ON patient_ledger_entries (patient_id, entry_at DESC);
 
 -- ---------------------------------------------------------------------------
 -- Facturación (preparado AFIP / ARCA)
 -- ---------------------------------------------------------------------------
-CREATE TABLE cash_invoices (
+CREATE TABLE IF NOT EXISTS cash_invoices (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clinic_id UUID NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
   cash_charge_id UUID REFERENCES cash_charges(id) ON DELETE SET NULL,
@@ -182,7 +150,7 @@ CREATE TABLE cash_invoices (
 -- ---------------------------------------------------------------------------
 -- Cierre diario de caja
 -- ---------------------------------------------------------------------------
-CREATE TABLE cash_daily_closures (
+CREATE TABLE IF NOT EXISTS cash_daily_closures (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clinic_id UUID NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
   closure_date DATE NOT NULL,
@@ -199,7 +167,7 @@ CREATE TABLE cash_daily_closures (
 -- ---------------------------------------------------------------------------
 -- Documentación administrativa (separada de HC)
 -- ---------------------------------------------------------------------------
-CREATE TABLE patient_admin_documents (
+CREATE TABLE IF NOT EXISTS patient_admin_documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clinic_id UUID NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
   patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
@@ -213,13 +181,15 @@ CREATE TABLE patient_admin_documents (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_patient_admin_docs ON patient_admin_documents (patient_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_patient_admin_docs ON patient_admin_documents (patient_id, created_at DESC);
 
 -- ---------------------------------------------------------------------------
 -- Seed catálogos globales (clinic_id NULL = plantilla del sistema)
 -- ---------------------------------------------------------------------------
-INSERT INTO cash_charge_types (clinic_id, code, label, sort_order) VALUES
-  (NULL, 'consulta_particular', 'Consulta Particular', 1),
+INSERT INTO cash_charge_types (clinic_id, code, label, sort_order)
+SELECT v.clinic_id, v.code, v.label, v.sort_order
+FROM (VALUES
+  (NULL::uuid, 'consulta_particular'::cash_charge_kind, 'Consulta Particular', 1),
   (NULL, 'copago_autorizado', 'Copago autorizado', 2),
   (NULL, 'coseguro_autorizado', 'Coseguro autorizado', 3),
   (NULL, 'practica', 'Práctica', 4),
@@ -228,16 +198,28 @@ INSERT INTO cash_charge_types (clinic_id, code, label, sort_order) VALUES
   (NULL, 'vacunacion', 'Vacunación', 7),
   (NULL, 'control', 'Control', 8),
   (NULL, 'procedimiento', 'Procedimiento', 9),
-  (NULL, 'otro', 'Otro', 10);
+  (NULL, 'otro', 'Otro', 10)
+) AS v(clinic_id, code, label, sort_order)
+WHERE NOT EXISTS (
+  SELECT 1 FROM cash_charge_types c
+  WHERE c.clinic_id IS NOT DISTINCT FROM v.clinic_id AND c.code = v.code
+);
 
-INSERT INTO cash_payment_methods (clinic_id, code, label, sort_order) VALUES
-  (NULL, 'cash', 'Efectivo', 1),
+INSERT INTO cash_payment_methods (clinic_id, code, label, sort_order)
+SELECT v.clinic_id, v.code, v.label, v.sort_order
+FROM (VALUES
+  (NULL::uuid, 'cash'::cash_payment_method, 'Efectivo', 1),
   (NULL, 'debit', 'Débito', 2),
   (NULL, 'credit', 'Crédito', 3),
   (NULL, 'transfer', 'Transferencia', 4),
   (NULL, 'mercadopago', 'Mercado Pago', 5),
   (NULL, 'qr', 'QR', 6),
-  (NULL, 'account', 'Cuenta Corriente', 7);
+  (NULL, 'account', 'Cuenta Corriente', 7)
+) AS v(clinic_id, code, label, sort_order)
+WHERE NOT EXISTS (
+  SELECT 1 FROM cash_payment_methods c
+  WHERE c.clinic_id IS NOT DISTINCT FROM v.clinic_id AND c.code = v.code
+);
 
 -- ---------------------------------------------------------------------------
 -- RLS helpers
@@ -277,28 +259,35 @@ ALTER TABLE cash_invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cash_daily_closures ENABLE ROW LEVEL SECURITY;
 ALTER TABLE patient_admin_documents ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS cash_charge_types_select ON cash_charge_types;
 CREATE POLICY cash_charge_types_select ON cash_charge_types FOR SELECT
   USING (clinic_id IS NULL OR clinic_id IN (SELECT user_clinic_ids()));
 
+DROP POLICY IF EXISTS cash_payment_methods_select ON cash_payment_methods;
 CREATE POLICY cash_payment_methods_select ON cash_payment_methods FOR SELECT
   USING (clinic_id IS NULL OR clinic_id IN (SELECT user_clinic_ids()));
 
+DROP POLICY IF EXISTS cash_charges_all ON cash_charges;
 CREATE POLICY cash_charges_all ON cash_charges FOR ALL
   USING (can_manage_cash(clinic_id))
   WITH CHECK (can_manage_cash(clinic_id));
 
+DROP POLICY IF EXISTS patient_ledger_all ON patient_ledger_entries;
 CREATE POLICY patient_ledger_all ON patient_ledger_entries FOR ALL
   USING (can_manage_cash(clinic_id))
   WITH CHECK (can_manage_cash(clinic_id));
 
+DROP POLICY IF EXISTS cash_invoices_all ON cash_invoices;
 CREATE POLICY cash_invoices_all ON cash_invoices FOR ALL
   USING (can_manage_cash(clinic_id))
   WITH CHECK (can_manage_cash(clinic_id));
 
+DROP POLICY IF EXISTS cash_daily_closures_all ON cash_daily_closures;
 CREATE POLICY cash_daily_closures_all ON cash_daily_closures FOR ALL
   USING (can_manage_cash(clinic_id))
   WITH CHECK (can_manage_cash(clinic_id));
 
+DROP POLICY IF EXISTS patient_admin_documents_all ON patient_admin_documents;
 CREATE POLICY patient_admin_documents_all ON patient_admin_documents FOR ALL
   USING (can_manage_admin_docs(clinic_id))
   WITH CHECK (can_manage_admin_docs(clinic_id));

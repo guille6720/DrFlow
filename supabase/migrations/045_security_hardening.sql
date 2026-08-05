@@ -128,10 +128,8 @@ CREATE POLICY audit_logs_select ON audit_logs FOR SELECT
 
 -- ---------------------------------------------------------------------------
 -- Indexes for common tenant + patient queries
+-- idx_clinical_records_clinic_created lives in 054 (061 drops duplicate name).
 -- ---------------------------------------------------------------------------
-CREATE INDEX IF NOT EXISTS idx_clinical_records_clinic
-  ON clinical_records(clinic_id, created_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_patient_attachments_patient
   ON patient_attachments(patient_id);
 

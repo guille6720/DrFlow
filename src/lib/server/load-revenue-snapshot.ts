@@ -11,12 +11,14 @@ import type {
   AdminAuthorizationDocRow,
 } from "@/lib/utils/admin-analytics-types";
 
-type ChargeRow = {
-  amount: number;
-  payment_method: string;
-  attention_type: string;
-  charge_kind: string;
-  status: string;
+type ChargeAgg = {
+  total: number;
+  count: number;
+  byPaymentMethod: Record<string, number>;
+  byChargeKind: Record<string, number>;
+  byAttentionType: Record<string, number>;
+  copago: number;
+  coseguro: number;
 };
 
 function mapPatient<T>(value: T | T[] | null): T | null {
@@ -24,8 +26,12 @@ function mapPatient<T>(value: T | T[] | null): T | null {
   return Array.isArray(value) ? value[0] ?? null : value;
 }
 
-function aggregateCharges(charges: ChargeRow[]) {
-  const collected = charges.filter((c) => c.status === "collected");
+function aggregateCharges(charges: Array<{
+  amount: number;
+  payment_method: string;
+  attention_type: string;
+  charge_kind: string;
+}>): ChargeAgg {
   const byPaymentMethod: Record<string, number> = {};
   const byChargeKind: Record<string, number> = {};
   const byAttentionType: Record<string, number> = {};
@@ -33,7 +39,7 @@ function aggregateCharges(charges: ChargeRow[]) {
   let copago = 0;
   let coseguro = 0;
 
-  for (const c of collected) {
+  for (const c of charges) {
     const amt = Number(c.amount);
     total += amt;
     byPaymentMethod[c.payment_method] = (byPaymentMethod[c.payment_method] ?? 0) + amt;
@@ -45,7 +51,7 @@ function aggregateCharges(charges: ChargeRow[]) {
 
   return {
     total,
-    count: collected.length,
+    count: charges.length,
     byPaymentMethod,
     byChargeKind,
     byAttentionType,
@@ -63,6 +69,59 @@ function toBreakdown(
     .sort((a, b) => b.amount - a.amount);
 }
 
+async function sumCollectedCharges(
+  supabase: SupabaseClient,
+  clinicId: string,
+  from: string,
+  to: string
+): Promise<ChargeAgg> {
+  const { data: rpcData, error: rpcError } = await supabase.rpc("sum_collected_cash_charges", {
+    p_clinic_id: clinicId,
+    p_from: from,
+    p_to: to,
+  });
+
+  if (!rpcError && rpcData?.[0]) {
+    const row = rpcData[0] as { total: number; charge_count: number };
+    return {
+      total: Number(row.total),
+      count: Number(row.charge_count),
+      byPaymentMethod: {},
+      byChargeKind: {},
+      byAttentionType: {},
+      copago: 0,
+      coseguro: 0,
+    };
+  }
+
+  const { data } = await supabase
+    .from("cash_charges")
+    .select("amount, payment_method, attention_type, charge_kind")
+    .eq("clinic_id", clinicId)
+    .eq("status", "collected")
+    .gte("charged_at", from)
+    .lte("charged_at", to);
+
+  return aggregateCharges(data ?? []);
+}
+
+async function loadTodayBreakdown(
+  supabase: SupabaseClient,
+  clinicId: string,
+  from: string,
+  to: string
+): Promise<ChargeAgg> {
+  const { data } = await supabase
+    .from("cash_charges")
+    .select("amount, payment_method, attention_type, charge_kind")
+    .eq("clinic_id", clinicId)
+    .eq("status", "collected")
+    .gte("charged_at", from)
+    .lte("charged_at", to);
+
+  return aggregateCharges(data ?? []);
+}
+
 /** Load revenue + authorization snapshot for admin analytics agent (Phase H). */
 export async function loadRevenueSnapshot(
   supabase: SupabaseClient,
@@ -75,19 +134,9 @@ export async function loadRevenueSnapshot(
   const monthEnd = endOfMonth(now).toISOString();
   const dateLabel = format(now, "yyyy-MM-dd");
 
-  const [todayRes, monthRes, closureRes, authDocsRes, authCountRes] = await Promise.all([
-    supabase
-      .from("cash_charges")
-      .select("amount, payment_method, attention_type, charge_kind, status")
-      .eq("clinic_id", clinicId)
-      .gte("charged_at", todayStart)
-      .lte("charged_at", todayEnd),
-    supabase
-      .from("cash_charges")
-      .select("amount, payment_method, attention_type, charge_kind, status")
-      .eq("clinic_id", clinicId)
-      .gte("charged_at", monthStart)
-      .lte("charged_at", monthEnd),
+  const [todayAgg, monthAgg, closureRes, authDocsRes, authCountRes] = await Promise.all([
+    loadTodayBreakdown(supabase, clinicId, todayStart, todayEnd),
+    sumCollectedCharges(supabase, clinicId, monthStart, monthEnd),
     supabase
       .from("cash_daily_closures")
       .select("id")
@@ -107,9 +156,6 @@ export async function loadRevenueSnapshot(
       .eq("clinic_id", clinicId)
       .eq("category", "authorization"),
   ]);
-
-  const todayAgg = aggregateCharges(todayRes.data ?? []);
-  const monthAgg = aggregateCharges(monthRes.data ?? []);
 
   const recentAuthorizations: AdminAuthorizationDocRow[] = (authDocsRes.data ?? []).map((d) => {
     const p = mapPatient(d.patients ?? null);
