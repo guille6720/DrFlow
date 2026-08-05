@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { PatientEhrClinicalTables } from "@/features/historias/components/historias/patient-ehr-clinical-tables";
 import { PatientEhrEvolutionPanel } from "@/features/historias/components/historias/patient-ehr-evolution-panel";
 import { PatientEhrFiltersBar } from "@/features/historias/components/historias/patient-ehr-filters-bar";
+import { PatientEhrPrintEvolutionBlock } from "@/features/historias/components/historias/patient-ehr-print-evolution-block";
 import { PatientEhrSidebar } from "@/features/historias/components/historias/patient-ehr-sidebar";
 import { usePatientEhrStateContext } from "@/features/historias/components/historias/patient-ehr-state-context";
 import { PatientEhrSupplementalSections } from "@/features/historias/components/historias/patient-ehr-supplemental-sections";
@@ -45,6 +46,7 @@ export function PatientEhrInteractiveBody({
     selected,
     selectedDocumentAttachment,
     vitalsRows,
+    dayPrintConsultations,
   } = usePatientEhrStateContext();
 
   return (
@@ -70,15 +72,32 @@ export function PatientEhrInteractiveBody({
             {actionLinks}
 
             {filters.evolutions ? (
-              <PatientEhrEvolutionPanel
-                patientId={patientId}
-                selected={selected}
-                selectedDocumentAttachment={selectedDocumentAttachment}
-                openingAttachmentId={openingAttachmentId}
-                onOpenAttachment={handleOpenAttachment}
-              />
+              <>
+                <div className="drflow-ehr-screen-only">
+                  <PatientEhrEvolutionPanel
+                    patientId={patientId}
+                    selected={selected}
+                    selectedDocumentAttachment={selectedDocumentAttachment}
+                    openingAttachmentId={openingAttachmentId}
+                    onOpenAttachment={handleOpenAttachment}
+                  />
+                </div>
+
+                <div className="drflow-ehr-print-only drflow-ehr-print-day-content mt-3 space-y-3">
+                  {dayPrintConsultations.map((consultation) => (
+                    <PatientEhrPrintEvolutionBlock key={consultation.id} consultation={consultation} />
+                  ))}
+                </div>
+
+                <div className="drflow-ehr-print-only drflow-ehr-print-all-content mt-3 space-y-3">
+                  {evolutionList.map((consultation) => (
+                    <PatientEhrPrintEvolutionBlock key={consultation.id} consultation={consultation} />
+                  ))}
+                </div>
+              </>
             ) : null}
 
+            <div className="drflow-ehr-print-supplemental">
             <PatientEhrClinicalTables
               patientId={patientId}
               diagnosisRows={diagnosisRows}
@@ -99,6 +118,7 @@ export function PatientEhrInteractiveBody({
               attachmentError={attachmentError}
               onOpenAttachment={handleOpenAttachment}
             />
+            </div>
           </div>
         </main>
       </div>

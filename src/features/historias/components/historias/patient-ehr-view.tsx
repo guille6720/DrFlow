@@ -1,6 +1,7 @@
 import { PatientEhrActionLinks } from "@/features/historias/components/historias/patient-ehr-action-links";
 import { PatientEhrDemographics } from "@/features/historias/components/historias/patient-ehr-demographics";
 import { PatientEhrInteractiveBody } from "@/features/historias/components/historias/patient-ehr-interactive-body";
+import { PatientEhrShellFrame } from "@/features/historias/components/historias/patient-ehr-shell-frame";
 import { PatientEhrStateProvider } from "@/features/historias/components/historias/patient-ehr-state-context";
 import type { PatientEhrViewProps } from "@/features/historias/components/historias/patient-ehr-types";
 
@@ -17,13 +18,7 @@ export function PatientEhrView({
 }: PatientEhrViewProps) {
   return (
     <PatientEhrStateProvider consultations={consultations} attachments={attachments}>
-      <div
-        className={
-          embedded
-            ? "drflow-ehr-shell drflow-ehr-embedded print:bg-white"
-            : "drflow-ehr-shell min-h-[calc(100vh-10rem)] print:bg-white"
-        }
-      >
+      <PatientEhrShellFrame embedded={embedded}>
         {embedded ? null : <PatientEhrDemographics patient={patient} />}
 
         <PatientEhrInteractiveBody
@@ -35,7 +30,7 @@ export function PatientEhrView({
           usesHceExport={usesHceExport}
           actionLinks={<PatientEhrActionLinks patientId={patient.id} />}
         />
-      </div>
+      </PatientEhrShellFrame>
     </PatientEhrStateProvider>
   );
 }

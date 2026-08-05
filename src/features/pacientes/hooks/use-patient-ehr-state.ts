@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   DEFAULT_PATIENT_EHR_FILTERS,
   type PatientEhrFilterKey,
   type PatientEhrFilters,
+  type PatientEhrPrintScope,
 } from "@/features/historias/components/historias/patient-ehr-types";
+import { isSameCalendarDay } from "@/features/historias/components/historias/patient-ehr-utils";
 import { getPatientClinicalDocumentUrl } from "@/features/pacientes/actions/patient-attachments";
 import { HCE_SUMMARY_ATTACHMENT_NAME } from "@/features/pacientes/utils/patient-ehr-from-hce";
 import type {
@@ -45,8 +47,17 @@ export function usePatientEhrState(
     evolutionList[0]?.id ?? sorted[0]?.id ?? null
   );
   const [filters, setFilters] = useState<PatientEhrFilters>(DEFAULT_PATIENT_EHR_FILTERS);
+  const [printScope, setPrintScope] = useState<PatientEhrPrintScope | null>(null);
   const [openingAttachmentId, setOpeningAttachmentId] = useState<string | null>(null);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
+
+  useEffect(() => {
+    function clearPrintScope() {
+      setPrintScope(null);
+    }
+    window.addEventListener("afterprint", clearPrintScope);
+    return () => window.removeEventListener("afterprint", clearPrintScope);
+  }, []);
 
   const visibleAttachments = useMemo(
     () => attachments.filter((a) => a.file_name !== HCE_SUMMARY_ATTACHMENT_NAME),
@@ -76,6 +87,11 @@ export function usePatientEhrState(
   const selected =
     sorted.find((c) => c.id === selectedId) ?? evolutionList[0] ?? sorted[0] ?? null;
 
+  const dayPrintConsultations = useMemo(() => {
+    if (!selected) return [];
+    return evolutionList.filter((c) => isSameCalendarDay(c.created_at, selected.created_at));
+  }, [evolutionList, selected]);
+
   const selectedDocumentAttachment = useMemo(() => {
     if (!selected || selected.category !== "document") return null;
     const fileName = selected.diagnosis?.trim().toLowerCase();
@@ -84,6 +100,14 @@ export function usePatientEhrState(
   }, [attachmentByFileName, selected]);
 
   const vitalsRows = useMemo(() => sorted.filter((c) => c.category === "vitals"), [sorted]);
+
+  function triggerPrint(scope: PatientEhrPrintScope) {
+    if (scope === "day" && dayPrintConsultations.length === 0) return;
+    setPrintScope(scope);
+    requestAnimationFrame(() => {
+      window.print();
+    });
+  }
 
   function toggleFilter(key: PatientEhrFilterKey) {
     setFilters((f) => ({ ...f, [key]: !f[key] }));
@@ -101,5 +125,8 @@ export function usePatientEhrState(
     selected,
     selectedDocumentAttachment,
     vitalsRows,
+    printScope,
+    dayPrintConsultations,
+    triggerPrint,
   };
 }

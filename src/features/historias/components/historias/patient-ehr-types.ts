@@ -63,6 +63,8 @@ export type PatientEhrViewProps = {
 
 export type PatientEhrFilters = Record<PatientEhrFilterKey, boolean>;
 
+export type PatientEhrPrintScope = "all" | "day";
+
 export const DEFAULT_PATIENT_EHR_FILTERS: PatientEhrFilters = {
   evolutions: true,
   files: true,

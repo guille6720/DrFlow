@@ -1,8 +1,7 @@
-import { Plus, Printer } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
-import { PrintPageButton } from "@/core/components/ui/print-page-button";
-
+import { PatientEhrPrintMenu } from "@/features/historias/components/historias/patient-ehr-print-menu";
 import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
@@ -45,14 +44,7 @@ export function PatientEhrActionLinks({ patientId }: { patientId: string }) {
       >
         <Plus className="h-3.5 w-3.5" /> Orden
       </Link>
-      <PrintPageButton
-        variant="link"
-        className="drflow-ehr-action-muted ml-auto inline-flex items-center gap-1"
-        label="Imprimir"
-        iconClassName="h-3.5 w-3.5"
-      >
-        <Printer className="h-3.5 w-3.5" aria-hidden /> Imprimir
-      </PrintPageButton>
+      <PatientEhrPrintMenu />
     </div>
   );
 }

@@ -2412,8 +2412,39 @@ html[data-motion="reduce"] *::after {
 
 @media print {
   .drflow-patient-workflow-bar,
+  .drflow-patient-workspace-tabs-row,
   .drflow-patient-workspace-tabs,
-  .drflow-clinical-workspace-header-actions {
+  .drflow-clinical-workspace-header-actions,
+  .drflow-ehr-filters,
+  .drflow-ehr-sidebar,
+  .drflow-ehr-actions,
+  .drflow-ehr-screen-only {
     display: none !important;
+  }
+
+  .drflow-ehr-print-only {
+    display: none;
+  }
+
+  .drflow-ehr-shell[data-print-scope="day"] .drflow-ehr-print-day-content {
+    display: block !important;
+  }
+
+  .drflow-ehr-shell[data-print-scope="all"] .drflow-ehr-print-all-content {
+    display: block !important;
+  }
+
+  .drflow-ehr-shell[data-print-scope="day"] .drflow-ehr-print-supplemental {
+    display: none !important;
+  }
+
+  .drflow-ehr-print-evolution {
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+  }
+
+  .drflow-ehr-print-evolution p,
+  .drflow-ehr-print-evolution div {
+    color: #0f172a !important;
   }
 }

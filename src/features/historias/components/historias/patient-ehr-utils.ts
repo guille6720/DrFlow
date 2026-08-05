@@ -9,6 +9,16 @@ export function formatPatientEhrSidebarDate(iso: string): string {
   return `${d.getDate()}-${months[d.getMonth()]}-${yy}`;
 }
 
+export function isSameCalendarDay(aIso: string, bIso: string): boolean {
+  const a = new Date(aIso);
+  const b = new Date(bIso);
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
 export function patientEhrEvolutionBody(c: PatientEhrConsultation): string {
   const evo = sanitizeClinicalDisplayText(c.evolution);
   if (evo.length > 0) return evo;
