@@ -21,6 +21,7 @@ export function PatientConsultSheet(props: PatientConsultSheetProps) {
       subtitle={state.overlaySubtitle}
       onClose={onClose}
       wide
+      fullscreen
       closeDisabled={state.form.loading || state.finalizing}
     >
       <ConsultationJourneyStepContent
@@ -29,6 +30,7 @@ export function PatientConsultSheet(props: PatientConsultSheetProps) {
         open={open}
         onClose={onClose}
         lastMedications={lastMedications}
+        fillViewport
       />
     </PatientWorkspaceOverlay>
   );

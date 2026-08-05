@@ -2,6 +2,8 @@
 
 import { SkipForward } from "lucide-react";
 
+import { cn } from "@/shared/utils/cn";
+
 import { ConsultationFlowBar } from "@/features/historias/components/historias/consultation-flow-bar";
 import { NuevaConsultaFormBody } from "@/features/historias/components/historias/nueva-consulta-form-body";
 import { ConsultationJourneyFinishStep } from "@/features/ia/components/clinical-workflow/consultation-journey-finish-step";
@@ -18,6 +20,8 @@ import type { PrescriptionMedication } from "@/types/prescription";
 type Props = PatientConsultSheetInput &
   PatientConsultSheetState & {
     lastMedications?: PrescriptionMedication[] | null;
+    /** Expande el paso de evolución para usar el alto del overlay fullscreen. */
+    fillViewport?: boolean;
   };
 
 /** Presentation-only: renders the active consultation / journey step. */
@@ -36,9 +40,10 @@ export function ConsultationJourneyStepContent({
   finalizing,
   onFinalizeConsult,
   onStepCompleted,
+  fillViewport = false,
 }: Props) {
   return (
-    <div className="space-y-4">
+    <div className={cn("space-y-4", fillViewport && "flex min-h-0 flex-1 flex-col gap-4 overflow-hidden")}>
       {journey.enabled ? (
         <ConsultationJourneyStepper
           steps={journey.steps}
@@ -59,7 +64,12 @@ export function ConsultationJourneyStepContent({
       ) : null}
 
       {journey.currentStep === "evolution" ? (
-        <>
+        <div
+          className={cn(
+            "space-y-4",
+            fillViewport && "flex min-h-0 flex-1 flex-col gap-4 overflow-hidden"
+          )}
+        >
           <PamiPatientBanner patient={patient} />
           <NuevaConsultaFormBody
             form={form}
@@ -68,8 +78,9 @@ export function ConsultationJourneyStepContent({
             templates={templates}
             canIssuePrescriptions={canIssuePrescriptions}
             journeyMode={journey.enabled}
+            fillViewport={fillViewport}
           />
-        </>
+        </div>
       ) : null}
 
       {journey.enabled && journey.currentStep === "prescription" ? (

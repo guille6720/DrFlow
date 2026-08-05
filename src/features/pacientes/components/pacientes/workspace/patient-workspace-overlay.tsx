@@ -11,6 +11,8 @@ type Props = {
   onClose: () => void;
   children: React.ReactNode;
   wide?: boolean;
+  /** Ocupa todo el viewport (consulta clínica, flujo largo). */
+  fullscreen?: boolean;
   closeDisabled?: boolean;
   headerActions?: React.ReactNode;
 };
@@ -22,6 +24,7 @@ export function PatientWorkspaceOverlay({
   onClose,
   children,
   wide = false,
+  fullscreen = false,
   closeDisabled = false,
   headerActions,
 }: Props) {
@@ -33,17 +36,29 @@ export function PatientWorkspaceOverlay({
   }
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-end justify-center p-0 sm:items-center sm:p-4">
-      <button
-        type="button"
-        className="absolute inset-0 bg-slate-900/50"
-        aria-label="Cerrar panel"
-        onClick={handleClose}
-      />
+    <div
+      className={cn(
+        "fixed inset-0 z-[200]",
+        fullscreen ? "flex flex-col" : "flex items-end justify-center p-0 sm:items-center sm:p-4"
+      )}
+    >
+      {!fullscreen ? (
+        <button
+          type="button"
+          className="absolute inset-0 bg-slate-900/50"
+          aria-label="Cerrar panel"
+          onClick={handleClose}
+        />
+      ) : null}
       <div
         className={cn(
-          "relative z-10 flex max-h-[92vh] w-full flex-col rounded-t-2xl bg-white shadow-xl sm:max-h-[90vh] sm:rounded-2xl",
-          wide ? "max-w-4xl" : "max-w-2xl"
+          "relative z-10 flex w-full flex-col bg-white shadow-xl",
+          fullscreen
+            ? "h-full max-h-none rounded-none"
+            : cn(
+                "max-h-[92vh] rounded-t-2xl sm:max-h-[90vh] sm:rounded-2xl",
+                wide ? "max-w-4xl" : "max-w-2xl"
+              )
         )}
         role="dialog"
         aria-modal="true"
@@ -68,7 +83,14 @@ export function PatientWorkspaceOverlay({
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6">{children}</div>
+        <div
+          className={cn(
+            "min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6",
+            fullscreen && "flex flex-col overflow-hidden"
+          )}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );

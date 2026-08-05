@@ -1777,7 +1777,7 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-summ
   gap: 0.75rem;
 }
 
-.drflow-patient-workspace-tabs {
+.drflow-patient-workspace-tabs-row {
   position: sticky;
   top: 0;
   z-index: 20;
@@ -1785,6 +1785,14 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-summ
   padding: 0.25rem 0;
   background: color-mix(in srgb, var(--background) 92%, transparent);
   backdrop-filter: blur(8px);
+}
+
+.drflow-patient-workspace-tabs {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  backdrop-filter: none;
+  position: static;
 }
 
 .drflow-patient-workspace-tabs-scroll {
@@ -1825,6 +1833,24 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-summ
 
 .drflow-patient-workspace-tab-soon:not(.drflow-patient-workspace-tab-active) {
   opacity: 0.92;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-proactive-care-access,
+html:not([data-ui-style="2"]) .drflow-proactive-care-access {
+  border-color: rgb(251 191 36 / 0.45) !important;
+  background: rgb(69 26 3 / 0.55) !important;
+  color: #fde68a !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-proactive-care-access:hover,
+html:not([data-ui-style="2"]) .drflow-proactive-care-access:hover {
+  background: rgb(92 32 7 / 0.75) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-proactive-care-access {
+  border-color: #fcd34d;
+  background: #fffbeb;
+  color: #78350f;
 }
 
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-patient-workspace-tab:not(.drflow-patient-workspace-tab-active),

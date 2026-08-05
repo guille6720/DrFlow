@@ -4,6 +4,8 @@ import { Pill, ScrollText } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import { cn } from "@/shared/utils/cn";
+
 import type { NuevaConsultaFormState } from "@/features/historias/hooks/use-nueva-consulta-form";
 import { ConsultationPhysicianAssist } from "@/features/ia/components/clinical-workflow/consultation-physician-assist";
 
@@ -30,6 +32,8 @@ type Props = {
   canIssuePrescriptions: boolean;
   /** Flujo lineal consulta → receta → orden → turno → fin (sin links externos). */
   journeyMode?: boolean;
+  /** Usa el alto disponible del overlay (textarea expandible). */
+  fillViewport?: boolean;
 };
 
 export function NuevaConsultaFormBody({
@@ -39,6 +43,7 @@ export function NuevaConsultaFormBody({
   templates,
   canIssuePrescriptions,
   journeyMode = false,
+  fillViewport = false,
 }: Props) {
   const {
     fromAppointment,
@@ -67,7 +72,7 @@ export function NuevaConsultaFormBody({
   const [voiceDraftPending, setVoiceDraftPending] = useState(false);
 
   return (
-    <>
+    <div className={cn("space-y-4", fillViewport && "flex min-h-0 flex-1 flex-col gap-4 overflow-hidden")}>
       {templates.length > 0 && (
         <Select
           label="Plantilla por especialidad"
@@ -77,8 +82,16 @@ export function NuevaConsultaFormBody({
         />
       )}
 
-      <Card title={fromAppointment ? "Historia clínica" : "Registro de consulta"}>
-        <form id="clinical-form" onSubmit={handleSubmit} className="grid gap-4">
+      <Card
+        title={fromAppointment ? "Historia clínica" : "Registro de consulta"}
+        className={fillViewport ? "flex min-h-0 flex-1 flex-col overflow-hidden" : undefined}
+        bodyClassName={fillViewport ? "flex min-h-0 flex-1 flex-col overflow-hidden" : undefined}
+      >
+        <form
+          id="clinical-form"
+          onSubmit={handleSubmit}
+          className={cn("grid gap-4", fillViewport && "flex min-h-0 flex-1 flex-col overflow-hidden")}
+        >
           {appointmentId ? <input type="hidden" name="appointment_id" value={appointmentId} /> : null}
 
           {fromAppointment ? (
@@ -119,7 +132,8 @@ export function NuevaConsultaFormBody({
             name="evolution"
             label="Evolución"
             required
-            rows={10}
+            rows={fillViewport ? undefined : 10}
+            grow={fillViewport}
             voiceInput
             value={evolution}
             onChange={(e) => {
@@ -199,6 +213,6 @@ export function NuevaConsultaFormBody({
           </div>
         </form>
       </Card>
-    </>
+    </div>
   );
 }

@@ -5,12 +5,13 @@ import { cn } from "@/shared/utils/cn";
 interface CardProps {
   children: ReactNode;
   className?: string;
+  bodyClassName?: string;
   title?: string;
   description?: string;
   action?: ReactNode;
 }
 
-export function Card({ children, className, title, description, action }: CardProps) {
+export function Card({ children, className, bodyClassName, title, description, action }: CardProps) {
   return (
     <div className={cn("drflow-ui-card min-w-0 overflow-visible", className)}>
       {(title || action) && (
@@ -24,7 +25,7 @@ export function Card({ children, className, title, description, action }: CardPr
           {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
-      <div className="drflow-card-body drflow-ui-card-body min-w-0 p-5">{children}</div>
+      <div className={cn("drflow-card-body drflow-ui-card-body min-w-0 p-5", bodyClassName)}>{children}</div>
     </div>
   );
 }

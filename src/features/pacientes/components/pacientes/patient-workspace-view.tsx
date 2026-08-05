@@ -32,10 +32,10 @@ const PreVisitBriefPanel = dynamic(
   { loading: () => null }
 );
 
-const ProactiveCarePanel = dynamic(
+const ProactiveCareAccessButton = dynamic(
   () =>
-    import("@/features/ia/components/clinical-workflow/proactive-care-panel").then((m) => ({
-      default: m.ProactiveCarePanel,
+    import("@/features/ia/components/clinical-workflow/proactive-care-access-button").then((m) => ({
+      default: m.ProactiveCareAccessButton,
     })),
   { loading: () => null }
 );
@@ -99,20 +99,12 @@ export function PatientWorkspaceView(props: Props) {
         canIssue={chartProps.canIssue}
       />
       {showClinicalContext ? (
-        <>
-          <PreVisitBriefPanel
-            patientName={patientName}
-            chart={chartProps.chart}
-            lastConsultAt={lastConsultAt}
-            className="mb-3"
-          />
-          <ProactiveCarePanel
-            patientId={chartProps.patientId}
-            chart={chartProps.chart}
-            lastConsultAt={lastConsultAt}
-            className="mb-3"
-          />
-        </>
+        <PreVisitBriefPanel
+          patientName={patientName}
+          chart={chartProps.chart}
+          lastConsultAt={lastConsultAt}
+          className="mb-3"
+        />
       ) : null}
       {showCopilotBridge ? (
         <PatientWorkspaceCopilotBridge
@@ -126,7 +118,16 @@ export function PatientWorkspaceView(props: Props) {
           lastMedications={chartProps.lastMedications}
         />
       ) : null}
-      <PatientWorkspaceTabBar activeTab={activeTab} onTabChange={setTab} />
+      <div className="drflow-patient-workspace-tabs-row flex items-center gap-2">
+        <PatientWorkspaceTabBar activeTab={activeTab} onTabChange={setTab} className="min-w-0 flex-1" />
+        {showClinicalContext ? (
+          <ProactiveCareAccessButton
+            patientId={chartProps.patientId}
+            chart={chartProps.chart}
+            lastConsultAt={lastConsultAt}
+          />
+        ) : null}
+      </div>
 
       <div className="drflow-patient-workspace-panel">
         {activeTab === "resumen" ? resumenPanel : null}

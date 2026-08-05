@@ -14,12 +14,14 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   error?: string;
   /** Muestra botón de dictado por voz (historias clínicas). */
   voiceInput?: boolean;
+  /** Expande verticalmente dentro de un contenedor flex. */
+  grow?: boolean;
   /** Called after speech-to-text appends a final transcript. */
   onVoiceAppend?: (appendedText: string, fullValue: string) => void;
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, label, error, id, voiceInput = false, onVoiceAppend, ...props }, ref) => {
+  ({ className, label, error, id, voiceInput = false, grow = false, onVoiceAppend, ...props }, ref) => {
     const textareaId = id ?? label?.toLowerCase().replace(/\s/g, "-");
     const innerRef = useRef<HTMLTextAreaElement | null>(null);
     const voice = useVoiceInputOptional();
@@ -48,7 +50,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     }
 
     return (
-      <div className="space-y-1">
+      <div className={cn("space-y-1", grow && "flex min-h-0 flex-1 flex-col")}>
         {(label || showVoice) && (
           <div className="flex items-center justify-between gap-2">
             {label ? (
@@ -100,6 +102,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           id={textareaId}
           className={cn(
             "drflow-ui-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 min-h-[100px]",
+            grow && "min-h-[12rem] flex-1 resize-y",
             error && "border-red-500",
             className
           )}

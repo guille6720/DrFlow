@@ -8,9 +8,10 @@ import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-fea
 type Props = {
   activeTab: PatientWorkspaceTabId;
   onTabChange: (tab: PatientWorkspaceTabId) => void;
+  className?: string;
 };
 
-export function PatientWorkspaceTabBar({ activeTab, onTabChange }: Props) {
+export function PatientWorkspaceTabBar({ activeTab, onTabChange, className }: Props) {
   const timelineEnabled = useFeatureFlag("clinical_timeline");
   const auditEnabled = useFeatureFlag("patient_audit_tab");
 
@@ -22,7 +23,7 @@ export function PatientWorkspaceTabBar({ activeTab, onTabChange }: Props) {
 
   return (
     <nav
-      className="drflow-patient-workspace-tabs"
+      className={cn("drflow-patient-workspace-tabs", className)}
       aria-label="Secciones de historia clínica"
     >
       <div className="drflow-patient-workspace-tabs-scroll">
