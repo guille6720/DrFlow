@@ -10,6 +10,7 @@ import { cn } from "@/shared/utils/cn";
 
 import { voidMedicalOrder } from "@/features/recetas/actions/medical-orders";
 import { MedicalOrderActionButtons } from "@/features/recetas/components/recetas/medical-order-action-buttons";
+import { MedicalOrderEditSheet } from "@/features/recetas/components/recetas/medical-order-edit-sheet";
 import { MedicalOrderForm } from "@/features/recetas/components/recetas/medical-order-form";
 import { MedicalOrderPreviewSheet } from "@/features/recetas/components/recetas/medical-order-preview-sheet";
 import { buildMedicalOrderDocumentData } from "@/features/recetas/utils/build-medical-order-document-data";
@@ -64,14 +65,37 @@ export function MedicalOrderPanel({
   const [showForm, setShowForm] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<(MedicalOrder & { order_type?: string }) | null>(
+    null
+  );
   const [previewData, setPreviewData] = useState<ReturnType<typeof buildMedicalOrderDocumentData> | null>(
     null
   );
 
-  async function handleVoid(id: string) {
-    setActing(id);
-    await voidMedicalOrder(id);
+  function openEdit(order: MedicalOrder & { order_type?: string }) {
+    setEditingOrder(order);
+    setEditOpen(true);
+  }
+
+  async function handleDelete(order: MedicalOrder & { order_type?: string }) {
+    if (
+      !confirm(
+        `¿Eliminar esta orden de ${orderTypeLabel(order.order_type)}?\n\nSe marcará como anulada y dejará de estar disponible para imprimir.`
+      )
+    ) {
+      return;
+    }
+
+    setActing(order.id);
+    const result = await voidMedicalOrder(order.id);
     setActing(null);
+
+    if (result.error) {
+      alert(result.error);
+      return;
+    }
+
     router.refresh();
   }
 
@@ -165,21 +189,12 @@ export function MedicalOrderPanel({
                       compact
                       data={documentData}
                       onPreview={() => openPreview(typedOrder)}
+                      onEdit={canIssue ? () => openEdit(typedOrder) : undefined}
+                      onDelete={canIssue ? () => handleDelete(typedOrder) : undefined}
+                      acting={acting === order.id}
                     />
                   ) : null}
                 </div>
-                {canIssue && !isVoid ? (
-                  <div className="border-t border-slate-100 px-4 py-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      loading={acting === order.id}
-                      onClick={() => handleVoid(order.id)}
-                    >
-                      Anular
-                    </Button>
-                  </div>
-                ) : null}
               </li>
             );
           })}
@@ -193,6 +208,18 @@ export function MedicalOrderPanel({
           onClose={() => setPreviewOpen(false)}
         />
       ) : null}
+
+      <MedicalOrderEditSheet
+        open={editOpen}
+        order={editingOrder}
+        patientId={patient.id}
+        professionals={professionals}
+        onClose={() => {
+          setEditOpen(false);
+          setEditingOrder(null);
+        }}
+        onSaved={() => router.refresh()}
+      />
     </Card>
   );
 }

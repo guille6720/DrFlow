@@ -57,8 +57,10 @@ export function PatientWorkspaceOrdersPanel({
         <MedicalOrderList
           orders={ehr.orders}
           patient={patient}
+          patientId={patientId}
           clinic={clinic}
           professionals={professionals}
+          canManage={canIssue}
         />
       )}
     </Card>

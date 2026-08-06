@@ -6,13 +6,14 @@ import { useState } from "react";
 
 import { OrderPhysicianAssist } from "@/features/ia/components/clinical-workflow/order-physician-assist";
 import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
-import { createMedicalOrder } from "@/features/recetas/actions/medical-orders";
+import { createMedicalOrder, updateMedicalOrder } from "@/features/recetas/actions/medical-orders";
 
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { PAMI_REFERRAL_TEMPLATES, PAMI_STUDY_TEMPLATES } from "@/lib/constants/pami-cabecera";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
+import type { MedicalOrder } from "@/types/medical-order";
 
 interface Professional {
   id: string;
@@ -26,7 +27,9 @@ interface Props {
   clinicalRecordId?: string;
   professionals: Professional[];
   defaultProfessionalId?: string;
+  existingOrder?: MedicalOrder & { order_type?: string };
   onSuccess?: () => void;
+  onCancel?: () => void;
   assistContext?: PhysicianAssistContext;
 }
 
@@ -35,12 +38,19 @@ export function MedicalOrderForm({
   clinicalRecordId,
   professionals,
   defaultProfessionalId,
+  existingOrder,
   onSuccess,
+  onCancel,
   assistContext,
 }: Props) {
   const router = useRouter();
-  const [orderType, setOrderType] = useState<"study" | "referral">("study");
-  const [orderText, setOrderText] = useState("");
+  const isEditing = Boolean(existingOrder);
+  const [orderType, setOrderType] = useState<"study" | "referral">(
+    existingOrder?.order_type === "referral" ? "referral" : "study"
+  );
+  const [orderText, setOrderText] = useState(existingOrder?.order_text ?? "");
+  const [notes, setNotes] = useState(existingOrder?.notes ?? "");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,7 +68,9 @@ export function MedicalOrderForm({
     formData.set("patient_id", patientId);
     if (clinicalRecordId) formData.set("clinical_record_id", clinicalRecordId);
     formData.set("order_type", orderType);
-    const result = await createMedicalOrder(formData);
+    const result = isEditing
+      ? await updateMedicalOrder(existingOrder!.id, formData)
+      : await createMedicalOrder(formData);
     setLoading(false);
     if (result.error) {
       setError(result.error);
@@ -132,7 +144,7 @@ export function MedicalOrderForm({
         name="professional_id"
         label="Profesional"
         required
-        defaultValue={defaultProfessionalId}
+        defaultValue={existingOrder?.professional_id ?? defaultProfessionalId}
         options={professionals.map((p) => ({
           value: p.id,
           label: getProfessionalDisplayName(p),
@@ -145,12 +157,23 @@ export function MedicalOrderForm({
         label="Indicaciones para el paciente"
         rows={2}
         voiceInput
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
         placeholder="Ayuno, preparación, turno en PAMI..."
       />
       {error && <p className="text-sm text-red-600">{error}</p>}
-      <Button type="submit" loading={loading}>
-        Generar {orderType === "study" ? "orden de estudios" : "derivación"}
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        {onCancel ? (
+          <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+            Cancelar
+          </Button>
+        ) : null}
+        <Button type="submit" loading={loading}>
+          {isEditing
+            ? "Guardar cambios"
+            : `Generar ${orderType === "study" ? "orden de estudios" : "derivación"}`}
+        </Button>
+      </div>
     </form>
   );
 }

@@ -10,6 +10,7 @@ import { sanitizeText } from "@/core/validations/schemas";
 
 import {
   insertMedicalOrder,
+  updateMedicalOrderRow,
   voidMedicalOrderRow,
 } from "@/features/recetas/repositories/medical-orders.repository";
 
@@ -58,6 +59,27 @@ export async function createMedicalOrderRecord(
   });
 
   return fromRepo(result);
+}
+
+export async function updateMedicalOrderRecord(
+  db: DbClient,
+  orderId: string,
+  clinicId: string,
+  input: MedicalOrderInput
+): Promise<ServiceResult<MedicalOrder>> {
+  const validationError = validateMedicalOrderInput(input);
+  if (validationError) return serviceErr(validationError);
+
+  const parsed = medicalOrderFormSchema.parse(input);
+
+  return fromRepo(
+    await updateMedicalOrderRow(db, orderId, clinicId, {
+      order_text: parsed.order_text,
+      notes: parsed.notes ?? null,
+      order_type: parsed.order_type,
+      professional_id: parsed.professional_id,
+    })
+  );
 }
 
 export async function voidMedicalOrderRecord(

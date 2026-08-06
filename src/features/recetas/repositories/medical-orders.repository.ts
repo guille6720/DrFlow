@@ -36,6 +36,33 @@ export async function insertMedicalOrder(
   return repoOk(data as MedicalOrder);
 }
 
+export type MedicalOrderUpdateRow = {
+  order_text: string;
+  notes: string | null;
+  order_type: string;
+  professional_id: string;
+};
+
+export async function updateMedicalOrderRow(
+  db: DbClient,
+  orderId: string,
+  clinicId: string,
+  patch: MedicalOrderUpdateRow
+): Promise<RepoResult<MedicalOrder>> {
+  const { data, error } = await db
+    .from("medical_orders")
+    .update({ ...patch, updated_at: new Date().toISOString() })
+    .eq("id", orderId)
+    .eq("clinic_id", clinicId)
+    .eq("status", "issued")
+    .select()
+    .maybeSingle();
+
+  if (error) return repoErr(formatMedicalOrderDbError(error.message));
+  if (!data) return repoErr("Orden no encontrada o ya anulada.");
+  return repoOk(data as MedicalOrder);
+}
+
 export async function voidMedicalOrderRow(
   db: DbClient,
   orderId: string,

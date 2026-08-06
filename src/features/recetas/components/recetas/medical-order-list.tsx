@@ -3,11 +3,14 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Eye, Printer } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { cn } from "@/shared/utils/cn";
 
+import { voidMedicalOrder } from "@/features/recetas/actions/medical-orders";
 import { MedicalOrderActionButtons } from "@/features/recetas/components/recetas/medical-order-action-buttons";
+import { MedicalOrderEditSheet } from "@/features/recetas/components/recetas/medical-order-edit-sheet";
 import { MedicalOrderPreviewSheet } from "@/features/recetas/components/recetas/medical-order-preview-sheet";
 import { buildMedicalOrderDocumentData } from "@/features/recetas/utils/build-medical-order-document-data";
 import { orderTypeLabel } from "@/features/recetas/utils/order-type-label";
@@ -42,13 +45,28 @@ type ClinicInfo = {
 type Props = {
   orders: (MedicalOrder & { order_type?: string })[];
   patient: PatientInfo;
+  patientId: string;
   clinic: ClinicInfo;
   professionals: ProfessionalInfo[];
+  canManage?: boolean;
 };
 
-export function MedicalOrderList({ orders, patient, clinic, professionals }: Props) {
+export function MedicalOrderList({
+  orders,
+  patient,
+  patientId,
+  clinic,
+  professionals,
+  canManage = false,
+}: Props) {
+  const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>(orders[0]?.id ?? null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<(MedicalOrder & { order_type?: string }) | null>(
+    null
+  );
+  const [actingId, setActingId] = useState<string | null>(null);
 
   const documentsById = useMemo(() => {
     const map = new Map<string, ReturnType<typeof buildMedicalOrderDocumentData>>();
@@ -67,6 +85,35 @@ export function MedicalOrderList({ orders, patient, clinic, professionals }: Pro
 
   function selectOrder(orderId: string) {
     setSelectedId(orderId);
+  }
+
+  function openEdit(order: MedicalOrder & { order_type?: string }) {
+    setEditingOrder(order);
+    setEditOpen(true);
+  }
+
+  async function handleDelete(order: MedicalOrder & { order_type?: string }) {
+    if (
+      !confirm(
+        `¿Eliminar esta orden de ${orderTypeLabel(order.order_type)}?\n\nSe marcará como anulada y dejará de estar disponible para imprimir.`
+      )
+    ) {
+      return;
+    }
+
+    setActingId(order.id);
+    const result = await voidMedicalOrder(order.id);
+    setActingId(null);
+
+    if (result.error) {
+      alert(result.error);
+      return;
+    }
+
+    if (selectedId === order.id) {
+      setSelectedId(null);
+    }
+    router.refresh();
   }
 
   return (
@@ -151,6 +198,9 @@ export function MedicalOrderList({ orders, patient, clinic, professionals }: Pro
                     compact
                     data={documentData}
                     onPreview={() => openPreview(order.id)}
+                    onEdit={canManage ? () => openEdit(order) : undefined}
+                    onDelete={canManage ? () => handleDelete(order) : undefined}
+                    acting={actingId === order.id}
                   />
                 ) : null}
               </div>
@@ -166,6 +216,18 @@ export function MedicalOrderList({ orders, patient, clinic, professionals }: Pro
           onClose={() => setPreviewOpen(false)}
         />
       ) : null}
+
+      <MedicalOrderEditSheet
+        open={editOpen}
+        order={editingOrder}
+        patientId={patientId}
+        professionals={professionals}
+        onClose={() => {
+          setEditOpen(false);
+          setEditingOrder(null);
+        }}
+        onSaved={() => router.refresh()}
+      />
     </>
   );
 }
