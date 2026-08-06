@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useCommandPaletteKeyboard } from "@/core/hooks/use-command-palette-keyboard";
 import { useCommandPalettePatientSearch } from "@/core/hooks/use-command-palette-patient-search";
+import type { PermissionOverrides } from "@/core/permissions/roles";
 
 import {
   buildPatientContextPaletteActions,
@@ -18,10 +19,16 @@ import type { UserRole } from "@/types/database";
 type Options = {
   role: UserRole | null;
   isSuperadmin?: boolean;
+  permissionOverrides?: PermissionOverrides;
   enabled?: boolean;
 };
 
-export function useCommandPaletteState({ role, isSuperadmin = false, enabled = true }: Options) {
+export function useCommandPaletteState({
+  role,
+  isSuperadmin = false,
+  permissionOverrides,
+  enabled = true,
+}: Options) {
   const router = useRouter();
   const pathname = usePathname();
   const activePatientId = parsePatientIdFromPath(pathname);
@@ -39,13 +46,26 @@ export function useCommandPaletteState({ role, isSuperadmin = false, enabled = t
           buildPatientContextPaletteActions(activePatientId),
           query,
           role,
-          isSuperadmin
+          isSuperadmin,
+          permissionOverrides
         )
       : [];
-    const actions = filterCommandPaletteItems(COMMAND_PALETTE_ACTIONS, query, role, isSuperadmin);
-    const nav = filterCommandPaletteItems(COMMAND_PALETTE_NAV, query, role, isSuperadmin);
+    const actions = filterCommandPaletteItems(
+      COMMAND_PALETTE_ACTIONS,
+      query,
+      role,
+      isSuperadmin,
+      permissionOverrides
+    );
+    const nav = filterCommandPaletteItems(
+      COMMAND_PALETTE_NAV,
+      query,
+      role,
+      isSuperadmin,
+      permissionOverrides
+    );
     return [...ctx, ...actions, ...nav];
-  }, [activePatientId, query, role, isSuperadmin]);
+  }, [activePatientId, query, role, isSuperadmin, permissionOverrides]);
 
   const flatResults = useMemo(
     () => [

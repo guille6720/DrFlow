@@ -12,7 +12,7 @@ import {
   type SidebarNavLink,
 } from "@/core/components/layout/sidebar-nav-config";
 import { SidebarNavContent } from "@/core/components/layout/sidebar-nav-content";
-import { hasPermission } from "@/core/permissions/roles";
+import { hasPermission, type PermissionOverrides } from "@/core/permissions/roles";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -30,15 +30,20 @@ interface SidebarProps {
   clinicName?: string;
   role: UserRole | null;
   isSuperadmin?: boolean;
+  permissionOverrides?: PermissionOverrides;
 }
 
 function filterNavLink(
   item: SidebarNavLink,
   role: UserRole | null,
   isSuperadmin: boolean | undefined,
-  clinicFeatures: ReturnType<typeof useClinicFeatures>
+  clinicFeatures: ReturnType<typeof useClinicFeatures>,
+  permissionOverrides?: PermissionOverrides
 ): boolean {
-  if (item.permission && !hasPermission(role, item.permission, isSuperadmin)) {
+  if (
+    item.permission &&
+    !hasPermission(role, item.permission, isSuperadmin, permissionOverrides)
+  ) {
     return false;
   }
 
@@ -59,24 +64,32 @@ function filterSidebarNavEntries(
   entries: SidebarNavEntry[],
   role: UserRole | null,
   isSuperadmin: boolean | undefined,
-  clinicFeatures: ReturnType<typeof useClinicFeatures>
+  clinicFeatures: ReturnType<typeof useClinicFeatures>,
+  permissionOverrides?: PermissionOverrides
 ): SidebarNavEntry[] {
   return entries
     .map((entry) => {
       if (isSidebarNavGroup(entry)) {
         const children = entry.children.filter((child) =>
-          filterNavLink(child, role, isSuperadmin, clinicFeatures)
+          filterNavLink(child, role, isSuperadmin, clinicFeatures, permissionOverrides)
         );
         if (children.length === 0) return null;
         return { ...entry, children };
       }
 
-      return filterNavLink(entry, role, isSuperadmin, clinicFeatures) ? entry : null;
+      return filterNavLink(entry, role, isSuperadmin, clinicFeatures, permissionOverrides)
+        ? entry
+        : null;
     })
     .filter((entry): entry is SidebarNavEntry => entry != null);
 }
 
-export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
+export function Sidebar({
+  clinicName,
+  role,
+  isSuperadmin,
+  permissionOverrides,
+}: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -84,8 +97,15 @@ export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
   const clinicFeatures = useClinicFeatures();
 
   const visibleItems = useMemo(
-    () => filterSidebarNavEntries(SIDEBAR_NAV_ENTRIES, role, isSuperadmin, clinicFeatures),
-    [role, isSuperadmin, clinicFeatures]
+    () =>
+      filterSidebarNavEntries(
+        SIDEBAR_NAV_ENTRIES,
+        role,
+        isSuperadmin,
+        clinicFeatures,
+        permissionOverrides
+      ),
+    [role, isSuperadmin, clinicFeatures, permissionOverrides]
   );
 
   function handleToggleSidebarHidden() {

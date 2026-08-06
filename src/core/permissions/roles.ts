@@ -1,5 +1,7 @@
 import type { UserRole } from "@/types/database";
 
+export type PermissionKey = keyof typeof PERMISSIONS;
+
 export const ROLE_LABELS: Record<UserRole, string> = {
   superadmin: "Superadmin SaaS",
   clinic_admin: "Administrador de clínica",
@@ -28,20 +30,44 @@ export const PERMISSIONS = {
   manageSettings: ["superadmin", "clinic_admin"] as UserRole[],
 };
 
+export const MANAGEABLE_PERMISSION_KEYS = [
+  "manageAppointments",
+  "managePatients",
+  "managePatientsAdmin",
+  "viewClinicalRecords",
+  "viewPharmacology",
+  "editClinicalRecords",
+  "issuePrescriptions",
+  "viewReports",
+  "managePayments",
+  "manageCashRegister",
+  "manageWaitingRoom",
+  "manageAdminDocuments",
+] as const satisfies readonly PermissionKey[];
+
+export type ManageablePermissionKey = (typeof MANAGEABLE_PERMISSION_KEYS)[number];
+
+export type PermissionOverrides = Partial<Record<ManageablePermissionKey, boolean>>;
+
 export function hasPermission(
   role: UserRole | null,
-  permission: keyof typeof PERMISSIONS,
-  isSuperadmin = false
+  permission: PermissionKey,
+  isSuperadmin = false,
+  overrides?: PermissionOverrides
 ): boolean {
   if (isSuperadmin || role === "superadmin") return true;
   if (!role) return false;
+  if (overrides && permission in overrides) {
+    return overrides[permission as ManageablePermissionKey]!;
+  }
   return PERMISSIONS[permission].includes(role);
 }
 
 export function canAccessRoute(
   role: UserRole | null,
   route: string,
-  isSuperadmin = false
+  isSuperadmin = false,
+  overrides?: PermissionOverrides
 ): boolean {
   if (isSuperadmin || role === "superadmin") return true;
 
@@ -55,16 +81,16 @@ export function canAccessRoute(
   }
 
   if (route.startsWith("/historias/nueva")) {
-    return hasPermission(role, "editClinicalRecords", isSuperadmin);
+    return hasPermission(role, "editClinicalRecords", isSuperadmin, overrides);
   }
   if (route.startsWith("/historias/") && route.includes("/editar")) {
-    return hasPermission(role, "editClinicalRecords", isSuperadmin);
+    return hasPermission(role, "editClinicalRecords", isSuperadmin, overrides);
   }
   if (route.startsWith("/pacientes/") && route.includes("/editar")) {
-    return hasPermission(role, "managePatients", isSuperadmin);
+    return hasPermission(role, "managePatients", isSuperadmin, overrides);
   }
 
-  const routePermissions: Record<string, keyof typeof PERMISSIONS> = {
+  const routePermissions: Record<string, PermissionKey> = {
     "/configuracion": "manageSettings",
     "/reportes": "viewReports",
     "/historias": "viewClinicalRecords",
@@ -78,7 +104,7 @@ export function canAccessRoute(
 
   for (const [prefix, permission] of Object.entries(routePermissions)) {
     if (route.startsWith(prefix)) {
-      return hasPermission(role, permission, isSuperadmin);
+      return hasPermission(role, permission, isSuperadmin, overrides);
     }
   }
 

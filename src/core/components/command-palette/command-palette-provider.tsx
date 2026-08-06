@@ -39,6 +39,7 @@ type ProviderProps = {
   children: ReactNode;
   role: UserRole | null;
   isSuperadmin?: boolean;
+  permissionOverrides?: import("@/core/permissions/roles").PermissionOverrides;
   enabled?: boolean;
 };
 
@@ -46,9 +47,10 @@ export function CommandPaletteProvider({
   children,
   role,
   isSuperadmin = false,
+  permissionOverrides,
   enabled = true,
 }: ProviderProps) {
-  const state = useCommandPaletteState({ role, isSuperadmin, enabled });
+  const state = useCommandPaletteState({ role, isSuperadmin, permissionOverrides, enabled });
 
   const contextValue = useMemo(
     () => ({ open: state.open, setOpen: state.setOpen, toggle: state.toggle }),

@@ -1,4 +1,4 @@
-import { hasPermission } from "@/core/permissions/roles";
+import { hasPermission, type PermissionOverrides } from "@/core/permissions/roles";
 
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
@@ -16,10 +16,12 @@ export function filterCommandPaletteItems(
   items: CommandPaletteItemDef[],
   query: string,
   role: UserRole | null,
-  isSuperadmin: boolean
+  isSuperadmin: boolean,
+  permissionOverrides?: PermissionOverrides
 ): CommandPaletteItemDef[] {
   const permitted = items.filter(
-    (item) => !item.permission || hasPermission(role, item.permission, isSuperadmin)
+    (item) =>
+      !item.permission || hasPermission(role, item.permission, isSuperadmin, permissionOverrides)
   );
 
   const q = normalize(query.trim());

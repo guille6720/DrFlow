@@ -128,6 +128,11 @@ export function ProfessionalIntakeDetailPanel({
           <Button type="submit" loading={loading}>
             Guardar cambios
           </Button>
+          <Link href="/configuracion?grupo=consultorio&seccion=equipo#permisos-equipo">
+            <Button type="button" variant="outline">
+              Equipo, permisos y credenciales
+            </Button>
+          </Link>
           <Link href="/configuracion?grupo=consultorio&seccion=equipo">
             <Button type="button" variant="outline">
               Invitar al equipo

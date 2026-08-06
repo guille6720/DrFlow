@@ -70,7 +70,7 @@ function DashboardShellFallback({ message }: { message: string }) {
 
 async function DashboardDataShellInner({ children }: { children: React.ReactNode }) {
   const shell = await getDashboardShell();
-  const { profile, clinics, clinicId, clinic, role, isSuperadmin } = shell;
+  const { profile, clinics, clinicId, clinic, role, isSuperadmin, permissionOverrides } = shell;
 
   if (!profile) redirect("/login");
   if (clinics.length === 0 && !isSuperadmin) redirect("/onboarding");
@@ -86,7 +86,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
     }
   }
 
-  if (path && !canAccessRoute(role, path, isSuperadmin)) {
+  if (path && !canAccessRoute(role, path, isSuperadmin, permissionOverrides)) {
     await logAudit({
       clinicId: clinicId ?? undefined,
       entityType: "route_access",
@@ -146,6 +146,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
               <CommandPaletteProvider
                 role={role}
                 isSuperadmin={isSuperadmin}
+                permissionOverrides={permissionOverrides}
                 enabled={clinicFeatures.flags.command_palette}
               >
                 <AccessibilityProvider>
@@ -161,6 +162,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
                         clinicName={clinic?.name}
                         role={role}
                         isSuperadmin={isSuperadmin}
+                        permissionOverrides={permissionOverrides}
                       />
                       <DashboardSidebarReveal />
                       <DashboardMain>

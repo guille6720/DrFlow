@@ -1,17 +1,17 @@
 "use server";
 
-import { getActiveClinic, getActiveClinicId } from "@/core/auth/session.server";
-import { hasPermission, PERMISSIONS } from "@/core/permissions/roles";
+import { getActiveClinicId, getPermissionContext } from "@/core/auth/session.server";
+import { hasPermission, type PermissionKey } from "@/core/permissions/roles";
 
-export async function requireClinicPermission(permission: keyof typeof PERMISSIONS) {
+export async function requireClinicPermission(permission: PermissionKey) {
   const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { role, isSuperadmin, permissionOverrides } = await getPermissionContext();
 
-  if (!clinicId || !hasPermission(role, permission, isSuperadmin)) {
+  if (!clinicId || !hasPermission(role, permission, isSuperadmin, permissionOverrides)) {
     return { ok: false as const, error: "Sin permisos" };
   }
 
-  return { ok: true as const, clinicId, role, isSuperadmin };
+  return { ok: true as const, clinicId, role, isSuperadmin, permissionOverrides };
 }
 
 /** Settings admin gate — same shape as legacy requireAdmin(). */

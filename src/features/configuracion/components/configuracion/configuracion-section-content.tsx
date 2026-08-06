@@ -20,6 +20,9 @@ export interface SettingsPanelData {
   members: never[];
   invitations: never[];
   bookingSlug: string | null;
+  teamAccess?: import("@/lib/actions/team-permissions").TeamPermissionsPanelData & {
+    hasSharedCredentials: boolean;
+  };
 }
 
 export interface ConfiguracionSectionExtras {

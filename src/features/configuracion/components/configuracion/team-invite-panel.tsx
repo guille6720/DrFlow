@@ -1,10 +1,14 @@
 "use client";
 
+import type { ManageablePermissionKey } from "@/core/permissions/member-permissions";
+
+import { TeamAccessPanel } from "@/features/configuracion/components/configuracion/team-access-panel";
 import { TeamInviteFormSection } from "@/features/configuracion/components/configuracion/team-invite-form-section";
 import { TeamMembersListSection } from "@/features/configuracion/components/configuracion/team-members-list-section";
 import { TeamPendingInvitesSection } from "@/features/configuracion/components/configuracion/team-pending-invites-section";
 
 import { Card } from "@/components/ui/card";
+import type { TeamPermissionMember } from "@/lib/actions/team-permissions";
 import { useTeamInvitePanel } from "@/lib/hooks/use-team-invite-panel";
 
 interface Member {
@@ -26,9 +30,14 @@ interface Invitation {
 interface Props {
   members: Member[];
   invitations: Invitation[];
+  teamAccess?: {
+    members: TeamPermissionMember[];
+    permissionOverrides: Record<string, Partial<Record<ManageablePermissionKey, boolean>>>;
+    hasSharedCredentials: boolean;
+  };
 }
 
-export function TeamInvitePanel({ members, invitations }: Props) {
+export function TeamInvitePanel({ members, invitations, teamAccess }: Props) {
   const panel = useTeamInvitePanel(members, invitations);
 
   return (
@@ -66,6 +75,14 @@ export function TeamInvitePanel({ members, invitations }: Props) {
           revokeClinicInvitation={panel.revokeClinicInvitation}
         />
       </Card>
+
+      {teamAccess ? (
+        <TeamAccessPanel
+          members={teamAccess.members}
+          permissionOverrides={teamAccess.permissionOverrides}
+          hasSharedCredentials={teamAccess.hasSharedCredentials}
+        />
+      ) : null}
     </div>
   );
 }

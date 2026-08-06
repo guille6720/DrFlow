@@ -26,6 +26,8 @@ import { getClinicFeatureFlagSettings } from "@/lib/actions/clinic-feature-flags
 import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
 import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
 import { getClinicObservabilityDashboard } from "@/lib/actions/observability";
+import { loadTeamPermissionsPanelData } from "@/lib/actions/team-permissions";
+import { getClinicSharedAiConnectionPublic } from "@/lib/ai/clinic-shared-ai.server";
 import { getCachedActiveBookingSlug, getCachedClinicProfessionalsSettings } from "@/lib/server/cached-clinic-queries";
 
 interface PageProps {
@@ -52,7 +54,8 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
 
   const supabase = await createClient();
 
-  const [professionals, members, invitations, bookingSlug, patientCount] = clinicId
+  const [professionals, members, invitations, bookingSlug, patientCount, teamAccessBase, sharedAi] =
+    clinicId
     ? await Promise.all([
         getCachedClinicProfessionalsSettings(clinicId),
         supabase
@@ -70,8 +73,10 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
           .select("id", { count: "exact", head: true })
           .eq("clinic_id", clinicId)
           .eq("is_active", true),
+        loadTeamPermissionsPanelData(clinicId),
+        getClinicSharedAiConnectionPublic(),
       ])
-    : [{ data: [] }, { data: [] }, { data: [] }, null, { count: 0 }];
+    : [[], { data: [] }, { data: [] }, null, { count: 0 }, { members: [], permissionOverrides: {} }, null];
 
   const settingsProps: SettingsPanelData = {
     clinic,
@@ -79,6 +84,12 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
     members: (members.data ?? []) as never[],
     invitations: (invitations.data ?? []) as never[],
     bookingSlug,
+    teamAccess: clinicId
+      ? {
+          ...teamAccessBase,
+          hasSharedCredentials: Boolean(sharedAi),
+        }
+      : undefined,
   };
 
   const [pluginSettingsResult, flagSettingsResult, jobsResult, observabilityResult] =

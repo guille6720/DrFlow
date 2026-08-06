@@ -3,6 +3,8 @@ import "server-only";
 import { cookies } from "next/headers";
 import { cache } from "react";
 
+import { resolveMemberPermissionOverrides } from "@/core/permissions/member-permissions";
+import type { PermissionOverrides } from "@/core/permissions/roles";
 import { CLINIC_COLUMNS, PROFILE_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
@@ -78,16 +80,17 @@ export const getActiveClinic = cache(async (): Promise<{
   clinic: Clinic | null;
   role: UserRole | null;
   isSuperadmin: boolean;
+  memberId: string | null;
 }> => {
   const supabase = await createClient();
   const user = await getSession();
-  if (!user) return { clinic: null, role: null, isSuperadmin: false };
+  if (!user) return { clinic: null, role: null, isSuperadmin: false, memberId: null };
 
   const clinics = await getUserClinics();
   const profile = await getProfile();
   const isSuperadmin = profile?.is_superadmin ?? false;
   const clinicId = await getActiveClinicId();
-  if (!clinicId) return { clinic: null, role: null, isSuperadmin };
+  if (!clinicId) return { clinic: null, role: null, isSuperadmin, memberId: null };
 
   const membership = clinics.find((m) => m.clinic_id === clinicId);
   const clinic =
@@ -98,15 +101,42 @@ export const getActiveClinic = cache(async (): Promise<{
     clinic: clinic as Clinic | null,
     role: membership?.role ?? (isSuperadmin ? "superadmin" : null),
     isSuperadmin,
+    memberId: membership?.id ?? null,
+  };
+});
+
+export const getPermissionContext = cache(async (): Promise<{
+  role: UserRole | null;
+  isSuperadmin: boolean;
+  permissionOverrides: PermissionOverrides;
+}> => {
+  const supabase = await createClient();
+  const user = await getSession();
+  const { role, isSuperadmin, memberId } = await getActiveClinic();
+
+  if (isSuperadmin || !user || !memberId) {
+    return { role, isSuperadmin, permissionOverrides: {} };
+  }
+
+  const { data } = await supabase
+    .from("clinic_member_permissions")
+    .select("permission_key, granted")
+    .eq("member_id", memberId);
+
+  return {
+    role,
+    isSuperadmin,
+    permissionOverrides: resolveMemberPermissionOverrides(data ?? []),
   };
 });
 
 export const getDashboardShell = cache(async () => {
-  const [profile, clinics, clinicId, active] = await Promise.all([
+  const [profile, clinics, clinicId, active, permissionContext] = await Promise.all([
     getProfile(),
     getUserClinics(),
     getActiveClinicId(),
     getActiveClinic(),
+    getPermissionContext(),
   ]);
-  return { profile, clinics, clinicId, ...active };
+  return { profile, clinics, clinicId, ...active, ...permissionContext };
 });

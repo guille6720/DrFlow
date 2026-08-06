@@ -1,8 +1,8 @@
 import "server-only";
 
+import { getActiveClinicId } from "@/core/auth/session";
 import { createClient } from "@/core/supabase/server";
 
-import { getClinicSharedAiCredentialsForSession } from "@/lib/ai/clinic-shared-ai.server";
 import type {
   UserAiConnectionPublic,
   UserAiCredentials,
@@ -30,21 +30,45 @@ function toPublic(row: DbRow): UserAiConnectionPublic {
   };
 }
 
-/** Returns the authenticated user's AI credentials for server-side LLM calls. */
-export async function getUserAiCredentialsForSession(): Promise<UserAiCredentials | null> {
-  const shared = await getClinicSharedAiCredentialsForSession();
-  if (shared) return shared;
+export async function getClinicSharedAiConnectionPublic(): Promise<UserAiConnectionPublic | null> {
+  const clinicId = await getActiveClinicId();
+  if (!clinicId) return null;
 
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("clinic_shared_ai_connections")
+    .select("provider, api_key, base_url, model, label, updated_at")
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+
+  if (error || !data?.api_key?.trim()) return null;
+  return toPublic(data as DbRow);
+}
+
+export async function getClinicSharedAiCredentialsForSession(): Promise<UserAiCredentials | null> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data, error } = await supabase
-    .from("user_ai_connections")
-    .select("provider, api_key, base_url, model")
+  const clinicId = await getActiveClinicId();
+  if (!clinicId) return null;
+
+  const { data: member } = await supabase
+    .from("clinic_members")
+    .select("uses_shared_ai")
+    .eq("clinic_id", clinicId)
     .eq("user_id", user.id)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (!member?.uses_shared_ai) return null;
+
+  const { data, error } = await supabase
+    .from("clinic_shared_ai_connections")
+    .select("provider, api_key, base_url, model")
+    .eq("clinic_id", clinicId)
     .maybeSingle();
 
   if (error || !data?.api_key?.trim()) return null;
@@ -57,25 +81,7 @@ export async function getUserAiCredentialsForSession(): Promise<UserAiCredential
   };
 }
 
-/** Public connection summary — never returns the API key. */
-export async function getUserAiConnectionPublic(): Promise<UserAiConnectionPublic | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const { data, error } = await supabase
-    .from("user_ai_connections")
-    .select("provider, api_key, base_url, model, label, updated_at")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (error || !data?.api_key?.trim()) return null;
-  return toPublic(data as DbRow);
-}
-
-export async function saveUserAiConnection(input: {
+export async function saveClinicSharedAiConnection(input: {
   provider: UserAiProviderId;
   apiKey?: string;
   baseUrl?: string | null;
@@ -88,15 +94,18 @@ export async function saveUserAiConnection(input: {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Sesión expirada" };
 
+  const clinicId = await getActiveClinicId();
+  if (!clinicId) return { error: "Sin clínica activa" };
+
   const apiKey = input.apiKey?.trim() ?? "";
   const model = input.model?.trim() || getDefaultModelForProvider(input.provider);
 
   let keyToStore = apiKey;
   if (apiKey.length < 8) {
     const { data: existing } = await supabase
-      .from("user_ai_connections")
+      .from("clinic_shared_ai_connections")
       .select("api_key")
-      .eq("user_id", user.id)
+      .eq("clinic_id", clinicId)
       .maybeSingle();
 
     if (!existing?.api_key?.trim()) {
@@ -105,38 +114,34 @@ export async function saveUserAiConnection(input: {
     keyToStore = existing.api_key.trim();
   }
 
-  const { error } = await supabase.from("user_ai_connections").upsert(
+  const { error } = await supabase.from("clinic_shared_ai_connections").upsert(
     {
-      user_id: user.id,
+      clinic_id: clinicId,
       provider: input.provider,
       api_key: keyToStore,
       base_url: input.baseUrl?.trim() || null,
       model,
       label: input.label?.trim() || null,
+      updated_by: user.id,
       updated_at: new Date().toISOString(),
     },
-    { onConflict: "user_id" }
+    { onConflict: "clinic_id" }
   );
 
-  if (error) return { error: formatUserAiConnectionError(error.message) };
+  if (error) return { error: error.message };
   return {};
 }
 
-function formatUserAiConnectionError(message: string): string {
-  if (message.includes("user_ai_connections_provider_check")) {
-    return "Gemini todavía no está habilitado en la base de datos. Un administrador debe aplicar la migración 069 en Supabase (ver instrucciones abajo).";
-  }
-  return message;
-}
+export async function deleteClinicSharedAiConnection(): Promise<{ error?: string }> {
+  const clinicId = await getActiveClinicId();
+  if (!clinicId) return { error: "Sin clínica activa" };
 
-export async function deleteUserAiConnection(): Promise<{ error?: string }> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Sesión expirada" };
+  const { error } = await supabase
+    .from("clinic_shared_ai_connections")
+    .delete()
+    .eq("clinic_id", clinicId);
 
-  const { error } = await supabase.from("user_ai_connections").delete().eq("user_id", user.id);
-  if (error) return { error: formatUserAiConnectionError(error.message) };
+  if (error) return { error: error.message };
   return {};
 }
