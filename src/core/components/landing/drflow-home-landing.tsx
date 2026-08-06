@@ -43,7 +43,7 @@ import { ButtonLink } from "@/components/ui/button";
 
 const STATS = [
   { value: `${TRIAL_DAYS_INCLUDED} días`, label: "Prueba gratis", suffix: "" },
-  { value: "3", label: "Planes", suffix: "desde $29.900" },
+  { value: "3", label: "Planes", suffix: "desde $24.900" },
   { value: "PAMI", label: "Órdenes y recetas", suffix: "integradas" },
   { value: "24/7", label: "Soporte online", suffix: "soporte.opusorg.com.ar" },
 ] as const;

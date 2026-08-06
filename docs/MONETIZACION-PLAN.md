@@ -13,7 +13,7 @@ Definidos en código: `src/core/billing/plans.ts`
 
 | Plan | Precio/mes (ARS) | Anual (2 meses off) | Incluye |
 |------|------------------|---------------------|---------|
-| **Solo** | $29.900 | $299.000 | 1 médico, core clínico |
+| **Solo** | $24.900 | $249.000 | 1 médico, core clínico |
 | **Consultorio** | $49.900 | $499.000 | Hasta 3 profesionales, equipo, permisos |
 | **Clínica** | $79.900 | $799.000 | Ilimitado, reportes, onboarding |
 

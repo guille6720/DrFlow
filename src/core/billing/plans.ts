@@ -18,8 +18,8 @@ export const DRFLOW_BILLING_PLANS: BillingPlan[] = [
     id: "solo",
     name: "Solo",
     tagline: "Un médico, consultorio chico",
-    priceArsMonthly: 29_900,
-    priceArsAnnual: 299_000,
+    priceArsMonthly: 24_900,
+    priceArsAnnual: 249_000,
     professionalsIncluded: "1 profesional",
     highlights: [
       "Agenda, HC, recetas y órdenes PAMI",
