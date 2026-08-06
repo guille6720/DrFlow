@@ -66,12 +66,5 @@ export const FEATURE_NAV_ITEMS: FeatureNavItem[] = [
     label: "Planillas PAMI",
     permission: "issuePrescriptions",
   },
-  { featureId: "reportes", href: "/reportes", label: "Reportes", permission: "viewReports" },
   { featureId: "core", href: "/ayuda", label: "Ayuda / Manual", permission: null },
-  {
-    featureId: "configuracion",
-    href: "/configuracion",
-    label: "Configuración",
-    permission: "manageSettings",
-  },
 ];

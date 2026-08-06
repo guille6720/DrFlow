@@ -14,12 +14,6 @@ const ClinicalWorkflowShortcuts = safeClientDynamic(() =>
   }))
 );
 
-const FloatingActions = safeClientDynamic(() =>
-  import("@/core/components/layout/floating-actions").then((mod) => ({
-    default: mod.FloatingActions,
-  }))
-);
-
 const RoutePrefetcher = safeClientDynamic(() =>
   import("@/core/components/layout/route-prefetcher").then((mod) => ({
     default: mod.RoutePrefetcher,
@@ -33,7 +27,6 @@ export function LazyDashboardInteractionHosts() {
       <RoutePrefetcher />
       <ClinicalContextMenuHost />
       <ClinicalWorkflowShortcuts />
-      <FloatingActions />
     </>
   );
 }

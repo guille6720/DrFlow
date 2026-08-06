@@ -1,7 +1,6 @@
 import { ClinicalOpsAiRail } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-ai-rail";
 import { ClinicalOpsLeftRail } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-left-rail";
 import { ClinicalOpsMainSections } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-main-sections";
-import { ClinicalOpsQuickActions } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-quick-actions";
 import { ClinicalOpsRealtime } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-realtime";
 import { ClinicalOpsTopBar } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-top-bar";
 import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
@@ -56,8 +55,6 @@ export function ClinicalOpsCenter({
           <ClinicalOpsAiRail ops={ops} />
         </div>
       </div>
-
-      <ClinicalOpsQuickActions />
     </section>
   );
 }
