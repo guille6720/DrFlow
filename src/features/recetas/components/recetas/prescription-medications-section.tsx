@@ -1,10 +1,14 @@
 import { Plus, Trash2 } from "lucide-react";
 
 import { appendPrescriptionMedication, emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
+import {
+  mergeVademecumIntoMedication,
+  PrescriptionMedicationLineFields,
+} from "@/features/recetas/components/recetas/prescription-medication-line-fields";
 import { PrescriptionMedicationSearch } from "@/features/recetas/components/recetas/prescription-medication-search";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import type { PamiVademecumResult } from "@/types/pharmacology";
 import type { PrescriptionMedication } from "@/types/prescription";
 
 interface Props {
@@ -18,6 +22,12 @@ export function PrescriptionMedicationsSection({ medications, setMedications, up
 
   function addMedicationFromSearch(med: PrescriptionMedication) {
     setMedications((prev) => appendPrescriptionMedication(prev, med));
+  }
+
+  function applyVademecum(index: number, item: PamiVademecumResult) {
+    setMedications((prev) =>
+      prev.map((med, i) => (i === index ? mergeVademecumIntoMedication(med, item) : med))
+    );
   }
 
   return (
@@ -56,54 +66,12 @@ export function PrescriptionMedicationsSection({ medications, setMedications, up
               </button>
             )}
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Input
-              label="Nombre genérico *"
-              required
-              value={med.generic_name}
-              onChange={(e) => updateMed(index, "generic_name", e.target.value)}
-              placeholder="Ej: Enalapril"
-            />
-            <Input
-              label="Marca (opcional)"
-              value={med.brand_name ?? ""}
-              onChange={(e) => updateMed(index, "brand_name", e.target.value)}
-            />
-            <Input
-              label="Presentación"
-              value={med.presentation ?? ""}
-              onChange={(e) => updateMed(index, "presentation", e.target.value)}
-              placeholder="Ej: comp x 30"
-            />
-            <Input
-              label="Concentración"
-              value={med.concentration ?? ""}
-              onChange={(e) => updateMed(index, "concentration", e.target.value)}
-              placeholder="Ej: 10 mg"
-            />
-            <Input
-              label="Cantidad"
-              type="number"
-              min={1}
-              value={med.quantity}
-              onChange={(e) => updateMed(index, "quantity", Number(e.target.value))}
-            />
-            <Input
-              label="Vía"
-              value={med.route ?? ""}
-              onChange={(e) => updateMed(index, "route", e.target.value)}
-              placeholder="oral, tópica..."
-            />
-            <div className="sm:col-span-2">
-              <Input
-                label="Posología *"
-                required
-                value={med.posology}
-                onChange={(e) => updateMed(index, "posology", e.target.value)}
-                placeholder="Ej: 1 comp cada 12 hs por 7 días"
-              />
-            </div>
-          </div>
+          <PrescriptionMedicationLineFields
+            med={med}
+            index={index}
+            updateMed={updateMed}
+            applyVademecum={applyVademecum}
+          />
         </div>
       ))}
       </div>
