@@ -21,23 +21,32 @@ import {
   AGENDA_PRESETS,
   type AgendaRuleDraft,
 } from "@/lib/constants/professional-intake-checklist";
+import type { EnrichedTeamMember } from "@/lib/utils/team-member-display";
 
 type Params = {
   professionals: ProfessionalIntakeDetail[];
+  teamMembers: EnrichedTeamMember[];
   scheduleByProfessional: Record<string, AvailabilityRuleRow[]>;
 };
 
-export function useProfessionalIntake({ professionals, scheduleByProfessional }: Params) {
+export function useProfessionalIntake({ professionals, teamMembers, scheduleByProfessional }: Params) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const selectedId = searchParams.get("id");
+  const selectedMemberId = searchParams.get("miembro");
   const isNew =
-    searchParams.get("nuevo") === "1" || (!selectedId && professionals.length === 0);
+    searchParams.get("nuevo") === "1" ||
+    (!selectedId && !selectedMemberId && professionals.length === 0);
 
   const selected = useMemo(
     () => professionals.find((p) => p.id === selectedId) ?? null,
     [professionals, selectedId]
+  );
+
+  const selectedMember = useMemo(
+    () => teamMembers.find((m) => m.id === selectedMemberId) ?? null,
+    [teamMembers, selectedMemberId]
   );
 
   const [detailTab, setDetailTab] = useState<ProfessionalIntakeDetailTab>("perfil");
@@ -71,6 +80,10 @@ export function useProfessionalIntake({ professionals, scheduleByProfessional }:
     else if (id) params.set("id", id);
     const qs = params.toString();
     router.push(qs ? `/ingreso-profesionales?${qs}` : "/ingreso-profesionales");
+  }
+
+  function navigateToMember(memberId: string) {
+    router.push(`/ingreso-profesionales?miembro=${memberId}`);
   }
 
   function clearError(name: string) {
@@ -172,8 +185,10 @@ export function useProfessionalIntake({ professionals, scheduleByProfessional }:
 
   return {
     selectedId,
+    selectedMemberId,
     isNew,
     selected,
+    selectedMember,
     detailTab,
     setDetailTab,
     newStep,
@@ -187,6 +202,7 @@ export function useProfessionalIntake({ professionals, scheduleByProfessional }:
     agendaRules,
     setAgendaRules,
     navigateTo,
+    navigateToMember,
     clearError,
     resetNewWizard,
     handleCreateSubmit,

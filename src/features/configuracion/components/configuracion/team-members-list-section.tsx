@@ -37,8 +37,12 @@ export function TeamMembersListSection({
               className="drflow-card-light flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-900"
             >
               <div>
-                <p className="font-medium text-slate-900">{m.profiles?.full_name ?? "Usuario"}</p>
-                <p className="text-xs text-slate-600">{m.profiles?.email}</p>
+                <p className="font-medium text-slate-900">
+                  {m.display_name ?? m.profiles?.full_name ?? m.profiles?.email ?? "Sin nombre"}
+                </p>
+                <p className="text-xs text-slate-600">
+                  {m.display_email ?? m.profiles?.email}
+                </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Select

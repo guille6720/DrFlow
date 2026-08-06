@@ -15,6 +15,8 @@ interface Member {
   id: string;
   role: string;
   is_active?: boolean;
+  display_name?: string;
+  display_email?: string | null;
   profiles?: { full_name: string; email: string } | null;
 }
 
@@ -59,7 +61,7 @@ export function useTeamInvitePanel(members: Member[], invitations: Invitation[])
   }
 
   function handleRemoveMember(m: Member) {
-    const name = m.profiles?.full_name ?? m.profiles?.email ?? "este usuario";
+    const name = m.display_name ?? m.profiles?.full_name ?? m.profiles?.email ?? "este usuario";
     if (
       !confirm(
         `¿Eliminar permanentemente a ${name}? Se borra la cuenta de acceso. Los registros clínicos históricos se conservan. También podés hacerlo desde Supabase → Authentication después de aplicar la migración 036.`

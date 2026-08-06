@@ -29,6 +29,7 @@ import { getClinicObservabilityDashboard } from "@/lib/actions/observability";
 import { loadTeamPermissionsPanelData } from "@/lib/actions/team-permissions";
 import { getClinicSharedAiConnectionPublic } from "@/lib/ai/clinic-shared-ai.server";
 import { getCachedActiveBookingSlug, getCachedClinicProfessionalsSettings } from "@/lib/server/cached-clinic-queries";
+import { enrichTeamMembers } from "@/lib/utils/team-member-display";
 
 interface PageProps {
   searchParams: Promise<{ seccion?: string; grupo?: string }>;
@@ -81,7 +82,7 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
   const settingsProps: SettingsPanelData = {
     clinic,
     professionals: professionals as never[],
-    members: (members.data ?? []) as never[],
+    members: enrichTeamMembers(members.data ?? [], invitations.data ?? []) as never[],
     invitations: (invitations.data ?? []) as never[],
     bookingSlug,
     teamAccess: clinicId

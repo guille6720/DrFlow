@@ -5,11 +5,14 @@ import { revalidatePath } from "next/cache";
 import { requireStaffManagerWithUser } from "@/core/actions/guard-adapters";
 import { recordAudit, recordAuditChange } from "@/core/security/audit-service";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
-import { getPublicSiteUrl } from "@/core/supabase/env";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue, parseEntityId, staffRoleSchema } from "@/core/validations/params";
 import { inviteSchema } from "@/core/validations/staff-schemas";
 
+import {
+  buildClinicInviteEmailContent,
+  sendTransactionalEmail,
+} from "@/lib/services/transactional-email";
 import type { UserRole } from "@/types/database";
 
 async function requireStaffManager() {
@@ -46,6 +49,7 @@ export async function inviteClinicMember(formData: FormData) {
     email: String(formData.get("email") ?? "").trim().toLowerCase(),
     full_name: String(formData.get("full_name") ?? "").trim(),
     role: String(formData.get("role") ?? ""),
+    password: String(formData.get("password") ?? ""),
   });
 
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
@@ -119,6 +123,28 @@ export async function inviteClinicMember(formData: FormData) {
 
     if (memberErr) return { error: memberErr.message };
 
+    await admin.auth.admin.updateUserById(existingUserId, {
+      password: parsed.data.password,
+    });
+
+    const { data: clinicRow } = await supabase
+      .from("clinics")
+      .select("name")
+      .eq("id", clinicId)
+      .maybeSingle();
+
+    const emailContent = buildClinicInviteEmailContent({
+      fullName: parsed.data.full_name,
+      clinicName: clinicRow?.name ?? "tu consultorio",
+      email,
+      password: parsed.data.password,
+    });
+    const emailResult = await sendTransactionalEmail({
+      to: email,
+      subject: emailContent.subject,
+      text: emailContent.text,
+    });
+
     await recordAudit({
       clinicId,
       module: "settings",
@@ -129,16 +155,20 @@ export async function inviteClinicMember(formData: FormData) {
     });
 
     revalidatePath("/configuracion");
+    revalidatePath("/ingreso-profesionales");
     return {
       success: true,
-      message: `${parsed.data.full_name} ya tenía cuenta y fue agregado al equipo.`,
+      message: emailResult.sent
+        ? `${parsed.data.full_name} ya tenía cuenta y fue agregado. Se enviaron las credenciales por email.`
+        : `${parsed.data.full_name} fue agregado al equipo. No se pudo enviar el email (${emailResult.reason}). Usuario: ${email} · Contraseña: ${parsed.data.password}`,
     };
   }
 
-  const siteUrl = getPublicSiteUrl();
-  const { error: authErr } = await admin.auth.admin.inviteUserByEmail(email, {
-    data: { full_name: parsed.data.full_name },
-    redirectTo: `${siteUrl}/auth/callback?next=/login/restablecer`,
+  const { data: createdUser, error: authErr } = await admin.auth.admin.createUser({
+    email,
+    password: parsed.data.password,
+    email_confirm: true,
+    user_metadata: { full_name: parsed.data.full_name },
   });
 
   if (authErr) {
@@ -150,6 +180,38 @@ export async function inviteClinicMember(formData: FormData) {
     };
   }
 
+  const newUserId = createdUser.user?.id;
+  if (!newUserId) {
+    return { error: "No se pudo crear el usuario de acceso." };
+  }
+
+  const { error: memberErr } = await supabase.rpc("accept_clinic_invitation_for_existing_user", {
+    p_clinic_id: clinicId,
+    p_user_id: newUserId,
+    p_email: email,
+    p_role: parsed.data.role,
+  });
+
+  if (memberErr) return { error: memberErr.message };
+
+  const { data: clinicRow } = await supabase
+    .from("clinics")
+    .select("name")
+    .eq("id", clinicId)
+    .maybeSingle();
+
+  const emailContent = buildClinicInviteEmailContent({
+    fullName: parsed.data.full_name,
+    clinicName: clinicRow?.name ?? "tu consultorio",
+    email,
+    password: parsed.data.password,
+  });
+  const emailResult = await sendTransactionalEmail({
+    to: email,
+    subject: emailContent.subject,
+    text: emailContent.text,
+  });
+
   await recordAudit({
     clinicId,
     module: "settings",
@@ -159,10 +221,63 @@ export async function inviteClinicMember(formData: FormData) {
   });
 
   revalidatePath("/configuracion");
+  revalidatePath("/ingreso-profesionales");
   return {
     success: true,
-    message: `Invitación enviada a ${email}. Revisá spam si no llega en unos minutos.`,
+    message: emailResult.sent
+      ? `Invitación enviada a ${email} con usuario y contraseña. Revisá spam si no llega en unos minutos.`
+      : `Usuario creado para ${email}. No se pudo enviar el email (${emailResult.reason}). Usuario: ${email} · Contraseña: ${parsed.data.password}`,
   };
+}
+
+export async function updateClinicMemberProfile(memberId: string, formData: FormData) {
+  const access = await requireStaffManager();
+  if (!access.ok) return { error: access.error };
+  const { clinicId, user } = access;
+
+  const idParsed = parseEntityId(memberId, "Miembro");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const fullName = String(formData.get("full_name") ?? "").trim();
+  if (fullName.length < 2) return { error: "Nombre requerido" };
+
+  const supabase = await createClient();
+  const { data: target } = await supabase
+    .from("clinic_members")
+    .select("user_id")
+    .eq("id", idParsed.data)
+    .eq("clinic_id", clinicId)
+    .single();
+
+  if (!target?.user_id) return { error: "Miembro no encontrado" };
+
+  if (!hasAdminClient()) {
+    return { error: "No se puede actualizar el perfil sin SUPABASE_SERVICE_ROLE_KEY." };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({ full_name: fullName, updated_at: new Date().toISOString() })
+    .eq("id", target.user_id);
+
+  if (error) return { error: error.message };
+
+  await recordAuditChange({
+    clinicId,
+    module: "settings",
+    entityType: "clinic_member",
+    entityId: idParsed.data,
+    action: "update",
+    before: {},
+    after: { full_name: fullName },
+    keys: ["full_name"],
+    metadata: { updated_by: user!.id, user_id: target.user_id },
+  });
+
+  revalidatePath("/configuracion");
+  revalidatePath("/ingreso-profesionales");
+  return { success: true, message: "Datos del usuario actualizados." };
 }
 
 export async function revokeClinicInvitation(invitationId: string) {
@@ -201,6 +316,7 @@ export async function revokeClinicInvitation(invitationId: string) {
   });
 
   revalidatePath("/configuracion");
+  revalidatePath("/ingreso-profesionales");
   return { success: true };
 }
 
@@ -246,6 +362,7 @@ export async function updateClinicMemberRole(memberId: string, role: UserRole) {
   });
 
   revalidatePath("/configuracion");
+  revalidatePath("/ingreso-profesionales");
   return { success: true };
 }
 
@@ -301,6 +418,7 @@ export async function deactivateClinicMember(memberId: string) {
   }
 
   revalidatePath("/configuracion");
+  revalidatePath("/ingreso-profesionales");
   return { success: true };
 }
 
@@ -354,5 +472,6 @@ export async function removeClinicMemberPermanently(memberId: string) {
   });
 
   revalidatePath("/configuracion");
+  revalidatePath("/ingreso-profesionales");
   return { success: true };
 }

@@ -4,6 +4,10 @@ import { Plus, UserRound } from "lucide-react";
 
 import { cn } from "@/shared/utils/cn";
 
+import { ClinicTeamMembersSidebarSection } from "@/features/profesionales/components/profesionales/clinic-team-members-sidebar-section";
+
+import type { EnrichedTeamMember } from "@/lib/utils/team-member-display";
+
 export type ProfessionalListItem = {
   id: string;
   display_name: string | null;
@@ -13,9 +17,12 @@ export type ProfessionalListItem = {
 
 interface Props {
   professionals: ProfessionalListItem[];
+  teamMembers: EnrichedTeamMember[];
   selectedId: string | null;
+  selectedMemberId: string | null;
   isNew: boolean;
   onSelect: (id: string) => void;
+  onSelectMember: (memberId: string) => void;
   onNew: () => void;
 }
 
@@ -29,9 +36,12 @@ function initials(name: string | null): string {
 
 export function ProfessionalIntakeSidebar({
   professionals,
+  teamMembers,
   selectedId,
+  selectedMemberId,
   isNew,
   onSelect,
+  onSelectMember,
   onNew,
 }: Props) {
   return (
@@ -63,7 +73,7 @@ export function ProfessionalIntakeSidebar({
         ) : (
           <ul className="space-y-1">
             {professionals.map((p) => {
-              const active = !isNew && selectedId === p.id;
+              const active = !isNew && !selectedMemberId && selectedId === p.id;
               const name = p.display_name ?? "Profesional";
               return (
                 <li key={p.id}>
@@ -113,6 +123,12 @@ export function ProfessionalIntakeSidebar({
           </ul>
         )}
       </div>
+
+      <ClinicTeamMembersSidebarSection
+        members={teamMembers}
+        selectedMemberId={selectedMemberId}
+        onSelect={onSelectMember}
+      />
 
       <div className="border-t border-slate-200 px-4 py-3 text-xs text-slate-500">
         <UserRound className="mb-1 inline h-3.5 w-3.5 text-teal-600" />{" "}

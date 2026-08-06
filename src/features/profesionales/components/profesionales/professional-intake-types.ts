@@ -1,3 +1,4 @@
+import type { EnrichedTeamMember } from "@/lib/utils/team-member-display";
 import type { Clinic, UserRole } from "@/types/database";
 
 export type ProfessionalIntakeDetail = {
@@ -46,6 +47,7 @@ export type ProfessionalIntakeViewProps = {
   userName?: string;
   locations: ProfessionalIntakeLocation[];
   professionals: ProfessionalIntakeDetail[];
+  teamMembers: EnrichedTeamMember[];
   scheduleByProfessional: Record<string, AvailabilityRuleRow[]>;
 };
 

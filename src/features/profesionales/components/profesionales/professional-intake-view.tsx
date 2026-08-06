@@ -2,12 +2,14 @@
 
 import { Header } from "@/core/components/layout/header";
 
+import { ClinicTeamMemberDetailPanel } from "@/features/profesionales/components/profesionales/clinic-team-member-detail-panel";
 import { ProfessionalIntakeChecklistCard } from "@/features/profesionales/components/profesionales/professional-intake-checklist-card";
 import { ProfessionalIntakeDetailHeader } from "@/features/profesionales/components/profesionales/professional-intake-detail-header";
 import { ProfessionalIntakeDetailPanel } from "@/features/profesionales/components/profesionales/professional-intake-detail-panel";
 import { ProfessionalIntakeNewForm } from "@/features/profesionales/components/profesionales/professional-intake-new-form";
 import { ProfessionalIntakeSidebar } from "@/features/profesionales/components/profesionales/professional-intake-sidebar";
 import type { ProfessionalIntakeViewProps } from "@/features/profesionales/components/profesionales/professional-intake-types";
+import { useClinicTeamMemberPanel } from "@/features/profesionales/hooks/use-clinic-team-member-panel";
 import { useProfessionalIntake } from "@/features/profesionales/hooks/use-professional-intake";
 
 import { Card } from "@/components/ui/card";
@@ -24,12 +26,15 @@ export function ProfessionalIntakeView({
   userName,
   locations,
   professionals,
+  teamMembers,
   scheduleByProfessional,
 }: ProfessionalIntakeViewProps) {
   const {
     selectedId,
+    selectedMemberId,
     isNew,
     selected,
+    selectedMember,
     detailTab,
     setDetailTab,
     newStep,
@@ -43,13 +48,16 @@ export function ProfessionalIntakeView({
     agendaRules,
     setAgendaRules,
     navigateTo,
+    navigateToMember,
     clearError,
     resetNewWizard,
     handleCreateSubmit,
     handleUpdateProfile,
     handleUpdateBankDetails,
     handleSaveSchedule,
-  } = useProfessionalIntake({ professionals, scheduleByProfessional });
+  } = useProfessionalIntake({ professionals, teamMembers, scheduleByProfessional });
+
+  const memberPanel = useClinicTeamMemberPanel(selectedMember);
 
   return (
     <>
@@ -65,9 +73,12 @@ export function ProfessionalIntakeView({
       <div className="flex flex-col gap-4 p-4 lg:flex-row lg:gap-6 lg:p-6">
         <ProfessionalIntakeSidebar
           professionals={professionals}
+          teamMembers={teamMembers}
           selectedId={selectedId}
+          selectedMemberId={selectedMemberId}
           isNew={isNew}
           onSelect={(id) => navigateTo(id)}
+          onSelectMember={(memberId) => navigateToMember(memberId)}
           onNew={() => {
             resetNewWizard();
             navigateTo(null, true);
@@ -75,7 +86,19 @@ export function ProfessionalIntakeView({
         />
 
         <div className="min-w-0 flex-1 space-y-4">
-          {isNew ? (
+          {selectedMember ? (
+            <ClinicTeamMemberDetailPanel
+              member={selectedMember}
+              acting={memberPanel.acting}
+              loading={memberPanel.loading}
+              error={memberPanel.error}
+              success={memberPanel.success}
+              onSubmitProfile={memberPanel.handleSubmitProfile}
+              onRoleChange={memberPanel.handleRoleChange}
+              onDeactivate={memberPanel.handleDeactivate}
+              onRemove={memberPanel.handleRemove}
+            />
+          ) : isNew ? (
             <ProfessionalIntakeNewForm
               locations={locations}
               newStep={newStep}
@@ -113,10 +136,10 @@ export function ProfessionalIntakeView({
               />
             </>
           ) : (
-            <Card title="Seleccioná un profesional">
+            <Card title="Seleccioná un profesional o usuario">
               <p className="text-sm text-slate-600">
-                Elegí un profesional del panel izquierdo para editar su perfil, consultorio,
-                horarios o datos bancarios, o creá uno nuevo.
+                Elegí un profesional o un usuario invitado del panel izquierdo para editar sus
+                datos, o creá un profesional nuevo.
               </p>
             </Card>
           )}

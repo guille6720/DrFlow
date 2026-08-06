@@ -16,13 +16,15 @@ import {
   ProfessionalIntakeView,
 } from "@/features/profesionales";
 
+import { enrichTeamMembers } from "@/lib/utils/team-member-display";
+
 export default async function IngresoProfesionalesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string; nuevo?: string }>;
+  searchParams: Promise<{ id?: string; nuevo?: string; miembro?: string }>;
 }) {
   const params = await searchParams;
-  const { id: selectedId, nuevo } = params;
+  const { id: selectedId, nuevo, miembro: selectedMemberId } = params;
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
@@ -34,7 +36,13 @@ export default async function IngresoProfesionalesPage({
 
   const supabase = await createClient();
 
-  const [{ data: locations }, { data: professionals }, { data: rules }] = clinicId
+  const [
+    { data: locations },
+    { data: professionals },
+    { data: rules },
+    { data: members },
+    { data: invitations },
+  ] = clinicId
     ? await Promise.all([
         supabase
           .from("locations")
@@ -54,8 +62,19 @@ export default async function IngresoProfesionalesPage({
           .select("id, professional_id, day_of_week, start_time, end_time, slot_duration")
           .eq("clinic_id", clinicId)
           .eq("is_active", true),
+        supabase
+          .from("clinic_members")
+          .select("id, role, is_active, user_id, professional_id, profiles(full_name, email)")
+          .eq("clinic_id", clinicId)
+          .order("created_at"),
+        supabase
+          .from("clinic_invitations")
+          .select("email, full_name, status")
+          .eq("clinic_id", clinicId),
       ])
-    : [{ data: [] }, { data: [] }, { data: [] }];
+    : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }];
+
+  const teamMembers = enrichTeamMembers(members ?? [], invitations ?? []);
 
   const professionalList: ProfessionalIntakeDetail[] = (professionals ?? []).map((p) => {
     const row = p as Record<string, unknown>;
@@ -99,8 +118,18 @@ export default async function IngresoProfesionalesPage({
     return acc;
   }, {});
 
-  if (!selectedId && !nuevo && professionalList.length > 0) {
+  if (!selectedId && !selectedMemberId && !nuevo && professionalList.length > 0) {
     redirect(`/ingreso-profesionales?id=${professionalList[0].id}`);
+  }
+
+  if (
+    !selectedId &&
+    !selectedMemberId &&
+    !nuevo &&
+    professionalList.length === 0 &&
+    teamMembers.length > 0
+  ) {
+    redirect(`/ingreso-profesionales?miembro=${teamMembers[0].id}`);
   }
 
   return (
@@ -112,6 +141,7 @@ export default async function IngresoProfesionalesPage({
         userName={profile?.full_name}
         locations={locations ?? []}
         professionals={professionalList}
+        teamMembers={teamMembers}
         scheduleByProfessional={scheduleByProfessional}
       />
     </Suspense>
