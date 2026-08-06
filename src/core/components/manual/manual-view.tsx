@@ -1,4 +1,5 @@
-import { BookOpen } from "lucide-react";
+import { BookOpen, ClipboardList } from "lucide-react";
+import Link from "next/link";
 
 import { CHANGELOG, getAppVersion } from "@/core/app-release";
 import { ExportManualPdfButton } from "@/core/components/manual/export-manual-pdf-button";
@@ -6,11 +7,24 @@ import { ManualIllustration } from "@/core/components/manual/manual-illustration
 import { MANUAL_SECTIONS, MANUAL_SUBTITLE, MANUAL_TITLE } from "@/core/manual/manual-data";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 export function ManualView() {
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-teal-100 bg-teal-50/60 px-4 py-3">
+        <div className="flex items-center gap-2 text-sm text-teal-900">
+          <ClipboardList className="h-5 w-5 shrink-0" />
+          <span>Auditoría QA módulo por módulo (checklist interactivo)</span>
+        </div>
+        <Link href="/ayuda/auditoria-modular">
+          <Button type="button" size="sm" variant="outline">
+            Abrir auditoría
+          </Button>
+        </Link>
+      </div>
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
