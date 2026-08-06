@@ -1,10 +1,19 @@
 "use client";
 
-import { ChevronDown, LayoutDashboard, LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import {
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
+  Palette,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
+import { GUEST_APPEARANCE_OPEN_EVENT } from "@/core/components/layout/guest-appearance-events";
+import { GuestAppearanceModal } from "@/core/components/layout/guest-appearance-modal";
 import { SidebarGeminiNavItem } from "@/core/components/layout/sidebar-gemini-nav-item";
 import {
   isSidebarNavGroup,
@@ -123,6 +132,7 @@ export function SidebarNavContent({
   onPrefetch,
   sidebarHidden,
   onToggleSidebarHidden,
+  isInvitedMember = false,
 }: {
   clinicName?: string;
   visibleItems: SidebarNavEntry[];
@@ -131,7 +141,21 @@ export function SidebarNavContent({
   onPrefetch: (href: string) => void;
   sidebarHidden: boolean;
   onToggleSidebarHidden: () => void;
+  isInvitedMember?: boolean;
 }) {
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isInvitedMember) return;
+
+    function handleOpenAppearance() {
+      setAppearanceOpen(true);
+    }
+
+    window.addEventListener(GUEST_APPEARANCE_OPEN_EVENT, handleOpenAppearance);
+    return () => window.removeEventListener(GUEST_APPEARANCE_OPEN_EVENT, handleOpenAppearance);
+  }, [isInvitedMember]);
+
   return (
     <>
       <div className="border-b border-slate-700/80 px-4 py-5">
@@ -139,6 +163,13 @@ export function SidebarNavContent({
         <p className="mt-2 truncate text-center text-xs font-medium text-slate-400">
           {clinicName ?? "Sin clínica"}
         </p>
+        {isInvitedMember ? (
+          <div className="mt-2 flex justify-center">
+            <span className="inline-flex items-center rounded-md border border-amber-400/50 bg-amber-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-200">
+              INVITADO
+            </span>
+          </div>
+        ) : null}
       </div>
 
       <nav
@@ -173,6 +204,16 @@ export function SidebarNavContent({
       </nav>
 
       <div className="space-y-1 border-t border-slate-700/80 p-3">
+        {isInvitedMember ? (
+          <button
+            type="button"
+            onClick={() => setAppearanceOpen(true)}
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+          >
+            <Palette className="h-5 w-5 text-teal-400" />
+            Cambiar estilo
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={onToggleSidebarHidden}
@@ -195,6 +236,8 @@ export function SidebarNavContent({
           </button>
         </form>
       </div>
+
+      <GuestAppearanceModal open={appearanceOpen} onClose={() => setAppearanceOpen(false)} />
     </>
   );
 }

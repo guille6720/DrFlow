@@ -12,7 +12,7 @@ import {
   type SidebarNavLink,
 } from "@/core/components/layout/sidebar-nav-config";
 import { SidebarNavContent } from "@/core/components/layout/sidebar-nav-content";
-import { hasPermission, type PermissionOverrides } from "@/core/permissions/roles";
+import { hasPermission, isInvitedClinicMember, type PermissionOverrides } from "@/core/permissions/roles";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -108,6 +108,8 @@ export function Sidebar({
     [role, isSuperadmin, clinicFeatures, permissionOverrides]
   );
 
+  const isInvitedMember = isInvitedClinicMember(role, isSuperadmin);
+
   function handleToggleSidebarHidden() {
     toggleHidden();
     setMobileOpen(false);
@@ -152,6 +154,7 @@ export function Sidebar({
           onPrefetch={(href) => router.prefetch(href)}
           sidebarHidden={desktopHidden}
           onToggleSidebarHidden={handleToggleSidebarHidden}
+          isInvitedMember={isInvitedMember}
         />
       </aside>
     </>

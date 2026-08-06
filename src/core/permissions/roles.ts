@@ -49,6 +49,15 @@ export type ManageablePermissionKey = (typeof MANAGEABLE_PERMISSION_KEYS)[number
 
 export type PermissionOverrides = Partial<Record<ManageablePermissionKey, boolean>>;
 
+/** Médico o secretaría invitados al consultorio (no administrador ni superadmin). */
+export function isInvitedClinicMember(
+  role: UserRole | null,
+  isSuperadmin = false
+): boolean {
+  if (isSuperadmin || role === "superadmin" || role === "clinic_admin") return false;
+  return role === "doctor" || role === "secretary";
+}
+
 export function hasPermission(
   role: UserRole | null,
   permission: PermissionKey,

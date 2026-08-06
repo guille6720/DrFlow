@@ -1,12 +1,13 @@
 "use client";
 
-import { Settings } from "lucide-react";
+import { Palette, Settings } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import { CommandPaletteTrigger } from "@/core/components/command-palette/command-palette-trigger";
 import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-context";
-import { hasPermission, ROLE_LABELS } from "@/core/permissions/roles";
+import { openGuestAppearanceModal } from "@/core/components/layout/guest-appearance-events";
+import { hasPermission, isInvitedClinicMember, ROLE_LABELS } from "@/core/permissions/roles";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -36,6 +37,7 @@ export function Header({
 }: HeaderProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const showSettings = hasPermission(role, "manageSettings", isSuperadmin);
+  const showGuestAppearance = isInvitedClinicMember(role, isSuperadmin);
   const { hidden: sidebarHidden } = useDashboardSidebar();
   const shellDark = true;
 
@@ -64,6 +66,22 @@ export function Header({
           )}
         </div>
         <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
+          {showGuestAppearance && (
+            <button
+              type="button"
+              onClick={openGuestAppearanceModal}
+              className={cn(
+                "inline-flex h-11 w-11 items-center justify-center rounded-2xl border shadow-sm transition",
+                shellDark
+                  ? "border-slate-600 bg-slate-800 text-teal-300 hover:border-teal-500/50 hover:bg-slate-700"
+                  : "border-slate-200 bg-white text-teal-700 hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800"
+              )}
+              aria-label="Cambiar estilo de la interfaz"
+              title="Cambiar estilo"
+            >
+              <Palette className="h-5 w-5" />
+            </button>
+          )}
           {showSettings && (
             <Link
               href="/configuracion"
