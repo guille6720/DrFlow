@@ -13,8 +13,6 @@ import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
-import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation";
-
 import { PatientWorkspaceContent } from "@/features/pacientes";
 import { PatientWorkspaceSkeleton } from "@/features/pacientes";
 import { DeletePatientButton } from "@/features/pacientes/components/pacientes/delete-patient-button";
@@ -25,6 +23,7 @@ import {
   parsePatientWorkspaceTab,
 } from "@/features/pacientes/constants/patient-workspace-tabs";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
+import { patientWorkspaceBackHref } from "@/features/pacientes/utils/patient-workspace-back-href";
 
 export default async function PacienteDetailPage({
   params,
@@ -36,7 +35,6 @@ export default async function PacienteDetailPage({
   const { id } = await params;
   const sp = await searchParams;
   const { from, patient: returnPatientId, tab: tabParam } = sp;
-  const backHref = backHrefFromClinicalSubpage(from, returnPatientId ?? id, "/pacientes");
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
@@ -67,6 +65,8 @@ export default async function PacienteDetailPage({
     initialTabRaw === "docs_admin" && !canManageAdminDocuments
       ? DEFAULT_HC_WORKSPACE_TAB
       : initialTabRaw;
+
+  const backHref = patientWorkspaceBackHref(id, initialTab, from, returnPatientId);
 
   return (
     <>
