@@ -131,10 +131,21 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-marketing :is(.text-slat
 
 .drflow-marketing-site {
   scroll-behavior: smooth;
+  isolation: isolate;
+}
+
+html:has(.drflow-marketing-site) body {
+  background-color: #f8fafc !important;
+  background-image: none !important;
+  color: #0f172a !important;
 }
 
 .drflow-marketing-site .drflow-ui-button.border-slate-600 {
   border-color: rgb(71 85 105);
+}
+
+.drflow-marketing-site .drflow-ui-button {
+  color: inherit;
 }
 
 .drflow-sidebar-gradient {

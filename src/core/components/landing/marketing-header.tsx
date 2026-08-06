@@ -1,6 +1,5 @@
+import Image from "next/image";
 import Link from "next/link";
-
-import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 
 import { ButtonLink } from "@/components/ui/button";
 
@@ -23,17 +22,34 @@ export function MarketingHeader({ variant = "light" }: MarketingHeaderProps) {
     <header
       className={
         isDark
-          ? "sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur-md"
-          : "sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md"
+          ? "sticky top-0 z-50 border-b border-white/10 bg-slate-950/95 backdrop-blur-md"
+          : "sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md"
       }
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:py-4">
-        <DrFlowLogo size="sm" href="/" priority className="sm:hidden" />
-        <DrFlowLogo size="md" href="/" priority className="hidden sm:block" />
+      <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:py-3.5">
+        <Link href="/" className="inline-flex shrink-0 items-center gap-2.5">
+          <Image
+            src="/drflow-logo.png"
+            alt="DrFlow"
+            width={40}
+            height={40}
+            priority
+            className="h-9 w-9 rounded-xl object-contain sm:h-10 sm:w-10"
+          />
+          <span
+            className={
+              isDark
+                ? "hidden text-lg font-bold tracking-tight text-white sm:inline"
+                : "hidden text-lg font-bold tracking-tight text-slate-900 sm:inline"
+            }
+          >
+            DrFlow
+          </span>
+        </Link>
 
         <nav
           aria-label="Secciones del sitio"
-          className="hidden items-center gap-1 lg:flex"
+          className="hidden flex-1 items-center justify-center gap-1 md:flex"
         >
           {NAV.map((item) => (
             <Link
@@ -50,7 +66,7 @@ export function MarketingHeader({ variant = "light" }: MarketingHeaderProps) {
           ))}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           <ButtonLink
             href="/login"
             variant="ghost"
