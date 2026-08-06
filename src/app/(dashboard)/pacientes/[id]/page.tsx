@@ -20,6 +20,7 @@ import { PatientWorkspaceSkeleton } from "@/features/pacientes";
 import { DeletePatientButton } from "@/features/pacientes/components/pacientes/delete-patient-button";
 import { PatientAdminDetailView } from "@/features/pacientes/components/pacientes/patient-admin-detail-view";
 import {
+  DEFAULT_HC_WORKSPACE_TAB,
   LEGACY_TAB_ALIASES,
   parsePatientWorkspaceTab,
 } from "@/features/pacientes/constants/patient-workspace-tabs";
@@ -57,10 +58,15 @@ export default async function PacienteDetailPage({
   const canEditClinical = hasPermission(role, "editClinicalRecords", isSuperadmin);
   const canViewClinical = hasPermission(role, "viewClinicalRecords", isSuperadmin);
   const canIssue = hasPermission(role, "issuePrescriptions", isSuperadmin);
+  const canManageAdminDocuments = hasPermission(role, "manageAdminDocuments", isSuperadmin);
 
-  const initialTab = parsePatientWorkspaceTab(
+  const initialTabRaw = parsePatientWorkspaceTab(
     tabParam ? (LEGACY_TAB_ALIASES[tabParam] ?? tabParam) : null
   );
+  const initialTab =
+    initialTabRaw === "docs_admin" && !canManageAdminDocuments
+      ? DEFAULT_HC_WORKSPACE_TAB
+      : initialTabRaw;
 
   return (
     <>
@@ -99,6 +105,7 @@ export default async function PacienteDetailPage({
               canEditClinical={canEditClinical}
               canIssue={canIssue}
               canManagePatients={canManagePatients}
+              canManageAdminDocuments={canManageAdminDocuments}
             />
           </Suspense>
         )}

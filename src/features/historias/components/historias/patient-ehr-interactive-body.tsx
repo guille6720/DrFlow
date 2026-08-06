@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { PatientEhrClinicalTables } from "@/features/historias/components/historias/patient-ehr-clinical-tables";
 import { PatientEhrEvolutionPanel } from "@/features/historias/components/historias/patient-ehr-evolution-panel";
 import { PatientEhrFiltersBar } from "@/features/historias/components/historias/patient-ehr-filters-bar";
+import { PatientEhrPrintClinicalTables } from "@/features/historias/components/historias/patient-ehr-print-clinical-tables";
 import { PatientEhrPrintEvolutionBlock } from "@/features/historias/components/historias/patient-ehr-print-evolution-block";
 import { PatientEhrSidebar } from "@/features/historias/components/historias/patient-ehr-sidebar";
 import { usePatientEhrStateContext } from "@/features/historias/components/historias/patient-ehr-state-context";
@@ -98,26 +99,36 @@ export function PatientEhrInteractiveBody({
             ) : null}
 
             <div className="drflow-ehr-print-supplemental">
-            <PatientEhrClinicalTables
-              patientId={patientId}
-              diagnosisRows={diagnosisRows}
-              treatmentRows={treatmentRows}
-              showDiagnostics={filters.diagnostics}
-              showTreatments={filters.treatments}
-            />
+              <div className="drflow-ehr-screen-only">
+                <PatientEhrClinicalTables
+                  patientId={patientId}
+                  diagnosisRows={diagnosisRows}
+                  treatmentRows={treatmentRows}
+                  showDiagnostics={filters.diagnostics}
+                  showTreatments={filters.treatments}
+                />
 
-            <PatientEhrSupplementalSections
-              patientId={patientId}
-              vitalsRows={vitalsRows}
-              visibleAttachments={visibleAttachments}
-              prescriptions={prescriptions}
-              showVitals={filters.vitals}
-              showFiles={filters.files}
-              showPrescriptions={filters.prescriptions}
-              openingAttachmentId={openingAttachmentId}
-              attachmentError={attachmentError}
-              onOpenAttachment={handleOpenAttachment}
-            />
+                <PatientEhrSupplementalSections
+                  patientId={patientId}
+                  vitalsRows={vitalsRows}
+                  visibleAttachments={visibleAttachments}
+                  prescriptions={prescriptions}
+                  showVitals={filters.vitals}
+                  showFiles={filters.files}
+                  showPrescriptions={filters.prescriptions}
+                  openingAttachmentId={openingAttachmentId}
+                  attachmentError={attachmentError}
+                  onOpenAttachment={handleOpenAttachment}
+                />
+              </div>
+
+              <div className="drflow-ehr-print-only drflow-ehr-print-tables-wrap">
+                <PatientEhrPrintClinicalTables
+                  diagnosisRows={filters.diagnostics ? diagnosisRows : []}
+                  treatmentRows={filters.treatments ? treatmentRows : []}
+                  consultations={evolutionList}
+                />
+              </div>
             </div>
           </div>
         </main>

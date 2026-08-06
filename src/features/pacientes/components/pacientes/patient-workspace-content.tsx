@@ -4,6 +4,7 @@ import { createClient } from "@/core/supabase/server";
 import { PatientEhrView } from "@/features/historias/components/historias/patient-ehr-view";
 import { ClinicalWorkspaceView } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-view";
 import type { PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
+import { PatientWorkspaceAdminDocsPanel } from "@/features/pacientes/components/pacientes/patient-workspace-admin-docs-panel";
 import { PatientWorkspaceChartPanel } from "@/features/pacientes/components/pacientes/patient-workspace-chart-panel";
 import { PatientWorkspaceDiagnosticsPanel } from "@/features/pacientes/components/pacientes/patient-workspace-diagnostics-panel";
 import { PatientWorkspaceOrdersPanel } from "@/features/pacientes/components/pacientes/patient-workspace-orders-panel";
@@ -28,6 +29,7 @@ type Props = {
   canEditClinical: boolean;
   canIssue: boolean;
   canManagePatients: boolean;
+  canManageAdminDocuments: boolean;
 };
 
 export async function PatientWorkspaceContent({
@@ -39,9 +41,23 @@ export async function PatientWorkspaceContent({
   canEditClinical,
   canIssue,
   canManagePatients,
+  canManageAdminDocuments,
 }: Props) {
   const supabase = await createClient();
   const workspace = await loadPatientWorkspacePageData(supabase, clinicId, patient);
+
+  const adminDocuments =
+    initialTab === "docs_admin" && canManageAdminDocuments
+      ? (
+          await supabase
+            .from("patient_admin_documents")
+            .select("id, title, file_name, category, created_at")
+            .eq("clinic_id", clinicId)
+            .eq("patient_id", patientId)
+            .order("created_at", { ascending: false })
+            .limit(50)
+        ).data ?? []
+      : [];
 
   const resumenPanel =
     initialTab === "resumen" ? (
@@ -103,6 +119,15 @@ export async function PatientWorkspaceContent({
   const timelinePanel =
     initialTab === "timeline" ? <PatientWorkspaceTimelinePanel ehr={workspace.ehr} /> : undefined;
 
+  const docsAdminPanel =
+    initialTab === "docs_admin" && canManageAdminDocuments ? (
+      <PatientWorkspaceAdminDocsPanel
+        patientId={patientId}
+        patientLabel={`${patient.last_name}, ${patient.first_name} — ${patient.document_number}`}
+        documents={adminDocuments}
+      />
+    ) : undefined;
+
   const chartFocus = chartFocusForTab(initialTab);
   const chartPanel = chartFocus ? (
     <PatientWorkspaceChartPanel
@@ -145,8 +170,10 @@ export async function PatientWorkspaceContent({
       diagnosticosPanel={diagnosticosPanel}
       recetasPanel={recetasPanel}
       ordenesPanel={ordenesPanel}
+      docsAdminPanel={docsAdminPanel}
       timelinePanel={timelinePanel}
       chartPanel={chartPanel}
+      canManageAdminDocuments={canManageAdminDocuments}
       arcoExport={
         canManagePatients ? (
           <PatientArcoExportButton

@@ -3,18 +3,20 @@ import { redirect } from "next/navigation";
 import {
   getActiveClinic,
   getActiveClinicId,
-  getProfile,
-  getUserClinics,
 } from "@/core/auth/session.server";
-import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
 import { AdminDocumentsPanel } from "@/features/administracion/components/secretaria/admin-documents-panel";
+import { PatientAdminDetailView } from "@/features/pacientes/components/pacientes/patient-admin-detail-view";
+import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
 
-export default async function SecretariaDocumentosPage() {
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
+export default async function SecretariaDocumentosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ patient?: string }>;
+}) {
+  const { patient: patientIdParam } = await searchParams;
   const clinicId = await getActiveClinicId();
   const { role, isSuperadmin } = await getActiveClinic();
 
@@ -22,45 +24,45 @@ export default async function SecretariaDocumentosPage() {
     redirect("/dashboard");
   }
 
-  const supabase = await createClient();
-  const [{ data: documents }, { data: patients }] = await Promise.all([
-    supabase
-      .from("patient_admin_documents")
-      .select("id, title, file_name, category, created_at, patients(first_name, last_name)")
-      .eq("clinic_id", clinicId)
-      .order("created_at", { ascending: false })
-      .limit(50),
-    supabase
-      .from("patients")
-      .select("id, first_name, last_name, document_number")
-      .eq("clinic_id", clinicId)
-      .order("last_name")
-      .limit(300),
-  ]);
+  const canViewClinical = hasPermission(role, "viewClinicalRecords", isSuperadmin);
 
-  return (
-    <>
-      <Header
-        title="Documentación administrativa"
-        subtitle="Secretaría"
-        clinics={clinics}
-        activeClinicId={clinicId}
-        role={role}
-        userName={profile?.full_name}
-      />
+  if (patientIdParam && canViewClinical) {
+    redirect(patientWorkspacePath(patientIdParam, "docs_admin"));
+  }
+
+  if (patientIdParam) {
+    const supabase = await createClient();
+    const [{ data: patient }, { data: documents }] = await Promise.all([
+      supabase
+        .from("patients")
+        .select("*")
+        .eq("id", patientIdParam)
+        .eq("clinic_id", clinicId)
+        .single(),
+      supabase
+        .from("patient_admin_documents")
+        .select("id, title, file_name, category, created_at")
+        .eq("clinic_id", clinicId)
+        .eq("patient_id", patientIdParam)
+        .order("created_at", { ascending: false })
+        .limit(50),
+    ]);
+
+    if (!patient) redirect("/pacientes");
+
+    return (
       <div className="p-4 sm:p-6">
-        <AdminDocumentsPanel
-          documents={(documents ?? []).map((d) => ({
-            ...d,
-            patients: Array.isArray(d.patients) ? d.patients[0] ?? null : d.patients,
-          }))}
-          patients={(patients ?? []).map((p) => ({
-            id: p.id,
-            label: `${p.last_name}, ${p.first_name} — ${p.document_number}`,
-          }))}
-          showPatientPicker
-        />
+        <PatientAdminDetailView patient={patient} />
+        <div className="mt-4">
+          <AdminDocumentsPanel
+            patientId={patient.id}
+            patientLabel={`${patient.last_name}, ${patient.first_name} — ${patient.document_number}`}
+            documents={documents ?? []}
+          />
+        </div>
       </div>
-    </>
-  );
+    );
+  }
+
+  redirect("/pacientes");
 }

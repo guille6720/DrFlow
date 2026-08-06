@@ -17,11 +17,13 @@ describe("parsePatientWorkspaceTab", () => {
   it("accepts valid tab ids", () => {
     expect(parsePatientWorkspaceTab("soap")).toBe("soap");
     expect(parsePatientWorkspaceTab("timeline")).toBe("timeline");
+    expect(parsePatientWorkspaceTab("docs_admin")).toBe("docs_admin");
   });
 
   it("resolves legacy tab aliases", () => {
     expect(parsePatientWorkspaceTab("evoluciones")).toBe("soap");
     expect(parsePatientWorkspaceTab("vitales")).toBe("resumen");
+    expect(parsePatientWorkspaceTab("hc")).toBe("soap");
   });
 });
 

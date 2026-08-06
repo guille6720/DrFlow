@@ -40,25 +40,7 @@ export const FEATURE_NAV_ITEMS: FeatureNavItem[] = [
   { featureId: "agenda", href: "/atenciones", label: "Atenciones", permission: null },
   { featureId: "pacientes", href: "/pacientes", label: "Pacientes", permission: "managePatients" },
   { featureId: "caja", href: "/caja", label: "Caja", permission: "manageCashRegister" },
-  {
-    featureId: "administracion",
-    href: "/secretaria/documentos",
-    label: "Docs administrativos",
-    permission: "manageAdminDocuments",
-  },
-  {
-    featureId: "historias",
-    href: "/historias",
-    label: "Historia clínica",
-    permission: "viewClinicalRecords",
-  },
   { featureId: "integraciones", href: "/datos", label: "Importar / Exportar", permission: null },
-  {
-    featureId: "recetas",
-    href: "/recetas",
-    label: "Recetas y órdenes",
-    permission: "issuePrescriptions",
-  },
   { featureId: "pami", href: "/guia-pami", label: "Guía cabecera PAMI", permission: null },
   {
     featureId: "pami",

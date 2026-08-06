@@ -62,8 +62,10 @@ type Props = PatientWorkspaceViewProps & {
   diagnosticosPanel?: ReactNode;
   recetasPanel?: ReactNode;
   ordenesPanel?: ReactNode;
+  docsAdminPanel?: ReactNode;
   timelinePanel?: ReactNode;
   chartPanel?: ReactNode;
+  canManageAdminDocuments?: boolean;
 };
 
 export function PatientWorkspaceView(props: Props) {
@@ -77,8 +79,10 @@ export function PatientWorkspaceView(props: Props) {
     diagnosticosPanel,
     recetasPanel,
     ordenesPanel,
+    docsAdminPanel,
     timelinePanel,
     chartPanel,
+    canManageAdminDocuments = false,
     ...chartProps
   } = props;
   const searchParams = useSearchParams();
@@ -119,7 +123,12 @@ export function PatientWorkspaceView(props: Props) {
         />
       ) : null}
       <div className="drflow-patient-workspace-tabs-row flex items-center gap-2">
-        <PatientWorkspaceTabBar activeTab={activeTab} onTabChange={setTab} className="min-w-0 flex-1" />
+        <PatientWorkspaceTabBar
+          activeTab={activeTab}
+          onTabChange={setTab}
+          canManageAdminDocuments={canManageAdminDocuments}
+          className="min-w-0 flex-1"
+        />
         {showClinicalContext ? (
           <ProactiveCareAccessButton
             patientId={chartProps.patientId}
@@ -136,6 +145,7 @@ export function PatientWorkspaceView(props: Props) {
         {chartFocus ? chartPanel : null}
         {activeTab === "recetas" ? recetasPanel : null}
         {activeTab === "ordenes" ? ordenesPanel : null}
+        {activeTab === "docs_admin" ? docsAdminPanel : null}
         {activeTab === "timeline" ? timelinePanel : null}
         {activeTab === "auditoria" ? (
           <PatientClinicalAuditPanel patientId={chartProps.patientId} />

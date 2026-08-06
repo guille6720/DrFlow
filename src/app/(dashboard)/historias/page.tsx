@@ -30,6 +30,10 @@ export default async function HistoriasPage({
     redirect(patientClinicalHistoryPath(patientIdParam));
   }
 
+  if (!patientIdParam && !q) {
+    redirect("/pacientes");
+  }
+
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();

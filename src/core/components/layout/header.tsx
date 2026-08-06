@@ -1,10 +1,12 @@
 "use client";
 
+import { Settings } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 import { CommandPaletteTrigger } from "@/core/components/command-palette/command-palette-trigger";
 import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-context";
-import { ROLE_LABELS } from "@/core/permissions/roles";
+import { hasPermission, ROLE_LABELS } from "@/core/permissions/roles";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -30,8 +32,10 @@ export function Header({
   activeClinicId,
   role,
   userName,
+  isSuperadmin = false,
 }: HeaderProps) {
   const [profileOpen, setProfileOpen] = useState(false);
+  const showSettings = hasPermission(role, "manageSettings", isSuperadmin);
   const { hidden: sidebarHidden } = useDashboardSidebar();
   const shellDark = true;
 
@@ -59,7 +63,22 @@ export function Header({
             </p>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
+          {showSettings && (
+            <Link
+              href="/configuracion"
+              className={cn(
+                "inline-flex h-11 w-11 items-center justify-center rounded-2xl border shadow-sm transition",
+                shellDark
+                  ? "border-slate-600 bg-slate-800 text-teal-300 hover:border-teal-500/50 hover:bg-slate-700"
+                  : "border-slate-200 bg-white text-teal-700 hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800"
+              )}
+              aria-label="Configuración"
+              title="Configuración"
+            >
+              <Settings className="h-5 w-5" />
+            </Link>
+          )}
           <CommandPaletteTrigger />
           {clinics.length > 1 && activeClinicId && (
             <ClinicSelector clinics={clinics} activeClinicId={activeClinicId} />
