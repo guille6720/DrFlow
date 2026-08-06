@@ -1,6 +1,7 @@
 import { Plus, Trash2 } from "lucide-react";
 
-import { emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
+import { appendPrescriptionMedication, emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
+import { PrescriptionMedicationSearch } from "@/features/recetas/components/recetas/prescription-medication-search";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,10 +14,22 @@ interface Props {
 }
 
 export function PrescriptionMedicationsSection({ medications, setMedications, updateMed }: Props) {
+  const existingGenericNames = medications.map((m) => m.generic_name.trim()).filter(Boolean);
+
+  function addMedicationFromSearch(med: PrescriptionMedication) {
+    setMedications((prev) => appendPrescriptionMedication(prev, med));
+  }
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      <PrescriptionMedicationSearch
+        onAdd={addMedicationFromSearch}
+        existingGenericNames={existingGenericNames}
+      />
+
+      <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-slate-800">Medicamentos (nombre genérico — Ley 25.649)</h4>
+        <h4 className="text-sm font-semibold text-slate-800">Medicamentos en la receta</h4>
         <Button
           type="button"
           variant="outline"
@@ -93,6 +106,7 @@ export function PrescriptionMedicationsSection({ medications, setMedications, up
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 }

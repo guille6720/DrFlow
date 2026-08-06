@@ -72,7 +72,7 @@ export function PacientesPageContent({
 
       <ProminentSearchForm
         action="/pacientes"
-        placeholder="Nombre, apellido o DNI del paciente…"
+        placeholder="Apellido, nombre o DNI… (una letra filtra por apellido)"
         defaultValue={q}
         submitLabel="Buscar"
         clearHref={clearHref}

@@ -27,6 +27,16 @@ export function buildPostgrestIlikePattern(token: string): string {
   return `*${escapePostgrestFilterValue(token)}*`;
 }
 
+/** Prefijo de apellido: una letra → apellidos que empiezan con esa letra (ILIKE, sin distinguir mayúsculas). */
+export function buildPostgrestLastNamePrefixPattern(letter: string): string {
+  return `${escapePostgrestFilterValue(letter)}*`;
+}
+
+export function isSingleLetterSearch(q: string): boolean {
+  const trimmed = q.trim();
+  return trimmed.length === 1 && /^\p{L}$/u.test(trimmed);
+}
+
 export function patientSearchTokens(q: string): string[] {
   return q.split(/\s+/).map((part) => part.trim()).filter(Boolean);
 }
@@ -44,8 +54,19 @@ function buildPatientFieldOrFilter(token: string): string {
   ].join(",");
 }
 
+function buildLastNamePrefixFilter(letter: string): string {
+  return `last_name.ilike.${buildPostgrestLastNamePrefixPattern(letter)}`;
+}
+
 /** Aplica búsqueda por tokens: cada palabra debe coincidir en nombre, apellido o DNI. */
 export function applyPatientSearchFilter<T extends PatientSearchQuery>(query: T, q: string): T {
+  const trimmed = q.trim();
+  if (!trimmed) return query;
+
+  if (isSingleLetterSearch(trimmed)) {
+    return query.or(buildLastNamePrefixFilter(trimmed)) as T;
+  }
+
   const tokens = patientSearchTokens(q);
   if (tokens.length === 0) return query;
 

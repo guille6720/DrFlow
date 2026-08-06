@@ -17,6 +17,8 @@ import {
 import {
   applyPatientSearchFilter,
   buildPostgrestIlikePattern,
+  buildPostgrestLastNamePrefixPattern,
+  isSingleLetterSearch,
   patientSearchTokens,
   sanitizePatientSearchTerm,
 } from "@/features/pacientes/utils/patient-search";
@@ -87,6 +89,28 @@ describe("patient-search", () => {
   it("builds postgrest ilike patterns with asterisk wildcards", () => {
     expect(buildPostgrestIlikePattern("zap")).toBe("*zap*");
     expect(buildPostgrestIlikePattern("a,b")).toBe("*a\\,b*");
+    expect(buildPostgrestLastNamePrefixPattern("z")).toBe("z*");
+    expect(buildPostgrestLastNamePrefixPattern("Z")).toBe("Z*");
+  });
+
+  it("detects single-letter last name prefix search", () => {
+    expect(isSingleLetterSearch("a")).toBe(true);
+    expect(isSingleLetterSearch("Z")).toBe(true);
+    expect(isSingleLetterSearch("ñ")).toBe(true);
+    expect(isSingleLetterSearch("ab")).toBe(false);
+    expect(isSingleLetterSearch("1")).toBe(false);
+  });
+
+  it("filters last names by prefix when a single letter is entered", () => {
+    const calls: string[] = [];
+    const query = {
+      or(filter: string) {
+        calls.push(filter);
+        return this;
+      },
+    };
+    applyPatientSearchFilter(query, "z");
+    expect(calls).toEqual(["last_name.ilike.z*"]);
   });
 
   it("applies postgrest or filters per token", () => {

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
 import { issuePrescription, savePrescriptionDraft } from "@/features/recetas/actions/prescriptions";
-import { emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
+import { appendPrescriptionMedication, emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
 
 import type { PathologySearchResult } from "@/types/pharmacology";
 import type { PrescriptionMedication } from "@/types/prescription";
@@ -46,10 +46,12 @@ export function usePrescriptionForm({
 
   function addMedicationsFromGuide(newMeds: PrescriptionMedication[]) {
     setMedications((prev) => {
-      const hasOnlyEmpty =
-        prev.length === 1 && !prev[0].generic_name.trim() && !prev[0].posology.trim();
-      if (hasOnlyEmpty) return newMeds;
-      return [...prev, ...newMeds];
+      if (newMeds.length === 0) return prev;
+      let next = prev;
+      for (const med of newMeds) {
+        next = appendPrescriptionMedication(next, med);
+      }
+      return next;
     });
   }
 
