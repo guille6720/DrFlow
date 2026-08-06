@@ -62,6 +62,19 @@ En [Vercel → Environment Variables](https://vercel.com/guillermo-c-bmw/drflow-
 | `NEXT_PUBLIC_SITE_URL` | `https://drflow.opusorg.com` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Opcional |
 
+**Emails de invitaciones** (copiá el mismo SMTP que Supabase → Authentication → SMTP Settings):
+
+| Variable | Hostinger (ejemplo) |
+|----------|---------------------|
+| `SMTP_HOST` | `smtp.hostinger.com` |
+| `SMTP_PORT` | `465` |
+| `SMTP_SECURE` | `true` |
+| `SMTP_USER` | `noreply@opusorg.com` *(email completo)* |
+| `SMTP_PASSWORD` | Contraseña del **casilla de correo**, no la del panel Hostinger |
+| `EMAIL_FROM` | `DrFlow <noreply@opusorg.com>` |
+
+Si ves **`535 authentication failed`**, el usuario o la contraseña SMTP en Vercel no coinciden con la casilla de correo. Tras cambiar variables, hacé **Redeploy** en Vercel.
+
 Plantilla local: copiá `.env.example` → `.env.local`
 
 ### 4. Deploy automático

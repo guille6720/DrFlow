@@ -11,6 +11,7 @@ import { inviteSchema } from "@/core/validations/staff-schemas";
 
 import {
   buildClinicInviteEmailContent,
+  formatEmailSendError,
   sendTransactionalEmail,
 } from "@/lib/services/transactional-email";
 import type { UserRole } from "@/types/database";
@@ -161,7 +162,7 @@ export async function inviteClinicMember(formData: FormData) {
       success: true,
       message: emailResult.sent
         ? `${parsed.data.full_name} ya tenía cuenta y fue agregado. Se enviaron las credenciales por email.`
-        : `${parsed.data.full_name} fue agregado al equipo. No se pudo enviar el email (${emailResult.reason}). Usuario: ${email} · Contraseña: ${parsed.data.password}`,
+        : `${parsed.data.full_name} fue agregado al equipo. No se pudo enviar el email (${formatEmailSendError(emailResult.reason)}). Usuario: ${email} · Contraseña: ${parsed.data.password}`,
     };
   }
 
@@ -227,7 +228,7 @@ export async function inviteClinicMember(formData: FormData) {
     success: true,
     message: emailResult.sent
       ? `Invitación enviada a ${email} con usuario y contraseña. Revisá spam si no llega en unos minutos.`
-      : `Usuario creado para ${email}. No se pudo enviar el email (${emailResult.reason}). Usuario: ${email} · Contraseña: ${parsed.data.password}`,
+      : `Usuario creado para ${email}. No se pudo enviar el email (${formatEmailSendError(emailResult.reason)}). Usuario: ${email} · Contraseña: ${parsed.data.password}`,
   };
 }
 
@@ -416,7 +417,7 @@ export async function resendClinicMemberInviteEmail(memberId: string) {
   });
 
   if (!emailResult.sent) {
-    return { error: `No se pudo enviar el email: ${emailResult.reason}` };
+    return { error: `No se pudo enviar el email: ${formatEmailSendError(emailResult.reason)}` };
   }
 
   await recordAudit({

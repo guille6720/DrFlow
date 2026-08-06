@@ -76,11 +76,21 @@ async function sendViaSmtp(
   const pass = getSmtpPassword();
   const secure = process.env.SMTP_SECURE?.trim() === "true" || port === 465;
 
+  if (!user || !pass) {
+    return {
+      sent: false,
+      reason: "SMTP_USER o SMTP_PASSWORD no están configurados en Vercel.",
+    };
+  }
+
   const transporter = nodemailer.createTransport({
     host,
     port,
     secure,
-    auth: user && pass ? { user, pass } : undefined,
+    auth: { user, pass },
+    ...(port === 587 && !secure
+      ? { requireTLS: true, tls: { minVersion: "TLSv1.2" as const } }
+      : {}),
   });
 
   try {
@@ -96,6 +106,22 @@ async function sendViaSmtp(
     const message = error instanceof Error ? error.message : "Error SMTP desconocido";
     return { sent: false, reason: message };
   }
+}
+
+/** Mensaje claro para administradores cuando falla el envío. */
+export function formatEmailSendError(reason: string): string {
+  const lower = reason.toLowerCase();
+  if (lower.includes("535") || lower.includes("authentication failed")) {
+    return [
+      "El servidor de correo rechazó usuario o contraseña SMTP.",
+      "En Vercel revisá SMTP_USER (email completo, ej. noreply@opusorg.com) y SMTP_PASSWORD.",
+      "Copiá los mismos datos que Supabase → Authentication → SMTP Settings (Hostinger: puerto 465, SMTP_SECURE=true).",
+    ].join(" ");
+  }
+  if (lower.includes("email_from no configurado") || lower.includes("resend_api_key")) {
+    return "Falta configurar el envío de emails en Vercel (SMTP o RESEND_API_KEY). Ver .env.example.";
+  }
+  return reason.replace(/\s*Configurá RESEND_API_KEY.*$/i, "").trim();
 }
 
 export function getEmailConfigurationHint(): string {
