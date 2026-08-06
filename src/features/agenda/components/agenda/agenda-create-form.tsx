@@ -11,7 +11,7 @@ import { Select } from "@/components/ui/select";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { Appointment, Patient, Professional } from "@/types/database";
 
-type Props = {
+type SharedProps = {
   agenda: Pick<
     AgendaViewState,
     | "startAt"
@@ -32,39 +32,34 @@ type Props = {
   defaultDuration: number;
 };
 
-export function AgendaCreateForm({
+const patientOptionsMapper = (
+  patients: SharedProps["patients"]
+): Array<{
+  id: string;
+  first_name: string;
+  last_name: string;
+  document_number: string;
+}> =>
+  patients.map((p) => ({
+    id: p.id,
+    first_name: p.first_name,
+    last_name: p.last_name,
+    document_number: p.document_number,
+  }));
+
+export function AgendaCreateFormTop({
   agenda,
   patients,
   professionals,
   locations,
   specialties,
-  appointments,
-  scheduleBlocks,
-  defaultDuration,
-}: Props) {
-  const {
-    startAt,
-    setStartAt,
-    formProfessionalId,
-    setFormProfessionalId,
-    error,
-    loading,
-    closeForm,
-    handleCreate,
-  } = agenda;
+}: Pick<SharedProps, "agenda" | "patients" | "professionals" | "locations" | "specialties">) {
+  const { formProfessionalId, setFormProfessionalId } = agenda;
 
   return (
     <Card title="Nuevo turno">
-      <form onSubmit={handleCreate} className="grid gap-4 sm:grid-cols-2">
-        <PatientSearchCombobox
-          patients={patients.map((p) => ({
-            id: p.id,
-            first_name: p.first_name,
-            last_name: p.last_name,
-            document_number: p.document_number,
-          }))}
-          required
-        />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <PatientSearchCombobox patients={patientOptionsMapper(patients)} required />
         <Select
           name="professional_id"
           label="Profesional"
@@ -89,6 +84,25 @@ export function AgendaCreateForm({
           options={specialties.map((s) => ({ value: s.id, label: s.name }))}
           placeholder="Opcional"
         />
+      </div>
+    </Card>
+  );
+}
+
+export function AgendaCreateFormBottom({
+  agenda,
+  appointments,
+  scheduleBlocks,
+  defaultDuration,
+}: Pick<
+  SharedProps,
+  "agenda" | "appointments" | "scheduleBlocks" | "defaultDuration"
+>) {
+  const { startAt, setStartAt, formProfessionalId, error, loading, closeForm } = agenda;
+
+  return (
+    <Card title="Fecha y confirmación">
+      <div className="grid gap-4 sm:grid-cols-2">
         <AppointmentDatetimePicker
           key={startAt || "new"}
           value={startAt}
@@ -117,7 +131,19 @@ export function AgendaCreateForm({
             Cancelar
           </Button>
         </div>
-      </form>
+      </div>
     </Card>
+  );
+}
+
+/** @deprecated Use AgendaCreateFormTop + AgendaCreateFormBottom in a single form wrapper. */
+export function AgendaCreateForm(props: SharedProps) {
+  const { handleCreate } = props.agenda;
+
+  return (
+    <form onSubmit={handleCreate} className="space-y-4">
+      <AgendaCreateFormTop {...props} />
+      <AgendaCreateFormBottom {...props} />
+    </form>
   );
 }

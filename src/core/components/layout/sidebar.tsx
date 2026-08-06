@@ -1,32 +1,79 @@
 "use client";
 
+import { Menu, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-context";
-import { SIDEBAR_NAV_ITEMS } from "@/core/components/layout/sidebar-nav-config";
 import {
-  Menu,
-  SidebarNavContent,
-  X,
-} from "@/core/components/layout/sidebar-nav-content";
+  isSidebarNavGroup,
+  SIDEBAR_NAV_ENTRIES,
+  type SidebarNavEntry,
+  type SidebarNavLink,
+} from "@/core/components/layout/sidebar-nav-config";
+import { SidebarNavContent } from "@/core/components/layout/sidebar-nav-content";
 import { hasPermission } from "@/core/permissions/roles";
 
 import { cn } from "@/shared/utils/cn";
 
 import { NAV_FLAG_BY_HREF } from "@/features/flags/lib/registry";
-import { filterNavByFeatureFlags } from "@/features/flags/lib/resolve";
+import { isFeatureFlagEnabled } from "@/features/flags/lib/resolve";
 import { useClinicFeatures } from "@/features/plugins/components/plugins/clinic-features-provider";
 
 import { NAV_PLUGIN_BY_FEATURE } from "@/plugins/registry";
-import { filterNavByPlugins } from "@/plugins/resolve";
+import { isPluginEnabled } from "@/plugins/resolve";
 import type { UserRole } from "@/types/database";
+
 export { FEATURE_NAV_ITEMS } from "@/features/_shared/nav";
 
 interface SidebarProps {
   clinicName?: string;
   role: UserRole | null;
   isSuperadmin?: boolean;
+}
+
+function filterNavLink(
+  item: SidebarNavLink,
+  role: UserRole | null,
+  isSuperadmin: boolean | undefined,
+  clinicFeatures: ReturnType<typeof useClinicFeatures>
+): boolean {
+  if (item.permission && !hasPermission(role, item.permission, isSuperadmin)) {
+    return false;
+  }
+
+  const pluginId = NAV_PLUGIN_BY_FEATURE[item.featureId];
+  if (pluginId && !isPluginEnabled(clinicFeatures.plugins, pluginId)) {
+    return false;
+  }
+
+  const flagId = NAV_FLAG_BY_HREF[item.href];
+  if (flagId && !isFeatureFlagEnabled(clinicFeatures, flagId)) {
+    return false;
+  }
+
+  return true;
+}
+
+function filterSidebarNavEntries(
+  entries: SidebarNavEntry[],
+  role: UserRole | null,
+  isSuperadmin: boolean | undefined,
+  clinicFeatures: ReturnType<typeof useClinicFeatures>
+): SidebarNavEntry[] {
+  return entries
+    .map((entry) => {
+      if (isSidebarNavGroup(entry)) {
+        const children = entry.children.filter((child) =>
+          filterNavLink(child, role, isSuperadmin, clinicFeatures)
+        );
+        if (children.length === 0) return null;
+        return { ...entry, children };
+      }
+
+      return filterNavLink(entry, role, isSuperadmin, clinicFeatures) ? entry : null;
+    })
+    .filter((entry): entry is SidebarNavEntry => entry != null);
 }
 
 export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
@@ -36,17 +83,9 @@ export function Sidebar({ clinicName, role, isSuperadmin }: SidebarProps) {
   const { hidden: desktopHidden, toggleHidden } = useDashboardSidebar();
   const clinicFeatures = useClinicFeatures();
 
-  const visibleItems = filterNavByFeatureFlags(
-    filterNavByPlugins(
-      SIDEBAR_NAV_ITEMS.filter((item) => {
-        if (!item.permission) return true;
-        return hasPermission(role, item.permission, isSuperadmin);
-      }),
-      clinicFeatures.plugins,
-      NAV_PLUGIN_BY_FEATURE
-    ),
-    clinicFeatures,
-    NAV_FLAG_BY_HREF
+  const visibleItems = useMemo(
+    () => filterSidebarNavEntries(SIDEBAR_NAV_ENTRIES, role, isSuperadmin, clinicFeatures),
+    [role, isSuperadmin, clinicFeatures]
   );
 
   function handleToggleSidebarHidden() {

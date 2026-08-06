@@ -10,7 +10,10 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 
-import { AgendaCreateForm } from "@/features/agenda/components/agenda/agenda-create-form";
+import {
+  AgendaCreateFormBottom,
+  AgendaCreateFormTop,
+} from "@/features/agenda/components/agenda/agenda-create-form";
 import { AgendaToolbar } from "@/features/agenda/components/agenda/agenda-toolbar";
 import { AppointmentRow, filterAppointmentsForDay } from "@/features/agenda/components/agenda/appointment-row";
 import { CalendarGrid } from "@/features/agenda/components/agenda/calendar-grid";
@@ -78,6 +81,7 @@ export function AgendaView({
     handleSlotClick,
     editingAppointment,
     setEditingAppointment,
+    handleCreate,
   } = agenda;
 
   const canManage = hasPermission(role, "manageAppointments", false);
@@ -136,38 +140,64 @@ export function AgendaView({
       <div className="space-y-4 p-4 sm:p-6">
         <AgendaToolbar agenda={agenda} professionals={professionals} specialties={specialties} />
 
-        <section aria-label="Calendario semanal">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-slate-200">
-              Semana del {format(weekDays[0], "d MMM", { locale: es })} al{" "}
-              {format(weekDays[weekDays.length - 1], "d MMM yyyy", { locale: es })}
-            </h2>
-            {canManage ? (
-              <p className="text-xs text-slate-400">Hacé clic en un horario libre para dar un turno</p>
-            ) : null}
-          </div>
-          <CalendarGrid
-            weekDays={weekDays}
-            appointments={filtered}
-            blocks={scheduleBlocks}
-            onSlotClick={canManage ? handleCalendarSlotClick : undefined}
-          />
-        </section>
-
         {showForm && canManage ? (
-          <div ref={createFormRef} id="agenda-create-form">
-            <AgendaCreateForm
+          <form
+            id="agenda-create-form"
+            onSubmit={handleCreate}
+            className="space-y-4"
+          >
+            <div ref={createFormRef}>
+              <AgendaCreateFormTop
+                agenda={agenda}
+                patients={patients}
+                professionals={professionals}
+                locations={locations}
+                specialties={specialties}
+              />
+            </div>
+
+            <section aria-label="Calendario semanal">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold text-slate-200">
+                  Semana del {format(weekDays[0], "d MMM", { locale: es })} al{" "}
+                  {format(weekDays[weekDays.length - 1], "d MMM yyyy", { locale: es })}
+                </h2>
+                <p className="text-xs text-slate-400">Hacé clic en un horario libre para elegir la hora</p>
+              </div>
+              <CalendarGrid
+                weekDays={weekDays}
+                appointments={filtered}
+                blocks={scheduleBlocks}
+                onSlotClick={handleCalendarSlotClick}
+              />
+            </section>
+
+            <AgendaCreateFormBottom
               agenda={agenda}
-              patients={patients}
-              professionals={professionals}
-              locations={locations}
-              specialties={specialties}
               appointments={appointments}
               scheduleBlocks={scheduleBlocks}
               defaultDuration={defaultDuration}
             />
-          </div>
-        ) : null}
+          </form>
+        ) : (
+          <section aria-label="Calendario semanal">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold text-slate-200">
+                Semana del {format(weekDays[0], "d MMM", { locale: es })} al{" "}
+                {format(weekDays[weekDays.length - 1], "d MMM yyyy", { locale: es })}
+              </h2>
+              {canManage ? (
+                <p className="text-xs text-slate-400">Hacé clic en un horario libre para dar un turno</p>
+              ) : null}
+            </div>
+            <CalendarGrid
+              weekDays={weekDays}
+              appointments={filtered}
+              blocks={scheduleBlocks}
+              onSlotClick={canManage ? handleCalendarSlotClick : undefined}
+            />
+          </section>
+        )}
 
         {view === "month" ? (
           <MonthOverviewGrid
