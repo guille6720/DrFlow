@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   deactivateClinicMember,
   removeClinicMemberPermanently,
+  resendClinicMemberInviteEmail,
   updateClinicMemberPassword,
   updateClinicMemberProfile,
   updateClinicMemberRole,
@@ -17,6 +18,7 @@ export function useClinicTeamMemberPanel(member: EnrichedTeamMember | null) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -52,14 +54,28 @@ export function useClinicTeamMemberPanel(member: EnrichedTeamMember | null) {
     }
   }
 
-  async function runAction(id: string, action: () => Promise<{ error?: string }>) {
+  async function handleResendInviteEmail() {
+    if (!member) return;
+    setResendLoading(true);
+    setError(null);
+    setSuccess(null);
+    const result = await resendClinicMemberInviteEmail(member.id);
+    setResendLoading(false);
+    if (result.error) setError(result.error);
+    else setSuccess(result.message ?? "Mail reenviado.");
+  }
+
+  async function runAction(id: string, action: () => Promise<{ error?: string; success?: boolean; message?: string }>) {
     setActing(id);
     setError(null);
     setSuccess(null);
     const result = await action();
     setActing(null);
     if (result.error) setError(result.error);
-    else router.refresh();
+    else {
+      if (result.message) setSuccess(result.message);
+      router.refresh();
+    }
   }
 
   function handleRoleChange(role: UserRole) {
@@ -88,11 +104,13 @@ export function useClinicTeamMemberPanel(member: EnrichedTeamMember | null) {
   return {
     loading,
     passwordLoading,
+    resendLoading,
     acting,
     error,
     success,
     handleSubmitProfile,
     handleSubmitPassword,
+    handleResendInviteEmail,
     handleRoleChange,
     handleDeactivate,
     handleRemove,

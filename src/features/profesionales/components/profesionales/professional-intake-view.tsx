@@ -93,10 +93,12 @@ export function ProfessionalIntakeView({
               acting={memberPanel.acting}
               loading={memberPanel.loading}
               passwordLoading={memberPanel.passwordLoading}
+              resendLoading={memberPanel.resendLoading}
               error={memberPanel.error}
               success={memberPanel.success}
               onSubmitProfile={memberPanel.handleSubmitProfile}
               onSubmitPassword={memberPanel.handleSubmitPassword}
+              onResendInviteEmail={memberPanel.handleResendInviteEmail}
               onRoleChange={memberPanel.handleRoleChange}
               onDeactivate={memberPanel.handleDeactivate}
               onRemove={memberPanel.handleRemove}

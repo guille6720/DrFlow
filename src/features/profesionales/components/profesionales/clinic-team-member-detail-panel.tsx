@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Mail } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -27,10 +27,12 @@ type Props = {
   acting: string | null;
   loading: boolean;
   passwordLoading: boolean;
+  resendLoading: boolean;
   error: string | null;
   success: string | null;
   onSubmitProfile: (e: React.FormEvent<HTMLFormElement>) => void;
   onSubmitPassword: (e: React.FormEvent<HTMLFormElement>) => void;
+  onResendInviteEmail: () => void;
   onRoleChange: (role: UserRole) => void;
   onDeactivate: () => void;
   onRemove: () => void;
@@ -41,10 +43,12 @@ export function ClinicTeamMemberDetailPanel({
   acting,
   loading,
   passwordLoading,
+  resendLoading,
   error,
   success,
   onSubmitProfile,
   onSubmitPassword,
+  onResendInviteEmail,
   onRoleChange,
   onDeactivate,
   onRemove,
@@ -113,6 +117,19 @@ export function ClinicTeamMemberDetailPanel({
             guardarla y compartirla con el usuario.
           </p>
         ) : null}
+        <div className="mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            loading={resendLoading}
+            disabled={!member.initial_password}
+            onClick={onResendInviteEmail}
+          >
+            <Mail className="h-4 w-4" />
+            Reenviar mail con credenciales
+          </Button>
+        </div>
       </div>
 
       <form onSubmit={onSubmitProfile} className="space-y-4">

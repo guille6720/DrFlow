@@ -348,6 +348,94 @@ export async function updateClinicMemberPassword(memberId: string, formData: For
   return { success: true, message: "Contraseña actualizada y guardada para referencia del consultorio." };
 }
 
+export async function resendClinicMemberInviteEmail(memberId: string) {
+  const access = await requireStaffManager();
+  if (!access.ok) return { error: access.error };
+  const { clinicId, user } = access;
+
+  const idParsed = parseEntityId(memberId, "Miembro");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const supabase = await createClient();
+
+  const { data: target } = await supabase
+    .from("clinic_members")
+    .select("user_id, profiles(full_name, email)")
+    .eq("id", idParsed.data)
+    .eq("clinic_id", clinicId)
+    .single();
+
+  if (!target?.user_id) return { error: "Miembro no encontrado" };
+  if (target.user_id === user!.id) {
+    return { error: "No podés reenviarte credenciales a vos mismo." };
+  }
+
+  const profile = (() => {
+    const p = target.profiles as { full_name?: string; email?: string } | { full_name?: string; email?: string }[] | null;
+    return Array.isArray(p) ? p[0] : p;
+  })();
+
+  const email = profile?.email?.trim().toLowerCase();
+  if (!email) return { error: "El usuario no tiene email de acceso." };
+
+  const { data: invitation } = await supabase
+    .from("clinic_invitations")
+    .select("full_name, initial_password")
+    .eq("clinic_id", clinicId)
+    .ilike("email", email)
+    .maybeSingle();
+
+  const password = invitation?.initial_password?.trim();
+  if (!password) {
+    return {
+      error:
+        "No hay contraseña registrada para este usuario. Restablecela abajo y volvé a reenviar el mail.",
+    };
+  }
+
+  const { data: clinicRow } = await supabase
+    .from("clinics")
+    .select("name")
+    .eq("id", clinicId)
+    .maybeSingle();
+
+  const fullName =
+    profile?.full_name?.trim() || invitation?.full_name?.trim() || email;
+
+  const emailContent = buildClinicInviteEmailContent({
+    fullName,
+    clinicName: clinicRow?.name ?? "tu consultorio",
+    email,
+    password,
+  });
+
+  const emailResult = await sendTransactionalEmail({
+    to: email,
+    subject: emailContent.subject,
+    text: emailContent.text,
+  });
+
+  if (!emailResult.sent) {
+    return { error: `No se pudo enviar el email: ${emailResult.reason}` };
+  }
+
+  await recordAudit({
+    clinicId,
+    module: "settings",
+    entityType: "clinic_member",
+    entityId: idParsed.data,
+    action: "update",
+    metadata: { email, resent_invite: true, provider: emailResult.provider },
+  });
+
+  revalidatePath("/configuracion");
+  revalidatePath("/ingreso-profesionales");
+  return {
+    success: true,
+    message: `Credenciales reenviadas a ${email}. Revisá spam si no llega en unos minutos.`,
+  };
+}
+
 export async function revokeClinicInvitation(invitationId: string) {
   const access = await requireStaffManager();
   if (!access.ok) return { error: access.error };
