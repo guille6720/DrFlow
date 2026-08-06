@@ -17,7 +17,6 @@ import {
   ScrollText,
   Settings,
   Stethoscope,
-  UserPlus,
   Users,
 } from "lucide-react";
 
@@ -171,11 +170,12 @@ export const COMMAND_PALETTE_NAV: CommandPaletteItemDef[] = [
   { id: "nav-ayuda", label: "Ayuda / Manual", href: "/ayuda", group: "navegacion", icon: BookOpen },
   {
     id: "nav-ingreso-prof",
-    label: "Ingreso de profesionales",
+    label: "Medicos",
     href: "/ingreso-profesionales",
     group: "navegacion",
-    icon: UserPlus,
+    icon: Stethoscope,
     permission: "manageStaff",
+    keywords: ["medicos", "profesionales", "ingreso", "staff"],
   },
   {
     id: "nav-docs-admin",

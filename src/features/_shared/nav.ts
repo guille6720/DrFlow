@@ -24,6 +24,12 @@ export type FeatureNavItem = {
 /** Sidebar navigation — maps routes to feature modules (Phase 3). */
 export const FEATURE_NAV_ITEMS: FeatureNavItem[] = [
   { featureId: "dashboard", href: "/dashboard", label: "Dashboard", permission: null },
+  {
+    featureId: "profesionales",
+    href: "/ingreso-profesionales",
+    label: "Medicos",
+    permission: "manageStaff",
+  },
   { featureId: "agenda", href: "/agenda", label: "Agenda", permission: null },
   {
     featureId: "administracion",
@@ -39,12 +45,6 @@ export const FEATURE_NAV_ITEMS: FeatureNavItem[] = [
     href: "/secretaria/documentos",
     label: "Docs administrativos",
     permission: "manageAdminDocuments",
-  },
-  {
-    featureId: "profesionales",
-    href: "/ingreso-profesionales",
-    label: "Ingreso de profesionales",
-    permission: "manageStaff",
   },
   {
     featureId: "historias",

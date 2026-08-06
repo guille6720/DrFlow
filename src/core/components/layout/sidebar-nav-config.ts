@@ -15,7 +15,7 @@ import {
   Pill,
   ScrollText,
   Settings,
-  UserPlus,
+  Stethoscope,
   Users,
 } from "lucide-react";
 
@@ -33,7 +33,7 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
   "/pacientes": Users,
   "/caja": Banknote,
   "/secretaria/documentos": FolderOpen,
-  "/ingreso-profesionales": UserPlus,
+  "/ingreso-profesionales": Stethoscope,
   "/historias": FileText,
   "/datos": ArrowDownUp,
   "/recetas": ScrollText,
