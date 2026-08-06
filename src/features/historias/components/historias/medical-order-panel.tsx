@@ -7,7 +7,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { voidMedicalOrder } from "@/features/recetas/actions/medical-orders";
+import { MedicalOrderActions } from "@/features/recetas/components/recetas/medical-order-actions";
 import { MedicalOrderForm } from "@/features/recetas/components/recetas/medical-order-form";
+import { buildMedicalOrderDocumentData } from "@/features/recetas/utils/build-medical-order-document-data";
+import { orderTypeLabel } from "@/features/recetas/utils/order-type-label";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,23 +21,40 @@ interface Professional {
   license_number?: string | null;
   display_name?: string | null;
   profiles?: { full_name: string } | null;
+  specialties?: { name?: string | null } | null;
+}
+
+interface PatientInfo {
+  id: string;
+  first_name: string;
+  last_name: string;
+  document_number: string;
+  birth_date?: string | null;
+  insurance_provider?: string | null;
+  insurance_number?: string | null;
 }
 
 interface Props {
   orders: MedicalOrder[];
-  patientId: string;
+  patient: PatientInfo;
   clinicalRecordId: string;
   professionals: Professional[];
   defaultProfessionalId?: string;
+  clinic: {
+    name: string;
+    address?: string | null;
+    phone?: string | null;
+  };
   canIssue: boolean;
 }
 
 export function MedicalOrderPanel({
   orders,
-  patientId,
+  patient,
   clinicalRecordId,
   professionals,
   defaultProfessionalId,
+  clinic,
   canIssue,
 }: Props) {
   const router = useRouter();
@@ -62,7 +82,7 @@ export function MedicalOrderPanel({
       {showForm && canIssue && (
         <div className="mb-6 border-b border-slate-100 pb-6">
           <MedicalOrderForm
-            patientId={patientId}
+            patientId={patient.id}
             clinicalRecordId={clinicalRecordId}
             professionals={professionals}
             defaultProfessionalId={defaultProfessionalId}
@@ -75,48 +95,54 @@ export function MedicalOrderPanel({
         <p className="text-sm text-slate-500">No hay órdenes ni derivaciones en esta consulta.</p>
       ) : (
         <ul className="space-y-3">
-          {orders.map((order) => (
-            <li key={order.id} className="rounded-xl border border-slate-200 p-4">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-                    {(order as MedicalOrder & { order_type?: string }).order_type === "referral"
-                      ? "Derivación"
-                      : (order as MedicalOrder & { order_type?: string }).order_type === "pami_form"
-                        ? "Planilla PAMI"
-                        : "Estudios"}
+          {orders.map((order) => {
+            const typedOrder = order as MedicalOrder & { order_type?: string };
+            const documentData = buildMedicalOrderDocumentData(
+              typedOrder,
+              patient,
+              clinic,
+              professionals
+            );
+            const isVoid = order.status === "void";
+
+            return (
+              <li key={order.id} className="rounded-xl border border-slate-200 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                      {orderTypeLabel(typedOrder.order_type)}
+                    </span>
+                    <p className="text-xs text-slate-500">
+                      {format(new Date(order.issued_at), "PPp", { locale: es })}
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      isVoid ? "bg-red-100 text-red-800" : "bg-emerald-100 text-emerald-800"
+                    }`}
+                  >
+                    {isVoid ? "Anulada" : "Emitida"}
                   </span>
-                  <p className="text-xs text-slate-500">
-                    {format(new Date(order.issued_at), "PPp", { locale: es })}
-                  </p>
                 </div>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                    order.status === "void"
-                      ? "bg-red-100 text-red-800"
-                      : "bg-emerald-100 text-emerald-800"
-                  }`}
-                >
-                  {order.status === "void" ? "Anulada" : "Emitida"}
-                </span>
-              </div>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-slate-800">{order.order_text}</p>
-              {order.notes && (
-                <p className="mt-2 text-xs text-slate-600">Indicaciones: {order.notes}</p>
-              )}
-              {canIssue && order.status !== "void" && (
-                <Button
-                  className="mt-3"
-                  size="sm"
-                  variant="outline"
-                  loading={acting === order.id}
-                  onClick={() => handleVoid(order.id)}
-                >
-                  Anular
-                </Button>
-              )}
-            </li>
-          ))}
+                <p className="mt-2 whitespace-pre-wrap text-sm text-slate-800">{order.order_text}</p>
+                {order.notes ? (
+                  <p className="mt-2 text-xs text-slate-600">Indicaciones: {order.notes}</p>
+                ) : null}
+                <MedicalOrderActions data={documentData} disabled={isVoid} />
+                {canIssue && !isVoid ? (
+                  <Button
+                    className="mt-2"
+                    size="sm"
+                    variant="outline"
+                    loading={acting === order.id}
+                    onClick={() => handleVoid(order.id)}
+                  >
+                    Anular
+                  </Button>
+                ) : null}
+              </li>
+            );
+          })}
         </ul>
       )}
     </Card>

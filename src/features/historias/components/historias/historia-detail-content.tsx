@@ -150,10 +150,15 @@ export function HistoriaDetailContent({
               />
               <MedicalOrderPanel
                 orders={medicalOrders as never[]}
-                patientId={patient.id}
+                patient={patient}
                 clinicalRecordId={id}
                 professionals={professionalList}
                 defaultProfessionalId={record.professional_id}
+                clinic={{
+                  name: clinic.name,
+                  address: clinic.address,
+                  phone: clinic.phone,
+                }}
                 canIssue={canIssue}
               />
             </>

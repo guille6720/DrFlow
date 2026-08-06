@@ -17,6 +17,11 @@ import { chartFocusForTab } from "@/features/pacientes/utils/patient-workspace-t
 
 type Props = {
   clinicId: string;
+  clinic: {
+    name: string;
+    address?: string | null;
+    phone?: string | null;
+  };
   patient: PatientChartPatient & {
     medical_history: string | null;
     allergies: string | null;
@@ -34,6 +39,7 @@ type Props = {
 
 export async function PatientWorkspaceContent({
   clinicId,
+  clinic,
   patient,
   patientRecord,
   patientId,
@@ -117,7 +123,14 @@ export async function PatientWorkspaceContent({
 
   const ordenesPanel =
     initialTab === "ordenes" ? (
-      <PatientWorkspaceOrdersPanel ehr={workspace.ehr} patientId={patientId} canIssue={canIssue} />
+      <PatientWorkspaceOrdersPanel
+        ehr={workspace.ehr}
+        patientId={patientId}
+        patient={patient}
+        clinic={clinic}
+        professionals={workspace.professionals}
+        canIssue={canIssue}
+      />
     ) : undefined;
 
   const timelinePanel =

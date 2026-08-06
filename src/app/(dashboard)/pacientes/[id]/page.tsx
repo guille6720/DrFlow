@@ -40,7 +40,7 @@ export default async function PacienteDetailPage({
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { role, isSuperadmin, clinic } = await getActiveClinic();
   const supabase = await createClient();
 
   if (!clinicId) notFound();
@@ -98,6 +98,11 @@ export default async function PacienteDetailPage({
           <Suspense fallback={<PatientWorkspaceSkeleton />}>
             <PatientWorkspaceContent
               clinicId={clinicId}
+              clinic={{
+                name: clinic?.name ?? "Consultorio",
+                address: clinic?.address ?? null,
+                phone: clinic?.phone ?? null,
+              }}
               patient={patient}
               patientRecord={patient}
               patientId={id}

@@ -15,11 +15,13 @@ import Link from "next/link";
 import { buildWhatsAppShareUrl, buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 
 import { ExportPrescriptionPdfButton } from "@/features/recetas/components/recetas/export-prescription-pdf-button";
+import { MedicalOrderActions } from "@/features/recetas/components/recetas/medical-order-actions";
 import type {
   PrescriptionsOrdersPatient,
   PrescriptionsOrdersPatientPrescription,
 } from "@/features/recetas/components/recetas/prescriptions-orders-types";
 import { SharePrescriptionButtons } from "@/features/recetas/components/recetas/share-prescription-buttons";
+import { buildMedicalOrderDocumentData } from "@/features/recetas/utils/build-medical-order-document-data";
 import { orderTypeLabel } from "@/features/recetas/utils/order-type-label";
 
 import { Badge } from "@/components/ui/badge";
@@ -93,7 +95,11 @@ export function PrescriptionsOrdersPatientSidebar({
                 ) : null}
               </li>
             ))}
-            {patientOrders.map((order) => (
+            {patientOrders.map((order) => {
+              const documentData = buildMedicalOrderDocumentData(order, patient, clinic, []);
+              const isVoid = order.status === "void";
+
+              return (
               <li key={`ord-${order.id}`} className="rounded-xl border border-slate-200 p-3 text-sm">
                 <div className="flex flex-wrap items-center gap-2">
                   <FileText className="h-3.5 w-3.5 text-blue-600" />
@@ -110,6 +116,7 @@ export function PrescriptionsOrdersPatientSidebar({
                 <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-slate-800">
                   {order.order_text}
                 </p>
+                <MedicalOrderActions data={documentData} disabled={isVoid} />
                 {order.status !== "void" && patient.phone ? (
                   <Button
                     type="button"
@@ -135,7 +142,8 @@ export function PrescriptionsOrdersPatientSidebar({
                   </Button>
                 ) : null}
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
       </Card>
