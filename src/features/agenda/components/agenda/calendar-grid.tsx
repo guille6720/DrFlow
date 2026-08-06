@@ -137,9 +137,27 @@ const CalendarSlotCell = memo(function CalendarSlotCell({
       className={cn(
         "relative min-h-[28px] border-l border-slate-700/50 bg-slate-800/60 p-0.5 transition-colors",
         blocked && "bg-red-950/40",
-        !blocked && dayAppts.length === 0 && onSlotClick && "cursor-pointer hover:bg-slate-700/80"
+        !blocked && dayAppts.length === 0 && onSlotClick && "cursor-pointer hover:bg-teal-950/30 hover:ring-1 hover:ring-teal-500/40"
       )}
       onClick={handleClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleClick();
+        }
+      }}
+      role={!blocked && dayAppts.length === 0 && onSlotClick ? "button" : undefined}
+      tabIndex={!blocked && dayAppts.length === 0 && onSlotClick ? 0 : undefined}
+      title={
+        !blocked && dayAppts.length === 0 && onSlotClick
+          ? `Dar turno el ${format(day, "d/M")} a las ${time}`
+          : undefined
+      }
+      aria-label={
+        !blocked && dayAppts.length === 0 && onSlotClick
+          ? `Dar turno el ${format(day, "d/M")} a las ${time}`
+          : undefined
+      }
     >
       {blocked && dayAppts.length === 0 ? (
         <span className="block truncate px-1 text-[9px] text-red-400/90">Bloqueo</span>

@@ -2,10 +2,10 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
@@ -20,7 +20,6 @@ import { useAgendaView } from "@/features/agenda/hooks/use-agenda-view";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
 import type { Appointment, Clinic, Patient, Professional, UserRole } from "@/types/database";
 
 interface AgendaPageProps {
@@ -107,6 +106,22 @@ export function AgendaView({
     setEditingAppointment(null);
   }, [setEditingAppointment]);
 
+  const createFormRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showForm && createFormRef.current) {
+      createFormRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [showForm]);
+
+  const handleCalendarSlotClick = useCallback(
+    (day: Date, time: string) => {
+      if (!canManage) return;
+      handleSlotClick(day, time);
+    },
+    [canManage, handleSlotClick]
+  );
+
   return (
     <>
       <Header
@@ -121,51 +136,60 @@ export function AgendaView({
       <div className="space-y-4 p-4 sm:p-6">
         <AgendaToolbar agenda={agenda} professionals={professionals} specialties={specialties} />
 
-        {showForm ? (
-          <AgendaCreateForm
-            agenda={agenda}
-            patients={patients}
-            professionals={professionals}
-            locations={locations}
-            specialties={specialties}
-            appointments={appointments}
-            scheduleBlocks={scheduleBlocks}
-            defaultDuration={defaultDuration}
-          />
-        ) : null}
-
-        {filtered.length === 0 && view === "day" ? (
-          <EmptyState
-            icon={Calendar}
-            title="No hay turnos en este período"
-            description="Creá un turno o ajustá los filtros para ver más resultados."
-            action={
-              <Button onClick={handleOpenNewAppointment}>
-                <Plus className="h-4 w-4" />
-                Nuevo turno
-              </Button>
-            }
-          />
-        ) : view === "week" ? (
+        <section aria-label="Calendario semanal">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-slate-200">
+              Semana del {format(weekDays[0], "d MMM", { locale: es })} al{" "}
+              {format(weekDays[weekDays.length - 1], "d MMM yyyy", { locale: es })}
+            </h2>
+            {canManage ? (
+              <p className="text-xs text-slate-400">Hacé clic en un horario libre para dar un turno</p>
+            ) : null}
+          </div>
           <CalendarGrid
             weekDays={weekDays}
             appointments={filtered}
             blocks={scheduleBlocks}
-            onSlotClick={handleSlotClick}
+            onSlotClick={canManage ? handleCalendarSlotClick : undefined}
           />
-        ) : view === "month" ? (
+        </section>
+
+        {showForm && canManage ? (
+          <div ref={createFormRef} id="agenda-create-form">
+            <AgendaCreateForm
+              agenda={agenda}
+              patients={patients}
+              professionals={professionals}
+              locations={locations}
+              specialties={specialties}
+              appointments={appointments}
+              scheduleBlocks={scheduleBlocks}
+              defaultDuration={defaultDuration}
+            />
+          </div>
+        ) : null}
+
+        {view === "month" ? (
           <MonthOverviewGrid
             monthDate={currentDate}
             appointments={filtered}
             onDayClick={handleDayClick}
           />
-        ) : (
+        ) : view === "day" ? (
           <Card
             title={format(currentDate, "EEEE d 'de' MMMM", { locale: es })}
             className="border-slate-600/80 bg-slate-800/95 [&_h3]:text-slate-100 [&_.font-medium]:text-slate-50"
           >
             {dayAppointments.length === 0 ? (
-              <p className="text-sm text-slate-400">Sin turnos este día.</p>
+              <div className="space-y-3">
+                <p className="text-sm text-slate-400">Sin turnos este día.</p>
+                {canManage ? (
+                  <Button size="sm" onClick={handleOpenNewAppointment}>
+                    <Plus className="h-4 w-4" />
+                    Nuevo turno
+                  </Button>
+                ) : null}
+              </div>
             ) : (
               <ul className="divide-y divide-slate-700/80">
                 {dayAppointments.map((appt) => (
@@ -181,7 +205,7 @@ export function AgendaView({
               </ul>
             )}
           </Card>
-        )}
+        ) : null}
 
         {bookingSlug ? (
           <p className="text-sm text-slate-400">
