@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { PrescriptionPhysicianAssist } from "@/features/ia/components/clinical-workflow/prescription-physician-assist";
 import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
+import { PrescriptionDiagnosisFields } from "@/features/recetas/components/recetas/prescription-diagnosis-fields";
 import { PrescriptionMedicationsSection } from "@/features/recetas/components/recetas/prescription-medications-section";
 import { PrescriptionPharmacologyPicker } from "@/features/recetas/components/recetas/prescription-pharmacology-picker";
 import { usePrescriptionForm } from "@/features/recetas/hooks/use-prescription-form";
@@ -52,8 +53,10 @@ export function PrescriptionForm({
   const [alertsReady, setAlertsReady] = useState(true);
 
   const {
-    cie10Ref,
-    diagnosisTextRef,
+    diagnosisText,
+    setDiagnosisText,
+    cie10,
+    setCie10,
     medications,
     setMedications,
     error,
@@ -69,6 +72,8 @@ export function PrescriptionForm({
     patientId,
     clinicalRecordId,
     initialMedications,
+    diagnosisDefault,
+    cie10Default,
     onSuccess,
   });
 
@@ -123,13 +128,11 @@ export function PrescriptionForm({
             { value: "duplicado", label: "Duplicado (psicotrópicos)" },
           ]}
         />
-        <Input
-          ref={cie10Ref}
-          name="diagnosis_cie10"
-          label="Diagnóstico CIE-10"
-          required
-          defaultValue={cie10Default}
-          placeholder="Ej: I10, J06.9"
+        <PrescriptionDiagnosisFields
+          diagnosisText={diagnosisText}
+          cie10={cie10}
+          onDiagnosisTextChange={setDiagnosisText}
+          onCie10Change={setCie10}
         />
         <Input
           name="patient_insurance"
@@ -137,16 +140,6 @@ export function PrescriptionForm({
           defaultValue={patientInsurance ?? ""}
           placeholder="Opcional"
         />
-        <div className="sm:col-span-2">
-          <Input
-            ref={diagnosisTextRef}
-            name="diagnosis_text"
-            label="Diagnóstico (texto)"
-            required
-            defaultValue={diagnosisDefault}
-            placeholder="Ej: Hipertensión arterial esencial"
-          />
-        </div>
         <Input name="validity_days" label="Vigencia (días)" type="number" defaultValue={30} min={1} max={365} />
       </div>
 

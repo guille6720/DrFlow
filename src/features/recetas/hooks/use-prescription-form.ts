@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import { issuePrescription, savePrescriptionDraft } from "@/features/recetas/actions/prescriptions";
 import { appendPrescriptionMedication, emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
@@ -13,6 +13,8 @@ type Options = {
   patientId: string;
   clinicalRecordId?: string;
   initialMedications?: PrescriptionMedication[];
+  diagnosisDefault?: string;
+  cie10Default?: string;
   onSuccess?: () => void;
 };
 
@@ -20,11 +22,13 @@ export function usePrescriptionForm({
   patientId,
   clinicalRecordId,
   initialMedications,
+  diagnosisDefault = "",
+  cie10Default = "",
   onSuccess,
 }: Options) {
   const router = useRouter();
-  const cie10Ref = useRef<HTMLInputElement>(null);
-  const diagnosisTextRef = useRef<HTMLInputElement>(null);
+  const [diagnosisText, setDiagnosisText] = useState(diagnosisDefault);
+  const [cie10, setCie10] = useState(cie10Default);
   const [medications, setMedications] = useState<PrescriptionMedication[]>(
     initialMedications && initialMedications.length > 0
       ? initialMedications
@@ -56,10 +60,8 @@ export function usePrescriptionForm({
   }
 
   function handlePathologySelect(pathology: PathologySearchResult) {
-    if (cie10Ref.current) cie10Ref.current.value = pathology.cie10_code;
-    if (diagnosisTextRef.current) {
-      diagnosisTextRef.current.value = pathology.name;
-    }
+    setCie10(pathology.cie10_code);
+    setDiagnosisText(pathology.name);
   }
 
   async function handleSubmit(issue: boolean) {
@@ -99,8 +101,10 @@ export function usePrescriptionForm({
   }
 
   return {
-    cie10Ref,
-    diagnosisTextRef,
+    diagnosisText,
+    setDiagnosisText,
+    cie10,
+    setCie10,
     medications,
     setMedications,
     error,
