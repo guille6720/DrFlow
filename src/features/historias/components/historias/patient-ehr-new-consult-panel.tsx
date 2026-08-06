@@ -161,6 +161,7 @@ export function PatientEhrNewConsultPanel({
             ref={diagnosisRef}
             label="Diagnóstico"
             rows={2}
+            voiceInput
             value={diagnosis}
             onChange={(e) => setDiagnosis(e.target.value)}
             placeholder="Diagnóstico principal o presuntivo"
@@ -173,6 +174,7 @@ export function PatientEhrNewConsultPanel({
             ref={treatmentRef}
             label="Tratamiento"
             rows={2}
+            voiceInput
             value={treatment}
             onChange={(e) => setTreatment(e.target.value)}
             placeholder="Medicación, indicaciones y plan terapéutico"
@@ -185,6 +187,7 @@ export function PatientEhrNewConsultPanel({
             ref={vitalsRef}
             label="Signos vitales"
             rows={2}
+            voiceInput
             value={vitals}
             onChange={(e) => setVitals(e.target.value)}
             placeholder="TA, FC, FR, T°, Sat O₂, peso..."

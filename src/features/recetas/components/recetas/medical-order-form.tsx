@@ -144,6 +144,7 @@ export function MedicalOrderForm({
         name="notes"
         label="Indicaciones para el paciente"
         rows={2}
+        voiceInput
         placeholder="Ayuno, preparación, turno en PAMI..."
       />
       {error && <p className="text-sm text-red-600">{error}</p>}
