@@ -89,3 +89,13 @@ export function getSalesWhatsAppPhone(): string | null {
   // Número comercial DrFlow (AR). Override con NEXT_PUBLIC_SALES_WHATSAPP en Vercel.
   return "5491152591607";
 }
+
+export const DRFLOW_SUPPORT_URL = "https://soporte.opusorg.com.ar";
+
+export function formatWhatsAppDisplay(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("549") && digits.length >= 12) {
+    return `+54 9 ${digits.slice(3, 5)} ${digits.slice(5, 9)}-${digits.slice(9)}`;
+  }
+  return phone;
+}

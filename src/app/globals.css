@@ -129,6 +129,14 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-marketing :is(.text-slat
   color: #94a3b8 !important;
 }
 
+.drflow-marketing-site {
+  scroll-behavior: smooth;
+}
+
+.drflow-marketing-site .drflow-ui-button.border-slate-600 {
+  border-color: rgb(71 85 105);
+}
+
 .drflow-sidebar-gradient {
   background: linear-gradient(180deg, #0f172a 0%, #1e293b 55%, #0f172a 100%);
 }
