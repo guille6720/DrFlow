@@ -65,7 +65,7 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
           .eq("clinic_id", clinicId),
         supabase
           .from("clinic_invitations")
-          .select("id, email, full_name, role, status, created_at")
+          .select("id, email, full_name, role, status, created_at, initial_password")
           .eq("clinic_id", clinicId)
           .order("created_at", { ascending: false }),
         getCachedActiveBookingSlug(clinicId),

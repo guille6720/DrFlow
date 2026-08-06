@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   deactivateClinicMember,
   removeClinicMemberPermanently,
+  updateClinicMemberPassword,
   updateClinicMemberProfile,
   updateClinicMemberRole,
 } from "@/lib/actions/invitations";
@@ -15,6 +16,7 @@ import type { UserRole } from "@/types/database";
 export function useClinicTeamMemberPanel(member: EnrichedTeamMember | null) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -30,6 +32,22 @@ export function useClinicTeamMemberPanel(member: EnrichedTeamMember | null) {
     if (result.error) setError(result.error);
     else {
       setSuccess(result.message ?? "Datos actualizados.");
+      router.refresh();
+    }
+  }
+
+  async function handleSubmitPassword(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!member) return;
+    setPasswordLoading(true);
+    setError(null);
+    setSuccess(null);
+    const result = await updateClinicMemberPassword(member.id, new FormData(e.currentTarget));
+    setPasswordLoading(false);
+    if (result.error) setError(result.error);
+    else {
+      setSuccess(result.message ?? "Contraseña actualizada.");
+      e.currentTarget.reset();
       router.refresh();
     }
   }
@@ -69,10 +87,12 @@ export function useClinicTeamMemberPanel(member: EnrichedTeamMember | null) {
 
   return {
     loading,
+    passwordLoading,
     acting,
     error,
     success,
     handleSubmitProfile,
+    handleSubmitPassword,
     handleRoleChange,
     handleDeactivate,
     handleRemove,

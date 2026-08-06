@@ -92,9 +92,11 @@ export function ProfessionalIntakeView({
               member={selectedMember}
               acting={memberPanel.acting}
               loading={memberPanel.loading}
+              passwordLoading={memberPanel.passwordLoading}
               error={memberPanel.error}
               success={memberPanel.success}
               onSubmitProfile={memberPanel.handleSubmitProfile}
+              onSubmitPassword={memberPanel.handleSubmitPassword}
               onRoleChange={memberPanel.handleRoleChange}
               onDeactivate={memberPanel.handleDeactivate}
               onRemove={memberPanel.handleRemove}
@@ -145,10 +147,12 @@ export function ProfessionalIntakeView({
             </Card>
           )}
 
-          <ProfessionalIntakeChecklistCard
-            showReference={showReference}
-            onToggleReference={() => setShowReference(!showReference)}
-          />
+          {!selectedMember ? (
+            <ProfessionalIntakeChecklistCard
+              showReference={showReference}
+              onToggleReference={() => setShowReference(!showReference)}
+            />
+          ) : null}
         </div>
       </div>
     </>

@@ -69,7 +69,7 @@ export default async function IngresoProfesionalesPage({
           .order("created_at"),
         supabase
           .from("clinic_invitations")
-          .select("email, full_name, status")
+          .select("email, full_name, status, initial_password")
           .eq("clinic_id", clinicId),
       ])
     : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }];

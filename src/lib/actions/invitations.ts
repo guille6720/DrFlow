@@ -97,6 +97,7 @@ export async function inviteClinicMember(formData: FormData) {
       role: parsed.data.role as UserRole,
       invited_by: user!.id,
       status: "pending",
+      initial_password: parsed.data.password,
     },
     { onConflict: "clinic_id,email" }
   );
@@ -278,6 +279,73 @@ export async function updateClinicMemberProfile(memberId: string, formData: Form
   revalidatePath("/configuracion");
   revalidatePath("/ingreso-profesionales");
   return { success: true, message: "Datos del usuario actualizados." };
+}
+
+export async function updateClinicMemberPassword(memberId: string, formData: FormData) {
+  const access = await requireStaffManager();
+  if (!access.ok) return { error: access.error };
+  const { clinicId, user } = access;
+
+  const idParsed = parseEntityId(memberId, "Miembro");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const password = String(formData.get("password") ?? "").trim();
+  if (password.length < 8) {
+    return { error: "La contraseña debe tener al menos 8 caracteres." };
+  }
+
+  if (!hasAdminClient()) {
+    return { error: "No se puede actualizar la contraseña sin SUPABASE_SERVICE_ROLE_KEY." };
+  }
+
+  const supabase = await createClient();
+  const admin = createAdminClient();
+
+  const { data: target } = await supabase
+    .from("clinic_members")
+    .select("user_id, profiles(email)")
+    .eq("id", idParsed.data)
+    .eq("clinic_id", clinicId)
+    .single();
+
+  if (!target?.user_id) return { error: "Miembro no encontrado" };
+  if (target.user_id === user!.id) {
+    return { error: "Cambiá tu propia contraseña desde Configuración de cuenta." };
+  }
+
+  const profileEmail = (() => {
+    const p = target.profiles as { email?: string } | { email?: string }[] | null;
+    return Array.isArray(p) ? p[0]?.email : p?.email;
+  })();
+
+  const { error: authError } = await admin.auth.admin.updateUserById(target.user_id, {
+    password,
+  });
+  if (authError) return { error: authError.message };
+
+  if (profileEmail) {
+    await supabase
+      .from("clinic_invitations")
+      .update({ initial_password: password })
+      .eq("clinic_id", clinicId)
+      .ilike("email", profileEmail);
+  }
+
+  await recordAuditChange({
+    clinicId,
+    module: "settings",
+    entityType: "clinic_member",
+    entityId: idParsed.data,
+    action: "update",
+    before: {},
+    after: { password_reset: true },
+    keys: ["password_reset"],
+    metadata: { updated_by: user!.id, user_id: target.user_id },
+  });
+
+  revalidatePath("/configuracion");
+  revalidatePath("/ingreso-profesionales");
+  return { success: true, message: "Contraseña actualizada y guardada para referencia del consultorio." };
 }
 
 export async function revokeClinicInvitation(invitationId: string) {

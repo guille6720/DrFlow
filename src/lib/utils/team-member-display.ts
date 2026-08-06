@@ -1,6 +1,11 @@
 type ProfileLike = { full_name?: string | null; email?: string | null } | null | undefined;
 
-type InvitationLike = { email?: string | null; full_name?: string | null; status?: string | null };
+type InvitationLike = {
+  email?: string | null;
+  full_name?: string | null;
+  status?: string | null;
+  initial_password?: string | null;
+};
 
 export type EnrichedTeamMember = {
   id: string;
@@ -11,6 +16,8 @@ export type EnrichedTeamMember = {
   profiles?: { full_name: string; email: string } | null;
   display_name: string;
   display_email: string | null;
+  login_username: string | null;
+  initial_password: string | null;
 };
 
 function normalizeProfile(
@@ -57,6 +64,17 @@ export function buildInvitationNameMap(
   return map;
 }
 
+function buildInvitationPasswordMap(invitations: InvitationLike[]): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const inv of invitations) {
+    const email = inv.email?.trim().toLowerCase();
+    const password = inv.initial_password?.trim();
+    if (!email || !password) continue;
+    map.set(email, password);
+  }
+  return map;
+}
+
 type ProfessionalRef = { id: string; email?: string | null };
 
 /** Miembros que solo deben listarse como invitados (no admins ni fichas ya cargadas arriba). */
@@ -94,10 +112,12 @@ export function enrichTeamMembers<
   },
 >(members: T[], invitations: InvitationLike[]): Array<T & EnrichedTeamMember> {
   const invitationNameByEmail = buildInvitationNameMap(invitations);
+  const invitationPasswordByEmail = buildInvitationPasswordMap(invitations);
 
   return members.map((member) => {
     const profiles = normalizeProfile(member.profiles);
     const display_email = profiles?.email ?? null;
+    const emailKey = display_email?.trim().toLowerCase() ?? "";
     return {
       ...member,
       profiles,
@@ -107,6 +127,8 @@ export function enrichTeamMembers<
         display_email
       ),
       display_email,
+      login_username: display_email,
+      initial_password: emailKey ? (invitationPasswordByEmail.get(emailKey) ?? null) : null,
     };
   });
 }
