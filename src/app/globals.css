@@ -3436,3 +3436,47 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-medical-order-row.bg-whi
 html[data-ui-palette="cobalt"] .drflow-medical-order-row :is(.text-slate-800, .text-slate-700) {
   color: #0f172a !important;
 }
+
+/* Vista previa / impresión de órdenes médicas — isla clara siempre legible */
+.drflow-medical-order-doc {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.drflow-medical-order-doc-kicker,
+.drflow-medical-order-doc-footer {
+  color: #64748b !important;
+}
+
+.drflow-medical-order-doc-heading,
+.drflow-medical-order-doc-strong {
+  color: #0f172a !important;
+}
+
+.drflow-medical-order-doc-meta,
+.drflow-medical-order-doc-text {
+  color: #334155 !important;
+}
+
+.drflow-medical-order-doc-section-title {
+  color: #0f766e !important;
+}
+
+.drflow-medical-order-doc-body-box,
+.drflow-medical-order-doc-notes-box {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-medical-order-doc,
+html[data-ui-palette="cobalt"] .drflow-medical-order-doc :is(.drflow-medical-order-doc-body-box, .drflow-medical-order-doc-notes-box) {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-medical-order-doc,
+html:not([data-ui-style="2"]) .drflow-medical-order-doc {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}

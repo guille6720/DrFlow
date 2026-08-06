@@ -43,6 +43,7 @@ export function buildMedicalOrderDocumentHtml(data: MedicalOrderDocumentData): s
   const insurance = [data.patient.insurance_provider, data.patient.insurance_number]
     .filter(Boolean)
     .join(" — ");
+  const orderText = data.orderText?.trim() || "— Sin texto de solicitud —";
 
   return `
     <article class="order-doc">
@@ -76,7 +77,7 @@ export function buildMedicalOrderDocumentHtml(data: MedicalOrderDocumentData): s
 
       <section class="order-doc-block order-doc-body">
         <h2>Solicitud</h2>
-        <pre>${escapeHtml(data.orderText)}</pre>
+        <pre>${escapeHtml(orderText)}</pre>
       </section>
 
       ${
@@ -100,11 +101,12 @@ const PRINT_STYLES = `
     color: #0f172a;
     font-family: Georgia, "Times New Roman", serif;
     line-height: 1.45;
+    background: #ffffff;
   }
   .order-doc { max-width: 720px; margin: 0 auto; }
   .order-doc-header { text-align: center; border-bottom: 2px solid #0f766e; padding-bottom: 12px; margin-bottom: 20px; }
   .order-doc-kicker { margin: 0 0 4px; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: #64748b; }
-  .order-doc-header h1 { margin: 0; font-size: 22px; letter-spacing: 0.03em; }
+  .order-doc-header h1 { margin: 0; font-size: 22px; letter-spacing: 0.03em; color: #0f172a; }
   .order-doc-meta { margin: 8px 0 0; font-size: 12px; color: #475569; }
   .order-doc-block { margin-bottom: 18px; }
   .order-doc-block h2 {
@@ -114,8 +116,9 @@ const PRINT_STYLES = `
     text-transform: uppercase;
     color: #0f766e;
   }
-  .order-doc-block p { margin: 0 0 4px; font-size: 14px; }
-  .order-doc-body pre {
+  .order-doc-block p { margin: 0 0 4px; font-size: 14px; color: #0f172a; }
+  .order-doc-body pre,
+  .order-doc-block pre {
     margin: 0;
     white-space: pre-wrap;
     font-family: inherit;
@@ -125,6 +128,7 @@ const PRINT_STYLES = `
     border: 1px solid #cbd5e1;
     border-radius: 8px;
     background: #f8fafc;
+    color: #0f172a;
   }
   .order-doc-footer {
     margin-top: 28px;
@@ -135,15 +139,63 @@ const PRINT_STYLES = `
   }
 `;
 
-export function printMedicalOrderDocument(data: MedicalOrderDocumentData): void {
-  const html = buildMedicalOrderDocumentHtml(data);
-  const printWindow = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
-  if (!printWindow) return;
+function buildPrintDocumentHtml(data: MedicalOrderDocumentData): string {
+  const title = escapeHtml(medicalOrderDocumentHeading(data.orderType));
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8" /><title>${title}</title><style>${PRINT_STYLES}</style></head><body>${buildMedicalOrderDocumentHtml(data)}</body></html>`;
+}
 
-  printWindow.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8" /><title>${medicalOrderDocumentHeading(data.orderType)}</title><style>${PRINT_STYLES}</style></head><body>${html}</body></html>`);
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.onload = () => {
-    printWindow.print();
+function triggerPrint(targetWindow: Window): void {
+  const print = () => {
+    try {
+      targetWindow.focus();
+      targetWindow.print();
+    } catch {
+      /* popup may be blocked mid-flow */
+    }
   };
+  if (targetWindow.document.readyState === "complete") {
+    setTimeout(print, 150);
+  } else {
+    targetWindow.addEventListener("load", () => setTimeout(print, 150), { once: true });
+  }
+}
+
+function printViaIframe(docHtml: string): void {
+  const iframe = document.createElement("iframe");
+  iframe.setAttribute("aria-hidden", "true");
+  iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  document.body.appendChild(iframe);
+
+  const frameWindow = iframe.contentWindow;
+  const frameDoc = frameWindow?.document;
+  if (!frameWindow || !frameDoc) {
+    iframe.remove();
+    return;
+  }
+
+  frameDoc.open();
+  frameDoc.write(docHtml);
+  frameDoc.close();
+  triggerPrint(frameWindow);
+  setTimeout(() => iframe.remove(), 2000);
+}
+
+export function printMedicalOrderDocument(data: MedicalOrderDocumentData): void {
+  const docHtml = buildPrintDocumentHtml(data);
+  const printWindow = window.open("about:blank", "_blank");
+
+  if (!printWindow) {
+    printViaIframe(docHtml);
+    return;
+  }
+
+  printWindow.document.open();
+  printWindow.document.write(docHtml);
+  printWindow.document.close();
+  triggerPrint(printWindow);
 }
