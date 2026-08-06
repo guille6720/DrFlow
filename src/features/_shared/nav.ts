@@ -59,12 +59,6 @@ export const FEATURE_NAV_ITEMS: FeatureNavItem[] = [
     label: "Recetas y órdenes",
     permission: "issuePrescriptions",
   },
-  {
-    featureId: "pharmacology",
-    href: "/herramientas/farmacologia",
-    label: "Guía farmacológica",
-    permission: "viewPharmacology",
-  },
   { featureId: "pami", href: "/guia-pami", label: "Guía cabecera PAMI", permission: null },
   {
     featureId: "pami",
@@ -72,7 +66,6 @@ export const FEATURE_NAV_ITEMS: FeatureNavItem[] = [
     label: "Planillas PAMI",
     permission: "issuePrescriptions",
   },
-  { featureId: "agenda", href: "/recordatorios", label: "Recordatorios", permission: null },
   { featureId: "reportes", href: "/reportes", label: "Reportes", permission: "viewReports" },
   { featureId: "core", href: "/ayuda", label: "Ayuda / Manual", permission: null },
   {
