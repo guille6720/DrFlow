@@ -35,13 +35,18 @@ export default async function TrialExpiradoPage() {
             clínicas y recetas, contactanos para activar tu plan.
           </p>
           <div className="mt-6 flex flex-col gap-2">
-            <Link href="/configuracion">
+            <Link href="/planes">
               <Button type="button" className="w-full">
+                Ver planes y activar
+              </Button>
+            </Link>
+            <Link href="/configuracion">
+              <Button type="button" variant="outline" className="w-full">
                 Ir a configuración
               </Button>
             </Link>
             <Link href="/ayuda">
-              <Button type="button" variant="outline" className="w-full">
+              <Button type="button" variant="ghost" className="w-full text-slate-600">
                 Ayuda / manual
               </Button>
             </Link>

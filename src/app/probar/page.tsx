@@ -116,6 +116,10 @@ export default function ProbarPage() {
           <Link href="/login" className="text-blue-700 hover:underline">
             Iniciar sesión
           </Link>
+          {" · "}
+          <Link href="/planes" className="text-blue-700 hover:underline">
+            Ver planes
+          </Link>
         </p>
       </main>
     </div>

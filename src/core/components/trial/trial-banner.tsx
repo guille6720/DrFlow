@@ -39,10 +39,10 @@ export function TrialBanner({ trialEndsAt, daysRemaining }: TrialBannerProps) {
           (hasta el {endLabel}).
         </p>
         <Link
-          href="/configuracion"
+          href="/planes"
           className="font-medium underline underline-offset-2 hover:no-underline"
         >
-          Ver opciones
+          Ver planes
         </Link>
       </div>
     </div>

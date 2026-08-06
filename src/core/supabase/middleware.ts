@@ -78,6 +78,7 @@ export async function updateSession(request: NextRequest) {
     path === "/" ||
     path === "/demo" ||
     path === "/probar" ||
+    path === "/planes" ||
     path === "/onboarding" ||
     path.startsWith("/auth/");
 
