@@ -1,19 +1,16 @@
-import { ChevronLeft, ChevronRight, Plus, Stethoscope, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
 import Link from "next/link";
 
 import { PatientsListCards } from "@/features/pacientes";
-import {
-  buildPacientesPageQuery,
-  type PacientesPageData,
-  resolvePacientesClearHref,
-} from "@/features/pacientes/server/load-pacientes-page";
+import { PacientesSearchForm } from "@/features/pacientes/components/pacientes/pacientes-search-form";
+import type { PacientesPageData } from "@/features/pacientes/server/load-pacientes-page";
+import { buildPacientesPageQuery } from "@/features/pacientes/utils/pacientes-page-url";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ListPagination, ListPaginationLabel } from "@/components/ui/list-pagination";
-import { ProminentSearchForm } from "@/components/ui/prominent-search-form";
 import { SectorHero } from "@/components/ui/sector-hero";
 
 type Props = PacientesPageData & {
@@ -36,7 +33,6 @@ export function PacientesPageContent({
   cobertura,
   canIssuePrescriptions,
 }: Props) {
-  const clearHref = resolvePacientesClearHref(q, cobertura, patologia);
   const hasSearch = Boolean(q || patologia);
 
   return (
@@ -70,29 +66,10 @@ export function PacientesPageContent({
         ) : null}
       </div>
 
-      <ProminentSearchForm
-        action="/pacientes"
-        placeholder="Apellido, nombre o DNI… (una letra filtra por apellido)"
-        defaultValue={q}
-        submitLabel="Buscar"
-        clearHref={clearHref}
-        hiddenFields={
-          cobertura === "pami" ? <input type="hidden" name="cobertura" value="pami" /> : undefined
-        }
-        extraFields={
-          <div className="relative min-w-[200px] flex-1">
-            <Stethoscope className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-amber-600" />
-            <input
-              key={patologia || "patologia-empty"}
-              name="patologia"
-              type="search"
-              autoComplete="off"
-              defaultValue={patologia}
-              placeholder="Patología o diagnóstico en historias…"
-              className="drflow-ui-input drflow-prominent-search-input w-full rounded-xl border-2 border-amber-300/90 bg-white py-2.5 pl-11 pr-3 text-sm font-medium text-slate-900 shadow-inner placeholder:font-normal placeholder:text-slate-400 focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-400/35"
-            />
-          </div>
-        }
+      <PacientesSearchForm
+        q={q}
+        patologia={patologia}
+        cobertura={cobertura}
         trailing={
           <>
             <Link href={cobertura === "pami" ? "/pacientes" : "/pacientes?cobertura=pami"}>

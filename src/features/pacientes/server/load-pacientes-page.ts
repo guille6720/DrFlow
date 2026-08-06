@@ -3,6 +3,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { observeQuery } from "@/core/observability/observe-query";
 import { PACIENTES_PAGE_SIZE } from "@/core/supabase/pagination";
 
+import {
+  buildPacientesPageQuery,
+  buildPacientesSearchUrl,
+  resolvePacientesClearHref,
+} from "@/features/pacientes/utils/pacientes-page-url";
 import { applyPatientSearchFilter, findPatientIdsByPathologySearch } from "@/features/pacientes/utils/patient-search";
 
 import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
@@ -181,25 +186,4 @@ async function loadPacientesPageDataInner(
   };
 }
 
-export function buildPacientesPageQuery(
-  page: number,
-  q: string,
-  cobertura?: string,
-  patologia?: string
-): string {
-  const params = new URLSearchParams();
-  params.set("page", String(page));
-  if (q) params.set("q", q);
-  if (patologia) params.set("patologia", patologia);
-  if (cobertura === "pami") params.set("cobertura", "pami");
-  return `/pacientes?${params.toString()}`;
-}
-
-export function resolvePacientesClearHref(
-  q: string,
-  cobertura?: string,
-  patologia?: string
-): string | undefined {
-  if (!q && !patologia && cobertura !== "pami") return undefined;
-  return cobertura === "pami" ? "/pacientes?cobertura=pami" : "/pacientes";
-}
+export { buildPacientesPageQuery, buildPacientesSearchUrl, resolvePacientesClearHref };
