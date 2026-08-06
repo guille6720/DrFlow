@@ -48,6 +48,7 @@ export type ProfessionalIntakeViewProps = {
   locations: ProfessionalIntakeLocation[];
   professionals: ProfessionalIntakeDetail[];
   teamMembers: EnrichedTeamMember[];
+  invitedMembers: EnrichedTeamMember[];
   scheduleByProfessional: Record<string, AvailabilityRuleRow[]>;
 };
 

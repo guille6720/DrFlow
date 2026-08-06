@@ -27,6 +27,7 @@ export function ProfessionalIntakeView({
   locations,
   professionals,
   teamMembers,
+  invitedMembers,
   scheduleByProfessional,
 }: ProfessionalIntakeViewProps) {
   const {
@@ -73,7 +74,7 @@ export function ProfessionalIntakeView({
       <div className="flex flex-col gap-4 p-4 lg:flex-row lg:gap-6 lg:p-6">
         <ProfessionalIntakeSidebar
           professionals={professionals}
-          teamMembers={teamMembers}
+          invitedMembers={invitedMembers}
           selectedId={selectedId}
           selectedMemberId={selectedMemberId}
           isNew={isNew}

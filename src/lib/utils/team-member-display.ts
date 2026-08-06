@@ -57,6 +57,32 @@ export function buildInvitationNameMap(
   return map;
 }
 
+type ProfessionalRef = { id: string; email?: string | null };
+
+/** Miembros que solo deben listarse como invitados (no admins ni fichas ya cargadas arriba). */
+export function filterSidebarInvitedMembers(
+  members: EnrichedTeamMember[],
+  professionals: ProfessionalRef[]
+): EnrichedTeamMember[] {
+  const professionalIds = new Set(professionals.map((p) => p.id));
+  const professionalEmails = new Set(
+    professionals
+      .map((p) => p.email?.trim().toLowerCase())
+      .filter((email): email is string => Boolean(email))
+  );
+
+  return members.filter((member) => {
+    if (member.is_active === false) return false;
+    if (member.role === "clinic_admin") return false;
+    if (member.professional_id && professionalIds.has(member.professional_id)) return false;
+
+    const email = member.display_email?.trim().toLowerCase();
+    if (email && professionalEmails.has(email)) return false;
+
+    return true;
+  });
+}
+
 export function enrichTeamMembers<
   T extends {
     id: string;

@@ -16,7 +16,7 @@ import {
   ProfessionalIntakeView,
 } from "@/features/profesionales";
 
-import { enrichTeamMembers } from "@/lib/utils/team-member-display";
+import { enrichTeamMembers, filterSidebarInvitedMembers } from "@/lib/utils/team-member-display";
 
 export default async function IngresoProfesionalesPage({
   searchParams,
@@ -74,8 +74,6 @@ export default async function IngresoProfesionalesPage({
       ])
     : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }];
 
-  const teamMembers = enrichTeamMembers(members ?? [], invitations ?? []);
-
   const professionalList: ProfessionalIntakeDetail[] = (professionals ?? []).map((p) => {
     const row = p as Record<string, unknown>;
     const spec = row.specialties;
@@ -110,6 +108,9 @@ export default async function IngresoProfesionalesPage({
     };
   });
 
+  const teamMembers = enrichTeamMembers(members ?? [], invitations ?? []);
+  const invitedMembers = filterSidebarInvitedMembers(teamMembers, professionalList);
+
   const scheduleByProfessional = ((rules ?? []) as AvailabilityRuleRow[]).reduce<
     Record<string, AvailabilityRuleRow[]>
   >((acc, rule) => {
@@ -127,9 +128,9 @@ export default async function IngresoProfesionalesPage({
     !selectedMemberId &&
     !nuevo &&
     professionalList.length === 0 &&
-    teamMembers.length > 0
+    invitedMembers.length > 0
   ) {
-    redirect(`/ingreso-profesionales?miembro=${teamMembers[0].id}`);
+    redirect(`/ingreso-profesionales?miembro=${invitedMembers[0].id}`);
   }
 
   return (
@@ -142,6 +143,7 @@ export default async function IngresoProfesionalesPage({
         locations={locations ?? []}
         professionals={professionalList}
         teamMembers={teamMembers}
+        invitedMembers={invitedMembers}
         scheduleByProfessional={scheduleByProfessional}
       />
     </Suspense>

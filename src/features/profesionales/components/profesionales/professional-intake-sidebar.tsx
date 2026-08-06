@@ -17,7 +17,7 @@ export type ProfessionalListItem = {
 
 interface Props {
   professionals: ProfessionalListItem[];
-  teamMembers: EnrichedTeamMember[];
+  invitedMembers: EnrichedTeamMember[];
   selectedId: string | null;
   selectedMemberId: string | null;
   isNew: boolean;
@@ -36,7 +36,7 @@ function initials(name: string | null): string {
 
 export function ProfessionalIntakeSidebar({
   professionals,
-  teamMembers,
+  invitedMembers,
   selectedId,
   selectedMemberId,
   isNew,
@@ -122,13 +122,13 @@ export function ProfessionalIntakeSidebar({
             })}
           </ul>
         )}
-      </div>
 
-      <ClinicTeamMembersSidebarSection
-        members={teamMembers}
-        selectedMemberId={selectedMemberId}
-        onSelect={onSelectMember}
-      />
+        <ClinicTeamMembersSidebarSection
+          members={invitedMembers}
+          selectedMemberId={selectedMemberId}
+          onSelect={onSelectMember}
+        />
+      </div>
 
       <div className="border-t border-slate-200 px-4 py-3 text-xs text-slate-500">
         <UserRound className="mb-1 inline h-3.5 w-3.5 text-teal-600" />{" "}
