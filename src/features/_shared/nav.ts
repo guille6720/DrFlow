@@ -75,28 +75,6 @@ export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
     ],
   },
   { featureId: "pacientes", href: "/pacientes", label: "Pacientes", permission: "managePatients" },
-  {
-    type: "group",
-    id: "configuracion",
-    label: "Configuraciones",
-    featureId: "configuracion",
-    children: [
-      {
-        featureId: "configuracion",
-        href: "/configuracion",
-        label: "Configuración",
-        permission: "manageSettings",
-      },
-      { featureId: "pami", href: "/guia-pami", label: "Guía cabecera PAMI", permission: null },
-      {
-        featureId: "pami",
-        href: "/pami/planillas",
-        label: "Planillas PAMI",
-        permission: "issuePrescriptions",
-      },
-      { featureId: "core", href: "/ayuda", label: "Ayuda / Manual", permission: null },
-    ],
-  },
 ];
 
 /** Flat list of all sidebar links (groups expanded). */

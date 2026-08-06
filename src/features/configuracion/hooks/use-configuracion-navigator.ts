@@ -8,6 +8,7 @@ import {
   type ConfiguracionGroupId,
   type ConfiguracionSectionId,
   getGroupForSection,
+  getSectionMeta,
 } from "@/features/configuracion/components/configuracion/configuracion-sections";
 
 export function useConfiguracionNavigator(
@@ -38,6 +39,12 @@ export function useConfiguracionNavigator(
   }
 
   function openSection(id: ConfiguracionSectionId) {
+    const meta = getSectionMeta(id);
+    if (meta?.href) {
+      router.push(meta.href);
+      return;
+    }
+
     const group = getGroupForSection(id);
     const params = new URLSearchParams(searchParams.toString());
     if (group) params.set("grupo", group);

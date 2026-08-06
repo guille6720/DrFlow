@@ -2,10 +2,12 @@ import type { LucideIcon } from "lucide-react";
 import {
   Accessibility,
   Activity,
+  BookOpen,
   Bot,
   BriefcaseMedical,
   Building2,
   CalendarClock,
+  ClipboardList,
   Database,
   HeartPulse,
   ListTodo,
@@ -27,6 +29,9 @@ export type ConfiguracionSectionId =
   | "apps"
   | "coberturas"
   | "pami"
+  | "guia-pami"
+  | "planillas-pami"
+  | "ayuda"
   | "apariencia"
   | "asistente-ia"
   | "legal"
@@ -44,6 +49,8 @@ export interface ConfiguracionSectionMeta {
   title: string;
   description: string;
   icon: LucideIcon;
+  /** Ruta externa: abre fuera del panel de configuración inline. */
+  href?: string;
 }
 
 export interface ConfiguracionGroupMeta {
@@ -90,6 +97,27 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
     title: "Consultorio PAMI",
     description: "Perfil médico de cabecera y plantillas clínicas.",
     icon: HeartPulse,
+  },
+  {
+    id: "guia-pami",
+    title: "Guía cabecera PAMI",
+    description: "Protocolos y guía operativa de médico de cabecera.",
+    icon: HeartPulse,
+    href: "/guia-pami",
+  },
+  {
+    id: "planillas-pami",
+    title: "Planillas PAMI",
+    description: "Formularios, órdenes y documentación PAMI.",
+    icon: ClipboardList,
+    href: "/pami/planillas",
+  },
+  {
+    id: "ayuda",
+    title: "Ayuda / Manual",
+    description: "Manual de uso de DrFlow y preguntas frecuentes.",
+    icon: BookOpen,
+    href: "/ayuda",
   },
   {
     id: "apariencia",
@@ -165,9 +193,9 @@ export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
   {
     id: "coberturas",
     title: "Coberturas y PAMI",
-    description: "Obras sociales aceptadas y perfil de médico de cabecera.",
+    description: "Obras sociales, consultorio PAMI, guía, planillas y manual.",
     icon: Wallet,
-    sections: ["coberturas", "pami"],
+    sections: ["coberturas", "pami", "guia-pami", "planillas-pami", "ayuda"],
   },
   {
     id: "sistema",
