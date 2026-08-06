@@ -9,6 +9,7 @@ import {
 import { applyPatientSearchFilter } from "@/features/pacientes/utils/patient-search";
 
 import { getCachedClinicProfessionalsList } from "@/lib/server/cached-clinic-queries";
+import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 
 export type PamiPlanillaPatient = {
   id: string;
@@ -39,7 +40,7 @@ export function buildPamiPlanillasUrl(q: string, page: number): string {
 export async function loadPamiPlanillasPageData(
   supabase: SupabaseClient,
   clinicId: string,
-  userId: string | undefined,
+  _userId: string | undefined,
   q: string,
   page: number
 ): Promise<PamiPlanillasPageData> {
@@ -60,21 +61,21 @@ export async function loadPamiPlanillasPageData(
 
   const { from, to } = offsetRange(page, PAMI_PATIENTS_PAGE_SIZE);
 
-  const [{ data: patients, count }, professionals, { data: membership }] = await Promise.all([
+  const [{ data: patients, count }, professionals] = await Promise.all([
     patientQuery.range(from, to),
     getCachedClinicProfessionalsList(clinicId),
-    supabase
-      .from("clinic_members")
-      .select("professional_id")
-      .eq("clinic_id", clinicId)
-      .eq("user_id", userId ?? "")
-      .maybeSingle(),
   ]);
+
+  const defaultProfessionalId = await resolveDefaultProfessionalId(
+    supabase,
+    clinicId,
+    professionals
+  );
 
   return {
     patients: patients ?? [],
     professionals,
-    defaultProfessionalId: membership?.professional_id ?? professionals[0]?.id,
+    defaultProfessionalId,
     pageMeta: buildPageMeta(count ?? 0, page, PAMI_PATIENTS_PAGE_SIZE),
     searchQuery: q,
   };

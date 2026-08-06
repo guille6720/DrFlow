@@ -19,6 +19,7 @@ type Props = Pick<
   | "patientId"
   | "ehr"
   | "professionals"
+  | "defaultProfessionalId"
   | "lastMedications"
   | "templates"
   | "canIssue"
@@ -35,6 +36,7 @@ export function PatientWorkspaceSheets({
   patientRecord,
   ehr,
   professionals,
+  defaultProfessionalId,
   lastMedications,
   templates,
   canIssue,
@@ -72,7 +74,7 @@ export function PatientWorkspaceSheets({
         templates={templates}
         canIssuePrescriptions={canIssue}
         appointmentId={actions.appointment}
-        professionalId={actions.professional}
+        professionalId={actions.professional ?? defaultProfessionalId}
         lastMedications={lastMedications}
         onClose={actions.closeSheet}
         onSaved={actions.onConsultSaved}
@@ -87,7 +89,7 @@ export function PatientWorkspaceSheets({
         patientAllergies={patientRecord.allergies}
         patientRegularMedication={patientRecord.regular_medication}
         professionals={professionals}
-        defaultProfessionalId={actions.professional ?? undefined}
+        defaultProfessionalId={actions.professional ?? defaultProfessionalId ?? undefined}
         clinicalRecordId={actions.consulta ?? undefined}
         initialMedications={lastMedications ?? undefined}
         onClose={actions.closeSheet}
@@ -105,7 +107,7 @@ export function PatientWorkspaceSheets({
         lastDiagnosis={assistBase.lastDiagnosis}
         lastEvolution={assistBase.lastEvolution}
         professionals={professionals}
-        defaultProfessionalId={actions.professional ?? undefined}
+        defaultProfessionalId={actions.professional ?? defaultProfessionalId ?? undefined}
         clinicalRecordId={actions.consulta ?? undefined}
         onClose={actions.closeSheet}
         onSaved={actions.onRxOrOrderSaved}

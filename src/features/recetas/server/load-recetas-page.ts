@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { getCachedClinicProfessionalsFull } from "@/lib/server/cached-clinic-queries";
+import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 import type { MedicalOrder } from "@/types/medical-order";
 import type { ElectronicPrescription, PrescriptionMedication } from "@/types/prescription";
 
@@ -86,6 +87,9 @@ export async function loadRecetasPageData(
 
   const patients = patientsRes.data ?? [];
   const recentPrescriptions = (recentRxRes.data ?? []) as RecetasPageData["recentPrescriptions"];
+  const defaultProfessionalId = clinicId
+    ? await resolveDefaultProfessionalId(supabase, clinicId, professionals, professionalParam)
+    : undefined;
 
   return {
     patients,
@@ -97,7 +101,7 @@ export async function loadRecetasPageData(
     prefillDiagnosis: "",
     prefillCie10: "",
     initialMedications: undefined,
-    defaultProfessionalId: professionalParam?.trim() || professionals[0]?.id,
+    defaultProfessionalId,
     defaultTab: tipo === "orden" ? "orden" : "receta",
     clinic: {
       name: clinicName,

@@ -27,6 +27,7 @@ import {
   getCachedClinicProfessionalsList,
   getCachedPortalContext,
 } from "@/lib/server/cached-clinic-queries";
+import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
 import type { MedicalOrder } from "@/types/medical-order";
 import type { PrescriptionMedication } from "@/types/prescription";
@@ -45,6 +46,7 @@ export type PatientWorkspacePagePayload = {
   appointments: PatientChartAppointment[];
   clinicalDocuments: ClinicalDocumentItem[];
   professionals: PatientWorkspaceProfessional[];
+  defaultProfessionalId: string | undefined;
   lastMedications: PrescriptionMedication[] | null;
   templates: ClinicalTemplateRow[];
   patientShare: {
@@ -247,6 +249,12 @@ export async function loadPatientWorkspacePageData(
 
   const appShare = appShareResult.data;
   const shareProfile = appShare?.profiles as { full_name?: string } | null;
+  const mappedProfessionals = mapProfessionals(professionals);
+  const defaultProfessionalId = await resolveDefaultProfessionalId(
+    supabase,
+    clinicId,
+    mappedProfessionals
+  );
 
   return {
     patient: patientWithClinical,
@@ -254,7 +262,8 @@ export async function loadPatientWorkspacePageData(
     chart,
     appointments: mapChartAppointments(allAppointments),
     clinicalDocuments,
-    professionals: mapProfessionals(professionals),
+    professionals: mappedProfessionals,
+    defaultProfessionalId,
     lastMedications,
     templates: (templates ?? []) as ClinicalTemplateRow[],
     patientShare: appShare

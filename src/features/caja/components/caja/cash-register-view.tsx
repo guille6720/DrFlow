@@ -24,10 +24,12 @@ export function CashRegisterView({
   patients,
   professionals,
   recentCharges,
+  defaultProfessionalId,
 }: {
   patients: PatientOption[];
   professionals: ProfessionalOption[];
   recentCharges: ChargeRow[];
+  defaultProfessionalId?: string;
 }) {
   const register = useCashRegister();
   const filteredPatients = register.filterPatients(patients);
@@ -40,6 +42,7 @@ export function CashRegisterView({
         </p>
         <CashChargeFormSection
           professionals={professionals}
+          defaultProfessionalId={defaultProfessionalId}
           filteredPatients={filteredPatients}
           patientSearch={register.patientSearch}
           setPatientSearch={register.setPatientSearch}

@@ -24,6 +24,7 @@ interface Props {
   lastMedications?: PrescriptionMedication[] | null;
   professionals: Professional[];
   canIssue: boolean;
+  defaultProfessionalId?: string;
   /** En ficha del paciente: solo botón + formulario colapsado */
   compact?: boolean;
 }
@@ -35,6 +36,7 @@ export function RenewMedicationPanel({
   lastMedications,
   professionals,
   canIssue,
+  defaultProfessionalId,
   compact,
 }: Props) {
   const [open, setOpen] = useState(false);
@@ -78,7 +80,7 @@ export function RenewMedicationPanel({
       patientId={patientId}
       patientInsurance={patientInsurance}
       professionals={professionals}
-      defaultProfessionalId={professionals[0]?.id}
+      defaultProfessionalId={defaultProfessionalId ?? professionals[0]?.id}
       initialMedications={initial.length > 0 ? initial : undefined}
       onSuccess={() => setOpen(false)}
     />

@@ -15,6 +15,7 @@ import {
   getCachedClinicProfessionalsAgenda,
   getCachedClinicSpecialties,
 } from "@/lib/server/cached-clinic-queries";
+import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 
 async function AgendaContent({
   initialView,
@@ -62,6 +63,10 @@ async function AgendaContent({
         ])
       : [{ data: [] }, { data: [] }, [], [], [], { data: [] }, null];
 
+  const defaultProfessionalId = clinicId
+    ? await resolveDefaultProfessionalId(supabase, clinicId, professionals as Array<{ id: string }>)
+    : undefined;
+
   return (
     <AgendaView
       initialView={initialView}
@@ -78,6 +83,7 @@ async function AgendaContent({
       defaultDuration={clinic?.default_appointment_duration ?? 30}
       scheduleBlocks={blocks.data ?? []}
       bookingSlug={bookingSlug ?? clinic?.slug ?? null}
+      defaultProfessionalId={defaultProfessionalId}
     />
   );
 }

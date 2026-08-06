@@ -57,4 +57,6 @@ export type PatientChartViewProps = {
   regularMedication?: string | null;
   /** Oculta la barra sticky duplicada cuando hay tabs de workspace arriba. */
   workspaceMode?: boolean;
+  /** Profesional prescriptor por defecto (administrador de la clínica). */
+  defaultProfessionalId?: string;
 };

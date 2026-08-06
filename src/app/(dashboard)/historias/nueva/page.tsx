@@ -13,6 +13,7 @@ import {
   getCachedClinicProfessionalsList,
 } from "@/lib/server/cached-clinic-queries";
 import { loadPatientPickerList } from "@/lib/server/load-patient-picker-list";
+import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 
 import NuevaConsultaForm from "./nueva-consulta-form";
 
@@ -53,6 +54,10 @@ export default async function NuevaConsultaPage({
       ])
     : [{ patients: [] }, [], []];
 
+  const defaultProfessionalId = clinicId
+    ? await resolveDefaultProfessionalId(supabase, clinicId, professionals, professional)
+    : undefined;
+
   return (
     <NuevaConsultaForm
       clinics={clinics}
@@ -62,6 +67,7 @@ export default async function NuevaConsultaPage({
       patients={patientPicker.patients as never}
       professionals={professionals as never}
       templates={templates}
+      defaultProfessionalId={defaultProfessionalId}
       canIssuePrescriptions={hasPermission(role, "issuePrescriptions", isSuperadmin)}
     />
   );

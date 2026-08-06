@@ -50,9 +50,10 @@ export async function PatientWorkspaceContent({
         chart={workspace.chart}
         patientId={patientId}
         canEditClinical={canEditClinical}
-        canIssue={canIssue}
-        professionals={workspace.professionals}
-        lastMedications={workspace.lastMedications}
+      canIssue={canIssue}
+      professionals={workspace.professionals}
+      defaultProfessionalId={workspace.defaultProfessionalId}
+      lastMedications={workspace.lastMedications}
         clinicalDocuments={workspace.clinicalDocuments}
         appointments={workspace.appointments}
         portalSlug={workspace.portalSlug}
@@ -112,6 +113,7 @@ export async function PatientWorkspaceContent({
       canEditClinical={canEditClinical}
       canIssue={canIssue}
       professionals={workspace.professionals}
+      defaultProfessionalId={workspace.defaultProfessionalId}
       lastMedications={workspace.lastMedications}
       regularMedication={workspace.patient.regular_medication}
       clinicalDocuments={workspace.clinicalDocuments}
@@ -128,6 +130,7 @@ export async function PatientWorkspaceContent({
       canEditClinical={canEditClinical}
       canIssue={canIssue}
       professionals={workspace.professionals}
+      defaultProfessionalId={workspace.defaultProfessionalId}
       lastMedications={workspace.lastMedications}
       regularMedication={workspace.patient.regular_medication}
       clinicalDocuments={workspace.clinicalDocuments}

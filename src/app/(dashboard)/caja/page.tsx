@@ -18,6 +18,7 @@ import { AdminOpsAnalyticsBridge } from "@/features/ia/components/admin-ops/admi
 import { Button } from "@/components/ui/button";
 import { loadPatientPickerList } from "@/lib/server/load-patient-picker-list";
 import { loadRevenueSnapshot } from "@/lib/server/load-revenue-snapshot";
+import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 
 export default async function CajaPage() {
@@ -67,6 +68,12 @@ export default async function CajaPage() {
     loadRevenueSnapshot(supabase, clinicId),
   ]);
 
+  const defaultProfessionalId = await resolveDefaultProfessionalId(
+    supabase,
+    clinicId,
+    (professionals ?? []).map((p) => ({ id: p.id }))
+  );
+
   return (
     <>
       <Header
@@ -102,6 +109,7 @@ export default async function CajaPage() {
           </Link>
         </div>
         <CashRegisterView
+          defaultProfessionalId={defaultProfessionalId}
           patients={(patients ?? []).map((p) => ({
             id: p.id,
             label: `${p.last_name}, ${p.first_name} — DNI ${p.document_number}`,

@@ -36,6 +36,7 @@ interface AgendaPageProps {
   role: UserRole | null;
   userName?: string;
   defaultDuration: number;
+  defaultProfessionalId?: string;
   scheduleBlocks?: { start_at: string; end_at: string; reason: string | null }[];
   bookingSlug?: string | null;
 }
@@ -53,6 +54,7 @@ export function AgendaView({
   role,
   userName,
   defaultDuration,
+  defaultProfessionalId,
   scheduleBlocks = [],
   bookingSlug,
 }: AgendaPageProps) {
@@ -62,6 +64,7 @@ export function AgendaView({
     initialShowForm,
     appointments,
     defaultDuration,
+    defaultProfessionalId,
   });
 
   const {

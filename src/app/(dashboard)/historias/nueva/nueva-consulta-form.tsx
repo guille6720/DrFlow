@@ -28,6 +28,7 @@ interface Props {
     indications_template: string | null;
   }>;
   canIssuePrescriptions?: boolean;
+  defaultProfessionalId?: string;
 }
 
 export default function NuevaConsultaForm({
@@ -39,8 +40,14 @@ export default function NuevaConsultaForm({
   professionals,
   templates,
   canIssuePrescriptions = false,
+  defaultProfessionalId,
 }: Props) {
-  const form = useNuevaConsultaForm({ patients, professionals, templates });
+  const form = useNuevaConsultaForm({
+    patients,
+    professionals,
+    templates,
+    fallbackProfessionalId: defaultProfessionalId,
+  });
 
   return (
     <>

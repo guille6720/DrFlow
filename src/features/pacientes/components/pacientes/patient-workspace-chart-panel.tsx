@@ -38,6 +38,7 @@ type Props = {
   professionals: PatientChartProfessional[];
   lastMedications: PrescriptionMedication[] | null;
   regularMedication?: string | null;
+  defaultProfessionalId?: string;
   clinicalDocuments: ClinicalDocumentItem[];
 };
 

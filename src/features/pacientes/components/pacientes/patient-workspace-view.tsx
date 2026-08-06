@@ -150,6 +150,7 @@ export function PatientWorkspaceView(props: Props) {
           patientRecord={patientRecord}
           ehr={ehr}
           professionals={chartProps.professionals}
+          defaultProfessionalId={chartProps.defaultProfessionalId}
           lastMedications={chartProps.lastMedications}
           templates={templates}
           canIssue={chartProps.canIssue}

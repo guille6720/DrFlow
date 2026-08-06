@@ -23,6 +23,7 @@ type Props = {
   professionals: PatientChartProfessional[];
   lastMedications: PrescriptionMedication[] | null;
   regularMedication?: string | null;
+  defaultProfessionalId?: string;
   medSearch: string;
   setMedSearch: (value: string) => void;
   filteredMeds: MedicationCard[];
@@ -37,6 +38,7 @@ export function PatientChartGridPrimary({
   professionals,
   lastMedications,
   regularMedication,
+  defaultProfessionalId,
   medSearch,
   setMedSearch,
   filteredMeds,
@@ -130,6 +132,7 @@ export function PatientChartGridPrimary({
             regularMedication={regularMedication}
             lastMedications={lastMedications}
             professionals={professionals}
+            defaultProfessionalId={defaultProfessionalId}
             canIssue={canIssue}
             compact
           />

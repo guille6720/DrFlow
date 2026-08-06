@@ -25,6 +25,7 @@ type BaseProps = {
   professionals: PatientChartProfessional[];
   lastMedications: PrescriptionMedication[] | null;
   regularMedication?: string | null;
+  defaultProfessionalId?: string;
 };
 
 export function PatientChartMedicationPanel({
@@ -34,6 +35,7 @@ export function PatientChartMedicationPanel({
   lastMedications,
   regularMedication,
   patient,
+  defaultProfessionalId,
   filteredMeds,
   medSearch,
   setMedSearch,
@@ -79,6 +81,7 @@ export function PatientChartMedicationPanel({
             patientId={patientId}
             lastMedications={lastMedications}
             professionals={professionals}
+            defaultProfessionalId={defaultProfessionalId}
             regularMedication={regularMedication}
             patientInsurance={patient.insurance_provider}
             canIssue={canIssue}

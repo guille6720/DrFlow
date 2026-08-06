@@ -49,14 +49,25 @@ type Options = {
   professionals: ConsultFormProfessional[];
   templates: Template[];
   workspace?: NuevaConsultaWorkspaceConfig;
+  /** Administrador de la clínica cuando no hay selección explícita. */
+  fallbackProfessionalId?: string;
 };
 
-export function useNuevaConsultaForm({ patients, professionals, templates, workspace }: Options) {
+export function useNuevaConsultaForm({
+  patients,
+  professionals,
+  templates,
+  workspace,
+  fallbackProfessionalId,
+}: Options) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultPatient = workspace?.patientId ?? searchParams.get("patient") ?? "";
   const defaultProfessional =
-    workspace?.professionalId ?? searchParams.get("professional") ?? "";
+    workspace?.professionalId ??
+    searchParams.get("professional") ??
+    fallbackProfessionalId ??
+    "";
   const appointmentId = workspace?.appointmentId ?? searchParams.get("appointment") ?? "";
   const fromClinical = workspace ? null : searchParams.get("from");
   const backHref = workspace

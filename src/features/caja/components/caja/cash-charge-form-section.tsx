@@ -15,6 +15,7 @@ type ProfessionalOption = { id: string; label: string };
 
 type Props = {
   professionals: ProfessionalOption[];
+  defaultProfessionalId?: string;
   filteredPatients: PatientOption[];
   patientSearch: string;
   setPatientSearch: (v: string) => void;
@@ -27,6 +28,7 @@ type Props = {
 
 export function CashChargeFormSection({
   professionals,
+  defaultProfessionalId,
   filteredPatients,
   patientSearch,
   setPatientSearch,
@@ -70,6 +72,7 @@ export function CashChargeFormSection({
         <Select
           name="professional_id"
           label="Profesional"
+          defaultValue={defaultProfessionalId ?? ""}
           options={[
             { value: "", label: "— Opcional —" },
             ...professionals.map((p) => ({ value: p.id, label: p.label })),

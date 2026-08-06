@@ -24,6 +24,7 @@ type Options = {
   initialShowForm?: boolean;
   appointments: Appointment[];
   defaultDuration: number;
+  defaultProfessionalId?: string;
 };
 
 export function useAgendaView({
@@ -31,6 +32,7 @@ export function useAgendaView({
   initialShowForm = false,
   appointments,
   defaultDuration,
+  defaultProfessionalId = "",
 }: Options) {
   const router = useRouter();
   const [view, setView] = useState<ViewMode>(initialView);
@@ -41,7 +43,7 @@ export function useAgendaView({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [startAt, setStartAt] = useState("");
-  const [formProfessionalId, setFormProfessionalId] = useState("");
+  const [formProfessionalId, setFormProfessionalId] = useState(defaultProfessionalId);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
 
   const filtered = useMemo(
@@ -68,8 +70,8 @@ export function useAgendaView({
   const closeForm = useCallback(() => {
     setShowForm(false);
     setStartAt("");
-    setFormProfessionalId("");
-  }, []);
+    setFormProfessionalId(defaultProfessionalId);
+  }, [defaultProfessionalId]);
 
   const shiftCalendar = useCallback(
     (back: boolean) => {
