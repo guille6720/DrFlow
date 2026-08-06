@@ -65,6 +65,7 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
 
 const GROUP_ICONS: Record<string, typeof LayoutDashboard> = {
   administracion: Building2,
+  configuracion: Settings,
 };
 
 function withNavIcon(item: FeatureNavItem): SidebarNavLink {
