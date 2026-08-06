@@ -42,7 +42,7 @@ export default async function NuevaConsultaPage({
   const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
 
   if (!hasPermission(role, "editClinicalRecords", isSuperadmin)) {
-    redirect("/historias");
+    redirect("/pacientes?seccion=historias");
   }
 
   const supabase = await createClient();

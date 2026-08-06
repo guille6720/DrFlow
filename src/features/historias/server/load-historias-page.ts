@@ -12,10 +12,10 @@ export { HISTORIAS_PAGE_SIZE };
 
 export function buildHistoriasUrl(params: { q?: string; page?: number }) {
   const parts = new URLSearchParams();
+  parts.set("seccion", "historias");
   if (params.q) parts.set("q", params.q);
   if (params.page && params.page > 1) parts.set("page", String(params.page));
-  const s = parts.toString();
-  return s ? `/historias?${s}` : "/historias";
+  return `/pacientes?${parts.toString()}`;
 }
 
 export type HistoriasPageData = {

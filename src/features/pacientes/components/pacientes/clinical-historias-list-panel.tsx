@@ -1,0 +1,146 @@
+import { ChevronLeft, ChevronRight, FileText, Plus } from "lucide-react";
+import Link from "next/link";
+
+import { ClinicalRecordsGroupedList } from "@/features/historias";
+import type { HistoriasPageData } from "@/features/historias/server/load-historias-page";
+import { ClinicalCopilotAccessButton } from "@/features/ia/components/clinical-workflow/clinical-copilot-access-button";
+import { HistoriasCopilotSessionBridge } from "@/features/ia/components/clinical-workflow/historias-copilot-session-bridge";
+import { buildPacientesHistoriasUrl } from "@/features/pacientes/utils/pacientes-page-url";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ListPagination, ListPaginationLabel } from "@/components/ui/list-pagination";
+import { ProminentSearchForm } from "@/components/ui/prominent-search-form";
+
+type Props = HistoriasPageData & {
+  q: string;
+};
+
+export function ClinicalHistoriasListPanel({
+  q,
+  records,
+  listTitle,
+  noMatchPatients,
+  totalRecords,
+  clinicTotalRecords,
+  groups,
+  singlePatientFromSearch,
+  totalPages,
+  safePage,
+}: Props) {
+  return (
+    <div className="space-y-4">
+      <HistoriasCopilotSessionBridge
+        groups={groups}
+        singlePatientFromSearch={singlePatientFromSearch}
+      />
+
+      <div className="flex flex-wrap gap-4 rounded-xl border border-slate-500/70 bg-slate-700/90 px-4 py-3 text-sm shadow-lg">
+        <p>
+          <span className="text-2xl font-bold text-teal-300">{clinicTotalRecords}</span>
+          <span className="ml-2 text-slate-300">consultas en la clínica</span>
+        </p>
+        {q && !noMatchPatients ? (
+          <>
+            <span className="text-slate-500">|</span>
+            <p className="text-slate-200">
+              <span className="font-bold text-teal-200">{totalRecords}</span>
+              <span className="ml-1 text-slate-300">coinciden con la búsqueda</span>
+            </p>
+          </>
+        ) : null}
+      </div>
+
+      <ProminentSearchForm
+        action="/pacientes"
+        hiddenFields={<input type="hidden" name="seccion" value="historias" />}
+        placeholder="Nombre, apellido o DNI del paciente…"
+        defaultValue={q}
+        submitLabel="Buscar historia"
+        clearHref={q ? buildPacientesHistoriasUrl() : undefined}
+        trailing={
+          <>
+            <ClinicalCopilotAccessButton
+              label="Asistente IA"
+              className="border-violet-200 bg-white/90 text-violet-900 hover:bg-violet-50"
+            />
+            <Link href="/historias/nueva">
+              <Button>
+                <Plus className="h-4 w-4" />
+                Nueva consulta
+              </Button>
+            </Link>
+          </>
+        }
+      />
+
+      {noMatchPatients ? (
+        <EmptyState
+          icon={FileText}
+          title="Sin resultados"
+          description={`No encontramos pacientes para “${q}”. Probá con otro nombre o DNI.`}
+        />
+      ) : records.length === 0 ? (
+        <EmptyState
+          icon={FileText}
+          title="Sin registros clínicos"
+          description="Las consultas que registres aparecerán acá."
+          action={
+            <Link href="/historias/nueva">
+              <Button>
+                <Plus className="h-4 w-4" />
+                Registrar consulta
+              </Button>
+            </Link>
+          }
+        />
+      ) : (
+        <>
+          <Card
+            title={`${listTitle} · página ${safePage} de ${totalPages} · ${records.length} filas`}
+          >
+            <ClinicalRecordsGroupedList
+              groups={groups}
+              defaultOpenPatientId={singlePatientFromSearch}
+            />
+          </Card>
+
+          {(totalPages > 1 || totalRecords > 0) && (
+            <ListPagination>
+              {safePage > 1 && (
+                <Link href={buildPacientesHistoriasUrl({ q: q || undefined, page: safePage - 1 })}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-slate-500 bg-slate-700/80 text-slate-100 hover:bg-slate-600"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Anterior
+                  </Button>
+                </Link>
+              )}
+              <ListPaginationLabel
+                current={safePage}
+                totalPages={totalPages}
+                suffix={`${totalRecords} consultas`}
+              />
+              {safePage < totalPages && (
+                <Link href={buildPacientesHistoriasUrl({ q: q || undefined, page: safePage + 1 })}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-slate-500 bg-slate-700/80 text-slate-100 hover:bg-slate-600"
+                  >
+                    Siguiente
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
+            </ListPagination>
+          )}
+        </>
+      )}
+    </div>
+  );
+}

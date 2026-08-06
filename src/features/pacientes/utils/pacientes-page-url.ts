@@ -32,3 +32,17 @@ export function resolvePacientesClearHref(
   if (!q && !patologia && cobertura !== "pami") return undefined;
   return cobertura === "pami" ? "/pacientes?cobertura=pami" : "/pacientes";
 }
+
+export type PacientesPageSection = "pacientes" | "historias";
+
+export function parsePacientesPageSection(value: string | null | undefined): PacientesPageSection {
+  return value === "historias" ? "historias" : "pacientes";
+}
+
+export function buildPacientesHistoriasUrl(params?: { q?: string; page?: number }): string {
+  const search = new URLSearchParams();
+  search.set("seccion", "historias");
+  if (params?.q) search.set("q", params.q);
+  if (params?.page && params.page > 1) search.set("page", String(params.page));
+  return `/pacientes?${search.toString()}`;
+}

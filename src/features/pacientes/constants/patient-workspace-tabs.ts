@@ -49,7 +49,7 @@ export type PatientWorkspacePrimaryTabDef = {
 };
 
 export const PATIENT_HC_SUB_TABS: PatientWorkspaceTabDef[] = [
-  { id: "soap", label: "Consultas", icon: Stethoscope, ready: true },
+  { id: "soap", label: "Historias clínicas", icon: Stethoscope, ready: true },
   { id: "recetas", label: "Recetas", icon: ScrollText, ready: true },
   { id: "ordenes", label: "Órdenes", icon: FileStack, ready: true },
   { id: "docs_admin", label: "Docs administrativos", icon: FolderOpen, ready: true },

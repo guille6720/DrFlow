@@ -117,8 +117,8 @@ export const COMMAND_PALETTE_NAV: CommandPaletteItemDef[] = [
   },
   {
     id: "nav-historias",
-    label: "Historia clínica (desde Pacientes)",
-    href: "/pacientes",
+    label: "Historias clínicas (desde Pacientes)",
+    href: "/pacientes?seccion=historias",
     group: "navegacion",
     icon: FileText,
     permission: "viewClinicalRecords",
