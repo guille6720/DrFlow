@@ -49,6 +49,15 @@ function main() {
     console.log(`⚠ ${key} no configurada — backups/migraciones manuales limitados`);
   }
 
+  const hasEmail =
+    process.env.RESEND_API_KEY?.trim() ||
+    (process.env.SMTP_HOST?.trim() && process.env.EMAIL_FROM?.trim());
+  if (!hasEmail) {
+    console.log(
+      "⚠ Email de invitaciones no configurado — configurá RESEND_API_KEY o SMTP_HOST + EMAIL_FROM en Vercel"
+    );
+  }
+
   console.log("\n✅ Variables de producción OK\n");
 }
 
