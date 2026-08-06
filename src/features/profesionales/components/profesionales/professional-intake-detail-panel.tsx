@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { DoctorSetupFields } from "@/core/components/onboarding/doctor-setup-fields";
 
+import { ProfessionalIntakeBankFields } from "@/features/profesionales/components/profesionales/professional-intake-bank-fields";
 import { ProfessionalIntakeFormMessages } from "@/features/profesionales/components/profesionales/professional-intake-form-messages";
 import { ProfessionalIntakeOfficeFields } from "@/features/profesionales/components/profesionales/professional-intake-office-fields";
 import type {
@@ -33,6 +34,7 @@ type Props = {
   error: string | null;
   success: string | null;
   onUpdateProfile: (e: React.FormEvent<HTMLFormElement>) => void;
+  onUpdateBankDetails: (e: React.FormEvent<HTMLFormElement>) => void;
   onSaveSchedule: () => void;
 };
 
@@ -48,9 +50,26 @@ export function ProfessionalIntakeDetailPanel({
   error,
   success,
   onUpdateProfile,
+  onUpdateBankDetails,
   onSaveSchedule,
 }: Props) {
   const { parsedName, specialtySelect, specialtyCustom } = getProfessionalSpecialtyDefaults(selected);
+
+  if (detailTab === "datos_bancarios") {
+    return (
+      <Card title="Datos bancarios">
+        <form onSubmit={onUpdateBankDetails} className="space-y-4">
+          <ProfessionalIntakeBankFields selected={selected} />
+          <ProfessionalIntakeFormMessages error={error} success={success} />
+          <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+            <Button type="submit" loading={loading}>
+              Guardar cambios
+            </Button>
+          </div>
+        </form>
+      </Card>
+    );
+  }
 
   if (detailTab === "horarios") {
     return (

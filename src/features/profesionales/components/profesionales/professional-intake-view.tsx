@@ -47,6 +47,7 @@ export function ProfessionalIntakeView({
     resetNewWizard,
     handleCreateSubmit,
     handleUpdateProfile,
+    handleUpdateBankDetails,
     handleSaveSchedule,
   } = useProfessionalIntake({ professionals, scheduleByProfessional });
 
@@ -107,14 +108,15 @@ export function ProfessionalIntakeView({
                 error={error}
                 success={success}
                 onUpdateProfile={handleUpdateProfile}
+                onUpdateBankDetails={handleUpdateBankDetails}
                 onSaveSchedule={handleSaveSchedule}
               />
             </>
           ) : (
             <Card title="Seleccioná un profesional">
               <p className="text-sm text-slate-600">
-                Elegí un profesional del panel izquierdo para editar su perfil, consultorio u
-                horarios, o creá uno nuevo.
+                Elegí un profesional del panel izquierdo para editar su perfil, consultorio,
+                horarios o datos bancarios, o creá uno nuevo.
               </p>
             </Card>
           )}

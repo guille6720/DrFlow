@@ -44,7 +44,7 @@ export default async function IngresoProfesionalesPage({
         supabase
           .from("professionals")
           .select(
-            "id, display_name, document_number, email, phone, license_national, license_provincial, office_phone, office_address, accepted_insurances, intake_notes, intake_completed_at, location_id, specialties(name)"
+            "id, display_name, document_number, email, phone, license_national, license_provincial, office_phone, office_address, accepted_insurances, intake_notes, intake_completed_at, location_id, tax_id, iva_status, bank_name, bank_account_type, bank_account_number, bank_cbu, bank_alias, specialties(name)"
           )
           .eq("clinic_id", clinicId)
           .eq("is_active", true)
@@ -80,6 +80,13 @@ export default async function IngresoProfesionalesPage({
       intake_notes: row.intake_notes as string | null | undefined,
       intake_completed_at: row.intake_completed_at as string | null | undefined,
       location_id: row.location_id as string | null | undefined,
+      tax_id: row.tax_id as string | null | undefined,
+      iva_status: row.iva_status as string | null | undefined,
+      bank_name: row.bank_name as string | null | undefined,
+      bank_account_type: row.bank_account_type as string | null | undefined,
+      bank_account_number: row.bank_account_number as string | null | undefined,
+      bank_cbu: row.bank_cbu as string | null | undefined,
+      bank_alias: row.bank_alias as string | null | undefined,
       specialties: specialty,
     };
   });

@@ -11,6 +11,10 @@ import {
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
 import {
+  parseProfessionalBankForm,
+  professionalBankFormSchema,
+} from "@/core/validations/professional-bank";
+import {
   parseProfessionalIntakeForm,
   professionalIntakeFormSchema,
   resolveIntakeSpecialtyName,
@@ -263,6 +267,43 @@ export async function updateProfessionalProfile(professionalId: string, formData
   revalidatePath("/agenda");
 
   return { success: true as const, message: "Datos del profesional actualizados." };
+}
+
+export async function updateProfessionalBankDetails(professionalId: string, formData: FormData) {
+  const access = await requireStaffManager();
+  if (!access.ok) return { error: access.error };
+
+  const idParsed = parseEntityId(professionalId, "Profesional");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const raw = parseProfessionalBankForm(formData);
+  const parsed = professionalBankFormSchema.safeParse(raw);
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
+
+  const supabase = await createClient();
+  const clinicId = access.clinicId;
+  const data = parsed.data;
+
+  const { error } = await supabase
+    .from("professionals")
+    .update({
+      tax_id: data.taxId || null,
+      iva_status: data.ivaStatus || null,
+      bank_name: data.bankName || null,
+      bank_account_type: data.bankAccountType || null,
+      bank_account_number: data.bankAccountNumber || null,
+      bank_cbu: data.bankCbu || null,
+      bank_alias: data.bankAlias || null,
+    })
+    .eq("id", idParsed.data)
+    .eq("clinic_id", clinicId);
+
+  if (error) return { error: error.message };
+
+  revalidateClinicProfessionalsCache(clinicId);
+  revalidatePath("/ingreso-profesionales");
+
+  return { success: true as const, message: "Datos bancarios actualizados." };
 }
 
 export async function saveProfessionalSchedule(professionalId: string, formData: FormData) {

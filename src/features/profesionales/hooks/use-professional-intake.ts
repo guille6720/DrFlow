@@ -14,6 +14,7 @@ import { normalizeAgendaRules } from "@/features/profesionales/components/profes
 import {
   saveProfessionalSchedule,
   submitProfessionalIntake,
+  updateProfessionalBankDetails,
   updateProfessionalProfile,
 } from "@/lib/actions/professional-intake";
 import {
@@ -127,6 +128,28 @@ export function useProfessionalIntake({ professionals, scheduleByProfessional }:
     router.refresh();
   }
 
+  async function handleUpdateBankDetails(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!selected) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    const result = await updateProfessionalBankDetails(
+      selected.id,
+      new FormData(e.currentTarget)
+    );
+    setLoading(false);
+
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+
+    setSuccess(result.message ?? "Datos bancarios actualizados.");
+    router.refresh();
+  }
+
   async function handleSaveSchedule() {
     if (!selected) return;
     setLoading(true);
@@ -168,6 +191,7 @@ export function useProfessionalIntake({ professionals, scheduleByProfessional }:
     resetNewWizard,
     handleCreateSubmit,
     handleUpdateProfile,
+    handleUpdateBankDetails,
     handleSaveSchedule,
   };
 }

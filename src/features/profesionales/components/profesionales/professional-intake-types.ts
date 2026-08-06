@@ -14,6 +14,13 @@ export type ProfessionalIntakeDetail = {
   intake_notes?: string | null;
   intake_completed_at?: string | null;
   location_id?: string | null;
+  tax_id?: string | null;
+  iva_status?: string | null;
+  bank_name?: string | null;
+  bank_account_type?: string | null;
+  bank_account_number?: string | null;
+  bank_cbu?: string | null;
+  bank_alias?: string | null;
   specialties?: { name: string } | null;
 };
 
@@ -42,7 +49,7 @@ export type ProfessionalIntakeViewProps = {
   scheduleByProfessional: Record<string, AvailabilityRuleRow[]>;
 };
 
-export type ProfessionalIntakeDetailTab = "perfil" | "consultorio" | "horarios";
+export type ProfessionalIntakeDetailTab = "perfil" | "consultorio" | "horarios" | "datos_bancarios";
 export type ProfessionalIntakeNewStep = "ficha" | "consultorio" | "agenda";
 
 export const PROFESSIONAL_INTAKE_DETAIL_TABS: { id: ProfessionalIntakeDetailTab; label: string }[] =
@@ -50,6 +57,7 @@ export const PROFESSIONAL_INTAKE_DETAIL_TABS: { id: ProfessionalIntakeDetailTab;
     { id: "perfil", label: "Perfil" },
     { id: "consultorio", label: "Consultorio" },
     { id: "horarios", label: "Horarios" },
+    { id: "datos_bancarios", label: "Datos Bancarios" },
   ];
 
 export const PROFESSIONAL_INTAKE_NEW_STEPS: { id: ProfessionalIntakeNewStep; label: string }[] = [
