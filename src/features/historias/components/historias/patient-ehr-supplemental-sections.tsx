@@ -2,10 +2,7 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ExternalLink, Loader2, Plus } from "lucide-react";
-import Link from "next/link";
-
-import { withClinicalHistoryReturn } from "@/shared/utils/clinical-navigation";
+import { ExternalLink, Loader2 } from "lucide-react";
 
 import type {
   PatientEhrAttachment,
@@ -16,7 +13,6 @@ import type {
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 
 type Props = {
-  patientId: string;
   vitalsRows: PatientEhrConsultation[];
   visibleAttachments: PatientEhrAttachment[];
   prescriptions: PatientEhrPrescription[];
@@ -29,7 +25,6 @@ type Props = {
 };
 
 export function PatientEhrSupplementalSections({
-  patientId,
   vitalsRows,
   visibleAttachments,
   prescriptions,
@@ -107,15 +102,6 @@ export function PatientEhrSupplementalSections({
           </ul>
         </section>
       ) : null}
-
-      <div className="mt-6 print:hidden">
-        <Link
-          href={withClinicalHistoryReturn(`/historias/nueva?patient=${patientId}`, patientId)}
-          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-teal-500/20 hover:from-cyan-600 hover:to-teal-600"
-        >
-          <Plus className="h-4 w-4" /> Nueva consulta
-        </Link>
-      </div>
     </>
   );
 }

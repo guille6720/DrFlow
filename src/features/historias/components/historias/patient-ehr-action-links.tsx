@@ -1,46 +1,90 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
+import { cn } from "@/shared/utils/cn";
+
 import { PatientEhrPrintMenu } from "@/features/historias/components/historias/patient-ehr-print-menu";
-import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
+import type {
+  PatientWorkspaceFocus,
+  PatientWorkspaceSheet,
+} from "@/features/pacientes/utils/patient-workspace-actions";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
-export function PatientEhrActionLinks({ patientId }: { patientId: string }) {
+type Props = {
+  patientId: string;
+  consultOpen?: boolean;
+  activeSheet?: PatientWorkspaceSheet | null;
+  activeFocus?: PatientWorkspaceFocus | null;
+};
+
+function consultUrl(
+  patientId: string,
+  opts?: { sheet?: PatientWorkspaceSheet; focus?: PatientWorkspaceFocus }
+) {
+  return buildPatientWorkspaceUrl(patientId, {
+    tab: "soap",
+    action: "nueva",
+    sheet: opts?.sheet,
+    focus: opts?.focus,
+  });
+}
+
+export function PatientEhrActionLinks({
+  patientId,
+  consultOpen = false,
+  activeSheet,
+  activeFocus,
+}: Props) {
+  const linkClass = (active: boolean) =>
+    cn(
+      "drflow-ehr-action-link inline-flex items-center gap-1 rounded-md px-1 py-0.5 transition",
+      active && "bg-teal-500/15 ring-1 ring-teal-400/40"
+    );
+
   return (
-    <div className="drflow-ehr-actions flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[var(--border)] pb-2 text-sm font-semibold">
+    <div className="drflow-ehr-actions mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[var(--border)] pb-3 text-sm font-semibold">
+      {!consultOpen ? (
+        <Link
+          href={consultUrl(patientId)}
+          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-teal-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-teal-500/20 hover:from-cyan-600 hover:to-teal-600"
+        >
+          <Plus className="h-4 w-4" /> Nueva consulta
+        </Link>
+      ) : null}
+
       <Link
-        href={patientWorkspacePath(patientId, "archivos")}
-        className="drflow-ehr-action-link inline-flex items-center gap-1"
+        href={consultUrl(patientId, { sheet: "archivo", focus: "evolucion" })}
+        className={linkClass(activeSheet === "archivo")}
       >
         <Plus className="h-3.5 w-3.5" /> Archivo
       </Link>
       <Link
-        href={buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })}
-        className="drflow-ehr-action-link inline-flex items-center gap-1"
+        href={consultUrl(patientId, { focus: "diagnostico" })}
+        className={linkClass(activeFocus === "diagnostico")}
       >
         <Plus className="h-3.5 w-3.5" /> Diagnóstico
       </Link>
       <Link
-        href={buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })}
-        className="drflow-ehr-action-link inline-flex items-center gap-1"
+        href={consultUrl(patientId, { focus: "tratamiento" })}
+        className={linkClass(activeFocus === "tratamiento")}
       >
         <Plus className="h-3.5 w-3.5" /> Tratamiento
       </Link>
       <Link
-        href={buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })}
-        className="drflow-ehr-action-link inline-flex items-center gap-1"
+        href={consultUrl(patientId, { focus: "vitales" })}
+        className={linkClass(activeFocus === "vitales")}
       >
         Signos vitales
       </Link>
       <Link
-        href={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}
-        className="drflow-ehr-action-link inline-flex items-center gap-1"
+        href={consultUrl(patientId, { sheet: "receta" })}
+        className={linkClass(activeSheet === "receta")}
       >
         <Plus className="h-3.5 w-3.5" /> Receta
       </Link>
       <Link
-        href={buildPatientWorkspaceUrl(patientId, { tab: "ordenes", action: "nueva" })}
-        className="drflow-ehr-action-link inline-flex items-center gap-1"
+        href={consultUrl(patientId, { sheet: "orden" })}
+        className={linkClass(activeSheet === "orden")}
       >
         <Plus className="h-3.5 w-3.5" /> Orden
       </Link>

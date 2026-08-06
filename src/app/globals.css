@@ -1396,6 +1396,29 @@ html:not([data-ui-style="2"]) .drflow-ehr-action-link {
   color: var(--ehr-text);
 }
 
+/* EHR oscuro: legibilidad garantizada (anula paletas / islas claras en workspace) */
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-shell .drflow-ehr-table th,
+html:not([data-ui-style="2"]) .drflow-ehr-shell .drflow-ehr-table th {
+  color: var(--ehr-label) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-shell .drflow-ehr-table td,
+html:not([data-ui-style="2"]) .drflow-ehr-shell .drflow-ehr-table td {
+  color: var(--ehr-text) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-shell .drflow-ehr-table-title,
+html:not([data-ui-style="2"]) .drflow-ehr-shell .drflow-ehr-table-title,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-shell .drflow-ehr-table-panel,
+html:not([data-ui-style="2"]) .drflow-ehr-shell .drflow-ehr-table-panel {
+  color: var(--ehr-text);
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-shell .drflow-ehr-muted,
+html:not([data-ui-style="2"]) .drflow-ehr-shell .drflow-ehr-muted {
+  color: var(--ehr-muted) !important;
+}
+
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-table a.text-teal-600,
 html:not([data-ui-style="2"]) .drflow-ehr-table a.text-teal-600 {
   color: #5eead4 !important;
@@ -3082,9 +3105,25 @@ html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-previsit-label {
 }
 
 /* Tablas y listas en tarjetas */
-html[data-ui-palette="cobalt"] .drflow-ui-card table,
-html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel table {
+html[data-ui-palette="cobalt"] .drflow-ui-card table:not(.drflow-ehr-table),
+html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel table:not(.drflow-ehr-table) {
   color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-ehr-shell .drflow-ehr-table th {
+  color: var(--ehr-label) !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-ehr-shell .drflow-ehr-table td {
+  color: var(--ehr-text) !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-ehr-shell {
+  color: var(--ehr-text);
+}
+
+html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-ehr-shell .drflow-ehr-table-panel :is(li, p, span:not([class*="text-teal"])) {
+  color: var(--ehr-text);
 }
 
 html[data-ui-palette="cobalt"] .drflow-ui-card thead.bg-slate-50,

@@ -1,9 +1,9 @@
 import { PatientArcoExportButton } from "@/core/components/legal/patient-arco-export-button";
 import { createClient } from "@/core/supabase/server";
 
-import { PatientEhrView } from "@/features/historias/components/historias/patient-ehr-view";
 import { ClinicalWorkspaceView } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-view";
 import type { PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
+import { PatientSoapWorkspace } from "@/features/pacientes/components/pacientes/patient-soap-workspace";
 import { PatientWorkspaceAdminDocsPanel } from "@/features/pacientes/components/pacientes/patient-workspace-admin-docs-panel";
 import { PatientWorkspaceChartPanel } from "@/features/pacientes/components/pacientes/patient-workspace-chart-panel";
 import { PatientWorkspaceDiagnosticsPanel } from "@/features/pacientes/components/pacientes/patient-workspace-diagnostics-panel";
@@ -84,7 +84,7 @@ export async function PatientWorkspaceContent({
 
   const soapPanel =
     initialTab === "soap" ? (
-      <PatientEhrView
+      <PatientSoapWorkspace
         embedded
         patient={workspace.ehr.patientInfo}
         consultations={workspace.ehr.consultations}
@@ -94,6 +94,10 @@ export async function PatientWorkspaceContent({
         prescriptions={workspace.ehr.prescriptions}
         totalConsultations={workspace.ehr.totalConsultations}
         usesHceExport={workspace.ehr.usesHceExport}
+        patientRecord={patientRecord}
+        professionals={workspace.professionals}
+        templates={workspace.templates}
+        defaultProfessionalId={workspace.defaultProfessionalId}
       />
     ) : undefined;
 

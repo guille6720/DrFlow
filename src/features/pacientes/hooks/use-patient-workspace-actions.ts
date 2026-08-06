@@ -27,8 +27,20 @@ export function usePatientWorkspaceActions(patientId: string, activeTab: Patient
   );
 
   const closeSheet = useCallback(() => {
+    if (parsed.inlineConsultOpen) {
+      router.push(
+        buildPatientWorkspaceUrl(patientId, {
+          tab: "soap",
+          action: "nueva",
+          appointment: parsed.appointment ?? undefined,
+          professional: parsed.professional ?? undefined,
+        }),
+        { scroll: false }
+      );
+      return;
+    }
     router.push(buildPatientWorkspaceUrl(patientId, { tab: activeTab }), { scroll: false });
-  }, [activeTab, patientId, router]);
+  }, [activeTab, patientId, parsed.appointment, parsed.inlineConsultOpen, parsed.professional, router]);
 
   const openNewConsult = useCallback(
     (opts?: { appointment?: string; professional?: string }) => {

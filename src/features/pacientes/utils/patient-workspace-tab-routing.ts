@@ -32,6 +32,7 @@ export function shouldLoadWorkspaceSheets(
     parsed.consultSheetOpen ||
     parsed.prescriptionSheetOpen ||
     parsed.orderSheetOpen ||
+    parsed.archivoSheetOpen ||
     parsed.recordSheetOpen ||
     parsed.dischargeSheetOpen ||
     parsed.certificateSheetOpen ||

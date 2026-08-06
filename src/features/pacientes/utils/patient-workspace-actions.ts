@@ -5,6 +5,8 @@ import {
 
 export type PatientWorkspaceAction = "nueva" | "upload" | "alta" | "certificado" | "cerrar" | "estudio" | "copilot";
 export type PatientWorkspaceMode = "edit" | "view";
+export type PatientWorkspaceSheet = "receta" | "orden" | "archivo";
+export type PatientWorkspaceFocus = "diagnostico" | "tratamiento" | "vitales" | "evolucion";
 
 export type PatientWorkspaceUrlOptions = {
   tab?: PatientWorkspaceTabId;
@@ -14,6 +16,8 @@ export type PatientWorkspaceUrlOptions = {
   appointment?: string;
   professional?: string;
   consulta?: string;
+  sheet?: PatientWorkspaceSheet;
+  focus?: PatientWorkspaceFocus;
 };
 
 /** Build a patient workspace URL with optional sheet/query state. */
@@ -30,7 +34,9 @@ export function buildPatientWorkspaceUrl(
     opts.mode != null ||
     opts.appointment != null ||
     opts.professional != null ||
-    opts.consulta != null;
+    opts.consulta != null ||
+    opts.sheet != null ||
+    opts.focus != null;
 
   if (tab !== DEFAULT_PATIENT_WORKSPACE_TAB || hasSheetState) {
     params.set("tab", tab);
@@ -41,6 +47,8 @@ export function buildPatientWorkspaceUrl(
   if (opts.appointment) params.set("appointment", opts.appointment);
   if (opts.professional) params.set("professional", opts.professional);
   if (opts.consulta) params.set("consulta", opts.consulta);
+  if (opts.sheet) params.set("sheet", opts.sheet);
+  if (opts.focus) params.set("focus", opts.focus);
 
   const qs = params.toString();
   return qs ? `/pacientes/${patientId}?${qs}` : `/pacientes/${patientId}`;
@@ -53,9 +61,13 @@ export type ParsedPatientWorkspaceActions = {
   appointment: string | null;
   professional: string | null;
   consulta: string | null;
+  sheet: PatientWorkspaceSheet | null;
+  focus: PatientWorkspaceFocus | null;
   consultSheetOpen: boolean;
+  inlineConsultOpen: boolean;
   prescriptionSheetOpen: boolean;
   orderSheetOpen: boolean;
+  archivoSheetOpen: boolean;
   recordSheetOpen: boolean;
   dischargeSheetOpen: boolean;
   certificateSheetOpen: boolean;
@@ -74,6 +86,9 @@ export function parsePatientWorkspaceActions(
   const appointment = searchParams.get("appointment");
   const professional = searchParams.get("professional");
   const consulta = searchParams.get("consulta");
+  const sheet = searchParams.get("sheet") as PatientWorkspaceSheet | null;
+  const focus = searchParams.get("focus") as PatientWorkspaceFocus | null;
+  const inlineConsult = action === "nueva" && tab === "soap" && !appointment;
 
   return {
     action,
@@ -82,9 +97,17 @@ export function parsePatientWorkspaceActions(
     appointment,
     professional,
     consulta,
-    consultSheetOpen: action === "nueva" && tab === "soap",
-    prescriptionSheetOpen: action === "nueva" && tab === "recetas",
-    orderSheetOpen: action === "nueva" && tab === "ordenes",
+    sheet,
+    focus,
+    consultSheetOpen: action === "nueva" && tab === "soap" && Boolean(appointment),
+    inlineConsultOpen: inlineConsult,
+    prescriptionSheetOpen:
+      (action === "nueva" && tab === "recetas") ||
+      (inlineConsult && sheet === "receta"),
+    orderSheetOpen:
+      (action === "nueva" && tab === "ordenes") ||
+      (inlineConsult && sheet === "orden"),
+    archivoSheetOpen: inlineConsult && sheet === "archivo",
     recordSheetOpen: Boolean(record && tab === "soap" && action !== "nueva"),
     dischargeSheetOpen: action === "alta",
     certificateSheetOpen: action === "certificado",

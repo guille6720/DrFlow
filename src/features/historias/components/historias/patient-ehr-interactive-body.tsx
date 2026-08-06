@@ -24,6 +24,8 @@ type Props = {
   totalConsultations: number;
   usesHceExport?: boolean;
   actionLinks: ReactNode;
+  inlineConsultOpen?: boolean;
+  consultPanel?: ReactNode;
 };
 
 export function PatientEhrInteractiveBody({
@@ -34,6 +36,8 @@ export function PatientEhrInteractiveBody({
   totalConsultations,
   usesHceExport = false,
   actionLinks,
+  inlineConsultOpen = false,
+  consultPanel,
 }: Props) {
   const {
     evolutionList,
@@ -72,7 +76,9 @@ export function PatientEhrInteractiveBody({
           <div className="p-4">
             {actionLinks}
 
-            {filters.evolutions ? (
+            {inlineConsultOpen && consultPanel ? (
+              <div className="drflow-ehr-screen-only">{consultPanel}</div>
+            ) : filters.evolutions ? (
               <>
                 <div className="drflow-ehr-screen-only">
                   <PatientEhrEvolutionPanel
@@ -109,7 +115,6 @@ export function PatientEhrInteractiveBody({
                 />
 
                 <PatientEhrSupplementalSections
-                  patientId={patientId}
                   vitalsRows={vitalsRows}
                   visibleAttachments={visibleAttachments}
                   prescriptions={prescriptions}
