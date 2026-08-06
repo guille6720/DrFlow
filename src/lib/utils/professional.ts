@@ -15,7 +15,7 @@ export function formatProfessionalLicenses(professional: {
 
 export function buildProfessionalSignature(professional: {
   display_name?: string | null;
-  profiles?: { full_name?: string } | null;
+  profiles?: { full_name?: string | null } | null;
   license_national?: string | null;
   license_provincial?: string | null;
   license_number?: string | null;
@@ -28,7 +28,7 @@ export function buildProfessionalSignature(professional: {
 
 export function getProfessionalDisplayName(professional: {
   display_name?: string | null;
-  profiles?: { full_name?: string } | null;
+  profiles?: { full_name?: string | null } | null;
   license_number?: string | null;
   id?: string;
 }): string {

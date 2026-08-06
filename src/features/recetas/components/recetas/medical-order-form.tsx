@@ -18,7 +18,7 @@ interface Professional {
   id: string;
   license_number?: string | null;
   display_name?: string | null;
-  profiles?: { full_name: string } | null;
+  profiles?: { full_name?: string | null } | null;
 }
 
 interface Props {

@@ -17,8 +17,16 @@ type ProfessionalInfo = {
   display_name?: string | null;
   license_number?: string | null;
   profiles?: { full_name?: string | null } | null;
-  specialties?: { name?: string | null } | null;
+  specialties?: { name?: string | null } | { name?: string | null }[] | null;
 };
+
+function professionalSpecialtyName(
+  specialties: ProfessionalInfo["specialties"]
+): string | null {
+  if (!specialties) return null;
+  if (Array.isArray(specialties)) return specialties[0]?.name ?? null;
+  return specialties.name ?? null;
+}
 
 type ClinicInfo = {
   name: string;
@@ -52,7 +60,7 @@ export function buildMedicalOrderDocumentData(
     professional: {
       full_name: fullName,
       license_number: pro?.license_number ?? null,
-      specialty: pro?.specialties?.name ?? null,
+      specialty: professionalSpecialtyName(pro?.specialties) ?? null,
     },
     clinic,
   };
