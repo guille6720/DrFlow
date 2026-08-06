@@ -1,4 +1,3 @@
-import { ClinicalOpsAiRail } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-ai-rail";
 import { ClinicalOpsLeftRail } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-left-rail";
 import { ClinicalOpsMainSections } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-main-sections";
 import { ClinicalOpsRealtime } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-realtime";
@@ -44,16 +43,12 @@ export function ClinicalOpsCenter({
         notificationCount={ops.notifications.length}
       />
 
-      <div className="clinical-ops-grid grid gap-4 lg:grid-cols-[minmax(11rem,13rem)_minmax(0,1fr)] xl:grid-cols-[minmax(11rem,13rem)_minmax(0,1fr)_minmax(14rem,17rem)]">
+      <div className="clinical-ops-grid grid gap-4 lg:grid-cols-[minmax(11rem,13rem)_minmax(0,1fr)]">
         <div className="hidden lg:block">
           <ClinicalOpsLeftRail ops={ops} />
         </div>
 
         <ClinicalOpsMainSections ops={ops} canManageAppointments={canManageAppointments} />
-
-        <div className="hidden xl:block">
-          <ClinicalOpsAiRail ops={ops} />
-        </div>
       </div>
     </section>
   );

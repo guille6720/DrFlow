@@ -14,19 +14,12 @@ const AdminOpsCopilotHost = safeClientDynamic(() =>
   }))
 );
 
-const UnifiedCopilotFab = safeClientDynamic(() =>
-  import("@/core/components/layout/unified-copilot-fab").then((mod) => ({
-    default: mod.UnifiedCopilotFab,
-  }))
-);
-
 /** IA copilot overlays — lazy-loaded to keep dashboard layout JS lean. */
 export function LazyDashboardCopilotHosts() {
   return (
     <>
       <ClinicalCopilotHost />
       <AdminOpsCopilotHost />
-      <UnifiedCopilotFab />
     </>
   );
 }
