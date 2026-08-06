@@ -10,7 +10,7 @@ type Professional = {
   license_number?: string | null;
   display_name?: string | null;
   profiles?: { full_name?: string | null } | null;
-  specialties?: { name?: string | null } | null;
+  specialties?: { name?: string | null } | { name?: string | null }[] | null;
 };
 
 type Props = {

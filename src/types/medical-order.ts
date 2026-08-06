@@ -7,6 +7,7 @@ export interface MedicalOrder {
   clinical_record_id: string | null;
   professional_id: string;
   order_text: string;
+  order_type?: string;
   notes: string | null;
   status: MedicalOrderStatus;
   issued_at: string;
