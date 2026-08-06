@@ -1,15 +1,10 @@
 "use client";
 
-import { Eye, Printer } from "lucide-react";
 import { useState } from "react";
 
+import { MedicalOrderActionButtons } from "@/features/recetas/components/recetas/medical-order-action-buttons";
 import { MedicalOrderPreviewSheet } from "@/features/recetas/components/recetas/medical-order-preview-sheet";
-import {
-  type MedicalOrderDocumentData,
-  printMedicalOrderDocument,
-} from "@/features/recetas/utils/print-medical-order-document";
-
-import { Button } from "@/components/ui/button";
+import type { MedicalOrderDocumentData } from "@/features/recetas/utils/print-medical-order-document";
 
 type Props = {
   data: MedicalOrderDocumentData;
@@ -23,17 +18,10 @@ export function MedicalOrderActions({ data, disabled = false }: Props) {
 
   return (
     <>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button type="button" size="sm" variant="outline" onClick={() => setPreviewOpen(true)}>
-          <Eye className="h-4 w-4" />
-          Vista previa
-        </Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => printMedicalOrderDocument(data)}>
-          <Printer className="h-4 w-4" />
-          Imprimir
-        </Button>
-      </div>
-
+      <MedicalOrderActionButtons
+        data={data}
+        onPreview={() => setPreviewOpen(true)}
+      />
       <MedicalOrderPreviewSheet
         open={previewOpen}
         data={data}

@@ -3261,3 +3261,71 @@ html[data-ui-palette="cobalt"] ::-webkit-scrollbar-thumb {
 html[data-ui-palette="cobalt"][data-clinical-dark="1"] ::-webkit-scrollbar-thumb {
   background: rgb(147 197 253 / 0.45);
 }
+
+/* Órdenes médicas — filas, toolbar y botones de acción visibles en todos los temas */
+.drflow-medical-order-row {
+  cursor: default;
+}
+
+.drflow-medical-order-row button[type="button"]:not(:disabled) {
+  cursor: pointer;
+}
+
+.drflow-medical-order-action-btn {
+  min-height: 2.25rem;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+}
+
+.drflow-medical-order-toolbar {
+  background: #eff6ff !important;
+  border-color: #93c5fd !important;
+}
+
+.drflow-medical-order-toolbar p {
+  color: #1e3a8a !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-medical-order-action-btn,
+html:not([data-ui-style="2"]) .drflow-medical-order-action-btn {
+  border-color: #60a5fa !important;
+  background: #1e3a8a !important;
+  color: #eff6ff !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-medical-order-action-btn:hover,
+html:not([data-ui-style="2"]) .drflow-medical-order-action-btn:hover {
+  background: #1d4ed8 !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-medical-order-action-btn + .drflow-medical-order-action-btn,
+html:not([data-ui-style="2"]) .drflow-medical-order-toolbar .drflow-medical-order-action-btn:last-child {
+  border-color: #64748b !important;
+  background: #334155 !important;
+  color: #f8fafc !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-medical-order-action-btn {
+  border-color: #93c5fd !important;
+  background: #eff6ff !important;
+  color: #1e40af !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-medical-order-action-btn:hover {
+  background: #dbeafe !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-medical-order-action-btn + .drflow-medical-order-action-btn {
+  border-color: #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-medical-order-row.border-blue-400 {
+  border-color: #3b82f6 !important;
+  background: #eff6ff !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-medical-order-row .text-blue-700 {
+  color: #1d4ed8 !important;
+}

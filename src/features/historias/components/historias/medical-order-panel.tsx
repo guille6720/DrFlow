@@ -6,9 +6,12 @@ import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { cn } from "@/shared/utils/cn";
+
 import { voidMedicalOrder } from "@/features/recetas/actions/medical-orders";
-import { MedicalOrderActions } from "@/features/recetas/components/recetas/medical-order-actions";
+import { MedicalOrderActionButtons } from "@/features/recetas/components/recetas/medical-order-action-buttons";
 import { MedicalOrderForm } from "@/features/recetas/components/recetas/medical-order-form";
+import { MedicalOrderPreviewSheet } from "@/features/recetas/components/recetas/medical-order-preview-sheet";
 import { buildMedicalOrderDocumentData } from "@/features/recetas/utils/build-medical-order-document-data";
 import { orderTypeLabel } from "@/features/recetas/utils/order-type-label";
 
@@ -20,8 +23,8 @@ interface Professional {
   id: string;
   license_number?: string | null;
   display_name?: string | null;
-  profiles?: { full_name: string } | null;
-  specialties?: { name?: string | null } | null;
+  profiles?: { full_name?: string | null } | null;
+  specialties?: { name?: string | null } | { name?: string | null }[] | null;
 }
 
 interface PatientInfo {
@@ -60,12 +63,21 @@ export function MedicalOrderPanel({
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<ReturnType<typeof buildMedicalOrderDocumentData> | null>(
+    null
+  );
 
   async function handleVoid(id: string) {
     setActing(id);
     await voidMedicalOrder(id);
     setActing(null);
     router.refresh();
+  }
+
+  function openPreview(order: MedicalOrder & { order_type?: string }) {
+    setPreviewData(buildMedicalOrderDocumentData(order, patient, clinic, professionals));
+    setPreviewOpen(true);
   }
 
   return (
@@ -106,45 +118,81 @@ export function MedicalOrderPanel({
             const isVoid = order.status === "void";
 
             return (
-              <li key={order.id} className="rounded-xl border border-slate-200 p-4">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-                      {orderTypeLabel(typedOrder.order_type)}
-                    </span>
-                    <p className="text-xs text-slate-500">
-                      {format(new Date(order.issued_at), "PPp", { locale: es })}
-                    </p>
-                  </div>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      isVoid ? "bg-red-100 text-red-800" : "bg-emerald-100 text-emerald-800"
-                    }`}
+              <li
+                key={order.id}
+                className={cn(
+                  "drflow-medical-order-row rounded-xl border transition",
+                  isVoid
+                    ? "border-slate-200 bg-slate-50 opacity-80"
+                    : "border-slate-200 bg-white hover:border-blue-200 hover:bg-slate-50"
+                )}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3 p-4">
+                  <button
+                    type="button"
+                    disabled={isVoid}
+                    onClick={() => openPreview(typedOrder)}
+                    className={cn(
+                      "min-w-0 flex-1 text-left",
+                      isVoid ? "cursor-default" : "cursor-pointer"
+                    )}
                   >
-                    {isVoid ? "Anulada" : "Emitida"}
-                  </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                        {orderTypeLabel(typedOrder.order_type)}
+                      </span>
+                      <p className="text-xs text-slate-500">
+                        {format(new Date(order.issued_at), "PPp", { locale: es })}
+                      </p>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          isVoid ? "bg-red-100 text-red-800" : "bg-emerald-100 text-emerald-800"
+                        }`}
+                      >
+                        {isVoid ? "Anulada" : "Emitida"}
+                      </span>
+                    </div>
+                    <p className="mt-2 whitespace-pre-wrap text-sm text-slate-800">{order.order_text}</p>
+                    {order.notes ? (
+                      <p className="mt-2 text-xs text-slate-600">Indicaciones: {order.notes}</p>
+                    ) : null}
+                    {!isVoid ? (
+                      <p className="mt-2 text-xs font-medium text-blue-700">Clic para abrir vista previa</p>
+                    ) : null}
+                  </button>
+                  {!isVoid ? (
+                    <MedicalOrderActionButtons
+                      compact
+                      data={documentData}
+                      onPreview={() => openPreview(typedOrder)}
+                    />
+                  ) : null}
                 </div>
-                <p className="mt-2 whitespace-pre-wrap text-sm text-slate-800">{order.order_text}</p>
-                {order.notes ? (
-                  <p className="mt-2 text-xs text-slate-600">Indicaciones: {order.notes}</p>
-                ) : null}
-                <MedicalOrderActions data={documentData} disabled={isVoid} />
                 {canIssue && !isVoid ? (
-                  <Button
-                    className="mt-2"
-                    size="sm"
-                    variant="outline"
-                    loading={acting === order.id}
-                    onClick={() => handleVoid(order.id)}
-                  >
-                    Anular
-                  </Button>
+                  <div className="border-t border-slate-100 px-4 py-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      loading={acting === order.id}
+                      onClick={() => handleVoid(order.id)}
+                    >
+                      Anular
+                    </Button>
+                  </div>
                 ) : null}
               </li>
             );
           })}
         </ul>
       )}
+
+      {previewData ? (
+        <MedicalOrderPreviewSheet
+          open={previewOpen}
+          data={previewData}
+          onClose={() => setPreviewOpen(false)}
+        />
+      ) : null}
     </Card>
   );
 }
