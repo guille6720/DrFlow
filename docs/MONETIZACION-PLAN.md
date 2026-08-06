@@ -14,8 +14,8 @@ Definidos en código: `src/core/billing/plans.ts`
 | Plan | Precio/mes (ARS) | Anual (2 meses off) | Incluye |
 |------|------------------|---------------------|---------|
 | **Solo** | $24.900 | $249.000 | 1 médico, core clínico |
-| **Consultorio** | $49.900 | $499.000 | Hasta 3 profesionales, equipo, permisos |
-| **Clínica** | $79.900 | $799.000 | Ilimitado, reportes, onboarding |
+| **Consultorio** | $39.900 | $399.000 | Hasta 3 profesionales, equipo, permisos |
+| **Clínica** | En desarrollo | — | Ilimitado, reportes, onboarding (próximamente) |
 
 **Trial:** 10 días gratis (`TRIAL_PROMO_DAYS`), sin tarjeta → `/probar`.
 

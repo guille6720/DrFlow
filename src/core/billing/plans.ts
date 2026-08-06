@@ -4,8 +4,10 @@ export type BillingPlan = {
   id: BillingPlanId;
   name: string;
   tagline: string;
-  priceArsMonthly: number;
-  priceArsAnnual: number;
+  priceArsMonthly?: number;
+  priceArsAnnual?: number;
+  /** Sin precio publicado — mostrar badge "En desarrollo". */
+  status?: "development";
   professionalsIncluded: string;
   highlights: string[];
   recommended?: boolean;
@@ -33,8 +35,8 @@ export const DRFLOW_BILLING_PLANS: BillingPlan[] = [
     id: "consultorio",
     name: "Consultorio",
     tagline: "Médico + secretaría + equipo chico",
-    priceArsMonthly: 49_900,
-    priceArsAnnual: 499_000,
+    priceArsMonthly: 39_900,
+    priceArsAnnual: 399_000,
     professionalsIncluded: "Hasta 3 profesionales",
     recommended: true,
     highlights: [
@@ -49,8 +51,7 @@ export const DRFLOW_BILLING_PLANS: BillingPlan[] = [
     id: "clinica",
     name: "Clínica",
     tagline: "Varios médicos, operación completa",
-    priceArsMonthly: 79_900,
-    priceArsAnnual: 799_000,
+    status: "development",
     professionalsIncluded: "Profesionales ilimitados",
     highlights: [
       "Todo Consultorio sin límite de médicos",
@@ -72,10 +73,17 @@ export function formatPlanPriceArs(amount: number): string {
   }).format(amount);
 }
 
+export function isPlanAvailableForPurchase(plan: BillingPlan): boolean {
+  return plan.status !== "development" && plan.priceArsMonthly != null;
+}
+
 export function buildPlanSalesMessage(planId: BillingPlanId, clinicName?: string): string {
   const plan = DRFLOW_BILLING_PLANS.find((p) => p.id === planId);
   const label = plan?.name ?? planId;
   const clinic = clinicName?.trim() ? ` — consultorio: ${clinicName.trim()}` : "";
+  if (plan?.status === "development") {
+    return `Hola, me interesa el plan ${label} de DrFlow (en desarrollo). ¿Cuándo estará disponible?${clinic}`;
+  }
   return `Hola, quiero activar DrFlow plan ${label}${clinic}. ¿Me pasan link de pago?`;
 }
 
