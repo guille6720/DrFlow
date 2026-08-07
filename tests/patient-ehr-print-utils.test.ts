@@ -41,11 +41,32 @@ describe("patient-ehr-print-utils", () => {
     });
 
     expect(parseInlineDiagnoses(c)).toEqual([
-      "Infarto transmural agudo del miocardio de la pared anterior",
+      { text: "Infarto transmural agudo del miocardio de la pared anterior", code: null },
     ]);
     expect(parseInlineTreatments(c)).toEqual([
-      { product: "GASTEC", dose: "20 mg caps.x 70" },
-      { product: "FILTEN", dose: "12.5 mg comp.ran.x 60" },
+      { product: "GASTEC", lab: "", dose: "20 mg caps.x 70" },
+      { product: "FILTEN", lab: "", dose: "12.5 mg comp.ran.x 60" },
+    ]);
+  });
+
+  it("extracts CIE code from diagnosis line", () => {
+    const c = consultation({
+      diagnosis: "Infarto transmural agudo del miocardio de la pared anterior I-210",
+    });
+    expect(parseInlineDiagnoses(c)).toEqual([
+      {
+        text: "Infarto transmural agudo del miocardio de la pared anterior",
+        code: "I-210",
+      },
+    ]);
+  });
+
+  it("splits product and laboratory name", () => {
+    const c = consultation({
+      indications: "GASTEC Laboratorios Be\n20 mg caps.x 70",
+    });
+    expect(parseInlineTreatments(c)).toEqual([
+      { product: "GASTEC", lab: "Laboratorios Be", dose: "20 mg caps.x 70" },
     ]);
   });
 

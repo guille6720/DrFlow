@@ -78,19 +78,51 @@ export function formatPrintAgeBlock(
   return birth ?? detailed ?? fallbackAgeLabel ?? "Sin definir";
 }
 
-export function parseInlineDiagnoses(consultation: PatientEhrConsultation): string[] {
+export function parseInlineDiagnoses(consultation: PatientEhrConsultation): PrintInlineDiagnosis[] {
   const raw = consultation.diagnosis?.trim();
   if (!raw) return [];
   return raw
     .split(/\n+/)
     .map((line) => line.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .map(parseDiagnosisLine);
+}
+
+export type PrintInlineDiagnosis = {
+  text: string;
+  code: string | null;
+};
+
+/** Separa texto diagnóstico de código CIE (p. ej. "… anterior I-210"). */
+export function parseDiagnosisLine(line: string): PrintInlineDiagnosis {
+  const match = line.match(/^(.+?)\s+([A-Z]\d{2,3}(?:\.\d+)?|[A-Z]-\d{2,3})$/i);
+  if (match) {
+    return { text: match[1].trim(), code: match[2].toUpperCase() };
+  }
+  return { text: line, code: null };
 }
 
 export type PrintInlineTreatment = {
   product: string;
+  lab: string;
   dose: string;
 };
+
+function looksLikeDoseLine(line: string): boolean {
+  return /\d+\s*mg|comp\.|caps\.|comp\.ran\.|ui\.|ml\./i.test(line);
+}
+
+/** Separa nombre comercial y laboratorio ("GASTEC Laboratorios Be"). */
+export function splitTreatmentProductLab(line: string): { product: string; lab: string } {
+  const trimmed = line.trim();
+  const parts = trimmed.split(/\s+/);
+  if (parts.length <= 1) return { product: trimmed, lab: "" };
+
+  const first = parts[0];
+  const rest = parts.slice(1).join(" ");
+  if (looksLikeDoseLine(rest)) return { product: trimmed, lab: "" };
+  return { product: first, lab: rest };
+}
 
 export function parseInlineTreatments(consultation: PatientEhrConsultation): PrintInlineTreatment[] {
   const raw = consultation.indications?.trim();
@@ -106,19 +138,22 @@ export function parseInlineTreatments(consultation: PatientEhrConsultation): Pri
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
     const next = lines[i + 1];
-    if (next && /\d+\s*mg|comp\.|caps\.|comp\.ran\./i.test(next)) {
-      result.push({ product: line, dose: next });
+    if (next && looksLikeDoseLine(next)) {
+      const { product, lab } = splitTreatmentProductLab(line);
+      result.push({ product, lab, dose: next });
       i += 1;
       continue;
     }
 
     const split = line.match(/^(.+?)\s+(\d[\d.,]*\s*mg.*)$/i);
     if (split) {
-      result.push({ product: split[1].trim(), dose: split[2].trim() });
+      const { product, lab } = splitTreatmentProductLab(split[1].trim());
+      result.push({ product, lab, dose: split[2].trim() });
       continue;
     }
 
-    result.push({ product: line, dose: "" });
+    const { product, lab } = splitTreatmentProductLab(line);
+    result.push({ product, lab, dose: "" });
   }
 
   return result;

@@ -2694,32 +2694,59 @@ html[data-motion="reduce"] *::after {
 
   .drflow-ehr-print-demo-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.75rem 1.5rem;
+    grid-template-columns: 1.6fr 0.9fr 1.1fr 1fr 1.2fr;
+    gap: 0.5rem 1.25rem;
+    align-items: start;
   }
 
   .drflow-ehr-print-demo-grid-secondary {
-    margin-top: 0.35rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: none;
   }
 
   .drflow-ehr-print-demo-label {
     font-size: 0.72rem;
     font-weight: 700;
     text-transform: none;
-    color: #334155 !important;
+    color: #111 !important;
     margin: 0;
   }
 
   .drflow-ehr-print-demo-value {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: #0f172a !important;
     margin: 0.15rem 0 0;
   }
 
+  .drflow-ehr-print-demo-name {
+    color: #2563eb !important;
+    text-transform: lowercase;
+  }
+
+  .drflow-ehr-print-demo-birth {
+    font-size: 0.68rem;
+    color: #64748b !important;
+    margin: 0 0 0.1rem;
+  }
+
   .drflow-ehr-print-demo-age {
-    white-space: pre-line;
     line-height: 1.35;
+  }
+
+  .drflow-ehr-print-demo-age p {
+    margin: 0;
+  }
+
+  .drflow-ehr-print-demo-phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #16a34a !important;
+  }
+
+  .drflow-ehr-print-whatsapp-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+    flex-shrink: 0;
   }
 
   .drflow-ehr-print-evolution {
@@ -2748,13 +2775,61 @@ html[data-motion="reduce"] *::after {
 
   .drflow-ehr-print-section-title {
     color: #0f172a !important;
+    text-transform: uppercase;
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
   }
 
-  .drflow-ehr-print-meta,
+  .drflow-ehr-print-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    color: #475569 !important;
+    margin: 0 0 0.35rem;
+  }
+
+  .drflow-ehr-print-meta-time {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .drflow-ehr-print-lock-icon {
+    width: 0.72rem;
+    height: 0.72rem;
+    color: #64748b !important;
+    flex-shrink: 0;
+  }
+
   .drflow-ehr-print-table-muted {
     font-size: 0.78rem;
     color: #475569 !important;
     margin: 0 0 0.35rem;
+  }
+
+  .drflow-ehr-print-professional-meta {
+    font-size: 0.78rem;
+    color: #2563eb !important;
+    margin: 0.35rem 0 0;
+  }
+
+  .drflow-ehr-print-chronic {
+    color: #2563eb !important;
+    font-weight: 600;
+  }
+
+  .drflow-ehr-print-status-actual {
+    margin: 0;
+    font-weight: 600;
+    color: #16a34a !important;
+  }
+
+  .drflow-ehr-print-diagnosis-code {
+    margin-left: auto;
+    padding-left: 1rem;
+    color: #64748b !important;
+    font-size: 0.82rem;
+    white-space: nowrap;
   }
 
   .drflow-ehr-print-evolution-body {
@@ -2771,27 +2846,77 @@ html[data-motion="reduce"] *::after {
     list-style: none;
   }
 
-  .drflow-ehr-print-list li,
-  .drflow-ehr-print-treatment-item {
+  .drflow-ehr-print-list li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
     font-size: 0.85rem;
     color: #0f172a !important;
     margin-bottom: 0.35rem;
+    padding-left: 1rem;
+    position: relative;
+  }
+
+  .drflow-ehr-print-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #0f172a !important;
+  }
+
+  .drflow-ehr-print-treatment-item {
+    font-size: 0.85rem;
+    color: #0f172a !important;
+    margin-bottom: 0.5rem;
+    padding-left: 1rem;
+    position: relative;
+  }
+
+  .drflow-ehr-print-treatment-item::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #0f172a !important;
+  }
+
+  .drflow-ehr-print-treatment-product-line {
+    margin: 0;
   }
 
   .drflow-ehr-print-treatment-product {
-    font-weight: 600;
-    margin: 0;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #0f172a !important;
+  }
+
+  .drflow-ehr-print-treatment-lab {
+    margin-left: 0.35rem;
+    font-weight: 400;
+    text-transform: none;
     color: #0f172a !important;
   }
 
   .drflow-ehr-print-treatment-dose {
     margin: 0.1rem 0 0;
-    color: #0f172a !important;
+    font-size: 0.78rem;
+    color: #64748b !important;
   }
 
   .drflow-ehr-print-table {
     border-collapse: collapse;
     font-size: 0.78rem;
+    color: #0f172a !important;
+    width: 100%;
+  }
+
+  .drflow-ehr-print-table-caption {
+    border: 1px solid #cbd5e1;
+    border-bottom: none;
+    background: #f8fafc;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 700;
     color: #0f172a !important;
   }
 
@@ -2805,7 +2930,7 @@ html[data-motion="reduce"] *::after {
 
   .drflow-ehr-print-table th {
     font-weight: 700;
-    background: #f8fafc;
+    background: #fff;
   }
 
   .drflow-ehr-print-table-stack {
@@ -2823,12 +2948,6 @@ html[data-motion="reduce"] *::after {
     margin: 0;
     font-weight: 600;
     color: #0f172a !important;
-  }
-
-  .drflow-ehr-print-treatment-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr 0.8fr 1.2fr 0.7fr;
-    gap: 0.35rem;
   }
 
   .drflow-ehr-print-tables {
