@@ -42,8 +42,8 @@ export function ClinicalWorkspaceAiSection({
 
       <div className="space-y-3 text-sm">
         <div>
-          <p className="mb-1 text-[11px] font-semibold uppercase text-slate-500">Resumen</p>
-          <ul className="space-y-0.5 text-slate-300">
+          <p className="drflow-patient-chart-muted mb-1 text-[11px] font-semibold uppercase">Resumen</p>
+          <ul className="drflow-patient-chart-muted space-y-0.5">
             {assistant.summaryLines.slice(0, 5).map((line) => (
               <li key={line} className="text-xs">{line}</li>
             ))}
@@ -63,10 +63,10 @@ export function ClinicalWorkspaceAiSection({
 
         {chart.reminders.length > 0 ? (
           <div>
-            <p className="mb-1 text-[11px] font-semibold uppercase text-slate-500">Seguimientos pendientes</p>
+            <p className="drflow-patient-chart-muted mb-1 text-[11px] font-semibold uppercase">Seguimientos pendientes</p>
             <ul className="space-y-0.5">
               {chart.reminders.slice(0, 4).map((r) => (
-                <li key={r} className="text-xs text-slate-400">{r}</li>
+                <li key={r} className="drflow-patient-chart-muted text-xs">{r}</li>
               ))}
             </ul>
           </div>
@@ -80,7 +80,7 @@ export function ClinicalWorkspaceAiSection({
         lastDiagnosis={lastDiagnosis}
       />
 
-      <p className="mt-2 text-[10px] leading-snug text-slate-500">
+      <p className="drflow-patient-chart-muted mt-2 text-[10px] leading-snug">
         Las sugerencias requieren confirmación del profesional. No reemplazan el criterio clínico.
       </p>
     </section>

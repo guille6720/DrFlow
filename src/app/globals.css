@@ -2717,34 +2717,82 @@ html[data-ui-palette="cobalt"] .drflow-clinical-workspace-timeline li {
   border-left-color: #93c5fd;
 }
 
+.drflow-clinical-workspace-filter-btn {
+  border-radius: 9999px;
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 500;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  color: #94a3b8;
+}
+
+.drflow-clinical-workspace-filter-btn:hover {
+  border-color: rgba(100, 116, 139, 0.55);
+}
+
+.drflow-clinical-workspace-filter-btn[aria-pressed="true"] {
+  border-color: rgba(45, 212, 191, 0.5);
+  background: rgba(15, 118, 110, 0.2);
+  color: #99f6e4;
+}
+
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-section button.rounded-full,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-section button.rounded-full {
-  border-color: #93c5fd;
-  background: #f8fafc;
-  color: #475569;
+html[data-ui-palette="cobalt"] .drflow-clinical-workspace-section button.rounded-full,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-filter-btn,
+html[data-ui-palette="cobalt"] .drflow-clinical-workspace-filter-btn {
+  border-color: #93c5fd !important;
+  background: #f8fafc !important;
+  color: #475569 !important;
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-section button.rounded-full[aria-pressed="true"],
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-section button.rounded-full[aria-pressed="true"] {
-  border-color: #2563eb;
-  background: #eff6ff;
-  color: #1d4ed8;
+html[data-ui-palette="cobalt"] .drflow-clinical-workspace-section button.rounded-full[aria-pressed="true"],
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-filter-btn[aria-pressed="true"],
+html[data-ui-palette="cobalt"] .drflow-clinical-workspace-filter-btn[aria-pressed="true"] {
+  border-color: #2563eb !important;
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
 }
 
-/* Dark clinical: Tailwind slate en workspace */
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400),
+/* Dark clinical: Tailwind slate en workspace (solo superficies oscuras; cobalt/azure usan tarjetas claras) */
+html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"]) .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400),
 html:not([data-ui-style="2"]) .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400) {
   color: #94a3b8 !important;
 }
 
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-clinical-workspace .text-slate-500,
+html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"]) .drflow-clinical-workspace .text-slate-500,
 html:not([data-ui-style="2"]) .drflow-clinical-workspace .text-slate-500 {
   color: #cbd5e1 !important;
 }
 
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-clinical-workspace .text-amber-200,
+html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"]) .drflow-clinical-workspace .text-amber-200,
 html:not([data-ui-style="2"]) .drflow-clinical-workspace .text-amber-200 {
   color: #fde68a !important;
+}
+
+/* Cobalt + estilo claro: refuerzo sobre remaps oscuros (tarjetas blancas del workspace) */
+html[data-ui-palette="cobalt"] .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400, .text-slate-500),
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400, .text-slate-500) {
+  color: #64748b !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-clinical-workspace .font-medium,
+html[data-ui-palette="cobalt"] .drflow-clinical-workspace .truncate,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .font-medium,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .truncate {
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-clinical-workspace .text-amber-200,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .text-amber-200 {
+  color: #92400e !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-clinical-workspace .drflow-patient-chart-muted,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-patient-chart-muted {
+  color: #64748b !important;
+  opacity: 1;
 }
 
 html[data-ui-palette="cobalt"] .drflow-clinical-workspace .drflow-physician-assist-panel {
@@ -3881,13 +3929,13 @@ html:not([data-ui-style="2"]) .drflow-medical-order-doc {
    bg-*-50/100, gradientes, drflow-card-light, documentos imprimibles). Las reglas de
    islas claras existentes usan !important, por lo que siguen teniendo prioridad. */
 @media screen {
-  html:not([data-ui-style="2"]) .drflow-mesh main :is(.text-slate-800, .text-slate-900):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *),
-  html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(.text-slate-800, .text-slate-900):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *) {
+  html:not([data-ui-style="2"]) .drflow-mesh main :is(.text-slate-800, .text-slate-900):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-clinical-workspace, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *),
+  html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"]) .drflow-mesh main :is(.text-slate-800, .text-slate-900):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-clinical-workspace, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *) {
     color: #f1f5f9;
   }
 
-  html:not([data-ui-style="2"]) .drflow-mesh main :is(.text-slate-500, .text-slate-600, .text-slate-700):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *),
-  html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(.text-slate-500, .text-slate-600, .text-slate-700):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *) {
+  html:not([data-ui-style="2"]) .drflow-mesh main :is(.text-slate-500, .text-slate-600, .text-slate-700):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-clinical-workspace, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *),
+  html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"]) .drflow-mesh main :is(.text-slate-500, .text-slate-600, .text-slate-700):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-clinical-workspace, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *) {
     color: #cbd5e1;
   }
 }

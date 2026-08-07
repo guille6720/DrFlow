@@ -53,11 +53,7 @@ export function ClinicalWorkspaceTimelinePreview({ ehr, patientId }: Props) {
             key={opt.id}
             type="button"
             onClick={() => setFilter(opt.id)}
-            className={`rounded-full border px-2 py-0.5 text-[10px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 ${
-              filter === opt.id
-                ? "border-teal-500 bg-teal-950/50 text-teal-200"
-                : "border-slate-600 text-slate-400 hover:border-slate-500"
-            }`}
+            className="drflow-clinical-workspace-filter-btn focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50"
             aria-pressed={filter === opt.id}
           >
             {opt.label}
@@ -71,11 +67,11 @@ export function ClinicalWorkspaceTimelinePreview({ ehr, patientId }: Props) {
         <ol className="drflow-clinical-workspace-timeline">
           {events.map((ev) => (
             <li key={ev.id}>
-              <span className="text-[10px] uppercase text-slate-500">
+              <span className="drflow-patient-chart-muted text-[10px] uppercase">
                 {CLINICAL_TIMELINE_TYPE_LABELS[ev.type]}
               </span>
               <p className="truncate text-sm font-medium">{ev.title}</p>
-              <p className="text-[11px] text-slate-400">
+              <p className="drflow-patient-chart-muted text-[11px]">
                 {format(new Date(ev.at), "d MMM yyyy HH:mm", { locale: es })}
               </p>
               {ev.href ? (

@@ -33,7 +33,7 @@ export function ClinicalWorkspaceLastConsultSection({
       <div className="drflow-clinical-workspace-section-head">
         <div>
           <h3 id="cw-last-consult-title">Última consulta</h3>
-          <p className="text-[11px] text-slate-400">
+          <p className="drflow-patient-chart-muted text-[11px]">
             {summary.dateLabel} · {summary.professionalName}
           </p>
         </div>

@@ -79,7 +79,7 @@ export function ClinicalWorkspaceVitalsSection({
         ))}
       </dl>
       {previous ? (
-        <p className="mt-1 text-[11px] text-slate-500">
+        <p className="mt-1 drflow-patient-chart-muted text-[11px]">
           Visita anterior: TA{" "}
           {previous.systolic && previous.diastolic ? `${previous.systolic}/${previous.diastolic}` : "—"} · FC{" "}
           {previous.heartRate ?? "—"}

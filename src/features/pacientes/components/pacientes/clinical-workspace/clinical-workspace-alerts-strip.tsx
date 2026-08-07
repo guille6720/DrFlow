@@ -25,7 +25,7 @@ export function ClinicalWorkspaceAlertsStrip({ alerts }: { alerts: ClinicalWorks
         aria-label="Alertas clínicas"
         className="drflow-clinical-workspace-alerts drflow-clinical-workspace-alerts-empty"
       >
-        <p className="text-sm text-slate-400">Sin alertas clínicas activas registradas.</p>
+        <p className="drflow-patient-chart-muted text-sm">Sin alertas clínicas activas registradas.</p>
       </section>
     );
   }

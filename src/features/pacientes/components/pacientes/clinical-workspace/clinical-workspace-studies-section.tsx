@@ -50,7 +50,7 @@ export function ClinicalWorkspaceStudiesSection({
                     <FlaskConical className={cn("h-3.5 w-3.5 shrink-0", kind === "lab" ? "text-amber-400" : "text-teal-400")} aria-hidden />
                     {s.file_name}
                   </p>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="drflow-patient-chart-muted text-[11px]">
                     {format(new Date(s.created_at), "d MMM yyyy", { locale: es })} ·{" "}
                     {kind === "lab" ? "Laboratorio" : kind === "imaging" ? "Imagen" : "Estudio"}
                   </p>

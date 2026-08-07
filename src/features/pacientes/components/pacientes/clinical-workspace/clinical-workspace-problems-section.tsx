@@ -36,7 +36,7 @@ export function ClinicalWorkspaceProblemsSection({ chart, patientId, canEditClin
               <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-teal-400" aria-hidden />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{p.name}</p>
-                <p className="text-[11px] text-slate-400">
+                <p className="drflow-patient-chart-muted text-[11px]">
                   {p.dateLabel} · {p.professionalName}
                 </p>
               </div>

@@ -43,7 +43,7 @@ export function ClinicalWorkspaceMedicationsSection({ chart, patientId, filtered
             <li key={m.id} className="drflow-clinical-workspace-med-row">
               <div className="min-w-0">
                 <p className="truncate font-medium">{m.name}</p>
-                <p className="text-[11px] text-slate-400">
+                <p className="drflow-patient-chart-muted text-[11px]">
                   {m.dose} · {m.frequency} · Desde {m.sinceLabel}
                 </p>
               </div>
