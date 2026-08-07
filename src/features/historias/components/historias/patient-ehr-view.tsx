@@ -18,7 +18,13 @@ export function PatientEhrView({
   embedded = false,
 }: PatientEhrViewProps) {
   return (
-    <PatientEhrStateProvider consultations={consultations} attachments={attachments}>
+    <PatientEhrStateProvider
+      consultations={consultations}
+      attachments={attachments}
+      patient={patient}
+      diagnosisRows={diagnosisRows}
+      treatmentRows={treatmentRows}
+    >
       <PatientEhrShellFrame embedded={embedded}>
         {!embedded ? <PatientEhrDemographics patient={patient} /> : null}
         <div className="drflow-ehr-print-demographics-wrap">

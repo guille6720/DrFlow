@@ -1,19 +1,25 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+
+import { toast } from "@/core/notifications/toast";
 
 import {
   DEFAULT_PATIENT_EHR_FILTERS,
   type PatientEhrFilterKey,
   type PatientEhrFilters,
+  type PatientEhrPatientInfo,
   type PatientEhrPrintScope,
 } from "@/features/historias/components/historias/patient-ehr-types";
 import { isSameCalendarDay } from "@/features/historias/components/historias/patient-ehr-utils";
+import { printEhrClinicalDocument } from "@/features/historias/utils/print-ehr-clinical-document";
 import { getPatientClinicalDocumentUrl } from "@/features/pacientes/actions/patient-attachments";
 import { HCE_SUMMARY_ATTACHMENT_NAME } from "@/features/pacientes/utils/patient-ehr-from-hce";
 import type {
   PatientEhrAttachment,
   PatientEhrConsultation,
+  PatientEhrDiagnosisRow,
+  PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
 
 function buildEvolutionList(sorted: PatientEhrConsultation[]): PatientEhrConsultation[] {
@@ -29,9 +35,16 @@ function buildEvolutionList(sorted: PatientEhrConsultation[]): PatientEhrConsult
   return withText.length > 0 ? withText : sorted.filter((c) => c.category === "evolution");
 }
 
+type PrintBundle = {
+  patient: PatientEhrPatientInfo;
+  diagnosisRows: PatientEhrDiagnosisRow[];
+  treatmentRows: PatientEhrTreatmentRow[];
+};
+
 export function usePatientEhrState(
   consultations: PatientEhrConsultation[],
-  attachments: PatientEhrAttachment[]
+  attachments: PatientEhrAttachment[],
+  printBundle: PrintBundle
 ) {
   const sorted = useMemo(
     () =>
@@ -47,17 +60,8 @@ export function usePatientEhrState(
     evolutionList[0]?.id ?? sorted[0]?.id ?? null
   );
   const [filters, setFilters] = useState<PatientEhrFilters>(DEFAULT_PATIENT_EHR_FILTERS);
-  const [printScope, setPrintScope] = useState<PatientEhrPrintScope | null>(null);
   const [openingAttachmentId, setOpeningAttachmentId] = useState<string | null>(null);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
-
-  useEffect(() => {
-    function clearPrintScope() {
-      setPrintScope(null);
-    }
-    window.addEventListener("afterprint", clearPrintScope);
-    return () => window.removeEventListener("afterprint", clearPrintScope);
-  }, []);
 
   const visibleAttachments = useMemo(
     () => attachments.filter((a) => a.file_name !== HCE_SUMMARY_ATTACHMENT_NAME),
@@ -103,10 +107,19 @@ export function usePatientEhrState(
 
   function triggerPrint(scope: PatientEhrPrintScope) {
     if (scope === "day" && dayPrintConsultations.length === 0) return;
-    setPrintScope(scope);
-    requestAnimationFrame(() => {
-      window.print();
+
+    const result = printEhrClinicalDocument({
+      scope,
+      patient: printBundle.patient,
+      consultations: evolutionList,
+      dayConsultations: dayPrintConsultations,
+      diagnosisRows: printBundle.diagnosisRows,
+      treatmentRows: printBundle.treatmentRows,
     });
+
+    if (!result.ok) {
+      toast.error(result.message);
+    }
   }
 
   function toggleFilter(key: PatientEhrFilterKey) {
@@ -125,7 +138,6 @@ export function usePatientEhrState(
     selected,
     selectedDocumentAttachment,
     vitalsRows,
-    printScope,
     dayPrintConsultations,
     triggerPrint,
   };

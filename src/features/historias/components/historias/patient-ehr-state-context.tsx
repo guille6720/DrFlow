@@ -2,10 +2,13 @@
 
 import { createContext, type ReactNode, useContext } from "react";
 
+import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
 import { usePatientEhrState } from "@/features/pacientes/hooks/use-patient-ehr-state";
 import type {
   PatientEhrAttachment,
   PatientEhrConsultation,
+  PatientEhrDiagnosisRow,
+  PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
 
 type PatientEhrState = ReturnType<typeof usePatientEhrState>;
@@ -15,11 +18,25 @@ const PatientEhrStateContext = createContext<PatientEhrState | null>(null);
 type ProviderProps = {
   consultations: PatientEhrConsultation[];
   attachments: PatientEhrAttachment[];
+  patient: PatientEhrPatientInfo;
+  diagnosisRows: PatientEhrDiagnosisRow[];
+  treatmentRows: PatientEhrTreatmentRow[];
   children: ReactNode;
 };
 
-export function PatientEhrStateProvider({ consultations, attachments, children }: ProviderProps) {
-  const state = usePatientEhrState(consultations, attachments);
+export function PatientEhrStateProvider({
+  consultations,
+  attachments,
+  patient,
+  diagnosisRows,
+  treatmentRows,
+  children,
+}: ProviderProps) {
+  const state = usePatientEhrState(consultations, attachments, {
+    patient,
+    diagnosisRows,
+    treatmentRows,
+  });
   return (
     <PatientEhrStateContext.Provider value={state}>{children}</PatientEhrStateContext.Provider>
   );

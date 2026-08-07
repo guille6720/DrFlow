@@ -1,12 +1,11 @@
 "use client";
 
 import { Printer } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
-import { PatientEhrPrintClinicalTables } from "@/features/historias/components/historias/patient-ehr-print-clinical-tables";
-import { PatientEhrPrintDemographics } from "@/features/historias/components/historias/patient-ehr-print-demographics";
-import { PatientEhrPrintEvolutionBlock } from "@/features/historias/components/historias/patient-ehr-print-evolution-block";
-import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
+import { toast } from "@/core/notifications/toast";
+
+import { printEhrClinicalDocument } from "@/features/historias/utils/print-ehr-clinical-document";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
 import { buildEhrPayloadFromRecords } from "@/features/pacientes/utils/patient-ehr-model";
 
@@ -46,11 +45,9 @@ interface Props {
   professional: RecordProfessional;
 }
 
-/** Imprime la consulta con layout Equipos (misma salida que HC del paciente). */
+/** Imprime la consulta con layout Equipos en un documento aislado (sin UI de la app). */
 export function PrintClinicalRecordButton({ record, patient, professional }: Props) {
-  const [printing, setPrinting] = useState(false);
-
-  const patientInfo: PatientEhrPatientInfo = useMemo(
+  const patientInfo = useMemo(
     () => ({
       id: patient.id,
       first_name: patient.first_name,
@@ -85,52 +82,25 @@ export function PrintClinicalRecordButton({ record, patient, professional }: Pro
     ]);
   }, [record, professional]);
 
-  useEffect(() => {
-    if (!printing) return;
-    function clearPrinting() {
-      setPrinting(false);
-    }
-    window.addEventListener("afterprint", clearPrinting);
-    return () => window.removeEventListener("afterprint", clearPrinting);
-  }, [printing]);
-
   function handlePrint() {
-    setPrinting(true);
-    requestAnimationFrame(() => {
-      window.print();
+    const result = printEhrClinicalDocument({
+      scope: "all",
+      patient: patientInfo,
+      consultations,
+      dayConsultations: consultations,
+      diagnosisRows,
+      treatmentRows,
     });
+
+    if (!result.ok) {
+      toast.error(result.message);
+    }
   }
 
   return (
-    <>
-      <Button type="button" variant="outline" size="sm" onClick={handlePrint}>
-        <Printer className="h-4 w-4" aria-hidden />
-        Imprimir
-      </Button>
-
-      <div
-        className="drflow-clinical-record-print-host"
-        data-active={printing ? "true" : undefined}
-        aria-hidden={!printing}
-      >
-        <div className="drflow-ehr-shell" data-print-scope={printing ? "all" : undefined}>
-          <div className="drflow-ehr-print-demographics-wrap">
-            <PatientEhrPrintDemographics patient={patientInfo} />
-          </div>
-          <div className="drflow-ehr-print-only drflow-ehr-print-all-content space-y-3">
-            {consultations.map((consultation) => (
-              <PatientEhrPrintEvolutionBlock key={consultation.id} consultation={consultation} />
-            ))}
-          </div>
-          <div className="drflow-ehr-print-only drflow-ehr-print-tables-wrap">
-            <PatientEhrPrintClinicalTables
-              diagnosisRows={diagnosisRows}
-              treatmentRows={treatmentRows}
-              consultations={consultations}
-            />
-          </div>
-        </div>
-      </div>
-    </>
+    <Button type="button" variant="outline" size="sm" onClick={handlePrint}>
+      <Printer className="h-4 w-4" aria-hidden />
+      Imprimir
+    </Button>
   );
 }
