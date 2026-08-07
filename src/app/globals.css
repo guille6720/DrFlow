@@ -3874,3 +3874,20 @@ html:not([data-ui-style="2"]) .drflow-medical-order-doc {
   background: #ffffff !important;
   color: #0f172a !important;
 }
+
+/* ——— Legibilidad global en modo oscuro (Estilo 1 y Estilo 2 clínico oscuro) ———
+   Texto slate oscuro (pensado para fondo claro) sobre superficies oscuras → tonos claros.
+   Se excluyen elementos con fondo propio y descendientes de islas claras (bg-white,
+   bg-*-50/100, gradientes, drflow-card-light, documentos imprimibles). Las reglas de
+   islas claras existentes usan !important, por lo que siguen teniendo prioridad. */
+@media screen {
+  html:not([data-ui-style="2"]) .drflow-mesh main :is(.text-slate-800, .text-slate-900):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *),
+  html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(.text-slate-800, .text-slate-900):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *) {
+    color: #f1f5f9;
+  }
+
+  html:not([data-ui-style="2"]) .drflow-mesh main :is(.text-slate-500, .text-slate-600, .text-slate-700):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *),
+  html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(.text-slate-500, .text-slate-600, .text-slate-700):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *) {
+    color: #cbd5e1;
+  }
+}
