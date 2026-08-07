@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useRef, useState, useTransition } from "react";
 
-import { buildPamiPlanillasUrl } from "@/features/pami/server/load-pami-planillas-page";
+import { buildPamiPlanillasUrl } from "@/features/pami/utils/build-pami-planillas-url";
 
 /** Debounce alineado con pacientes (300 ms) — dentro del rango 300–500 ms pedido. */
 export const PAMI_PLANILLAS_SEARCH_DEBOUNCE_MS = 300;

@@ -15,6 +15,8 @@ import type { PamiPlanillaCatalog } from "@/features/pami/types/pami-planilla-te
 import { getCachedClinicProfessionalsList, getCachedPamiPlanillaCatalog } from "@/lib/server/cached-clinic-queries";
 import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 
+export { buildPamiPlanillasUrl } from "@/features/pami/utils/build-pami-planillas-url";
+
 export type { PamiPlanillaPatient };
 
 export type PamiPlanillasPageData = {
@@ -26,14 +28,6 @@ export type PamiPlanillasPageData = {
   pageMeta: PageMeta;
   searchQuery: string;
 };
-export function buildPamiPlanillasUrl(q: string, page: number): string {
-  const params = new URLSearchParams();
-  if (q) params.set("q", q);
-  if (page > 1) params.set("page", String(page));
-  const s = params.toString();
-  return s ? `/pami/planillas?${s}` : "/pami/planillas";
-}
-
 export async function loadPamiPlanillasPageData(
   supabase: SupabaseClient,
   clinicId: string,

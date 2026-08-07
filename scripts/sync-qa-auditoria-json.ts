@@ -13,7 +13,7 @@ import {
   QA_LAYER_ORDER,
   type QaFunctionalModule,
   type QaModuleSummary,
-} from "../src/core/qa/modular-audit-layers.ts";
+} from "@/core/qa/modular-audit-layers";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const COMBINED_PATH = path.join(ROOT, "docs", "qa-auditoria-modulos.json");
