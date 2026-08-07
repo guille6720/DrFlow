@@ -22,7 +22,15 @@ describe("patientWorkspaceBackHref", () => {
     expect(patientWorkspaceBackHref(patientId, "soap")).toBe("/pacientes/patient-1");
   });
 
-  it("returns patient list from non-HC tabs", () => {
+  it("returns patient list from resumen tab", () => {
     expect(patientWorkspaceBackHref(patientId, "resumen")).toBe("/pacientes");
+  });
+
+  it("returns patient chart from archivos tab instead of the patient list", () => {
+    expect(patientWorkspaceBackHref(patientId, "archivos")).toBe("/pacientes/patient-1");
+  });
+
+  it("returns patient chart from estudios tab", () => {
+    expect(patientWorkspaceBackHref(patientId, "estudios")).toBe("/pacientes/patient-1");
   });
 });

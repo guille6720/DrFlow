@@ -5,6 +5,7 @@ import {
 
 import {
   DEFAULT_HC_WORKSPACE_TAB,
+  DEFAULT_PATIENT_WORKSPACE_TAB,
   isHcWorkspaceTab,
   type PatientWorkspaceTabId,
 } from "@/features/pacientes/constants/patient-workspace-tabs";
@@ -42,5 +43,10 @@ export function patientWorkspaceBackHref(
     return `/pacientes/${patientId}`;
   }
 
-  return "/pacientes";
+  if (tab === DEFAULT_PATIENT_WORKSPACE_TAB) {
+    return "/pacientes";
+  }
+
+  // Archivos, estudios, timeline, etc.: volver al resumen del mismo paciente.
+  return `/pacientes/${patientId}`;
 }

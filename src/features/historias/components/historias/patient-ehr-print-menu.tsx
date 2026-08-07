@@ -23,7 +23,9 @@ export function PatientEhrPrintMenu() {
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [open]);
 
-  function handlePrint(scope: "all" | "day") {
+  function handlePrint(scope: "all" | "day", event: React.MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    event.stopPropagation();
     triggerPrint(scope);
     setOpen(false);
   }
@@ -52,7 +54,7 @@ export function PatientEhrPrintMenu() {
             type="button"
             role="menuitem"
             disabled={!selected || dayPrintConsultations.length === 0}
-            onClick={() => handlePrint("day")}
+            onClick={(event) => handlePrint("day", event)}
             className="block w-full px-3 py-2 text-left text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Historia del día
@@ -60,7 +62,7 @@ export function PatientEhrPrintMenu() {
           <button
             type="button"
             role="menuitem"
-            onClick={() => handlePrint("all")}
+            onClick={(event) => handlePrint("all", event)}
             className="block w-full px-3 py-2 text-left text-slate-800 hover:bg-slate-50"
           >
             Toda la historia clínica
