@@ -15,7 +15,7 @@ export function formatProfessionalLicenses(professional: {
 
 export function buildProfessionalSignature(professional: {
   display_name?: string | null;
-  profiles?: { full_name?: string | null } | null;
+  profiles?: { full_name?: string | null } | { full_name?: string | null }[] | null;
   license_national?: string | null;
   license_provincial?: string | null;
   license_number?: string | null;
@@ -28,13 +28,17 @@ export function buildProfessionalSignature(professional: {
 
 export function getProfessionalDisplayName(professional: {
   display_name?: string | null;
-  profiles?: { full_name?: string | null } | null;
+  profiles?: { full_name?: string | null } | { full_name?: string | null }[] | null;
   license_number?: string | null;
   id?: string;
 }): string {
+  const profileName = Array.isArray(professional.profiles)
+    ? professional.profiles[0]?.full_name
+    : professional.profiles?.full_name;
+
   return (
     professional.display_name ??
-    professional.profiles?.full_name ??
+    profileName ??
     professional.license_number ??
     (professional.id ? professional.id.slice(0, 8) : "Profesional")
   );

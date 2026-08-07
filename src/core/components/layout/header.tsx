@@ -19,6 +19,8 @@ import { UserAccountModal } from "./user-account-modal";
 interface HeaderProps {
   title: string;
   subtitle?: string;
+  /** Links page main landmark to the visible page title (WCAG 2.4.6). */
+  titleId?: string;
   clinics: { clinic_id: string; clinic?: Clinic }[];
   activeClinicId?: string | null;
   role: UserRole | null;
@@ -29,6 +31,7 @@ interface HeaderProps {
 export function Header({
   title,
   subtitle,
+  titleId,
   clinics,
   activeClinicId,
   role,
@@ -52,6 +55,7 @@ export function Header({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="pl-12 lg:pl-0">
           <h1
+            id={titleId}
             className={cn(
               "text-xl font-bold tracking-tight sm:text-2xl",
               shellDark ? "text-slate-50" : "text-slate-900"

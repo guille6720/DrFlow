@@ -21,7 +21,7 @@ import {
   listClinicalAiAgents,
   runClinicalAiOrchestrator,
 } from "@/lib/utils/clinical-ai-orchestrator";
-import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
+import { buildClinicalAiOrchestratorInput } from "@/lib/utils/clinical-ai-request-mapper";
 import { buildClinicalCopilotContextSummary } from "@/lib/utils/clinical-copilot-responses";
 
 function buildCopilotChatMessages(
@@ -66,17 +66,8 @@ export const POST = withObservabilityApiRoute("clinical_ai", async (request, ctx
   }
 
   const payload = parsed.data;
-  const result = runClinicalAiOrchestrator({
-    task: payload.task,
-    message: payload.message,
-    patientId: payload.patientId,
-    patientName: payload.patientName,
-    labSourceText: payload.labSourceText,
-    lastConsultAt: payload.lastConsultAt ?? undefined,
-    assistContext: payload.assistContext as never,
-    copilotContext: payload.copilotContext as never,
-    chart: payload.chart as never,
-  });
+  const orchestratorInput = buildClinicalAiOrchestratorInput(payload);
+  const result = runClinicalAiOrchestrator(orchestratorInput);
 
   const userCredentials = payload.useUserProvider
     ? await getUserAiCredentialsForSession()
@@ -87,7 +78,7 @@ export const POST = withObservabilityApiRoute("clinical_ai", async (request, ctx
     (payload.enhanceWithLlm || payload.useUserProvider || payload.task === "copilot_query");
 
   if (wantsLlm && credentials) {
-    const copilotCtx = (payload.copilotContext ?? {}) as ClinicalCopilotContext;
+    const copilotCtx = orchestratorInput.copilotContext ?? {};
     const contextSummary =
       buildClinicalCopilotContextSummary(copilotCtx) || payload.patientName || undefined;
 

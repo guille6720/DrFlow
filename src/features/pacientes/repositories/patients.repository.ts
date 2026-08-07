@@ -1,5 +1,5 @@
 import type { DbClient, RepoResult } from "@/core/repositories/types";
-import { mapDbError, repoErr, repoOk } from "@/core/repositories/types";
+import { mapPostgresError, repoErr, repoOk } from "@/core/repositories/types";
 
 import type { Patient } from "@/types/database";
 
@@ -21,13 +21,8 @@ export type PatientInsertRow = {
 
 export type PatientUpdateRow = Omit<PatientInsertRow, "clinic_id">;
 
-const PATIENT_DB_HINTS: Record<string, string> = {
-  insurance_plan:
-    "Falta actualizar la base de datos (columna insurance_plan). En Supabase → SQL Editor ejecutá supabase/migrations/041_patients_insurance_plan.sql y volvé a intentar.",
-};
-
-export function formatPatientDbError(message: string): string {
-  return mapDbError(message, PATIENT_DB_HINTS);
+export function formatPatientDbError(error: { message?: string; code?: string; details?: string; hint?: string }): string {
+  return mapPostgresError(error);
 }
 
 export async function findPatientById(
@@ -65,7 +60,7 @@ export async function insertPatient(
   row: PatientInsertRow
 ): Promise<RepoResult<Patient>> {
   const { data, error } = await db.from("patients").insert(row).select().single();
-  if (error) return repoErr(formatPatientDbError(error.message));
+  if (error) return repoErr(formatPatientDbError(error));
   return repoOk(data as Patient);
 }
 
@@ -81,7 +76,7 @@ export async function updatePatientRow(
     .eq("id", patientId)
     .eq("clinic_id", clinicId);
 
-  if (error) return repoErr(formatPatientDbError(error.message));
+  if (error) return repoErr(formatPatientDbError(error));
   return repoOk(undefined);
 }
 

@@ -3,6 +3,8 @@
 import { AlertTriangle, ChevronDown, Copy, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { toast } from "@/core/notifications/toast";
+
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
@@ -31,7 +33,6 @@ function SectionValue({ section }: { section: PreVisitBriefSection }) {
 export function PreVisitBriefPanel({ patientName, chart, lastConsultAt, className = "" }: Props) {
   const enabled = useFeatureFlag("consultation_assistant");
   const [open, setOpen] = useState(true);
-  const [copied, setCopied] = useState(false);
 
   const brief = useMemo(
     () => buildPreVisitBrief({ patientName, chart, lastConsultAt }),
@@ -43,8 +44,7 @@ export function PreVisitBriefPanel({ patientName, chart, lastConsultAt, classNam
   async function handleCopy() {
     if (typeof navigator === "undefined" || !navigator.clipboard) return;
     await navigator.clipboard.writeText(brief.plainText);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+    toast.copySuccess();
   }
 
   return (
@@ -101,7 +101,7 @@ export function PreVisitBriefPanel({ patientName, chart, lastConsultAt, classNam
             </p>
             <Button type="button" size="sm" variant="outline" onClick={() => void handleCopy()}>
               <Copy className="h-3.5 w-3.5" />
-              {copied ? "Copiado" : "Copiar"}
+              Copiar
             </Button>
           </div>
         </div>

@@ -14,15 +14,16 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
+import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
+
 import { createAppointment } from "@/lib/actions/appointments";
-import type { Appointment } from "@/types/database";
 
 type ViewMode = "day" | "week" | "month";
 
 type Options = {
   initialView?: ViewMode;
   initialShowForm?: boolean;
-  appointments: Appointment[];
+  appointments: AppointmentAgendaRow[];
   defaultDuration: number;
   defaultProfessionalId?: string;
 };
@@ -44,7 +45,7 @@ export function useAgendaView({
   const [loading, setLoading] = useState(false);
   const [startAt, setStartAt] = useState("");
   const [formProfessionalId, setFormProfessionalId] = useState(defaultProfessionalId);
-  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [editingAppointment, setEditingAppointment] = useState<AppointmentAgendaRow | null>(null);
 
   const filtered = useMemo(
     () =>

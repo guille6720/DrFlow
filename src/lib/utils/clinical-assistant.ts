@@ -3,6 +3,7 @@ import type {
   PhysicianAssistItem,
   PhysicianAssistKind,
 } from "@/features/ia/types/physician-assist-types";
+import { stubMedicationCard } from "@/features/pacientes/utils/medication-card-stub";
 import type { ChartAlert, MedicationCard } from "@/features/pacientes/utils/patient-chart-model-types";
 
 import { buildConsultationDocumentationItems } from "@/lib/utils/consultation-documentation";
@@ -402,15 +403,9 @@ export function buildInteractionAlertItems(ctx: PhysicianAssistContext): Physici
           .split(/[\n,;]+/)
           .map((s) => s.trim())
           .filter(Boolean),
-        medications: ctx.proposedMedications.map((name, i) => ({
-          id: `rx-${i}`,
-          name,
-          dose: "—",
-          frequency: "—",
-          sinceLabel: "—",
-          lastRenewalLabel: "—",
-          raw: {} as never,
-        })),
+        medications: ctx.proposedMedications.map((name, i) =>
+          stubMedicationCard({ id: `rx-${i}`, name })
+        ),
         extraMedNames: (ctx.regularMedication ?? "")
           .split(/[\n,;]+/)
           .map((s) => s.trim())

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { createClient } from "@/core/supabase/server";
 
@@ -23,21 +24,14 @@ export async function seedDemoPatientsForActiveClinic(): Promise<DemoSeedResult>
   });
 
   if (error) {
-    const msg = error.message ?? "";
-    if (
-      msg.includes("seed_demo_patients_for_clinic") ||
-      msg.includes("function") ||
-      error.code === "42883"
-    ) {
-      return {
-        error:
-          "Falta la función en Supabase. Ejecutá las migraciones 017 y 019 en el SQL Editor.",
-      };
-    }
-    if (msg.includes("FORBIDDEN")) {
-      return { error: "No tenés permiso para cargar datos demo en esta clínica." };
-    }
-    return { error: msg || "No se pudieron cargar los datos demo." };
+    return {
+      error: resolvePostgresUserMessage(error, {
+        rpcMessages: {
+          FORBIDDEN: "No tenés permiso para cargar datos demo en esta clínica.",
+        },
+        fallback: "No se pudieron cargar los datos demo.",
+      }),
+    };
   }
 
   const result = (data ?? {}) as {

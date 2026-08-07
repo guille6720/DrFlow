@@ -8,8 +8,6 @@ import { cn } from "@/shared/utils/cn";
 import { clearConsultationTimer, ConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
 import { FinalizeConsultationButton } from "@/features/historias/components/historias/finalize-consultation-button";
 
-import type { Patient } from "@/types/database";
-
 export type ConsultationStep = "motivo" | "evolucion" | "diagnostico" | "indicaciones";
 
 const STEPS: { id: ConsultationStep; label: string; icon: typeof FileText }[] = [
@@ -21,7 +19,7 @@ const STEPS: { id: ConsultationStep; label: string; icon: typeof FileText }[] = 
 
 interface ConsultationFlowBarProps {
   appointmentId: string;
-  patient?: Patient | null;
+  patient?: { first_name: string; last_name: string } | null;
   activeStep?: ConsultationStep;
   onStepChange?: (step: ConsultationStep) => void;
   /** Oculta la barra de pasos cuando el formulario usa un solo campo de evolución. */

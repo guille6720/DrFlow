@@ -8,17 +8,19 @@ import { useState } from "react";
 
 import { cn } from "@/shared/utils/cn";
 
+import type { HistoriaMedicalOrderSummary } from "@/features/historias/types/historia-clinical-summaries";
 import { voidMedicalOrder } from "@/features/recetas/actions/medical-orders";
 import { MedicalOrderActionButtons } from "@/features/recetas/components/recetas/medical-order-action-buttons";
 import { MedicalOrderEditSheet } from "@/features/recetas/components/recetas/medical-order-edit-sheet";
 import { MedicalOrderForm } from "@/features/recetas/components/recetas/medical-order-form";
 import { MedicalOrderPreviewSheet } from "@/features/recetas/components/recetas/medical-order-preview-sheet";
+import { isMedicalOrderConflictError } from "@/features/recetas/repositories/medical-orders.errors";
 import { buildMedicalOrderDocumentData } from "@/features/recetas/utils/build-medical-order-document-data";
+import { normalizeMedicalOrderVersion } from "@/features/recetas/utils/medical-order-version";
 import { orderTypeLabel } from "@/features/recetas/utils/order-type-label";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { MedicalOrder } from "@/types/medical-order";
 
 interface Professional {
   id: string;
@@ -39,7 +41,7 @@ interface PatientInfo {
 }
 
 interface Props {
-  orders: MedicalOrder[];
+  orders: HistoriaMedicalOrderSummary[];
   patient: PatientInfo;
   clinicalRecordId: string;
   professionals: Professional[];
@@ -66,19 +68,17 @@ export function MedicalOrderPanel({
   const [acting, setActing] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [editingOrder, setEditingOrder] = useState<(MedicalOrder & { order_type?: string }) | null>(
-    null
-  );
+  const [editingOrder, setEditingOrder] = useState<HistoriaMedicalOrderSummary | null>(null);
   const [previewData, setPreviewData] = useState<ReturnType<typeof buildMedicalOrderDocumentData> | null>(
     null
   );
 
-  function openEdit(order: MedicalOrder & { order_type?: string }) {
+  function openEdit(order: HistoriaMedicalOrderSummary) {
     setEditingOrder(order);
     setEditOpen(true);
   }
 
-  async function handleDelete(order: MedicalOrder & { order_type?: string }) {
+  async function handleDelete(order: HistoriaMedicalOrderSummary & { order_type?: string }) {
     if (
       !confirm(
         `¿Eliminar esta orden de ${orderTypeLabel(order.order_type)}?\n\nSe marcará como anulada y dejará de estar disponible para imprimir.`
@@ -88,10 +88,13 @@ export function MedicalOrderPanel({
     }
 
     setActing(order.id);
-    const result = await voidMedicalOrder(order.id);
+    const result = await voidMedicalOrder(order.id, normalizeMedicalOrderVersion(order.version));
     setActing(null);
 
     if (result.error) {
+      if (isMedicalOrderConflictError(result.error)) {
+        router.refresh();
+      }
       alert(result.error);
       return;
     }
@@ -99,7 +102,7 @@ export function MedicalOrderPanel({
     router.refresh();
   }
 
-  function openPreview(order: MedicalOrder & { order_type?: string }) {
+  function openPreview(order: HistoriaMedicalOrderSummary & { order_type?: string }) {
     setPreviewData(buildMedicalOrderDocumentData(order, patient, clinic, professionals));
     setPreviewOpen(true);
   }
@@ -132,9 +135,8 @@ export function MedicalOrderPanel({
       ) : (
         <ul className="space-y-3">
           {orders.map((order) => {
-            const typedOrder = order as MedicalOrder & { order_type?: string };
             const documentData = buildMedicalOrderDocumentData(
-              typedOrder,
+              order,
               patient,
               clinic,
               professionals
@@ -155,7 +157,7 @@ export function MedicalOrderPanel({
                   <button
                     type="button"
                     disabled={isVoid}
-                    onClick={() => openPreview(typedOrder)}
+                      onClick={() => openPreview(order)}
                     className={cn(
                       "min-w-0 flex-1 text-left",
                       isVoid ? "cursor-default" : "cursor-pointer"
@@ -163,7 +165,7 @@ export function MedicalOrderPanel({
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-                        {orderTypeLabel(typedOrder.order_type)}
+                        {orderTypeLabel(order.order_type)}
                       </span>
                       <p className="text-xs text-slate-500">
                         {format(new Date(order.issued_at), "PPp", { locale: es })}
@@ -188,9 +190,9 @@ export function MedicalOrderPanel({
                     <MedicalOrderActionButtons
                       compact
                       data={documentData}
-                      onPreview={() => openPreview(typedOrder)}
-                      onEdit={canIssue ? () => openEdit(typedOrder) : undefined}
-                      onDelete={canIssue ? () => handleDelete(typedOrder) : undefined}
+                      onPreview={() => openPreview(order)}
+                      onEdit={canIssue ? () => openEdit(order) : undefined}
+                      onDelete={canIssue ? () => handleDelete(order) : undefined}
                       acting={acting === order.id}
                     />
                   ) : null}

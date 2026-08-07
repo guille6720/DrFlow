@@ -57,7 +57,25 @@ button {
   background: transparent;
 }
 
-@keyframes fab-in {
+@keyframes drflow-toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes drflow-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
   from {
     opacity: 0;
     transform: translateY(8px) scale(0.95);
@@ -2580,8 +2598,38 @@ html[data-motion="reduce"] *::after {
   border-color: rgba(45, 212, 191, 0.25);
 }
 
+.drflow-clinical-record-print-host {
+  display: none;
+}
+
 .drflow-ehr-print-demographics-wrap {
   display: none;
+}
+
+@media print {
+  .drflow-clinical-record-print-host[data-active="true"] {
+    display: block !important;
+  }
+
+  .drflow-historia-detail-screen {
+    display: none !important;
+  }
+
+  .drflow-clinical-record-print-host[data-active="true"] .drflow-ehr-print-only {
+    display: none;
+  }
+
+  .drflow-clinical-record-print-host[data-active="true"] .drflow-ehr-print-all-content,
+  .drflow-clinical-record-print-host[data-active="true"] .drflow-ehr-print-tables-wrap {
+    display: block !important;
+  }
+
+  .drflow-clinical-record-print-host[data-active="true"] .drflow-ehr-print-demographics-wrap {
+    display: block !important;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #cbd5e1;
+  }
 }
 
 .drflow-ehr-print-section-title {
@@ -2665,6 +2713,11 @@ html[data-motion="reduce"] *::after {
     font-size: 0.85rem;
     color: #0f172a !important;
     margin: 0.15rem 0 0;
+  }
+
+  .drflow-ehr-print-demo-age {
+    white-space: pre-line;
+    line-height: 1.35;
   }
 
   .drflow-ehr-print-evolution {

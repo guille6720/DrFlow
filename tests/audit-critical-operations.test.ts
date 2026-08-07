@@ -64,7 +64,11 @@ describe("audit service module", () => {
 });
 
 describe("critical operations audit coverage", () => {
-  const criticalMutations: Array<{ file: string; mustAudit: string[] }> = [
+  const criticalMutations: Array<{
+    file: string;
+    mustAudit: string[];
+    auditPattern?: RegExp;
+  }> = [
     {
       file: "src/lib/actions/invitations.ts",
       mustAudit: ["inviteClinicMember", "revokeClinicInvitation", "updateClinicMemberRole"],
@@ -76,6 +80,7 @@ describe("critical operations audit coverage", () => {
     {
       file: "src/features/recetas/actions/medical-orders.ts",
       mustAudit: ["createMedicalOrder", "voidMedicalOrder"],
+      auditPattern: /recordAudit|logAudit|recordMedicalOrder\w+Audit/,
     },
     {
       file: "src/features/recetas/actions/prescriptions.ts",
@@ -91,15 +96,15 @@ describe("critical operations audit coverage", () => {
     },
   ];
 
-  for (const { file, mustAudit } of criticalMutations) {
+  for (const { file, mustAudit, auditPattern = /recordAudit|logAudit/ } of criticalMutations) {
     it(`${file} audits critical mutations`, () => {
       const content = readFileSync(resolve(ROOT, file), "utf8");
-      expect(content).toMatch(/recordAudit|logAudit/);
+      expect(content).toMatch(auditPattern);
       for (const fn of mustAudit) {
         const fnBody = content.slice(content.indexOf(`export async function ${fn}`));
         const nextFn = fnBody.indexOf("\nexport async function ", 10);
         const section = nextFn > 0 ? fnBody.slice(0, nextFn) : fnBody;
-        expect(section).toMatch(/recordAudit|logAudit|recordAuditChange/);
+        expect(section).toMatch(/recordAudit|logAudit|recordAuditChange|recordMedicalOrder\w+Audit/);
       }
     });
   }

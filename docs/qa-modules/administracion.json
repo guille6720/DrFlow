@@ -1,0 +1,102 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs administracion",
+  "module": {
+    "id": "administracion",
+    "name": "Administración / secretaría",
+    "status": "ready",
+    "summary": {
+      "what": "Documentos admin, sala de espera y registro de atenciones por periodo.",
+      "inputs": "Upload doc admin, appointmentId + estado espera, periodo atenciones.",
+      "outputs": "patient_admin_documents, waiting_room_status, resumen atenciones."
+    },
+    "layers": [
+      {
+        "layerId": "auth",
+        "layerLabel": "Autenticación / guards",
+        "what": "Permisos secretaría/doctor y clinic guard en acciones admin.",
+        "inputs": "Rol, clinicId, patientId.",
+        "outputs": "FORBIDDEN | scoped mutations.",
+        "files": [
+          "src/core/permissions/roles.ts",
+          "src/core/actions/clinic-guard.ts"
+        ]
+      },
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Actions documentos admin, sala espera y loader atenciones paginado.",
+        "inputs": "FormData upload, waiting_room_status, filtros periodo.",
+        "outputs": "Docs persistidos, estados turno, stats atenciones.",
+        "files": [
+          "src/lib/actions/admin-documents.ts",
+          "src/lib/actions/waiting-room.ts",
+          "src/features/administracion/server/load-atenciones-page.ts",
+          "src/lib/utils/attendance-stats.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Schemas Zod documentos admin y tipos cash relacionados.",
+        "inputs": "Payload upload, metadata doc.",
+        "outputs": "Validación Zod, filas admin_documents.",
+        "files": [
+          "src/core/validations/admin-documents.ts",
+          "src/core/validations/cash-schemas.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Páginas secretaría/documentos, sala-espera y atenciones con paneles.",
+        "inputs": "Selección paciente/turno, drag estado espera.",
+        "outputs": "UI docs, cola espera, registro atenciones.",
+        "files": [
+          "src/app/(dashboard)/secretaria/documentos/page.tsx",
+          "src/app/(dashboard)/sala-espera/page.tsx",
+          "src/app/(dashboard)/atenciones/page.tsx",
+          "src/features/administracion/components/secretaria/admin-documents-panel.tsx",
+          "src/features/administracion/components/secretaria/waiting-room-view.tsx",
+          "src/features/administracion/components/atenciones/patient-attendance-register.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-admin-docs",
+        "label": "Subir documento admin por paciente",
+        "href": "/secretaria/documentos"
+      },
+      {
+        "id": "mod-admin-wait",
+        "label": "Cambiar estado sala de espera",
+        "href": "/sala-espera"
+      },
+      {
+        "id": "mod-admin-atenc",
+        "label": "Registro atenciones por periodo",
+        "href": "/atenciones"
+      },
+      {
+        "id": "mod-admin-perm",
+        "label": "Doctor accede sala de espera",
+        "href": "/sala-espera"
+      }
+    ]
+  }
+}

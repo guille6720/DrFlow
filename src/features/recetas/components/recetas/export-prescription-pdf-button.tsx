@@ -1,7 +1,9 @@
 "use client";
 
+import type { HistoriaPrescriptionSummary } from "@/features/historias/types/historia-clinical-summaries";
+
 import { loadJsPdf } from "@/lib/utils/jspdf-loader";
-import type { ElectronicPrescription, PrescriptionMedication } from "@/types/prescription";
+import type { PrescriptionMedication } from "@/types/prescription";
 import { ARGENTINA_PRESCRIPTION_DISCLAIMER, PRESCRIPTION_TYPE_LABELS } from "@/types/prescription";
 
 interface PatientInfo {
@@ -24,7 +26,7 @@ interface ClinicInfo {
 }
 
 interface Props {
-  prescription: ElectronicPrescription;
+  prescription: HistoriaPrescriptionSummary;
   patient: PatientInfo;
   professional: ProfessionalInfo;
   clinic: ClinicInfo;
@@ -57,8 +59,8 @@ export function ExportPrescriptionPdfButton({
     doc.text(`N° ${prescription.prescription_number ?? prescription.id.slice(0, 8)}`, 20, y);
     doc.text(`Fecha: ${new Date(issued).toLocaleString("es-AR")}`, 120, y);
     y += 8;
-    doc.text(`Tipo: ${PRESCRIPTION_TYPE_LABELS[prescription.prescription_type]}`, 20, y);
-    doc.text(`Vigencia: ${prescription.validity_days} días`, 120, y);
+    doc.text(`Tipo: ${PRESCRIPTION_TYPE_LABELS[prescription.prescription_type ?? "ambulatoria"]}`, 20, y);
+    doc.text(`Vigencia: ${prescription.validity_days ?? 30} días`, 120, y);
 
     y += 10;
     doc.setFont("helvetica", "bold");

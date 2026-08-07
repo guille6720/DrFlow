@@ -4,12 +4,13 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
+import type { ProfessionalAgendaRow } from "@/core/supabase/query-types";
+
 import type { AgendaViewState } from "@/features/agenda/hooks/use-agenda-view";
 
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
-import type { Professional } from "@/types/database";
 
 type Props = {
   agenda: Pick<
@@ -24,7 +25,7 @@ type Props = {
     | "shiftCalendar"
     | "openNewAppointmentForm"
   >;
-  professionals: Professional[];
+  professionals: ProfessionalAgendaRow[];
   specialties: { id: string; name: string }[];
 };
 

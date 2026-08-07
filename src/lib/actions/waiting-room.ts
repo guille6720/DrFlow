@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.server";
+import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { createClient } from "@/core/supabase/server";
 import { waitingRoomStatusSchema } from "@/core/validations/cash-schemas";
 import { parseEntityId } from "@/core/validations/params";
@@ -32,10 +33,7 @@ export async function updateWaitingRoomStatus(
   });
 
   if (error) {
-    if (error.message.includes("APPOINTMENT_NOT_FOUND")) {
-      return { error: "Turno no encontrado" };
-    }
-    return { error: error.message };
+    return { error: resolvePostgresUserMessage(error, { fallback: error.message }) };
   }
 
   await logAudit({

@@ -4,6 +4,7 @@ import {
   getDashboardPageContext,
 } from "@/core/auth/dashboard-page";
 import { APPOINTMENTS_AGENDA_MAX, PATIENT_PICKER_INITIAL_LIMIT } from "@/core/supabase/pagination";
+import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
 import { APPOINTMENT_AGENDA_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
@@ -67,13 +68,16 @@ async function AgendaContent({
     ? await resolveDefaultProfessionalId(supabase, clinicId, professionals as Array<{ id: string }>)
     : undefined;
 
+  const appointmentRows: AppointmentAgendaRow[] = appointments.data ?? [];
+  const professionalRows: ProfessionalAgendaRow[] = professionals;
+
   return (
     <AgendaView
       initialView={initialView}
       initialShowForm={initialShowForm}
-      appointments={(appointments.data ?? []) as never}
+      appointments={appointmentRows}
       patients={patients.data ?? []}
-      professionals={professionals as never}
+      professionals={professionalRows}
       locations={locations}
       specialties={specialties}
       clinics={clinics}

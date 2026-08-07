@@ -16,6 +16,7 @@ import { useState } from "react";
 import { cn } from "@/shared/utils/cn";
 import { buildWhatsAppShareUrl, buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 
+import { usePamiMessages } from "@/features/pami/i18n";
 import { ExportPrescriptionPdfButton } from "@/features/recetas/components/recetas/export-prescription-pdf-button";
 import { MedicalOrderActionButtons } from "@/features/recetas/components/recetas/medical-order-action-buttons";
 import { MedicalOrderPreviewSheet } from "@/features/recetas/components/recetas/medical-order-preview-sheet";
@@ -46,6 +47,7 @@ export function PrescriptionsOrdersPatientSidebar({
   patientPrescriptions,
   patientOrders,
 }: Props) {
+  const pamiNav = usePamiMessages().nav.commandPalette;
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<ReturnType<typeof buildMedicalOrderDocumentData> | null>(
     null
@@ -200,14 +202,14 @@ export function PrescriptionsOrdersPatientSidebar({
             className="inline-flex items-center gap-2 text-teal-700 hover:underline"
           >
             <Stethoscope className="h-4 w-4" />
-            Guía cabecera PAMI
+            {pamiNav.guia}
           </Link>
           <Link
             href="/pami/planillas"
             className="inline-flex items-center gap-2 text-blue-700 hover:underline"
           >
             <ClipboardList className="h-4 w-4" />
-            Planillas PAMI
+            {pamiNav.planillas}
           </Link>
         </div>
       </Card>

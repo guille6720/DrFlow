@@ -1,14 +1,24 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { revalidatePamiCabeceraSurfaces } from "@/core/cache/revalidate-pami-cabecera";
+import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { createClient } from "@/core/supabase/server";
+
+import {
+  formatPamiCabeceraSuccessMessage,
+  pamiCabeceraSeedChanged,
+  parsePamiCabeceraSeedResult,
+} from "@/features/pami/server/pami-cabecera-setup";
+
+import { pamiSetupMessages } from "@/locales/es-AR/pami/setup";
 
 export async function configurePamiCabecera(): Promise<{
   success?: boolean;
   error?: string;
   message?: string;
+  alreadyConfigured?: boolean;
+  changed?: boolean;
 }> {
   const access = await requireClinicPermission("manageSettings");
   if (!access.ok) return { error: access.error };
@@ -20,24 +30,24 @@ export async function configurePamiCabecera(): Promise<{
   });
 
   if (error) {
-    const msg = error.message ?? "";
-    if (msg.includes("seed_pami_cabecera") || msg.includes("function")) {
-      return {
-        error: "Ejecutá la migración 020 en Supabase SQL Editor (020_pami_cabecera.sql).",
-      };
-    }
-    return { error: msg || "No se pudo configurar el perfil PAMI." };
+    return {
+      error: resolvePostgresUserMessage(error, {
+        fallback: pamiSetupMessages.seed.configureError,
+      }),
+    };
   }
 
-  const result = (data ?? {}) as { templates_added?: number; reasons_added?: number };
+  const result = parsePamiCabeceraSeedResult(data);
+  const changed = pamiCabeceraSeedChanged(result);
 
-  revalidatePath("/configuracion");
-  revalidatePath("/dashboard");
-  revalidatePath("/historias/nueva");
-  revalidatePath("/guia-pami");
+  if (changed) {
+    revalidatePamiCabeceraSurfaces(clinicId);
+  }
 
   return {
     success: true,
-    message: `Consultorio PAMI listo: ${result.templates_added ?? 5} plantillas clínicas, turnos de 20 min, cobertura PAMI por defecto.`,
+    alreadyConfigured: result.already_configured === true,
+    changed,
+    message: formatPamiCabeceraSuccessMessage(result),
   };
 }

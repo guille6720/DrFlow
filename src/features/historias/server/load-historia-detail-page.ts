@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
+import type {
+  HistoriaMedicalOrderSummary,
+  HistoriaPrescriptionSummary,
+} from "@/features/historias/types/historia-clinical-summaries";
 
 import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
 
@@ -40,7 +44,12 @@ export type HistoriaDetailPageData = {
     appointment_id: string | null;
     professional_id: string;
     patients: HistoriaDetailPatient;
-    professionals: { profiles: { full_name: string } | null };
+    professionals: {
+      license_national?: string | null;
+      license_provincial?: string | null;
+      license_number?: string | null;
+      profiles: { full_name: string; email?: string | null } | null;
+    };
   };
   patient: HistoriaDetailPatient;
   portalSlug: string | null;
@@ -51,16 +60,21 @@ export type HistoriaDetailPageData = {
     changed_at: string;
     profiles: { full_name: string } | null;
   }>;
-  prescriptions: unknown[];
+  prescriptions: HistoriaPrescriptionSummary[];
   professionalList: HistoriaDetailProfessional[];
-  medicalOrders: unknown[];
+  medicalOrders: HistoriaMedicalOrderSummary[];
   patientShare: {
     sharedAt: string;
     sharedByName: string | null;
     channel: string;
   } | null;
   clinicalDocuments: ClinicalDocumentItem[];
-  professional: { profiles: { full_name: string } | null };
+  professional: {
+    license_national?: string | null;
+    license_provincial?: string | null;
+    license_number?: string | null;
+    profiles: { full_name: string; email?: string | null } | null;
+  };
 };
 
 export async function loadHistoriaDetailPageData(
@@ -71,7 +85,7 @@ export async function loadHistoriaDetailPageData(
   const { data: record } = await supabase
     .from("clinical_records")
     .select(
-      "*, patients(id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, email, allergies, regular_medication, emergency_contact_name, emergency_contact_phone), professionals(profiles(full_name))"
+      "*, patients(id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, email, allergies, regular_medication, emergency_contact_name, emergency_contact_phone), professionals(license_national, license_provincial, license_number, profiles(full_name, email))"
     )
     .eq("id", id)
     .eq("clinic_id", clinicId)
@@ -108,7 +122,9 @@ export async function loadHistoriaDetailPageData(
       .eq("is_active", true),
     supabase
       .from("medical_orders")
-      .select("id, order_text, notes, status, issued_at, created_at, professional_id, patient_id, clinical_record_id")
+      .select(
+        "id, order_text, order_type, notes, status, issued_at, created_at, updated_at, version, professional_id, patient_id, clinical_record_id"
+      )
       .eq("clinical_record_id", id)
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false }),
@@ -136,9 +152,7 @@ export async function loadHistoriaDetailPageData(
       }
     : null;
 
-  const professional = record.professionals as unknown as {
-    profiles: { full_name: string } | null;
-  };
+  const professional = record.professionals as unknown as HistoriaDetailPageData["professional"];
   const professionalList = (professionals ?? []) as unknown as HistoriaDetailProfessional[];
 
   return {
@@ -147,9 +161,9 @@ export async function loadHistoriaDetailPageData(
     portalSlug,
     doctorInfo,
     audit: (audit ?? []) as unknown as HistoriaDetailPageData["audit"],
-    prescriptions: prescriptions ?? [],
+    prescriptions: (prescriptions ?? []) as HistoriaPrescriptionSummary[],
     professionalList,
-    medicalOrders: medicalOrders ?? [],
+    medicalOrders: (medicalOrders ?? []) as HistoriaMedicalOrderSummary[],
     patientShare,
     clinicalDocuments: (clinicalDocuments ?? []) as ClinicalDocumentItem[],
     professional,

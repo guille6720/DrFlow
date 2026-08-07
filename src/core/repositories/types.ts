@@ -15,9 +15,17 @@ export function repoErr<T = never>(error: string): RepoResult<T> {
   return { ok: false, error };
 }
 
+import type { PostgresErrorLike } from "@/core/errors/postgres-error";
+import { resolveRepositoryDbError } from "@/core/errors/postgres-error";
+
+/** @deprecated Prefer resolveRepositoryDbError(error) with a PostgresErrorLike object. */
 export function mapDbError(message: string, hints: Record<string, string>): string {
-  for (const [needle, hint] of Object.entries(hints)) {
-    if (message.includes(needle)) return hint;
-  }
-  return message;
+  return resolveRepositoryDbError({ message }, hints);
+}
+
+export function mapPostgresError(
+  error: PostgresErrorLike,
+  extraColumnHints: Record<string, string> = {}
+): string {
+  return resolveRepositoryDbError(error, extraColumnHints);
 }

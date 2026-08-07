@@ -18,6 +18,7 @@ import {
   loadClinicProfessionalsListCached,
   loadClinicProfessionalsSettingsCached,
   loadClinicSpecialtiesCached,
+  loadPamiPlanillaCatalogCached,
 } from "@/lib/server/cached-clinic-metadata";
 import type { PortalContext } from "@/lib/utils/portal-doctor-info";
 import { resolveClinicPlugins } from "@/plugins/resolve";
@@ -84,6 +85,11 @@ export const getCachedClinicSpecialties = cache(async (clinicId: string) => {
 
 export const getCachedClinicalTemplates = cache(async (clinicId: string) => {
   return loadClinicClinicalTemplatesCached(clinicId);
+});
+
+/** Per-request dedupe for PAMI planilla catalog (categories + templates). */
+export const getCachedPamiPlanillaCatalog = cache(async (clinicId: string) => {
+  return loadPamiPlanillaCatalogCached(clinicId);
 });
 
 /** Empty features context when no clinic is selected. */

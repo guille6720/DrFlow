@@ -1,0 +1,102 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs profesionales",
+  "module": {
+    "id": "profesionales",
+    "name": "Profesionales / equipo",
+    "status": "ready",
+    "summary": {
+      "what": "Alta de profesionales, datos bancarios, horarios y panel miembros del equipo.",
+      "inputs": "FormData intake, reglas agenda JSON, datos banco, memberId.",
+      "outputs": "Filas professionals/availability_rules, paths /ingreso-profesionales."
+    },
+    "layers": [
+      {
+        "layerId": "auth",
+        "layerLabel": "Autenticación / guards",
+        "what": "Guard adapters y permisos admin/doctor para intake y edición de equipo.",
+        "inputs": "Rol, clinicId, professionalId.",
+        "outputs": "FORBIDDEN secretaría | acceso admin/doctor.",
+        "files": [
+          "src/core/permissions/roles.ts",
+          "src/core/actions/guard-adapters.ts"
+        ]
+      },
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Server actions intake profesional, hooks intake y panel miembro equipo.",
+        "inputs": "FormData especialidad/matricula/sede, reglas agenda.",
+        "outputs": "Profesional persistido, cache revalidada.",
+        "files": [
+          "src/lib/actions/professional-intake.ts",
+          "src/features/profesionales/hooks/use-professional-intake.ts",
+          "src/features/profesionales/hooks/use-clinic-team-member-panel.ts",
+          "src/features/profesionales/components/profesionales/professional-intake-utils.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Schemas Zod intake profesional, datos bancarios y settings.",
+        "inputs": "Payload intake, CBU/alias banco.",
+        "outputs": "Validación Zod, filas professionals.",
+        "files": [
+          "src/core/validations/professional-intake.ts",
+          "src/core/validations/professional-bank.ts",
+          "src/core/validations/settings-schemas.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Vista intake, formulario nuevo profesional, editor horarios y panel miembro.",
+        "inputs": "Selección profesional, checklist intake.",
+        "outputs": "UI alta/edición profesional y equipo.",
+        "files": [
+          "src/app/(dashboard)/ingreso-profesionales/page.tsx",
+          "src/features/profesionales/components/profesionales/professional-intake-view.tsx",
+          "src/features/profesionales/components/profesionales/professional-intake-new-form.tsx",
+          "src/features/profesionales/components/profesionales/professional-schedule-editor.tsx",
+          "src/features/profesionales/components/profesionales/clinic-team-member-detail-panel.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-prof-intake",
+        "label": "Nuevo profesional completa checklist",
+        "href": "/ingreso-profesionales?nuevo=1"
+      },
+      {
+        "id": "mod-prof-bank",
+        "label": "Datos bancarios persisten",
+        "href": "/ingreso-profesionales"
+      },
+      {
+        "id": "mod-prof-schedule",
+        "label": "Reglas de agenda guardan",
+        "href": "/ingreso-profesionales"
+      },
+      {
+        "id": "mod-prof-perm",
+        "label": "Secretaría no accede al módulo",
+        "href": "/ingreso-profesionales"
+      }
+    ]
+  }
+}

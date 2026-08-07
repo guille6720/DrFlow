@@ -9,11 +9,11 @@ import {
 
 import { ClinicalDocumentsPanel } from "@/features/historias/components/historias/clinical-documents-panel";
 import { ConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
-import { ExportClinicalPdfButton } from "@/features/historias/components/historias/export-clinical-pdf-button";
 import { FinalizeConsultationButton } from "@/features/historias/components/historias/finalize-consultation-button";
 import { HistoriaDetailAuditCard } from "@/features/historias/components/historias/historia-detail-audit-card";
 import { HistoriaDetailConsultaCard } from "@/features/historias/components/historias/historia-detail-consulta-card";
 import { MedicalOrderPanel } from "@/features/historias/components/historias/medical-order-panel";
+import { PrintClinicalRecordButton } from "@/features/historias/components/historias/print-clinical-record-button";
 import type { HistoriaDetailPageData } from "@/features/historias/server/load-historia-detail-page";
 import { PamiPatientBanner } from "@/features/pacientes/components/pacientes/pami-patient-banner";
 import { PatientAppShareControl } from "@/features/pacientes/components/pacientes/patient-app-share-control";
@@ -62,7 +62,7 @@ export function HistoriaDetailContent({
   const backHref = backHrefFromClinicalSubpage(from, returnPatientId ?? patient.id, "/historias");
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
+    <div className="drflow-historia-detail-screen space-y-6 p-4 sm:p-6">
       <PamiPatientBanner patient={patient} />
 
       {portalSlug && doctorInfo && (
@@ -92,7 +92,7 @@ export function HistoriaDetailContent({
           Historia clínica completa
         </Link>
         {record.appointment_id && <ConsultationTimer storageKey={record.appointment_id} />}
-        <ExportClinicalPdfButton record={record} patient={patient} professional={professional} />
+        <PrintClinicalRecordButton record={record} patient={patient} professional={professional} />
         <PatientWhatsAppButton
           phone={patient.phone}
           message={buildPatientContactMessage(
@@ -136,7 +136,7 @@ export function HistoriaDetailContent({
           {canIssue && clinic && (
             <>
               <PrescriptionPanel
-                prescriptions={prescriptions as never[]}
+                prescriptions={prescriptions}
                 patient={patient}
                 clinicalRecordId={id}
                 diagnosis={record.diagnosis}
@@ -149,7 +149,7 @@ export function HistoriaDetailContent({
                 canIssue={canIssue}
               />
               <MedicalOrderPanel
-                orders={medicalOrders as never[]}
+                orders={medicalOrders}
                 patient={patient}
                 clinicalRecordId={id}
                 professionals={professionalList}

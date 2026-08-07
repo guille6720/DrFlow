@@ -3,6 +3,8 @@
 import { AlertTriangle, Copy, FlaskConical, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { toast } from "@/core/notifications/toast";
+
 import { PHYSICIAN_ASSIST_DISCLAIMER } from "@/features/ia/types/physician-assist-types";
 import type { PatientChartExtras } from "@/features/pacientes/utils/patient-chart-model-types";
 import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
@@ -34,7 +36,6 @@ export function LabInterpretationPanel({
 }: Props) {
   const enabled = useFeatureFlag("consultation_assistant");
   const [internalText, setInternalText] = useState("");
-  const [copied, setCopied] = useState(false);
 
   const sourceText = controlledText ?? internalText;
   const setSourceText = onSourceTextChange ?? setInternalText;
@@ -54,8 +55,7 @@ export function LabInterpretationPanel({
   async function handleCopy() {
     if (!item || typeof navigator === "undefined" || !navigator.clipboard) return;
     await navigator.clipboard.writeText(item.body);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+    toast.copySuccess("Resumen copiado al portapapeles");
   }
 
   const abnormal = comparisons.filter((c) => c.status === "high" || c.status === "low");
@@ -137,7 +137,7 @@ export function LabInterpretationPanel({
             <div className="flex flex-wrap gap-2">
               <Button type="button" size="sm" variant="outline" onClick={() => void handleCopy()}>
                 <Copy className="h-3.5 w-3.5" />
-                {copied ? "Copiado" : "Copiar resumen"}
+                Copiar resumen
               </Button>
             </div>
           ) : null}

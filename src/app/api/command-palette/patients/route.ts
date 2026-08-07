@@ -46,17 +46,22 @@ export const GET = withObservabilityApiRoute("command_palette_patients", async (
   }
 
   const supabase = await createClient();
-  const selectFields = extended
-    ? "id, first_name, last_name, document_number, insurance_number, phone, address"
-    : "id, first_name, last_name, document_number";
 
-  let query = supabase
-    .from("patients")
-    .select(selectFields)
-    .eq("clinic_id", clinicId)
-    .eq("is_active", true)
-    .order("last_name")
-    .limit(limit ?? PATIENT_SEARCH_API_LIMIT);
+  let query = extended
+    ? supabase
+        .from("patients")
+        .select("id, first_name, last_name, document_number, insurance_number, phone, address")
+        .eq("clinic_id", clinicId)
+        .eq("is_active", true)
+        .order("last_name")
+        .limit(limit ?? PATIENT_SEARCH_API_LIMIT)
+    : supabase
+        .from("patients")
+        .select("id, first_name, last_name, document_number")
+        .eq("clinic_id", clinicId)
+        .eq("is_active", true)
+        .order("last_name")
+        .limit(limit ?? PATIENT_SEARCH_API_LIMIT);
 
   if (cobertura === "pami") {
     query = query.ilike("insurance_provider", "%PAMI%");
@@ -69,7 +74,8 @@ export const GET = withObservabilityApiRoute("command_palette_patients", async (
     return NextResponse.json({ patients: [], error: error.message }, { status: 500 });
   }
 
-  const patients = extended ? (data ?? []) : mapPatientHits((data ?? []) as never);
+  const rows = data ?? [];
+  const patients = extended ? rows : mapPatientHits(rows);
 
   return NextResponse.json({ patients });
 });

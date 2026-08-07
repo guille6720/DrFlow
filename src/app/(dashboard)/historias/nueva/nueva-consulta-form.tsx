@@ -4,21 +4,22 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 import { Header } from "@/core/components/layout/header";
+import type { ConsultPatientPickerRow, ProfessionalListRow } from "@/core/supabase/query-types";
 
 import { ConsultationFlowBar } from "@/features/historias/components/historias/consultation-flow-bar";
 import { NuevaConsultaFormBody } from "@/features/historias/components/historias/nueva-consulta-form-body";
 import { useNuevaConsultaForm } from "@/features/historias/hooks/use-nueva-consulta-form";
 import { PamiPatientBanner } from "@/features/pacientes/components/pacientes/pami-patient-banner";
 
-import type { Clinic, Patient, Professional, UserRole } from "@/types/database";
+import type { Clinic, UserRole } from "@/types/database";
 
 interface Props {
   clinics: { clinic_id: string; clinic?: Clinic }[];
   clinicId: string | null;
   role: UserRole | null;
   userName?: string;
-  patients: Patient[];
-  professionals: Professional[];
+  patients: ConsultPatientPickerRow[];
+  professionals: ProfessionalListRow[];
   templates: Array<{
     id: string;
     name: string;

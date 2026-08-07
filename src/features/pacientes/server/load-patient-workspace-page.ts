@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { unwrapNestedRow } from "@/core/supabase/nested-row";
 import { PATIENT_ATTACHMENTS_LIMIT } from "@/core/supabase/pagination";
+import type { ProfessionalListRow } from "@/core/supabase/query-types";
 
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
 import type { PatientChartAppointment, PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
@@ -34,7 +36,7 @@ import type { PrescriptionMedication } from "@/types/prescription";
 
 export type PatientWorkspaceProfessional = {
   id: string;
-  display_name: string;
+  display_name: string | null;
   license_number: string | null;
   profiles: { full_name: string } | null;
 };
@@ -89,22 +91,13 @@ function mapChartAppointments(rows: unknown): PatientChartAppointment[] {
   return (rows ?? []) as PatientChartAppointment[];
 }
 
-function mapProfessionals(
-  rows: Array<{
-    id: string;
-    display_name: string;
-    license_number: string | null;
-    profiles: { full_name: string } | { full_name: string }[] | null;
-  }> | null
-): PatientWorkspaceProfessional[] {
+function mapProfessionals(rows: ProfessionalListRow[] | null): PatientWorkspaceProfessional[] {
   return (
     rows?.map((p) => ({
       id: p.id,
       display_name: p.display_name,
       license_number: p.license_number,
-      profiles: Array.isArray(p.profiles)
-        ? (p.profiles[0] as { full_name: string } | undefined) ?? null
-        : (p.profiles as { full_name: string } | null),
+      profiles: unwrapNestedRow(p.profiles),
     })) ?? []
   );
 }
@@ -155,7 +148,7 @@ export async function loadPatientWorkspacePageData(
       .limit(PATIENT_RX_FETCH_LIMIT),
     supabase
       .from("medical_orders")
-      .select("id, order_text, notes, status, issued_at, created_at, professional_id, patient_id, clinical_record_id, order_type")
+      .select("id, order_text, notes, status, issued_at, created_at, updated_at, version, professional_id, patient_id, clinical_record_id, order_type")
       .eq("clinic_id", clinicId)
       .eq("patient_id", patientId)
       .order("issued_at", { ascending: false })

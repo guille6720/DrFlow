@@ -3,6 +3,8 @@
 import { Check, Copy, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { toast } from "@/core/notifications/toast";
+
 import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
 import { PHYSICIAN_ASSIST_DISCLAIMER } from "@/features/ia/types/physician-assist-types";
 import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
@@ -81,7 +83,6 @@ type PanelProps = {
 export function CloseEncounterWizardPanel({ patientName, context, compact = false }: PanelProps) {
   const enabled = useFeatureFlag("consultation_assistant");
   const [reviewed, setReviewed] = useState<Record<string, boolean>>({});
-  const [copiedAll, setCopiedAll] = useState(false);
 
   const steps = useMemo(
     () => buildCloseEncounterSteps({ ...context, patientName }),
@@ -103,13 +104,13 @@ export function CloseEncounterWizardPanel({ patientName, context, compact = fals
   async function copyStep(step: CloseEncounterStep) {
     if (!step.item || typeof navigator === "undefined" || !navigator.clipboard) return;
     await navigator.clipboard.writeText(step.item.body);
+    toast.copySuccess();
   }
 
   async function copyAll() {
     if (typeof navigator === "undefined" || !navigator.clipboard) return;
     await navigator.clipboard.writeText(buildCloseEncounterBundleText(steps));
-    setCopiedAll(true);
-    window.setTimeout(() => setCopiedAll(false), 2000);
+    toast.copySuccess("Paquete copiado al portapapeles");
   }
 
   return (
@@ -144,7 +145,7 @@ export function CloseEncounterWizardPanel({ patientName, context, compact = fals
       <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
         <Button type="button" disabled={availableSteps.length === 0} onClick={() => void copyAll()}>
           <Copy className="h-4 w-4" />
-          {copiedAll ? "Copiado" : "Copiar todo el paquete"}
+          Copiar todo el paquete
         </Button>
         {allReviewed ? (
           <span className="text-xs font-medium text-emerald-700">

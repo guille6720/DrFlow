@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { batchPatientRecordCounts } from "@/lib/utils/batch-patient-record-counts";
 
+import { createSupabaseTestDouble } from "../helpers/mock-supabase-client";
+
 describe("batchPatientRecordCounts", () => {
   it("returns empty map for no patient ids", async () => {
     const supabase = {
@@ -13,9 +15,9 @@ describe("batchPatientRecordCounts", () => {
           }),
         }),
       }),
-    } as never;
+    } ;
 
-    const counts = await batchPatientRecordCounts(supabase, "clinic-1", []);
+    const counts = await batchPatientRecordCounts(createSupabaseTestDouble(supabase), "clinic-1", []);
     expect(counts.size).toBe(0);
   });
 
@@ -31,9 +33,9 @@ describe("batchPatientRecordCounts", () => {
       from: () => {
         throw new Error("should not scan rows when RPC succeeds");
       },
-    } as never;
+    } ;
 
-    const counts = await batchPatientRecordCounts(supabase, "clinic-1", ["p1", "p2", "p3"]);
+    const counts = await batchPatientRecordCounts(createSupabaseTestDouble(supabase), "clinic-1", ["p1", "p2", "p3"]);
     expect(counts.get("p1")).toBe(3);
     expect(counts.get("p2")).toBe(1);
     expect(counts.get("p3")).toBe(0);
@@ -45,9 +47,9 @@ describe("batchPatientRecordCounts", () => {
       from: () => {
         throw new Error("should not scan rows when RPC fails");
       },
-    } as never;
+    } ;
 
-    const counts = await batchPatientRecordCounts(supabase, "clinic-1", ["p1", "p2", "p3"]);
+    const counts = await batchPatientRecordCounts(createSupabaseTestDouble(supabase), "clinic-1", ["p1", "p2", "p3"]);
     expect(counts.get("p1")).toBe(0);
     expect(counts.get("p2")).toBe(0);
     expect(counts.get("p3")).toBe(0);

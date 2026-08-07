@@ -4,6 +4,8 @@ import { Pill, ScrollText } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import type { ConsultPatientPickerRow } from "@/core/supabase/query-types";
+
 import { cn } from "@/shared/utils/cn";
 
 import type { NuevaConsultaFormState } from "@/features/historias/hooks/use-nueva-consulta-form";
@@ -15,18 +17,17 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
-import type { Patient } from "@/types/database";
 
 type FormProfessional = {
   id: string;
   display_name?: string | null;
   license_number?: string | null;
-  profiles?: { full_name?: string } | null;
+  profiles?: { full_name?: string } | { full_name?: string }[] | null;
 };
 
 type Props = {
   form: NuevaConsultaFormState;
-  patients: Patient[];
+  patients: ConsultPatientPickerRow[];
   professionals: FormProfessional[];
   templates: Array<{ id: string; name: string }>;
   canIssuePrescriptions: boolean;

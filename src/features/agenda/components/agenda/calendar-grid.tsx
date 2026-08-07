@@ -5,11 +5,12 @@ import { es } from "date-fns/locale";
 import { Globe } from "lucide-react";
 import { memo, useMemo } from "react";
 
+import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
+
 import { cn } from "@/shared/utils/cn";
 
 import { appointmentStatusBadge, Badge } from "@/components/ui/badge";
 import { isOnlineBooking } from "@/lib/utils/appointment";
-import type { Appointment } from "@/types/database";
 
 const HOUR_START = 8;
 const HOUR_END = 20;
@@ -33,7 +34,7 @@ interface Block {
 
 interface CalendarGridProps {
   weekDays: Date[];
-  appointments: Appointment[];
+  appointments: AppointmentAgendaRow[];
   blocks?: Block[];
   onSlotClick?: (day: Date, time: string) => void;
 }
@@ -61,8 +62,8 @@ function isSlotBlocked(day: Date, time: string, blocks: Block[]): boolean {
   });
 }
 
-function buildAppointmentsBySlot(appointments: Appointment[]): Map<string, Appointment[]> {
-  const map = new Map<string, Appointment[]>();
+function buildAppointmentAgendaRowsBySlot(appointments: AppointmentAgendaRow[]): Map<string, AppointmentAgendaRow[]> {
+  const map = new Map<string, AppointmentAgendaRow[]>();
   for (const appt of appointments) {
     const key = appointmentSlotKey(appt.start_at);
     const list = map.get(key);
@@ -88,10 +89,10 @@ function buildBlockedSlotKeys(weekDays: Date[], blocks: Block[]): Set<string> {
   return set;
 }
 
-const CalendarAppointmentChip = memo(function CalendarAppointmentChip({
+const CalendarAppointmentAgendaRowChip = memo(function CalendarAppointmentAgendaRowChip({
   appt,
 }: {
-  appt: Appointment;
+  appt: AppointmentAgendaRow;
 }) {
   const status = appointmentStatusBadge[appt.status];
   const online = isOnlineBooking(appt);
@@ -122,7 +123,7 @@ const CalendarSlotCell = memo(function CalendarSlotCell({
 }: {
   day: Date;
   time: string;
-  dayAppts: Appointment[];
+  dayAppts: AppointmentAgendaRow[];
   blocked: boolean;
   onSlotClick?: (day: Date, time: string) => void;
 }) {
@@ -163,7 +164,7 @@ const CalendarSlotCell = memo(function CalendarSlotCell({
         <span className="block truncate px-1 text-[9px] text-red-400/90">Bloqueo</span>
       ) : null}
       {dayAppts.map((appt) => (
-        <CalendarAppointmentChip key={appt.id} appt={appt} />
+        <CalendarAppointmentAgendaRowChip key={appt.id} appt={appt} />
       ))}
     </div>
   );
@@ -181,7 +182,7 @@ export function CalendarGrid({
   );
 
   const appointmentsBySlot = useMemo(
-    () => buildAppointmentsBySlot(appointments),
+    () => buildAppointmentAgendaRowsBySlot(appointments),
     [appointments]
   );
 

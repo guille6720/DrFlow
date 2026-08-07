@@ -1,5 +1,12 @@
+import { isUniqueViolation } from "@/core/errors/postgres-error";
 import type { DbClient, RepoResult } from "@/core/repositories/types";
-import { mapDbError, repoErr, repoOk } from "@/core/repositories/types";
+import { mapPostgresError, repoErr, repoOk } from "@/core/repositories/types";
+
+import {
+  MEDICAL_ORDER_CONCURRENCY_ERROR,
+  MEDICAL_ORDER_IDEMPOTENCY_CONFLICT,
+  MEDICAL_ORDER_VOIDED_ERROR,
+} from "@/features/recetas/repositories/medical-orders.errors";
 
 import type { MedicalOrder } from "@/types/medical-order";
 
@@ -12,19 +19,61 @@ export type MedicalOrderInsertRow = {
   notes: string | null;
   order_type: string;
   status: string;
-  issued_at: string;
   created_by: string;
+  idempotency_key?: string | null;
 };
 
-const MEDICAL_ORDER_DB_HINTS: Record<string, string> = {
-  medical_orders:
-    "Falta la migración 015 en Supabase (órdenes médicas y turnos online).",
-  "schema cache":
-    "Falta la migración 015 en Supabase (órdenes médicas y turnos online).",
-};
+const MEDICAL_ORDER_DB_HINTS: Record<string, string> = {};
 
-export function formatMedicalOrderDbError(message: string): string {
-  return mapDbError(message, MEDICAL_ORDER_DB_HINTS);
+export function formatMedicalOrderDbError(error: { message?: string; code?: string; details?: string; hint?: string }): string {
+  return mapPostgresError(error, MEDICAL_ORDER_DB_HINTS);
+}
+
+export async function getMedicalOrderVersionRow(
+  db: DbClient,
+  orderId: string,
+  clinicId: string
+): Promise<RepoResult<{ version: number; status: MedicalOrder["status"] }>> {
+  const { data, error } = await db
+    .from("medical_orders")
+    .select("version, status")
+    .eq("id", orderId)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+
+  if (error) return repoErr(formatMedicalOrderDbError(error));
+  if (!data) return repoErr("Orden no encontrada.");
+  return repoOk({
+    version: typeof data.version === "number" ? data.version : 1,
+    status: data.status as MedicalOrder["status"],
+  });
+}
+
+async function resolveMedicalOrderWriteConflict(
+  db: DbClient,
+  orderId: string,
+  clinicId: string
+): Promise<string> {
+  const current = await getMedicalOrderVersionRow(db, orderId, clinicId);
+  if (!current.ok) return current.error;
+  if (current.data.status !== "issued") return MEDICAL_ORDER_VOIDED_ERROR;
+  return MEDICAL_ORDER_CONCURRENCY_ERROR;
+}
+
+export async function findMedicalOrderByIdempotencyKey(
+  db: DbClient,
+  clinicId: string,
+  idempotencyKey: string
+): Promise<RepoResult<MedicalOrder | null>> {
+  const { data, error } = await db
+    .from("medical_orders")
+    .select("*")
+    .eq("clinic_id", clinicId)
+    .eq("idempotency_key", idempotencyKey)
+    .maybeSingle();
+
+  if (error) return repoErr(formatMedicalOrderDbError(error));
+  return repoOk((data as MedicalOrder | null) ?? null);
 }
 
 export async function insertMedicalOrder(
@@ -32,7 +81,12 @@ export async function insertMedicalOrder(
   row: MedicalOrderInsertRow
 ): Promise<RepoResult<MedicalOrder>> {
   const { data, error } = await db.from("medical_orders").insert(row).select().single();
-  if (error) return repoErr(formatMedicalOrderDbError(error.message));
+  if (error) {
+    if (isUniqueViolation(error)) {
+      return repoErr(MEDICAL_ORDER_IDEMPOTENCY_CONFLICT);
+    }
+    return repoErr(formatMedicalOrderDbError(error));
+  }
   return repoOk(data as MedicalOrder);
 }
 
@@ -47,33 +101,51 @@ export async function updateMedicalOrderRow(
   db: DbClient,
   orderId: string,
   clinicId: string,
+  expectedVersion: number,
   patch: MedicalOrderUpdateRow
 ): Promise<RepoResult<MedicalOrder>> {
   const { data, error } = await db
     .from("medical_orders")
-    .update({ ...patch, updated_at: new Date().toISOString() })
+    .update({
+      ...patch,
+      version: expectedVersion + 1,
+    })
     .eq("id", orderId)
     .eq("clinic_id", clinicId)
     .eq("status", "issued")
+    .eq("version", expectedVersion)
     .select()
     .maybeSingle();
 
-  if (error) return repoErr(formatMedicalOrderDbError(error.message));
-  if (!data) return repoErr("Orden no encontrada o ya anulada.");
+  if (error) return repoErr(formatMedicalOrderDbError(error));
+  if (!data) {
+    return repoErr(await resolveMedicalOrderWriteConflict(db, orderId, clinicId));
+  }
   return repoOk(data as MedicalOrder);
 }
 
 export async function voidMedicalOrderRow(
   db: DbClient,
   orderId: string,
-  clinicId: string
+  clinicId: string,
+  expectedVersion: number
 ): Promise<RepoResult<void>> {
-  const { error } = await db
+  const { data, error } = await db
     .from("medical_orders")
-    .update({ status: "void", updated_at: new Date().toISOString() })
+    .update({
+      status: "void",
+      version: expectedVersion + 1,
+    })
     .eq("id", orderId)
-    .eq("clinic_id", clinicId);
+    .eq("clinic_id", clinicId)
+    .eq("status", "issued")
+    .eq("version", expectedVersion)
+    .select("id")
+    .maybeSingle();
 
-  if (error) return repoErr(error.message);
+  if (error) return repoErr(formatMedicalOrderDbError(error));
+  if (!data) {
+    return repoErr(await resolveMedicalOrderWriteConflict(db, orderId, clinicId));
+  }
   return repoOk(undefined);
 }

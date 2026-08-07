@@ -1,0 +1,77 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs billing",
+  "module": {
+    "id": "billing",
+    "name": "Monetización / trial",
+    "status": "ready",
+    "summary": {
+      "what": "Planes SaaS, trial 10 días, landing /planes.",
+      "inputs": "trial_ends_at, planId, WhatsApp ventas.",
+      "outputs": "Bloqueo trial, pricing cards, CTAs comerciales."
+    },
+    "layers": [
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Planes SaaS, trial 10 días, caja consultorio (lab) y contacto comercial WhatsApp.",
+        "inputs": "trial_ends_at, planId, FormData cobro caja.",
+        "outputs": "Bloqueo trial expirado, mensajes ventas, filas cash.",
+        "files": [
+          "src/core/billing/plans.ts",
+          "src/core/trial/clinic-trial.ts",
+          "src/lib/actions/cash-register.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Schemas caja y campo trial_ends_at en clinics.",
+        "inputs": "Montos ARS, movimientos caja.",
+        "outputs": "Validación cash-schemas, filas payments.",
+        "files": [
+          "src/core/validations/cash-schemas.ts",
+          "src/types/database.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Landing /planes, trial banner, página trial-expirado y pagos (mock lab).",
+        "inputs": "Plan seleccionado, click WhatsApp.",
+        "outputs": "Pricing cards, redirect /planes, banner días restantes.",
+        "files": [
+          "src/core/components/landing/plans-pricing-section.tsx",
+          "src/app/(marketing)/planes/page.tsx",
+          "src/core/components/trial/trial-banner.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-bill-planes",
+        "label": "Landing /planes muestra precios",
+        "href": "/planes"
+      },
+      {
+        "id": "mod-bill-trial",
+        "label": "Trial banner visible en dashboard",
+        "href": "/dashboard"
+      }
+    ]
+  }
+}

@@ -1,9 +1,10 @@
 "use client";
 
 import { Bot, Copy, Loader2, Send, Settings, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { SafeInternalLink } from "@/core/components/safe-link";
+import { toast } from "@/core/notifications/toast";
 
 import { useClinicalCopilotChat } from "@/features/ia/hooks/use-clinical-copilot-chat";
 import { PHYSICIAN_ASSIST_DISCLAIMER } from "@/features/ia/types/physician-assist-types";
@@ -26,7 +27,6 @@ type Props = {
 /** Conversational clinical copilot — LLM when configured, rule-based fallback. */
 export function ClinicalCopilotSheet({ open, onClose, context }: Props) {
   const enabled = useFeatureFlag("consultation_assistant");
-  const [copied, setCopied] = useState(false);
   const { turns, input, setInput, submit, loading, meta, hasLlm } = useClinicalCopilotChat(context);
 
   const prompts = useMemo(() => buildCopilotSuggestedPrompts(context), [context]);
@@ -34,8 +34,7 @@ export function ClinicalCopilotSheet({ open, onClose, context }: Props) {
   async function copyText(text: string) {
     if (typeof navigator === "undefined" || !navigator.clipboard) return;
     await navigator.clipboard.writeText(text);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+    toast.copySuccess();
   }
 
   const subtitle = context.patientName ?? "Sin paciente activo";
@@ -209,7 +208,6 @@ export function ClinicalCopilotSheet({ open, onClose, context }: Props) {
         <Button type="button" variant="ghost" onClick={onClose}>
           Cerrar
         </Button>
-        {copied ? <span className="self-center text-xs text-emerald-700">Copiado</span> : null}
       </div>
     </PatientWorkspaceOverlay>
   );

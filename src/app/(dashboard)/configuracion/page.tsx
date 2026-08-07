@@ -26,6 +26,7 @@ import { getClinicFeatureFlagSettings } from "@/lib/actions/clinic-feature-flags
 import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
 import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
 import { getClinicObservabilityDashboard } from "@/lib/actions/observability";
+import { loadPamiPlanillaAdminCatalog } from "@/lib/actions/pami-planilla-admin";
 import { loadTeamPermissionsPanelData } from "@/lib/actions/team-permissions";
 import { getClinicSharedAiConnectionPublic } from "@/lib/ai/clinic-shared-ai.server";
 import { getCachedActiveBookingSlug, getCachedClinicProfessionalsSettings } from "@/lib/server/cached-clinic-queries";
@@ -81,9 +82,9 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
 
   const settingsProps: SettingsPanelData = {
     clinic,
-    professionals: professionals as never[],
-    members: enrichTeamMembers(members.data ?? [], invitations.data ?? []) as never[],
-    invitations: (invitations.data ?? []) as never[],
+    professionals,
+    members: enrichTeamMembers(members.data ?? [], invitations.data ?? []),
+    invitations: invitations.data ?? [],
     bookingSlug,
     teamAccess: clinicId
       ? {
@@ -93,12 +94,13 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
       : undefined,
   };
 
-  const [pluginSettingsResult, flagSettingsResult, jobsResult, observabilityResult] =
+  const [pluginSettingsResult, flagSettingsResult, jobsResult, observabilityResult, pamiAdminResult] =
     await Promise.all([
       getClinicPluginSettings(),
       getClinicFeatureFlagSettings(),
       getClinicJobsList(),
       getClinicObservabilityDashboard(),
+      activeSection === "pami" && clinicId ? loadPamiPlanillaAdminCatalog() : Promise.resolve(null),
     ]);
 
   const sectionContent = activeSection
@@ -111,6 +113,10 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
         flagSettings: flagSettingsResult.data ?? [],
         jobSettings: jobsResult.data ?? [],
         observability: observabilityResult.data,
+        pamiPlanillaAdminCatalog:
+          pamiAdminResult && "catalog" in pamiAdminResult ? pamiAdminResult.catalog : undefined,
+        pamiPlanillaAdminError:
+          pamiAdminResult && "error" in pamiAdminResult ? pamiAdminResult.error : undefined,
       })
     : undefined;
 

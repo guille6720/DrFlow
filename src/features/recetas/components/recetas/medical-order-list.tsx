@@ -12,7 +12,9 @@ import { voidMedicalOrder } from "@/features/recetas/actions/medical-orders";
 import { MedicalOrderActionButtons } from "@/features/recetas/components/recetas/medical-order-action-buttons";
 import { MedicalOrderEditSheet } from "@/features/recetas/components/recetas/medical-order-edit-sheet";
 import { MedicalOrderPreviewSheet } from "@/features/recetas/components/recetas/medical-order-preview-sheet";
+import { isMedicalOrderConflictError } from "@/features/recetas/repositories/medical-orders.errors";
 import { buildMedicalOrderDocumentData } from "@/features/recetas/utils/build-medical-order-document-data";
+import { normalizeMedicalOrderVersion } from "@/features/recetas/utils/medical-order-version";
 import { orderTypeLabel } from "@/features/recetas/utils/order-type-label";
 import { printMedicalOrderDocument } from "@/features/recetas/utils/print-medical-order-document";
 
@@ -102,10 +104,13 @@ export function MedicalOrderList({
     }
 
     setActingId(order.id);
-    const result = await voidMedicalOrder(order.id);
+    const result = await voidMedicalOrder(order.id, normalizeMedicalOrderVersion(order.version));
     setActingId(null);
 
     if (result.error) {
+      if (isMedicalOrderConflictError(result.error)) {
+        router.refresh();
+      }
       alert(result.error);
       return;
     }

@@ -4,6 +4,8 @@ import { parseISO } from "date-fns";
 import { X } from "lucide-react";
 import { useState } from "react";
 
+import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
+
 import { AppointmentDatetimePicker } from "@/features/agenda/components/agenda/appointment-datetime-picker";
 import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 
@@ -12,15 +14,15 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { updateAppointment } from "@/lib/actions/appointments";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
-import type { Appointment, Patient, Professional } from "@/types/database";
+import type { Patient } from "@/types/database";
 
 interface Props {
-  appointment: Appointment;
+  appointment: AppointmentAgendaRow;
   patients: Pick<Patient, "id" | "first_name" | "last_name" | "document_number">[];
-  professionals: Professional[];
+  professionals: ProfessionalAgendaRow[];
   locations: { id: string; name: string }[];
   specialties: { id: string; name: string }[];
-  appointments: Appointment[];
+  appointments: AppointmentAgendaRow[];
   scheduleBlocks: { start_at: string; end_at: string; reason: string | null }[];
   defaultDuration: number;
   open: boolean;

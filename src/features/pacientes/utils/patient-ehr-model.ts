@@ -2,6 +2,9 @@ export type PatientEhrConsultation = {
   id: string;
   created_at: string;
   professional_name: string;
+  professional_license_national?: string | null;
+  professional_license_provincial?: string | null;
+  professional_email?: string | null;
   chief_complaint: string;
   diagnosis: string;
   evolution: string;
@@ -148,6 +151,9 @@ export function buildEhrPayloadFromRecords(
     evolution: string | null;
     indications: string | null;
     professional_name: string;
+    professional_license_national?: string | null;
+    professional_license_provincial?: string | null;
+    professional_email?: string | null;
   }>
 ): {
   consultations: PatientEhrConsultation[];
@@ -171,6 +177,9 @@ export function buildEhrPayloadFromRecords(
         id: r.id,
         created_at: r.created_at,
         professional_name: r.professional_name,
+        professional_license_national: r.professional_license_national,
+        professional_license_provincial: r.professional_license_provincial,
+        professional_email: r.professional_email,
         chief_complaint: chief,
         diagnosis: stripHceMarker(r.diagnosis ?? ""),
         evolution: sanitizeClinicalDisplayText(r.evolution ?? ""),

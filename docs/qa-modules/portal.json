@@ -1,0 +1,77 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs portal",
+  "module": {
+    "id": "portal",
+    "name": "App paciente (portal PWA)",
+    "status": "ready",
+    "summary": {
+      "what": "Portal PWA por slug: turnos, recetas, WhatsApp.",
+      "inputs": "slug clínica, solicitudes paciente.",
+      "outputs": "Portal branded, manifest PWA."
+    },
+    "layers": [
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Portal público por slug, share link paciente, solicitud recetas/turnos.",
+        "inputs": "slug clínica, patient token, FormData solicitud.",
+        "outputs": "Portal metadata, requests en localStorage/DB.",
+        "files": [
+          "src/features/pacientes/actions/patient-app-share.ts",
+          "src/features/pacientes/hooks/use-patient-portal.ts",
+          "src/lib/server/cached-clinic-metadata.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Tipos clinic portal_slug y client público Supabase.",
+        "inputs": "slug, anon queries públicas.",
+        "outputs": "Metadata clínica para branding portal.",
+        "files": [
+          "src/types/database.ts",
+          "src/core/supabase/client-public-url.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "PWA paciente: home, turnos, receta WhatsApp, install prompt.",
+        "inputs": "Navegación portal tabs, install events.",
+        "outputs": "UI mobile-first branded, manifest PWA.",
+        "files": [
+          "src/app/portal/[slug]/page.tsx",
+          "src/features/portal/components/portal/patient-portal-view.tsx",
+          "src/features/portal/components/portal/app-install-card.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-portal-load",
+        "label": "Portal /portal/[slug] carga",
+        "href": "/portal/demo"
+      },
+      {
+        "id": "mod-portal-pwa",
+        "label": "Instalable como PWA",
+        "href": "/portal/demo/instalar"
+      }
+    ]
+  }
+}

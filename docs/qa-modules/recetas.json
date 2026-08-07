@@ -1,0 +1,91 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs recetas",
+  "module": {
+    "id": "recetas",
+    "name": "Recetas y órdenes médicas",
+    "status": "ready",
+    "summary": {
+      "what": "Prescripciones y órdenes PAMI con preview/imprimir/editar.",
+      "inputs": "FormData orden/receta, patientId, professionalId.",
+      "outputs": "Documentos imprimibles, filas DB, audit."
+    },
+    "layers": [
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Prescripciones Ley 25.649, órdenes PAMI, preview/print/edit/void y audit log.",
+        "inputs": "FormData orden/receta, patientId, professionalId.",
+        "outputs": "Filas DB, documentData imprimible, audit before/after.",
+        "files": [
+          "src/features/recetas/actions/medical-orders.ts",
+          "src/features/recetas/services/medical-orders.service.ts",
+          "src/features/recetas/utils/build-medical-order-document-data.ts",
+          "src/features/recetas/utils/print-medical-order-document.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Repos medical_orders/prescriptions, tipos MedicalOrder y validación Zod.",
+        "inputs": "Insert/update rows, order_type, status.",
+        "outputs": "RepoResult<MedicalOrder>, errores migración 015.",
+        "files": [
+          "src/features/recetas/repositories/medical-orders.repository.ts",
+          "src/types/medical-order.ts",
+          "src/types/prescription.ts",
+          "src/core/validations/medical-order.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Formularios receta/orden, listas con action buttons, preview sheet y edit overlay.",
+        "inputs": "Click preview/print/edit/delete, existingOrder.",
+        "outputs": "Modales, window.print(), toast éxito/error.",
+        "files": [
+          "src/features/recetas/components/recetas/medical-order-list.tsx",
+          "src/features/recetas/components/recetas/medical-order-action-buttons.tsx",
+          "src/features/recetas/components/recetas/medical-order-preview-sheet.tsx",
+          "src/features/recetas/components/recetas/medical-order-edit-sheet.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-rx-preview",
+        "label": "Preview orden con contraste correcto",
+        "href": "/pacientes"
+      },
+      {
+        "id": "mod-rx-print",
+        "label": "Imprimir no abre pantalla en blanco",
+        "href": "/pacientes"
+      },
+      {
+        "id": "mod-rx-edit",
+        "label": "Editar orden guarda cambios",
+        "href": "/pacientes"
+      },
+      {
+        "id": "mod-rx-del",
+        "label": "Eliminar anula la orden",
+        "href": "/pacientes"
+      }
+    ]
+  }
+}

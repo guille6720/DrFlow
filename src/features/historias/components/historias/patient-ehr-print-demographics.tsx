@@ -1,3 +1,7 @@
+import {
+  formatPrintAgeBlock,
+  formatPrintDocumentNumber,
+} from "@/features/historias/components/historias/patient-ehr-print-utils";
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
 
 type Props = {
@@ -17,16 +21,23 @@ export function PatientEhrPrintDemographics({ patient }: Props) {
         </div>
         <div className="drflow-ehr-print-demo-field">
           <p className="drflow-ehr-print-demo-label">DNI</p>
-          <p className="drflow-ehr-print-demo-value">{patient.document_number}</p>
+          <p className="drflow-ehr-print-demo-value">
+            {formatPrintDocumentNumber(patient.document_number)}
+          </p>
         </div>
         <div className="drflow-ehr-print-demo-field">
           <p className="drflow-ehr-print-demo-label">Edad</p>
-          <p className="drflow-ehr-print-demo-value">{patient.age_label ?? "Sin definir"}</p>
+          <p className="drflow-ehr-print-demo-value drflow-ehr-print-demo-age">
+            {formatPrintAgeBlock(patient.birth_date, patient.age_label)}
+          </p>
         </div>
       </div>
       <div className="drflow-ehr-print-demo-grid drflow-ehr-print-demo-grid-secondary">
         <div className="drflow-ehr-print-demo-field">
           <p className="drflow-ehr-print-demo-label">{insurance}</p>
+          {patient.insurance_number ? (
+            <p className="drflow-ehr-print-demo-value"># {patient.insurance_number}</p>
+          ) : null}
         </div>
         <div className="drflow-ehr-print-demo-field">
           <p className="drflow-ehr-print-demo-label">Teléfono</p>

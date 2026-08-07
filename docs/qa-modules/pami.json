@@ -1,0 +1,93 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs pami",
+  "module": {
+    "id": "pami",
+    "name": "PAMI cabecera y planillas",
+    "status": "ready",
+    "summary": {
+      "what": "Cabecera PAMI, planillas, vademécum y órdenes pami_form.",
+      "inputs": "patientId, template planilla, clinic practice_profile.",
+      "outputs": "Planillas renderizadas, seed cabecera, órdenes PAMI."
+    },
+    "layers": [
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Setup cabecera PAMI, planillas por categoría, órdenes pami_form y vademécum PAMI.",
+        "inputs": "patientId, planilla template, FormData orden, clinic practice_profile.",
+        "outputs": "Planillas renderizadas, medical_orders tipo pami_form, seed cabecera.",
+        "files": [
+          "src/lib/actions/pami-setup.ts",
+          "src/lib/hooks/use-pami-planillas.ts",
+          "src/features/pami/server/load-pami-planillas-page.ts",
+          "src/lib/constants/pami-planillas.ts",
+          "src/lib/constants/pami-cabecera.ts",
+          "src/lib/actions/pharmacology.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "RPC seed_pami_cabecera, search_pami_vademecum, migración 020 y seeds vademécum.",
+        "inputs": "clinic_id, búsqueda fármaco PAMI.",
+        "outputs": "Templates/reasons seeded, filas vademécum PAMI.",
+        "files": [
+          "supabase/migrations/020_pami_cabecera.sql",
+          "supabase/seeds/pami_vademecum_data.sql",
+          "src/types/database.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Guía cabecera, planillas wizard, banner paciente PAMI y panel setup en Configuración.",
+        "inputs": "Selección paciente/planilla, preview, imprimir.",
+        "outputs": "UI planillas, links guía, filtro pacientes PAMI.",
+        "files": [
+          "src/app/(dashboard)/pami/planillas/page.tsx",
+          "src/app/(dashboard)/guia-pami/page.tsx",
+          "src/features/pami/components/pami/pami-planillas-view.tsx",
+          "src/features/pacientes/components/pacientes/pami-patient-banner.tsx",
+          "src/features/configuracion/components/configuracion/pami-setup-panel.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-pami-setup",
+        "label": "Configurar cabecera PAMI en Configuración",
+        "href": "/configuracion"
+      },
+      {
+        "id": "mod-pami-planilla",
+        "label": "Generar planilla desde /pami/planillas",
+        "href": "/pami/planillas"
+      },
+      {
+        "id": "mod-pami-banner",
+        "label": "Banner PAMI en HC si obra social PAMI",
+        "href": "/pacientes"
+      },
+      {
+        "id": "mod-pami-order",
+        "label": "Orden médica tipo pami_form imprime OK",
+        "href": "/pacientes"
+      }
+    ]
+  }
+}

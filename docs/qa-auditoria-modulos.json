@@ -1,0 +1,1607 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "generatedFrom": "src/core/qa/modular-audit-layers.ts",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs <moduleId> [--layer=auth|business|data|ui]",
+  "modules": [
+    {
+      "id": "auth",
+      "name": "Autenticación",
+      "status": "ready",
+      "summary": {
+        "what": "Login, registro, OAuth, refresh SSR y bootstrap post-login.",
+        "inputs": "Credenciales, tokens OAuth, cookies Supabase.",
+        "outputs": "Sesión userId/clinicId/role, redirects, errores auth."
+      },
+      "layers": [
+        {
+          "layerId": "auth",
+          "layerLabel": "Autenticación / guards",
+          "what": "Middleware SSR, cookies Supabase, rutas /login|/register|/auth/* y guards de sesión.",
+          "inputs": "Request HTTP, cookies auth-token, token_hash OAuth/recovery.",
+          "outputs": "Redirect /login, sesión activa, NextResponse con trace-id.",
+          "files": [
+            "src/middleware.ts",
+            "src/core/supabase/middleware.ts",
+            "src/core/auth/session.ts",
+            "src/core/auth/session.server.ts",
+            "src/app/api/auth/login/route.ts",
+            "src/app/auth/confirm/route.ts"
+          ]
+        },
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Server actions signUp/signIn/signOut, bootstrap post-login y hooks de formularios.",
+          "inputs": "FormData (email, password, clinicName), OAuth callback payload.",
+          "outputs": "{ data } | { error }, clinicId/userId/role en sesión.",
+          "files": [
+            "src/lib/actions/auth.ts",
+            "src/lib/actions/account.ts",
+            "src/lib/auth/post-login-bootstrap.ts",
+            "src/core/hooks/use-login-form.ts",
+            "src/core/hooks/use-register-clinic-form.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Clientes Supabase (anon/service), tipos Profile/Clinic y validaciones Zod de registro.",
+          "inputs": "Queries auth.users, clinics, clinic_members.",
+          "outputs": "Filas tipadas, errores PostgREST mapeados.",
+          "files": [
+            "src/core/supabase/server.ts",
+            "src/core/supabase/client.ts",
+            "src/core/supabase/env.ts",
+            "src/core/validations/schemas.ts",
+            "src/types/database.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Páginas login/registro/restablecer y componentes de formulario + Google OAuth.",
+          "inputs": "Eventos usuario, searchParams (?trial=10), errores de action.",
+          "outputs": "UI formularios, toasts/errores inline, redirect post-auth.",
+          "files": [
+            "src/app/(auth)/login/page.tsx",
+            "src/app/(auth)/register/page.tsx",
+            "src/core/components/auth/login-form-view.tsx",
+            "src/core/components/auth/register-clinic-form.tsx",
+            "src/core/components/auth/google-login-button.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-auth-login",
+          "label": "Login válido redirige a dashboard",
+          "href": "/login"
+        },
+        {
+          "id": "mod-auth-register",
+          "label": "Registro crea clínica + admin",
+          "href": "/register"
+        },
+        {
+          "id": "mod-auth-signout",
+          "label": "Cerrar sesión limpia la sesión"
+        },
+        {
+          "id": "mod-auth-expired",
+          "label": "Sesión expirada redirige a /login"
+        }
+      ]
+    },
+    {
+      "id": "permissions",
+      "name": "Permisos y multi-tenant",
+      "status": "ready",
+      "summary": {
+        "what": "Matriz de roles, overrides por miembro, guards multi-tenant e invitados.",
+        "inputs": "Rol, ruta, IDs recurso, overrides JSON.",
+        "outputs": "hasPermission(), nav filtrado, FORBIDDEN."
+      },
+      "layers": [
+        {
+          "layerId": "auth",
+          "layerLabel": "Autenticación / guards",
+          "what": "Guards de clínica, ownership por entidad y scope tenant en server actions.",
+          "inputs": "userId, clinicId, entityId, pathname.",
+          "outputs": "FORBIDDEN | scoped clinic_id, redirect login.",
+          "files": [
+            "src/core/actions/clinic-guard.ts",
+            "src/core/security/ownership-guard.ts",
+            "src/core/security/tenant-scope.ts"
+          ]
+        },
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Matriz roles (admin/doctor/secretary), overrides por miembro e isInvitedClinicMember.",
+          "inputs": "UserRole, member_permissions JSON, ruta solicitada.",
+          "outputs": "hasPermission(), nav filtrado, clinical-access guards.",
+          "files": [
+            "src/core/permissions/roles.ts",
+            "src/core/permissions/member-permissions.ts",
+            "src/core/services/clinical-access.service.ts",
+            "src/lib/actions/team-permissions.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Schemas staff/invitations y tipos DB para clinic_members + permisos.",
+          "inputs": "Payload invitación, overrides JSON.",
+          "outputs": "Validación Zod, filas clinic_members.",
+          "files": [
+            "src/core/validations/staff-schemas.ts",
+            "src/types/database.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Matriz permisos en Configuración, sidebar filtrado, badge INVITADO.",
+          "inputs": "Rol actual, permisos efectivos.",
+          "outputs": "Nav items visibles/ocultos, toggles matriz.",
+          "files": [
+            "src/features/configuracion/components/configuracion/team-permissions-matrix.tsx",
+            "src/core/components/layout/sidebar-nav-content.tsx",
+            "src/core/components/layout/guest-appearance-modal.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-perm-sec",
+          "label": "Secretaría no accede a HC clínica completa",
+          "href": "/historias"
+        },
+        {
+          "id": "mod-perm-inv",
+          "label": "Invitado ve badge INVITADO",
+          "href": "/dashboard"
+        },
+        {
+          "id": "mod-perm-admin",
+          "label": "Admin accede a Configuración",
+          "href": "/configuracion"
+        },
+        {
+          "id": "mod-perm-tenant",
+          "label": "Usuario no ve datos de otra clínica"
+        }
+      ]
+    },
+    {
+      "id": "pacientes",
+      "name": "Pacientes / workspace clínico",
+      "status": "ready",
+      "summary": {
+        "what": "Workspace clínico: HC, órdenes, recetas, timeline y tabs.",
+        "inputs": "patientId, tab (soap/ordenes), FormData.",
+        "outputs": "Vistas paciente, mutaciones, URLs con tab."
+      },
+      "layers": [
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "CRUD pacientes, workspace tabs (HC/órdenes/recetas), loaders SSR y hooks de acciones.",
+          "inputs": "patientId, tab query, FormData ficha.",
+          "outputs": "PatientWorkspacePayload, mutaciones, URLs ?tab=.",
+          "files": [
+            "src/features/pacientes/actions/patients.ts",
+            "src/features/pacientes/server/load-patient-workspace-page.ts",
+            "src/features/pacientes/hooks/use-patient-workspace-actions.ts",
+            "src/features/pacientes/utils/patient-workspace-tab-routing.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Repository pacientes, perfiles clínicos, validaciones y constantes de tabs.",
+          "inputs": "clinic_id, patientId, filtros búsqueda.",
+          "outputs": "Filas patients + clinical_profiles, errores repo.",
+          "files": [
+            "src/features/pacientes/repositories/patients.repository.ts",
+            "src/features/pacientes/constants/patient-workspace-tabs.ts",
+            "src/core/validations/schemas.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Lista pacientes, workspace SOAP/órdenes, sheets modales y chart panels.",
+          "inputs": "Props workspace, eventos tab/focus.",
+          "outputs": "Vistas interactivas HC, navegación intra-paciente.",
+          "files": [
+            "src/app/(dashboard)/pacientes/[id]/page.tsx",
+            "src/features/pacientes/components/pacientes/patient-workspace-content.tsx",
+            "src/features/pacientes/components/pacientes/patient-soap-workspace.tsx",
+            "src/features/pacientes/components/pacientes/patient-workspace-orders-panel.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-pat-hc",
+          "label": "Tab HC legible en dark/cobalt",
+          "href": "/pacientes"
+        },
+        {
+          "id": "mod-pat-ord",
+          "label": "Órdenes: preview, imprimir, editar, eliminar",
+          "href": "/pacientes"
+        },
+        {
+          "id": "mod-pat-voice",
+          "label": "Dictado en nueva consulta",
+          "href": "/pacientes"
+        },
+        {
+          "id": "mod-pat-back",
+          "label": "Volver desde sub-tabs respeta navegación",
+          "href": "/pacientes"
+        }
+      ]
+    },
+    {
+      "id": "historias",
+      "name": "Historias clínicas (EHR)",
+      "status": "ready",
+      "summary": {
+        "what": "EHR: consultas SOAP, evoluciones, import clínico.",
+        "inputs": "clinicalRecordId, FormData SOAP.",
+        "outputs": "Registros clínicos, timeline evoluciones."
+      },
+      "layers": [
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "CRUD clinical_records, SOAP, import CSV/PDF/Teams y timeline de evoluciones.",
+          "inputs": "clinicalRecordId, FormData SOAP, archivos import.",
+          "outputs": "Registros HC, audit trail, revalidate paths.",
+          "files": [
+            "src/features/historias/actions/clinical-records.ts",
+            "src/features/historias/services/clinical-records.service.ts",
+            "src/features/historias/hooks/use-nueva-consulta-form.ts",
+            "src/lib/actions/clinical-import.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Tipos EHR, utilidades patient-ehr y schemas de consulta.",
+          "inputs": "Payload SOAP, attachments metadata.",
+          "outputs": "Tipos TS, validación campos clínicos.",
+          "files": [
+            "src/features/historias/components/historias/patient-ehr-types.ts",
+            "src/core/validations/schemas.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Vista EHR, formularios nueva/editar consulta, tablas diagnósticos e import hubs.",
+          "inputs": "Props HC, dictado voz, CIE-10 suggestions.",
+          "outputs": "UI evolución, PDF export, print views.",
+          "files": [
+            "src/features/historias/components/historias/patient-ehr-view.tsx",
+            "src/features/historias/components/historias/historia-detail-content.tsx",
+            "src/features/historias/components/historias/nueva-consulta-form-body.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-hc-soap",
+          "label": "Nueva consulta guarda SOAP completo",
+          "href": "/historias/nueva"
+        },
+        {
+          "id": "mod-hc-tables",
+          "label": "Tablas diagnósticos/tratamientos legibles",
+          "href": "/historias"
+        }
+      ]
+    },
+    {
+      "id": "recetas",
+      "name": "Recetas y órdenes médicas",
+      "status": "ready",
+      "summary": {
+        "what": "Prescripciones y órdenes PAMI con preview/imprimir/editar.",
+        "inputs": "FormData orden/receta, patientId, professionalId.",
+        "outputs": "Documentos imprimibles, filas DB, audit."
+      },
+      "layers": [
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Prescripciones Ley 25.649, órdenes PAMI, preview/print/edit/void y audit log.",
+          "inputs": "FormData orden/receta, patientId, professionalId.",
+          "outputs": "Filas DB, documentData imprimible, audit before/after.",
+          "files": [
+            "src/features/recetas/actions/medical-orders.ts",
+            "src/features/recetas/services/medical-orders.service.ts",
+            "src/features/recetas/utils/build-medical-order-document-data.ts",
+            "src/features/recetas/utils/print-medical-order-document.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Repos medical_orders/prescriptions, tipos MedicalOrder y validación Zod.",
+          "inputs": "Insert/update rows, order_type, status.",
+          "outputs": "RepoResult<MedicalOrder>, errores migración 015.",
+          "files": [
+            "src/features/recetas/repositories/medical-orders.repository.ts",
+            "src/types/medical-order.ts",
+            "src/types/prescription.ts",
+            "src/core/validations/medical-order.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Formularios receta/orden, listas con action buttons, preview sheet y edit overlay.",
+          "inputs": "Click preview/print/edit/delete, existingOrder.",
+          "outputs": "Modales, window.print(), toast éxito/error.",
+          "files": [
+            "src/features/recetas/components/recetas/medical-order-list.tsx",
+            "src/features/recetas/components/recetas/medical-order-action-buttons.tsx",
+            "src/features/recetas/components/recetas/medical-order-preview-sheet.tsx",
+            "src/features/recetas/components/recetas/medical-order-edit-sheet.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-rx-preview",
+          "label": "Preview orden con contraste correcto",
+          "href": "/pacientes"
+        },
+        {
+          "id": "mod-rx-print",
+          "label": "Imprimir no abre pantalla en blanco",
+          "href": "/pacientes"
+        },
+        {
+          "id": "mod-rx-edit",
+          "label": "Editar orden guarda cambios",
+          "href": "/pacientes"
+        },
+        {
+          "id": "mod-rx-del",
+          "label": "Eliminar anula la orden",
+          "href": "/pacientes"
+        }
+      ]
+    },
+    {
+      "id": "agenda",
+      "name": "Agenda y turnos",
+      "status": "ready",
+      "summary": {
+        "what": "Agenda, sala de espera, booking público y recordatorios.",
+        "inputs": "Fecha, professionalId, slug portal.",
+        "outputs": "Filas appointments, confirm/ausente, WhatsApp."
+      },
+      "layers": [
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "CRUD appointments, sala de espera, booking público y recordatorios.",
+          "inputs": "Fecha, professionalId, slug portal, FormData turno.",
+          "outputs": "Filas appointments, WhatsApp messages, confirm/ausente.",
+          "files": [
+            "src/lib/actions/appointments.ts",
+            "src/lib/actions/waiting-room.ts",
+            "src/lib/actions/public-booking.ts",
+            "src/features/agenda/hooks/use-agenda-view.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Validación booking público y tipos Appointment en database.ts.",
+          "inputs": "Slot datetime, patient contact, slug.",
+          "outputs": "Zod parse, fila appointment insertada.",
+          "files": [
+            "src/core/validations/public-booking.ts",
+            "src/types/database.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Vista día/semana, filas turno con acciones, sala de espera y solicitar-turno público.",
+          "inputs": "Clicks confirmar/ausente/empezar consulta.",
+          "outputs": "Calendario interactivo, badges estado turno.",
+          "files": [
+            "src/features/agenda/components/agenda/agenda-view.tsx",
+            "src/app/(dashboard)/sala-espera/page.tsx",
+            "src/app/solicitar-turno/[slug]/page.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-agenda-day",
+          "label": "Vista día carga turnos",
+          "href": "/agenda"
+        },
+        {
+          "id": "mod-agenda-web",
+          "label": "Turno web aparece con badge",
+          "href": "/agenda"
+        }
+      ]
+    },
+    {
+      "id": "configuracion",
+      "name": "Configuración y equipo",
+      "status": "ready",
+      "summary": {
+        "what": "Settings clínica, invitaciones, permisos, plugins.",
+        "inputs": "Settings, emails invitación, matriz permisos.",
+        "outputs": "Config persistida, miembros activos."
+      },
+      "layers": [
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Settings clínica, invitaciones email, permisos miembro, plugins y feature flags.",
+          "inputs": "Settings FormData, email invitado, role, overrides.",
+          "outputs": "Config persistida, invite token, miembros activos.",
+          "files": [
+            "src/lib/actions/settings.ts",
+            "src/lib/actions/invitations.ts",
+            "src/lib/actions/team-permissions.ts",
+            "src/lib/actions/clinic-feature-flags.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Repo clinics, schemas settings/staff/intake y migraciones 071–073.",
+          "inputs": "clinic patch, invitation row, password inicial.",
+          "outputs": "Filas clinics/clinic_invitations validadas.",
+          "files": [
+            "src/features/configuracion/repositories/clinics.repository.ts",
+            "src/core/validations/settings-schemas.ts",
+            "supabase/migrations/072_invitation_profile_access.sql"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Navigator configuración, paneles clínica/equipo/apariencia/IA/demo.",
+          "inputs": "Sección activa, toggles permisos.",
+          "outputs": "Forms settings, listas miembros pendientes.",
+          "files": [
+            "src/app/(dashboard)/configuracion/page.tsx",
+            "src/features/configuracion/components/configuracion/settings-panel.tsx",
+            "src/features/configuracion/components/configuracion/team-invite-form-section.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-cfg-invite",
+          "label": "Invitar médico/secretaria",
+          "href": "/configuracion"
+        },
+        {
+          "id": "mod-cfg-perm",
+          "label": "Matriz permisos persiste",
+          "href": "/configuracion"
+        }
+      ]
+    },
+    {
+      "id": "dashboard",
+      "name": "Dashboard / operaciones",
+      "status": "ready",
+      "summary": {
+        "what": "Centro operaciones: cola, alertas, KPIs.",
+        "inputs": "clinicId, fecha, permisos.",
+        "outputs": "Payload agregado operaciones."
+      },
+      "layers": [
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Agregación operaciones clínicas: cola, alertas, KPIs, tareas y admin-ops AI.",
+          "inputs": "clinicId, fecha, permisos usuario.",
+          "outputs": "ClinicalOperationsDashboardPayload, métricas asistencia.",
+          "files": [
+            "src/features/dashboard/server/load-clinical-operations-dashboard.ts",
+            "src/features/dashboard/utils/clinical-ops-metrics.ts",
+            "src/lib/utils/attendance-stats.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Tipos payload dashboard y queries agregadas Supabase.",
+          "inputs": "appointments, orders, labs del día.",
+          "outputs": "Tipos TS estructurados para UI.",
+          "files": [
+            "src/features/dashboard/utils/clinical-operations-dashboard-types.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Centro operaciones, KPI cards, rails izquierdo y accesos rápidos.",
+          "inputs": "Payload SSR, clicks navegación.",
+          "outputs": "Dashboard renderizado, links filtrados por rol.",
+          "files": [
+            "src/app/(dashboard)/dashboard/page.tsx",
+            "src/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-center.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-dash-kpi",
+          "label": "KPIs cargan sin error",
+          "href": "/dashboard"
+        },
+        {
+          "id": "mod-dash-links",
+          "label": "Accesos rápidos respetan permisos",
+          "href": "/dashboard"
+        }
+      ]
+    },
+    {
+      "id": "billing",
+      "name": "Monetización / trial",
+      "status": "ready",
+      "summary": {
+        "what": "Planes SaaS, trial 10 días, landing /planes.",
+        "inputs": "trial_ends_at, planId, WhatsApp ventas.",
+        "outputs": "Bloqueo trial, pricing cards, CTAs comerciales."
+      },
+      "layers": [
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Planes SaaS, trial 10 días, caja consultorio (lab) y contacto comercial WhatsApp.",
+          "inputs": "trial_ends_at, planId, FormData cobro caja.",
+          "outputs": "Bloqueo trial expirado, mensajes ventas, filas cash.",
+          "files": [
+            "src/core/billing/plans.ts",
+            "src/core/trial/clinic-trial.ts",
+            "src/lib/actions/cash-register.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Schemas caja y campo trial_ends_at en clinics.",
+          "inputs": "Montos ARS, movimientos caja.",
+          "outputs": "Validación cash-schemas, filas payments.",
+          "files": [
+            "src/core/validations/cash-schemas.ts",
+            "src/types/database.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Landing /planes, trial banner, página trial-expirado y pagos (mock lab).",
+          "inputs": "Plan seleccionado, click WhatsApp.",
+          "outputs": "Pricing cards, redirect /planes, banner días restantes.",
+          "files": [
+            "src/core/components/landing/plans-pricing-section.tsx",
+            "src/app/(marketing)/planes/page.tsx",
+            "src/core/components/trial/trial-banner.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-bill-planes",
+          "label": "Landing /planes muestra precios",
+          "href": "/planes"
+        },
+        {
+          "id": "mod-bill-trial",
+          "label": "Trial banner visible en dashboard",
+          "href": "/dashboard"
+        }
+      ]
+    },
+    {
+      "id": "portal",
+      "name": "App paciente (portal PWA)",
+      "status": "ready",
+      "summary": {
+        "what": "Portal PWA por slug: turnos, recetas, WhatsApp.",
+        "inputs": "slug clínica, solicitudes paciente.",
+        "outputs": "Portal branded, manifest PWA."
+      },
+      "layers": [
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Portal público por slug, share link paciente, solicitud recetas/turnos.",
+          "inputs": "slug clínica, patient token, FormData solicitud.",
+          "outputs": "Portal metadata, requests en localStorage/DB.",
+          "files": [
+            "src/features/pacientes/actions/patient-app-share.ts",
+            "src/features/pacientes/hooks/use-patient-portal.ts",
+            "src/lib/server/cached-clinic-metadata.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Tipos clinic portal_slug y client público Supabase.",
+          "inputs": "slug, anon queries públicas.",
+          "outputs": "Metadata clínica para branding portal.",
+          "files": [
+            "src/types/database.ts",
+            "src/core/supabase/client-public-url.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "PWA paciente: home, turnos, receta WhatsApp, install prompt.",
+          "inputs": "Navegación portal tabs, install events.",
+          "outputs": "UI mobile-first branded, manifest PWA.",
+          "files": [
+            "src/app/portal/[slug]/page.tsx",
+            "src/features/portal/components/portal/patient-portal-view.tsx",
+            "src/features/portal/components/portal/app-install-card.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-portal-load",
+          "label": "Portal /portal/[slug] carga",
+          "href": "/portal/demo"
+        },
+        {
+          "id": "mod-portal-pwa",
+          "label": "Instalable como PWA",
+          "href": "/portal/demo/instalar"
+        }
+      ]
+    },
+    {
+      "id": "ia",
+      "name": "IA clínica",
+      "status": "lab",
+      "summary": {
+        "what": "Copilot clínico, physician assist SOAP/recetas.",
+        "inputs": "Contexto paciente, prompt, credenciales IA.",
+        "outputs": "Sugerencias revisables, streams API."
+      },
+      "layers": [
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Copilot clínico, physician assist SOAP/recetas, admin-ops y APIs /api/clinical-ai.",
+          "inputs": "Contexto paciente, prompt, credenciales IA usuario/clínica.",
+          "outputs": "Sugerencias SOAP, resúmenes, streams API.",
+          "files": [
+            "src/lib/utils/clinical-copilot.ts",
+            "src/lib/utils/clinical-assistant.ts",
+            "src/app/api/clinical-ai/route.ts",
+            "src/lib/actions/user-ai-connection.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Validación API IA, tipos physician-assist y conexiones user_ai.",
+          "inputs": "JSON request API, provider keys.",
+          "outputs": "Zod parse, tipos assist kind.",
+          "files": [
+            "src/core/validations/clinical-ai-api.ts",
+            "src/features/ia/types/physician-assist-types.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Sheets copilot, inline assist en formularios, FAB unificado y panel proveedor IA.",
+          "inputs": "Click assist, dictado, chat messages.",
+          "outputs": "UI sugerencias insertables, disclaimers médicos.",
+          "files": [
+            "src/features/ia/components/clinical-workflow/clinical-copilot-sheet.tsx",
+            "src/features/ia/components/clinical-workflow/inline-physician-assist.tsx",
+            "src/core/components/layout/unified-copilot-fab.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-ia-soap",
+          "label": "Assist SOAP sugiere texto revisable",
+          "href": "/historias/nueva"
+        },
+        {
+          "id": "mod-ia-disclaimer",
+          "label": "Disclaimer responsabilidad médica visible"
+        }
+      ]
+    },
+    {
+      "id": "pami",
+      "name": "PAMI cabecera y planillas",
+      "status": "ready",
+      "summary": {
+        "what": "Cabecera PAMI, planillas, vademécum y órdenes pami_form.",
+        "inputs": "patientId, template planilla, clinic practice_profile.",
+        "outputs": "Planillas renderizadas, seed cabecera, órdenes PAMI."
+      },
+      "layers": [
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Setup cabecera PAMI, planillas por categoría, órdenes pami_form y vademécum PAMI.",
+          "inputs": "patientId, planilla template, FormData orden, clinic practice_profile.",
+          "outputs": "Planillas renderizadas, medical_orders tipo pami_form, seed cabecera.",
+          "files": [
+            "src/lib/actions/pami-setup.ts",
+            "src/lib/hooks/use-pami-planillas.ts",
+            "src/features/pami/server/load-pami-planillas-page.ts",
+            "src/lib/constants/pami-planillas.ts",
+            "src/lib/constants/pami-cabecera.ts",
+            "src/lib/actions/pharmacology.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "RPC seed_pami_cabecera, search_pami_vademecum, migración 020 y seeds vademécum.",
+          "inputs": "clinic_id, búsqueda fármaco PAMI.",
+          "outputs": "Templates/reasons seeded, filas vademécum PAMI.",
+          "files": [
+            "supabase/migrations/020_pami_cabecera.sql",
+            "supabase/seeds/pami_vademecum_data.sql",
+            "src/types/database.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Guía cabecera, planillas wizard, banner paciente PAMI y panel setup en Configuración.",
+          "inputs": "Selección paciente/planilla, preview, imprimir.",
+          "outputs": "UI planillas, links guía, filtro pacientes PAMI.",
+          "files": [
+            "src/app/(dashboard)/pami/planillas/page.tsx",
+            "src/app/(dashboard)/guia-pami/page.tsx",
+            "src/features/pami/components/pami/pami-planillas-view.tsx",
+            "src/features/pacientes/components/pacientes/pami-patient-banner.tsx",
+            "src/features/configuracion/components/configuracion/pami-setup-panel.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-pami-setup",
+          "label": "Configurar cabecera PAMI en Configuración",
+          "href": "/configuracion"
+        },
+        {
+          "id": "mod-pami-planilla",
+          "label": "Generar planilla desde /pami/planillas",
+          "href": "/pami/planillas"
+        },
+        {
+          "id": "mod-pami-banner",
+          "label": "Banner PAMI en HC si obra social PAMI",
+          "href": "/pacientes"
+        },
+        {
+          "id": "mod-pami-order",
+          "label": "Orden médica tipo pami_form imprime OK",
+          "href": "/pacientes"
+        }
+      ]
+    },
+    {
+      "id": "caja",
+      "name": "Caja / cobranzas",
+      "status": "ready",
+      "summary": {
+        "what": "Cobranzas diarias, cierre de caja, cuenta corriente y reportes de ingresos.",
+        "inputs": "FormData cobro, fecha cierre, movimientos ledger por paciente.",
+        "outputs": "cash_charges, cierres diarios, ledger paciente, audit log."
+      },
+      "layers": [
+        {
+          "layerId": "auth",
+          "layerLabel": "Autenticación / guards",
+          "what": "Permiso manageCashRegister y guards clinic/ownership en acciones de caja.",
+          "inputs": "userId, clinicId, rol, entityId cobro.",
+          "outputs": "FORBIDDEN | redirect dashboard si sin permiso.",
+          "files": [
+            "src/core/permissions/roles.ts",
+            "src/core/actions/clinic-guard.ts",
+            "src/core/security/ownership-guard.ts"
+          ]
+        },
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Server actions cobro/anulación/cierre, hook use-cash-register y snapshot revenue.",
+          "inputs": "FormData (paciente, monto, método), fecha cierre.",
+          "outputs": "Filas cash_charges, totales por método, revalidate /caja.",
+          "files": [
+            "src/lib/actions/cash-register.ts",
+            "src/lib/server/load-revenue-snapshot.ts",
+            "src/features/caja/hooks/use-cash-register.ts",
+            "src/lib/constants/cash-register.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Schemas Zod montos/métodos y migración secretaría-caja.",
+          "inputs": "Payload cobro, montos ARS.",
+          "outputs": "Validación Zod, filas cash_* tipadas.",
+          "files": [
+            "src/core/validations/cash-schemas.ts",
+            "supabase/migrations/034_secretaria_caja.sql"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Vistas /caja, cierre, reportes y cuenta corriente con formularios de cobro.",
+          "inputs": "Selección paciente/turno, confirmación anulación.",
+          "outputs": "UI cobros, totales cierre, ledger por paciente.",
+          "files": [
+            "src/app/(dashboard)/caja/page.tsx",
+            "src/app/(dashboard)/caja/cierre/page.tsx",
+            "src/app/(dashboard)/caja/reportes/page.tsx",
+            "src/app/(dashboard)/caja/cuenta-corriente/page.tsx",
+            "src/features/caja/components/caja/cash-register-view.tsx",
+            "src/features/caja/components/caja/cash-charge-form-section.tsx",
+            "src/features/caja/components/caja/cash-closure-view.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-caja-charge",
+          "label": "Registrar cobro con paciente y método",
+          "href": "/caja"
+        },
+        {
+          "id": "mod-caja-void",
+          "label": "Anular cobro existente",
+          "href": "/caja"
+        },
+        {
+          "id": "mod-caja-cierre",
+          "label": "Cierre diario con totales por método",
+          "href": "/caja/cierre"
+        },
+        {
+          "id": "mod-caja-ledger",
+          "label": "Cuenta corriente: alta movimiento",
+          "href": "/caja/cuenta-corriente"
+        },
+        {
+          "id": "mod-caja-perm",
+          "label": "Doctor sin permiso redirige a dashboard",
+          "href": "/caja"
+        }
+      ]
+    },
+    {
+      "id": "profesionales",
+      "name": "Profesionales / equipo",
+      "status": "ready",
+      "summary": {
+        "what": "Alta de profesionales, datos bancarios, horarios y panel miembros del equipo.",
+        "inputs": "FormData intake, reglas agenda JSON, datos banco, memberId.",
+        "outputs": "Filas professionals/availability_rules, paths /ingreso-profesionales."
+      },
+      "layers": [
+        {
+          "layerId": "auth",
+          "layerLabel": "Autenticación / guards",
+          "what": "Guard adapters y permisos admin/doctor para intake y edición de equipo.",
+          "inputs": "Rol, clinicId, professionalId.",
+          "outputs": "FORBIDDEN secretaría | acceso admin/doctor.",
+          "files": [
+            "src/core/permissions/roles.ts",
+            "src/core/actions/guard-adapters.ts"
+          ]
+        },
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Server actions intake profesional, hooks intake y panel miembro equipo.",
+          "inputs": "FormData especialidad/matricula/sede, reglas agenda.",
+          "outputs": "Profesional persistido, cache revalidada.",
+          "files": [
+            "src/lib/actions/professional-intake.ts",
+            "src/features/profesionales/hooks/use-professional-intake.ts",
+            "src/features/profesionales/hooks/use-clinic-team-member-panel.ts",
+            "src/features/profesionales/components/profesionales/professional-intake-utils.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Schemas Zod intake profesional, datos bancarios y settings.",
+          "inputs": "Payload intake, CBU/alias banco.",
+          "outputs": "Validación Zod, filas professionals.",
+          "files": [
+            "src/core/validations/professional-intake.ts",
+            "src/core/validations/professional-bank.ts",
+            "src/core/validations/settings-schemas.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Vista intake, formulario nuevo profesional, editor horarios y panel miembro.",
+          "inputs": "Selección profesional, checklist intake.",
+          "outputs": "UI alta/edición profesional y equipo.",
+          "files": [
+            "src/app/(dashboard)/ingreso-profesionales/page.tsx",
+            "src/features/profesionales/components/profesionales/professional-intake-view.tsx",
+            "src/features/profesionales/components/profesionales/professional-intake-new-form.tsx",
+            "src/features/profesionales/components/profesionales/professional-schedule-editor.tsx",
+            "src/features/profesionales/components/profesionales/clinic-team-member-detail-panel.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-prof-intake",
+          "label": "Nuevo profesional completa checklist",
+          "href": "/ingreso-profesionales?nuevo=1"
+        },
+        {
+          "id": "mod-prof-bank",
+          "label": "Datos bancarios persisten",
+          "href": "/ingreso-profesionales"
+        },
+        {
+          "id": "mod-prof-schedule",
+          "label": "Reglas de agenda guardan",
+          "href": "/ingreso-profesionales"
+        },
+        {
+          "id": "mod-prof-perm",
+          "label": "Secretaría no accede al módulo",
+          "href": "/ingreso-profesionales"
+        }
+      ]
+    },
+    {
+      "id": "reportes",
+      "name": "Reportes operativos",
+      "status": "ready",
+      "summary": {
+        "what": "Informe mensual: turnos, ausencias, pacientes nuevos, consultas e ingresos estimados.",
+        "inputs": "clinicId, rango mes, permiso viewReports.",
+        "outputs": "MonthlyClinicReport, CSV export, job async."
+      },
+      "layers": [
+        {
+          "layerId": "auth",
+          "layerLabel": "Autenticación / guards",
+          "what": "Permiso viewReports y redirect dashboard si rol sin acceso.",
+          "inputs": "Rol, pathname /reportes.",
+          "outputs": "Redirect | payload reporte.",
+          "files": [
+            "src/core/permissions/roles.ts",
+            "src/core/auth/dashboard-page.ts"
+          ]
+        },
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Loader informe mensual, export CSV y botón reporte async.",
+          "inputs": "monthStart, monthEnd, clinicId.",
+          "outputs": "MonthlyClinicReport, CSV rows, job encolado.",
+          "files": [
+            "src/lib/server/load-monthly-clinic-report.ts",
+            "src/features/dashboard/components/reportes/async-report-button.tsx",
+            "src/features/dashboard/components/reportes/export-csv-button.tsx"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Tipos DB para agregaciones de turnos, consultas e ingresos.",
+          "inputs": "Queries scoped clinic_id.",
+          "outputs": "Filas tipadas para KPIs.",
+          "files": [
+            "src/types/database.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Página /reportes con KPIs del mes y acciones export/async.",
+          "inputs": "Mes seleccionado, click export.",
+          "outputs": "Tabla KPIs, descarga CSV.",
+          "files": [
+            "src/app/(dashboard)/reportes/page.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-rep-load",
+          "label": "KPIs del mes cargan sin error",
+          "href": "/reportes"
+        },
+        {
+          "id": "mod-rep-csv",
+          "label": "Export CSV descarga filas",
+          "href": "/reportes"
+        },
+        {
+          "id": "mod-rep-async",
+          "label": "Reporte async encola job",
+          "href": "/reportes"
+        },
+        {
+          "id": "mod-rep-perm",
+          "label": "Rol sin permiso redirige",
+          "href": "/reportes"
+        }
+      ]
+    },
+    {
+      "id": "auditoria",
+      "name": "Auditoría clínica",
+      "status": "ready",
+      "summary": {
+        "what": "Trazabilidad inmutable de mutaciones clínicas con timeline por paciente.",
+        "inputs": "entityType, action, old/new values, patientId.",
+        "outputs": "Filas audit_logs, timeline tab Auditoría."
+      },
+      "layers": [
+        {
+          "layerId": "auth",
+          "layerLabel": "Autenticación / guards",
+          "what": "Permiso can_view_clinical y guards al cargar trail por paciente.",
+          "inputs": "userId, patientId, rol.",
+          "outputs": "Trail vacío | FORBIDDEN.",
+          "files": [
+            "src/core/permissions/roles.ts",
+            "src/features/pacientes/server/load-patient-audit-trail.ts"
+          ]
+        },
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Writer centralizado logAudit, contexto request y session server.",
+          "inputs": "Mutación clínica/admin, snapshot before/after.",
+          "outputs": "Fila audit_logs inmutable, eventos merge timeline.",
+          "files": [
+            "src/core/security/audit-service.ts",
+            "src/core/security/audit-log.ts",
+            "src/core/security/audit-context.ts",
+            "src/core/auth/session.server.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Tipos audit, constantes tab workspace y triggers anti-mutación.",
+          "inputs": "Payload audit, patient scope.",
+          "outputs": "Tipos TS, tab id auditoria.",
+          "files": [
+            "src/core/security/audit-types.ts",
+            "src/features/pacientes/constants/patient-workspace-tabs.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Panel auditoría en workspace paciente y card audit en detalle HC.",
+          "inputs": "Props trail, expand evento.",
+          "outputs": "Timeline actor/fecha/diff old→new.",
+          "files": [
+            "src/features/pacientes/components/pacientes/patient-clinical-audit-panel.tsx",
+            "src/features/pacientes/components/pacientes/patient-workspace-view.tsx",
+            "src/features/historias/components/historias/historia-detail-audit-card.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-audit-tab",
+          "label": "Tab Auditoría visible en workspace",
+          "href": "/pacientes"
+        },
+        {
+          "id": "mod-audit-trail",
+          "label": "Eventos HC/cobros listados con actor",
+          "href": "/pacientes"
+        },
+        {
+          "id": "mod-audit-diff",
+          "label": "Cambios muestran old→new",
+          "href": "/pacientes"
+        },
+        {
+          "id": "mod-audit-perm",
+          "label": "Sin permiso HC no carga trail",
+          "href": "/pacientes"
+        }
+      ]
+    },
+    {
+      "id": "administracion",
+      "name": "Administración / secretaría",
+      "status": "ready",
+      "summary": {
+        "what": "Documentos admin, sala de espera y registro de atenciones por periodo.",
+        "inputs": "Upload doc admin, appointmentId + estado espera, periodo atenciones.",
+        "outputs": "patient_admin_documents, waiting_room_status, resumen atenciones."
+      },
+      "layers": [
+        {
+          "layerId": "auth",
+          "layerLabel": "Autenticación / guards",
+          "what": "Permisos secretaría/doctor y clinic guard en acciones admin.",
+          "inputs": "Rol, clinicId, patientId.",
+          "outputs": "FORBIDDEN | scoped mutations.",
+          "files": [
+            "src/core/permissions/roles.ts",
+            "src/core/actions/clinic-guard.ts"
+          ]
+        },
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Actions documentos admin, sala espera y loader atenciones paginado.",
+          "inputs": "FormData upload, waiting_room_status, filtros periodo.",
+          "outputs": "Docs persistidos, estados turno, stats atenciones.",
+          "files": [
+            "src/lib/actions/admin-documents.ts",
+            "src/lib/actions/waiting-room.ts",
+            "src/features/administracion/server/load-atenciones-page.ts",
+            "src/lib/utils/attendance-stats.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Schemas Zod documentos admin y tipos cash relacionados.",
+          "inputs": "Payload upload, metadata doc.",
+          "outputs": "Validación Zod, filas admin_documents.",
+          "files": [
+            "src/core/validations/admin-documents.ts",
+            "src/core/validations/cash-schemas.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Páginas secretaría/documentos, sala-espera y atenciones con paneles.",
+          "inputs": "Selección paciente/turno, drag estado espera.",
+          "outputs": "UI docs, cola espera, registro atenciones.",
+          "files": [
+            "src/app/(dashboard)/secretaria/documentos/page.tsx",
+            "src/app/(dashboard)/sala-espera/page.tsx",
+            "src/app/(dashboard)/atenciones/page.tsx",
+            "src/features/administracion/components/secretaria/admin-documents-panel.tsx",
+            "src/features/administracion/components/secretaria/waiting-room-view.tsx",
+            "src/features/administracion/components/atenciones/patient-attendance-register.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-admin-docs",
+          "label": "Subir documento admin por paciente",
+          "href": "/secretaria/documentos"
+        },
+        {
+          "id": "mod-admin-wait",
+          "label": "Cambiar estado sala de espera",
+          "href": "/sala-espera"
+        },
+        {
+          "id": "mod-admin-atenc",
+          "label": "Registro atenciones por periodo",
+          "href": "/atenciones"
+        },
+        {
+          "id": "mod-admin-perm",
+          "label": "Doctor accede sala de espera",
+          "href": "/sala-espera"
+        }
+      ]
+    },
+    {
+      "id": "pharmacology",
+      "name": "Farmacología / vademécum",
+      "status": "ready",
+      "summary": {
+        "what": "Búsqueda CIE-10, síntomas→patología y vademécum; API y reutilización en recetas.",
+        "inputs": "query, pathologyId, symptomIds, mode search.",
+        "outputs": "Resultados RPC, sugerencias prescripción."
+      },
+      "layers": [
+        {
+          "layerId": "auth",
+          "layerLabel": "Autenticación / guards",
+          "what": "Permiso acceso herramientas clínicas en actions y API pharmacology.",
+          "inputs": "Rol, clinicId, request API.",
+          "outputs": "403 | resultados búsqueda.",
+          "files": [
+            "src/core/permissions/roles.ts",
+            "src/lib/actions/pharmacology.ts"
+          ]
+        },
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Hooks búsqueda diferida patología y cache reference data.",
+          "inputs": "Query string, debounce, mode tabs.",
+          "outputs": "Lista patologías/síntomas/fármacos.",
+          "files": [
+            "src/lib/hooks/use-pharmacology-search.ts",
+            "src/lib/hooks/use-deferred-pathology-search.ts",
+            "src/lib/server/cached-reference-data.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Validación API pharmacology, tipos dominio y route REST.",
+          "inputs": "JSON query params, RPC vademécum.",
+          "outputs": "Parse Zod, filas reference tables.",
+          "files": [
+            "src/core/validations/pharmacology-api.ts",
+            "src/types/pharmacology.ts",
+            "src/app/api/pharmacology/route.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Página /herramientas/farmacologia con tabs modo búsqueda y typeaheads.",
+          "inputs": "Selección modo, término búsqueda.",
+          "outputs": "UI resultados patología/síntomas/vademécum.",
+          "files": [
+            "src/app/(dashboard)/herramientas/farmacologia/page.tsx",
+            "src/features/pharmacology/components/pharmacology/pharmacology-search-view.tsx",
+            "src/features/pharmacology/components/pharmacology/pharmacology-search-mode-tabs.tsx",
+            "src/features/pharmacology/components/pharmacology/vademecum-typeahead.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-pharm-path",
+          "label": "Búsqueda por patología devuelve CIE-10",
+          "href": "/herramientas/farmacologia"
+        },
+        {
+          "id": "mod-pharm-sym",
+          "label": "Modo síntomas sugiere patologías",
+          "href": "/herramientas/farmacologia?mode=symptoms"
+        },
+        {
+          "id": "mod-pharm-vad",
+          "label": "Vademécum lista fármacos",
+          "href": "/herramientas/farmacologia?mode=vademecum"
+        },
+        {
+          "id": "mod-pharm-perm",
+          "label": "Secretaría no accede",
+          "href": "/herramientas/farmacologia"
+        }
+      ]
+    },
+    {
+      "id": "voice",
+      "name": "Dictado por voz",
+      "status": "ready",
+      "summary": {
+        "what": "Dictado Web Speech API en campos clínicos con prefs usuario/clínica.",
+        "inputs": "Micrófono, transcript, pref localStorage, voice_input_enabled.",
+        "outputs": "Texto append en textarea, eventos input React."
+      },
+      "layers": [
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Hook use-speech-to-text y util voice-input con kill-switch env.",
+          "inputs": "Stream micrófono, lang es-AR, enabled flag.",
+          "outputs": "Transcript parcial/final, error browser API.",
+          "files": [
+            "src/features/voice/lib/voice-input.ts",
+            "src/features/voice/hooks/use-speech-to-text.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Schema settings voice_input_enabled en clínica.",
+          "inputs": "Patch settings clínica.",
+          "outputs": "Flag persistido clinics.settings.",
+          "files": [
+            "src/core/validations/settings-schemas.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Provider global voice, textarea con micrófono y form consulta.",
+          "inputs": "Click micrófono, toggle pref usuario.",
+          "outputs": "UI mic activo, texto dictado en SOAP.",
+          "files": [
+            "src/features/voice/components/voice/voice-input-provider.tsx",
+            "src/core/components/layout/dashboard-data-shell.tsx",
+            "src/components/ui/textarea.tsx",
+            "src/features/historias/components/historias/nueva-consulta-form-body.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-voice-soap",
+          "label": "Dictado en nueva consulta",
+          "href": "/historias/nueva"
+        },
+        {
+          "id": "mod-voice-pref",
+          "label": "Toggle usuario persiste en localStorage",
+          "href": "/configuracion"
+        },
+        {
+          "id": "mod-voice-browser",
+          "label": "Navegador sin API oculta micrófono",
+          "href": "/historias/nueva"
+        },
+        {
+          "id": "mod-voice-env",
+          "label": "Kill-switch env desactiva globalmente"
+        }
+      ]
+    },
+    {
+      "id": "telemedicina",
+      "name": "Telemedicina (lab)",
+      "status": "lab",
+      "summary": {
+        "what": "Videoconsulta stub Jitsi: crear sala por turno y link externo paciente.",
+        "inputs": "appointmentId, datos paciente/turno.",
+        "outputs": "telemedicine_sessions, URL meet.jit.si, audit event."
+      },
+      "layers": [
+        {
+          "layerId": "auth",
+          "layerLabel": "Autenticación / guards",
+          "what": "Guards clínica y permisos doctor/admin en acciones telemedicina.",
+          "inputs": "userId, clinicId, appointmentId.",
+          "outputs": "FORBIDDEN | sesión creada.",
+          "files": [
+            "src/core/permissions/roles.ts",
+            "src/core/actions/clinic-guard.ts"
+          ]
+        },
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Service telemedicine y actions clinic-services para crear/listar salas.",
+          "inputs": "appointmentId, slug room.",
+          "outputs": "Fila session, room URL Jitsi.",
+          "files": [
+            "src/lib/actions/clinic-services.ts",
+            "src/lib/services/telemedicine.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Tipos DB telemedicine_sessions.",
+          "inputs": "Insert session scoped clinic.",
+          "outputs": "Filas tipadas sessions.",
+          "files": [
+            "src/types/database.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Página /telemedicina con lista sesiones y botón crear/unirse.",
+          "inputs": "Click crear sesión, abrir link externo.",
+          "outputs": "UI sesiones recientes, link Jitsi.",
+          "files": [
+            "src/app/(dashboard)/telemedicina/page.tsx",
+            "src/features/telemedicina/components/telemedicina/telemedicina-view.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-tele-create",
+          "label": "Crear sesión genera URL Jitsi",
+          "href": "/telemedicina"
+        },
+        {
+          "id": "mod-tele-list",
+          "label": "Sesiones recientes listadas",
+          "href": "/telemedicina"
+        },
+        {
+          "id": "mod-tele-link",
+          "label": "Link externo abre meet.jit.si",
+          "href": "/telemedicina"
+        },
+        {
+          "id": "mod-tele-perm",
+          "label": "Ruta protegida por rol",
+          "href": "/telemedicina"
+        }
+      ]
+    },
+    {
+      "id": "facturacion",
+      "name": "Facturación / pagos (lab)",
+      "status": "lab",
+      "summary": {
+        "what": "Pagos en línea mock Mercado Pago: registrar pago/seña y listar historial.",
+        "inputs": "FormData patient_id, amount, deposit_amount, appointment_id.",
+        "outputs": "Fila payments mock_transaction_id status paid."
+      },
+      "layers": [
+        {
+          "layerId": "auth",
+          "layerLabel": "Autenticación / guards",
+          "what": "Permiso managePayments y ownership guard en pagos.",
+          "inputs": "Rol, patientId, clinicId.",
+          "outputs": "FORBIDDEN | pago registrado.",
+          "files": [
+            "src/core/permissions/roles.ts",
+            "src/core/actions/clinic-guard.ts",
+            "src/core/security/ownership-guard.ts"
+          ]
+        },
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Service payments mock y actions clinic-services registrar/listar.",
+          "inputs": "FormData monto ARS, patient_id.",
+          "outputs": "Fila payments paid, historial 50 últimos.",
+          "files": [
+            "src/lib/actions/clinic-services.ts",
+            "src/lib/services/payments.ts",
+            "src/shared/utils/currency.ts"
+          ]
+        },
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Tipos DB tabla payments.",
+          "inputs": "Insert payment scoped clinic.",
+          "outputs": "Filas payments tipadas.",
+          "files": [
+            "src/types/database.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Página /pagos con form mock y banner lab sin MP real.",
+          "inputs": "Selección paciente, monto, simular pago.",
+          "outputs": "UI historial pagos, confirmación mock.",
+          "files": [
+            "src/app/(dashboard)/pagos/page.tsx",
+            "src/features/facturacion/components/pagos/pagos-view.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-fact-mock",
+          "label": "Simular pago crea fila paid",
+          "href": "/pagos"
+        },
+        {
+          "id": "mod-fact-list",
+          "label": "Historial últimos 50 pagos",
+          "href": "/pagos"
+        },
+        {
+          "id": "mod-fact-banner",
+          "label": "Banner lab visible (no MP real)",
+          "href": "/pagos"
+        },
+        {
+          "id": "mod-fact-perm",
+          "label": "Solo roles con managePayments",
+          "href": "/pagos"
+        }
+      ]
+    },
+    {
+      "id": "data",
+      "name": "Datos / RLS / migraciones",
+      "status": "ready",
+      "summary": {
+        "what": "Supabase, repos, 75 migraciones SQL con RLS.",
+        "inputs": "Queries, clinic_id, IDs entidad.",
+        "outputs": "Filas DB tipadas, errores repo."
+      },
+      "layers": [
+        {
+          "layerId": "data",
+          "layerLabel": "Capa de datos / validación",
+          "what": "Supabase clients, RLS manifest, repos tipados y 75 migraciones SQL.",
+          "inputs": "Queries con clinic_id, JWT RLS.",
+          "outputs": "Filas scoped tenant, errores repo mapeados.",
+          "files": [
+            "src/core/supabase/server.ts",
+            "src/core/security/rls-manifest.ts",
+            "src/core/repositories/types.ts",
+            "supabase/migrations/071_clinic_member_permissions_and_shared_ai.sql",
+            "supabase/migrations/073_clinic_invitation_initial_password.sql"
+          ]
+        },
+        {
+          "layerId": "business",
+          "layerLabel": "Lógica de negocio / servicios",
+          "what": "Import/export HCE, consumers JSONL, jobs batch y migration health check.",
+          "inputs": "Archivos CSV/PDF/JSONL, staging rows.",
+          "outputs": "Pacientes importados, reporte health migraciones.",
+          "files": [
+            "src/lib/actions/patient-import.ts",
+            "src/lib/actions/hce-import.ts",
+            "src/lib/utils/migration-health.ts"
+          ]
+        },
+        {
+          "layerId": "ui",
+          "layerLabel": "Interfaz / componentes",
+          "what": "Panel /datos: import/export, clear history, migration health UI.",
+          "inputs": "Upload archivos, confirmaciones destructivas.",
+          "outputs": "Progress import, banners jobs en cola.",
+          "files": [
+            "src/app/(dashboard)/datos/page.tsx",
+            "src/features/integraciones/components/datos/migration-health-panel.tsx"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "mod-data-rls",
+          "label": "RLS bloquea otra clínica"
+        },
+        {
+          "id": "mod-data-mig",
+          "label": "Migraciones 071–073 aplicadas en prod"
+        }
+      ]
+    }
+  ]
+}

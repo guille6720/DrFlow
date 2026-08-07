@@ -7,6 +7,8 @@ import {
 } from "@/features/pacientes/utils/clinical-workspace-alerts";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 
+import { stubMedicationCard } from "./helpers/clinical-fixtures";
+
 function minimalChart(overrides: Partial<PatientChartPayload> = {}): PatientChartPayload {
   return {
     ageLabel: "45 años",
@@ -80,24 +82,8 @@ describe("clinical-workspace-alerts", () => {
 
   it("detects duplicate medications", () => {
     const flags = detectMedicationFlags([
-      {
-        id: "1",
-        name: "Losartán",
-        dose: "50mg",
-        frequency: "1/d",
-        sinceLabel: "2024",
-        lastRenewalLabel: "2026",
-        raw: { name: "Losartán" } as never,
-      },
-      {
-        id: "2",
-        name: "Losartán",
-        dose: "50mg",
-        frequency: "1/d",
-        sinceLabel: "2025",
-        lastRenewalLabel: "2026",
-        raw: { name: "Losartán" } as never,
-      },
+      stubMedicationCard({ id: "1", name: "Losartán", dose: "50mg", frequency: "1/d", sinceLabel: "2024", lastRenewalLabel: "2026" }),
+      stubMedicationCard({ id: "2", name: "Losartán", dose: "50mg", frequency: "1/d", sinceLabel: "2025", lastRenewalLabel: "2026" }),
     ]);
     expect(flags.some((f) => f.includes("duplicación"))).toBe(true);
   });

@@ -4,8 +4,10 @@ import { Mail, MessageCircle } from "lucide-react";
 
 import { buildWhatsAppShareUrl, buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 
+import type { HistoriaPrescriptionSummary } from "@/features/historias/types/historia-clinical-summaries";
+
 import { Button } from "@/components/ui/button";
-import type { ElectronicPrescription, PrescriptionMedication } from "@/types/prescription";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 interface PatientInfo {
   first_name: string;
@@ -15,7 +17,7 @@ interface PatientInfo {
 }
 
 function buildPrescriptionSummary(
-  prescription: ElectronicPrescription,
+  prescription: HistoriaPrescriptionSummary,
   patient: PatientInfo
 ): string {
   const meds = (prescription.medications as PrescriptionMedication[]) ?? [];
@@ -43,7 +45,7 @@ function buildPrescriptionSummary(
 }
 
 interface Props {
-  prescription: ElectronicPrescription;
+  prescription: HistoriaPrescriptionSummary;
   patient: PatientInfo;
 }
 

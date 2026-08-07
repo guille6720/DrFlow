@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { PatientAppIcon } from "@/core/components/brand/patient-app-icon";
+import { toast } from "@/core/notifications/toast";
 
 import {
   isConsultorioStandalone,
@@ -40,7 +41,6 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
   const [installing, setInstalling] = useState(false);
   const [platform, setPlatform] = useState<"android" | "ios">("android");
   const [inConsultorioApp, setInConsultorioApp] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const portalUrl = `/portal/${slug}`;
   const installPath = `/portal/${slug}/instalar`;
@@ -91,8 +91,7 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
     const url = `${window.location.origin}${installPath}`;
     try {
       await navigator.clipboard.writeText(url);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+      toast.copySuccess("Link copiado al portapapeles");
     } catch {
       /* clipboard no disponible */
     }
@@ -123,7 +122,7 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
               onClick={() => void copyInstallLink()}
             >
               <Copy className="h-4 w-4" />
-              {copied ? "Link copiado" : "Copiar link"}
+              Copiar link
             </Button>
           </div>
         )}

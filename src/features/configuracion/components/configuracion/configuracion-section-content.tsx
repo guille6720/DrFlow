@@ -10,20 +10,16 @@ import { ComplianceLegalPanel } from "@/features/configuracion/components/config
 import type { ConfiguracionSectionId } from "@/features/configuracion/components/configuracion/configuracion-sections";
 import { CoveragesPanel } from "@/features/configuracion/components/configuracion/coverages-panel";
 import { DemoDataPanel } from "@/features/configuracion/components/configuracion/demo-data-panel";
+import { PamiPlanillasAdminPanel } from "@/features/configuracion/components/configuracion/pami-planillas-admin-panel";
 import { PamiSetupPanel } from "@/features/configuracion/components/configuracion/pami-setup-panel";
+import type { SettingsPanelProps } from "@/features/configuracion/components/configuracion/settings-panel";
 
-import type { Clinic } from "@/types/database";
+import type { PamiPlanillaAdminCatalog } from "@/lib/actions/pami-planilla-admin";
 
-export interface SettingsPanelData {
-  clinic: Clinic | null;
-  professionals: never[];
-  members: never[];
-  invitations: never[];
-  bookingSlug: string | null;
-  teamAccess?: import("@/lib/actions/team-permissions").TeamPermissionsPanelData & {
-    hasSharedCredentials: boolean;
-  };
-}
+export type SettingsPanelData = Pick<
+  SettingsPanelProps,
+  "clinic" | "professionals" | "members" | "invitations" | "bookingSlug" | "teamAccess"
+>;
 
 export interface ConfiguracionSectionExtras {
   patientCount: number;
@@ -59,6 +55,8 @@ export interface ConfiguracionSectionExtras {
     snapshot: import("@/lib/server/load-observability").ObservabilitySnapshot;
     health: import("@/core/observability/health").HealthStatus;
   };
+  pamiPlanillaAdminCatalog?: PamiPlanillaAdminCatalog;
+  pamiPlanillaAdminError?: string;
 }
 
 export function renderConfiguracionSectionContent(
@@ -82,10 +80,19 @@ export function renderConfiguracionSectionContent(
       );
     case "pami":
       return (
-        <PamiSetupPanel
-          practiceProfile={extras.practiceProfile}
-          defaultInsurance={extras.defaultInsurance}
-        />
+        <div className="space-y-6">
+          <PamiSetupPanel
+            practiceProfile={extras.practiceProfile}
+            defaultInsurance={extras.defaultInsurance}
+          />
+          {extras.pamiPlanillaAdminCatalog ? (
+            <PamiPlanillasAdminPanel initialCatalog={extras.pamiPlanillaAdminCatalog} />
+          ) : extras.pamiPlanillaAdminError ? (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+              {extras.pamiPlanillaAdminError}
+            </div>
+          ) : null}
+        </div>
       );
     case "plugins":
       return <ClinicPluginsPanel plugins={extras.pluginSettings} />;

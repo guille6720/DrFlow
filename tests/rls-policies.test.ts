@@ -53,13 +53,15 @@ describe("RLS policy manifest (static audit)", () => {
     }
   });
 
-  it("seed_pami RPC en 030 incluye control FORBIDDEN", () => {
-    const m030 = readFileSync(
-      resolve(process.cwd(), "supabase/migrations/030_clinic_accepted_coverages.sql"),
+  it("seed_pami RPC incluye idempotencia (030/077)", () => {
+    const m077 = readFileSync(
+      resolve(process.cwd(), "supabase/migrations/077_pami_cabecera_idempotent.sql"),
       "utf8"
     );
-    expect(m030).toMatch(/FORBIDDEN/i);
-    expect(m030).toMatch(/p_clinic_id/i);
+    expect(m077).toMatch(/FORBIDDEN/i);
+    expect(m077).toMatch(/already_configured/i);
+    expect(m077).toMatch(/pg_advisory_xact_lock/i);
+    expect(m077).toMatch(/idx_clinical_templates_clinic_name/i);
   });
 
   it("get_patient_appointment_statuses acota por clinic_id y documento", () => {

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { isUniqueViolation } from "@/core/errors/postgres-error";
 import { sanitizeText } from "@/core/validations/schemas";
 
 import { upsertPatientClinicalProfile } from "@/features/pacientes/server/patient-clinical-profile";
@@ -47,7 +48,7 @@ export async function findOrCreatePatientFromExtract(
     .single();
 
   if (error) {
-    if (error.message.includes("unique") || error.code === "23505") {
+    if (isUniqueViolation(error)) {
       const { data: retry } = await supabase
         .from("patients")
         .select("id, first_name, last_name")

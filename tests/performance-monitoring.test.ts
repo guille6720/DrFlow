@@ -6,6 +6,8 @@ import {
 } from "@/core/observability/client-ingest-schema";
 import { inferWebVitalStatus, WEB_VITAL_THRESHOLDS } from "@/core/observability/web-vitals-thresholds";
 
+import { createSupabaseTestDouble } from "./helpers/mock-supabase-client";
+
 describe("client observability ingest schema", () => {
   it("accepts valid performance batch", () => {
     const events: ClientObservabilityEvent[] = [
@@ -75,7 +77,7 @@ describe("load-observability percentile", () => {
       }),
     };
 
-    const snapshot = await loadObservabilitySnapshot(supabase as never, "clinic-1");
+    const snapshot = await loadObservabilitySnapshot(createSupabaseTestDouble(supabase), "clinic-1");
     expect(snapshot.last24h.p75LcpMs).toBe(3000);
     expect(snapshot.last24h.webVitalsPoor).toBe(2);
   });

@@ -1,27 +1,27 @@
 import { AlertTriangle, Heart, Pill } from "lucide-react";
 
 import { calculateAge, formatAgeLabel, isPamiPatient } from "@/features/pacientes/utils/patient-age";
+import { getPamiMessages } from "@/features/pami/i18n";
 
 import { Badge } from "@/components/ui/badge";
 import { insuranceNumberLabel } from "@/lib/constants/coverages";
-import type { Patient } from "@/types/database";
 
 interface PamiPatientBannerProps {
-  patient: Pick<
-    Patient,
-    | "first_name"
-    | "last_name"
-    | "birth_date"
-    | "insurance_provider"
-    | "insurance_number"
-    | "allergies"
-    | "regular_medication"
-    | "emergency_contact_name"
-    | "emergency_contact_phone"
-  >;
+  patient: {
+    first_name: string;
+    last_name: string;
+    birth_date?: string | null;
+    insurance_provider?: string | null;
+    insurance_number?: string | null;
+    allergies?: string | null;
+    regular_medication?: string | null;
+    emergency_contact_name?: string | null;
+    emergency_contact_phone?: string | null;
+  };
 }
 
 export function PamiPatientBanner({ patient }: PamiPatientBannerProps) {
+  const t = getPamiMessages().patientBanner;
   const age = calculateAge(patient.birth_date);
   const ageLabel = formatAgeLabel(patient.birth_date);
   const isPami = isPamiPatient(patient.insurance_provider);
@@ -29,20 +29,23 @@ export function PamiPatientBanner({ patient }: PamiPatientBannerProps) {
   const numberLabel = insuranceNumberLabel(patient.insurance_provider);
 
   return (
-    <div className="drflow-patient-context-banner rounded-2xl border border-blue-200/80 bg-gradient-to-r from-blue-50/80 to-white p-4 shadow-sm">
+    <section
+      className="drflow-patient-context-banner rounded-2xl border border-blue-200/80 bg-gradient-to-r from-blue-50/80 to-white p-4 shadow-sm"
+      aria-label={t.ariaLabel}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             {isPami && (
               <Badge variant="teal" className="font-semibold">
-                PAMI
+                {t.badgePami}
               </Badge>
             )}
             {!isPami && patient.insurance_provider && (
               <Badge variant="default">{patient.insurance_provider}</Badge>
             )}
             {ageLabel && <Badge variant="default">{ageLabel}</Badge>}
-            {isGeriatric && <Badge variant="warning">Adulto mayor</Badge>}
+            {isGeriatric && <Badge variant="warning">{t.badgeGeriatric}</Badge>}
           </div>
           {patient.insurance_number ? (
             <p className="drflow-patient-banner-meta mt-2 text-sm">
@@ -51,12 +54,12 @@ export function PamiPatientBanner({ patient }: PamiPatientBannerProps) {
             </p>
           ) : patient.insurance_provider ? (
             <p className="drflow-patient-banner-meta mt-2 text-sm">
-              {numberLabel}: <span className="italic">Sin Nº</span>
+              {numberLabel}: <span className="italic">{t.noNumber}</span>
             </p>
           ) : null}
           {(patient.emergency_contact_name || patient.emergency_contact_phone) && (
             <p className="drflow-patient-banner-meta mt-1 text-xs">
-              Contacto: {patient.emergency_contact_name ?? "—"}
+              {t.contact} {patient.emergency_contact_name ?? "—"}
               {patient.emergency_contact_phone ? ` · ${patient.emergency_contact_phone}` : ""}
             </p>
           )}
@@ -65,28 +68,31 @@ export function PamiPatientBanner({ patient }: PamiPatientBannerProps) {
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {patient.allergies && (
-          <div className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div
+            className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800"
+            role="alert"
+          >
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             <span>
-              <strong>Alergias:</strong> {patient.allergies}
+              <strong>{t.allergies}</strong> {patient.allergies}
             </span>
           </div>
         )}
         {patient.regular_medication && (
           <div className="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            <Pill className="mt-0.5 h-4 w-4 shrink-0" />
+            <Pill className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             <span>
-              <strong>Medicación:</strong> {patient.regular_medication}
+              <strong>{t.medication}</strong> {patient.regular_medication}
             </span>
           </div>
         )}
         {!patient.allergies && !patient.regular_medication && (
           <div className="drflow-patient-banner-hint flex items-center gap-2 text-sm sm:col-span-2">
-            <Heart className="h-4 w-4 shrink-0" />
-            Completá alergias y medicación habitual en la ficha del paciente.
+            <Heart className="h-4 w-4 shrink-0" aria-hidden />
+            {t.completeHint}
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 }

@@ -3,7 +3,7 @@
 import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
 import { MedicalOrderForm } from "@/features/recetas/components/recetas/medical-order-form";
 
-import type { MedicalOrder } from "@/types/medical-order";
+import type { MedicalOrderEditFields } from "@/types/medical-order";
 
 type Professional = {
   id: string;
@@ -15,7 +15,7 @@ type Professional = {
 
 type Props = {
   open: boolean;
-  order: (MedicalOrder & { order_type?: string }) | null;
+  order: MedicalOrderEditFields | null;
   patientId: string;
   professionals: Professional[];
   onClose: () => void;

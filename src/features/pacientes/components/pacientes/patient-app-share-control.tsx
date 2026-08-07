@@ -6,6 +6,8 @@ import { CheckCircle2, Copy, MessageCircle, RefreshCw, Smartphone } from "lucide
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
+import { toast } from "@/core/notifications/toast";
+
 import { cn } from "@/shared/utils/cn";
 import { buildWhatsAppShareUrl, buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 
@@ -50,7 +52,6 @@ export function PatientAppShareControl({
   const [pending, startTransition] = useTransition();
   const [localShare, setLocalShare] = useState<PatientAppShareInfo | null>(share ?? null);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
 
   const { installUrl, message, whatsappUrl } = useMemo(() => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -93,8 +94,7 @@ export function PatientAppShareControl({
     if (pending) return;
     registerShare("copy", () => {
       void navigator.clipboard.writeText(message);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+      toast.copySuccess("Mensaje copiado al portapapeles");
     });
   }
 
@@ -155,7 +155,7 @@ export function PatientAppShareControl({
         </Button>
         <Button type="button" size="sm" variant="outline" onClick={handleCopy} disabled={pending}>
           <Copy className="h-4 w-4" />
-          {copied ? "Copiado" : "Copiar mensaje"}
+          Copiar mensaje
         </Button>
       </div>
       <p className="break-all text-xs text-slate-500">{installUrl}</p>

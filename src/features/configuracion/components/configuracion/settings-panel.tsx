@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import type { ManageablePermissionKey } from "@/core/permissions/member-permissions";
+import type { NestedRow } from "@/core/supabase/query-types";
 
 import { SettingsAgendaSection } from "@/features/configuracion/components/configuracion/settings-agenda-section";
 import { SettingsAppsSection } from "@/features/configuracion/components/configuracion/settings-apps-section";
@@ -16,15 +17,15 @@ import type { Clinic } from "@/types/database";
 
 export type SettingsSectionId = "clinica" | "apps" | "agenda" | "equipo";
 
-interface SettingsPanelProps {
+export interface SettingsPanelProps {
   section?: SettingsSectionId;
   clinic: Clinic | null;
   professionals: {
     id: string;
     display_name: string | null;
     license_number: string | null;
-    profiles?: { full_name: string } | null;
-    specialties?: { name: string } | null;
+    profiles?: NestedRow<{ full_name: string }>;
+    specialties?: NestedRow<{ name: string }>;
   }[];
   members: {
     id: string;

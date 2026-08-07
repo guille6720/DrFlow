@@ -1,0 +1,99 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs permissions",
+  "module": {
+    "id": "permissions",
+    "name": "Permisos y multi-tenant",
+    "status": "ready",
+    "summary": {
+      "what": "Matriz de roles, overrides por miembro, guards multi-tenant e invitados.",
+      "inputs": "Rol, ruta, IDs recurso, overrides JSON.",
+      "outputs": "hasPermission(), nav filtrado, FORBIDDEN."
+    },
+    "layers": [
+      {
+        "layerId": "auth",
+        "layerLabel": "Autenticación / guards",
+        "what": "Guards de clínica, ownership por entidad y scope tenant en server actions.",
+        "inputs": "userId, clinicId, entityId, pathname.",
+        "outputs": "FORBIDDEN | scoped clinic_id, redirect login.",
+        "files": [
+          "src/core/actions/clinic-guard.ts",
+          "src/core/security/ownership-guard.ts",
+          "src/core/security/tenant-scope.ts"
+        ]
+      },
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Matriz roles (admin/doctor/secretary), overrides por miembro e isInvitedClinicMember.",
+        "inputs": "UserRole, member_permissions JSON, ruta solicitada.",
+        "outputs": "hasPermission(), nav filtrado, clinical-access guards.",
+        "files": [
+          "src/core/permissions/roles.ts",
+          "src/core/permissions/member-permissions.ts",
+          "src/core/services/clinical-access.service.ts",
+          "src/lib/actions/team-permissions.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Schemas staff/invitations y tipos DB para clinic_members + permisos.",
+        "inputs": "Payload invitación, overrides JSON.",
+        "outputs": "Validación Zod, filas clinic_members.",
+        "files": [
+          "src/core/validations/staff-schemas.ts",
+          "src/types/database.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Matriz permisos en Configuración, sidebar filtrado, badge INVITADO.",
+        "inputs": "Rol actual, permisos efectivos.",
+        "outputs": "Nav items visibles/ocultos, toggles matriz.",
+        "files": [
+          "src/features/configuracion/components/configuracion/team-permissions-matrix.tsx",
+          "src/core/components/layout/sidebar-nav-content.tsx",
+          "src/core/components/layout/guest-appearance-modal.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-perm-sec",
+        "label": "Secretaría no accede a HC clínica completa",
+        "href": "/historias"
+      },
+      {
+        "id": "mod-perm-inv",
+        "label": "Invitado ve badge INVITADO",
+        "href": "/dashboard"
+      },
+      {
+        "id": "mod-perm-admin",
+        "label": "Admin accede a Configuración",
+        "href": "/configuracion"
+      },
+      {
+        "id": "mod-perm-tenant",
+        "label": "Usuario no ve datos de otra clínica"
+      }
+    ]
+  }
+}

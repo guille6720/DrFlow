@@ -24,6 +24,8 @@ import type { PERMISSIONS } from "@/core/permissions/roles";
 
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
+import { pamiNavMessages } from "@/locales/es-AR/pami/nav";
+
 export type CommandPaletteGroup = "acciones" | "navegacion" | "pacientes";
 
 export type CommandPaletteItemDef = {
@@ -139,10 +141,10 @@ export const COMMAND_PALETTE_NAV: CommandPaletteItemDef[] = [
     icon: Pill,
     permission: "viewPharmacology",
   },
-  { id: "nav-pami", label: "Guía cabecera PAMI", href: "/guia-pami", group: "navegacion", icon: HeartPulse },
+  { id: "nav-pami", label: pamiNavMessages.commandPalette.guia, href: "/guia-pami", group: "navegacion", icon: HeartPulse },
   {
     id: "nav-planillas-pami",
-    label: "Planillas PAMI",
+    label: pamiNavMessages.commandPalette.planillas,
     href: "/pami/planillas",
     group: "navegacion",
     icon: ClipboardList,

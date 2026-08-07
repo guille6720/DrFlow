@@ -3,6 +3,8 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+import type { ConsultPatientPickerRow } from "@/core/supabase/query-types";
+
 import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation";
 
 import { createClinicalRecord } from "@/features/historias/actions/clinical-records";
@@ -18,7 +20,6 @@ import {
   saveConsultationEvolution,
 } from "@/lib/utils/consultation-draft";
 import { buildProfessionalSignature } from "@/lib/utils/professional";
-import type { Patient } from "@/types/database";
 
 type Template = {
   id: string;
@@ -41,11 +42,11 @@ type ConsultFormProfessional = {
   id: string;
   display_name?: string | null;
   license_number?: string | null;
-  profiles?: { full_name?: string } | null;
+  profiles?: { full_name?: string } | { full_name?: string }[] | null;
 };
 
 type Options = {
-  patients: Patient[];
+  patients: ConsultPatientPickerRow[];
   professionals: ConsultFormProfessional[];
   templates: Template[];
   workspace?: NuevaConsultaWorkspaceConfig;

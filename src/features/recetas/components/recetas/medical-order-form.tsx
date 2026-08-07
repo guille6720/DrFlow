@@ -7,13 +7,15 @@ import { useState } from "react";
 import { OrderPhysicianAssist } from "@/features/ia/components/clinical-workflow/order-physician-assist";
 import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
 import { createMedicalOrder, updateMedicalOrder } from "@/features/recetas/actions/medical-orders";
+import { isMedicalOrderConflictError } from "@/features/recetas/repositories/medical-orders.errors";
+import { normalizeMedicalOrderVersion } from "@/features/recetas/utils/medical-order-version";
 
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { PAMI_REFERRAL_TEMPLATES, PAMI_STUDY_TEMPLATES } from "@/lib/constants/pami-cabecera";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
-import type { MedicalOrder } from "@/types/medical-order";
+import type { MedicalOrderEditFields } from "@/types/medical-order";
 
 interface Professional {
   id: string;
@@ -27,7 +29,7 @@ interface Props {
   clinicalRecordId?: string;
   professionals: Professional[];
   defaultProfessionalId?: string;
-  existingOrder?: MedicalOrder & { order_type?: string };
+  existingOrder?: MedicalOrderEditFields;
   onSuccess?: () => void;
   onCancel?: () => void;
   assistContext?: PhysicianAssistContext;
@@ -73,6 +75,10 @@ export function MedicalOrderForm({
       : await createMedicalOrder(formData);
     setLoading(false);
     if (result.error) {
+      if (isEditing && isMedicalOrderConflictError(result.error)) {
+        router.refresh();
+        onCancel?.();
+      }
       setError(result.error);
       return;
     }
@@ -82,6 +88,13 @@ export function MedicalOrderForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {isEditing && existingOrder ? (
+        <input
+          type="hidden"
+          name="expected_version"
+          value={normalizeMedicalOrderVersion(existingOrder.version)}
+        />
+      ) : null}
       <div className="flex flex-wrap gap-2">
         <Button
           type="button"

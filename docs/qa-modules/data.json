@@ -1,0 +1,77 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs data",
+  "module": {
+    "id": "data",
+    "name": "Datos / RLS / migraciones",
+    "status": "ready",
+    "summary": {
+      "what": "Supabase, repos, 75 migraciones SQL con RLS.",
+      "inputs": "Queries, clinic_id, IDs entidad.",
+      "outputs": "Filas DB tipadas, errores repo."
+    },
+    "layers": [
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Supabase clients, RLS manifest, repos tipados y 75 migraciones SQL.",
+        "inputs": "Queries con clinic_id, JWT RLS.",
+        "outputs": "Filas scoped tenant, errores repo mapeados.",
+        "files": [
+          "src/core/supabase/server.ts",
+          "src/core/security/rls-manifest.ts",
+          "src/core/repositories/types.ts",
+          "supabase/migrations/071_clinic_member_permissions_and_shared_ai.sql",
+          "supabase/migrations/073_clinic_invitation_initial_password.sql"
+        ]
+      },
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Import/export HCE, consumers JSONL, jobs batch y migration health check.",
+        "inputs": "Archivos CSV/PDF/JSONL, staging rows.",
+        "outputs": "Pacientes importados, reporte health migraciones.",
+        "files": [
+          "src/lib/actions/patient-import.ts",
+          "src/lib/actions/hce-import.ts",
+          "src/lib/utils/migration-health.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Panel /datos: import/export, clear history, migration health UI.",
+        "inputs": "Upload archivos, confirmaciones destructivas.",
+        "outputs": "Progress import, banners jobs en cola.",
+        "files": [
+          "src/app/(dashboard)/datos/page.tsx",
+          "src/features/integraciones/components/datos/migration-health-panel.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-data-rls",
+        "label": "RLS bloquea otra clínica"
+      },
+      {
+        "id": "mod-data-mig",
+        "label": "Migraciones 071–073 aplicadas en prod"
+      }
+    ]
+  }
+}

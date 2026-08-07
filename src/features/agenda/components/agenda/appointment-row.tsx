@@ -4,6 +4,8 @@ import { isSameDay, parseISO } from "date-fns";
 import { Globe } from "lucide-react";
 import { memo } from "react";
 
+import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
+
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 
 import { AppointmentRowActions } from "@/features/agenda/components/agenda/appointment-row-actions";
@@ -12,14 +14,13 @@ import { useAppointmentRow } from "@/features/agenda/hooks/use-appointment-row";
 
 import { appointmentStatusBadge, Badge } from "@/components/ui/badge";
 import { isOnlineBooking } from "@/lib/utils/appointment";
-import type { Appointment } from "@/types/database";
 
 interface Props {
-  appointment: Appointment;
+  appointment: AppointmentAgendaRow;
   showDate?: boolean;
   canManage: boolean;
   canStartClinical: boolean;
-  onEdit?: (appointment: Appointment) => void;
+  onEdit?: (appointment: AppointmentAgendaRow) => void;
 }
 
 export const AppointmentRow = memo(function AppointmentRow({
@@ -96,7 +97,7 @@ export const AppointmentRow = memo(function AppointmentRow({
   );
 });
 
-export function filterAppointmentsForDay(appointments: Appointment[], day: Date) {
+export function filterAppointmentsForDay(appointments: AppointmentAgendaRow[], day: Date) {
   return appointments
     .filter((a) => isSameDay(parseISO(a.start_at), day))
     .sort((a, b) => parseISO(a.start_at).getTime() - parseISO(b.start_at).getTime());

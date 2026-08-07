@@ -9,6 +9,8 @@ import {
   sortProactiveCareItems,
 } from "@/lib/utils/proactive-follow-up";
 
+import { stubMedicationCard } from "./helpers/clinical-fixtures";
+
 function baseChart(overrides: Partial<PatientChartPayload> = {}): PatientChartPayload {
   return {
     ageLabel: "64 años",
@@ -25,7 +27,7 @@ function baseChart(overrides: Partial<PatientChartPayload> = {}): PatientChartPa
     smokingLabel: "Sin registrar",
     alerts: [],
     problems: [],
-    medications: [{ id: "1", name: "Metformina", dose: "850", frequency: "c/12h", sinceLabel: "—", lastRenewalLabel: "—", raw: {} as never }],
+    medications: [stubMedicationCard({ id: "1", name: "Metformina", dose: "850", frequency: "c/12h" })],
     vitals: [],
     latestVitals: {},
     labPanel: [

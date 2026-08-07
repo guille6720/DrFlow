@@ -14,19 +14,19 @@ import {
 import { es } from "date-fns/locale";
 import { memo, useMemo } from "react";
 
-import { cn } from "@/shared/utils/cn";
+import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
-import type { Appointment } from "@/types/database";
+import { cn } from "@/shared/utils/cn";
 
 interface MonthOverviewGridProps {
   monthDate: Date;
-  appointments: Appointment[];
+  appointments: AppointmentAgendaRow[];
   onDayClick?: (day: Date) => void;
 }
 
 const WEEK_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"] as const;
 
-function buildDayCounts(appointments: Appointment[]): Map<string, number> {
+function buildDayCounts(appointments: AppointmentAgendaRow[]): Map<string, number> {
   const counts = new Map<string, number>();
   for (const appt of appointments) {
     const key = format(parseISO(appt.start_at), "yyyy-MM-dd");

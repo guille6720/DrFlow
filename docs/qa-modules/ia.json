@@ -1,0 +1,77 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs ia",
+  "module": {
+    "id": "ia",
+    "name": "IA clínica",
+    "status": "lab",
+    "summary": {
+      "what": "Copilot clínico, physician assist SOAP/recetas.",
+      "inputs": "Contexto paciente, prompt, credenciales IA.",
+      "outputs": "Sugerencias revisables, streams API."
+    },
+    "layers": [
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Copilot clínico, physician assist SOAP/recetas, admin-ops y APIs /api/clinical-ai.",
+        "inputs": "Contexto paciente, prompt, credenciales IA usuario/clínica.",
+        "outputs": "Sugerencias SOAP, resúmenes, streams API.",
+        "files": [
+          "src/lib/utils/clinical-copilot.ts",
+          "src/lib/utils/clinical-assistant.ts",
+          "src/app/api/clinical-ai/route.ts",
+          "src/lib/actions/user-ai-connection.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Validación API IA, tipos physician-assist y conexiones user_ai.",
+        "inputs": "JSON request API, provider keys.",
+        "outputs": "Zod parse, tipos assist kind.",
+        "files": [
+          "src/core/validations/clinical-ai-api.ts",
+          "src/features/ia/types/physician-assist-types.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Sheets copilot, inline assist en formularios, FAB unificado y panel proveedor IA.",
+        "inputs": "Click assist, dictado, chat messages.",
+        "outputs": "UI sugerencias insertables, disclaimers médicos.",
+        "files": [
+          "src/features/ia/components/clinical-workflow/clinical-copilot-sheet.tsx",
+          "src/features/ia/components/clinical-workflow/inline-physician-assist.tsx",
+          "src/core/components/layout/unified-copilot-fab.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-ia-soap",
+        "label": "Assist SOAP sugiere texto revisable",
+        "href": "/historias/nueva"
+      },
+      {
+        "id": "mod-ia-disclaimer",
+        "label": "Disclaimer responsabilidad médica visible"
+      }
+    ]
+  }
+}

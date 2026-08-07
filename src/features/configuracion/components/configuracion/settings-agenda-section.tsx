@@ -3,6 +3,9 @@
 import { Copy, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
+import { nestedProfileFullName } from "@/core/supabase/nested-row";
+import type { NestedRow } from "@/core/supabase/query-types";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,7 +20,7 @@ import type { Clinic } from "@/types/database";
 type ProfessionalOption = {
   id: string;
   display_name: string | null;
-  profiles?: { full_name: string } | null;
+  profiles?: NestedRow<{ full_name: string }>;
 };
 
 type Props = {
@@ -37,7 +40,7 @@ export function SettingsAgendaSection({
 }: Props) {
   const professionalOptions = professionals.map((p) => ({
     value: p.id,
-    label: p.display_name ?? p.profiles?.full_name ?? "Profesional",
+    label: p.display_name ?? nestedProfileFullName(p.profiles) ?? "Profesional",
   }));
 
   return (

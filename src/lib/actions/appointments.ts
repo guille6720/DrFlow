@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { getSession, logAudit } from "@/core/auth/session.server";
+import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { verifyAppointmentForeignKeys } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
@@ -60,10 +61,9 @@ export async function createAppointment(formData: FormData) {
     .single();
 
   if (error) {
-    if (error.message.includes("turno en ese horario")) {
-      return { error: "El profesional ya tiene un turno en ese horario." };
-    }
-    return { error: error.message };
+    return {
+      error: resolvePostgresUserMessage(error, { fallback: error.message }),
+    };
   }
 
   await logAudit({
@@ -136,10 +136,9 @@ export async function updateAppointment(id: string, formData: FormData) {
     .eq("clinic_id", clinicId);
 
   if (error) {
-    if (error.message.includes("turno en ese horario")) {
-      return { error: "El profesional ya tiene un turno en ese horario." };
-    }
-    return { error: error.message };
+    return {
+      error: resolvePostgresUserMessage(error, { fallback: error.message }),
+    };
   }
 
   await logAudit({

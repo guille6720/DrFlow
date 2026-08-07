@@ -4,6 +4,8 @@ import type { PatientChartPayload } from "@/features/pacientes/utils/patient-cha
 
 import { buildPreVisitBrief, formatMonthsSince } from "@/lib/utils/pre-visit-brief";
 
+import { stubMedicationCard } from "./helpers/clinical-fixtures";
+
 function minimalChart(overrides: Partial<PatientChartPayload> = {}): PatientChartPayload {
   return {
     ageLabel: "62 años",
@@ -21,24 +23,8 @@ function minimalChart(overrides: Partial<PatientChartPayload> = {}): PatientChar
     alerts: [{ level: "red", label: "Alergia: Penicilina" }],
     problems: [],
     medications: [
-      {
-        id: "1",
-        name: "Metformina",
-        dose: "850 mg",
-        frequency: "c/12h",
-        sinceLabel: "—",
-        lastRenewalLabel: "—",
-        raw: {} as never,
-      },
-      {
-        id: "2",
-        name: "Losartán",
-        dose: "50 mg",
-        frequency: "c/24h",
-        sinceLabel: "—",
-        lastRenewalLabel: "—",
-        raw: {} as never,
-      },
+      stubMedicationCard({ id: "1", name: "Metformina", dose: "850 mg", frequency: "c/12h" }),
+      stubMedicationCard({ id: "2", name: "Losartán", dose: "50 mg", frequency: "c/24h" }),
     ],
     vitals: [],
     latestVitals: {},

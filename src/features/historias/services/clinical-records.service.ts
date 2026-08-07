@@ -1,5 +1,6 @@
 import type { z } from "zod";
 
+import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import type { DbClient } from "@/core/repositories/types";
 import type { ServiceResult } from "@/core/services/types";
 import { serviceErr, serviceOk } from "@/core/services/types";
@@ -83,10 +84,7 @@ export async function updateClinicalRecordEntry(
   });
 
   if (error) {
-    if (error.message.includes("RECORD_NOT_FOUND")) {
-      return serviceErr("Consulta no encontrada");
-    }
-    return serviceErr(error.message);
+    return serviceErr(resolvePostgresUserMessage(error, { fallback: error.message }));
   }
 
   const payload = data as { old: Record<string, unknown>; data: Record<string, unknown> };

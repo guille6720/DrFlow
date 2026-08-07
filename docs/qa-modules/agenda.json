@@ -1,0 +1,78 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs agenda",
+  "module": {
+    "id": "agenda",
+    "name": "Agenda y turnos",
+    "status": "ready",
+    "summary": {
+      "what": "Agenda, sala de espera, booking público y recordatorios.",
+      "inputs": "Fecha, professionalId, slug portal.",
+      "outputs": "Filas appointments, confirm/ausente, WhatsApp."
+    },
+    "layers": [
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "CRUD appointments, sala de espera, booking público y recordatorios.",
+        "inputs": "Fecha, professionalId, slug portal, FormData turno.",
+        "outputs": "Filas appointments, WhatsApp messages, confirm/ausente.",
+        "files": [
+          "src/lib/actions/appointments.ts",
+          "src/lib/actions/waiting-room.ts",
+          "src/lib/actions/public-booking.ts",
+          "src/features/agenda/hooks/use-agenda-view.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Validación booking público y tipos Appointment en database.ts.",
+        "inputs": "Slot datetime, patient contact, slug.",
+        "outputs": "Zod parse, fila appointment insertada.",
+        "files": [
+          "src/core/validations/public-booking.ts",
+          "src/types/database.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Vista día/semana, filas turno con acciones, sala de espera y solicitar-turno público.",
+        "inputs": "Clicks confirmar/ausente/empezar consulta.",
+        "outputs": "Calendario interactivo, badges estado turno.",
+        "files": [
+          "src/features/agenda/components/agenda/agenda-view.tsx",
+          "src/app/(dashboard)/sala-espera/page.tsx",
+          "src/app/solicitar-turno/[slug]/page.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-agenda-day",
+        "label": "Vista día carga turnos",
+        "href": "/agenda"
+      },
+      {
+        "id": "mod-agenda-web",
+        "label": "Turno web aparece con badge",
+        "href": "/agenda"
+      }
+    ]
+  }
+}

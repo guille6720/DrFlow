@@ -1,7 +1,7 @@
+import type { HistoriaMedicalOrderSummary } from "@/features/historias/types/historia-clinical-summaries";
 import type { MedicalOrderDocumentData } from "@/features/recetas/utils/print-medical-order-document";
 
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
-import type { MedicalOrder } from "@/types/medical-order";
 
 type PatientInfo = {
   first_name: string;
@@ -35,7 +35,7 @@ type ClinicInfo = {
 };
 
 export function buildMedicalOrderDocumentData(
-  order: MedicalOrder & { order_type?: string },
+  order: HistoriaMedicalOrderSummary & { order_type?: string },
   patient: PatientInfo,
   clinic: ClinicInfo,
   professionals: ProfessionalInfo[]

@@ -1,6 +1,7 @@
 import {
+  formatPrintDiagnosisMetaDate,
   formatPrintFullDate,
-  formatPrintMetaDate,
+  formatPrintTreatmentMetaDate,
   professionalMetaLine,
 } from "@/features/historias/components/historias/patient-ehr-print-utils";
 import type {
@@ -52,7 +53,7 @@ export function PatientEhrPrintClinicalTables({
                         {row.chronic ? <p className="drflow-ehr-print-table-emphasis">Crónico</p> : null}
                         <p className="drflow-ehr-print-table-muted">
                           {consultation
-                            ? formatPrintMetaDate(consultation.created_at)
+                            ? formatPrintDiagnosisMetaDate(consultation.created_at)
                             : formatPrintFullDate(new Date().toISOString())}
                         </p>
                         <p className="drflow-ehr-print-table-primary">{row.name}</p>
@@ -102,7 +103,7 @@ export function PatientEhrPrintClinicalTables({
                         <p className="drflow-ehr-print-table-emphasis">{row.status}</p>
                         <p className="drflow-ehr-print-table-muted">
                           {consultation
-                            ? formatPrintMetaDate(consultation.created_at)
+                            ? formatPrintTreatmentMetaDate(consultation.created_at)
                             : `${row.dateLabel} · (n/a)`}
                         </p>
                         {consultation ? (

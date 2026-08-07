@@ -1,5 +1,5 @@
 import type { DbClient, RepoResult } from "@/core/repositories/types";
-import { mapDbError, repoErr, repoOk } from "@/core/repositories/types";
+import { mapPostgresError, repoErr, repoOk } from "@/core/repositories/types";
 
 import type { ElectronicPrescription } from "@/types/prescription";
 
@@ -21,17 +21,8 @@ export type PrescriptionDraftInsertRow = {
   created_by: string;
 };
 
-const PRESCRIPTION_DB_HINTS: Record<string, string> = {
-  diagnosis_cie10:
-    "Falta la migración de recetas en Supabase. Ejecutá en el SQL Editor el archivo supabase/migrations/014_repair_prescription_schema.sql (o 013) y volvé a intentar.",
-  prescription_type:
-    "Falta la migración de recetas en Supabase. Ejecutá en el SQL Editor el archivo supabase/migrations/014_repair_prescription_schema.sql (o 013) y volvé a intentar.",
-  "schema cache":
-    "Falta la migración de recetas en Supabase. Ejecutá en el SQL Editor el archivo supabase/migrations/014_repair_prescription_schema.sql (o 013) y volvé a intentar.",
-};
-
-export function formatPrescriptionDbError(message: string): string {
-  return mapDbError(message, PRESCRIPTION_DB_HINTS);
+export function formatPrescriptionDbError(error: { message?: string; code?: string; details?: string; hint?: string }): string {
+  return mapPostgresError(error);
 }
 
 export async function insertPrescriptionDraft(
@@ -39,7 +30,7 @@ export async function insertPrescriptionDraft(
   row: PrescriptionDraftInsertRow
 ): Promise<RepoResult<ElectronicPrescription>> {
   const { data, error } = await db.from("prescription_drafts").insert(row).select().single();
-  if (error) return repoErr(formatPrescriptionDbError(error.message));
+  if (error) return repoErr(formatPrescriptionDbError(error));
   return repoOk(data as ElectronicPrescription);
 }
 
@@ -47,7 +38,7 @@ export async function updatePrescriptionDraft(
   db: DbClient,
   draftId: string,
   clinicId: string,
-  row: Partial<PrescriptionDraftInsertRow> & { updated_at: string }
+  row: Partial<PrescriptionDraftInsertRow>
 ): Promise<RepoResult<ElectronicPrescription>> {
   const { data, error } = await db
     .from("prescription_drafts")
@@ -58,7 +49,7 @@ export async function updatePrescriptionDraft(
     .select()
     .single();
 
-  if (error) return repoErr(formatPrescriptionDbError(error.message));
+  if (error) return repoErr(formatPrescriptionDbError(error));
   return repoOk(data as ElectronicPrescription);
 }
 
@@ -71,9 +62,7 @@ export async function issuePrescriptionDraft(
     .from("prescription_drafts")
     .update({
       status: "issued",
-      issued_at: new Date().toISOString(),
       refeps_status: "local",
-      updated_at: new Date().toISOString(),
     })
     .eq("id", draftId)
     .eq("clinic_id", clinicId)
@@ -81,7 +70,7 @@ export async function issuePrescriptionDraft(
     .select()
     .single();
 
-  if (error) return repoErr(formatPrescriptionDbError(error.message));
+  if (error) return repoErr(formatPrescriptionDbError(error));
   return repoOk(data as ElectronicPrescription);
 }
 
@@ -94,7 +83,6 @@ export async function voidPrescriptionDraft(
     .from("prescription_drafts")
     .update({
       status: "void",
-      updated_at: new Date().toISOString(),
     })
     .eq("id", draftId)
     .eq("clinic_id", clinicId)
@@ -102,6 +90,6 @@ export async function voidPrescriptionDraft(
     .select()
     .single();
 
-  if (error) return repoErr(formatPrescriptionDbError(error.message));
+  if (error) return repoErr(formatPrescriptionDbError(error));
   return repoOk(data as ElectronicPrescription);
 }

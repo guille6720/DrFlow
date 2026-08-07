@@ -1,0 +1,78 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs historias",
+  "module": {
+    "id": "historias",
+    "name": "Historias clínicas (EHR)",
+    "status": "ready",
+    "summary": {
+      "what": "EHR: consultas SOAP, evoluciones, import clínico.",
+      "inputs": "clinicalRecordId, FormData SOAP.",
+      "outputs": "Registros clínicos, timeline evoluciones."
+    },
+    "layers": [
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "CRUD clinical_records, SOAP, import CSV/PDF/Teams y timeline de evoluciones.",
+        "inputs": "clinicalRecordId, FormData SOAP, archivos import.",
+        "outputs": "Registros HC, audit trail, revalidate paths.",
+        "files": [
+          "src/features/historias/actions/clinical-records.ts",
+          "src/features/historias/services/clinical-records.service.ts",
+          "src/features/historias/hooks/use-nueva-consulta-form.ts",
+          "src/lib/actions/clinical-import.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Tipos EHR, utilidades patient-ehr y schemas de consulta.",
+        "inputs": "Payload SOAP, attachments metadata.",
+        "outputs": "Tipos TS, validación campos clínicos.",
+        "files": [
+          "src/features/historias/components/historias/patient-ehr-types.ts",
+          "src/core/validations/schemas.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Vista EHR, formularios nueva/editar consulta, tablas diagnósticos e import hubs.",
+        "inputs": "Props HC, dictado voz, CIE-10 suggestions.",
+        "outputs": "UI evolución, PDF export, print views.",
+        "files": [
+          "src/features/historias/components/historias/patient-ehr-view.tsx",
+          "src/features/historias/components/historias/historia-detail-content.tsx",
+          "src/features/historias/components/historias/nueva-consulta-form-body.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-hc-soap",
+        "label": "Nueva consulta guarda SOAP completo",
+        "href": "/historias/nueva"
+      },
+      {
+        "id": "mod-hc-tables",
+        "label": "Tablas diagnósticos/tratamientos legibles",
+        "href": "/historias"
+      }
+    ]
+  }
+}

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { getSession, logAudit } from "@/core/auth/session.server";
+import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { verifyCashChargeForeignKeys } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
 import {
@@ -55,10 +56,7 @@ export async function createCashCharge(formData: FormData) {
   });
 
   if (error) {
-    if (error.message.includes("CAJA_MODULE_NOT_INSTALLED")) {
-      return { error: "El módulo de caja no está instalado. Aplicá la migración 034." };
-    }
-    return { error: error.message };
+    return { error: resolvePostgresUserMessage(error, { fallback: error.message }) };
   }
 
   const row = charge as { id: string };
@@ -94,12 +92,7 @@ export async function voidCashCharge(formData: FormData) {
   });
 
   if (error) {
-    if (error.message.includes("CHARGE_NOT_FOUND")) return { error: "Cobro no encontrado" };
-    if (error.message.includes("ALREADY_VOIDED")) return { error: "El cobro ya está anulado" };
-    if (error.message.includes("CAJA_MODULE_NOT_INSTALLED")) {
-      return { error: "El módulo de caja no está instalado. Aplicá la migración 034." };
-    }
-    return { error: error.message };
+    return { error: resolvePostgresUserMessage(error, { fallback: error.message }) };
   }
 
   await logAudit({
@@ -145,10 +138,7 @@ export async function addLedgerEntry(formData: FormData) {
   });
 
   if (error) {
-    if (error.message.includes("CAJA_MODULE_NOT_INSTALLED")) {
-      return { error: "El módulo de caja no está instalado. Aplicá la migración 034." };
-    }
-    return { error: error.message };
+    return { error: resolvePostgresUserMessage(error, { fallback: error.message }) };
   }
 
   const row = data as { id: string };

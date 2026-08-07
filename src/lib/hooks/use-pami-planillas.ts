@@ -1,55 +1,62 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { type SyntheticEvent, useEffect, useMemo, useRef, useState } from "react";
 
-import { escapeHtml } from "@/core/security/xss";
-
-import { createMedicalOrder } from "@/features/recetas/actions/medical-orders";
-
+import { copyTextToClipboard } from "@/core/browser/copy-to-clipboard";
+import { printTextDocument } from "@/core/browser/print-text-document";
+import { useAppRouterRefresh } from "@/core/hooks/use-app-router-refresh";
+import { toast } from "@/core/notifications/toast";
 import {
-  PAMI_PLANILLA_TEMPLATES,
-  type PamiPlanillaCategory,
-  type PamiPlanillaTemplate,
-  renderPamiPlanilla,
-} from "@/lib/constants/pami-planillas";
+  clampPamiPlanillaValues,
+  validatePamiPlanillaForExport,
+} from "@/core/validations/pami-planilla";
+
+import { getPamiMessages } from "@/features/pami/i18n";
+import {
+  getDefaultPlanillaCategory,
+  getDefaultPlanillaTemplateId,
+} from "@/features/pami/services/pami-planilla-templates.service";
+import type {
+  PamiPlanillaPatient,
+  PamiPlanillaProfessional,
+} from "@/features/pami/types/pami-planilla-entities";
+import type {
+  PamiPlanillaCatalog,
+  PamiPlanillaCategory,
+  PamiPlanillaTemplate,
+} from "@/features/pami/types/pami-planilla-template";
+import { renderPamiPlanilla } from "@/features/pami/utils/render-pami-planilla";
+import { createMedicalOrder } from "@/features/recetas/actions/medical-orders";
+import { createMedicalOrderIdempotencyKey } from "@/features/recetas/utils/medical-order-idempotency";
+
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 
-interface Patient {
-  id: string;
-  first_name: string;
-  last_name: string;
-  document_number: string;
-  insurance_number: string | null;
-  phone: string | null;
-  address: string | null;
-}
-
-interface Professional {
-  id: string;
-  license_number?: string | null;
-  display_name?: string | null;
-  profiles?: { full_name: string } | null;
-}
-
 export function usePamiPlanillas(
-  patients: Patient[],
-  professionals: Professional[],
+  patients: PamiPlanillaPatient[],
+  professionals: PamiPlanillaProfessional[],
+  catalog: PamiPlanillaCatalog,
   defaultProfessionalId?: string
 ) {
-  const router = useRouter();
-  const [category, setCategory] = useState<PamiPlanillaCategory>("internacion_domiciliaria");
-  const [templateId, setTemplateId] = useState(PAMI_PLANILLA_TEMPLATES[0]!.id);
+  const { refreshSafely } = useAppRouterRefresh();
+  const initialCategory = getDefaultPlanillaCategory(catalog);
+  const [category, setCategory] = useState<PamiPlanillaCategory>(initialCategory);
+  const [templateId, setTemplateId] = useState(
+    getDefaultPlanillaTemplateId(catalog, initialCategory)
+  );
   const [patientId, setPatientId] = useState("");
   const [professionalId, setProfessionalId] = useState(defaultProfessionalId ?? "");
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  /** Synchronous guard — blocks double-click before React re-renders loading. */
+  const saveInFlightRef = useRef(false);
+  /** Reused on retry; reset when the planilla content changes or after success. */
+  const idempotencyKeyRef = useRef<string | null>(null);
+
   const categoryTemplates = useMemo(
-    () => PAMI_PLANILLA_TEMPLATES.filter((t) => t.category === category),
-    [category]
+    () => catalog.templates.filter((t) => t.category === category),
+    [catalog.templates, category]
   );
 
   const template: PamiPlanillaTemplate | undefined =
@@ -70,54 +77,166 @@ export function usePamiPlanillas(
     });
   }, [template, values, patient, professional]);
 
+  const planillaFingerprint = useMemo(
+    () =>
+      JSON.stringify({
+        category,
+        templateId,
+        patientId,
+        professionalId,
+        values,
+        rendered,
+      }),
+    [category, templateId, patientId, professionalId, values, rendered]
+  );
+
+  useEffect(() => {
+    idempotencyKeyRef.current = null;
+  }, [planillaFingerprint]);
+
   function selectCategory(id: PamiPlanillaCategory) {
     setCategory(id);
-    const first = PAMI_PLANILLA_TEMPLATES.find((t) => t.category === id);
+    const first = catalog.templates.find((t) => t.category === id);
     if (first) {
       setTemplateId(first.id);
       setValues({});
     }
   }
 
+  function setPlanillaValues(updater: React.SetStateAction<Record<string, string>>) {
+    setValues((prev) => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      if (!template) return next;
+      return clampPamiPlanillaValues(template, { ...prev, ...next });
+    });
+  }
+
+  const t = getPamiMessages().planillas.actions;
+
+  function assertPlanillaExportable(): boolean {
+    if (!template || !patient || !professional || !rendered) {
+      setError(t.exportIncomplete);
+      return false;
+    }
+
+    const validation = validatePamiPlanillaForExport(template, values, rendered);
+    if (!validation.ok) {
+      setError(validation.error);
+      return false;
+    }
+
+    return true;
+  }
+
   async function copyText() {
     if (!rendered) return;
-    await navigator.clipboard.writeText(rendered);
-    setMsg("Copiado al portapapeles");
-    setTimeout(() => setMsg(null), 2000);
+
+    setError(null);
+    if (!assertPlanillaExportable()) return;
+
+    try {
+      const result = await copyTextToClipboard(rendered);
+      if (result.ok) {
+        toast.copySuccess();
+        return;
+      }
+      setError(result.message);
+    } catch {
+      setError(t.copyFailed);
+    }
   }
 
   function printText() {
     if (!rendered) return;
-    const w = window.open("", "_blank");
-    if (!w) return;
-    w.document.write(
-      `<pre style="font-family:system-ui;padding:24px;white-space:pre-wrap">${escapeHtml(rendered)}</pre>`
-    );
-    w.document.close();
-    w.print();
+
+    setError(null);
+    if (!assertPlanillaExportable()) return;
+
+    try {
+      const result = printTextDocument({
+        text: rendered,
+        title: template?.title ?? t.printTitleFallback,
+      });
+      if (!result.ok) {
+        setError(result.message);
+      }
+    } catch {
+      setError(t.printFailed);
+    }
   }
 
-  async function saveAsOrder() {
-    if (!patient || !professional || !rendered) {
-      setError("Seleccioná paciente, profesional y completá la planilla.");
-      return;
-    }
-    setLoading(true);
+  async function saveAsOrder(event?: Pick<SyntheticEvent, "preventDefault" | "stopPropagation">) {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    if (saveInFlightRef.current || loading) return;
+
+    saveInFlightRef.current = true;
     setError(null);
-    const fd = new FormData();
-    fd.set("patient_id", patient.id);
-    fd.set("professional_id", professional.id);
-    fd.set("order_text", rendered);
-    fd.set("order_type", "pami_form");
-    fd.set("notes", template?.title ?? "Planilla PAMI");
-    const result = await createMedicalOrder(fd);
-    setLoading(false);
-    if (result.error) {
-      setError(result.error);
+
+    if (!assertPlanillaExportable()) {
+      saveInFlightRef.current = false;
       return;
     }
-    setMsg("Planilla guardada como orden médica");
-    router.refresh();
+
+    if (!patient || !professional || !rendered || !template) {
+      saveInFlightRef.current = false;
+      return;
+    }
+
+    setLoading(true);
+
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current = createMedicalOrderIdempotencyKey();
+    }
+
+    try {
+      const fd = new FormData();
+      fd.set("patient_id", patient.id);
+      fd.set("professional_id", professional.id);
+      fd.set("order_text", rendered);
+      fd.set("order_type", "pami_form");
+      fd.set("notes", template.title ?? t.orderNotesFallback);
+      fd.set("idempotency_key", idempotencyKeyRef.current);
+
+      const result = await createMedicalOrder(fd);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
+      idempotencyKeyRef.current = null;
+      toast.success(t.saveSuccessToast);
+
+      const refreshResult = await refreshSafely({
+        scope: "pami-planillas.refresh-after-save",
+        metadata: {
+          patientId: patient.id,
+          professionalId: professional.id,
+          templateId: template.id,
+          orderType: "pami_form",
+        },
+      });
+
+      if (!refreshResult.ok) {
+        setError(refreshResult.message);
+      }
+    } catch {
+      setError(t.saveFailed);
+    } finally {
+      saveInFlightRef.current = false;
+      setLoading(false);
+    }
+  }
+
+  /** Blocks duplicate pointer / keyboard activation while a save is in flight. */
+  function handleSaveAsOrder(event?: Pick<SyntheticEvent, "preventDefault" | "stopPropagation">) {
+    if (saveInFlightRef.current || loading) {
+      event?.preventDefault();
+      event?.stopPropagation();
+      return;
+    }
+    void saveAsOrder(event);
   }
 
   return {
@@ -127,7 +246,7 @@ export function usePamiPlanillas(
     categoryTemplates,
     templateId,
     setTemplateId,
-    setValues,
+    setValues: setPlanillaValues,
     patientId,
     setPatientId,
     professionalId,
@@ -135,12 +254,11 @@ export function usePamiPlanillas(
     values,
     rendered,
     loading,
-    msg,
     error,
     copyText,
     printText,
     saveAsOrder,
-  };
-}
+    handleSaveAsOrder,
+  };}
 
-export type { Patient as PamiPlanillaPatient, Professional as PamiPlanillaProfessional };
+export type { PamiPlanillaPatient, PamiPlanillaProfessional };

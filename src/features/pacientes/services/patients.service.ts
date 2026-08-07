@@ -1,5 +1,6 @@
 import type { z } from "zod";
 
+import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import type { DbClient } from "@/core/repositories/types";
 import type { ServiceResult } from "@/core/services/types";
 import { serviceErr, serviceOk } from "@/core/services/types";
@@ -131,10 +132,7 @@ export async function updatePatientRecord(
   });
 
   if (error) {
-    if (error.message.includes("PATIENT_NOT_FOUND")) {
-      return serviceErr("Paciente no encontrado");
-    }
-    return serviceErr(error.message);
+    return serviceErr(resolvePostgresUserMessage(error, { fallback: error.message }));
   }
 
   const result = data as { old: Patient; data: Patient };

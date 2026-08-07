@@ -1,0 +1,75 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs dashboard",
+  "module": {
+    "id": "dashboard",
+    "name": "Dashboard / operaciones",
+    "status": "ready",
+    "summary": {
+      "what": "Centro operaciones: cola, alertas, KPIs.",
+      "inputs": "clinicId, fecha, permisos.",
+      "outputs": "Payload agregado operaciones."
+    },
+    "layers": [
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Agregación operaciones clínicas: cola, alertas, KPIs, tareas y admin-ops AI.",
+        "inputs": "clinicId, fecha, permisos usuario.",
+        "outputs": "ClinicalOperationsDashboardPayload, métricas asistencia.",
+        "files": [
+          "src/features/dashboard/server/load-clinical-operations-dashboard.ts",
+          "src/features/dashboard/utils/clinical-ops-metrics.ts",
+          "src/lib/utils/attendance-stats.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Tipos payload dashboard y queries agregadas Supabase.",
+        "inputs": "appointments, orders, labs del día.",
+        "outputs": "Tipos TS estructurados para UI.",
+        "files": [
+          "src/features/dashboard/utils/clinical-operations-dashboard-types.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Centro operaciones, KPI cards, rails izquierdo y accesos rápidos.",
+        "inputs": "Payload SSR, clicks navegación.",
+        "outputs": "Dashboard renderizado, links filtrados por rol.",
+        "files": [
+          "src/app/(dashboard)/dashboard/page.tsx",
+          "src/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-center.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-dash-kpi",
+        "label": "KPIs cargan sin error",
+        "href": "/dashboard"
+      },
+      {
+        "id": "mod-dash-links",
+        "label": "Accesos rápidos respetan permisos",
+        "href": "/dashboard"
+      }
+    ]
+  }
+}

@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
+import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
+
 import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
@@ -12,9 +14,8 @@ import {
   buildAppointmentCancellationByClinicMessage,
   buildAppointmentConfirmationMessage,
 } from "@/lib/utils/appointment-messages";
-import type { Appointment } from "@/types/database";
 
-export function useAppointmentRow(appointment: Appointment) {
+export function useAppointmentRow(appointment: AppointmentAgendaRow) {
   const router = useRouter();
   const [acting, setActing] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);

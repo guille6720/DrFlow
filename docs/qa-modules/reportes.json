@@ -1,0 +1,95 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs reportes",
+  "module": {
+    "id": "reportes",
+    "name": "Reportes operativos",
+    "status": "ready",
+    "summary": {
+      "what": "Informe mensual: turnos, ausencias, pacientes nuevos, consultas e ingresos estimados.",
+      "inputs": "clinicId, rango mes, permiso viewReports.",
+      "outputs": "MonthlyClinicReport, CSV export, job async."
+    },
+    "layers": [
+      {
+        "layerId": "auth",
+        "layerLabel": "Autenticación / guards",
+        "what": "Permiso viewReports y redirect dashboard si rol sin acceso.",
+        "inputs": "Rol, pathname /reportes.",
+        "outputs": "Redirect | payload reporte.",
+        "files": [
+          "src/core/permissions/roles.ts",
+          "src/core/auth/dashboard-page.ts"
+        ]
+      },
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Loader informe mensual, export CSV y botón reporte async.",
+        "inputs": "monthStart, monthEnd, clinicId.",
+        "outputs": "MonthlyClinicReport, CSV rows, job encolado.",
+        "files": [
+          "src/lib/server/load-monthly-clinic-report.ts",
+          "src/features/dashboard/components/reportes/async-report-button.tsx",
+          "src/features/dashboard/components/reportes/export-csv-button.tsx"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Tipos DB para agregaciones de turnos, consultas e ingresos.",
+        "inputs": "Queries scoped clinic_id.",
+        "outputs": "Filas tipadas para KPIs.",
+        "files": [
+          "src/types/database.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Página /reportes con KPIs del mes y acciones export/async.",
+        "inputs": "Mes seleccionado, click export.",
+        "outputs": "Tabla KPIs, descarga CSV.",
+        "files": [
+          "src/app/(dashboard)/reportes/page.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-rep-load",
+        "label": "KPIs del mes cargan sin error",
+        "href": "/reportes"
+      },
+      {
+        "id": "mod-rep-csv",
+        "label": "Export CSV descarga filas",
+        "href": "/reportes"
+      },
+      {
+        "id": "mod-rep-async",
+        "label": "Reporte async encola job",
+        "href": "/reportes"
+      },
+      {
+        "id": "mod-rep-perm",
+        "label": "Rol sin permiso redirige",
+        "href": "/reportes"
+      }
+    ]
+  }
+}

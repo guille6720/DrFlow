@@ -1,0 +1,79 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs configuracion",
+  "module": {
+    "id": "configuracion",
+    "name": "Configuración y equipo",
+    "status": "ready",
+    "summary": {
+      "what": "Settings clínica, invitaciones, permisos, plugins.",
+      "inputs": "Settings, emails invitación, matriz permisos.",
+      "outputs": "Config persistida, miembros activos."
+    },
+    "layers": [
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Settings clínica, invitaciones email, permisos miembro, plugins y feature flags.",
+        "inputs": "Settings FormData, email invitado, role, overrides.",
+        "outputs": "Config persistida, invite token, miembros activos.",
+        "files": [
+          "src/lib/actions/settings.ts",
+          "src/lib/actions/invitations.ts",
+          "src/lib/actions/team-permissions.ts",
+          "src/lib/actions/clinic-feature-flags.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Repo clinics, schemas settings/staff/intake y migraciones 071–073.",
+        "inputs": "clinic patch, invitation row, password inicial.",
+        "outputs": "Filas clinics/clinic_invitations validadas.",
+        "files": [
+          "src/features/configuracion/repositories/clinics.repository.ts",
+          "src/core/validations/settings-schemas.ts",
+          "supabase/migrations/072_invitation_profile_access.sql"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Navigator configuración, paneles clínica/equipo/apariencia/IA/demo.",
+        "inputs": "Sección activa, toggles permisos.",
+        "outputs": "Forms settings, listas miembros pendientes.",
+        "files": [
+          "src/app/(dashboard)/configuracion/page.tsx",
+          "src/features/configuracion/components/configuracion/settings-panel.tsx",
+          "src/features/configuracion/components/configuracion/team-invite-form-section.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-cfg-invite",
+        "label": "Invitar médico/secretaria",
+        "href": "/configuracion"
+      },
+      {
+        "id": "mod-cfg-perm",
+        "label": "Matriz permisos persiste",
+        "href": "/configuracion"
+      }
+    ]
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs caja",
+  "module": {
+    "id": "caja",
+    "name": "Caja / cobranzas",
+    "status": "ready",
+    "summary": {
+      "what": "Cobranzas diarias, cierre de caja, cuenta corriente y reportes de ingresos.",
+      "inputs": "FormData cobro, fecha cierre, movimientos ledger por paciente.",
+      "outputs": "cash_charges, cierres diarios, ledger paciente, audit log."
+    },
+    "layers": [
+      {
+        "layerId": "auth",
+        "layerLabel": "Autenticación / guards",
+        "what": "Permiso manageCashRegister y guards clinic/ownership en acciones de caja.",
+        "inputs": "userId, clinicId, rol, entityId cobro.",
+        "outputs": "FORBIDDEN | redirect dashboard si sin permiso.",
+        "files": [
+          "src/core/permissions/roles.ts",
+          "src/core/actions/clinic-guard.ts",
+          "src/core/security/ownership-guard.ts"
+        ]
+      },
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Server actions cobro/anulación/cierre, hook use-cash-register y snapshot revenue.",
+        "inputs": "FormData (paciente, monto, método), fecha cierre.",
+        "outputs": "Filas cash_charges, totales por método, revalidate /caja.",
+        "files": [
+          "src/lib/actions/cash-register.ts",
+          "src/lib/server/load-revenue-snapshot.ts",
+          "src/features/caja/hooks/use-cash-register.ts",
+          "src/lib/constants/cash-register.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Schemas Zod montos/métodos y migración secretaría-caja.",
+        "inputs": "Payload cobro, montos ARS.",
+        "outputs": "Validación Zod, filas cash_* tipadas.",
+        "files": [
+          "src/core/validations/cash-schemas.ts",
+          "supabase/migrations/034_secretaria_caja.sql"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Vistas /caja, cierre, reportes y cuenta corriente con formularios de cobro.",
+        "inputs": "Selección paciente/turno, confirmación anulación.",
+        "outputs": "UI cobros, totales cierre, ledger por paciente.",
+        "files": [
+          "src/app/(dashboard)/caja/page.tsx",
+          "src/app/(dashboard)/caja/cierre/page.tsx",
+          "src/app/(dashboard)/caja/reportes/page.tsx",
+          "src/app/(dashboard)/caja/cuenta-corriente/page.tsx",
+          "src/features/caja/components/caja/cash-register-view.tsx",
+          "src/features/caja/components/caja/cash-charge-form-section.tsx",
+          "src/features/caja/components/caja/cash-closure-view.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-caja-charge",
+        "label": "Registrar cobro con paciente y método",
+        "href": "/caja"
+      },
+      {
+        "id": "mod-caja-void",
+        "label": "Anular cobro existente",
+        "href": "/caja"
+      },
+      {
+        "id": "mod-caja-cierre",
+        "label": "Cierre diario con totales por método",
+        "href": "/caja/cierre"
+      },
+      {
+        "id": "mod-caja-ledger",
+        "label": "Cuenta corriente: alta movimiento",
+        "href": "/caja/cuenta-corriente"
+      },
+      {
+        "id": "mod-caja-perm",
+        "label": "Doctor sin permiso redirige a dashboard",
+        "href": "/caja"
+      }
+    ]
+  }
+}

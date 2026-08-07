@@ -30,8 +30,8 @@ export default async function PagosPage() {
 
   return (
     <PagosView
-      payments={(payments.data ?? []) as never}
-      patients={patientPicker.patients as never}
+      payments={payments.data ?? []}
+      patients={patientPicker.patients}
       clinics={clinics}
       clinicId={clinicId}
       role={role}

@@ -84,6 +84,7 @@ type ButtonLinkProps = {
   className?: string;
   children: React.ReactNode;
   prefetch?: boolean;
+  "aria-label"?: string;
 };
 
 /** Accessible link styled as button — avoids nested interactive elements. */
@@ -94,11 +95,13 @@ export function ButtonLink({
   className,
   children,
   prefetch,
+  "aria-label": ariaLabel,
 }: ButtonLinkProps) {
   return (
     <Link
       href={href}
       prefetch={prefetch}
+      aria-label={ariaLabel}
       className={buttonSurfaceClassName(variant, size, className)}
     >
       {children}

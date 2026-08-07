@@ -28,6 +28,10 @@ export function clinicClinicalTemplatesTag(clinicId: string): string {
   return `clinic-${clinicId}-clinical-templates`;
 }
 
+export function clinicPamiPlanillasTag(clinicId: string): string {
+  return `clinic-${clinicId}-pami-planillas`;
+}
+
 export function pathologyDrugsTag(pathologyId: string): string {
   return `pathology-drugs-${pathologyId}`;
 }
@@ -42,5 +46,6 @@ export function clinicMetadataTags(clinicId: string): string[] {
     clinicLocationsTag(clinicId),
     clinicSpecialtiesTag(clinicId),
     clinicClinicalTemplatesTag(clinicId),
+    clinicPamiPlanillasTag(clinicId),
   ];
 }

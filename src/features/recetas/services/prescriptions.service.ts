@@ -85,10 +85,7 @@ export async function savePrescriptionDraftRecord(
   const row = buildDraftRow(input.clinicId, input.userId, input.parsed);
 
   if (input.existingDraftId) {
-    const result = await updatePrescriptionDraft(db, input.existingDraftId, input.clinicId, {
-      ...row,
-      updated_at: new Date().toISOString(),
-    });
+    const result = await updatePrescriptionDraft(db, input.existingDraftId, input.clinicId, row);
     return fromRepo(result);
   }
 

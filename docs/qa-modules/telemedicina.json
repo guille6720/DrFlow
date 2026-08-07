@@ -1,0 +1,95 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs telemedicina",
+  "module": {
+    "id": "telemedicina",
+    "name": "Telemedicina (lab)",
+    "status": "lab",
+    "summary": {
+      "what": "Videoconsulta stub Jitsi: crear sala por turno y link externo paciente.",
+      "inputs": "appointmentId, datos paciente/turno.",
+      "outputs": "telemedicine_sessions, URL meet.jit.si, audit event."
+    },
+    "layers": [
+      {
+        "layerId": "auth",
+        "layerLabel": "Autenticación / guards",
+        "what": "Guards clínica y permisos doctor/admin en acciones telemedicina.",
+        "inputs": "userId, clinicId, appointmentId.",
+        "outputs": "FORBIDDEN | sesión creada.",
+        "files": [
+          "src/core/permissions/roles.ts",
+          "src/core/actions/clinic-guard.ts"
+        ]
+      },
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Service telemedicine y actions clinic-services para crear/listar salas.",
+        "inputs": "appointmentId, slug room.",
+        "outputs": "Fila session, room URL Jitsi.",
+        "files": [
+          "src/lib/actions/clinic-services.ts",
+          "src/lib/services/telemedicine.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Tipos DB telemedicine_sessions.",
+        "inputs": "Insert session scoped clinic.",
+        "outputs": "Filas tipadas sessions.",
+        "files": [
+          "src/types/database.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Página /telemedicina con lista sesiones y botón crear/unirse.",
+        "inputs": "Click crear sesión, abrir link externo.",
+        "outputs": "UI sesiones recientes, link Jitsi.",
+        "files": [
+          "src/app/(dashboard)/telemedicina/page.tsx",
+          "src/features/telemedicina/components/telemedicina/telemedicina-view.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-tele-create",
+        "label": "Crear sesión genera URL Jitsi",
+        "href": "/telemedicina"
+      },
+      {
+        "id": "mod-tele-list",
+        "label": "Sesiones recientes listadas",
+        "href": "/telemedicina"
+      },
+      {
+        "id": "mod-tele-link",
+        "label": "Link externo abre meet.jit.si",
+        "href": "/telemedicina"
+      },
+      {
+        "id": "mod-tele-perm",
+        "label": "Ruta protegida por rol",
+        "href": "/telemedicina"
+      }
+    ]
+  }
+}

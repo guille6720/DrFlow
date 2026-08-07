@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  formatPrintDocumentNumber,
   formatPrintHeaderDate,
   formatPrintTableDate,
+  formatPrintTreatmentMetaDate,
   parseInlineDiagnoses,
   parseInlineTreatments,
+  professionalMetaLine,
 } from "@/features/historias/components/historias/patient-ehr-print-utils";
 import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
 
@@ -13,6 +16,9 @@ function consultation(partial: Partial<PatientEhrConsultation>): PatientEhrConsu
     id: "1",
     created_at: "2022-11-10T12:04:12.000Z",
     professional_name: "Leonardi, Oscar Angel",
+    professional_license_national: "455344",
+    professional_license_provincial: "160261",
+    professional_email: "osleonardi@gmail.com",
     chief_complaint: "",
     diagnosis: "",
     evolution: "",
@@ -41,5 +47,13 @@ describe("patient-ehr-print-utils", () => {
       { product: "GASTEC", dose: "20 mg caps.x 70" },
       { product: "FILTEN", dose: "12.5 mg comp.ran.x 60" },
     ]);
+  });
+
+  it("formats demographics and professional meta like Equipos export", () => {
+    expect(formatPrintDocumentNumber("12459480")).toBe("12.459.480");
+    expect(formatPrintTreatmentMetaDate("2022-11-10T12:04:12.000Z")).toBe("10-NOV-2022 · (n/a)");
+    expect(professionalMetaLine(consultation({}))).toBe(
+      "Leonardi, Oscar Angel 455344 160261 osleonardi@gmail.com"
+    );
   });
 });

@@ -1,0 +1,85 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs voice",
+  "module": {
+    "id": "voice",
+    "name": "Dictado por voz",
+    "status": "ready",
+    "summary": {
+      "what": "Dictado Web Speech API en campos clínicos con prefs usuario/clínica.",
+      "inputs": "Micrófono, transcript, pref localStorage, voice_input_enabled.",
+      "outputs": "Texto append en textarea, eventos input React."
+    },
+    "layers": [
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Hook use-speech-to-text y util voice-input con kill-switch env.",
+        "inputs": "Stream micrófono, lang es-AR, enabled flag.",
+        "outputs": "Transcript parcial/final, error browser API.",
+        "files": [
+          "src/features/voice/lib/voice-input.ts",
+          "src/features/voice/hooks/use-speech-to-text.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Schema settings voice_input_enabled en clínica.",
+        "inputs": "Patch settings clínica.",
+        "outputs": "Flag persistido clinics.settings.",
+        "files": [
+          "src/core/validations/settings-schemas.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Provider global voice, textarea con micrófono y form consulta.",
+        "inputs": "Click micrófono, toggle pref usuario.",
+        "outputs": "UI mic activo, texto dictado en SOAP.",
+        "files": [
+          "src/features/voice/components/voice/voice-input-provider.tsx",
+          "src/core/components/layout/dashboard-data-shell.tsx",
+          "src/components/ui/textarea.tsx",
+          "src/features/historias/components/historias/nueva-consulta-form-body.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-voice-soap",
+        "label": "Dictado en nueva consulta",
+        "href": "/historias/nueva"
+      },
+      {
+        "id": "mod-voice-pref",
+        "label": "Toggle usuario persiste en localStorage",
+        "href": "/configuracion"
+      },
+      {
+        "id": "mod-voice-browser",
+        "label": "Navegador sin API oculta micrófono",
+        "href": "/historias/nueva"
+      },
+      {
+        "id": "mod-voice-env",
+        "label": "Kill-switch env desactiva globalmente"
+      }
+    ]
+  }
+}

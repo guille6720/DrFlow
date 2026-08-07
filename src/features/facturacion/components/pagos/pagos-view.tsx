@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Header } from "@/core/components/layout/header";
+import { unwrapNestedRow } from "@/core/supabase/nested-row";
+import type { PatientPickerRow, PaymentListRow } from "@/core/supabase/query-types";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,11 +18,11 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { createMockPayment } from "@/lib/actions/clinic-services";
 import { formatCurrency } from "@/lib/services/payments";
-import type { Clinic, Patient, Payment, UserRole } from "@/types/database";
+import type { Clinic, UserRole } from "@/types/database";
 
 interface Props {
-  payments: Payment[];
-  patients: Patient[];
+  payments: PaymentListRow[];
+  patients: PatientPickerRow[];
   clinics: { clinic_id: string; clinic?: Clinic }[];
   clinicId: string | null;
   role: UserRole | null;
@@ -106,9 +108,12 @@ export function PagosView({ payments, patients, clinics, clinicId, role, userNam
                   {payments.map((p) => (
                     <tr key={p.id} className="border-b border-slate-50">
                       <td className="py-2 pr-4">
-                        {p.patients
-                          ? `${p.patients.last_name}, ${p.patients.first_name}`
-                          : "—"}
+                        {(() => {
+                          const linked = unwrapNestedRow(p.patients);
+                          return linked
+                            ? `${linked.last_name}, ${linked.first_name}`
+                            : "—";
+                        })()}
                       </td>
                       <td className="py-2 pr-4">{formatCurrency(Number(p.amount))}</td>
                       <td className="py-2 pr-4">{formatCurrency(Number(p.deposit_amount))}</td>

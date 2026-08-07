@@ -1,0 +1,100 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs pharmacology",
+  "module": {
+    "id": "pharmacology",
+    "name": "Farmacología / vademécum",
+    "status": "ready",
+    "summary": {
+      "what": "Búsqueda CIE-10, síntomas→patología y vademécum; API y reutilización en recetas.",
+      "inputs": "query, pathologyId, symptomIds, mode search.",
+      "outputs": "Resultados RPC, sugerencias prescripción."
+    },
+    "layers": [
+      {
+        "layerId": "auth",
+        "layerLabel": "Autenticación / guards",
+        "what": "Permiso acceso herramientas clínicas en actions y API pharmacology.",
+        "inputs": "Rol, clinicId, request API.",
+        "outputs": "403 | resultados búsqueda.",
+        "files": [
+          "src/core/permissions/roles.ts",
+          "src/lib/actions/pharmacology.ts"
+        ]
+      },
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Hooks búsqueda diferida patología y cache reference data.",
+        "inputs": "Query string, debounce, mode tabs.",
+        "outputs": "Lista patologías/síntomas/fármacos.",
+        "files": [
+          "src/lib/hooks/use-pharmacology-search.ts",
+          "src/lib/hooks/use-deferred-pathology-search.ts",
+          "src/lib/server/cached-reference-data.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Validación API pharmacology, tipos dominio y route REST.",
+        "inputs": "JSON query params, RPC vademécum.",
+        "outputs": "Parse Zod, filas reference tables.",
+        "files": [
+          "src/core/validations/pharmacology-api.ts",
+          "src/types/pharmacology.ts",
+          "src/app/api/pharmacology/route.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Página /herramientas/farmacologia con tabs modo búsqueda y typeaheads.",
+        "inputs": "Selección modo, término búsqueda.",
+        "outputs": "UI resultados patología/síntomas/vademécum.",
+        "files": [
+          "src/app/(dashboard)/herramientas/farmacologia/page.tsx",
+          "src/features/pharmacology/components/pharmacology/pharmacology-search-view.tsx",
+          "src/features/pharmacology/components/pharmacology/pharmacology-search-mode-tabs.tsx",
+          "src/features/pharmacology/components/pharmacology/vademecum-typeahead.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-pharm-path",
+        "label": "Búsqueda por patología devuelve CIE-10",
+        "href": "/herramientas/farmacologia"
+      },
+      {
+        "id": "mod-pharm-sym",
+        "label": "Modo síntomas sugiere patologías",
+        "href": "/herramientas/farmacologia?mode=symptoms"
+      },
+      {
+        "id": "mod-pharm-vad",
+        "label": "Vademécum lista fármacos",
+        "href": "/herramientas/farmacologia?mode=vademecum"
+      },
+      {
+        "id": "mod-pharm-perm",
+        "label": "Secretaría no accede",
+        "href": "/herramientas/farmacologia"
+      }
+    ]
+  }
+}

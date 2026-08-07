@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { createClient } from "@/core/supabase/server";
 
@@ -37,13 +38,9 @@ export async function deleteMyAccount(confirmPhrase: string) {
   });
 
   if (error) {
-    if (error.message.includes("delete_own_account")) {
-      return {
-        error:
-          "Ejecutá la migración 039 en Supabase SQL Editor (delete_own_account) y volvé a intentar.",
-      };
-    }
-    return { error: error.message };
+    return {
+      error: resolvePostgresUserMessage(error, { fallback: error.message }),
+    };
   }
 
   await recordAudit({

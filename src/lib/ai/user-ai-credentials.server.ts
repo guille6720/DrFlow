@@ -1,5 +1,6 @@
 import "server-only";
 
+import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { createClient } from "@/core/supabase/server";
 
 import { getClinicSharedAiCredentialsForSession } from "@/lib/ai/clinic-shared-ai.server";
@@ -118,15 +119,12 @@ export async function saveUserAiConnection(input: {
     { onConflict: "user_id" }
   );
 
-  if (error) return { error: formatUserAiConnectionError(error.message) };
+  if (error) return { error: formatUserAiConnectionError(error) };
   return {};
 }
 
-function formatUserAiConnectionError(message: string): string {
-  if (message.includes("user_ai_connections_provider_check")) {
-    return "Gemini todavía no está habilitado en la base de datos. Un administrador debe aplicar la migración 069 en Supabase (ver instrucciones abajo).";
-  }
-  return message;
+function formatUserAiConnectionError(error: { code?: string; message?: string; details?: string; hint?: string }): string {
+  return resolvePostgresUserMessage(error, { fallback: error.message ?? "Error de conexión AI" });
 }
 
 export async function deleteUserAiConnection(): Promise<{ error?: string }> {
@@ -137,6 +135,6 @@ export async function deleteUserAiConnection(): Promise<{ error?: string }> {
   if (!user) return { error: "Sesión expirada" };
 
   const { error } = await supabase.from("user_ai_connections").delete().eq("user_id", user.id);
-  if (error) return { error: formatUserAiConnectionError(error.message) };
+  if (error) return { error: formatUserAiConnectionError(error) };
   return {};
 }

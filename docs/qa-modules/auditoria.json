@@ -1,0 +1,99 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs auditoria",
+  "module": {
+    "id": "auditoria",
+    "name": "Auditoría clínica",
+    "status": "ready",
+    "summary": {
+      "what": "Trazabilidad inmutable de mutaciones clínicas con timeline por paciente.",
+      "inputs": "entityType, action, old/new values, patientId.",
+      "outputs": "Filas audit_logs, timeline tab Auditoría."
+    },
+    "layers": [
+      {
+        "layerId": "auth",
+        "layerLabel": "Autenticación / guards",
+        "what": "Permiso can_view_clinical y guards al cargar trail por paciente.",
+        "inputs": "userId, patientId, rol.",
+        "outputs": "Trail vacío | FORBIDDEN.",
+        "files": [
+          "src/core/permissions/roles.ts",
+          "src/features/pacientes/server/load-patient-audit-trail.ts"
+        ]
+      },
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Writer centralizado logAudit, contexto request y session server.",
+        "inputs": "Mutación clínica/admin, snapshot before/after.",
+        "outputs": "Fila audit_logs inmutable, eventos merge timeline.",
+        "files": [
+          "src/core/security/audit-service.ts",
+          "src/core/security/audit-log.ts",
+          "src/core/security/audit-context.ts",
+          "src/core/auth/session.server.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Tipos audit, constantes tab workspace y triggers anti-mutación.",
+        "inputs": "Payload audit, patient scope.",
+        "outputs": "Tipos TS, tab id auditoria.",
+        "files": [
+          "src/core/security/audit-types.ts",
+          "src/features/pacientes/constants/patient-workspace-tabs.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Panel auditoría en workspace paciente y card audit en detalle HC.",
+        "inputs": "Props trail, expand evento.",
+        "outputs": "Timeline actor/fecha/diff old→new.",
+        "files": [
+          "src/features/pacientes/components/pacientes/patient-clinical-audit-panel.tsx",
+          "src/features/pacientes/components/pacientes/patient-workspace-view.tsx",
+          "src/features/historias/components/historias/historia-detail-audit-card.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-audit-tab",
+        "label": "Tab Auditoría visible en workspace",
+        "href": "/pacientes"
+      },
+      {
+        "id": "mod-audit-trail",
+        "label": "Eventos HC/cobros listados con actor",
+        "href": "/pacientes"
+      },
+      {
+        "id": "mod-audit-diff",
+        "label": "Cambios muestran old→new",
+        "href": "/pacientes"
+      },
+      {
+        "id": "mod-audit-perm",
+        "label": "Sin permiso HC no carga trail",
+        "href": "/pacientes"
+      }
+    ]
+  }
+}

@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { createSupabaseTestDouble } from "./helpers/mock-supabase-client";
+
 vi.mock("react", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react")>();
   return {
@@ -81,7 +83,7 @@ describe("loadMonthlyClinicReport", () => {
     };
 
     const report = await loadMonthlyClinicReport(
-      supabase as never,
+      createSupabaseTestDouble(supabase),
       "clinic-1",
       "2026-01-01",
       "2026-01-31",

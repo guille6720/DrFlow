@@ -42,3 +42,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# QA exports generados (scripts/export-qa-module-code.mjs)
+/docs/qa-exports/

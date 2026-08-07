@@ -4,6 +4,7 @@ import { Building2, Copy, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { SafeInternalLink } from "@/core/components/safe-link";
+import { toast } from "@/core/notifications/toast";
 
 import {
   buildAdminOpsSuggestedPrompts,
@@ -38,7 +39,6 @@ export function AdminOpsCopilotSheet({ open, onClose, context }: Props) {
   const enabled = useFeatureFlag("admin_ops_assistant");
   const [input, setInput] = useState("");
   const [turns, setTurns] = useState<ChatTurn[]>([]);
-  const [copied, setCopied] = useState(false);
 
   const prompts = useMemo(() => buildAdminOpsSuggestedPrompts(context), [context]);
 
@@ -62,8 +62,7 @@ export function AdminOpsCopilotSheet({ open, onClose, context }: Props) {
   async function copyText(text: string) {
     if (typeof navigator === "undefined" || !navigator.clipboard) return;
     await navigator.clipboard.writeText(text);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+    toast.copySuccess();
   }
 
   const subtitle =
@@ -194,7 +193,6 @@ export function AdminOpsCopilotSheet({ open, onClose, context }: Props) {
         <Button type="button" variant="ghost" onClick={onClose}>
           Cerrar
         </Button>
-        {copied ? <span className="self-center text-xs text-emerald-700">Copiado</span> : null}
       </div>
     </PatientWorkspaceOverlay>
   );

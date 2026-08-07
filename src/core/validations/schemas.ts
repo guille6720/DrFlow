@@ -1,5 +1,16 @@
 import { z } from "zod";
 
+import {
+  optionalClinicalTextRefinement,
+  PRESCRIPTION_DIAGNOSIS_CIE10_MAX,
+  PRESCRIPTION_DIAGNOSIS_TEXT_MAX,
+  PRESCRIPTION_MEDICATION_NAME_MAX,
+  PRESCRIPTION_MEDICATIONS_JSON_MAX,
+  PRESCRIPTION_NOTES_MAX,
+  PRESCRIPTION_POSOLOGY_MAX,
+  requiredClinicalTextRefinement,
+} from "@/core/validations/clinical-free-text";
+
 export const loginSchema = z.object({
   email: z.string().email("Ingresá un email válido"),
   password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
@@ -96,31 +107,121 @@ export const clinicalRecordSchema = z.object({
 });
 
 export const prescriptionMedicationSchema = z.object({
-  generic_name: z.string().min(1, "Nombre genérico obligatorio (Ley 25.649)"),
-  brand_name: z.string().optional(),
-  presentation: z.string().optional(),
-  concentration: z.string().optional(),
+  generic_name: z
+    .string()
+    .superRefine(
+      requiredClinicalTextRefinement({
+        fieldLabel: "El nombre genérico",
+        maxLength: PRESCRIPTION_MEDICATION_NAME_MAX,
+      })
+    ),
+  brand_name: z
+    .string()
+    .optional()
+    .superRefine(
+      optionalClinicalTextRefinement({
+        fieldLabel: "La marca",
+        maxLength: PRESCRIPTION_MEDICATION_NAME_MAX,
+      })
+    ),
+  presentation: z
+    .string()
+    .optional()
+    .superRefine(
+      optionalClinicalTextRefinement({
+        fieldLabel: "La presentación",
+        maxLength: PRESCRIPTION_MEDICATION_NAME_MAX,
+      })
+    ),
+  concentration: z
+    .string()
+    .optional()
+    .superRefine(
+      optionalClinicalTextRefinement({
+        fieldLabel: "La concentración",
+        maxLength: PRESCRIPTION_MEDICATION_NAME_MAX,
+      })
+    ),
   quantity: z.coerce.number().int().min(1, "Cantidad mínima 1"),
-  posology: z.string().min(1, "Indicá posología"),
-  route: z.string().optional(),
+  posology: z
+    .string()
+    .superRefine(
+      requiredClinicalTextRefinement({
+        fieldLabel: "La posología",
+        maxLength: PRESCRIPTION_POSOLOGY_MAX,
+      })
+    ),
+  route: z
+    .string()
+    .optional()
+    .superRefine(
+      optionalClinicalTextRefinement({
+        fieldLabel: "La vía",
+        maxLength: 120,
+      })
+    ),
   prolonged_treatment: z.coerce.boolean().optional(),
 });
 
-export const prescriptionDraftSchema = z.object({
-  patient_id: z.string().uuid(),
-  clinical_record_id: z.string().uuid().optional().nullable(),
-  professional_id: z.string().uuid(),
-  prescription_type: z.enum(["ambulatoria", "cronica", "duplicado"]),
-  diagnosis_cie10: z.string().min(1, "CIE-10 obligatorio para receta"),
-  diagnosis_text: z.string().min(1, "Diagnóstico obligatorio"),
-  patient_insurance: z.string().optional(),
-  medications: z.array(prescriptionMedicationSchema).min(1, "Agregá al menos un medicamento"),
-  notes: z.string().optional(),
-  validity_days: z.coerce.number().int().min(1).max(365).default(30),
-  disclaimer_accepted: z.literal(true, {
-    error: "Debés aceptar el aviso legal",
-  }),
-});
+export const prescriptionDraftSchema = z
+  .object({
+    patient_id: z.string().uuid(),
+    clinical_record_id: z.preprocess(
+      (value) => (typeof value === "string" && value.trim() === "" ? null : value),
+      z.string().uuid().optional().nullable()
+    ),
+    professional_id: z.string().uuid(),
+    prescription_type: z.enum(["ambulatoria", "cronica", "duplicado"]),
+    diagnosis_cie10: z
+      .string()
+      .superRefine(
+        requiredClinicalTextRefinement({
+          fieldLabel: "El CIE-10",
+          maxLength: PRESCRIPTION_DIAGNOSIS_CIE10_MAX,
+        })
+      ),
+    diagnosis_text: z
+      .string()
+      .superRefine(
+        requiredClinicalTextRefinement({
+          fieldLabel: "El diagnóstico",
+          maxLength: PRESCRIPTION_DIAGNOSIS_TEXT_MAX,
+        })
+      ),
+    patient_insurance: z
+      .string()
+      .optional()
+      .superRefine(
+        optionalClinicalTextRefinement({
+          fieldLabel: "La cobertura",
+          maxLength: 200,
+        })
+      ),
+    medications: z.array(prescriptionMedicationSchema).min(1, "Agregá al menos un medicamento"),
+    notes: z
+      .string()
+      .optional()
+      .superRefine(
+        optionalClinicalTextRefinement({
+          fieldLabel: "Las notas",
+          maxLength: PRESCRIPTION_NOTES_MAX,
+        })
+      ),
+    validity_days: z.coerce.number().int().min(1).max(365).default(30),
+    disclaimer_accepted: z.literal(true, {
+      error: "Debés aceptar el aviso legal",
+    }),
+  })
+  .superRefine((data, ctx) => {
+    if (JSON.stringify(data.medications).length > PRESCRIPTION_MEDICATIONS_JSON_MAX) {
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "La receta contiene demasiados datos. Reducí la cantidad de medicamentos o el texto.",
+        path: ["medications"],
+      });
+    }
+  });
 
 export function sanitizeText(input: string): string {
   return input

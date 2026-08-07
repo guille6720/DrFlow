@@ -5,6 +5,11 @@ import { redirect } from "next/navigation";
 
 import { logAudit, setActiveClinic } from "@/core/auth/session.actions";
 import { logServerError } from "@/core/errors/log-error.server";
+import {
+  getRpcCode,
+  isUniqueViolation,
+  resolvePostgresUserMessage,
+} from "@/core/errors/postgres-error";
 import { applyClinicLegalAcceptanceInternal } from "@/core/legal/apply-clinic-legal-acceptance";
 import { createClient } from "@/core/supabase/server";
 import {
@@ -59,38 +64,37 @@ function mapAuthError(message: string): { error: string; field?: string } {
   return { error: message };
 }
 
-function mapSetupRpcError(message: string): AuthActionResult {
-  if (message.includes("SLUG_TAKEN") || message.includes("23505")) {
+function mapSetupRpcError(error: { code?: string; message?: string; details?: string; hint?: string }): AuthActionResult {
+  const rpcCode = getRpcCode(error);
+  if (rpcCode === "SLUG_TAKEN" || isUniqueViolation(error)) {
     return {
       error: "Ese identificador URL ya está en uso.",
       fieldErrors: { slug: "Probá otro slug, ej: drguille-consultorio" },
     };
   }
-  if (message.includes("NOT_AUTHENTICATED")) {
+  if (rpcCode === "NOT_AUTHENTICATED") {
     return { error: "Tenés que iniciar sesión." };
   }
-  if (message.includes("ALREADY_HAS_CLINIC")) {
+  if (rpcCode === "ALREADY_HAS_CLINIC") {
     return { success: true, redirectTo: "/dashboard" };
   }
-  if (message.includes("PHONE_REQUIRED")) {
+  if (rpcCode === "PHONE_REQUIRED") {
     return {
       error: "El teléfono es obligatorio.",
       fieldErrors: { phone: "Ingresá un teléfono para solicitud de turnos" },
     };
   }
-  if (message.includes("LICENSE_REQUIRED")) {
+  if (rpcCode === "LICENSE_REQUIRED") {
     return {
       error: "La matrícula es obligatoria.",
       fieldErrors: { licenseNational: "Ingresá la matrícula nacional" },
     };
   }
-  if (message.includes("setup_user_clinic") || message.includes("function")) {
-    return {
-      error:
-        "Falta ejecutar la migración 024 en Supabase SQL Editor (supabase/migrations/024_doctor_onboarding_fields.sql).",
-    };
-  }
-  return { error: `No se pudo crear la clínica: ${message}` };
+
+  const message = resolvePostgresUserMessage(error, {
+    fallback: `No se pudo crear la clínica: ${error.message ?? "error desconocido"}`,
+  });
+  return { error: message };
 }
 
 function parseClinicAndDoctor(formData: FormData) {
@@ -149,7 +153,7 @@ async function runSetupUserClinic(
   });
 
   if (setupError) {
-    return { error: mapSetupRpcError(setupError.message ?? "") };
+    return { error: mapSetupRpcError(setupError) };
   }
 
   return { clinicId: clinicId as string | undefined };

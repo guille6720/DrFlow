@@ -1,4 +1,6 @@
 /** Optional plugin identifiers — core platform modules are always on. */
+import { pamiNavMessages } from "@/locales/es-AR/pami/nav";
+
 export type PluginId =
   | "pami"
   | "ia"
@@ -27,8 +29,8 @@ export type PluginDefinition = {
 export const PLUGIN_REGISTRY: PluginDefinition[] = [
   {
     id: "pami",
-    label: "PAMI",
-    description: "Guía cabecera, planillas y vademécum PAMI.",
+    label: pamiNavMessages.plugin.label,
+    description: pamiNavMessages.plugin.description,
     tier: "optional",
     defaultEnabled: true,
     routes: ["/guia-pami", "/pami/planillas"],

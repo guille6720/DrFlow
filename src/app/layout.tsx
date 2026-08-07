@@ -18,6 +18,7 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+import { ToastProvider } from "@/core/components/notifications/toast-provider";
 import { UiThemeBootstrapScript } from "@/core/components/theme/ui-theme-bootstrap-script";
 
 import { PWA_APPLE_ICON } from "@/features/pacientes/utils/patient-portal-ready";
@@ -88,6 +89,7 @@ export default function RootLayout({
       <body className="min-h-full">
         <UiThemeBootstrapScript />
         {children}
+        <ToastProvider />
       </body>
     </html>
   );

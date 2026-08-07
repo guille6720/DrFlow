@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
 
 import {
   AgendaCreateFormBottom,
@@ -23,14 +24,14 @@ import { useAgendaView } from "@/features/agenda/hooks/use-agenda-view";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { Appointment, Clinic, Patient, Professional, UserRole } from "@/types/database";
+import type { Clinic, Patient, UserRole } from "@/types/database";
 
 interface AgendaPageProps {
   initialView?: "day" | "week" | "month";
   initialShowForm?: boolean;
-  appointments: Appointment[];
+  appointments: AppointmentAgendaRow[];
   patients: Pick<Patient, "id" | "first_name" | "last_name" | "document_number">[];
-  professionals: Professional[];
+  professionals: ProfessionalAgendaRow[];
   locations: { id: string; name: string }[];
   specialties: { id: string; name: string }[];
   clinics: { clinic_id: string; clinic?: Clinic }[];

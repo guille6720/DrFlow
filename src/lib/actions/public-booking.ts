@@ -1,5 +1,6 @@
 "use server";
 
+import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import {
   CONSENT_TYPES,
   LEGAL_PATIENT_NOTICE_VERSION,
@@ -50,12 +51,11 @@ export async function submitPublicBooking(formData: FormData) {
   });
 
   if (error) {
-    const msg = error.message.includes("horario")
-      ? "Ese horario ya no está disponible. Elegí otro."
-      : error.message.includes("Link")
-        ? "El link de reserva no es válido."
-        : "No pudimos registrar tu solicitud. Intentá de nuevo.";
-    return { error: msg };
+    return {
+      error: resolvePostgresUserMessage(error, {
+        fallback: "No pudimos registrar tu solicitud. Intentá de nuevo.",
+      }),
+    };
   }
 
   const row = result as {
@@ -146,13 +146,14 @@ export async function cancelPatientAppointment(
   });
 
   if (error) {
-    if (error.message.includes("REASON_REQUIRED")) {
-      return { error: "Indicá el motivo de la cancelación" };
-    }
-    if (error.message.includes("APPOINTMENT_NOT_FOUND")) {
-      return { error: "No encontramos ese turno o ya no se puede cancelar" };
-    }
-    return { error: "No pudimos cancelar el turno. Intentá de nuevo." };
+    return {
+      error: resolvePostgresUserMessage(error, {
+        rpcMessages: {
+          APPOINTMENT_NOT_FOUND: "No encontramos ese turno o ya no se puede cancelar",
+        },
+        fallback: "No pudimos cancelar el turno. Intentá de nuevo.",
+      }),
+    };
   }
 
   return { success: true };

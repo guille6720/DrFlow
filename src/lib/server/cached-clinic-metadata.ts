@@ -1,3 +1,4 @@
+import type { ProfessionalAgendaRow, ProfessionalListRow, SettingsProfessionalRow } from "@/core/supabase/query-types";
 import {
   CLINICAL_TEMPLATE_COLUMNS,
   PROFESSIONAL_AGENDA_COLUMNS,
@@ -29,7 +30,7 @@ export async function loadClinicPortalContextCached(clinicId: string): Promise<P
   return fetchPortalContext(clinicId, supabase);
 }
 
-export async function loadClinicProfessionalsAgendaCached(clinicId: string) {
+export async function loadClinicProfessionalsAgendaCached(clinicId: string): Promise<ProfessionalAgendaRow[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("professionals")
@@ -39,7 +40,7 @@ export async function loadClinicProfessionalsAgendaCached(clinicId: string) {
   return data ?? [];
 }
 
-export async function loadClinicProfessionalsSettingsCached(clinicId: string) {
+export async function loadClinicProfessionalsSettingsCached(clinicId: string): Promise<SettingsProfessionalRow[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("professionals")
@@ -49,7 +50,7 @@ export async function loadClinicProfessionalsSettingsCached(clinicId: string) {
   return data ?? [];
 }
 
-export async function loadClinicProfessionalsListCached(clinicId: string) {
+export async function loadClinicProfessionalsListCached(clinicId: string): Promise<ProfessionalListRow[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("professionals")
@@ -97,4 +98,12 @@ export async function loadClinicClinicalTemplatesCached(clinicId: string) {
     .eq("is_active", true)
     .order("name");
   return data ?? [];
+}
+
+export async function loadPamiPlanillaCatalogCached(clinicId: string) {
+  const supabase = await createClient();
+  const { loadPamiPlanillaCatalog } = await import(
+    "@/features/pami/services/pami-planilla-templates.service"
+  );
+  return loadPamiPlanillaCatalog(supabase, clinicId);
 }

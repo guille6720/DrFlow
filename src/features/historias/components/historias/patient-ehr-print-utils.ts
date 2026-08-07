@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, intervalToDuration, isValid, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 
 import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
@@ -25,8 +25,57 @@ export function formatPrintTime(iso: string): string {
   return format(new Date(iso), "H:mm:ss", { locale: es });
 }
 
-export function formatPrintMetaDate(iso: string): string {
+/** Meta bajo diagnósticos en tablas resumen (export Equipos). */
+export function formatPrintDiagnosisMetaDate(iso: string): string {
   return `${formatPrintFullDate(iso)} · N/A`;
+}
+
+/** Meta bajo tratamientos en tablas resumen (export Equipos). */
+export function formatPrintTreatmentMetaDate(iso: string): string {
+  return `${formatPrintFullDate(iso)} · (n/a)`;
+}
+
+/** @deprecated Use formatPrintDiagnosisMetaDate or formatPrintTreatmentMetaDate */
+export function formatPrintMetaDate(iso: string): string {
+  return formatPrintDiagnosisMetaDate(iso);
+}
+
+/** DNI con separador de miles (12.459.480). */
+export function formatPrintDocumentNumber(documentNumber: string): string {
+  const digits = documentNumber.replace(/\D/g, "");
+  if (!digits) return documentNumber;
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+/** Fecha de nacimiento como en export Equipos: 21 MAY 1936 */
+export function formatPrintBirthDate(birthDate: string | null | undefined): string | null {
+  if (!birthDate) return null;
+  const d = parseISO(birthDate.includes("T") ? birthDate : `${birthDate}T12:00:00`);
+  if (!isValid(d)) return null;
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/** Edad detallada: 90 años 2 meses 17 días */
+export function formatPrintDetailedAge(birthDate: string | null | undefined): string | null {
+  if (!birthDate) return null;
+  const d = parseISO(birthDate.includes("T") ? birthDate : `${birthDate}T12:00:00`);
+  if (!isValid(d)) return null;
+  const duration = intervalToDuration({ start: d, end: new Date() });
+  const parts: string[] = [];
+  if (duration.years) parts.push(`${duration.years} años`);
+  if (duration.months) parts.push(`${duration.months} meses`);
+  if (duration.days !== undefined) parts.push(`${duration.days} días`);
+  return parts.length > 0 ? parts.join(" ") : null;
+}
+
+export function formatPrintAgeBlock(
+  birthDate: string | null | undefined,
+  fallbackAgeLabel: string | null | undefined
+): string {
+  const birth = formatPrintBirthDate(birthDate);
+  const detailed = formatPrintDetailedAge(birthDate);
+  if (birth && detailed) return `${birth}\n${detailed}`;
+  return birth ?? detailed ?? fallbackAgeLabel ?? "Sin definir";
 }
 
 export function parseInlineDiagnoses(consultation: PatientEhrConsultation): string[] {
@@ -76,5 +125,12 @@ export function parseInlineTreatments(consultation: PatientEhrConsultation): Pri
 }
 
 export function professionalMetaLine(consultation: PatientEhrConsultation): string {
-  return consultation.professional_name.trim();
+  const parts = [consultation.professional_name.trim()];
+  const national = consultation.professional_license_national?.trim();
+  const provincial = consultation.professional_license_provincial?.trim();
+  if (national) parts.push(national);
+  if (provincial && provincial !== national) parts.push(provincial);
+  const email = consultation.professional_email?.trim();
+  if (email) parts.push(email);
+  return parts.join(" ");
 }

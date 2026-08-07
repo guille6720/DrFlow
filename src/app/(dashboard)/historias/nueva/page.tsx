@@ -48,7 +48,7 @@ export default async function NuevaConsultaPage({
   const supabase = await createClient();
   const [patientPicker, professionals, templates] = clinicId
     ? await Promise.all([
-        loadPatientPickerList(supabase, clinicId, { pageSize: 500 }),
+        loadPatientPickerList(supabase, clinicId, { pageSize: 500, includeClinicalFields: true }),
         getCachedClinicProfessionalsList(clinicId),
         getCachedClinicalTemplates(clinicId),
       ])
@@ -64,8 +64,8 @@ export default async function NuevaConsultaPage({
       clinicId={clinicId}
       role={role}
       userName={profile?.full_name}
-      patients={patientPicker.patients as never}
-      professionals={professionals as never}
+      patients={patientPicker.patients}
+      professionals={professionals}
       templates={templates}
       defaultProfessionalId={defaultProfessionalId}
       canIssuePrescriptions={hasPermission(role, "issuePrescriptions", isSuperadmin)}

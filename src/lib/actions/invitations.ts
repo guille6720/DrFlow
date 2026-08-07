@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireStaffManagerWithUser } from "@/core/actions/guard-adapters";
+import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit, recordAuditChange } from "@/core/security/audit-service";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { createClient } from "@/core/supabase/server";
@@ -24,10 +25,9 @@ export async function acceptPendingInvitations() {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("accept_clinic_invitations_for_user");
   if (error) {
-    if (error.message.includes("accept_clinic_invitations")) {
-      return { error: "Ejecutá la migración 018 en Supabase SQL Editor." };
-    }
-    return { error: error.message };
+    return {
+      error: resolvePostgresUserMessage(error, { fallback: error.message }),
+    };
   }
   return { accepted: (data as number) ?? 0 };
 }
@@ -104,10 +104,9 @@ export async function inviteClinicMember(formData: FormData) {
   );
 
   if (invErr) {
-    if (invErr.message.includes("clinic_invitations")) {
-      return { error: "Ejecutá la migración 018 en Supabase SQL Editor." };
-    }
-    return { error: invErr.message };
+    return {
+      error: resolvePostgresUserMessage(invErr, { fallback: invErr.message }),
+    };
   }
 
   const existingUserId = await findAuthUserIdByEmail(email);
@@ -604,13 +603,9 @@ export async function removeClinicMemberPermanently(memberId: string) {
   });
 
   if (error) {
-    if (error.message.includes("remove_clinic_member_user")) {
-      return {
-        error:
-          "Ejecutá las migraciones 035 y 036 en Supabase SQL Editor y volvé a intentar.",
-      };
-    }
-    return { error: error.message };
+    return {
+      error: resolvePostgresUserMessage(error, { fallback: error.message }),
+    };
   }
 
   await recordAudit({

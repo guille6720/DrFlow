@@ -15,6 +15,8 @@ import {
   extractPathologySearchQuery,
 } from "@/lib/utils/clinical-assistant";
 
+import { stubMedicationCard } from "./helpers/clinical-fixtures";
+
 describe("clinical-assistant", () => {
   it("extractPathologySearchQuery strips CIE-10 codes", () => {
     expect(
@@ -44,15 +46,7 @@ describe("clinical-assistant", () => {
     const warnings = buildMedicationSafetyWarnings({
       allergies: ["Penicilina"],
       medications: [
-        {
-          id: "1",
-          name: "Amoxicilina",
-          dose: "—",
-          frequency: "—",
-          sinceLabel: "—",
-          lastRenewalLabel: "—",
-          raw: {} as never,
-        },
+        stubMedicationCard({ id: "1", name: "Amoxicilina" }),
       ],
     });
     expect(warnings.some((w) => w.includes("penicilina"))).toBe(true);
@@ -62,24 +56,8 @@ describe("clinical-assistant", () => {
     const warnings = buildMedicationSafetyWarnings({
       allergies: [],
       medications: [
-        {
-          id: "1",
-          name: "Warfarina",
-          dose: "—",
-          frequency: "—",
-          sinceLabel: "—",
-          lastRenewalLabel: "—",
-          raw: {} as never,
-        },
-        {
-          id: "2",
-          name: "Ibuprofeno",
-          dose: "—",
-          frequency: "—",
-          sinceLabel: "—",
-          lastRenewalLabel: "—",
-          raw: {} as never,
-        },
+        stubMedicationCard({ id: "1", name: "Warfarina" }),
+        stubMedicationCard({ id: "2", name: "Ibuprofeno" }),
       ],
     });
     expect(warnings.some((w) => w.includes("AINE"))).toBe(true);

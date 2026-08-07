@@ -66,6 +66,9 @@ export type PatientEhrMappedRecord = {
   evolution: string | null;
   indications: string | null;
   professional_name: string;
+  professional_license_national?: string | null;
+  professional_license_provincial?: string | null;
+  professional_email?: string | null;
 };
 
 type RawPrescriptionRow = {
@@ -102,17 +105,29 @@ export function mapClinicalRecordsForEhr(
   }> | null
 ): PatientEhrMappedRecord[] {
   return (
-    records?.map((r) => ({
-      id: r.id,
-      created_at: r.created_at,
-      chief_complaint: r.chief_complaint,
-      diagnosis: r.diagnosis,
-      evolution: r.evolution,
-      indications: r.indications,
-      professional_name:
-        (r.professionals as { profiles?: { full_name?: string } } | null)?.profiles?.full_name ??
-        "Profesional",
-    })) ?? []
+    records?.map((r) => {
+      const professional = r.professionals as {
+        license_national?: string | null;
+        license_provincial?: string | null;
+        profiles?: { full_name?: string; email?: string } | { full_name?: string; email?: string }[] | null;
+      } | null;
+      const profile = Array.isArray(professional?.profiles)
+        ? professional.profiles[0]
+        : professional?.profiles;
+
+      return {
+        id: r.id,
+        created_at: r.created_at,
+        chief_complaint: r.chief_complaint,
+        diagnosis: r.diagnosis,
+        evolution: r.evolution,
+        indications: r.indications,
+        professional_name: profile?.full_name ?? "Profesional",
+        professional_license_national: professional?.license_national ?? null,
+        professional_license_provincial: professional?.license_provincial ?? null,
+        professional_email: profile?.email ?? null,
+      };
+    }) ?? []
   );
 }
 
@@ -243,7 +258,7 @@ export async function loadPatientEhrWorkspaceData(
     supabase
       .from("clinical_records")
       .select(
-        "id, created_at, chief_complaint, diagnosis, evolution, indications, professionals(profiles(full_name))"
+        "id, created_at, chief_complaint, diagnosis, evolution, indications, professionals(license_national, license_provincial, profiles(full_name, email))"
       )
       .eq("clinic_id", clinicId)
       .eq("patient_id", patientId)

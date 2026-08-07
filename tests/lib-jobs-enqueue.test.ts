@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
 
+import { createSupabaseTestDouble } from "./helpers/mock-supabase-client";
+
 describe("enqueueClinicJob", () => {
   it("inserts pending job with defaults", async () => {
     const insert = vi.fn().mockReturnValue({
@@ -13,7 +15,7 @@ describe("enqueueClinicJob", () => {
       from: vi.fn().mockReturnValue({ insert }),
     };
 
-    const result = await enqueueClinicJob(supabase as never, {
+    const result = await enqueueClinicJob(createSupabaseTestDouble(supabase), {
       clinicId: "clinic-1",
       jobType: "send_reminder",
       payload: { reminderId: "r1" },
@@ -41,7 +43,7 @@ describe("enqueueClinicJob", () => {
     };
 
     await expect(
-      enqueueClinicJob(supabase as never, {
+      enqueueClinicJob(createSupabaseTestDouble(supabase), {
         clinicId: "c",
         jobType: "send_email",
         payload: {},

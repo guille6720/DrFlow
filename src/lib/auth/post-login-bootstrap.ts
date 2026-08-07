@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { logServerError } from "@/core/errors/log-error.server";
+import { isUndefinedFunction } from "@/core/errors/postgres-error";
 
 export async function ensureUserProfile(
   supabase: SupabaseClient,
@@ -26,7 +27,7 @@ export async function ensureUserProfile(
 /** Best-effort: attach pending clinic invitations to the signed-in user. */
 export async function acceptPendingInvitationsForUser(supabase: SupabaseClient) {
   const { error } = await supabase.rpc("accept_clinic_invitations_for_user");
-  if (error && !error.message.includes("accept_clinic_invitations")) {
+  if (error && !isUndefinedFunction(error)) {
     logServerError("post-login-bootstrap.accept-invitations", error);
   }
 }

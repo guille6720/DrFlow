@@ -1,0 +1,97 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs facturacion",
+  "module": {
+    "id": "facturacion",
+    "name": "Facturación / pagos (lab)",
+    "status": "lab",
+    "summary": {
+      "what": "Pagos en línea mock Mercado Pago: registrar pago/seña y listar historial.",
+      "inputs": "FormData patient_id, amount, deposit_amount, appointment_id.",
+      "outputs": "Fila payments mock_transaction_id status paid."
+    },
+    "layers": [
+      {
+        "layerId": "auth",
+        "layerLabel": "Autenticación / guards",
+        "what": "Permiso managePayments y ownership guard en pagos.",
+        "inputs": "Rol, patientId, clinicId.",
+        "outputs": "FORBIDDEN | pago registrado.",
+        "files": [
+          "src/core/permissions/roles.ts",
+          "src/core/actions/clinic-guard.ts",
+          "src/core/security/ownership-guard.ts"
+        ]
+      },
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "Service payments mock y actions clinic-services registrar/listar.",
+        "inputs": "FormData monto ARS, patient_id.",
+        "outputs": "Fila payments paid, historial 50 últimos.",
+        "files": [
+          "src/lib/actions/clinic-services.ts",
+          "src/lib/services/payments.ts",
+          "src/shared/utils/currency.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Tipos DB tabla payments.",
+        "inputs": "Insert payment scoped clinic.",
+        "outputs": "Filas payments tipadas.",
+        "files": [
+          "src/types/database.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Página /pagos con form mock y banner lab sin MP real.",
+        "inputs": "Selección paciente, monto, simular pago.",
+        "outputs": "UI historial pagos, confirmación mock.",
+        "files": [
+          "src/app/(dashboard)/pagos/page.tsx",
+          "src/features/facturacion/components/pagos/pagos-view.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-fact-mock",
+        "label": "Simular pago crea fila paid",
+        "href": "/pagos"
+      },
+      {
+        "id": "mod-fact-list",
+        "label": "Historial últimos 50 pagos",
+        "href": "/pagos"
+      },
+      {
+        "id": "mod-fact-banner",
+        "label": "Banner lab visible (no MP real)",
+        "href": "/pagos"
+      },
+      {
+        "id": "mod-fact-perm",
+        "label": "Solo roles con managePayments",
+        "href": "/pagos"
+      }
+    ]
+  }
+}

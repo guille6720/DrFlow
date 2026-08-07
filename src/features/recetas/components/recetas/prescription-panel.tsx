@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import type { HistoriaPrescriptionSummary } from "@/features/historias/types/historia-clinical-summaries";
 import { issuePrescription, voidPrescription } from "@/features/recetas/actions/prescriptions";
 import { ExportPrescriptionPdfButton } from "@/features/recetas/components/recetas/export-prescription-pdf-button";
 import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
@@ -14,7 +15,6 @@ import { SharePrescriptionButtons } from "@/features/recetas/components/recetas/
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { ElectronicPrescription } from "@/types/prescription";
 import { PRESCRIPTION_STATUS_LABELS } from "@/types/prescription";
 
 interface Professional {
@@ -26,7 +26,7 @@ interface Professional {
 }
 
 interface Props {
-  prescriptions: ElectronicPrescription[];
+  prescriptions: HistoriaPrescriptionSummary[];
   patient: {
     id: string;
     first_name: string;

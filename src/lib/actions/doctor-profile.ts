@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
+import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { createClient } from "@/core/supabase/server";
 import {
@@ -137,10 +138,7 @@ export async function updateMyDoctorProfile(formData: FormData) {
   });
 
   if (error) {
-    if (error.message.includes("NOT_AUTHENTICATED")) {
-      return { error: "Tenés que iniciar sesión" };
-    }
-    return { error: error.message };
+    return { error: resolvePostgresUserMessage(error, { fallback: error.message }) };
   }
 
   await recordAudit({

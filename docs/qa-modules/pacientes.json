@@ -1,0 +1,90 @@
+{
+  "project": "DrFlow",
+  "repo": "https://github.com/guille6720/DrFlow",
+  "production": "https://drflow.opusorg.com",
+  "layerLabels": {
+    "auth": "Autenticación / guards",
+    "business": "Lógica de negocio / servicios",
+    "data": "Capa de datos / validación",
+    "ui": "Interfaz / componentes"
+  },
+  "layerOrder": [
+    "auth",
+    "business",
+    "data",
+    "ui"
+  ],
+  "exportCodeCommand": "node scripts/export-qa-module-code.mjs pacientes",
+  "module": {
+    "id": "pacientes",
+    "name": "Pacientes / workspace clínico",
+    "status": "ready",
+    "summary": {
+      "what": "Workspace clínico: HC, órdenes, recetas, timeline y tabs.",
+      "inputs": "patientId, tab (soap/ordenes), FormData.",
+      "outputs": "Vistas paciente, mutaciones, URLs con tab."
+    },
+    "layers": [
+      {
+        "layerId": "business",
+        "layerLabel": "Lógica de negocio / servicios",
+        "what": "CRUD pacientes, workspace tabs (HC/órdenes/recetas), loaders SSR y hooks de acciones.",
+        "inputs": "patientId, tab query, FormData ficha.",
+        "outputs": "PatientWorkspacePayload, mutaciones, URLs ?tab=.",
+        "files": [
+          "src/features/pacientes/actions/patients.ts",
+          "src/features/pacientes/server/load-patient-workspace-page.ts",
+          "src/features/pacientes/hooks/use-patient-workspace-actions.ts",
+          "src/features/pacientes/utils/patient-workspace-tab-routing.ts"
+        ]
+      },
+      {
+        "layerId": "data",
+        "layerLabel": "Capa de datos / validación",
+        "what": "Repository pacientes, perfiles clínicos, validaciones y constantes de tabs.",
+        "inputs": "clinic_id, patientId, filtros búsqueda.",
+        "outputs": "Filas patients + clinical_profiles, errores repo.",
+        "files": [
+          "src/features/pacientes/repositories/patients.repository.ts",
+          "src/features/pacientes/constants/patient-workspace-tabs.ts",
+          "src/core/validations/schemas.ts"
+        ]
+      },
+      {
+        "layerId": "ui",
+        "layerLabel": "Interfaz / componentes",
+        "what": "Lista pacientes, workspace SOAP/órdenes, sheets modales y chart panels.",
+        "inputs": "Props workspace, eventos tab/focus.",
+        "outputs": "Vistas interactivas HC, navegación intra-paciente.",
+        "files": [
+          "src/app/(dashboard)/pacientes/[id]/page.tsx",
+          "src/features/pacientes/components/pacientes/patient-workspace-content.tsx",
+          "src/features/pacientes/components/pacientes/patient-soap-workspace.tsx",
+          "src/features/pacientes/components/pacientes/patient-workspace-orders-panel.tsx"
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "id": "mod-pat-hc",
+        "label": "Tab HC legible en dark/cobalt",
+        "href": "/pacientes"
+      },
+      {
+        "id": "mod-pat-ord",
+        "label": "Órdenes: preview, imprimir, editar, eliminar",
+        "href": "/pacientes"
+      },
+      {
+        "id": "mod-pat-voice",
+        "label": "Dictado en nueva consulta",
+        "href": "/pacientes"
+      },
+      {
+        "id": "mod-pat-back",
+        "label": "Volver desde sub-tabs respeta navegación",
+        "href": "/pacientes"
+      }
+    ]
+  }
+}

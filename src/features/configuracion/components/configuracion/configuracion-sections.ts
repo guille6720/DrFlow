@@ -22,6 +22,8 @@ import {
   Wallet,
 } from "lucide-react";
 
+import { pamiNavMessages } from "@/locales/es-AR/pami/nav";
+
 export type ConfiguracionSectionId =
   | "clinica"
   | "equipo"
@@ -94,21 +96,21 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
   },
   {
     id: "pami",
-    title: "Consultorio PAMI",
-    description: "Perfil médico de cabecera y plantillas clínicas.",
+    title: pamiNavMessages.configuracion.setupTitle,
+    description: pamiNavMessages.configuracion.setupDescription,
     icon: HeartPulse,
   },
   {
     id: "guia-pami",
-    title: "Guía cabecera PAMI",
-    description: "Protocolos y guía operativa de médico de cabecera.",
+    title: pamiNavMessages.configuracion.guiaTitle,
+    description: pamiNavMessages.configuracion.guiaDescription,
     icon: HeartPulse,
     href: "/guia-pami",
   },
   {
     id: "planillas-pami",
-    title: "Planillas PAMI",
-    description: "Formularios, órdenes y documentación PAMI.",
+    title: pamiNavMessages.configuracion.planillasTitle,
+    description: pamiNavMessages.configuracion.planillasDescription,
     icon: ClipboardList,
     href: "/pami/planillas",
   },
@@ -192,8 +194,8 @@ export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
   },
   {
     id: "coberturas",
-    title: "Coberturas y PAMI",
-    description: "Obras sociales, consultorio PAMI, guía, planillas y manual.",
+    title: pamiNavMessages.configuracion.groupTitle,
+    description: pamiNavMessages.configuracion.groupDescription,
     icon: Wallet,
     sections: ["coberturas", "pami", "guia-pami", "planillas-pami", "ayuda"],
   },
