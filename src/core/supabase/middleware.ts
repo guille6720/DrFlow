@@ -80,6 +80,7 @@ export async function updateSession(request: NextRequest) {
     path === "/probar" ||
     path === "/planes" ||
     path === "/onboarding" ||
+    path.startsWith("/acceso-invitado") ||
     path.startsWith("/auth/");
 
   if (isFullyPublic && !isAuthRoute) {

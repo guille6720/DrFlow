@@ -27,6 +27,7 @@ export function LoginFormView() {
     resetError,
     formError,
     info,
+    isInvitedFlow,
     handleResetPassword,
     handleLoginSubmit,
   } = useLoginForm();
@@ -113,7 +114,13 @@ export function LoginFormView() {
             </div>
           </div>
 
-          <GoogleLoginButton />
+          {!isInvitedFlow ? (
+            <GoogleLoginButton />
+          ) : (
+            <p className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+              Tu acceso fue creado con email y contraseña. Usá esos datos del formulario de arriba.
+            </p>
+          )}
 
           <form action="/api/auth/signout" method="post" className="mt-3 text-center">
             <button

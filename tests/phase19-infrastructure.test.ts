@@ -60,4 +60,9 @@ describe("middleware public API routes", () => {
     expect(src).toMatch(/\/api\/version/);
     expect(src).toMatch(/\/api\/jobs\//);
   });
+
+  it("allows guest invitation credential pages without auth", () => {
+    const src = readFileSync(resolve("src/core/supabase/middleware.ts"), "utf8");
+    expect(src).toMatch(/\/acceso-invitado/);
+  });
 });

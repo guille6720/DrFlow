@@ -63,6 +63,8 @@ export function useLoginForm() {
   const [resetError, setResetError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const isInvitedFlow = searchParams.get("invited") === "1";
+
   const { formError, info } = useMemo(() => {
     if (bootstrap.passwordLeakError) {
       return { formError: bootstrap.passwordLeakError, info: null as string | null };
@@ -80,7 +82,7 @@ export function useLoginForm() {
       infoMessage = "Registro exitoso. Ingresá con tu email y contraseña.";
     } else if (searchParams.get("invited") === "1") {
       infoMessage =
-        "¡Bienvenido! Si recibiste invitación, abrí el link del email para elegir tu contraseña.";
+        "Usá el email y la contraseña de tu invitación. No uses «Continuar con Google».";
     } else if (searchParams.get("reset") === "done") {
       infoMessage = "Contraseña actualizada. Ingresá con tu nueva contraseña.";
     }
@@ -194,6 +196,7 @@ export function useLoginForm() {
     resetError,
     formError,
     info,
+    isInvitedFlow,
     handleResetPassword,
     handleLoginSubmit,
   };

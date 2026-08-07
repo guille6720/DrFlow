@@ -84,7 +84,15 @@ export function InvitationCredentialsViewPanel({ credentials }: Props) {
         Guardá estos datos en un lugar seguro. Podés cambiar la contraseña después de iniciar sesión.
       </p>
 
-      <Link href="/login" className="mt-6 inline-flex">
+      <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+        Iniciá sesión con el email y la contraseña de arriba. Las cuentas invitadas no pueden
+        entrar con Google.
+      </p>
+
+      <Link
+        href={`/login?email=${encodeURIComponent(credentials.email)}&invited=1`}
+        className="mt-6 inline-flex"
+      >
         <Button type="button">Ir a iniciar sesión</Button>
       </Link>
     </div>

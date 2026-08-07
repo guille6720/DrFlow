@@ -37,10 +37,13 @@ export async function acceptPendingInvitations() {
 async function findAuthUserIdByEmail(email: string): Promise<string | null> {
   if (!hasAdminClient()) return null;
   const admin = createAdminClient();
-  const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-  if (error) return null;
-  const match = data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
-  return match?.id ?? null;
+  const { data, error } = await admin
+    .from("profiles")
+    .select("id")
+    .ilike("email", email)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data.id;
 }
 
 export async function inviteClinicMember(formData: FormData) {
