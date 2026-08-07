@@ -2,11 +2,8 @@
 
 import { useState } from "react";
 
-import { PrescriptionPhysicianAssist } from "@/features/ia/components/clinical-workflow/prescription-physician-assist";
-import type { PhysicianAssistContext } from "@/features/ia/types/physician-assist-types";
 import { PrescriptionDiagnosisFields } from "@/features/recetas/components/recetas/prescription-diagnosis-fields";
 import { PrescriptionMedicationsSection } from "@/features/recetas/components/recetas/prescription-medications-section";
-import { PrescriptionPharmacologyPicker } from "@/features/recetas/components/recetas/prescription-pharmacology-picker";
 import { usePrescriptionForm } from "@/features/recetas/hooks/use-prescription-form";
 
 import { Button } from "@/components/ui/button";
@@ -15,7 +12,6 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { PrescriptionMedication } from "@/types/prescription";
-import { ARGENTINA_PRESCRIPTION_DISCLAIMER } from "@/types/prescription";
 
 interface Professional {
   id: string;
@@ -34,7 +30,6 @@ interface Props {
   defaultProfessionalId?: string;
   initialMedications?: PrescriptionMedication[];
   onSuccess?: () => void;
-  assistContext?: PhysicianAssistContext;
 }
 
 export function PrescriptionForm({
@@ -47,10 +42,8 @@ export function PrescriptionForm({
   defaultProfessionalId,
   initialMedications,
   onSuccess,
-  assistContext,
 }: Props) {
   const [notes, setNotes] = useState("");
-  const [alertsReady, setAlertsReady] = useState(true);
 
   const {
     diagnosisText,
@@ -63,10 +56,7 @@ export function PrescriptionForm({
     loading,
     disclaimerAccepted,
     setDisclaimerAccepted,
-    existingGenericNames,
     updateMed,
-    addMedicationsFromGuide,
-    handlePathologySelect,
     handleSubmit,
   } = usePrescriptionForm({
     patientId,
@@ -79,32 +69,6 @@ export function PrescriptionForm({
 
   return (
     <form id="prescription-form" className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
-        {ARGENTINA_PRESCRIPTION_DISCLAIMER}
-      </div>
-
-      <PrescriptionPharmacologyPicker
-        onPathologySelect={handlePathologySelect}
-        onAddMedications={addMedicationsFromGuide}
-        existingGenericNames={existingGenericNames}
-      />
-
-      {assistContext ? (
-        <PrescriptionPhysicianAssist
-          context={{
-            ...assistContext,
-            insurance: assistContext.insurance ?? patientInsurance ?? undefined,
-          }}
-          medicationNames={medications
-            .map((m) => m.generic_name || m.brand_name || "")
-            .filter(Boolean)}
-          onApplyPrescriptionNotes={(text) =>
-            setNotes((prev) => (prev.trim() ? `${prev.trim()}\n\n${text}` : text))
-          }
-          onAlertGateChange={setAlertsReady}
-        />
-      ) : null}
-
       <div className="grid gap-4 sm:grid-cols-2">
         <Select
           name="professional_id"
@@ -158,12 +122,6 @@ export function PrescriptionForm({
         onChange={(e) => setNotes(e.target.value)}
       />
 
-      {!alertsReady ? (
-        <p className="text-sm text-amber-800">
-          Revisá y confirmá las alertas medicamentosas antes de emitir la receta.
-        </p>
-      ) : null}
-
       <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-sm text-amber-950">
         <input
           type="checkbox"
@@ -174,7 +132,7 @@ export function PrescriptionForm({
         />
         <span>
           Entiendo que esta es una <strong>receta local / borrador</strong> y{" "}
-          <strong>no constituye homologación REFEPS</strong>. Acepto el aviso legal de arriba.
+          <strong>no constituye homologación REFEPS</strong> ni firma digital homologada.
         </span>
       </label>
 
@@ -185,7 +143,7 @@ export function PrescriptionForm({
           type="button"
           variant="outline"
           loading={loading}
-          disabled={!disclaimerAccepted || !alertsReady}
+          disabled={!disclaimerAccepted}
           onClick={() => handleSubmit(false)}
         >
           Guardar borrador
@@ -193,7 +151,7 @@ export function PrescriptionForm({
         <Button
           type="button"
           loading={loading}
-          disabled={!disclaimerAccepted || !alertsReady}
+          disabled={!disclaimerAccepted}
           onClick={() => handleSubmit(true)}
         >
           Emitir receta

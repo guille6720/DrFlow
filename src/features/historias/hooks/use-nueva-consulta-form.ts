@@ -42,6 +42,10 @@ type ConsultFormProfessional = {
   id: string;
   display_name?: string | null;
   license_number?: string | null;
+  license_national?: string | null;
+  license_provincial?: string | null;
+  signature_text?: string | null;
+  signature_image_url?: string | null;
   profiles?: { full_name?: string } | { full_name?: string }[] | null;
 };
 
@@ -84,6 +88,8 @@ export function useNuevaConsultaForm({
 
   const selectedPatient = patients.find((p) => p.id === patientId);
   const activeProfessionalId = fromAppointment ? defaultProfessional : professionalId;
+
+  const activeProfessional = professionals.find((p) => p.id === activeProfessionalId);
 
   function signatureForProfessionalId(id: string): string {
     const pro = professionals.find((p) => p.id === id);
@@ -234,6 +240,7 @@ export function useNuevaConsultaForm({
     setEvolution,
     professionalSignature,
     setProfessionalSignature,
+    professionalSignatureImageUrl: activeProfessional?.signature_image_url ?? null,
     pharmacologyHref,
     flushEvolutionDraft,
     recetaHref,

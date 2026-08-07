@@ -7,6 +7,7 @@ import { createClient } from "@/core/supabase/server";
 
 import { loadClinicFeatureFlags } from "@/lib/server/load-clinic-feature-flags";
 import { loadClinicPlugins } from "@/lib/server/load-clinic-plugins";
+import { resolveProfessionalSignatureUrls } from "@/lib/server/resolve-professional-signature-urls";
 import { fetchPortalContext, type PortalContext } from "@/lib/utils/portal-doctor-info";
 
 /**
@@ -54,11 +55,13 @@ export async function loadClinicProfessionalsListCached(clinicId: string): Promi
   const supabase = await createClient();
   const { data } = await supabase
     .from("professionals")
-    .select("id, display_name, license_number, profiles(full_name)")
+    .select(
+      "id, display_name, license_number, license_national, license_provincial, signature_text, signature_image_path, profiles(full_name)"
+    )
     .eq("clinic_id", clinicId)
     .eq("is_active", true)
     .order("display_name");
-  return data ?? [];
+  return resolveProfessionalSignatureUrls(supabase, data ?? []);
 }
 
 export async function loadClinicProfessionalsFullCached(clinicId: string) {
@@ -68,7 +71,7 @@ export async function loadClinicProfessionalsFullCached(clinicId: string) {
     .select("*, profiles(full_name), specialties(name)")
     .eq("clinic_id", clinicId)
     .eq("is_active", true);
-  return data ?? [];
+  return resolveProfessionalSignatureUrls(supabase, data ?? []);
 }
 
 export async function loadClinicLocationsCached(clinicId: string) {

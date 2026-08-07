@@ -180,6 +180,15 @@ export const COMMAND_PALETTE_NAV: CommandPaletteItemDef[] = [
     keywords: ["plantillas", "evolucion", "soap", "texto", "medicos"],
   },
   {
+    id: "nav-firmas",
+    label: "Firmas de profesionales",
+    href: "/firmas",
+    group: "navegacion",
+    icon: ClipboardList,
+    permission: "editClinicalRecords",
+    keywords: ["firmas", "firma", "medico", "receta", "medicos"],
+  },
+  {
     id: "nav-ingreso-prof",
     label: "Equipo médico",
     href: "/ingreso-profesionales",

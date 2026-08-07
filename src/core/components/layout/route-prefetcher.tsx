@@ -17,6 +17,7 @@ const DASHBOARD_ROUTES = [
   "/ayuda",
   "/ingreso-profesionales",
   "/plantillas",
+  "/firmas",
   "/configuracion",
 ] as const;
 

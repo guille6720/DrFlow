@@ -84,10 +84,7 @@ export function PatientWorkspaceSheets({
         open={actions.prescriptionSheetOpen && canIssue}
         patientId={patientId}
         patientInsurance={patient.insurance_provider}
-        patientInsurancePlan={patientRecord.insurance_plan}
         patientName={patientName}
-        patientAllergies={patientRecord.allergies}
-        patientRegularMedication={patientRecord.regular_medication}
         professionals={professionals}
         defaultProfessionalId={actions.professional ?? defaultProfessionalId ?? undefined}
         clinicalRecordId={actions.consulta ?? undefined}

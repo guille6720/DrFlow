@@ -107,6 +107,61 @@ export function validatePdfUpload(
   };
 }
 
+const SIGNATURE_MAX_BYTES = 2 * 1024 * 1024;
+
+export function buildProfessionalSignaturePath(
+  clinicId: string,
+  professionalId: string,
+  fileName: string
+): string {
+  const safe = sanitizeStorageFileName(fileName);
+  return `${clinicId}/signatures/${professionalId}/${randomUUID()}-${safe}`;
+}
+
+export function validateSignatureImageUpload(
+  file: File,
+  buffer: Buffer,
+  maxBytes: number = SIGNATURE_MAX_BYTES
+): UploadValidationResult {
+  if (file.size <= 0) return { ok: false, error: "Archivo vacío" };
+  if (file.size > maxBytes) return { ok: false, error: maxMbError(maxBytes) };
+
+  if (isJpegBuffer(buffer)) {
+    return {
+      ok: true,
+      sanitizedName: ensureExtension(
+        sanitizeStorageFileName(file.name, "firma.jpg"),
+        ".jpg"
+      ),
+      contentType: "image/jpeg",
+    };
+  }
+  if (isPngBuffer(buffer)) {
+    return {
+      ok: true,
+      sanitizedName: ensureExtension(
+        sanitizeStorageFileName(file.name, "firma.png"),
+        ".png"
+      ),
+      contentType: "image/png",
+    };
+  }
+
+  const lower = file.name.toLowerCase();
+  if (lower.endsWith(".webp") || file.type === "image/webp") {
+    return {
+      ok: true,
+      sanitizedName: ensureExtension(
+        sanitizeStorageFileName(file.name, "firma.webp"),
+        ".webp"
+      ),
+      contentType: "image/webp",
+    };
+  }
+
+  return { ok: false, error: "Solo PNG, JPEG o WebP para la firma" };
+}
+
 export function validateAdminDocumentUpload(
   file: File,
   buffer: Buffer,

@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
+import { DocumentSignatureBlock } from "@/features/recetas/components/recetas/document-signature-block";
 import {
   medicalOrderDocumentHeading,
   medicalOrderDocumentTitle,
@@ -95,6 +96,13 @@ export function MedicalOrderDocumentView({ data, className }: Props) {
           </div>
         </section>
       ) : null}
+
+      <DocumentSignatureBlock
+        signature={{
+          signatureText: data.professional.signatureText,
+          signatureImageUrl: data.professional.signatureImageUrl,
+        }}
+      />
 
       <footer className="drflow-medical-order-doc-footer mt-6 border-t pt-3 text-[10px]">
         Documento generado electrónicamente en DrFlow. Verifique datos del paciente antes de presentar.

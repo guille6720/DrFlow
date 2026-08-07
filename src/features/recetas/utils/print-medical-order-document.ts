@@ -1,5 +1,10 @@
 import { medicalOrderDocumentHeading } from "@/features/recetas/utils/medical-order-document-title";
 
+import {
+  buildDocumentSignatureHtml,
+  DOCUMENT_SIGNATURE_PRINT_STYLES,
+} from "@/lib/utils/professional-signature-document";
+
 export type MedicalOrderDocumentData = {
   orderType?: string;
   orderText: string;
@@ -18,6 +23,8 @@ export type MedicalOrderDocumentData = {
     full_name: string;
     license_number?: string | null;
     specialty?: string | null;
+    signatureText?: string | null;
+    signatureImageUrl?: string | null;
   };
   clinic: {
     name: string;
@@ -86,6 +93,11 @@ export function buildMedicalOrderDocumentHtml(data: MedicalOrderDocumentData): s
           : ""
       }
 
+      ${buildDocumentSignatureHtml({
+        signatureText: data.professional.signatureText,
+        signatureImageUrl: data.professional.signatureImageUrl,
+      })}
+
       <footer class="order-doc-footer">
         <p>Documento generado electrónicamente en DrFlow. Verifique datos del paciente antes de presentar.</p>
       </footer>
@@ -137,6 +149,7 @@ const PRINT_STYLES = `
     font-size: 10px;
     color: #64748b;
   }
+  ${DOCUMENT_SIGNATURE_PRINT_STYLES}
 `;
 
 function buildPrintDocumentHtml(data: MedicalOrderDocumentData): string {

@@ -170,7 +170,7 @@ export const FEATURE_MODULES: FeatureModuleDef[] = [
   {
     id: "profesionales",
     label: "Profesionales",
-    routes: ["/ingreso-profesionales", "/plantillas"],
+    routes: ["/ingreso-profesionales", "/plantillas", "/firmas"],
     status: "ready",
     description: "Alta y documentación de profesionales.",
   },

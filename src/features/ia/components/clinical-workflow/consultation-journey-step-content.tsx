@@ -93,7 +93,6 @@ export function ConsultationJourneyStepContent({
             defaultProfessionalId={activeProfessionalId ?? undefined}
             initialMedications={lastMedications ?? undefined}
             onSuccess={() => onStepCompleted("prescription")}
-            assistContext={assistBase}
           />
         </JourneySkipWrapper>
       ) : null}

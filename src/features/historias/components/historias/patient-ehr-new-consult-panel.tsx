@@ -5,6 +5,8 @@ import { es } from "date-fns/locale";
 import { Loader2, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { SignatureImage } from "@/core/components/ui/signature-image";
+
 import { cn } from "@/shared/utils/cn";
 
 import type { NuevaConsultaFormState } from "@/features/historias/hooks/use-nueva-consulta-form";
@@ -52,6 +54,7 @@ export function PatientEhrNewConsultPanel({
     setProfessionalId,
     professionalSignature,
     setProfessionalSignature,
+    professionalSignatureImageUrl,
     error,
     loading,
     handleSubmit,
@@ -230,6 +233,15 @@ export function PatientEhrNewConsultPanel({
           onChange={(e) => setProfessionalSignature(e.target.value)}
           placeholder="Dr/a. Nombre Apellido — Mat. XXXXX"
         />
+        {professionalSignatureImageUrl ? (
+          <div className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-3">
+            <SignatureImage
+              src={professionalSignatureImageUrl}
+              alt="Firma del profesional"
+              className="max-h-16 max-w-[200px] object-contain"
+            />
+          </div>
+        ) : null}
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

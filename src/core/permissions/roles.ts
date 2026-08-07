@@ -110,6 +110,7 @@ export function canAccessRoute(
     "/secretaria": "manageAdminDocuments",
     "/ingreso-profesionales": "manageStaff",
     "/plantillas": "editClinicalRecords",
+    "/firmas": "editClinicalRecords",
   };
 
   for (const [prefix, permission] of Object.entries(routePermissions)) {

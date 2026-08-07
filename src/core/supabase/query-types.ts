@@ -27,6 +27,11 @@ export type ProfessionalListRow = {
   id: string;
   display_name: string | null;
   license_number: string | null;
+  license_national?: string | null;
+  license_provincial?: string | null;
+  signature_text?: string | null;
+  signature_image_path?: string | null;
+  signature_image_url?: string | null;
   profiles?: NestedRow<{ full_name: string }>;
 };
 

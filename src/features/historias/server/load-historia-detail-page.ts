@@ -6,6 +6,7 @@ import type {
   HistoriaPrescriptionSummary,
 } from "@/features/historias/types/historia-clinical-summaries";
 
+import { resolveProfessionalSignatureUrls } from "@/lib/server/resolve-professional-signature-urls";
 import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
 
 export type HistoriaDetailPatient = {
@@ -28,6 +29,10 @@ export type HistoriaDetailProfessional = {
   id: string;
   display_name?: string | null;
   license_number?: string | null;
+  license_national?: string | null;
+  license_provincial?: string | null;
+  signature_text?: string | null;
+  signature_image_url?: string | null;
   profiles?: { full_name: string } | null;
   specialties?: { name: string } | { name: string }[] | null;
 };
@@ -117,7 +122,9 @@ export async function loadHistoriaDetailPageData(
       .order("created_at", { ascending: false }),
     supabase
       .from("professionals")
-      .select("id, display_name, license_number, profiles(full_name), specialties(name)")
+      .select(
+        "id, display_name, license_number, license_national, license_provincial, signature_text, signature_image_path, profiles(full_name), specialties(name)"
+      )
       .eq("clinic_id", clinicId)
       .eq("is_active", true),
     supabase
@@ -153,7 +160,10 @@ export async function loadHistoriaDetailPageData(
     : null;
 
   const professional = record.professionals as unknown as HistoriaDetailPageData["professional"];
-  const professionalList = (professionals ?? []) as unknown as HistoriaDetailProfessional[];
+  const professionalList = (await resolveProfessionalSignatureUrls(
+    supabase,
+    (professionals ?? []) as Array<{ signature_image_path?: string | null }>
+  )) as unknown as HistoriaDetailProfessional[];
 
   return {
     record: record as HistoriaDetailPageData["record"],

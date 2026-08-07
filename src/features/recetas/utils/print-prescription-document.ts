@@ -1,3 +1,7 @@
+import {
+  buildDocumentSignatureHtml,
+  DOCUMENT_SIGNATURE_PRINT_STYLES,
+} from "@/lib/utils/professional-signature-document";
 import type { PrescriptionMedication, PrescriptionType } from "@/types/prescription";
 import {
   ARGENTINA_PRESCRIPTION_DISCLAIMER,
@@ -27,6 +31,8 @@ export type PrescriptionDocumentData = {
     full_name: string;
     license_number?: string | null;
     specialty?: string | null;
+    signatureText?: string | null;
+    signatureImageUrl?: string | null;
   };
   clinic: {
     name: string;
@@ -126,6 +132,11 @@ export function buildPrescriptionDocumentHtml(data: PrescriptionDocumentData): s
           : ""
       }
 
+      ${buildDocumentSignatureHtml({
+        signatureText: data.professional.signatureText,
+        signatureImageUrl: data.professional.signatureImageUrl,
+      })}
+
       <footer class="order-doc-footer">
         <p>${escapeHtml(ARGENTINA_PRESCRIPTION_DISCLAIMER)}</p>
       </footer>
@@ -182,6 +193,7 @@ const PRINT_STYLES = `
     font-size: 10px;
     color: #64748b;
   }
+  ${DOCUMENT_SIGNATURE_PRINT_STYLES}
 `;
 
 function buildPrintDocumentHtml(data: PrescriptionDocumentData): string {

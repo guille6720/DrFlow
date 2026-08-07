@@ -13,14 +13,22 @@ export function formatProfessionalLicenses(professional: {
   return single ? `Mat. ${single}` : null;
 }
 
-export function buildProfessionalSignature(professional: {
+export type ProfessionalSignatureSource = {
   display_name?: string | null;
   profiles?: { full_name?: string | null } | { full_name?: string | null }[] | null;
   license_national?: string | null;
   license_provincial?: string | null;
   license_number?: string | null;
+  signature_text?: string | null;
+  signature_image_path?: string | null;
+  signature_image_url?: string | null;
   id?: string;
-}): string {
+};
+
+export function buildProfessionalSignature(professional: ProfessionalSignatureSource): string {
+  const stored = professional.signature_text?.trim();
+  if (stored) return stored;
+
   const name = getProfessionalDisplayName(professional);
   const license = formatProfessionalLicenses(professional);
   return license ? `Dr/a. ${name} — ${license}` : `Dr/a. ${name}`;

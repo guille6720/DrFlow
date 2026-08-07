@@ -16,10 +16,7 @@ type Props = {
   open: boolean;
   patientId: string;
   patientInsurance?: string | null;
-  patientInsurancePlan?: string | null;
   patientName: string;
-  patientAllergies?: string | null;
-  patientRegularMedication?: string | null;
   professionals: Professional[];
   defaultProfessionalId?: string;
   clinicalRecordId?: string;
@@ -34,10 +31,7 @@ export function PatientPrescriptionSheet({
   open,
   patientId,
   patientInsurance,
-  patientInsurancePlan,
   patientName,
-  patientAllergies,
-  patientRegularMedication,
   professionals,
   defaultProfessionalId,
   clinicalRecordId,
@@ -65,14 +59,6 @@ export function PatientPrescriptionSheet({
         defaultProfessionalId={defaultProfessionalId}
         initialMedications={initialMedications}
         onSuccess={onSaved}
-        assistContext={{
-          patientName,
-          allergies: patientAllergies,
-          regularMedication: patientRegularMedication,
-          diagnosis: prefillDiagnosis,
-          insurance: patientInsurance ?? undefined,
-          insurancePlan: patientInsurancePlan,
-        }}
       />
     </PatientWorkspaceOverlay>
   );

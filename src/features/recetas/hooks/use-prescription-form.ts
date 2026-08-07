@@ -4,9 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { issuePrescription, savePrescriptionDraft } from "@/features/recetas/actions/prescriptions";
-import { appendPrescriptionMedication, emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
+import { emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
 
-import type { PathologySearchResult } from "@/types/pharmacology";
 import type { PrescriptionMedication } from "@/types/prescription";
 
 type Options = {
@@ -38,30 +37,10 @@ export function usePrescriptionForm({
   const [loading, setLoading] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
 
-  const existingGenericNames = medications
-    .map((m) => m.generic_name.trim())
-    .filter(Boolean);
-
   function updateMed(index: number, field: keyof PrescriptionMedication, value: string | number | boolean) {
     setMedications((prev) =>
       prev.map((m, i) => (i === index ? { ...m, [field]: value } : m))
     );
-  }
-
-  function addMedicationsFromGuide(newMeds: PrescriptionMedication[]) {
-    setMedications((prev) => {
-      if (newMeds.length === 0) return prev;
-      let next = prev;
-      for (const med of newMeds) {
-        next = appendPrescriptionMedication(next, med);
-      }
-      return next;
-    });
-  }
-
-  function handlePathologySelect(pathology: PathologySearchResult) {
-    setCie10(pathology.cie10_code);
-    setDiagnosisText(pathology.name);
   }
 
   async function handleSubmit(issue: boolean) {
@@ -111,10 +90,7 @@ export function usePrescriptionForm({
     loading,
     disclaimerAccepted,
     setDisclaimerAccepted,
-    existingGenericNames,
     updateMed,
-    addMedicationsFromGuide,
-    handlePathologySelect,
     handleSubmit,
   };
 }
