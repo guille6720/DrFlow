@@ -141,7 +141,9 @@ export async function loadPatientWorkspacePageData(
       .limit(PATIENT_ATTACHMENTS_LIMIT),
     supabase
       .from("prescription_drafts")
-      .select("id, created_at, medications, status, diagnosis_text, issued_at, prescription_number")
+      .select(
+        "id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, notes, professional_id"
+      )
       .eq("patient_id", patientId)
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false })

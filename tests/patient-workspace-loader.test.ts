@@ -26,7 +26,7 @@ describe("mapEhrPrescriptions", () => {
         created_at: "2025-01-01T00:00:00.000Z",
         issued_at: "2025-01-01T01:00:00.000Z",
         status: "issued",
-        medications: [{ name: "Enalapril" }, { name: "Aspirina" }],
+        medications: [{ generic_name: "Enalapril" }, { generic_name: "Aspirina" }],
       },
     ]);
     expect(result[0].label).toBe("Receta · Enalapril +1");

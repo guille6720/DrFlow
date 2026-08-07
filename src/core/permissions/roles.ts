@@ -109,6 +109,7 @@ export function canAccessRoute(
     "/sala-espera": "manageWaitingRoom",
     "/secretaria": "manageAdminDocuments",
     "/ingreso-profesionales": "manageStaff",
+    "/plantillas": "editClinicalRecords",
   };
 
   for (const [prefix, permission] of Object.entries(routePermissions)) {

@@ -45,9 +45,9 @@ export function ProfessionalIntakeSidebar({
   onNew,
 }: Props) {
   return (
-    <aside className="flex h-full min-h-[520px] w-full flex-col rounded-2xl border border-slate-200 bg-slate-50/80 shadow-sm lg:w-72 lg:shrink-0">
+    <aside className="drflow-card-light drflow-light-sidebar-panel flex h-full min-h-[520px] w-full flex-col rounded-2xl border border-slate-200 bg-white shadow-sm lg:w-72 lg:shrink-0">
       <div className="border-b border-slate-200 px-4 py-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-700">
           Equipo médico
         </p>
         <button
@@ -67,7 +67,7 @@ export function ProfessionalIntakeSidebar({
 
       <div className="flex-1 overflow-y-auto p-2">
         {professionals.length === 0 ? (
-          <p className="px-2 py-4 text-sm text-slate-500">
+          <p className="px-2 py-4 text-sm text-slate-700">
             Todavía no hay profesionales. Creá el primero con el botón de arriba.
           </p>
         ) : (
@@ -100,7 +100,7 @@ export function ProfessionalIntakeSidebar({
                       <span
                         className={cn(
                           "block truncate text-xs",
-                          active ? "text-slate-800/80" : "text-slate-500"
+                          active ? "text-slate-800/90" : "text-slate-600"
                         )}
                       >
                         {p.specialties?.name ?? "Sin especialidad"}
@@ -130,7 +130,7 @@ export function ProfessionalIntakeSidebar({
         />
       </div>
 
-      <div className="border-t border-slate-200 px-4 py-3 text-xs text-slate-500">
+      <div className="border-t border-slate-200 px-4 py-3 text-xs font-medium text-slate-700">
         <UserRound className="mb-1 inline h-3.5 w-3.5 text-teal-600" />{" "}
         {professionals.length} profesional{professionals.length === 1 ? "" : "es"}
       </div>

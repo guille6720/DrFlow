@@ -65,7 +65,7 @@ export const FEATURE_MODULES: FeatureModuleDef[] = [
   {
     id: "historias",
     label: "Historia clínica",
-    routes: ["/historias"],
+    routes: ["/historias", "/plantillas"],
     status: "ready",
     description: "Consultas, evoluciones y documentos clínicos.",
   },
@@ -170,7 +170,7 @@ export const FEATURE_MODULES: FeatureModuleDef[] = [
   {
     id: "profesionales",
     label: "Profesionales",
-    routes: ["/ingreso-profesionales"],
+    routes: ["/ingreso-profesionales", "/plantillas"],
     status: "ready",
     description: "Alta y documentación de profesionales.",
   },

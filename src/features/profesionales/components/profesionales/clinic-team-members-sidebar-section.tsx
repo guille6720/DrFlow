@@ -40,7 +40,7 @@ export function ClinicTeamMembersSidebarSection({
 
   return (
     <div className="mt-4 border-t border-slate-200 pt-4">
-      <p className="px-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
+      <p className="px-2 text-xs font-semibold uppercase tracking-wide text-slate-800">
         Usuarios invitados
       </p>
       <ul className="mt-2 space-y-1">
@@ -80,7 +80,7 @@ export function ClinicTeamMembersSidebarSection({
                   <span
                     className={cn(
                       "block truncate text-xs font-medium",
-                      active ? "text-indigo-100" : "text-slate-600"
+                      active ? "text-indigo-100" : "text-slate-700"
                     )}
                   >
                     {roleLabel}
@@ -91,7 +91,7 @@ export function ClinicTeamMembersSidebarSection({
           );
         })}
       </ul>
-      <p className="mt-3 flex items-center gap-1 px-2 text-xs font-medium text-slate-600">
+      <p className="mt-3 flex items-center gap-1 px-2 text-xs font-medium text-slate-700">
         <Users className="h-3.5 w-3.5 text-indigo-600" />
         {activeMembers.length} invitado{activeMembers.length === 1 ? "" : "s"}
       </p>

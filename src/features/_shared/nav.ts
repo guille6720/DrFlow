@@ -3,6 +3,7 @@ import type { FeatureModuleId } from "@/features/_shared/registry";
 export type FeatureNavPermission =
   | "managePatients"
   | "viewClinicalRecords"
+  | "editClinicalRecords"
   | "issuePrescriptions"
   | "viewPharmacology"
   | "managePayments"
@@ -51,10 +52,24 @@ export function flattenNavEntries(entries: FeatureNavEntry[]): FeatureNavItem[] 
 export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
   { featureId: "dashboard", href: "/dashboard", label: "Dashboard", permission: null },
   {
-    featureId: "profesionales",
-    href: "/ingreso-profesionales",
+    type: "group",
+    id: "medicos",
     label: "Medicos",
-    permission: "manageStaff",
+    featureId: "profesionales",
+    children: [
+      {
+        featureId: "profesionales",
+        href: "/ingreso-profesionales",
+        label: "Equipo",
+        permission: "manageStaff",
+      },
+      {
+        featureId: "historias",
+        href: "/plantillas",
+        label: "Plantillas",
+        permission: "editClinicalRecords",
+      },
+    ],
   },
   {
     type: "group",

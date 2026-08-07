@@ -51,6 +51,7 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
   "/caja": Banknote,
   "/secretaria/documentos": FolderOpen,
   "/ingreso-profesionales": Stethoscope,
+  "/plantillas": ClipboardList,
   "/historias": FileText,
   "/datos": ArrowDownUp,
   "/recetas": ScrollText,
@@ -65,6 +66,7 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
 
 const GROUP_ICONS: Record<string, typeof LayoutDashboard> = {
   administracion: Building2,
+  medicos: Stethoscope,
 };
 
 function withNavIcon(item: FeatureNavItem): SidebarNavLink {

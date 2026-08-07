@@ -694,6 +694,25 @@ html[data-ui-palette="cobalt"] .drflow-patient-picker-dropdown {
   border-color: #94a3b8;
 }
 
+/* Paneles claros dentro del mesh oscuro (sidebar de equipo, listas, etc.) */
+.drflow-light-sidebar-panel,
+.drflow-light-sidebar-panel :is(.text-slate-500, .text-slate-600, .text-slate-700) {
+  color: #334155;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-light-sidebar-panel,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-light-sidebar-panel :is(.text-slate-500, .text-slate-600, .text-slate-700),
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-light-sidebar-panel,
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-light-sidebar-panel :is(.text-slate-500, .text-slate-600, .text-slate-700) {
+  color: #334155 !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-light-sidebar-panel .text-slate-800,
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-light-sidebar-panel .text-slate-900,
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-light-sidebar-panel .font-semibold {
+  color: #0f172a !important;
+}
+
 /* Etiquetas de formulario en tarjetas oscuras (sin clase explícita) */
 .drflow-card-body label.drflow-ui-label,
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body label.drflow-ui-label,

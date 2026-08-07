@@ -117,6 +117,9 @@ export async function PatientWorkspaceContent({
       <PatientWorkspacePrescriptionsPanel
         ehr={workspace.ehr}
         patientId={patientId}
+        patient={patient}
+        clinic={clinic}
+        professionals={workspace.professionals}
         canIssue={canIssue}
       />
     ) : undefined;

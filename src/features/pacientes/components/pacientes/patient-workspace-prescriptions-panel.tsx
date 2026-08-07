@@ -1,10 +1,11 @@
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
+import type { HistoriaPrescriptionSummary } from "@/features/historias/types/historia-clinical-summaries";
 import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
+import type { PatientWorkspaceProfessional } from "@/features/pacientes/server/load-patient-workspace-page";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { PrescriptionList } from "@/features/recetas/components/recetas/prescription-list";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,11 +13,32 @@ import { Card } from "@/components/ui/card";
 type Props = {
   ehr: PatientEhrWorkspaceData;
   patientId: string;
+  patient: {
+    first_name: string;
+    last_name: string;
+    document_number: string;
+    birth_date?: string | null;
+    insurance_provider?: string | null;
+    insurance_number?: string | null;
+  };
+  clinic: {
+    name: string;
+    address?: string | null;
+    phone?: string | null;
+  };
+  professionals: PatientWorkspaceProfessional[];
   canIssue: boolean;
 };
 
-export function PatientWorkspacePrescriptionsPanel({ ehr, patientId, canIssue }: Props) {
-  const issued = ehr.prescriptions;
+export function PatientWorkspacePrescriptionsPanel({
+  ehr,
+  patientId,
+  patient,
+  clinic,
+  professionals,
+  canIssue,
+}: Props) {
+  const prescriptions = ehr.prescriptionRecords as HistoriaPrescriptionSummary[];
 
   return (
     <Card
@@ -32,20 +54,12 @@ export function PatientWorkspacePrescriptionsPanel({ ehr, patientId, canIssue }:
         ) : null
       }
     >
-      {issued.length === 0 ? (
-        <p className="text-sm text-slate-500">Sin recetas emitidas para este paciente.</p>
-      ) : (
-        <ul className="divide-y divide-slate-100 text-sm">
-          {issued.map((rx) => (
-            <li key={rx.id} className="py-3">
-              <p className="font-medium">{rx.label}</p>
-              <p className="text-xs text-slate-500">
-                {format(new Date(rx.created_at), "PPp", { locale: es })}
-              </p>
-            </li>
-          ))}
-        </ul>
-      )}
+      <PrescriptionList
+        prescriptions={prescriptions}
+        patient={patient}
+        clinic={clinic}
+        professionals={professionals}
+      />
     </Card>
   );
 }

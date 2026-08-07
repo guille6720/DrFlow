@@ -40,6 +40,7 @@ export type PatientEhrWorkspaceData = {
   treatmentRows: PatientEhrTreatmentRow[];
   attachments: PatientEhrAttachment[];
   prescriptions: PatientEhrWorkspacePrescription[];
+  prescriptionRecords: RawPrescriptionRow[];
   orders: (MedicalOrder & { order_type?: string })[];
   appointments: PatientEhrAppointment[];
   totalConsultations: number;
@@ -77,6 +78,14 @@ type RawPrescriptionRow = {
   medications: unknown;
   status: string;
   issued_at: string | null;
+  professional_id: string;
+  diagnosis_text: string | null;
+  diagnosis_cie10: string | null;
+  prescription_number: string | null;
+  prescription_type: string;
+  validity_days: number;
+  patient_insurance: string | null;
+  notes: string | null;
 };
 
 type RawAttachmentRow = {
@@ -154,9 +163,10 @@ export function mapEhrPrescriptions(
       const meds = rx.medications as unknown;
       let label = "Receta";
       if (Array.isArray(meds) && meds.length > 0) {
-        const first = meds[0] as { name?: string };
-        label = first.name
-          ? `Receta · ${first.name}${meds.length > 1 ? ` +${meds.length - 1}` : ""}`
+        const first = meds[0] as { generic_name?: string; name?: string };
+        const drugName = first.generic_name ?? first.name;
+        label = drugName
+          ? `Receta · ${drugName}${meds.length > 1 ? ` +${meds.length - 1}` : ""}`
           : "Receta";
       }
       return {
@@ -225,6 +235,7 @@ export function buildPatientEhrWorkspaceData(input: {
         category: a.category,
       })) ?? [],
     prescriptions: mapEhrPrescriptions(rxList),
+    prescriptionRecords: rxList ?? [],
     orders: orders ?? [],
     appointments: timelineAppointments,
     totalConsultations: usesHceExport
@@ -273,7 +284,9 @@ export async function loadPatientEhrWorkspaceData(
       .limit(PATIENT_ATTACHMENTS_LIMIT),
     supabase
       .from("prescription_drafts")
-      .select("id, created_at, medications, status, diagnosis_text, issued_at, prescription_number")
+      .select(
+        "id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, notes, professional_id"
+      )
       .eq("patient_id", patientId)
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false })

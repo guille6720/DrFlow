@@ -171,8 +171,17 @@ export const COMMAND_PALETTE_NAV: CommandPaletteItemDef[] = [
   { id: "nav-recordatorios", label: "Recordatorios", href: "/recordatorios", group: "navegacion", icon: Bell },
   { id: "nav-ayuda", label: "Ayuda / Manual", href: "/ayuda", group: "navegacion", icon: BookOpen },
   {
+    id: "nav-plantillas",
+    label: "Plantillas clínicas",
+    href: "/plantillas",
+    group: "navegacion",
+    icon: ClipboardList,
+    permission: "editClinicalRecords",
+    keywords: ["plantillas", "evolucion", "soap", "texto", "medicos"],
+  },
+  {
     id: "nav-ingreso-prof",
-    label: "Medicos",
+    label: "Equipo médico",
     href: "/ingreso-profesionales",
     group: "navegacion",
     icon: Stethoscope,
