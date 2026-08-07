@@ -27,20 +27,13 @@ const UNKNOWN_MESSAGE = "No se pudo imprimir. Intentá de nuevo.";
 
 const PRINT_CLEANUP_FALLBACK_MS = 120_000;
 const IFRAME_CLEANUP_FALLBACK_MS = 5_000;
+const POPUP_CLOSE_AFTER_PRINT_MS = 2_000;
 
 function fail(
   reason: PrintHtmlDocumentFailureReason,
   message: string
 ): PrintHtmlDocumentResult {
   return { ok: false, reason, message };
-}
-
-function isMobilePrintContext(): boolean {
-  if (typeof window === "undefined") return false;
-  return (
-    window.matchMedia("(max-width: 768px)").matches ||
-    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
-  );
 }
 
 function writeHtmlDocument(targetDoc: Document, html: string): boolean {
@@ -64,7 +57,11 @@ function closePrintWindow(targetWindow: Window): void {
   }
 }
 
-function triggerPrintWithCleanup(targetWindow: Window, onCleanup: () => void): void {
+function triggerPrintWithCleanup(
+  targetWindow: Window,
+  onCleanup: () => void,
+  options?: { closePopupAfterMs?: number }
+): void {
   let cleaned = false;
   const cleanup = () => {
     if (cleaned) return;
@@ -76,6 +73,9 @@ function triggerPrintWithCleanup(targetWindow: Window, onCleanup: () => void): v
     try {
       targetWindow.focus();
       targetWindow.print();
+      if (options?.closePopupAfterMs != null) {
+        window.setTimeout(cleanup, options.closePopupAfterMs);
+      }
     } catch {
       cleanup();
     }
@@ -98,7 +98,7 @@ function tryPrintViaPopup(html: string): PrintHtmlDocumentResult {
 
   let printWindow: Window | null = null;
   try {
-    printWindow = window.open("about:blank", "_blank", "noopener,noreferrer");
+    printWindow = window.open("about:blank", "_blank");
   } catch {
     return fail("popup_blocked", POPUP_BLOCKED_MESSAGE);
   }
@@ -112,7 +112,9 @@ function tryPrintViaPopup(html: string): PrintHtmlDocumentResult {
     return fail("document_write_failed", DOCUMENT_WRITE_FAILED_MESSAGE);
   }
 
-  triggerPrintWithCleanup(printWindow, () => closePrintWindow(printWindow!));
+  triggerPrintWithCleanup(printWindow, () => closePrintWindow(printWindow!), {
+    closePopupAfterMs: POPUP_CLOSE_AFTER_PRINT_MS,
+  });
   return { ok: true, method: "popup" };
 }
 
@@ -132,6 +134,8 @@ function tryPrintViaIframe(html: string): PrintHtmlDocumentResult {
     iframe.style.width = "0";
     iframe.style.height = "0";
     iframe.style.border = "0";
+    iframe.style.opacity = "0";
+    iframe.style.pointerEvents = "none";
     document.body.appendChild(iframe);
   } catch {
     return fail("print_unavailable", PRINT_UNAVAILABLE_MESSAGE);
@@ -161,7 +165,10 @@ function tryPrintViaIframe(html: string): PrintHtmlDocumentResult {
   return { ok: true, method: "iframe" };
 }
 
-/** Opens an isolated HTML document and triggers the browser print dialog. */
+/**
+ * Opens an isolated HTML document and triggers the browser print dialog.
+ * Prefers a hidden iframe so no blank browser tab is opened.
+ */
 export function printHtmlDocument(options: PrintHtmlDocumentOptions): PrintHtmlDocumentResult {
   const html = options.html;
   if (!html.trim()) {
@@ -169,19 +176,9 @@ export function printHtmlDocument(options: PrintHtmlDocumentOptions): PrintHtmlD
   }
 
   try {
-    const strategies: Array<() => PrintHtmlDocumentResult> = isMobilePrintContext()
-      ? [() => tryPrintViaIframe(html), () => tryPrintViaPopup(html)]
-      : [() => tryPrintViaPopup(html), () => tryPrintViaIframe(html)];
-
-    let lastFailure: PrintHtmlDocumentResult = fail("unknown", UNKNOWN_MESSAGE);
-
-    for (const strategy of strategies) {
-      const result = strategy();
-      if (result.ok) return result;
-      lastFailure = result;
-    }
-
-    return lastFailure;
+    const iframeResult = tryPrintViaIframe(html);
+    if (iframeResult.ok) return iframeResult;
+    return tryPrintViaPopup(html);
   } catch {
     return fail("unknown", UNKNOWN_MESSAGE);
   }
