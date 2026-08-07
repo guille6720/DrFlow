@@ -2,6 +2,7 @@
 
 import type { ManageablePermissionKey } from "@/core/permissions/member-permissions";
 
+import { CopyCredentialsLinkButton } from "@/features/configuracion/components/configuracion/copy-credentials-link-button";
 import { TeamAccessPanel } from "@/features/configuracion/components/configuracion/team-access-panel";
 import { TeamInviteFormSection } from "@/features/configuracion/components/configuracion/team-invite-form-section";
 import { TeamMembersListSection } from "@/features/configuracion/components/configuracion/team-members-list-section";
@@ -49,8 +50,13 @@ export function TeamInvitePanel({ members, invitations, teamAccess }: Props) {
         </p>
 
         {panel.msg && (
-          <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
-            {panel.msg}
+          <div className="mb-4 space-y-3">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+              {panel.msg}
+            </div>
+            {panel.credentialsPath ? (
+              <CopyCredentialsLinkButton path={panel.credentialsPath} />
+            ) : null}
           </div>
         )}
         {panel.err && (

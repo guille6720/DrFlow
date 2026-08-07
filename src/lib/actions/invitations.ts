@@ -15,6 +15,8 @@ import {
   formatEmailSendError,
   sendTransactionalEmail,
 } from "@/lib/services/transactional-email";
+import { generateInitialPassword } from "@/lib/utils/generate-initial-password";
+import { invitationCredentialsPath } from "@/lib/utils/invitation-credentials-path";
 import type { UserRole } from "@/types/database";
 
 async function requireStaffManager() {
@@ -50,10 +52,11 @@ export async function inviteClinicMember(formData: FormData) {
     email: String(formData.get("email") ?? "").trim().toLowerCase(),
     full_name: String(formData.get("full_name") ?? "").trim(),
     role: String(formData.get("role") ?? ""),
-    password: String(formData.get("password") ?? ""),
   });
 
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
+
+  const initialPassword = generateInitialPassword();
 
   if (parsed.data.email === user!.email?.toLowerCase()) {
     return { error: "No podés invitarte a vos mismo." };
@@ -90,24 +93,32 @@ export async function inviteClinicMember(formData: FormData) {
     }
   }
 
-  const { error: invErr } = await supabase.from("clinic_invitations").upsert(
-    {
-      clinic_id: clinicId,
-      email,
-      full_name: parsed.data.full_name,
-      role: parsed.data.role as UserRole,
-      invited_by: user!.id,
-      status: "pending",
-      initial_password: parsed.data.password,
-    },
-    { onConflict: "clinic_id,email" }
-  );
+  const { data: invitationRow, error: invErr } = await supabase
+    .from("clinic_invitations")
+    .upsert(
+      {
+        clinic_id: clinicId,
+        email,
+        full_name: parsed.data.full_name,
+        role: parsed.data.role as UserRole,
+        invited_by: user!.id,
+        status: "pending",
+        initial_password: initialPassword,
+      },
+      { onConflict: "clinic_id,email" }
+    )
+    .select("id")
+    .single();
 
-  if (invErr) {
+  if (invErr || !invitationRow?.id) {
     return {
-      error: resolvePostgresUserMessage(invErr, { fallback: invErr.message }),
+      error: resolvePostgresUserMessage(invErr, {
+        fallback: invErr?.message ?? "No se pudo registrar la invitación.",
+      }),
     };
   }
+
+  const credentialsPath = invitationCredentialsPath(invitationRow.id);
 
   const existingUserId = await findAuthUserIdByEmail(email);
 
@@ -125,7 +136,7 @@ export async function inviteClinicMember(formData: FormData) {
     if (memberErr) return { error: memberErr.message };
 
     await admin.auth.admin.updateUserById(existingUserId, {
-      password: parsed.data.password,
+      password: initialPassword,
     });
 
     const { data: clinicRow } = await supabase
@@ -138,7 +149,8 @@ export async function inviteClinicMember(formData: FormData) {
       fullName: parsed.data.full_name,
       clinicName: clinicRow?.name ?? "tu consultorio",
       email,
-      password: parsed.data.password,
+      password: initialPassword,
+      credentialsPath,
     });
     const emailResult = await sendTransactionalEmail({
       to: email,
@@ -161,13 +173,14 @@ export async function inviteClinicMember(formData: FormData) {
       success: true,
       message: emailResult.sent
         ? `${parsed.data.full_name} ya tenía cuenta y fue agregado. Se enviaron las credenciales por email.`
-        : `${parsed.data.full_name} fue agregado al equipo. No se pudo enviar el email (${formatEmailSendError(emailResult.reason)}). Usuario: ${email} · Contraseña: ${parsed.data.password}`,
+        : `${parsed.data.full_name} fue agregado al equipo. Compartí el enlace de credenciales con la persona invitada.`,
+      credentialsPath,
     };
   }
 
   const { data: createdUser, error: authErr } = await admin.auth.admin.createUser({
     email,
-    password: parsed.data.password,
+    password: initialPassword,
     email_confirm: true,
     user_metadata: { full_name: parsed.data.full_name },
   });
@@ -205,7 +218,8 @@ export async function inviteClinicMember(formData: FormData) {
     fullName: parsed.data.full_name,
     clinicName: clinicRow?.name ?? "tu consultorio",
     email,
-    password: parsed.data.password,
+    password: initialPassword,
+    credentialsPath,
   });
   const emailResult = await sendTransactionalEmail({
     to: email,
@@ -226,8 +240,9 @@ export async function inviteClinicMember(formData: FormData) {
   return {
     success: true,
     message: emailResult.sent
-      ? `Invitación enviada a ${email} con usuario y contraseña. Revisá spam si no llega en unos minutos.`
-      : `Usuario creado para ${email}. No se pudo enviar el email (${formatEmailSendError(emailResult.reason)}). Usuario: ${email} · Contraseña: ${parsed.data.password}`,
+      ? `Invitación enviada a ${email}. También podés compartir el enlace de credenciales.`
+      : `Usuario creado para ${email}. Compartí el enlace de credenciales con la persona invitada.`,
+    credentialsPath,
   };
 }
 
@@ -380,7 +395,7 @@ export async function resendClinicMemberInviteEmail(memberId: string) {
 
   const { data: invitation } = await supabase
     .from("clinic_invitations")
-    .select("full_name, initial_password")
+    .select("id, full_name, initial_password")
     .eq("clinic_id", clinicId)
     .ilike("email", email)
     .maybeSingle();
@@ -407,6 +422,7 @@ export async function resendClinicMemberInviteEmail(memberId: string) {
     clinicName: clinicRow?.name ?? "tu consultorio",
     email,
     password,
+    credentialsPath: invitation?.id ? invitationCredentialsPath(invitation.id) : undefined,
   });
 
   const emailResult = await sendTransactionalEmail({

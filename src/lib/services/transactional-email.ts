@@ -165,19 +165,26 @@ export function buildClinicInviteEmailContent(input: {
   clinicName: string;
   email: string;
   password: string;
+  credentialsPath?: string;
 }): { subject: string; text: string } {
   const loginUrl = `${getPublicSiteUrl()}/login`;
+  const credentialsUrl = input.credentialsPath
+    ? `${getPublicSiteUrl()}${input.credentialsPath}`
+    : `${getPublicSiteUrl()}/acceso-invitado`;
   const subject = `Acceso a DrFlow — ${input.clinicName}`;
   const text = [
     `Hola ${input.fullName},`,
     "",
     `Te dieron acceso al consultorio "${input.clinicName}" en DrFlow.`,
     "",
+    "Podés ver tu usuario y contraseña en este enlace:",
+    credentialsUrl,
+    "",
     "Datos para ingresar:",
     `Usuario: ${input.email}`,
     `Contraseña: ${input.password}`,
     "",
-    `Ingresá en: ${loginUrl}`,
+    `Después podés iniciar sesión en: ${loginUrl}`,
     "",
     "Por seguridad, cambiá la contraseña después del primer acceso desde Configuración.",
     "",

@@ -1,25 +1,23 @@
 "use client";
 
-import { Eye, EyeOff, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import { CopyCredentialsLinkButton } from "@/features/configuracion/components/configuracion/copy-credentials-link-button";
 import { INVITE_ROLES } from "@/features/configuracion/components/configuracion/team-invite-form-section";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { generateInitialPassword } from "@/lib/utils/generate-initial-password";
+import { invitationCredentialsPath } from "@/lib/utils/invitation-credentials-path";
 import type { EnrichedTeamMember } from "@/lib/utils/team-member-display";
 import type { UserRole } from "@/types/database";
 
 function generatePassword(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$";
-  let value = "";
-  for (let i = 0; i < 12; i += 1) {
-    value += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return value;
+  return generateInitialPassword();
 }
 
 type Props = {
@@ -53,7 +51,6 @@ export function ClinicTeamMemberDetailPanel({
   onDeactivate,
   onRemove,
 }: Props) {
-  const [showPassword, setShowPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
 
   return (
@@ -75,48 +72,21 @@ export function ClinicTeamMemberDetailPanel({
       ) : null}
 
       <div className="mb-6 rounded-xl border border-indigo-100 bg-indigo-50/60 p-4">
-        <h4 className="text-sm font-semibold text-indigo-950">Credenciales para entrar a DrFlow</h4>
+        <h4 className="text-sm font-semibold text-indigo-950">Acceso del invitado</h4>
         <p className="mt-1 text-xs text-indigo-900/80">
-          Usuario y contraseña exclusivos de este invitado, distintos de los del administrador.
+          Compartí este enlace para que vea su usuario y contraseña. Vos no necesitás enviarle los
+          datos manualmente.
         </p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <Input
-            label="Usuario"
-            value={member.login_username ?? ""}
-            readOnly
-            disabled
-          />
-          <div className="space-y-1">
-            <label className="drflow-ui-label block text-sm font-medium text-slate-800">
-              Contraseña enviada
-            </label>
-            <div className="flex gap-2">
-              <input
-                readOnly
-                value={member.initial_password ?? ""}
-                type={showPassword ? "text" : "password"}
-                placeholder="Sin registro — restablecela abajo"
-                className="drflow-ui-input w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400"
-              />
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="shrink-0 px-3"
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
-            </div>
+        {member.invitation_id ? (
+          <div className="mt-3">
+            <CopyCredentialsLinkButton path={invitationCredentialsPath(member.invitation_id)} />
           </div>
-        </div>
-        {!member.initial_password ? (
+        ) : (
           <p className="mt-2 text-xs text-amber-800">
-            Esta invitación es anterior al registro de contraseñas. Definí una nueva abajo para
-            guardarla y compartirla con el usuario.
+            No hay enlace de credenciales para este usuario. Restablecé la contraseña abajo para
+            generar una nueva.
           </p>
-        ) : null}
+        )}
         <div className="mt-4">
           <Button
             type="button"

@@ -35,17 +35,20 @@ export function useTeamInvitePanel(members: Member[], invitations: Invitation[])
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [acting, setActing] = useState<string | null>(null);
+  const [credentialsPath, setCredentialsPath] = useState<string | null>(null);
 
   async function handleInvite(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setMsg(null);
     setErr(null);
+    setCredentialsPath(null);
     const result = await inviteClinicMember(new FormData(e.currentTarget));
     setLoading(false);
     if (result.error) setErr(result.error);
     else {
       setMsg(result.message ?? "Invitación enviada.");
+      setCredentialsPath(result.credentialsPath ?? null);
       e.currentTarget.reset();
       router.refresh();
     }
@@ -80,6 +83,7 @@ export function useTeamInvitePanel(members: Member[], invitations: Invitation[])
     msg,
     err,
     acting,
+    credentialsPath,
     handleInvite,
     runAction,
     handleRemoveMember,

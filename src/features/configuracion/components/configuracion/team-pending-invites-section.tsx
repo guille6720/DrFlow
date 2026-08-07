@@ -4,8 +4,11 @@ import { Mail, X } from "lucide-react";
 
 import { ROLE_LABELS } from "@/core/permissions/roles";
 
+import { CopyCredentialsLinkButton } from "@/features/configuracion/components/configuracion/copy-credentials-link-button";
+
 import { Button } from "@/components/ui/button";
 import type { TeamInvitation } from "@/lib/hooks/use-team-invite-panel";
+import { invitationCredentialsPath } from "@/lib/utils/invitation-credentials-path";
 import type { UserRole } from "@/types/database";
 
 type Props = {
@@ -35,11 +38,14 @@ export function TeamPendingInvitesSection({
             key={inv.id}
             className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-100 bg-amber-50/50 px-3 py-2 text-sm"
           >
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="font-medium text-slate-900">{inv.full_name}</p>
               <p className="text-xs text-slate-600">
                 {inv.email} · {ROLE_LABELS[inv.role as UserRole] ?? inv.role}
               </p>
+              <div className="mt-2">
+                <CopyCredentialsLinkButton path={invitationCredentialsPath(inv.id)} />
+              </div>
             </div>
             <Button
               type="button"

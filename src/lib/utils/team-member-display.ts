@@ -1,6 +1,7 @@
 type ProfileLike = { full_name?: string | null; email?: string | null } | null | undefined;
 
 type InvitationLike = {
+  id?: string;
   email?: string | null;
   full_name?: string | null;
   status?: string | null;
@@ -18,6 +19,7 @@ export type EnrichedTeamMember = {
   display_email: string | null;
   login_username: string | null;
   initial_password: string | null;
+  invitation_id: string | null;
 };
 
 function normalizeProfile(
@@ -75,6 +77,17 @@ function buildInvitationPasswordMap(invitations: InvitationLike[]): Map<string, 
   return map;
 }
 
+function buildInvitationIdMap(invitations: InvitationLike[]): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const inv of invitations) {
+    const email = inv.email?.trim().toLowerCase();
+    const id = inv.id?.trim();
+    if (!email || !id) continue;
+    map.set(email, id);
+  }
+  return map;
+}
+
 type ProfessionalRef = { id: string; email?: string | null };
 
 /** Miembros que solo deben listarse como invitados (no admins ni fichas ya cargadas arriba). */
@@ -113,6 +126,7 @@ export function enrichTeamMembers<
 >(members: T[], invitations: InvitationLike[]): Array<T & EnrichedTeamMember> {
   const invitationNameByEmail = buildInvitationNameMap(invitations);
   const invitationPasswordByEmail = buildInvitationPasswordMap(invitations);
+  const invitationIdByEmail = buildInvitationIdMap(invitations);
 
   return members.map((member) => {
     const profiles = normalizeProfile(member.profiles);
@@ -129,6 +143,7 @@ export function enrichTeamMembers<
       display_email,
       login_username: display_email,
       initial_password: emailKey ? (invitationPasswordByEmail.get(emailKey) ?? null) : null,
+      invitation_id: emailKey ? (invitationIdByEmail.get(emailKey) ?? null) : null,
     };
   });
 }

@@ -42,6 +42,12 @@ export function LoginFormView() {
           </div>
           <h2 className="text-2xl font-bold text-slate-900">Iniciar sesión</h2>
           <p className="mt-1 text-sm text-slate-500">
+            ¿Te invitaron al consultorio?{" "}
+            <Link href="/acceso-invitado" className="text-blue-700 hover:underline">
+              Ver tus credenciales
+            </Link>
+          </p>
+          <p className="mt-1 text-sm text-slate-500">
             ¿No tenés cuenta?{" "}
             <Link href="/register" className="text-blue-700 hover:underline">
               Registrar clínica
