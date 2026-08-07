@@ -18,12 +18,18 @@ interface PatientFormFieldsProps {
   patient?: Patient;
   defaultInsurance?: string | null;
   acceptedCoverages?: string[] | null;
+  prefill?: {
+    first_name?: string;
+    last_name?: string;
+    document_number?: string;
+  };
 }
 
 export function PatientFormFields({
   patient,
   defaultInsurance,
   acceptedCoverages,
+  prefill,
 }: PatientFormFieldsProps) {
   const options = useMemo(
     () => coverageOptionsForClinic(acceptedCoverages, patient?.insurance_provider),
@@ -42,9 +48,24 @@ export function PatientFormFields({
 
   return (
     <>
-      <Input name="first_name" label="Nombre" required defaultValue={patient?.first_name} />
-      <Input name="last_name" label="Apellido" required defaultValue={patient?.last_name} />
-      <Input name="document_number" label="DNI" required defaultValue={patient?.document_number} />
+      <Input
+        name="first_name"
+        label="Nombre"
+        required
+        defaultValue={patient?.first_name ?? prefill?.first_name}
+      />
+      <Input
+        name="last_name"
+        label="Apellido"
+        required
+        defaultValue={patient?.last_name ?? prefill?.last_name}
+      />
+      <Input
+        name="document_number"
+        label="DNI"
+        required
+        defaultValue={patient?.document_number ?? prefill?.document_number}
+      />
       <Input
         name="birth_date"
         label="Fecha de nacimiento"

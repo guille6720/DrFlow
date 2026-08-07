@@ -8,6 +8,7 @@ import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabas
 
 import { AppointmentDatetimePicker } from "@/features/agenda/components/agenda/appointment-datetime-picker";
 import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
+import { buildCreatePatientHref } from "@/features/pacientes/utils/create-patient-from-search";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,6 +133,10 @@ export function EditAppointmentDialog({
               document_number: p.document_number,
             }))}
             defaultPatientId={appointment.patient_id}
+            searchMode="remote"
+            minSearchLength={1}
+            searchResultLimit={30}
+            createPatientHref={(q) => buildCreatePatientHref(q, "/agenda")}
             required
           />
           <Select

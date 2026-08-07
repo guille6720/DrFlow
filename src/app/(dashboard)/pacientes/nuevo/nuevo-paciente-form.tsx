@@ -21,6 +21,12 @@ interface Props {
   userName?: string;
   defaultInsurance?: string | null;
   acceptedCoverages?: string[] | null;
+  prefill?: {
+    first_name?: string;
+    last_name?: string;
+    document_number?: string;
+  };
+  returnPath?: string;
 }
 
 export default function NuevoPacienteForm({
@@ -30,10 +36,13 @@ export default function NuevoPacienteForm({
   userName,
   defaultInsurance,
   acceptedCoverages,
+  prefill,
+  returnPath,
 }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const cancelHref = returnPath && returnPath.startsWith("/") ? returnPath : "/pacientes";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -44,7 +53,7 @@ export default function NuevoPacienteForm({
     if (result.error) {
       setError(result.error);
     } else if (result.data) {
-      router.push(`/pacientes/${result.data.id}`);
+      router.push(returnPath && returnPath.startsWith("/") ? returnPath : `/pacientes/${result.data.id}`);
     }
   }
 
@@ -58,7 +67,10 @@ export default function NuevoPacienteForm({
         userName={userName}
       />
       <div className="p-4 sm:p-6">
-        <Link href="/pacientes" className="mb-4 inline-flex items-center gap-1 text-sm text-blue-700 hover:underline">
+        <Link
+          href={cancelHref}
+          className="mb-4 inline-flex items-center gap-1 text-sm text-blue-700 hover:underline"
+        >
           <ArrowLeft className="h-4 w-4" /> Volver
         </Link>
         <Card title="Datos del paciente">
@@ -66,11 +78,12 @@ export default function NuevoPacienteForm({
             <PatientFormFields
               defaultInsurance={defaultInsurance}
               acceptedCoverages={acceptedCoverages}
+              prefill={prefill}
             />
             {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}
             <div className="flex gap-2 sm:col-span-2">
               <Button type="submit" loading={loading}>Guardar paciente</Button>
-              <Link href="/pacientes">
+              <Link href={cancelHref}>
                 <Button type="button" variant="outline">Cancelar</Button>
               </Link>
             </div>

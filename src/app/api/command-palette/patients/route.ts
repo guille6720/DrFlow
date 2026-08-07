@@ -6,7 +6,7 @@ import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { hasPermission } from "@/core/permissions/roles";
 import { PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
-import { searchQuerySchema } from "@/core/validations/params";
+import { patientPickerSearchQuerySchema } from "@/core/validations/params";
 
 import { applyPatientSearchFilter } from "@/features/pacientes/utils/patient-search";
 
@@ -21,7 +21,7 @@ export const GET = withObservabilityApiRoute("command_palette_patients", async (
   }
 
   const url = new URL(request.url);
-  const qParsed = searchQuerySchema.safeParse(url.searchParams.get("q")?.trim() ?? "");
+  const qParsed = patientPickerSearchQuerySchema.safeParse(url.searchParams.get("q")?.trim() ?? "");
   if (!qParsed.success) {
     return NextResponse.json({ patients: [] });
   }

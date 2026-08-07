@@ -5,6 +5,7 @@ import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabas
 import { AppointmentDatetimePicker } from "@/features/agenda/components/agenda/appointment-datetime-picker";
 import type { AgendaViewState } from "@/features/agenda/hooks/use-agenda-view";
 import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
+import { buildCreatePatientHref } from "@/features/pacientes/utils/create-patient-from-search";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -61,7 +62,14 @@ export function AgendaCreateFormTop({
   return (
     <Card title="Nuevo turno">
       <div className="grid gap-4 sm:grid-cols-2">
-        <PatientSearchCombobox patients={patientOptionsMapper(patients)} required />
+        <PatientSearchCombobox
+          patients={patientOptionsMapper(patients)}
+          searchMode="remote"
+          minSearchLength={1}
+          searchResultLimit={30}
+          createPatientHref={(q) => buildCreatePatientHref(q, "/agenda?action=new")}
+          required
+        />
         <Select
           name="professional_id"
           label="Profesional"

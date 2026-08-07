@@ -1,9 +1,11 @@
 "use client";
 
 import { Search } from "lucide-react";
+import Link from "next/link";
 import { type KeyboardEvent, useId, useMemo, useRef, useState } from "react";
 
 import { useAsyncPatientSearch } from "@/core/hooks/use-async-patient-search";
+import { PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -25,6 +27,12 @@ interface Props {
   /** When `remote`, searches via API instead of filtering the full local list. */
   searchMode?: "local" | "remote";
   cobertura?: "pami";
+  /** Minimum characters before remote search runs (default 2). */
+  minSearchLength?: number;
+  /** Max API results when `searchMode` is `remote`. */
+  searchResultLimit?: number;
+  /** When set, shows a create-patient link if there are no matches. */
+  createPatientHref?: (query: string) => string;
 }
 
 function normalize(s: string) {
@@ -52,6 +60,9 @@ export function PatientSearchCombobox({
   onPatientChange,
   searchMode = "local",
   cobertura,
+  minSearchLength,
+  searchResultLimit = PATIENT_SEARCH_API_LIMIT,
+  createPatientHref,
 }: Props) {
   const inputId = useId();
   const listboxId = useId();
@@ -78,17 +89,20 @@ export function PatientSearchCombobox({
   }
 
   const isRemote = searchMode === "remote";
+  const effectiveMinLength = minSearchLength ?? (isRemote ? 2 : 1);
   const { results: remoteResults, loading } = useAsyncPatientSearch(query, {
     cobertura,
     enabled: isRemote && open,
+    minLength: effectiveMinLength,
+    limit: searchResultLimit,
   });
 
   const filtered = useMemo(() => {
     if (isRemote) {
-      return query.trim().length >= 2 ? remoteResults : patients.slice(0, 12);
+      return query.trim().length >= effectiveMinLength ? remoteResults : patients.slice(0, searchResultLimit);
     }
     const q = normalize(query.trim());
-    if (!q) return patients.slice(0, 12);
+    if (!q) return patients.slice(0, searchResultLimit);
     const qDigits = q.replace(/\D/g, "");
     return patients
       .filter((p) => {
@@ -101,8 +115,8 @@ export function PatientSearchCombobox({
         }
         return false;
       })
-      .slice(0, 12);
-  }, [patients, query, isRemote, remoteResults]);
+      .slice(0, searchResultLimit);
+  }, [patients, query, isRemote, remoteResults, effectiveMinLength, searchResultLimit]);
 
   const filteredKey = filtered.map((p) => p.id).join(",");
   const [syncOpen, setSyncOpen] = useState(open);
@@ -190,6 +204,14 @@ export function PatientSearchCombobox({
     }
   }
 
+  const trimmedQuery = query.trim();
+  const showCreatePatient =
+    Boolean(createPatientHref) &&
+    trimmedQuery.length >= effectiveMinLength &&
+    !loading &&
+    filtered.length === 0;
+  const createHref = showCreatePatient ? createPatientHref?.(trimmedQuery) : undefined;
+
   return (
     <div className="relative space-y-1">
       <label htmlFor={inputId} className="drflow-ui-label block text-sm font-medium">
@@ -225,17 +247,19 @@ export function PatientSearchCombobox({
         />
       </div>
       <p id={statusId} className="sr-only" aria-live="polite" aria-atomic="true">
-        {open && loading && isRemote && query.trim().length >= 2
+        {open && loading && isRemote && trimmedQuery.length >= effectiveMinLength
           ? "Buscando pacientes…"
-          : open && !loading && query.trim() && filtered.length === 0
-            ? isRemote && query.trim().length < 2
-              ? "Escribí al menos 2 caracteres para buscar."
-              : "Sin coincidencias."
+          : open && !loading && trimmedQuery && filtered.length === 0
+            ? showCreatePatient
+              ? "Paciente inexistente. Podés crear la ficha."
+              : isRemote && trimmedQuery.length < effectiveMinLength
+                ? `Escribí al menos ${effectiveMinLength} caracteres para buscar.`
+                : "Sin coincidencias."
             : open && filtered.length > 0
               ? `${filtered.length} resultados disponibles.`
               : ""}
       </p>
-      {open && loading && isRemote && query.trim().length >= 2 && (
+      {open && loading && isRemote && trimmedQuery.length >= effectiveMinLength && (
         <p className="drflow-ui-dropdown absolute mt-1 w-full rounded-xl px-3 py-2 text-xs text-slate-600" aria-hidden>
           Buscando…
         </p>
@@ -274,13 +298,26 @@ export function PatientSearchCombobox({
           ))}
         </ul>
       )}
-      {open && !loading && query.trim() && filtered.length === 0 && (
+      {open && !loading && showCreatePatient && createHref ? (
+        <div
+          className="drflow-ui-dropdown absolute mt-1 w-full overflow-hidden rounded-xl py-1"
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          <Link
+            href={createHref}
+            className="drflow-ui-dropdown-item block px-3 py-2.5 text-sm text-teal-700 hover:bg-teal-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-inset"
+          >
+            Paciente inexistente, crear ficha
+          </Link>
+        </div>
+      ) : null}
+      {open && !loading && trimmedQuery && filtered.length === 0 && !showCreatePatient ? (
         <p className="drflow-ui-dropdown absolute mt-1 w-full rounded-xl px-3 py-2 text-xs text-slate-600" aria-hidden>
-          {isRemote && query.trim().length < 2
-            ? "Escribí al menos 2 caracteres para buscar."
+          {isRemote && trimmedQuery.length < effectiveMinLength
+            ? `Escribí al menos ${effectiveMinLength} caracteres para buscar.`
             : "Sin coincidencias. Probá otro nombre o DNI."}
         </p>
-      )}
+      ) : null}
     </div>
   );
 }

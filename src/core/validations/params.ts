@@ -23,6 +23,9 @@ export const boundedReasonSchema = z.string().min(3).max(500);
 
 export const searchQuerySchema = z.string().min(2).max(100);
 
+/** Patient picker / combobox — allows single-letter last-name prefix search. */
+export const patientPickerSearchQuerySchema = z.string().min(1).max(100);
+
 export const appointmentStatusSchema = z.enum([
   "pending",
   "confirmed",

@@ -17,11 +17,12 @@ type Options = {
   minLength?: number;
   cobertura?: "pami";
   enabled?: boolean;
+  limit?: number;
 };
 
 /** Debounced patient search against `/api/command-palette/patients`. */
 export function useAsyncPatientSearch(query: string, options: Options = {}) {
-  const { minLength = 2, cobertura, enabled = true } = options;
+  const { minLength = 2, cobertura, enabled = true, limit = PATIENT_SEARCH_API_LIMIT } = options;
   const [results, setResults] = useState<ApiPatient[]>([]);
   const [loading, setLoading] = useState(false);
   const fetchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -44,7 +45,7 @@ export function useAsyncPatientSearch(query: string, options: Options = {}) {
     fetchRef.current = setTimeout(() => {
       const params = new URLSearchParams({ q });
       if (cobertura) params.set("cobertura", cobertura);
-      params.set("limit", String(PATIENT_SEARCH_API_LIMIT));
+      params.set("limit", String(limit));
 
       void fetch(`/api/command-palette/patients?${params.toString()}`)
         .then((res) => (res.ok ? res.json() : { patients: [] }))
@@ -62,7 +63,7 @@ export function useAsyncPatientSearch(query: string, options: Options = {}) {
       if (fetchRef.current) clearTimeout(fetchRef.current);
       window.clearTimeout(loadingTimer);
     };
-  }, [query, minLength, cobertura, enabled]);
+  }, [query, minLength, cobertura, enabled, limit]);
 
   return { results, loading };
 }
