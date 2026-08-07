@@ -73,7 +73,7 @@ export function PatientEhrSupplementalSections({
                   type="button"
                   onClick={() => void onOpenAttachment(a.id)}
                   disabled={openingAttachmentId === a.id}
-                  className="inline-flex items-center gap-2 font-medium text-teal-600 hover:underline disabled:opacity-60"
+                  className="drflow-ehr-action-link inline-flex items-center gap-2 font-medium hover:underline disabled:opacity-60"
                 >
                   {openingAttachmentId === a.id ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />

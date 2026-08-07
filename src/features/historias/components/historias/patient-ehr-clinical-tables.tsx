@@ -54,14 +54,14 @@ export function PatientEhrClinicalTables({
                       <td className="px-3 py-2">
                         <Link
                           href={withClinicalHistoryReturn(`/historias/${row.recordId}`, patientId)}
-                          className="font-medium text-teal-600 hover:underline"
+                          className="drflow-ehr-action-link font-medium hover:underline"
                         >
                           {row.name}
                         </Link>
                       </td>
                       <td className="px-3 py-2">
                         {row.chronic ? (
-                          <span className="font-medium text-teal-600">Crónico</span>
+                          <span className="drflow-ehr-action-link font-medium">Crónico</span>
                         ) : (
                           "—"
                         )}
@@ -104,7 +104,7 @@ export function PatientEhrClinicalTables({
                       <td className="px-3 py-2">
                         <Link
                           href={withClinicalHistoryReturn(`/historias/${row.recordId}`, patientId)}
-                          className="font-medium text-teal-600 hover:underline"
+                          className="drflow-ehr-action-link font-medium hover:underline"
                         >
                           {row.product}
                         </Link>

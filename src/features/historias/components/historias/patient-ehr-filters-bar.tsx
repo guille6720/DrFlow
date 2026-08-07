@@ -33,9 +33,9 @@ export function PatientEhrFiltersBar({
               type="checkbox"
               checked={filters[key]}
               onChange={() => onToggleFilter(key)}
-              className="h-4 w-4 rounded border-slate-400 text-teal-600 focus:ring-teal-500"
+              className="drflow-ehr-accent-checkbox h-4 w-4 rounded border-slate-400"
             />
-            <Icon className="h-4 w-4 text-teal-600" />
+            <Icon className="drflow-ehr-accent-icon h-4 w-4" />
             {label}
           </label>
         ))}
@@ -43,7 +43,7 @@ export function PatientEhrFiltersBar({
       </div>
 
       {usesHceExport ? (
-        <p className="border-b border-[var(--border)] bg-teal-950/20 px-4 py-2 text-xs text-teal-100">
+        <p className="drflow-ehr-hce-banner px-4 py-2">
           Datos parciales del export HCE. Completá con{" "}
           <Link href="/datos" className="font-semibold underline">
             PDF o JSONL

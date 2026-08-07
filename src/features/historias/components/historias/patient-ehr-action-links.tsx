@@ -38,16 +38,13 @@ export function PatientEhrActionLinks({
   const linkClass = (active: boolean) =>
     cn(
       "drflow-ehr-action-link inline-flex items-center gap-1 rounded-md px-1 py-0.5 transition",
-      active && "bg-teal-500/15 ring-1 ring-teal-400/40"
+      active && "drflow-ehr-action-link-active"
     );
 
   return (
     <div className="drflow-ehr-actions mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[var(--border)] pb-3 text-sm font-semibold">
       {!consultOpen ? (
-        <Link
-          href={consultUrl(patientId)}
-          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-teal-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-teal-500/20 hover:from-cyan-600 hover:to-teal-600"
-        >
+        <Link href={consultUrl(patientId)} className="drflow-ehr-primary-btn">
           <Plus className="h-4 w-4" /> Nueva consulta
         </Link>
       ) : null}

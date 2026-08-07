@@ -47,7 +47,7 @@ export function PatientEhrEvolutionPanel({
               type="button"
               onClick={() => void onOpenAttachment(selectedDocumentAttachment.id)}
               disabled={openingAttachmentId === selectedDocumentAttachment.id}
-              className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-teal-600 hover:underline disabled:opacity-60"
+              className="drflow-ehr-action-link mt-3 inline-flex items-center gap-2 text-sm font-semibold hover:underline disabled:opacity-60"
             >
               {openingAttachmentId === selectedDocumentAttachment.id ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -60,7 +60,7 @@ export function PatientEhrEvolutionPanel({
           {!selected.id.startsWith("hce-") ? (
             <Link
               href={withClinicalHistoryReturn(`/historias/${selected.id}`, patientId)}
-              className="mt-3 inline-block text-sm font-semibold text-teal-600 hover:underline"
+              className="drflow-ehr-action-link mt-3 inline-block text-sm font-semibold hover:underline"
             >
               Abrir consulta completa →
             </Link>
