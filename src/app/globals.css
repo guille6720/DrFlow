@@ -2608,6 +2608,10 @@ html[data-motion="reduce"] *::after {
   display: none;
 }
 
+.drflow-ehr-print-only {
+  display: none;
+}
+
 @media print {
   .drflow-clinical-record-print-host[data-active="true"] {
     display: block !important;
@@ -2792,13 +2796,6 @@ html[data-motion="reduce"] *::after {
 
   .drflow-ehr-print-meta-time {
     font-variant-numeric: tabular-nums;
-  }
-
-  .drflow-ehr-print-lock-icon {
-    width: 0.72rem;
-    height: 0.72rem;
-    color: #64748b !important;
-    flex-shrink: 0;
   }
 
   .drflow-ehr-print-table-muted {

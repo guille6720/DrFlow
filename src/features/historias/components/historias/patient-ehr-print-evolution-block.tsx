@@ -12,22 +12,6 @@ type Props = {
   consultation: PatientEhrConsultation;
 };
 
-function LockIcon() {
-  return (
-    <svg
-      className="drflow-ehr-print-lock-icon"
-      viewBox="0 0 16 16"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        fill="currentColor"
-        d="M8 1a3 3 0 0 0-3 3v2H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-1V4a3 3 0 0 0-3-3zm-2 3V4a2 2 0 1 1 4 0v1H6z"
-      />
-    </svg>
-  );
-}
-
 export function PatientEhrPrintEvolutionBlock({ consultation }: Props) {
   const diagnoses = parseInlineDiagnoses(consultation);
   const treatments = parseInlineTreatments(consultation);
@@ -48,7 +32,6 @@ export function PatientEhrPrintEvolutionBlock({ consultation }: Props) {
         <h3 className="drflow-ehr-print-section-title">Evoluciones</h3>
         <p className="drflow-ehr-print-meta">
           <span className="drflow-ehr-print-meta-time">{formatPrintTime(consultation.created_at)}</span>
-          <LockIcon />
           <span>{professionalMetaLine(consultation)}</span>
         </p>
         <div className="drflow-ehr-print-evolution-body whitespace-pre-wrap">{evolutionText}</div>
