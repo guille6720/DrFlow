@@ -59,7 +59,11 @@ export function HistoriaDetailContent({
   canFinalize,
   clinic,
 }: Props) {
-  const backHref = backHrefFromClinicalSubpage(from, returnPatientId ?? patient.id, "/historias");
+  const backHref = backHrefFromClinicalSubpage(
+    from,
+    returnPatientId ?? patient.id,
+    patientClinicalHistoryPath(patient.id)
+  );
 
   return (
     <div className="drflow-historia-detail-screen space-y-6 p-4 sm:p-6">

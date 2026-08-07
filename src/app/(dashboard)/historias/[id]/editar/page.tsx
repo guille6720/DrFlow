@@ -9,7 +9,7 @@ import {
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
-import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation";
+import { backHrefFromClinicalSubpage, patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
 
 import { EditConsultaForm } from "@/features/historias";
 
@@ -53,7 +53,7 @@ export default async function EditarHistoriaPage({
   const backHref = backHrefFromClinicalSubpage(
     from,
     returnPatientId ?? record.patient_id,
-    `/historias/${id}`
+    patientClinicalHistoryPath(record.patient_id)
   );
 
   return (

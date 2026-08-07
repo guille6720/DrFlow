@@ -1,5 +1,3 @@
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -17,13 +15,13 @@ import { PatientWorkspaceContent } from "@/features/pacientes";
 import { PatientWorkspaceSkeleton } from "@/features/pacientes";
 import { DeletePatientButton } from "@/features/pacientes/components/pacientes/delete-patient-button";
 import { PatientAdminDetailView } from "@/features/pacientes/components/pacientes/patient-admin-detail-view";
+import { PatientWorkspaceBackLink } from "@/features/pacientes/components/pacientes/patient-workspace-back-link";
 import {
   DEFAULT_HC_WORKSPACE_TAB,
   LEGACY_TAB_ALIASES,
   parsePatientWorkspaceTab,
 } from "@/features/pacientes/constants/patient-workspace-tabs";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
-import { patientWorkspaceBackHref } from "@/features/pacientes/utils/patient-workspace-back-href";
 
 export default async function PacienteDetailPage({
   params,
@@ -66,8 +64,6 @@ export default async function PacienteDetailPage({
       ? DEFAULT_HC_WORKSPACE_TAB
       : initialTabRaw;
 
-  const backHref = patientWorkspaceBackHref(id, initialTab, from, returnPatientId);
-
   return (
     <>
       <Header
@@ -81,9 +77,13 @@ export default async function PacienteDetailPage({
 
       <div className="p-3 sm:p-4">
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <Link href={backHref} className="drflow-link inline-flex items-center gap-1 text-sm">
-            <ArrowLeft className="h-4 w-4" /> Volver
-          </Link>
+          <Suspense fallback={null}>
+            <PatientWorkspaceBackLink
+              patientId={id}
+              initialFrom={from}
+              returnPatientId={returnPatientId}
+            />
+          </Suspense>
           {canManagePatients && (
             <DeletePatientButton
               patientId={patient.id}

@@ -9,21 +9,37 @@ import {
   type PatientWorkspaceTabId,
 } from "@/features/pacientes/constants/patient-workspace-tabs";
 
-/** Destino del enlace «Volver» en la ficha del paciente según tab activo. */
+export type PatientWorkspaceBackContext = {
+  from?: string | null;
+  returnPatientId?: string;
+  record?: string | null;
+  action?: string | null;
+  sheet?: string | null;
+  mode?: string | null;
+  focus?: string | null;
+};
+
+function hasHcDeepLinkState(ctx: PatientWorkspaceBackContext): boolean {
+  return Boolean(ctx.record || ctx.action || ctx.sheet || ctx.mode || ctx.focus);
+}
+
+/** Destino del enlace «Volver» en la ficha del paciente según tab y estado de la URL. */
 export function patientWorkspaceBackHref(
   patientId: string,
   tab: PatientWorkspaceTabId,
-  from?: string | null,
-  returnPatientId?: string
+  ctx: PatientWorkspaceBackContext = {}
 ): string {
-  const resolvedPatientId = returnPatientId ?? patientId;
+  const resolvedPatientId = ctx.returnPatientId ?? patientId;
 
-  if (isFromClinicalHistory(from)) {
+  if (isFromClinicalHistory(ctx.from)) {
     return patientClinicalHistoryPath(resolvedPatientId);
   }
 
-  if (isHcWorkspaceTab(tab) && tab !== DEFAULT_HC_WORKSPACE_TAB) {
-    return patientClinicalHistoryPath(patientId);
+  if (isHcWorkspaceTab(tab)) {
+    if (hasHcDeepLinkState(ctx) || tab !== DEFAULT_HC_WORKSPACE_TAB) {
+      return patientClinicalHistoryPath(patientId);
+    }
+    return `/pacientes/${patientId}`;
   }
 
   return "/pacientes";
