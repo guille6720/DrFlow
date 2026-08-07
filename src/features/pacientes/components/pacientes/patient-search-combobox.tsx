@@ -9,11 +9,18 @@ import { PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
 
 import { cn } from "@/shared/utils/cn";
 
+import { formatAgeLabel, isPamiPatient } from "@/features/pacientes/utils/patient-age";
+
+import { Badge } from "@/components/ui/badge";
+
 export type PatientSearchOption = {
   id: string;
   first_name: string;
   last_name: string;
   document_number: string;
+  birth_date?: string | null;
+  phone?: string | null;
+  insurance_provider?: string | null;
 };
 
 interface Props {
@@ -33,6 +40,8 @@ interface Props {
   searchResultLimit?: number;
   /** When set, shows a create-patient link if there are no matches. */
   createPatientHref?: (query: string) => string;
+  /** Rich rows (name + DNI/edad/tel/obra social) like the Pacientes list. */
+  displayMode?: "compact" | "detailed";
 }
 
 function normalize(s: string) {
@@ -50,6 +59,17 @@ function optionId(listboxId: string, patientId: string) {
   return `${listboxId}-option-${patientId}`;
 }
 
+function buildPatientOptionMeta(p: PatientSearchOption): string {
+  const parts = [
+    `DNI ${p.document_number}`,
+    formatAgeLabel(p.birth_date),
+    p.phone,
+    p.insurance_provider ?? "Sin obra social",
+  ].filter(Boolean);
+
+  return parts.join(" · ");
+}
+
 export function PatientSearchCombobox({
   patients,
   name = "patient_id",
@@ -63,6 +83,7 @@ export function PatientSearchCombobox({
   minSearchLength,
   searchResultLimit = PATIENT_SEARCH_API_LIMIT,
   createPatientHref,
+  displayMode = "compact",
 }: Props) {
   const inputId = useId();
   const listboxId = useId();
@@ -269,7 +290,10 @@ export function PatientSearchCombobox({
           id={listboxId}
           role="listbox"
           aria-label={`Resultados de ${label}`}
-          className="drflow-ui-dropdown absolute mt-1 max-h-56 w-full overflow-y-auto rounded-xl py-1"
+          className={cn(
+            "drflow-ui-dropdown drflow-patient-picker-dropdown absolute mt-1 max-h-72 w-full overflow-y-auto rounded-xl py-1",
+            displayMode === "detailed" && "space-y-2 p-2"
+          )}
           onMouseDown={(e) => e.preventDefault()}
         >
           {filtered.map((p, index) => (
@@ -282,17 +306,42 @@ export function PatientSearchCombobox({
               <button
                 type="button"
                 className={cn(
-                  "drflow-ui-dropdown-item w-full px-3 py-2 text-left text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-inset",
-                  index === activeIndex && "bg-teal-900/40",
-                  selectedId === p.id && "bg-teal-950/60 text-teal-200"
+                  "w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-inset",
+                  displayMode === "detailed"
+                    ? cn(
+                        "drflow-card-light rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-900 shadow-sm hover:border-teal-300",
+                        index === activeIndex && "border-teal-400 ring-2 ring-teal-400/30",
+                        selectedId === p.id && "border-teal-500 bg-teal-50"
+                      )
+                    : cn(
+                        "drflow-ui-dropdown-item px-3 py-2 text-sm",
+                        index === activeIndex && "bg-teal-900/40",
+                        selectedId === p.id && "bg-teal-950/60 text-teal-200"
+                      )
                 )}
                 onMouseEnter={() => setActiveIndex(index)}
                 onClick={() => pick(p)}
               >
-                <span className="font-medium">
-                  {p.last_name}, {p.first_name}
-                </span>
-                <span className="ml-2 text-xs text-slate-600">DNI {p.document_number}</span>
+                {displayMode === "detailed" ? (
+                  <>
+                    <p className="font-semibold text-slate-900">
+                      {p.last_name}, {p.first_name}
+                    </p>
+                    <p className="mt-0.5 text-xs text-slate-700">{buildPatientOptionMeta(p)}</p>
+                    {isPamiPatient(p.insurance_provider) ? (
+                      <p className="mt-1.5">
+                        <Badge variant="teal">PAMI</Badge>
+                      </p>
+                    ) : null}
+                  </>
+                ) : (
+                  <>
+                    <span className="font-medium">
+                      {p.last_name}, {p.first_name}
+                    </span>
+                    <span className="ml-2 text-xs opacity-80">DNI {p.document_number}</span>
+                  </>
+                )}
               </button>
             </li>
           ))}

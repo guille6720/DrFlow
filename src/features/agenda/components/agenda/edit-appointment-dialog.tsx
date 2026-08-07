@@ -136,6 +136,7 @@ export function EditAppointmentDialog({
             searchMode="remote"
             minSearchLength={1}
             searchResultLimit={30}
+            displayMode="detailed"
             createPatientHref={(q) => buildCreatePatientHref(q, "/agenda")}
             required
           />

@@ -27,7 +27,9 @@ export const GET = withObservabilityApiRoute("command_palette_patients", async (
   }
   const q = qParsed.data;
   const cobertura = url.searchParams.get("cobertura");
+  const format = url.searchParams.get("format");
   const extended = url.searchParams.get("extended") === "1";
+  const pickerFormat = format === "picker";
   const limitParsed = limitSchema.safeParse(url.searchParams.get("limit") ?? undefined);
   const limit = limitParsed.success ? limitParsed.data : PATIENT_SEARCH_API_LIMIT;
 
@@ -47,10 +49,12 @@ export const GET = withObservabilityApiRoute("command_palette_patients", async (
 
   const supabase = await createClient();
 
-  let query = extended
+  let query = extended || pickerFormat
     ? supabase
         .from("patients")
-        .select("id, first_name, last_name, document_number, insurance_number, phone, address")
+        .select(
+          "id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, address"
+        )
         .eq("clinic_id", clinicId)
         .eq("is_active", true)
         .order("last_name")
@@ -75,7 +79,7 @@ export const GET = withObservabilityApiRoute("command_palette_patients", async (
   }
 
   const rows = data ?? [];
-  const patients = extended ? rows : mapPatientHits(rows);
+  const patients = pickerFormat || extended ? rows : mapPatientHits(rows);
 
   return NextResponse.json({ patients });
 });

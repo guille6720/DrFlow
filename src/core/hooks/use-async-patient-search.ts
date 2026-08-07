@@ -6,11 +6,16 @@ import { logClientError } from "@/core/errors";
 import { PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
 
 import type { PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
+import { normalizePatientSearchResult } from "@/features/pacientes/utils/patient-search-result";
 
 type ApiPatient = PatientSearchOption & {
+  label?: string;
+  description?: string;
   insurance_number?: string | null;
   phone?: string | null;
   address?: string | null;
+  birth_date?: string | null;
+  insurance_provider?: string | null;
 };
 
 type Options = {
@@ -46,11 +51,13 @@ export function useAsyncPatientSearch(query: string, options: Options = {}) {
       const params = new URLSearchParams({ q });
       if (cobertura) params.set("cobertura", cobertura);
       params.set("limit", String(limit));
+      params.set("format", "picker");
+      params.set("extended", "1");
 
       void fetch(`/api/command-palette/patients?${params.toString()}`)
         .then((res) => (res.ok ? res.json() : { patients: [] }))
         .then((data: { patients?: ApiPatient[] }) => {
-          setResults(data.patients ?? []);
+          setResults((data.patients ?? []).map(normalizePatientSearchResult));
         })
         .catch((err) => {
           logClientError("async-patient-search", err, { query: q });

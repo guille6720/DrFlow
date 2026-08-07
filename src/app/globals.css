@@ -683,6 +683,17 @@ select.drflow-ui-select option:checked {
   color: #0f766e;
 }
 
+.drflow-patient-picker-dropdown {
+  border-color: #cbd5e1;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+html[data-ui-palette="cobalt"] .drflow-patient-picker-dropdown {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
 /* Etiquetas de formulario en tarjetas oscuras (sin clase explícita) */
 .drflow-card-body label.drflow-ui-label,
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body label.drflow-ui-label,
