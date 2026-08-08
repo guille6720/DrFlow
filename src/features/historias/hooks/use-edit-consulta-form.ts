@@ -86,22 +86,11 @@ export function useEditConsultaForm({ record, templates = [] }: Options) {
 
   useEffect(() => {
     const timer = window.setTimeout(() => saveConsultationEvolution(draftKey, evolution), 300);
-    return () => window.clearTimeout(timer);
-  }, [evolution, draftKey]);
-
-  useEffect(() => {
-    const storageKey = draftKey;
-    function syncFromStorage() {
-      const saved = readConsultationEvolution(storageKey);
-      setEvolution((prev) => (prev !== saved ? saved : prev));
-    }
-    document.addEventListener("visibilitychange", syncFromStorage);
-    window.addEventListener("focus", syncFromStorage);
     return () => {
-      document.removeEventListener("visibilitychange", syncFromStorage);
-      window.removeEventListener("focus", syncFromStorage);
+      window.clearTimeout(timer);
+      saveConsultationEvolution(draftKey, evolution);
     };
-  }, [draftKey]);
+  }, [evolution, draftKey]);
 
   function pharmacologyHref(mode?: "symptoms" | "pathology" | "vademecum") {
     return buildPharmacologyHrefFromConsultation(consultationContext, mode);

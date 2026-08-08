@@ -59,8 +59,8 @@ export function PatientSoapWorkspace({
     [searchParams]
   );
 
-  const onConsultSaved = useCallback(() => {
-    router.refresh();
+  const onConsultSaved = useCallback((_recordId: string, silent?: boolean) => {
+    if (!silent) router.refresh();
   }, [router]);
 
   const onCloseConsult = useCallback(() => {

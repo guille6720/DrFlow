@@ -34,7 +34,7 @@ export type NuevaConsultaWorkspaceConfig = {
   patientId: string;
   appointmentId?: string;
   professionalId?: string;
-  onSaved: (recordId: string) => void;
+  onSaved: (recordId: string, silent?: boolean) => void;
   onClose: () => void;
 };
 
@@ -75,6 +75,15 @@ function buildEvolutionWithVitals(evolution: string, vitals: string): string {
   return base ? `${base}\n\n${vitalsBlock}` : vitalsBlock;
 }
 
+type ConsultFormDraft = {
+  evolution: string;
+  chiefComplaint: string;
+  diagnosis: string;
+  indications: string;
+  vitals: string;
+  isDirty: boolean;
+};
+
 export function useNuevaConsultaForm({
   patients,
   professionals,
@@ -109,6 +118,14 @@ export function useNuevaConsultaForm({
   const [consultationAt, setConsultationAt] = useState(() => toDatetimeLocalValue(new Date()));
   const savingRef = useRef(false);
   const formRef = useRef<HTMLFormElement | null>(null);
+  const formDraftRef = useRef<ConsultFormDraft>({
+    evolution: "",
+    chiefComplaint: "",
+    diagnosis: "",
+    indications: "",
+    vitals: "",
+    isDirty: false,
+  });
 
   const selectedPatient = patients.find((p) => p.id === patientId);
   const activeProfessionalId = fromAppointment ? defaultProfessional : professionalId;
@@ -119,6 +136,17 @@ export function useNuevaConsultaForm({
     diagnosis.trim().length > 0 ||
     indications.trim().length > 0 ||
     vitals.trim().length > 0;
+
+  useEffect(() => {
+    formDraftRef.current = {
+      evolution,
+      chiefComplaint,
+      diagnosis,
+      indications,
+      vitals,
+      isDirty,
+    };
+  }, [evolution, chiefComplaint, diagnosis, indications, vitals, isDirty]);
 
   function signatureForProfessionalId(id: string): string {
     const pro = professionals.find((p) => p.id === id);
@@ -161,34 +189,40 @@ export function useNuevaConsultaForm({
 
   useEffect(() => {
     if (!draftKey) return;
-    queueMicrotask(() => setEvolution(readConsultationEvolution(draftKey)));
+    const saved = readConsultationEvolution(draftKey);
+    if (!saved.trim()) return;
+    queueMicrotask(() => {
+      setEvolution((prev) => (prev.trim().length === 0 ? saved : prev));
+    });
   }, [draftKey]);
 
   useEffect(() => {
     if (!draftKey) return;
-    const timer = window.setTimeout(() => saveConsultationEvolution(draftKey, evolution), 300);
-    return () => window.clearTimeout(timer);
-  }, [evolution, draftKey]);
-
-  useEffect(() => {
-    if (draftKey == null) return;
     const storageKey: string = draftKey;
-    function syncFromStorage() {
-      const saved = readConsultationEvolution(storageKey);
-      setEvolution((prev) => (prev !== saved ? saved : prev));
+
+    function flushDraft() {
+      saveConsultationEvolution(storageKey, formDraftRef.current.evolution);
     }
-    document.addEventListener("visibilitychange", syncFromStorage);
-    window.addEventListener("focus", syncFromStorage);
+
+    const timer = window.setTimeout(flushDraft, 300);
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "hidden") flushDraft();
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
-      document.removeEventListener("visibilitychange", syncFromStorage);
-      window.removeEventListener("focus", syncFromStorage);
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      flushDraft();
     };
-  }, [draftKey]);
+  }, [evolution, draftKey]);
 
   const persistConsultation = useCallback(
     async (form: HTMLFormElement, options?: { silent?: boolean }) => {
+      const draft = formDraftRef.current;
       if (savingRef.current) return { ok: false as const, error: "Guardando..." };
-      if (!isDirty) return { ok: false as const, error: null };
+      if (!draft.isDirty) return { ok: false as const, error: null };
 
       savingRef.current = true;
       setLoading(true);
@@ -196,10 +230,10 @@ export function useNuevaConsultaForm({
 
       const formData = new FormData(form);
       if (appointmentId) formData.set("appointment_id", appointmentId);
-      formData.set("chief_complaint", chiefComplaint);
-      formData.set("diagnosis", diagnosis);
-      formData.set("indications", indications);
-      formData.set("evolution", buildEvolutionWithVitals(evolution, vitals));
+      formData.set("chief_complaint", draft.chiefComplaint);
+      formData.set("diagnosis", draft.diagnosis);
+      formData.set("indications", draft.indications);
+      formData.set("evolution", buildEvolutionWithVitals(draft.evolution, draft.vitals));
       formData.set("professional_signature", professionalSignature);
       formData.set("consultation_at", new Date(consultationAt).toISOString());
 
@@ -214,13 +248,15 @@ export function useNuevaConsultaForm({
 
       if (result.data) {
         if (draftKey) clearConsultationEvolution(draftKey);
-        setEvolution("");
-        setChiefComplaint("");
-        setDiagnosis("");
-        setIndications("");
-        setVitals("");
+        if (!options?.silent) {
+          setEvolution("");
+          setChiefComplaint("");
+          setDiagnosis("");
+          setIndications("");
+          setVitals("");
+        }
         if (workspace) {
-          workspace.onSaved(result.data.id);
+          workspace.onSaved(result.data.id, options?.silent);
         } else if (!options?.silent) {
           router.push(`/historias/${result.data.id}`);
         }
@@ -230,35 +266,32 @@ export function useNuevaConsultaForm({
     },
     [
       appointmentId,
-      chiefComplaint,
       consultationAt,
-      diagnosis,
       draftKey,
-      evolution,
-      indications,
-      isDirty,
       professionalSignature,
       router,
-      vitals,
       workspace,
     ]
   );
 
   const saveIfDirty = useCallback(
     async (options?: { silent?: boolean }) => {
-      if (!isDirty || !formRef.current) return true;
+      if (!formDraftRef.current.isDirty || !formRef.current) return true;
       const result = await persistConsultation(formRef.current, options);
       return result.ok;
     },
-    [isDirty, persistConsultation]
+    [persistConsultation]
   );
 
+  const saveIfDirtyRef = useRef(saveIfDirty);
   useEffect(() => {
-    const form = formRef.current;
+    saveIfDirtyRef.current = saveIfDirty;
+  }, [saveIfDirty]);
 
+  useEffect(() => {
     function handleBeforeUnload(event: BeforeUnloadEvent) {
-      if (!isDirty) return;
-      void saveIfDirty({ silent: true });
+      if (!formDraftRef.current.isDirty) return;
+      void saveIfDirtyRef.current({ silent: true });
       event.preventDefault();
       event.returnValue = "";
     }
@@ -266,11 +299,9 @@ export function useNuevaConsultaForm({
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      if (isDirty && form) {
-        void persistConsultation(form, { silent: true });
-      }
+      void saveIfDirtyRef.current({ silent: true });
     };
-  }, [isDirty, persistConsultation, saveIfDirty]);
+  }, []);
 
   function pharmacologyHref(mode?: "symptoms" | "pathology" | "vademecum") {
     if (!consultationContext) {
