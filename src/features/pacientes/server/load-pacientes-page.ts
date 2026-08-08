@@ -10,7 +10,7 @@ import {
 } from "@/features/pacientes/utils/pacientes-page-url";
 import { applyPatientSearchFilter, findPatientIdsByPathologySearch } from "@/features/pacientes/utils/patient-search";
 
-import { batchPatientRecordCounts } from "@/lib/utils/batch-patient-record-counts";
+import { batchPatientConsultationCounts } from "@/lib/utils/batch-patient-record-counts";
 import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
 
 export { PACIENTES_PAGE_SIZE };
@@ -156,7 +156,7 @@ async function loadPacientesPageDataInner(
     doctorInfo = portalContext.doctorInfo;
 
     if (rawPatients.length > 0) {
-      const recordCounts = await batchPatientRecordCounts(
+      const recordCounts = await batchPatientConsultationCounts(
         supabase,
         clinicId,
         rawPatients.map((p) => p.id)

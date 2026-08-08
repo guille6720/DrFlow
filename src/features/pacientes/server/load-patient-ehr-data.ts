@@ -4,6 +4,7 @@ import { PATIENT_ATTACHMENTS_LIMIT } from "@/core/supabase/pagination";
 
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
+import { countEhrConsultations } from "@/features/pacientes/utils/patient-ehr-consultation-count";
 import {
   buildEhrPayloadFromHceRows,
   loadPatientHceSummaryRows,
@@ -238,9 +239,10 @@ export function buildPatientEhrWorkspaceData(input: {
     prescriptionRecords: rxList ?? [],
     orders: orders ?? [],
     appointments: timelineAppointments,
-    totalConsultations: usesHceExport
-      ? diagnosisRows.length + treatmentRows.length + consultations.length
-      : (totalRecords ?? consultations.length),
+    totalConsultations: (() => {
+      const sidebarCount = countEhrConsultations(consultations);
+      return sidebarCount > 0 ? sidebarCount : (totalRecords ?? 0);
+    })(),
     usesHceExport,
   };
 }

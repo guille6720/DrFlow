@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { batchPatientRecordCounts } from "@/lib/utils/batch-patient-record-counts";
+import {
+  batchPatientConsultationCounts,
+  batchPatientRecordCounts,
+} from "@/lib/utils/batch-patient-record-counts";
 
 import { createSupabaseTestDouble } from "../helpers/mock-supabase-client";
 
@@ -53,5 +56,51 @@ describe("batchPatientRecordCounts", () => {
     expect(counts.get("p1")).toBe(0);
     expect(counts.get("p2")).toBe(0);
     expect(counts.get("p3")).toBe(0);
+  });
+});
+
+describe("batchPatientConsultationCounts", () => {
+  it("uses HCE sidebar counts when clinical_records are empty", async () => {
+    const csv = [
+      "paciente_id,last_name,first_name,document_number,tipo_registro,fecha_inicio,fecha_fin,estado,diagnostico,cie10,notas",
+      'summary,Amaya,Rosa,123,records,2023-03-14,,,Control,,"Evolución importada desde HCE con texto clínico."',
+      'summary,Amaya,Rosa,123,records,2021-12-02,,,Control,,"Segunda evolución importada."',
+    ].join("\n");
+
+    const supabase = {
+      rpc: async () => ({ data: [], error: null }),
+      from: (table: string) => {
+        if (table !== "patient_attachments") {
+          throw new Error(`unexpected table ${table}`);
+        }
+        return {
+          select: () => ({
+            eq: () => ({
+              eq: () => ({
+                in: async () => ({
+                  data: [{ patient_id: "p1", file_path: "clinic/p1/hce-export-resumen.csv" }],
+                }),
+              }),
+            }),
+          }),
+        };
+      },
+      storage: {
+        from: () => ({
+          download: async () => ({
+            data: {
+              text: async () => csv,
+            },
+            error: null,
+          }),
+        }),
+      },
+    };
+
+    const counts = await batchPatientConsultationCounts(createSupabaseTestDouble(supabase), "clinic-1", [
+      "p1",
+    ]);
+
+    expect(counts.get("p1")).toBe(2);
   });
 });

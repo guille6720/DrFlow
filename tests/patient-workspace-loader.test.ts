@@ -48,7 +48,7 @@ describe("mapTimelineAppointments", () => {
 });
 
 describe("buildPatientEhrWorkspaceData", () => {
-  it("uses total record count when not using HCE export", () => {
+  it("uses sidebar consultation count when evolutions exist", () => {
     const ehr = buildPatientEhrWorkspaceData({
       patient,
       totalRecords: 42,
@@ -70,7 +70,7 @@ describe("buildPatientEhrWorkspaceData", () => {
       hceRows: null,
     });
 
-    expect(ehr.totalConsultations).toBe(42);
+    expect(ehr.totalConsultations).toBe(1);
     expect(ehr.consultations).toHaveLength(1);
     expect(ehr.usesHceExport).toBe(false);
   });

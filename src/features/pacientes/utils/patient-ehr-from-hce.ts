@@ -186,6 +186,19 @@ export function mergeEhrPayload(
 export const HCE_SUMMARY_ATTACHMENT_NAME = "hce-export-resumen.csv";
 const HCE_STORAGE_BUCKET = "clinical-files";
 
+export async function loadPatientHceSummaryRowsFromPath(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  filePath: string
+): Promise<HceExportRow[] | null> {
+  const { data: blob, error } = await supabase.storage.from(HCE_STORAGE_BUCKET).download(filePath);
+
+  if (error || !blob) return null;
+
+  const text = await blob.text();
+  const rows = parsePatientHceSummaryCsv(text);
+  return rows.length > 0 ? rows : null;
+}
+
 export async function loadPatientHceSummaryRows(
   supabase: Awaited<ReturnType<typeof createClient>>,
   clinicId: string,
@@ -207,13 +220,5 @@ export async function loadPatientHceSummaryRows(
 
   if (!filePath) return null;
 
-  const { data: blob, error } = await supabase.storage
-    .from(HCE_STORAGE_BUCKET)
-    .download(filePath);
-
-  if (error || !blob) return null;
-
-  const text = await blob.text();
-  const rows = parsePatientHceSummaryCsv(text);
-  return rows.length > 0 ? rows : null;
+  return loadPatientHceSummaryRowsFromPath(supabase, filePath);
 }
