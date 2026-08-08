@@ -28,6 +28,7 @@ export type PatientEhrPrescription = {
 export type PatientEhrDiagnosisRow = {
   id: string;
   dateLabel: string;
+  recordCreatedAt: string;
   name: string;
   chronic: boolean;
   recordId: string;
@@ -36,6 +37,7 @@ export type PatientEhrDiagnosisRow = {
 export type PatientEhrTreatmentRow = {
   id: string;
   dateLabel: string;
+  recordCreatedAt: string;
   product: string;
   dose: string;
   frequency: string;
@@ -74,7 +76,12 @@ function stripHceMarker(text: string): string {
   return sanitizeClinicalDisplayText(text);
 }
 
-function parseTreatmentLines(indications: string, recordId: string, dateLabel: string): PatientEhrTreatmentRow[] {
+function parseTreatmentLines(
+  indications: string,
+  recordId: string,
+  dateLabel: string,
+  recordCreatedAt: string
+): PatientEhrTreatmentRow[] {
   const raw = indications.trim();
   if (!raw) return [];
 
@@ -89,6 +96,7 @@ function parseTreatmentLines(indications: string, recordId: string, dateLabel: s
     return {
       id: `${recordId}-t-${i}`,
       dateLabel,
+      recordCreatedAt,
       product,
       dose: parts[1]?.slice(0, 40) ?? "—",
       frequency: parts[2]?.slice(0, 40) ?? "—",
@@ -104,6 +112,7 @@ function diagnosisRowToTreatment(row: PatientEhrDiagnosisRow): PatientEhrTreatme
   return {
     id: `reclass-${row.id}`,
     dateLabel: row.dateLabel,
+    recordCreatedAt: row.recordCreatedAt,
     product: product.slice(0, 120),
     dose: extractMedicationDose(product),
     frequency: "—",
@@ -169,6 +178,7 @@ export function buildEhrPayloadFromRecords(
     const chief = stripHceMarker(r.chief_complaint ?? "");
     const category = classifyCategory(chief);
     const dateLabel = formatShortDate(r.created_at);
+    const recordCreatedAt = r.created_at;
 
     const skipSidebar = isHceStructuralChiefComplaint(r.chief_complaint);
 
@@ -197,6 +207,7 @@ export function buildEhrPayloadFromRecords(
           treatmentRows.push({
             id: `t-${r.id}-diag`,
             dateLabel,
+            recordCreatedAt,
             product: diagText.slice(0, 120),
             dose: extractMedicationDose(diagText),
             frequency: "—",
@@ -210,6 +221,7 @@ export function buildEhrPayloadFromRecords(
         diagnosisRows.push({
           id: `d-${r.id}`,
           dateLabel,
+          recordCreatedAt,
           name: diagText,
           chronic: category === "diagnostic" || chief.toLowerCase().includes("crónic"),
           recordId: r.id,
@@ -218,7 +230,7 @@ export function buildEhrPayloadFromRecords(
     }
 
     if (r.indications?.trim()) {
-      const parsed = parseTreatmentLines(r.indications, r.id, dateLabel);
+      const parsed = parseTreatmentLines(r.indications, r.id, dateLabel, recordCreatedAt);
       if (parsed.length > 0) {
         treatmentRows.push(...parsed);
       }
@@ -231,6 +243,7 @@ export function buildEhrPayloadFromRecords(
       treatmentRows.push({
         id: `t-${r.id}`,
         dateLabel,
+        recordCreatedAt,
         product: diagText.slice(0, 80),
         dose: (r.indications ?? "").trim() || "—",
         frequency: "—",

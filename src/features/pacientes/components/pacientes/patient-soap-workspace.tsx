@@ -59,15 +59,9 @@ export function PatientSoapWorkspace({
     [searchParams]
   );
 
-  const onConsultSaved = useCallback(
-    (recordId: string) => {
-      router.push(
-        buildPatientWorkspaceUrl(patient.id, { tab: "soap", record: recordId, mode: "view" }),
-        { scroll: false }
-      );
-    },
-    [patient.id, router]
-  );
+  const onConsultSaved = useCallback(() => {
+    router.refresh();
+  }, [router]);
 
   const onCloseConsult = useCallback(() => {
     router.push(buildPatientWorkspaceUrl(patient.id, { tab: "soap" }), { scroll: false });

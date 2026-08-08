@@ -19,7 +19,7 @@ function formatShortDateFromIso(iso: string | null, fallbackIso: string): string
   return `${d.getDate()}-${months[d.getMonth()]}-${String(d.getFullYear()).slice(-2)}`;
 }
 
-function parseTreatmentFromHceRow(row: HceExportRow, recordId: string): PatientEhrTreatmentRow {
+function parseTreatmentFromHceRow(row: HceExportRow, recordId: string, recordCreatedAt: string): PatientEhrTreatmentRow {
   const product = row.diagnostico.trim() || row.notas.trim() || "Tratamiento";
   const notes = row.notas.trim();
   const doseMatch =
@@ -35,6 +35,7 @@ function parseTreatmentFromHceRow(row: HceExportRow, recordId: string): PatientE
   return {
     id: recordId,
     dateLabel,
+    recordCreatedAt,
     product,
     dose,
     frequency: "—",
@@ -93,7 +94,7 @@ export function buildEhrPayloadFromHceRows(
       }
 
       if (looksLikeMedication(row.diagnostico.trim())) {
-        treatmentRows.push(parseTreatmentFromHceRow(row, recordId));
+        treatmentRows.push(parseTreatmentFromHceRow(row, recordId, iso));
         continue;
       }
 
@@ -108,6 +109,7 @@ export function buildEhrPayloadFromHceRows(
       diagnosisRows.push({
         id: recordId,
         dateLabel,
+        recordCreatedAt: iso,
         name,
         chronic: /chronic|cr[oó]nic/i.test(row.estado),
         recordId,
@@ -116,7 +118,7 @@ export function buildEhrPayloadFromHceRows(
     }
 
     if (tipo === "treatments") {
-      treatmentRows.push(parseTreatmentFromHceRow(row, recordId));
+      treatmentRows.push(parseTreatmentFromHceRow(row, recordId, iso));
       continue;
     }
 

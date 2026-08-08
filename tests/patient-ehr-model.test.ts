@@ -17,6 +17,7 @@ describe("buildEhrPayloadFromRecords", () => {
     ]);
     expect(consultations).toHaveLength(1);
     expect(diagnosisRows).toHaveLength(1);
+    expect(diagnosisRows[0].recordCreatedAt).toBe("2022-11-10T12:00:00.000Z");
     expect(treatmentRows.length).toBeGreaterThanOrEqual(2);
   });
 });

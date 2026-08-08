@@ -1,7 +1,5 @@
 "use client";
 
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -14,14 +12,19 @@ import { Input } from "@/components/ui/input";
 type Props = {
   recordId: string;
   createdAt: string;
+  dateLabel: string;
 };
 
-export function PatientEhrConsultationDateEditor({ recordId, createdAt }: Props) {
+export function PatientEhrTableDateCell({ recordId, createdAt, dateLabel }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(() => toPatientEhrDatetimeLocalValue(createdAt));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  if (recordId.startsWith("hce-")) {
+    return <span>{dateLabel}</span>;
+  }
 
   async function handleSave() {
     setLoading(true);
@@ -41,41 +44,42 @@ export function PatientEhrConsultationDateEditor({ recordId, createdAt }: Props)
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="text-left text-xs drflow-ehr-muted hover:underline"
-        title="Editar fecha de la consulta"
+        className="text-left hover:underline"
+        title="Editar fecha"
       >
-        {format(new Date(createdAt), "EEEE d MMMM yyyy · HH:mm", { locale: es })}
+        {dateLabel}
       </button>
     );
   }
 
   return (
-    <div className="mb-2 flex flex-wrap items-end gap-2">
-      <div className="min-w-[220px] flex-1">
-        <Input
-          type="datetime-local"
-          label="Fecha de la consulta"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-        />
+    <div className="min-w-[160px] space-y-1">
+      <Input
+        type="datetime-local"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className="h-8 text-xs"
+      />
+      <div className="flex flex-wrap gap-1">
+        <Button type="button" size="sm" className="h-7 px-2 text-xs" loading={loading} onClick={() => void handleSave()}>
+          Guardar
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="h-7 px-2 text-xs"
+          disabled={loading}
+          onClick={() => {
+            setValue(toPatientEhrDatetimeLocalValue(createdAt));
+            setEditing(false);
+            setError(null);
+          }}
+        >
+          Cancelar
+        </Button>
       </div>
-      <Button type="button" size="sm" loading={loading} onClick={() => void handleSave()}>
-        Guardar fecha
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        variant="outline"
-        disabled={loading}
-        onClick={() => {
-          setValue(toPatientEhrDatetimeLocalValue(createdAt));
-          setEditing(false);
-          setError(null);
-        }}
-      >
-        Cancelar
-      </Button>
-      {error ? <p className="w-full text-xs text-red-600">{error}</p> : null}
+      {error ? <p className="text-[10px] text-red-600">{error}</p> : null}
     </div>
   );
 }

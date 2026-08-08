@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { withClinicalHistoryReturn } from "@/shared/utils/clinical-navigation";
 
+import { PatientEhrTableDateCell } from "@/features/historias/components/historias/patient-ehr-table-date-cell";
 import type {
   PatientEhrDiagnosisRow,
   PatientEhrTreatmentRow,
@@ -50,7 +51,13 @@ export function PatientEhrClinicalTables({
                 ) : (
                   diagnosisRows.map((row) => (
                     <tr key={row.id} className="border-t border-[var(--border)]">
-                      <td className="px-3 py-2 whitespace-nowrap">{row.dateLabel}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <PatientEhrTableDateCell
+                          recordId={row.recordId}
+                          createdAt={row.recordCreatedAt}
+                          dateLabel={row.dateLabel}
+                        />
+                      </td>
                       <td className="px-3 py-2">
                         <Link
                           href={withClinicalHistoryReturn(`/historias/${row.recordId}`, patientId)}
@@ -100,7 +107,13 @@ export function PatientEhrClinicalTables({
                 ) : (
                   treatmentRows.map((row) => (
                     <tr key={row.id} className="border-t border-[var(--border)]">
-                      <td className="px-3 py-2 whitespace-nowrap">{row.dateLabel}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <PatientEhrTableDateCell
+                          recordId={row.recordId}
+                          createdAt={row.recordCreatedAt}
+                          dateLabel={row.dateLabel}
+                        />
+                      </td>
                       <td className="px-3 py-2">
                         <Link
                           href={withClinicalHistoryReturn(`/historias/${row.recordId}`, patientId)}

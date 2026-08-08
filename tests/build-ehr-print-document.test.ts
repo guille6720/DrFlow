@@ -37,6 +37,7 @@ describe("buildEhrPrintDocumentHtml", () => {
         {
           id: "d1",
           dateLabel: "10-NOV-22",
+          recordCreatedAt: "2022-11-10T12:00:00.000Z",
           name: "Infarto transmural agudo del miocardio de la pared anterior",
           chronic: true,
           recordId: "c1",
@@ -46,6 +47,7 @@ describe("buildEhrPrintDocumentHtml", () => {
         {
           id: "t1",
           dateLabel: "10-NOV-22",
+          recordCreatedAt: "2022-11-10T12:00:00.000Z",
           product: "GASTEC Laboratorios Be",
           dose: "20 mg caps.x 70",
           frequency: "—",

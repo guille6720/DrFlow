@@ -47,6 +47,7 @@ describe("sanitizeEhrPayload", () => {
         {
           id: "d1",
           dateLabel: "1-AGO-26",
+          recordCreatedAt: "2026-08-01T12:00:00.000Z",
           name: "ibarra.pdf",
           chronic: false,
           recordId: "rec-1",
@@ -54,6 +55,7 @@ describe("sanitizeEhrPayload", () => {
         {
           id: "d2",
           dateLabel: "6-SEP-19",
+          recordCreatedAt: "2019-09-06T12:00:00.000Z",
           name: "Diabetes mellitus insulinodependiente",
           chronic: true,
           recordId: "rec-2",
@@ -73,6 +75,7 @@ describe("sanitizeEhrPayload", () => {
         {
           id: "d1",
           dateLabel: "10-NOV-22",
+          recordCreatedAt: "2022-11-10T12:00:00.000Z",
           name: "Metformina - DBI AP 500 - 500mg Comp. Rec. x 60",
           chronic: true,
           recordId: "hce-1",
@@ -80,6 +83,7 @@ describe("sanitizeEhrPayload", () => {
         {
           id: "d2",
           dateLabel: "10-NOV-22",
+          recordCreatedAt: "2022-11-10T12:00:00.000Z",
           name: "Artrosis, no especificada",
           chronic: true,
           recordId: "hce-2",

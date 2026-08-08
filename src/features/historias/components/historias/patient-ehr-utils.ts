@@ -9,6 +9,13 @@ export function formatPatientEhrSidebarDate(iso: string): string {
   return `${d.getDate()}-${months[d.getMonth()]}-${yy}`;
 }
 
+export function toPatientEhrDatetimeLocalValue(iso: string): string {
+  const date = new Date(iso);
+  const offset = date.getTimezoneOffset();
+  const local = new Date(date.getTime() - offset * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
 export function isSameCalendarDay(aIso: string, bIso: string): boolean {
   const a = new Date(aIso);
   const b = new Date(bIso);
