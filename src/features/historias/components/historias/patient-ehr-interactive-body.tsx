@@ -11,7 +11,10 @@ import { PatientEhrPrintEvolutionBlock } from "@/features/historias/components/h
 import { PatientEhrSidebar } from "@/features/historias/components/historias/patient-ehr-sidebar";
 import { usePatientEhrStateContext } from "@/features/historias/components/historias/patient-ehr-state-context";
 import { PatientEhrSupplementalSections } from "@/features/historias/components/historias/patient-ehr-supplemental-sections";
-import { filterClinicalRowsByConsultationDay } from "@/features/historias/components/historias/patient-ehr-utils";
+import {
+  filterClinicalRowsByConsultationDay,
+  filterConsultationsByConsultationDay,
+} from "@/features/historias/components/historias/patient-ehr-utils";
 import type {
   PatientEhrDiagnosisRow,
   PatientEhrPrescription,
@@ -88,6 +91,11 @@ export function PatientEhrInteractiveBody({
     return filterClinicalRowsByConsultationDay(treatmentRows, selected.created_at);
   }, [treatmentRows, filters.evolutions, inlineConsultOpen, selected]);
 
+  const screenVitalsRows = useMemo(() => {
+    if (!filters.evolutions || inlineConsultOpen || !selected) return vitalsRows;
+    return filterConsultationsByConsultationDay(vitalsRows, selected.created_at);
+  }, [vitalsRows, filters.evolutions, inlineConsultOpen, selected]);
+
   return (
     <>
       <PatientEhrFiltersBar
@@ -154,7 +162,7 @@ export function PatientEhrInteractiveBody({
                 />
 
                 <PatientEhrSupplementalSections
-                  vitalsRows={vitalsRows}
+                  vitalsRows={screenVitalsRows}
                   visibleAttachments={visibleAttachments}
                   prescriptions={prescriptions}
                   showVitals={filters.vitals}

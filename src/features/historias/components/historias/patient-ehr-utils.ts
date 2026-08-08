@@ -79,6 +79,14 @@ export function filterClinicalRowsByConsultationDay<
   return rows.filter((row) => isSameCalendarDay(row.recordCreatedAt, consultationCreatedAt));
 }
 
+export function filterConsultationsByConsultationDay(
+  consultations: PatientEhrConsultation[],
+  consultationCreatedAt: string | null | undefined
+): PatientEhrConsultation[] {
+  if (!consultationCreatedAt) return consultations;
+  return consultations.filter((row) => isSameCalendarDay(row.created_at, consultationCreatedAt));
+}
+
 export function extractConsultationFileName(consultation: PatientEhrConsultation): string | null {
   for (const candidate of [
     consultation.diagnosis,

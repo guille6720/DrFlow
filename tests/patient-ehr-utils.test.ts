@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildConsultationSidebarList,
   filterClinicalRowsByConsultationDay,
+  filterConsultationsByConsultationDay,
   formatPatientEhrSidebarDate,
   patientEhrEvolutionBody,
   resolveConsultationAttachment,
@@ -94,6 +95,37 @@ describe("filterClinicalRowsByConsultationDay", () => {
     const filtered = filterClinicalRowsByConsultationDay(rows, "2019-04-05T09:00:00Z");
 
     expect(filtered.map((row) => row.id)).toEqual(["a"]);
+  });
+});
+
+describe("filterConsultationsByConsultationDay", () => {
+  it("keeps only vitals from the selected consultation day", () => {
+    const rows = [
+      {
+        id: "v1",
+        created_at: "2021-03-08T12:00:00Z",
+        professional_name: "Dr. Test",
+        chief_complaint: "Signos vitales",
+        diagnosis: "",
+        evolution: "TA 120/80",
+        indications: "",
+        category: "vitals" as const,
+      },
+      {
+        id: "v2",
+        created_at: "2025-08-29T12:00:00Z",
+        professional_name: "Dr. Test",
+        chief_complaint: "Signos vitales",
+        diagnosis: "",
+        evolution: "TA 170/70",
+        indications: "",
+        category: "vitals" as const,
+      },
+    ];
+
+    const filtered = filterConsultationsByConsultationDay(rows, "2021-03-08T09:00:00Z");
+
+    expect(filtered.map((row) => row.id)).toEqual(["v1"]);
   });
 });
 
