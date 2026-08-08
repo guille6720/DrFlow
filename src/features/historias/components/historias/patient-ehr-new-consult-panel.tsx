@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2, Upload } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { SignatureImage } from "@/core/components/ui/signature-image";
 
@@ -49,6 +49,14 @@ export function PatientEhrNewConsultPanel({
   const {
     evolution,
     setEvolution,
+    chiefComplaint,
+    setChiefComplaint,
+    diagnosis,
+    setDiagnosis,
+    indications,
+    setIndications,
+    vitals,
+    setVitals,
     professionalId,
     setProfessionalId,
     consultationAt,
@@ -63,9 +71,6 @@ export function PatientEhrNewConsultPanel({
     applyTemplate,
   } = form;
 
-  const [diagnosis, setDiagnosis] = useState("");
-  const [treatment, setTreatment] = useState("");
-  const [vitals, setVitals] = useState("");
   const evolutionRef = useRef<HTMLTextAreaElement>(null);
   const diagnosisRef = useRef<HTMLTextAreaElement>(null);
   const treatmentRef = useRef<HTMLTextAreaElement>(null);
@@ -91,24 +96,6 @@ export function PatientEhrNewConsultPanel({
     target.current?.focus();
     target.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [focus]);
-
-  function buildMergedEvolution() {
-    const parts: string[] = [];
-    if (evolution.trim()) parts.push(evolution.trim());
-    if (diagnosis.trim()) parts.push(`Diagnóstico: ${diagnosis.trim()}`);
-    if (treatment.trim()) parts.push(`Tratamiento: ${treatment.trim()}`);
-    if (vitals.trim()) parts.push(`Signos vitales: ${vitals.trim()}`);
-    return parts.join("\n\n");
-  }
-
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    const merged = buildMergedEvolution();
-    if (evolutionRef.current) {
-      evolutionRef.current.value = merged;
-    }
-    setEvolution(merged);
-    void handleSubmit(e);
-  }
 
   return (
     <div className="drflow-ehr-evolution-box mt-3 min-h-[240px] rounded-sm border p-4">
@@ -140,7 +127,7 @@ export function PatientEhrNewConsultPanel({
       <form
         id={EHR_NEW_CONSULT_FORM_ID}
         ref={formRef}
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit}
         onKeyDown={handleFormKeyDown}
         className="space-y-3"
       >
@@ -176,9 +163,20 @@ export function PatientEhrNewConsultPanel({
           />
         </div>
 
+        <Textarea
+          name="chief_complaint"
+          label="Motivo de consulta"
+          rows={2}
+          voiceInput
+          value={chiefComplaint}
+          onChange={(e) => setChiefComplaint(e.target.value)}
+          placeholder="Motivo de la consulta (opcional)"
+        />
+
         <div id={sectionId("diagnostico")}>
           <Textarea
             ref={diagnosisRef}
+            name="diagnosis"
             label="Diagnóstico"
             rows={2}
             voiceInput
@@ -192,11 +190,12 @@ export function PatientEhrNewConsultPanel({
         <div id={sectionId("tratamiento")}>
           <Textarea
             ref={treatmentRef}
+            name="indications"
             label="Tratamiento"
             rows={2}
             voiceInput
-            value={treatment}
-            onChange={(e) => setTreatment(e.target.value)}
+            value={indications}
+            onChange={(e) => setIndications(e.target.value)}
             placeholder="Medicación, indicaciones y plan terapéutico"
             className={cn(focus === "tratamiento" && "ring-2 ring-teal-400/60")}
           />

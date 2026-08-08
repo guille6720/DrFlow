@@ -124,6 +124,7 @@ export function PatientWorkspaceView(props: Props) {
       ) : null}
       <div className="drflow-patient-workspace-tabs-row flex items-center gap-2">
         <PatientWorkspaceTabBar
+          patientId={chartProps.patientId}
           activeTab={activeTab}
           onTabChange={setTab}
           canManageAdminDocuments={canManageAdminDocuments}

@@ -63,6 +63,18 @@ function toDatetimeLocalValue(date: Date): string {
   return local.toISOString().slice(0, 16);
 }
 
+function templateText(value: string | null | undefined): string {
+  return value?.trim() ?? "";
+}
+
+function buildEvolutionWithVitals(evolution: string, vitals: string): string {
+  const base = evolution.trim();
+  const vitalsText = vitals.trim();
+  if (!vitalsText) return base;
+  const vitalsBlock = `Signos vitales: ${vitalsText}`;
+  return base ? `${base}\n\n${vitalsBlock}` : vitalsBlock;
+}
+
 export function useNuevaConsultaForm({
   patients,
   professionals,
@@ -90,6 +102,10 @@ export function useNuevaConsultaForm({
   const [patientId, setPatientId] = useState(defaultPatient);
   const [professionalId, setProfessionalId] = useState(defaultProfessional);
   const [evolution, setEvolution] = useState("");
+  const [chiefComplaint, setChiefComplaint] = useState("");
+  const [diagnosis, setDiagnosis] = useState("");
+  const [indications, setIndications] = useState("");
+  const [vitals, setVitals] = useState("");
   const [consultationAt, setConsultationAt] = useState(() => toDatetimeLocalValue(new Date()));
   const savingRef = useRef(false);
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -97,7 +113,12 @@ export function useNuevaConsultaForm({
   const selectedPatient = patients.find((p) => p.id === patientId);
   const activeProfessionalId = fromAppointment ? defaultProfessional : professionalId;
   const activeProfessional = professionals.find((p) => p.id === activeProfessionalId);
-  const isDirty = evolution.trim().length > 0;
+  const isDirty =
+    evolution.trim().length > 0 ||
+    chiefComplaint.trim().length > 0 ||
+    diagnosis.trim().length > 0 ||
+    indications.trim().length > 0 ||
+    vitals.trim().length > 0;
 
   function signatureForProfessionalId(id: string): string {
     const pro = professionals.find((p) => p.id === id);
@@ -167,7 +188,7 @@ export function useNuevaConsultaForm({
   const persistConsultation = useCallback(
     async (form: HTMLFormElement, options?: { silent?: boolean }) => {
       if (savingRef.current) return { ok: false as const, error: "Guardando..." };
-      if (!evolution.trim()) return { ok: false as const, error: null };
+      if (!isDirty) return { ok: false as const, error: null };
 
       savingRef.current = true;
       setLoading(true);
@@ -175,9 +196,10 @@ export function useNuevaConsultaForm({
 
       const formData = new FormData(form);
       if (appointmentId) formData.set("appointment_id", appointmentId);
-      formData.set("chief_complaint", "");
-      formData.set("diagnosis", "");
-      formData.set("indications", "");
+      formData.set("chief_complaint", chiefComplaint);
+      formData.set("diagnosis", diagnosis);
+      formData.set("indications", indications);
+      formData.set("evolution", buildEvolutionWithVitals(evolution, vitals));
       formData.set("professional_signature", professionalSignature);
       formData.set("consultation_at", new Date(consultationAt).toISOString());
 
@@ -193,6 +215,10 @@ export function useNuevaConsultaForm({
       if (result.data) {
         if (draftKey) clearConsultationEvolution(draftKey);
         setEvolution("");
+        setChiefComplaint("");
+        setDiagnosis("");
+        setIndications("");
+        setVitals("");
         if (workspace) {
           workspace.onSaved(result.data.id);
         } else if (!options?.silent) {
@@ -204,11 +230,16 @@ export function useNuevaConsultaForm({
     },
     [
       appointmentId,
+      chiefComplaint,
       consultationAt,
+      diagnosis,
       draftKey,
       evolution,
+      indications,
+      isDirty,
       professionalSignature,
       router,
+      vitals,
       workspace,
     ]
   );
@@ -294,15 +325,10 @@ export function useNuevaConsultaForm({
   function applyTemplate(templateId: string) {
     const t = templates.find((x) => x.id === templateId);
     if (!t) return;
-    const unified = [
-      t.chief_complaint_template,
-      t.diagnosis_template,
-      t.evolution_template,
-      t.indications_template,
-    ]
-      .filter(Boolean)
-      .join("\n\n");
-    setEvolution(unified);
+    setChiefComplaint(templateText(t.chief_complaint_template));
+    setDiagnosis(templateText(t.diagnosis_template));
+    setEvolution(templateText(t.evolution_template));
+    setIndications(templateText(t.indications_template));
   }
 
   return {
@@ -321,6 +347,14 @@ export function useNuevaConsultaForm({
     setProfessionalId,
     evolution,
     setEvolution,
+    chiefComplaint,
+    setChiefComplaint,
+    diagnosis,
+    setDiagnosis,
+    indications,
+    setIndications,
+    vitals,
+    setVitals,
     consultationAt,
     setConsultationAt,
     professionalSignature,
