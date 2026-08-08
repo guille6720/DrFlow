@@ -1,10 +1,24 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { countConsultationsFromHceRows } from "@/features/pacientes/utils/patient-ehr-consultation-count";
+import { mapClinicalRecordsForEhr } from "@/features/pacientes/server/load-patient-ehr-data";
+import { countPatientConsultationsFromSources } from "@/features/pacientes/utils/patient-ehr-consultation-count";
 import {
   HCE_SUMMARY_ATTACHMENT_NAME,
   loadPatientHceSummaryRowsFromPath,
 } from "@/features/pacientes/utils/patient-ehr-from-hce";
+
+import type { HceExportRow } from "@/lib/utils/hce-export-parse";
+
+type ClinicalRecordRow = {
+  patient_id: string;
+  id: string;
+  created_at: string;
+  chief_complaint: string | null;
+  diagnosis: string | null;
+  evolution: string | null;
+  indications: string | null;
+  professionals: unknown;
+};
 
 /** Batch count clinical_records per patient — SQL GROUP BY via RPC, fallback to row scan. */
 export async function batchPatientRecordCounts(
@@ -35,13 +49,49 @@ export async function batchPatientRecordCounts(
   return counts;
 }
 
-async function batchHceSidebarConsultationCounts(
+async function batchClinicalRecordsByPatient(
   supabase: SupabaseClient,
   clinicId: string,
   patientIds: string[]
-): Promise<Map<string, number>> {
-  const counts = new Map<string, number>();
-  if (patientIds.length === 0) return counts;
+): Promise<Map<string, ReturnType<typeof mapClinicalRecordsForEhr>>> {
+  const byPatient = new Map<string, ReturnType<typeof mapClinicalRecordsForEhr>>();
+  for (const patientId of patientIds) {
+    byPatient.set(patientId, []);
+  }
+  if (patientIds.length === 0) return byPatient;
+
+  const { data: records } = await supabase
+    .from("clinical_records")
+    .select(
+      "patient_id, id, created_at, chief_complaint, diagnosis, evolution, indications, professionals(license_national, license_provincial, profiles(full_name, email))"
+    )
+    .eq("clinic_id", clinicId)
+    .in("patient_id", patientIds)
+    .order("created_at", { ascending: true });
+
+  const rawByPatient = new Map<string, ClinicalRecordRow[]>();
+  for (const patientId of patientIds) {
+    rawByPatient.set(patientId, []);
+  }
+
+  for (const record of (records ?? []) as ClinicalRecordRow[]) {
+    rawByPatient.get(record.patient_id)?.push(record);
+  }
+
+  for (const patientId of patientIds) {
+    byPatient.set(patientId, mapClinicalRecordsForEhr(rawByPatient.get(patientId) ?? []));
+  }
+
+  return byPatient;
+}
+
+async function batchHceRowsByPatient(
+  supabase: SupabaseClient,
+  clinicId: string,
+  patientIds: string[]
+): Promise<Map<string, HceExportRow[]>> {
+  const rowsByPatient = new Map<string, HceExportRow[]>();
+  if (patientIds.length === 0) return rowsByPatient;
 
   const { data: attachments } = await supabase
     .from("patient_attachments")
@@ -53,31 +103,37 @@ async function batchHceSidebarConsultationCounts(
   await Promise.all(
     (attachments ?? []).map(async (attachment) => {
       const rows = await loadPatientHceSummaryRowsFromPath(supabase, attachment.file_path);
-      if (!rows) return;
-      counts.set(attachment.patient_id, countConsultationsFromHceRows(rows));
+      if (!rows?.length) return;
+      rowsByPatient.set(attachment.patient_id, rows);
     })
   );
 
-  return counts;
+  return rowsByPatient;
 }
 
-/** Consultas visibles en HC: registros en BD + evoluciones importadas desde HCE. */
+/** Consultas visibles en HC: misma lógica que el sidebar (BD + resumen HCE). */
 export async function batchPatientConsultationCounts(
   supabase: SupabaseClient,
   clinicId: string,
   patientIds: string[]
 ): Promise<Map<string, number>> {
-  const [recordCounts, hceCounts] = await Promise.all([
-    batchPatientRecordCounts(supabase, clinicId, patientIds),
-    batchHceSidebarConsultationCounts(supabase, clinicId, patientIds),
+  const counts = new Map<string, number>();
+  if (patientIds.length === 0) return counts;
+
+  const [recordsByPatient, hceRowsByPatient] = await Promise.all([
+    batchClinicalRecordsByPatient(supabase, clinicId, patientIds),
+    batchHceRowsByPatient(supabase, clinicId, patientIds),
   ]);
 
-  const merged = new Map<string, number>();
   for (const patientId of patientIds) {
-    const recordCount = recordCounts.get(patientId) ?? 0;
-    const hceCount = hceCounts.get(patientId) ?? 0;
-    merged.set(patientId, hceCount > 0 ? Math.max(recordCount, hceCount) : recordCount);
+    counts.set(
+      patientId,
+      countPatientConsultationsFromSources({
+        mappedRecords: recordsByPatient.get(patientId) ?? [],
+        hceRows: hceRowsByPatient.get(patientId) ?? null,
+      })
+    );
   }
 
-  return merged;
+  return counts;
 }

@@ -1,8 +1,15 @@
 import { buildConsultationSidebarList } from "@/features/historias/components/historias/patient-ehr-utils";
-import { buildEhrPayloadFromHceRows } from "@/features/pacientes/utils/patient-ehr-from-hce";
-import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
+import type { PatientEhrMappedRecord } from "@/features/pacientes/server/load-patient-ehr-data";
+import {
+  buildEhrPayloadFromHceRows,
+  mergeEhrPayload,
+} from "@/features/pacientes/utils/patient-ehr-from-hce";
+import {
+  buildEhrPayloadFromRecords,
+  type PatientEhrConsultation,
+} from "@/features/pacientes/utils/patient-ehr-model";
 
-import type { HceExportRow } from "@/lib/utils/hce-export-parse";
+import { filterRecordsForEhrSupplement, type HceExportRow } from "@/lib/utils/hce-export-parse";
 
 function buildEvolutionList(sorted: PatientEhrConsultation[]): PatientEhrConsultation[] {
   const withText = sorted.filter(
@@ -36,4 +43,25 @@ export function countConsultationsFromHceRows(
   if (rows.length === 0) return 0;
   const { consultations } = buildEhrPayloadFromHceRows(rows, professionalFallback);
   return countEhrConsultations(consultations);
+}
+
+/** Misma lógica de conteo que la HC (BD + resumen HCE importado). */
+export function countPatientConsultationsFromSources(input: {
+  mappedRecords: PatientEhrMappedRecord[];
+  hceRows: HceExportRow[] | null;
+}): number {
+  const { mappedRecords, hceRows } = input;
+
+  if (hceRows?.length) {
+    const professionalFallback =
+      mappedRecords.find((record) => record.professional_name !== "Profesional")
+        ?.professional_name ?? "Importación HCE";
+    const fromHce = buildEhrPayloadFromHceRows(hceRows, professionalFallback);
+    const supplement = buildEhrPayloadFromRecords(
+      filterRecordsForEhrSupplement(mappedRecords)
+    );
+    return countEhrConsultations(mergeEhrPayload(fromHce, supplement).consultations);
+  }
+
+  return countEhrConsultations(buildEhrPayloadFromRecords(mappedRecords).consultations);
 }

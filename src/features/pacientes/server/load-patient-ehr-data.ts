@@ -4,7 +4,7 @@ import { PATIENT_ATTACHMENTS_LIMIT } from "@/core/supabase/pagination";
 
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
-import { countEhrConsultations } from "@/features/pacientes/utils/patient-ehr-consultation-count";
+import { countPatientConsultationsFromSources } from "@/features/pacientes/utils/patient-ehr-consultation-count";
 import {
   buildEhrPayloadFromHceRows,
   loadPatientHceSummaryRows,
@@ -191,7 +191,7 @@ export function buildPatientEhrWorkspaceData(input: {
   timelineAppointments: PatientEhrAppointment[];
   hceRows: HceExportRow[] | null;
 }): PatientEhrWorkspaceData {
-  const { patient, totalRecords, mappedRecords, attachments, rxList, orders, timelineAppointments, hceRows } =
+  const { patient, mappedRecords, attachments, rxList, orders, timelineAppointments, hceRows } =
     input;
 
   const professionalFallback =
@@ -239,10 +239,7 @@ export function buildPatientEhrWorkspaceData(input: {
     prescriptionRecords: rxList ?? [],
     orders: orders ?? [],
     appointments: timelineAppointments,
-    totalConsultations: (() => {
-      const sidebarCount = countEhrConsultations(consultations);
-      return sidebarCount > 0 ? sidebarCount : (totalRecords ?? 0);
-    })(),
+    totalConsultations: countPatientConsultationsFromSources({ mappedRecords, hceRows }),
     usesHceExport,
   };
 }

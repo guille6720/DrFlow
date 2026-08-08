@@ -60,6 +60,14 @@ describe("batchPatientRecordCounts", () => {
 });
 
 describe("batchPatientConsultationCounts", () => {
+  function mockClinicalRecordsFrom(tableHandlers: Record<string, unknown>) {
+    return (table: string) => {
+      const handler = tableHandlers[table];
+      if (!handler) throw new Error(`unexpected table ${table}`);
+      return handler;
+    };
+  }
+
   it("uses HCE sidebar counts when clinical_records are empty", async () => {
     const csv = [
       "paciente_id,last_name,first_name,document_number,tipo_registro,fecha_inicio,fecha_fin,estado,diagnostico,cie10,notas",
@@ -68,12 +76,17 @@ describe("batchPatientConsultationCounts", () => {
     ].join("\n");
 
     const supabase = {
-      rpc: async () => ({ data: [], error: null }),
-      from: (table: string) => {
-        if (table !== "patient_attachments") {
-          throw new Error(`unexpected table ${table}`);
-        }
-        return {
+      from: mockClinicalRecordsFrom({
+        clinical_records: {
+          select: () => ({
+            eq: () => ({
+              in: () => ({
+                order: async () => ({ data: [] }),
+              }),
+            }),
+          }),
+        },
+        patient_attachments: {
           select: () => ({
             eq: () => ({
               eq: () => ({
@@ -83,8 +96,8 @@ describe("batchPatientConsultationCounts", () => {
               }),
             }),
           }),
-        };
-      },
+        },
+      }),
       storage: {
         from: () => ({
           download: async () => ({
@@ -95,6 +108,60 @@ describe("batchPatientConsultationCounts", () => {
           }),
         }),
       },
+    };
+
+    const counts = await batchPatientConsultationCounts(createSupabaseTestDouble(supabase), "clinic-1", [
+      "p1",
+    ]);
+
+    expect(counts.get("p1")).toBe(2);
+  });
+
+  it("counts consultations from clinical_records without HCE attachment", async () => {
+    const supabase = {
+      from: mockClinicalRecordsFrom({
+        clinical_records: {
+          select: () => ({
+            eq: () => ({
+              in: () => ({
+                order: async () => ({
+                  data: [
+                    {
+                      patient_id: "p1",
+                      id: "r1",
+                      created_at: "2023-03-14T10:00:00.000Z",
+                      chief_complaint: "Control",
+                      diagnosis: "HTA",
+                      evolution: "Evolución clínica con texto suficiente para el sidebar.",
+                      indications: "",
+                      professionals: { profiles: { full_name: "Dr. López" } },
+                    },
+                    {
+                      patient_id: "p1",
+                      id: "r2",
+                      created_at: "2021-12-02T10:00:00.000Z",
+                      chief_complaint: "Control",
+                      diagnosis: "HTA",
+                      evolution: "Segunda evolución con texto clínico suficiente.",
+                      indications: "",
+                      professionals: { profiles: { full_name: "Dr. López" } },
+                    },
+                  ],
+                }),
+              }),
+            }),
+          }),
+        },
+        patient_attachments: {
+          select: () => ({
+            eq: () => ({
+              eq: () => ({
+                in: async () => ({ data: [] }),
+              }),
+            }),
+          }),
+        },
+      }),
     };
 
     const counts = await batchPatientConsultationCounts(createSupabaseTestDouble(supabase), "clinic-1", [
