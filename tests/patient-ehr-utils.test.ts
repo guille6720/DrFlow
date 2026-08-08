@@ -4,6 +4,7 @@ import {
   buildConsultationSidebarList,
   formatPatientEhrSidebarDate,
   patientEhrEvolutionBody,
+  resolveSelectedConsultation,
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
 
@@ -65,5 +66,18 @@ describe("buildConsultationSidebarList", () => {
     const sidebar = buildConsultationSidebarList(sorted, sorted);
 
     expect(sidebar.map((c) => c.id)).toEqual(["1", "4"]);
+  });
+});
+
+describe("resolveSelectedConsultation", () => {
+  it("returns the requested consultation instead of falling back to the first item", () => {
+    const sidebar = [
+      consultation({ id: "newest", created_at: "2022-11-10T12:00:00Z" }),
+      consultation({ id: "older", created_at: "2022-11-09T10:00:00Z" }),
+    ];
+
+    const selected = resolveSelectedConsultation("older", sidebar, sidebar, sidebar);
+
+    expect(selected?.id).toBe("older");
   });
 });

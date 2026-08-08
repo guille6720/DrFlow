@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { PatientEhrClinicalTables } from "@/features/historias/components/historias/patient-ehr-clinical-tables";
@@ -15,6 +16,7 @@ import type {
   PatientEhrPrescription,
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 type Props = {
   patientId: string;
@@ -25,6 +27,10 @@ type Props = {
   usesHceExport?: boolean;
   actionLinks: ReactNode;
   inlineConsultOpen?: boolean;
+  pendingSidebarConsultation?: {
+    createdAt: string;
+    professionalName: string;
+  } | null;
   consultPanel?: ReactNode;
 };
 
@@ -37,11 +43,14 @@ export function PatientEhrInteractiveBody({
   usesHceExport = false,
   actionLinks,
   inlineConsultOpen = false,
+  pendingSidebarConsultation = null,
   consultPanel,
 }: Props) {
+  const router = useRouter();
   const {
     evolutionList,
     sidebarList,
+    selectedId,
     setSelectedId,
     filters,
     toggleFilter,
@@ -54,6 +63,19 @@ export function PatientEhrInteractiveBody({
     vitalsRows,
     dayPrintConsultations,
   } = usePatientEhrStateContext();
+
+  function handleSidebarSelect(id: string) {
+    setSelectedId(id);
+    const url = buildPatientWorkspaceUrl(patientId, { tab: "soap", consulta: id });
+    if (inlineConsultOpen) {
+      router.push(url, { scroll: false });
+      return;
+    }
+    router.replace(url, { scroll: false });
+  }
+
+  const screenDayConsultations =
+    dayPrintConsultations.length > 0 ? dayPrintConsultations : selected ? [selected] : [];
 
   return (
     <>
@@ -68,9 +90,9 @@ export function PatientEhrInteractiveBody({
         {filters.evolutions ? (
           <PatientEhrSidebar
             sidebarList={sidebarList}
-            selectedId={selected?.id}
-            selectedCreatedAt={selected?.created_at}
-            onSelect={setSelectedId}
+            selectedId={selectedId}
+            pendingConsultation={pendingSidebarConsultation}
+            onSelect={handleSidebarSelect}
           />
         ) : null}
 
@@ -82,14 +104,19 @@ export function PatientEhrInteractiveBody({
               <div className="drflow-ehr-screen-only">{consultPanel}</div>
             ) : filters.evolutions ? (
               <>
-                <div className="drflow-ehr-screen-only">
-                  <PatientEhrEvolutionPanel
-                    patientId={patientId}
-                    selected={selected}
-                    selectedDocumentAttachment={selectedDocumentAttachment}
-                    openingAttachmentId={openingAttachmentId}
-                    onOpenAttachment={handleOpenAttachment}
-                  />
+                <div className="drflow-ehr-screen-only mt-3 space-y-3">
+                  {screenDayConsultations.map((consultation) => (
+                    <PatientEhrEvolutionPanel
+                      key={consultation.id}
+                      patientId={patientId}
+                      selected={consultation}
+                      selectedDocumentAttachment={
+                        consultation.id === selected?.id ? selectedDocumentAttachment : null
+                      }
+                      openingAttachmentId={openingAttachmentId}
+                      onOpenAttachment={handleOpenAttachment}
+                    />
+                  ))}
                 </div>
 
                 <div className="drflow-ehr-print-only drflow-ehr-print-day-content mt-3 space-y-3">

@@ -4,34 +4,54 @@ import { cn } from "@/shared/utils/cn";
 
 import {
   formatPatientEhrSidebarDate,
-  isSameCalendarDay,
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
+
+type PendingSidebarConsultation = {
+  createdAt: string;
+  professionalName: string;
+};
 
 type Props = {
   sidebarList: PatientEhrConsultation[];
   selectedId: string | null | undefined;
-  selectedCreatedAt?: string | null;
+  pendingConsultation?: PendingSidebarConsultation | null;
   onSelect: (id: string) => void;
 };
 
 export function PatientEhrSidebar({
   sidebarList,
   selectedId,
-  selectedCreatedAt,
+  pendingConsultation = null,
   onSelect,
 }: Props) {
   return (
     <aside className="drflow-ehr-sidebar w-full shrink-0 border-b border-[var(--border)] lg:w-56 lg:border-b-0 lg:border-r">
       <div className="max-h-48 overflow-y-auto lg:max-h-[calc(100vh-16rem)] lg:min-h-[320px]">
-        {sidebarList.length === 0 ? (
+        {sidebarList.length === 0 && !pendingConsultation ? (
           <p className="p-4 text-center text-xs drflow-ehr-muted">Sin evoluciones</p>
         ) : (
           <ul>
+            {pendingConsultation ? (
+              <li key="pending-consultation">
+                <div
+                  className={cn(
+                    "w-full border-b border-[var(--border)] px-3 py-2.5 text-left text-xs",
+                    "drflow-ehr-sidebar-active"
+                  )}
+                >
+                  <p className="font-bold">
+                    {formatPatientEhrSidebarDate(pendingConsultation.createdAt)}
+                  </p>
+                  <p className="mt-0.5 truncate font-medium">{pendingConsultation.professionalName}</p>
+                  <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide opacity-80">
+                    Consulta en curso
+                  </p>
+                </div>
+              </li>
+            ) : null}
             {sidebarList.map((c) => {
-              const active =
-                c.id === selectedId ||
-                (selectedCreatedAt != null && isSameCalendarDay(c.created_at, selectedCreatedAt));
+              const active = !pendingConsultation && c.id === selectedId;
               return (
                 <li key={c.id}>
                   <button

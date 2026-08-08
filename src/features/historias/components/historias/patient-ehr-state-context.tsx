@@ -21,6 +21,7 @@ type ProviderProps = {
   patient: PatientEhrPatientInfo;
   diagnosisRows: PatientEhrDiagnosisRow[];
   treatmentRows: PatientEhrTreatmentRow[];
+  initialSelectedId?: string | null;
   children: ReactNode;
 };
 
@@ -30,13 +31,14 @@ export function PatientEhrStateProvider({
   patient,
   diagnosisRows,
   treatmentRows,
+  initialSelectedId = null,
   children,
 }: ProviderProps) {
   const state = usePatientEhrState(consultations, attachments, {
     patient,
     diagnosisRows,
     treatmentRows,
-  });
+  }, initialSelectedId);
   return (
     <PatientEhrStateContext.Provider value={state}>{children}</PatientEhrStateContext.Provider>
   );

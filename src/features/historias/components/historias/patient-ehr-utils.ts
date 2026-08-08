@@ -53,6 +53,24 @@ export function buildConsultationSidebarList(
   return [...byDay.values()];
 }
 
+export function resolveSelectedConsultation(
+  selectedId: string | null,
+  sidebarList: PatientEhrConsultation[],
+  evolutionList: PatientEhrConsultation[],
+  sorted: PatientEhrConsultation[]
+): PatientEhrConsultation | null {
+  if (selectedId) {
+    return (
+      sidebarList.find((c) => c.id === selectedId) ??
+      sorted.find((c) => c.id === selectedId) ??
+      evolutionList.find((c) => c.id === selectedId) ??
+      null
+    );
+  }
+
+  return sidebarList[0] ?? evolutionList[0] ?? sorted[0] ?? null;
+}
+
 export function patientEhrEvolutionBody(c: PatientEhrConsultation): string {
   const evo = sanitizeClinicalDisplayText(c.evolution);
   if (evo.length > 0) return evo;

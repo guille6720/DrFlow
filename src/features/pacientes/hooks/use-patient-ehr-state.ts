@@ -14,6 +14,7 @@ import {
 import {
   buildConsultationSidebarList,
   isSameCalendarDay,
+  resolveSelectedConsultation,
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import { printEhrClinicalDocument } from "@/features/historias/utils/print-ehr-clinical-document";
 import { getPatientClinicalDocumentUrl } from "@/features/pacientes/actions/patient-attachments";
@@ -47,7 +48,8 @@ type PrintBundle = {
 export function usePatientEhrState(
   consultations: PatientEhrConsultation[],
   attachments: PatientEhrAttachment[],
-  printBundle: PrintBundle
+  printBundle: PrintBundle,
+  initialSelectedId?: string | null
 ) {
   const sorted = useMemo(
     () =>
@@ -63,9 +65,30 @@ export function usePatientEhrState(
     [sorted, evolutionList]
   );
 
-  const [selectedId, setSelectedId] = useState<string | null>(
-    sidebarList[0]?.id ?? evolutionList[0]?.id ?? sorted[0]?.id ?? null
-  );
+  const defaultSelectedId =
+    sidebarList[0]?.id ?? evolutionList[0]?.id ?? sorted[0]?.id ?? null;
+
+  const [localSelectedId, setLocalSelectedId] = useState<string | null>(defaultSelectedId);
+
+  const selectedId = useMemo(() => {
+    const fromUrl = resolveSelectedConsultation(
+      initialSelectedId ?? null,
+      sidebarList,
+      evolutionList,
+      sorted
+    )?.id;
+    if (fromUrl) return fromUrl;
+
+    const fromLocal = resolveSelectedConsultation(
+      localSelectedId,
+      sidebarList,
+      evolutionList,
+      sorted
+    )?.id;
+    if (fromLocal) return fromLocal;
+
+    return defaultSelectedId;
+  }, [initialSelectedId, localSelectedId, sidebarList, evolutionList, sorted, defaultSelectedId]);
   const [filters, setFilters] = useState<PatientEhrFilters>(DEFAULT_PATIENT_EHR_FILTERS);
   const [openingAttachmentId, setOpeningAttachmentId] = useState<string | null>(null);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
@@ -95,8 +118,10 @@ export function usePatientEhrState(
     window.open(result.url, "_blank", "noopener,noreferrer");
   }
 
-  const selected =
-    sorted.find((c) => c.id === selectedId) ?? evolutionList[0] ?? sorted[0] ?? null;
+  const selected = useMemo(
+    () => resolveSelectedConsultation(selectedId, sidebarList, evolutionList, sorted),
+    [selectedId, sidebarList, evolutionList, sorted]
+  );
 
   const dayPrintConsultations = useMemo(() => {
     if (!selected) return [];
@@ -136,7 +161,8 @@ export function usePatientEhrState(
   return {
     evolutionList,
     sidebarList,
-    setSelectedId,
+    selectedId,
+    setSelectedId: setLocalSelectedId,
     filters,
     toggleFilter,
     openingAttachmentId,

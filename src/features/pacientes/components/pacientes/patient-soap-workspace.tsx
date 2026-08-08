@@ -19,6 +19,7 @@ import {
   type PatientWorkspaceFocus,
 } from "@/features/pacientes/utils/patient-workspace-actions";
 
+import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { Patient } from "@/types/database";
 
 type Template = {
@@ -86,6 +87,18 @@ export function PatientSoapWorkspace({
   const consultFocus: PatientWorkspaceFocus | null =
     parsed.focus ?? (parsed.inlineConsultOpen ? "evolucion" : null);
 
+  const activeProfessional = professionals.find(
+    (p) => p.id === (form.professionalId || defaultProfessionalId)
+  );
+  const pendingSidebarConsultation = parsed.inlineConsultOpen
+    ? {
+        createdAt: new Date(form.consultationAt).toISOString(),
+        professionalName: activeProfessional
+          ? getProfessionalDisplayName(activeProfessional)
+          : "Consulta en curso",
+      }
+    : null;
+
   return (
     <PatientEhrStateProvider
       consultations={consultations}
@@ -93,6 +106,7 @@ export function PatientSoapWorkspace({
       patient={patient}
       diagnosisRows={diagnosisRows}
       treatmentRows={treatmentRows}
+      initialSelectedId={parsed.consulta}
     >
       <PatientEhrShellFrame embedded={embedded}>
         {!embedded ? <PatientEhrDemographics patient={patient} /> : null}
@@ -108,6 +122,7 @@ export function PatientSoapWorkspace({
           totalConsultations={totalConsultations}
           usesHceExport={usesHceExport}
           inlineConsultOpen={parsed.inlineConsultOpen}
+          pendingSidebarConsultation={pendingSidebarConsultation}
           consultPanel={
             parsed.inlineConsultOpen ? (
               <PatientEhrNewConsultPanel
