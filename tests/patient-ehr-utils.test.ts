@@ -5,6 +5,7 @@ import {
   filterClinicalRowsByConsultationDay,
   formatPatientEhrSidebarDate,
   patientEhrEvolutionBody,
+  resolveConsultationAttachment,
   resolveSelectedConsultation,
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
@@ -93,5 +94,41 @@ describe("filterClinicalRowsByConsultationDay", () => {
     const filtered = filterClinicalRowsByConsultationDay(rows, "2019-04-05T09:00:00Z");
 
     expect(filtered.map((row) => row.id)).toEqual(["a"]);
+  });
+});
+
+describe("resolveConsultationAttachment", () => {
+  const consultation = (
+    partial: Partial<PatientEhrConsultation> & Pick<PatientEhrConsultation, "id">
+  ): PatientEhrConsultation => ({
+    id: partial.id,
+    created_at: partial.created_at ?? "2025-04-24T12:00:00Z",
+    professional_name: "Dr. Test",
+    chief_complaint: partial.chief_complaint ?? "",
+    diagnosis: partial.diagnosis ?? "",
+    evolution: partial.evolution ?? "",
+    indications: "",
+    category: partial.category ?? "document",
+  });
+
+  it("matches attachments by file name and embedded uuid", () => {
+    const attachments = [
+      {
+        id: "att-1",
+        file_name: "d8aded1d-2b82-4068-930b-b86427cdfcae.jpeg",
+        created_at: "2025-04-24T12:00:00Z",
+        category: "estudio",
+      },
+    ];
+
+    const match = resolveConsultationAttachment(
+      consultation({
+        id: "rec-1",
+        diagnosis: "d8aded1d-2b82-4068-930b-b86427cdfcae.jpeg",
+      }),
+      attachments
+    );
+
+    expect(match?.id).toBe("att-1");
   });
 });

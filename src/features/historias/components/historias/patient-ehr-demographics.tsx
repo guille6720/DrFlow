@@ -1,9 +1,15 @@
 import { PatientEhrDemographicCell } from "@/features/historias/components/historias/patient-ehr-demographic-cell";
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
 import { PatientWhatsAppButton } from "@/features/pacientes/components/pacientes/patient-whatsapp-button";
+import { formatPatientConsultationCount } from "@/features/pacientes/utils/patient-consultation-count";
 import { buildPatientContactMessage } from "@/features/pacientes/utils/patient-messages";
 
-export function PatientEhrDemographics({ patient }: { patient: PatientEhrPatientInfo }) {
+type Props = {
+  patient: PatientEhrPatientInfo;
+  totalConsultations?: number;
+};
+
+export function PatientEhrDemographics({ patient, totalConsultations }: Props) {
   const patientFormal = `${patient.last_name}, ${patient.first_name}`;
   const patientDisplay = `${patient.first_name} ${patient.last_name}`;
 
@@ -39,6 +45,12 @@ export function PatientEhrDemographics({ patient }: { patient: PatientEhrPatient
         }
       />
       <PatientEhrDemographicCell label="Email" value={patient.email?.trim() || "Sin definir"} />
+      {totalConsultations != null ? (
+        <PatientEhrDemographicCell
+          label="Consultas"
+          value={formatPatientConsultationCount(totalConsultations)}
+        />
+      ) : null}
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
   buildConsultationSidebarList,
   filterClinicalRowsByConsultationDay,
   isSameCalendarDay,
+  resolveConsultationAttachment,
   resolveSelectedConsultation,
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import { printEhrClinicalDocument } from "@/features/historias/utils/print-ehr-clinical-document";
@@ -31,6 +32,7 @@ function buildEvolutionList(sorted: PatientEhrConsultation[]): PatientEhrConsult
   const withText = sorted.filter(
     (c) =>
       c.category === "evolution" ||
+      c.category === "document" ||
       (c.evolution?.trim().length ?? 0) > 15 ||
       (c.category !== "vitals" &&
         c.category !== "treatment" &&
@@ -99,13 +101,14 @@ export function usePatientEhrState(
     [attachments]
   );
 
-  const attachmentByFileName = useMemo(() => {
+  const consultationAttachmentById = useMemo(() => {
     const map = new Map<string, PatientEhrAttachment>();
-    for (const attachment of visibleAttachments) {
-      map.set(attachment.file_name.toLowerCase(), attachment);
+    for (const consultation of sorted) {
+      const attachment = resolveConsultationAttachment(consultation, visibleAttachments);
+      if (attachment) map.set(consultation.id, attachment);
     }
     return map;
-  }, [visibleAttachments]);
+  }, [sorted, visibleAttachments]);
 
   async function handleOpenAttachment(id: string) {
     setOpeningAttachmentId(id);
@@ -113,7 +116,9 @@ export function usePatientEhrState(
     const result = await getPatientClinicalDocumentUrl(id);
     setOpeningAttachmentId(null);
     if (result.error || !result.url) {
-      setAttachmentError(result.error ?? "No se pudo abrir el documento");
+      const message = result.error ?? "No se pudo abrir el documento";
+      setAttachmentError(message);
+      toast.error(message);
       return;
     }
     window.open(result.url, "_blank", "noopener,noreferrer");
@@ -128,13 +133,6 @@ export function usePatientEhrState(
     if (!selected) return [];
     return evolutionList.filter((c) => isSameCalendarDay(c.created_at, selected.created_at));
   }, [evolutionList, selected]);
-
-  const selectedDocumentAttachment = useMemo(() => {
-    if (!selected || selected.category !== "document") return null;
-    const fileName = selected.diagnosis?.trim().toLowerCase();
-    if (!fileName) return null;
-    return attachmentByFileName.get(fileName) ?? null;
-  }, [attachmentByFileName, selected]);
 
   const vitalsRows = useMemo(() => sorted.filter((c) => c.category === "vitals"), [sorted]);
 
@@ -181,7 +179,7 @@ export function usePatientEhrState(
     visibleAttachments,
     handleOpenAttachment,
     selected,
-    selectedDocumentAttachment,
+    consultationAttachmentById,
     vitalsRows,
     dayPrintConsultations,
     triggerPrint,

@@ -7,6 +7,7 @@ import {
   type PatientEhrFilterKey,
   type PatientEhrFilters,
 } from "@/features/historias/components/historias/patient-ehr-types";
+import { formatPatientConsultationCount } from "@/features/pacientes/utils/patient-consultation-count";
 
 type Props = {
   filters: PatientEhrFilters;
@@ -39,7 +40,9 @@ export function PatientEhrFiltersBar({
             {label}
           </label>
         ))}
-        <span className="ml-auto text-xs drflow-ehr-filter-meta">{totalConsultations} registros</span>
+        <span className="ml-auto text-xs drflow-ehr-filter-meta">
+          {formatPatientConsultationCount(totalConsultations)}
+        </span>
       </div>
 
       {usesHceExport ? (

@@ -63,12 +63,23 @@ function formatShortDate(iso: string): string {
   return `${day}-${months[d.getMonth()]}-${yy}`;
 }
 
-function classifyCategory(chief_complaint: string): PatientEhrConsultation["category"] {
+function classifyCategory(
+  chief_complaint: string,
+  diagnosis = "",
+  evolution = ""
+): PatientEhrConsultation["category"] {
   const cc = chief_complaint.toLowerCase();
   if (cc.includes("signos vitales")) return "vitals";
   if (cc.includes("tratamiento")) return "treatment";
   if (cc.includes("diagnóstico") || cc.includes("diagnostico")) return "diagnostic";
   if (cc.includes("documento adjunto") || cc.includes("archivo")) return "document";
+  if (
+    looksLikeClinicalFileName(diagnosis) ||
+    looksLikeClinicalFileName(evolution) ||
+    looksLikeClinicalFileName(chief_complaint)
+  ) {
+    return "document";
+  }
   return "evolution";
 }
 
@@ -176,7 +187,9 @@ export function buildEhrPayloadFromRecords(
 
   for (const r of records) {
     const chief = stripHceMarker(r.chief_complaint ?? "");
-    const category = classifyCategory(chief);
+    const diagnosis = stripHceMarker(r.diagnosis ?? "");
+    const evolution = sanitizeClinicalDisplayText(r.evolution ?? "");
+    const category = classifyCategory(chief, diagnosis, evolution);
     const dateLabel = formatShortDate(r.created_at);
     const recordCreatedAt = r.created_at;
 
@@ -191,14 +204,14 @@ export function buildEhrPayloadFromRecords(
         professional_license_provincial: r.professional_license_provincial,
         professional_email: r.professional_email,
         chief_complaint: chief,
-        diagnosis: stripHceMarker(r.diagnosis ?? ""),
-        evolution: sanitizeClinicalDisplayText(r.evolution ?? ""),
+        diagnosis,
+        evolution,
         indications: sanitizeClinicalDisplayText(r.indications ?? ""),
         category,
       });
     }
 
-    const diagText = stripHceMarker(r.diagnosis ?? "");
+    const diagText = diagnosis;
     if (diagText && category !== "vitals" && category !== "document" && !looksLikeClinicalFileName(diagText)) {
       const key = diagText.toLowerCase().slice(0, 120);
 

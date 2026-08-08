@@ -109,9 +109,14 @@ export function PatientSoapWorkspace({
       initialSelectedId={parsed.consulta}
     >
       <PatientEhrShellFrame embedded={embedded}>
-        {!embedded ? <PatientEhrDemographics patient={patient} /> : null}
+        {!embedded ? (
+          <PatientEhrDemographics patient={patient} totalConsultations={totalConsultations} />
+        ) : null}
         <div className="drflow-ehr-print-demographics-wrap">
-          <PatientEhrPrintDemographics patient={patient} />
+          <PatientEhrPrintDemographics
+            patient={patient}
+            totalConsultations={totalConsultations}
+          />
         </div>
 
         <PatientEhrInteractiveBody

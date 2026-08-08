@@ -60,7 +60,7 @@ export function PatientEhrInteractiveBody({
     visibleAttachments,
     handleOpenAttachment,
     selected,
-    selectedDocumentAttachment,
+    consultationAttachmentById,
     vitalsRows,
     dayPrintConsultations,
   } = usePatientEhrStateContext();
@@ -121,10 +121,9 @@ export function PatientEhrInteractiveBody({
                       key={consultation.id}
                       patientId={patientId}
                       selected={consultation}
-                      selectedDocumentAttachment={
-                        consultation.id === selected?.id ? selectedDocumentAttachment : null
-                      }
+                      documentAttachment={consultationAttachmentById.get(consultation.id) ?? null}
                       openingAttachmentId={openingAttachmentId}
+                      attachmentError={attachmentError}
                       onOpenAttachment={handleOpenAttachment}
                     />
                   ))}

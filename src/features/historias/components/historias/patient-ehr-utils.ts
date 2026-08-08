@@ -1,5 +1,6 @@
-import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
+import type { PatientEhrAttachment, PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
 
+import { looksLikeClinicalFileName } from "@/lib/utils/ehr-clinical-category";
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 
 export function formatPatientEhrSidebarDate(iso: string): string {
@@ -76,6 +77,44 @@ export function filterClinicalRowsByConsultationDay<
 >(rows: T[], consultationCreatedAt: string | null | undefined): T[] {
   if (!consultationCreatedAt) return rows;
   return rows.filter((row) => isSameCalendarDay(row.recordCreatedAt, consultationCreatedAt));
+}
+
+export function extractConsultationFileName(consultation: PatientEhrConsultation): string | null {
+  for (const candidate of [
+    consultation.diagnosis,
+    consultation.evolution,
+    consultation.chief_complaint,
+  ]) {
+    const trimmed = candidate?.trim() ?? "";
+    if (looksLikeClinicalFileName(trimmed)) return trimmed;
+  }
+  return null;
+}
+
+function normalizeAttachmentLookupKey(fileName: string): string {
+  return fileName.trim().toLowerCase().split(/[/\\]/).pop() ?? fileName.trim().toLowerCase();
+}
+
+export function resolveConsultationAttachment(
+  consultation: PatientEhrConsultation,
+  attachments: PatientEhrAttachment[]
+): PatientEhrAttachment | null {
+  const fileName = extractConsultationFileName(consultation);
+  if (!fileName) return null;
+
+  const normalized = normalizeAttachmentLookupKey(fileName);
+  const exact = attachments.find(
+    (attachment) => normalizeAttachmentLookupKey(attachment.file_name) === normalized
+  );
+  if (exact) return exact;
+
+  const uuidMatch = normalized.match(
+    /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
+  );
+  if (!uuidMatch) return null;
+
+  const uuid = uuidMatch[0].toLowerCase();
+  return attachments.find((attachment) => attachment.file_name.toLowerCase().includes(uuid)) ?? null;
 }
 
 export function patientEhrEvolutionBody(c: PatientEhrConsultation): string {

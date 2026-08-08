@@ -4,9 +4,11 @@ import {
   formatPrintDocumentNumber,
 } from "@/features/historias/components/historias/patient-ehr-print-utils";
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
+import { formatPatientConsultationCount } from "@/features/pacientes/utils/patient-consultation-count";
 
 type Props = {
   patient: PatientEhrPatientInfo;
+  totalConsultations?: number;
 };
 
 function WhatsAppIcon() {
@@ -25,7 +27,7 @@ function WhatsAppIcon() {
   );
 }
 
-export function PatientEhrPrintDemographics({ patient }: Props) {
+export function PatientEhrPrintDemographics({ patient, totalConsultations }: Props) {
   const patientFormal = `${patient.last_name}, ${patient.first_name}`.toLowerCase();
   const birthDate = formatPrintBirthDate(patient.birth_date);
   const detailedAge = formatPrintDetailedAge(patient.birth_date) ?? patient.age_label;
@@ -75,6 +77,14 @@ export function PatientEhrPrintDemographics({ patient }: Props) {
             )}
           </p>
         </div>
+        {totalConsultations != null ? (
+          <div className="drflow-ehr-print-demo-field">
+            <p className="drflow-ehr-print-demo-label">Consultas</p>
+            <p className="drflow-ehr-print-demo-value">
+              {formatPatientConsultationCount(totalConsultations)}
+            </p>
+          </div>
+        ) : null}
       </div>
     </section>
   );

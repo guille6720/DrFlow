@@ -13,6 +13,7 @@ import {
 import { PatientAppShareControl } from "@/features/pacientes/components/pacientes/patient-app-share-control";
 import { PatientWhatsAppButton } from "@/features/pacientes/components/pacientes/patient-whatsapp-button";
 import { isPamiPatient } from "@/features/pacientes/utils/patient-age";
+import { formatPatientConsultationCountShort } from "@/features/pacientes/utils/patient-consultation-count";
 import { buildPatientContactMessage } from "@/features/pacientes/utils/patient-messages";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
@@ -29,6 +30,7 @@ export type PatientListRow = {
   email: string | null;
   insurance_provider: string | null;
   ageLabel: string | null;
+  consultationCount: number;
 };
 
 type ShareMeta = {
@@ -87,47 +89,52 @@ const PatientListCard = memo(function PatientListCard({
         ) : null}
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center gap-2">
-        {portalSlug && doctorInfo ? (
-          <PatientAppShareControl
-            patientId={p.id}
-            patientName={`${p.first_name} ${p.last_name}`}
-            patientPhone={p.phone}
-            slug={portalSlug}
-            doctor={doctorInfo}
-            share={shareMeta ?? null}
-            compact
-          />
-        ) : null}
-        <PatientWhatsAppButton phone={p.phone} message={contactMessage} size="icon" />
-        <Link
-          href={patientClinicalHistoryPath(p.id)}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-cyan-700 hover:to-teal-700"
-        >
-          <FileText className="h-3.5 w-3.5" />
-          Historia clínica
-        </Link>
-        {canIssuePrescriptions ? (
+      <div className="flex shrink-0 flex-col items-stretch gap-1.5 sm:items-end">
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          {portalSlug && doctorInfo ? (
+            <PatientAppShareControl
+              patientId={p.id}
+              patientName={`${p.first_name} ${p.last_name}`}
+              patientPhone={p.phone}
+              slug={portalSlug}
+              doctor={doctorInfo}
+              share={shareMeta ?? null}
+              compact
+            />
+          ) : null}
+          <PatientWhatsAppButton phone={p.phone} message={contactMessage} size="icon" />
           <Link
-            href={buildPatientWorkspaceUrl(p.id, { tab: "recetas", action: "nueva" })}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800 hover:bg-teal-100"
+            href={patientClinicalHistoryPath(p.id)}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-cyan-700 hover:to-teal-700"
           >
-            <ScrollText className="h-3.5 w-3.5" />
-            Receta
+            <FileText className="h-3.5 w-3.5" />
+            Historia clínica
           </Link>
-        ) : null}
-        <Link
-          href={`/pacientes/${p.id}`}
-          className="text-xs font-semibold text-slate-800 underline-offset-2 hover:text-teal-800 hover:underline"
-        >
-          Ficha
-        </Link>
-        <Link
-          href={`/pacientes/${p.id}/editar`}
-          className="text-xs font-semibold text-slate-800 underline-offset-2 hover:text-teal-800 hover:underline"
-        >
-          Editar
-        </Link>
+          {canIssuePrescriptions ? (
+            <Link
+              href={buildPatientWorkspaceUrl(p.id, { tab: "recetas", action: "nueva" })}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800 hover:bg-teal-100"
+            >
+              <ScrollText className="h-3.5 w-3.5" />
+              Receta
+            </Link>
+          ) : null}
+          <Link
+            href={`/pacientes/${p.id}`}
+            className="text-xs font-semibold text-slate-800 underline-offset-2 hover:text-teal-800 hover:underline"
+          >
+            Ficha
+          </Link>
+          <Link
+            href={`/pacientes/${p.id}/editar`}
+            className="text-xs font-semibold text-slate-800 underline-offset-2 hover:text-teal-800 hover:underline"
+          >
+            Editar
+          </Link>
+        </div>
+        <p className="text-[11px] font-medium text-slate-600 sm:text-right">
+          {formatPatientConsultationCountShort(p.consultationCount)}
+        </p>
       </div>
     </article>
   );

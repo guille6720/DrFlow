@@ -2,18 +2,12 @@
 
 import { Search, Stethoscope } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import type { FormEvent, ReactNode } from "react";
-import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 
-import {
-  buildPacientesSearchUrl,
-  resolvePacientesClearHref,
-} from "@/features/pacientes/utils/pacientes-page-url";
+import { useDebouncedPacientesSearch } from "@/features/pacientes/hooks/use-debounced-pacientes-search";
+import { resolvePacientesClearHref } from "@/features/pacientes/utils/pacientes-page-url";
 
 import { Button } from "@/components/ui/button";
-
-const LIVE_SEARCH_DEBOUNCE_MS = 300;
 
 type Props = {
   q: string;
@@ -23,35 +17,12 @@ type Props = {
 };
 
 export function PacientesSearchForm({ q, patologia = "", cobertura, trailing }: Props) {
-  const router = useRouter();
-  const [query, setQuery] = useState(q);
-  const [pathology, setPathology] = useState(patologia);
-  const [syncedQ, setSyncedQ] = useState(q);
-  const [syncedPatologia, setSyncedPatologia] = useState(patologia);
+  const { query, setQuery, pathology, setPathology, submitSearch } = useDebouncedPacientesSearch(
+    q,
+    patologia,
+    cobertura
+  );
   const clearHref = resolvePacientesClearHref(q, cobertura, patologia);
-
-  if (q !== syncedQ) {
-    setSyncedQ(q);
-    setQuery(q);
-  }
-
-  if (patologia !== syncedPatologia) {
-    setSyncedPatologia(patologia);
-    setPathology(patologia);
-  }
-
-  useEffect(() => {
-    if (query === q && pathology === patologia) return;
-    const timer = window.setTimeout(() => {
-      router.push(buildPacientesSearchUrl(query, cobertura, pathology), { scroll: false });
-    }, LIVE_SEARCH_DEBOUNCE_MS);
-    return () => window.clearTimeout(timer);
-  }, [query, pathology, q, patologia, cobertura, router]);
-
-  function submitNow(e: FormEvent) {
-    e.preventDefault();
-    router.push(buildPacientesSearchUrl(query, cobertura, pathology), { scroll: false });
-  }
 
   return (
     <div className="drflow-card-light rounded-2xl border-2 border-amber-400/90 bg-gradient-to-br from-amber-50 via-orange-50/40 to-blue-50 p-4 text-slate-900 shadow-md shadow-amber-200/40 ring-1 ring-amber-300/50">
@@ -63,7 +34,7 @@ export function PacientesSearchForm({ q, patologia = "", cobertura, trailing }: 
           className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
           action="/pacientes"
           method="get"
-          onSubmit={submitNow}
+          onSubmit={submitSearch}
         >
           {cobertura === "pami" ? <input type="hidden" name="cobertura" value="pami" /> : null}
           <div className="relative min-w-[200px] flex-1">
