@@ -1,5 +1,6 @@
 "use client";
 
+import { buildClinicalHistoryFilename } from "@/lib/utils/clinical-history-filename";
 import { type JsPdfDocument, loadJsPdf } from "@/lib/utils/jspdf-loader";
 
 export function downloadCsv(filename: string, rows: string[][]) {
@@ -117,7 +118,14 @@ export async function downloadClinicalHistoryPdf(
     y += 10;
   }
 
-  doc.save(`historia-clinica-${patient.document_number}.pdf`);
+  doc.save(
+    buildClinicalHistoryFilename({
+      last_name: patient.last_name,
+      first_name: patient.first_name,
+      document_number: patient.document_number,
+      consultationDate: records[0]?.created_at ?? null,
+    })
+  );
 }
 
 export async function downloadPatientsPdf(patients: PatientExportRow[]) {

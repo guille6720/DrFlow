@@ -134,5 +134,8 @@ export function parsePatientWorkspaceTab(value: string | null | undefined): Pati
 
 export function patientWorkspacePath(patientId: string, tab: PatientWorkspaceTabId = "resumen"): string {
   if (tab === DEFAULT_PATIENT_WORKSPACE_TAB) return `/pacientes/${patientId}`;
+  if (tab === DEFAULT_HC_WORKSPACE_TAB) {
+    return `/pacientes/${patientId}?tab=soap&action=nueva`;
+  }
   return `/pacientes/${patientId}?tab=${tab}`;
 }

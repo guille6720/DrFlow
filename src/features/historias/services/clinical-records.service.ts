@@ -34,6 +34,7 @@ export async function createClinicalRecordEntry(
 ): Promise<ServiceResult<ClinicalRecordRow>> {
   const sanitized = sanitizeClinicalRecordFields(input.parsed);
   const modality = parseConsultationModality(input.consultationModalityRaw);
+  const consultationAt = input.parsed.consultation_at?.trim() || null;
 
   const { data, error } = await db.rpc("create_clinical_record_atomic", {
     p_clinic_id: input.clinicId,
@@ -46,6 +47,7 @@ export async function createClinicalRecordEntry(
     p_indications: sanitized.indications,
     p_created_by: input.userId,
     p_consultation_modality: modality,
+    p_consultation_at: consultationAt,
     p_audit_what: "Creó consulta clínica (SOAP)",
     p_audit_ip: input.auditContext.ip_address,
     p_audit_user_agent: input.auditContext.user_agent,
@@ -66,6 +68,7 @@ export async function updateClinicalRecordEntry(
   }
 ): Promise<ServiceResult<{ old: Record<string, unknown>; data: Record<string, unknown> }>> {
   const sanitized = sanitizeClinicalRecordFields(input.parsed);
+  const consultationAt = input.parsed.consultation_at?.trim() || null;
 
   const { data, error } = await db.rpc("update_clinical_record_atomic", {
     p_clinic_id: input.clinicId,
@@ -78,6 +81,7 @@ export async function updateClinicalRecordEntry(
     p_evolution: sanitized.evolution,
     p_indications: sanitized.indications,
     p_updated_by: input.userId,
+    p_consultation_at: consultationAt,
     p_audit_what: "Modificó consulta clínica (SOAP)",
     p_audit_ip: input.auditContext.ip_address,
     p_audit_user_agent: input.auditContext.user_agent,

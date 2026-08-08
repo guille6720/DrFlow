@@ -56,7 +56,7 @@ export async function createClinicalRecord(formData: FormData) {
     revalidatePath("/atenciones");
   }
 
-  await logAudit({
+  void logAudit({
     clinicId,
     module: "clinical",
     what: "Creó consulta clínica (SOAP)",
@@ -68,7 +68,50 @@ export async function createClinicalRecord(formData: FormData) {
   });
 
   revalidatePath("/historias");
+  revalidatePath(`/pacientes/${parsed.data.patient_id}`, "page");
   return { data: result.data };
+}
+
+export async function updateClinicalRecordConsultationAt(
+  recordId: string,
+  consultationAtIso: string
+) {
+  const access = await requireClinicPermission("editClinicalRecords");
+  if (!access.ok) return { error: access.error };
+  const { clinicId } = access;
+
+  const idParsed = parseEntityId(recordId, "Consulta");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const parsedDate = new Date(consultationAtIso);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return { error: "Fecha de consulta inválida." };
+  }
+
+  const supabase = await createClient();
+  const { data: record, error: fetchError } = await supabase
+    .from("clinical_records")
+    .select(
+      "id, patient_id, professional_id, appointment_id, chief_complaint, diagnosis, evolution, indications"
+    )
+    .eq("id", idParsed.data)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+
+  if (fetchError) return { error: fetchError.message };
+  if (!record) return { error: "Consulta no encontrada." };
+
+  const formData = new FormData();
+  formData.set("patient_id", record.patient_id);
+  formData.set("professional_id", record.professional_id);
+  if (record.appointment_id) formData.set("appointment_id", record.appointment_id);
+  formData.set("chief_complaint", record.chief_complaint ?? "");
+  formData.set("diagnosis", record.diagnosis ?? "");
+  formData.set("evolution", record.evolution ?? "");
+  formData.set("indications", record.indications ?? "");
+  formData.set("consultation_at", parsedDate.toISOString());
+
+  return updateClinicalRecord(idParsed.data, formData);
 }
 
 export async function updateClinicalRecord(id: string, formData: FormData) {
@@ -122,5 +165,6 @@ export async function updateClinicalRecord(id: string, formData: FormData) {
 
   revalidatePath("/historias");
   revalidatePath(`/historias/${idParsed.data}`);
+  revalidatePath(`/pacientes/${String(result.data.data.patient_id)}`, "page");
   return { success: true };
 }

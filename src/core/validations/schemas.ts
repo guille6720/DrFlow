@@ -104,6 +104,7 @@ export const clinicalRecordSchema = z.object({
   evolution: z.string().optional(),
   indications: z.string().optional(),
   professional_signature: z.string().optional(),
+  consultation_at: z.string().optional().nullable(),
 });
 
 export const prescriptionMedicationSchema = z.object({

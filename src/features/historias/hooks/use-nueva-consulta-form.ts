@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { ConsultPatientPickerRow } from "@/core/supabase/query-types";
 
@@ -54,9 +54,14 @@ type Options = {
   professionals: ConsultFormProfessional[];
   templates: Template[];
   workspace?: NuevaConsultaWorkspaceConfig;
-  /** Administrador de la clínica cuando no hay selección explícita. */
   fallbackProfessionalId?: string;
 };
+
+function toDatetimeLocalValue(date: Date): string {
+  const offset = date.getTimezoneOffset();
+  const local = new Date(date.getTime() - offset * 60_000);
+  return local.toISOString().slice(0, 16);
+}
 
 export function useNuevaConsultaForm({
   patients,
@@ -85,11 +90,14 @@ export function useNuevaConsultaForm({
   const [patientId, setPatientId] = useState(defaultPatient);
   const [professionalId, setProfessionalId] = useState(defaultProfessional);
   const [evolution, setEvolution] = useState("");
+  const [consultationAt, setConsultationAt] = useState(() => toDatetimeLocalValue(new Date()));
+  const savingRef = useRef(false);
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   const selectedPatient = patients.find((p) => p.id === patientId);
   const activeProfessionalId = fromAppointment ? defaultProfessional : professionalId;
-
   const activeProfessional = professionals.find((p) => p.id === activeProfessionalId);
+  const isDirty = evolution.trim().length > 0;
 
   function signatureForProfessionalId(id: string): string {
     const pro = professionals.find((p) => p.id === id);
@@ -156,6 +164,83 @@ export function useNuevaConsultaForm({
     };
   }, [draftKey]);
 
+  const persistConsultation = useCallback(
+    async (form: HTMLFormElement, options?: { silent?: boolean }) => {
+      if (savingRef.current) return { ok: false as const, error: "Guardando..." };
+      if (!evolution.trim()) return { ok: false as const, error: null };
+
+      savingRef.current = true;
+      setLoading(true);
+      setError(null);
+
+      const formData = new FormData(form);
+      if (appointmentId) formData.set("appointment_id", appointmentId);
+      formData.set("chief_complaint", "");
+      formData.set("diagnosis", "");
+      formData.set("indications", "");
+      formData.set("professional_signature", professionalSignature);
+      formData.set("consultation_at", new Date(consultationAt).toISOString());
+
+      const result = await createClinicalRecord(formData);
+      savingRef.current = false;
+      setLoading(false);
+
+      if (result.error) {
+        if (!options?.silent) setError(result.error);
+        return { ok: false as const, error: result.error };
+      }
+
+      if (result.data) {
+        if (draftKey) clearConsultationEvolution(draftKey);
+        setEvolution("");
+        if (workspace) {
+          workspace.onSaved(result.data.id);
+        } else if (!options?.silent) {
+          router.push(`/historias/${result.data.id}`);
+        }
+      }
+
+      return { ok: true as const, recordId: result.data?.id };
+    },
+    [
+      appointmentId,
+      consultationAt,
+      draftKey,
+      evolution,
+      professionalSignature,
+      router,
+      workspace,
+    ]
+  );
+
+  const saveIfDirty = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (!isDirty || !formRef.current) return true;
+      const result = await persistConsultation(formRef.current, options);
+      return result.ok;
+    },
+    [isDirty, persistConsultation]
+  );
+
+  useEffect(() => {
+    const form = formRef.current;
+
+    function handleBeforeUnload(event: BeforeUnloadEvent) {
+      if (!isDirty) return;
+      void saveIfDirty({ silent: true });
+      event.preventDefault();
+      event.returnValue = "";
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      if (isDirty && form) {
+        void persistConsultation(form, { silent: true });
+      }
+    };
+  }, [isDirty, persistConsultation, saveIfDirty]);
+
   function pharmacologyHref(mode?: "symptoms" | "pathology" | "vademecum") {
     if (!consultationContext) {
       return mode && mode !== "pathology"
@@ -186,25 +271,23 @@ export function useNuevaConsultaForm({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    const formData = new FormData(e.currentTarget);
-    if (appointmentId) formData.set("appointment_id", appointmentId);
-    formData.set("chief_complaint", "");
-    formData.set("diagnosis", "");
-    formData.set("indications", "");
-    formData.set("professional_signature", professionalSignature);
-    const result = await createClinicalRecord(formData);
-    setLoading(false);
-    if (result.error) {
-      setError(result.error);
-    } else if (result.data) {
-      if (draftKey) clearConsultationEvolution(draftKey);
-      if (workspace) {
-        workspace.onSaved(result.data.id);
-      } else {
-        router.push(`/historias/${result.data.id}`);
-      }
+    await persistConsultation(e.currentTarget);
+  }
+
+  function requestSubmit() {
+    formRef.current?.requestSubmit();
+  }
+
+  function handleFormKeyDown(event: React.KeyboardEvent<HTMLFormElement>) {
+    const target = event.target;
+    const isTextarea = target instanceof HTMLTextAreaElement;
+    const isModifierEnter =
+      (event.ctrlKey || event.metaKey) && event.key === "Enter";
+    const isPlainEnter = event.key === "Enter" && !isTextarea && !event.shiftKey;
+
+    if (isModifierEnter || isPlainEnter) {
+      event.preventDefault();
+      requestSubmit();
     }
   }
 
@@ -238,9 +321,16 @@ export function useNuevaConsultaForm({
     setProfessionalId,
     evolution,
     setEvolution,
+    consultationAt,
+    setConsultationAt,
     professionalSignature,
     setProfessionalSignature,
     professionalSignatureImageUrl: activeProfessional?.signature_image_url ?? null,
+    isDirty,
+    formRef,
+    saveIfDirty,
+    requestSubmit,
+    handleFormKeyDown,
     pharmacologyHref,
     flushEvolutionDraft,
     recetaHref,

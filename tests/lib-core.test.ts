@@ -33,11 +33,11 @@ describe("cn", () => {
 
 describe("clinical-navigation", () => {
   it("builds patient HC path and return query", () => {
-    expect(patientClinicalHistoryPath("abc")).toBe("/pacientes/abc?tab=soap");
+    expect(patientClinicalHistoryPath("abc")).toBe("/pacientes/abc?tab=soap&action=nueva");
     expect(withClinicalHistoryReturn("/recetas", "abc")).toContain("from=" + FROM_CLINICAL_HISTORY);
     expect(isFromClinicalHistory(FROM_CLINICAL_HISTORY)).toBe(true);
     expect(backHrefFromClinicalSubpage(FROM_CLINICAL_HISTORY, "abc", "/dashboard")).toBe(
-      "/pacientes/abc?tab=soap"
+      "/pacientes/abc?tab=soap&action=nueva"
     );
     expect(backHrefFromClinicalSubpage(null, "abc", "/dashboard")).toBe("/dashboard");
   });

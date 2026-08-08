@@ -62,9 +62,9 @@ export function PatientSoapWorkspace({
   const onConsultSaved = useCallback(
     (recordId: string) => {
       router.push(
-        buildPatientWorkspaceUrl(patient.id, { tab: "soap", record: recordId, mode: "view" })
+        buildPatientWorkspaceUrl(patient.id, { tab: "soap", record: recordId, mode: "view" }),
+        { scroll: false }
       );
-      router.refresh();
     },
     [patient.id, router]
   );
@@ -130,6 +130,7 @@ export function PatientSoapWorkspace({
             <PatientEhrActionLinks
               patientId={patient.id}
               consultOpen={parsed.inlineConsultOpen}
+              saveLoading={form.loading}
               activeSheet={parsed.sheet}
               activeFocus={parsed.focus}
             />

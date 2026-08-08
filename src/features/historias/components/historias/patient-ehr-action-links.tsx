@@ -10,9 +10,13 @@ import type {
 } from "@/features/pacientes/utils/patient-workspace-actions";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
+import { Button } from "@/components/ui/button";
+import { EHR_NEW_CONSULT_FORM_ID } from "@/lib/utils/clinical-history-filename";
+
 type Props = {
   patientId: string;
   consultOpen?: boolean;
+  saveLoading?: boolean;
   activeSheet?: PatientWorkspaceSheet | null;
   activeFocus?: PatientWorkspaceFocus | null;
 };
@@ -32,6 +36,7 @@ function consultUrl(
 export function PatientEhrActionLinks({
   patientId,
   consultOpen = false,
+  saveLoading = false,
   activeSheet,
   activeFocus,
 }: Props) {
@@ -85,7 +90,15 @@ export function PatientEhrActionLinks({
       >
         <Plus className="h-3.5 w-3.5" /> Orden
       </Link>
-      <PatientEhrPrintMenu />
+
+      <div className="ml-auto flex items-center gap-3 print:hidden">
+        {consultOpen ? (
+          <Button type="submit" form={EHR_NEW_CONSULT_FORM_ID} size="sm" loading={saveLoading}>
+            Guardar consulta
+          </Button>
+        ) : null}
+        <PatientEhrPrintMenu />
+      </div>
     </div>
   );
 }

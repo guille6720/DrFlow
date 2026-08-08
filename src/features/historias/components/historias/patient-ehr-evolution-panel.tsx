@@ -1,13 +1,15 @@
 "use client";
 
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { ExternalLink, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { withClinicalHistoryReturn } from "@/shared/utils/clinical-navigation";
 
-import { patientEhrEvolutionBody } from "@/features/historias/components/historias/patient-ehr-utils";
+import { PatientEhrConsultationDateEditor } from "@/features/historias/components/historias/patient-ehr-consultation-date-editor";
+import {
+  formatPatientEhrSidebarDate,
+  patientEhrEvolutionBody,
+} from "@/features/historias/components/historias/patient-ehr-utils";
 import type { PatientEhrAttachment, PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
 
 type Props = {
@@ -29,12 +31,17 @@ export function PatientEhrEvolutionPanel({
     <div className="drflow-ehr-evolution-box mt-3 min-h-[240px] rounded-sm border p-4">
       {selected ? (
         <>
-          <p className="mb-2 text-xs drflow-ehr-muted">
-            {format(new Date(selected.created_at), "EEEE d MMMM yyyy · HH:mm", {
-              locale: es,
-            })}{" "}
-            · {selected.professional_name}
-          </p>
+          <div className="mb-2 flex flex-wrap items-center gap-2 text-xs drflow-ehr-muted">
+            {!selected.id.startsWith("hce-") ? (
+              <PatientEhrConsultationDateEditor
+                recordId={selected.id}
+                createdAt={selected.created_at}
+              />
+            ) : (
+              <span>{formatPatientEhrSidebarDate(selected.created_at)}</span>
+            )}
+            <span>· {selected.professional_name}</span>
+          </div>
           <div className="min-h-[180px] whitespace-pre-wrap text-sm leading-relaxed drflow-ehr-evolution-text">
             {selected.category === "document" ? (
               <p>{selected.diagnosis?.trim() || selected.chief_complaint || "Documento adjunto"}</p>

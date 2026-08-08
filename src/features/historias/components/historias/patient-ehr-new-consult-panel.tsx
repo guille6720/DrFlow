@@ -1,7 +1,5 @@
 "use client";
 
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { Loader2, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -17,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useClinicalDocumentsPanel } from "@/lib/hooks/use-clinical-documents-panel";
+import { EHR_NEW_CONSULT_FORM_ID } from "@/lib/utils/clinical-history-filename";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 
 type FormProfessional = {
@@ -52,12 +51,15 @@ export function PatientEhrNewConsultPanel({
     setEvolution,
     professionalId,
     setProfessionalId,
+    consultationAt,
+    setConsultationAt,
     professionalSignature,
     setProfessionalSignature,
     professionalSignatureImageUrl,
     error,
-    loading,
     handleSubmit,
+    handleFormKeyDown,
+    formRef,
     applyTemplate,
   } = form;
 
@@ -110,10 +112,19 @@ export function PatientEhrNewConsultPanel({
 
   return (
     <div className="drflow-ehr-evolution-box mt-3 min-h-[240px] rounded-sm border p-4">
-      <p className="mb-3 text-xs drflow-ehr-muted">
-        {format(new Date(), "EEEE d MMMM yyyy · HH:mm", { locale: es })}
-        {activeProfessional ? ` · ${getProfessionalDisplayName(activeProfessional)}` : null}
-      </p>
+      <div className="mb-3 flex flex-wrap items-end gap-3">
+        <div className="min-w-[220px] flex-1">
+          <Input
+            type="datetime-local"
+            label="Fecha de la consulta"
+            value={consultationAt}
+            onChange={(e) => setConsultationAt(e.target.value)}
+          />
+        </div>
+        <p className="pb-2 text-xs drflow-ehr-muted">
+          {activeProfessional ? getProfessionalDisplayName(activeProfessional) : null}
+        </p>
+      </div>
 
       {templates.length > 0 ? (
         <div className="mb-3">
@@ -126,7 +137,13 @@ export function PatientEhrNewConsultPanel({
         </div>
       ) : null}
 
-      <form onSubmit={onSubmit} className="space-y-3">
+      <form
+        id={EHR_NEW_CONSULT_FORM_ID}
+        ref={formRef}
+        onSubmit={onSubmit}
+        onKeyDown={handleFormKeyDown}
+        className="space-y-3"
+      >
         <input type="hidden" name="patient_id" value={patientId} />
         <input type="hidden" name="professional_id" value={professionalId} />
 
@@ -245,11 +262,9 @@ export function PatientEhrNewConsultPanel({
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
-        <div className="flex flex-wrap gap-2 pt-1">
-          <Button type="submit" loading={loading}>
-            Guardar consulta
-          </Button>
-        </div>
+        <p className="text-xs drflow-ehr-muted">
+          Enter o Ctrl+Enter guarda la consulta.
+        </p>
       </form>
     </div>
   );
