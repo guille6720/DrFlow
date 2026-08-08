@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildConsultationSidebarList,
+  filterClinicalRowsByConsultationDay,
   formatPatientEhrSidebarDate,
   patientEhrEvolutionBody,
   resolveSelectedConsultation,
@@ -79,5 +80,18 @@ describe("resolveSelectedConsultation", () => {
     const selected = resolveSelectedConsultation("older", sidebar, sidebar, sidebar);
 
     expect(selected?.id).toBe("older");
+  });
+});
+
+describe("filterClinicalRowsByConsultationDay", () => {
+  it("keeps only rows from the selected consultation day", () => {
+    const rows = [
+      { id: "a", recordCreatedAt: "2019-04-05T12:00:00Z" },
+      { id: "b", recordCreatedAt: "2018-12-24T12:00:00Z" },
+    ];
+
+    const filtered = filterClinicalRowsByConsultationDay(rows, "2019-04-05T09:00:00Z");
+
+    expect(filtered.map((row) => row.id)).toEqual(["a"]);
   });
 });

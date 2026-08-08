@@ -13,6 +13,7 @@ import {
 } from "@/features/historias/components/historias/patient-ehr-types";
 import {
   buildConsultationSidebarList,
+  filterClinicalRowsByConsultationDay,
   isSameCalendarDay,
   resolveSelectedConsultation,
 } from "@/features/historias/components/historias/patient-ehr-utils";
@@ -140,13 +141,23 @@ export function usePatientEhrState(
   function triggerPrint(scope: PatientEhrPrintScope) {
     if (scope === "day" && dayPrintConsultations.length === 0) return;
 
+    const dayCreatedAt = selected?.created_at ?? dayPrintConsultations[0]?.created_at ?? null;
+    const diagnosisRows =
+      scope === "day"
+        ? filterClinicalRowsByConsultationDay(printBundle.diagnosisRows, dayCreatedAt)
+        : printBundle.diagnosisRows;
+    const treatmentRows =
+      scope === "day"
+        ? filterClinicalRowsByConsultationDay(printBundle.treatmentRows, dayCreatedAt)
+        : printBundle.treatmentRows;
+
     const result = printEhrClinicalDocument({
       scope,
       patient: printBundle.patient,
       consultations: evolutionList,
       dayConsultations: dayPrintConsultations,
-      diagnosisRows: printBundle.diagnosisRows,
-      treatmentRows: printBundle.treatmentRows,
+      diagnosisRows,
+      treatmentRows,
     });
 
     if (!result.ok) {

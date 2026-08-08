@@ -71,6 +71,13 @@ export function resolveSelectedConsultation(
   return sidebarList[0] ?? evolutionList[0] ?? sorted[0] ?? null;
 }
 
+export function filterClinicalRowsByConsultationDay<
+  T extends { recordCreatedAt: string },
+>(rows: T[], consultationCreatedAt: string | null | undefined): T[] {
+  if (!consultationCreatedAt) return rows;
+  return rows.filter((row) => isSameCalendarDay(row.recordCreatedAt, consultationCreatedAt));
+}
+
 export function patientEhrEvolutionBody(c: PatientEhrConsultation): string {
   const evo = sanitizeClinicalDisplayText(c.evolution);
   if (evo.length > 0) return evo;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { type ReactNode, useMemo } from "react";
 
 import { PatientEhrClinicalTables } from "@/features/historias/components/historias/patient-ehr-clinical-tables";
 import { PatientEhrEvolutionPanel } from "@/features/historias/components/historias/patient-ehr-evolution-panel";
@@ -11,6 +11,7 @@ import { PatientEhrPrintEvolutionBlock } from "@/features/historias/components/h
 import { PatientEhrSidebar } from "@/features/historias/components/historias/patient-ehr-sidebar";
 import { usePatientEhrStateContext } from "@/features/historias/components/historias/patient-ehr-state-context";
 import { PatientEhrSupplementalSections } from "@/features/historias/components/historias/patient-ehr-supplemental-sections";
+import { filterClinicalRowsByConsultationDay } from "@/features/historias/components/historias/patient-ehr-utils";
 import type {
   PatientEhrDiagnosisRow,
   PatientEhrPrescription,
@@ -77,6 +78,16 @@ export function PatientEhrInteractiveBody({
   const screenDayConsultations =
     dayPrintConsultations.length > 0 ? dayPrintConsultations : selected ? [selected] : [];
 
+  const screenDiagnosisRows = useMemo(() => {
+    if (!filters.evolutions || inlineConsultOpen || !selected) return diagnosisRows;
+    return filterClinicalRowsByConsultationDay(diagnosisRows, selected.created_at);
+  }, [diagnosisRows, filters.evolutions, inlineConsultOpen, selected]);
+
+  const screenTreatmentRows = useMemo(() => {
+    if (!filters.evolutions || inlineConsultOpen || !selected) return treatmentRows;
+    return filterClinicalRowsByConsultationDay(treatmentRows, selected.created_at);
+  }, [treatmentRows, filters.evolutions, inlineConsultOpen, selected]);
+
   return (
     <>
       <PatientEhrFiltersBar
@@ -137,8 +148,8 @@ export function PatientEhrInteractiveBody({
               <div className="drflow-ehr-screen-only">
                 <PatientEhrClinicalTables
                   patientId={patientId}
-                  diagnosisRows={diagnosisRows}
-                  treatmentRows={treatmentRows}
+                  diagnosisRows={screenDiagnosisRows}
+                  treatmentRows={screenTreatmentRows}
                   showDiagnostics={filters.diagnostics}
                   showTreatments={filters.treatments}
                 />
@@ -158,8 +169,8 @@ export function PatientEhrInteractiveBody({
 
               <div className="drflow-ehr-print-only drflow-ehr-print-tables-wrap">
                 <PatientEhrPrintClinicalTables
-                  diagnosisRows={filters.diagnostics ? diagnosisRows : []}
-                  treatmentRows={filters.treatments ? treatmentRows : []}
+                  diagnosisRows={filters.diagnostics ? screenDiagnosisRows : []}
+                  treatmentRows={filters.treatments ? screenTreatmentRows : []}
                   consultations={evolutionList}
                 />
               </div>
