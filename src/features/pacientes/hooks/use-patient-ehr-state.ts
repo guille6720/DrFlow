@@ -11,7 +11,10 @@ import {
   type PatientEhrPatientInfo,
   type PatientEhrPrintScope,
 } from "@/features/historias/components/historias/patient-ehr-types";
-import { isSameCalendarDay } from "@/features/historias/components/historias/patient-ehr-utils";
+import {
+  buildConsultationSidebarList,
+  isSameCalendarDay,
+} from "@/features/historias/components/historias/patient-ehr-utils";
 import { printEhrClinicalDocument } from "@/features/historias/utils/print-ehr-clinical-document";
 import { getPatientClinicalDocumentUrl } from "@/features/pacientes/actions/patient-attachments";
 import { HCE_SUMMARY_ATTACHMENT_NAME } from "@/features/pacientes/utils/patient-ehr-from-hce";
@@ -55,9 +58,13 @@ export function usePatientEhrState(
   );
 
   const evolutionList = useMemo(() => buildEvolutionList(sorted), [sorted]);
+  const sidebarList = useMemo(
+    () => buildConsultationSidebarList(sorted, evolutionList),
+    [sorted, evolutionList]
+  );
 
   const [selectedId, setSelectedId] = useState<string | null>(
-    evolutionList[0]?.id ?? sorted[0]?.id ?? null
+    sidebarList[0]?.id ?? evolutionList[0]?.id ?? sorted[0]?.id ?? null
   );
   const [filters, setFilters] = useState<PatientEhrFilters>(DEFAULT_PATIENT_EHR_FILTERS);
   const [openingAttachmentId, setOpeningAttachmentId] = useState<string | null>(null);
@@ -128,6 +135,7 @@ export function usePatientEhrState(
 
   return {
     evolutionList,
+    sidebarList,
     setSelectedId,
     filters,
     toggleFilter,

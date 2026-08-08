@@ -41,6 +41,7 @@ export function PatientEhrInteractiveBody({
 }: Props) {
   const {
     evolutionList,
+    sidebarList,
     setSelectedId,
     filters,
     toggleFilter,
@@ -66,8 +67,9 @@ export function PatientEhrInteractiveBody({
       <div className="drflow-ehr-layout flex flex-col lg:flex-row lg:items-stretch">
         {filters.evolutions ? (
           <PatientEhrSidebar
-            evolutionList={evolutionList}
+            sidebarList={sidebarList}
             selectedId={selected?.id}
+            selectedCreatedAt={selected?.created_at}
             onSelect={setSelectedId}
           />
         ) : null}

@@ -2,25 +2,36 @@
 
 import { cn } from "@/shared/utils/cn";
 
-import { formatPatientEhrSidebarDate } from "@/features/historias/components/historias/patient-ehr-utils";
+import {
+  formatPatientEhrSidebarDate,
+  isSameCalendarDay,
+} from "@/features/historias/components/historias/patient-ehr-utils";
 import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
 
 type Props = {
-  evolutionList: PatientEhrConsultation[];
+  sidebarList: PatientEhrConsultation[];
   selectedId: string | null | undefined;
+  selectedCreatedAt?: string | null;
   onSelect: (id: string) => void;
 };
 
-export function PatientEhrSidebar({ evolutionList, selectedId, onSelect }: Props) {
+export function PatientEhrSidebar({
+  sidebarList,
+  selectedId,
+  selectedCreatedAt,
+  onSelect,
+}: Props) {
   return (
     <aside className="drflow-ehr-sidebar w-full shrink-0 border-b border-[var(--border)] lg:w-56 lg:border-b-0 lg:border-r">
       <div className="max-h-48 overflow-y-auto lg:max-h-[calc(100vh-16rem)] lg:min-h-[320px]">
-        {evolutionList.length === 0 ? (
+        {sidebarList.length === 0 ? (
           <p className="p-4 text-center text-xs drflow-ehr-muted">Sin evoluciones</p>
         ) : (
           <ul>
-            {evolutionList.map((c) => {
-              const active = c.id === selectedId;
+            {sidebarList.map((c) => {
+              const active =
+                c.id === selectedId ||
+                (selectedCreatedAt != null && isSameCalendarDay(c.created_at, selectedCreatedAt));
               return (
                 <li key={c.id}>
                   <button

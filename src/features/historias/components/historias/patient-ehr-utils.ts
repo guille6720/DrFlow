@@ -19,6 +19,33 @@ export function isSameCalendarDay(aIso: string, bIso: string): boolean {
   );
 }
 
+export function calendarDayKey(iso: string): string {
+  const d = new Date(iso);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** Una entrada por día de consulta (evolución principal), sin repetir fechas. */
+export function buildConsultationSidebarList(
+  sorted: PatientEhrConsultation[],
+  evolutionList: PatientEhrConsultation[]
+): PatientEhrConsultation[] {
+  const evolutionOnly = sorted.filter((c) => c.category === "evolution");
+  const source = evolutionOnly.length > 0 ? evolutionOnly : evolutionList;
+
+  const byDay = new Map<string, PatientEhrConsultation>();
+  for (const consultation of source) {
+    const key = calendarDayKey(consultation.created_at);
+    if (!byDay.has(key)) {
+      byDay.set(key, consultation);
+    }
+  }
+
+  return [...byDay.values()];
+}
+
 export function patientEhrEvolutionBody(c: PatientEhrConsultation): string {
   const evo = sanitizeClinicalDisplayText(c.evolution);
   if (evo.length > 0) return evo;

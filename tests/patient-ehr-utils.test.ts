@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildConsultationSidebarList,
   formatPatientEhrSidebarDate,
   patientEhrEvolutionBody,
 } from "@/features/historias/components/historias/patient-ehr-utils";
@@ -35,5 +36,34 @@ describe("patientEhrEvolutionBody", () => {
 describe("formatPatientEhrSidebarDate", () => {
   it("formats date as DD-MMM-YY", () => {
     expect(formatPatientEhrSidebarDate("2024-03-15T10:00:00Z")).toMatch(/^15-MAR-24$/);
+  });
+});
+
+function consultation(
+  partial: Partial<PatientEhrConsultation> & Pick<PatientEhrConsultation, "id" | "created_at">
+): PatientEhrConsultation {
+  return {
+    professional_name: "Dr. Test",
+    chief_complaint: "",
+    diagnosis: "",
+    evolution: "",
+    indications: "",
+    category: "evolution",
+    ...partial,
+  };
+}
+
+describe("buildConsultationSidebarList", () => {
+  it("deduplicates same-day records and keeps only evolution consultations", () => {
+    const sorted = [
+      consultation({ id: "1", created_at: "2022-11-10T12:00:00Z", category: "evolution" }),
+      consultation({ id: "2", created_at: "2022-11-10T15:00:00Z", category: "diagnostic" }),
+      consultation({ id: "3", created_at: "2022-11-10T18:00:00Z", category: "treatment" }),
+      consultation({ id: "4", created_at: "2022-11-09T10:00:00Z", category: "evolution" }),
+    ];
+
+    const sidebar = buildConsultationSidebarList(sorted, sorted);
+
+    expect(sidebar.map((c) => c.id)).toEqual(["1", "4"]);
   });
 });
