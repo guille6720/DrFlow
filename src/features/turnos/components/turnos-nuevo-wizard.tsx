@@ -19,7 +19,7 @@ import { cn } from "@/shared/utils/cn";
 
 import { RescheduleAppointmentDialog } from "@/features/agenda/components/agenda/reschedule-appointment-dialog";
 import { useAppointmentRow } from "@/features/agenda/hooks/use-appointment-row";
-import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
+import { PatientSearchCombobox, type PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { buildCreatePatientHref } from "@/features/pacientes/utils/create-patient-from-search";
 import { createTurnoWizard } from "@/features/turnos/actions/create-turno-wizard";
 import { fetchTurnosWizardSlots } from "@/features/turnos/actions/fetch-turnos-wizard-slots";
@@ -340,9 +340,29 @@ export function TurnosNuevoWizard({
   }, []);
 
   const handlePatientChange = useCallback(
-    (id: string) => {
+    (id: string, picked?: PatientSearchOption) => {
       setPatientId(id);
-      const found = patients.find((p) => p.id === id) ?? null;
+      if (!id) {
+        setSelectedPatient(null);
+        setInsuranceProvider("");
+        setInsurancePlan("");
+        return;
+      }
+
+      const fromList = patients.find((p) => p.id === id);
+      const found =
+        fromList ??
+        (picked
+          ? {
+              id: picked.id,
+              first_name: picked.first_name,
+              last_name: picked.last_name,
+              document_number: picked.document_number,
+              insurance_provider: picked.insurance_provider ?? null,
+              insurance_plan: null,
+            }
+          : null);
+
       setSelectedPatient(found);
       setInsuranceProvider(found?.insurance_provider ?? "");
       setInsurancePlan(found?.insurance_plan ?? "");
@@ -434,7 +454,20 @@ export function TurnosNuevoWizard({
       setSelectedExisting(appointment);
       setSelectedSlot(null);
       setError(null);
-      handlePatientChange(appointment.patient_id);
+      const apptPatient = appointment.patients as
+        | { first_name: string; last_name: string }
+        | undefined;
+      handlePatientChange(
+        appointment.patient_id,
+        apptPatient
+          ? {
+              id: appointment.patient_id,
+              first_name: apptPatient.first_name,
+              last_name: apptPatient.last_name,
+              document_number: "",
+            }
+          : undefined
+      );
     },
     [handlePatientChange]
   );

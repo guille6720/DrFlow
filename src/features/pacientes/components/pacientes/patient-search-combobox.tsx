@@ -30,7 +30,7 @@ interface Props {
   required?: boolean;
   placeholder?: string;
   defaultPatientId?: string;
-  onPatientChange?: (patientId: string) => void;
+  onPatientChange?: (patientId: string, patient?: PatientSearchOption) => void;
   /** When `remote`, searches via API instead of filtering the full local list. */
   searchMode?: "local" | "remote";
   cobertura?: "pami";
@@ -159,7 +159,7 @@ export function PatientSearchCombobox({
     setQuery(formatLabel(p));
     setOpen(false);
     setActiveIndex(-1);
-    onPatientChange?.(p.id);
+    onPatientChange?.(p.id, p);
   }
 
   function handleBlur() {
