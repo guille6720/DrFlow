@@ -8,7 +8,7 @@ import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 
 import type { CancelAppointmentInput } from "@/features/agenda/components/agenda/cancel-appointment-dialog";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { buildAppointmentConsultationUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { formatCancellationReason } from "@/features/turnos/utils/appointment-lifecycle";
 
 import { updateAppointmentStatus } from "@/lib/actions/appointments";
@@ -78,11 +78,9 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
   const openCancelDialog = useCallback(() => setCancelOpen(true), []);
   const closeCancelDialog = useCallback(() => setCancelOpen(false), []);
 
-  const startHref = buildPatientWorkspaceUrl(appointment.patient_id, {
-    tab: "soap",
-    action: "nueva",
-    appointment: appointment.id,
-    professional: appointment.professional_id,
+  const startHref = buildAppointmentConsultationUrl(appointment.patient_id, {
+    appointmentId: appointment.id,
+    professionalId: appointment.professional_id,
   });
 
   const cancelledByLabel =

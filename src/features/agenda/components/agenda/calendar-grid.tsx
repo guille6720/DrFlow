@@ -10,7 +10,7 @@ import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { cn } from "@/shared/utils/cn";
 
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { buildAppointmentConsultationUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 import { appointmentStatusBadge, Badge } from "@/components/ui/badge";
 import { isOnlineBooking } from "@/lib/utils/appointment";
@@ -94,11 +94,9 @@ function buildBlockedSlotKeys(weekDays: Date[], blocks: Block[]): Set<string> {
 }
 
 function buildClinicalHref(appt: AppointmentAgendaRow): string {
-  return buildPatientWorkspaceUrl(appt.patient_id, {
-    tab: "soap",
-    action: "nueva",
-    appointment: appt.id,
-    professional: appt.professional_id,
+  return buildAppointmentConsultationUrl(appt.patient_id, {
+    appointmentId: appt.id,
+    professionalId: appt.professional_id,
   });
 }
 

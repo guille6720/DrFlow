@@ -54,6 +54,19 @@ export function buildPatientWorkspaceUrl(
   return qs ? `/pacientes/${patientId}?${qs}` : `/pacientes/${patientId}`;
 }
 
+/** Abre la HC con evolución inline (misma UX que Pacientes → HC → nueva consulta). */
+export function buildAppointmentConsultationUrl(
+  patientId: string,
+  opts: { appointmentId: string; professionalId: string }
+): string {
+  return buildPatientWorkspaceUrl(patientId, {
+    tab: "soap",
+    action: "nueva",
+    appointment: opts.appointmentId,
+    professional: opts.professionalId,
+  });
+}
+
 export type ParsedPatientWorkspaceActions = {
   action: PatientWorkspaceAction | null;
   record: string | null;
@@ -88,7 +101,7 @@ export function parsePatientWorkspaceActions(
   const consulta = searchParams.get("consulta");
   const sheet = searchParams.get("sheet") as PatientWorkspaceSheet | null;
   const focus = searchParams.get("focus") as PatientWorkspaceFocus | null;
-  const inlineConsult = action === "nueva" && tab === "soap" && !appointment;
+  const inlineConsult = action === "nueva" && tab === "soap";
 
   return {
     action,
@@ -99,7 +112,7 @@ export function parsePatientWorkspaceActions(
     consulta,
     sheet,
     focus,
-    consultSheetOpen: action === "nueva" && tab === "soap" && Boolean(appointment),
+    consultSheetOpen: false,
     inlineConsultOpen: inlineConsult,
     prescriptionSheetOpen:
       (action === "nueva" && tab === "recetas") ||
