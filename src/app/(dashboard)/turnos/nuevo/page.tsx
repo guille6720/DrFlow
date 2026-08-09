@@ -62,7 +62,7 @@ export default async function TurnosNuevoPage() {
         userName={profile?.full_name}
         isSuperadmin={isSuperadmin}
       />
-      <div className="p-4">
+      <div className="p-4 lg:p-6">
         <p className="mb-4 text-sm">
           <Link href="/turnos/agenda" className="text-[var(--primary)] hover:underline">
             ← Volver a la agenda
