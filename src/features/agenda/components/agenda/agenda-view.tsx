@@ -7,10 +7,11 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
 import { Header } from "@/core/components/layout/header";
-import { hasPermission } from "@/core/permissions/roles";
+import { hasPermission, type PermissionOverrides } from "@/core/permissions/roles";
 import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
 
 import { AgendaToolbar } from "@/features/agenda/components/agenda/agenda-toolbar";
+import { CalendarAppointmentDialog } from "@/features/agenda/components/agenda/calendar-appointment-dialog";
 import { CalendarGrid } from "@/features/agenda/components/agenda/calendar-grid";
 import { EditAppointmentDialog } from "@/features/agenda/components/agenda/edit-appointment-dialog";
 import { MonthOverviewGrid } from "@/features/agenda/components/agenda/month-overview-grid";
@@ -33,6 +34,8 @@ interface AgendaPageProps {
   defaultProfessionalId?: string;
   scheduleBlocks?: { start_at: string; end_at: string; reason: string | null }[];
   bookingSlug?: string | null;
+  isSuperadmin?: boolean;
+  permissionOverrides?: PermissionOverrides;
 }
 
 export function AgendaView({
@@ -49,9 +52,13 @@ export function AgendaView({
   defaultProfessionalId,
   scheduleBlocks = [],
   bookingSlug,
+  isSuperadmin = false,
+  permissionOverrides,
 }: AgendaPageProps) {
   const router = useRouter();
   const [reschedulingAppointment, setReschedulingAppointment] =
+    useState<AppointmentAgendaRow | null>(null);
+  const [selectedAppointment, setSelectedAppointment] =
     useState<AppointmentAgendaRow | null>(null);
   const agenda = useAgendaView({
     appointments,
@@ -68,11 +75,23 @@ export function AgendaView({
     handleSlotClick,
   } = agenda;
 
-  const canManage = hasPermission(role, "manageAppointments", false);
-  const canStartClinical = hasPermission(role, "editClinicalRecords", false);
+  const canManage = hasPermission(role, "manageAppointments", isSuperadmin, permissionOverrides);
+  const canStartClinical = hasPermission(role, "editClinicalRecords", isSuperadmin, permissionOverrides);
 
   const handleCloseReschedule = useCallback(() => {
     setReschedulingAppointment(null);
+  }, []);
+
+  const handleCloseAppointmentDialog = useCallback(() => {
+    setSelectedAppointment(null);
+  }, []);
+
+  const handleAppointmentClick = useCallback((appointment: AppointmentAgendaRow) => {
+    setSelectedAppointment(appointment);
+  }, []);
+
+  const handleRescheduleFromCalendar = useCallback((appointment: AppointmentAgendaRow) => {
+    setReschedulingAppointment(appointment);
   }, []);
 
   const handleDayClick = useCallback(
@@ -117,7 +136,7 @@ export function AgendaView({
               </h2>
               {canManage ? (
                 <p className="text-xs text-slate-400">
-                  Horario libre → nuevo turno · Paciente → historia clínica
+                  Horario libre → nuevo turno · Turno → gestionar o cancelar
                 </p>
               ) : canStartClinical ? (
                 <p className="text-xs text-slate-400">Clic en paciente para abrir la consulta</p>
@@ -128,7 +147,9 @@ export function AgendaView({
               appointments={filtered}
               blocks={scheduleBlocks}
               onSlotClick={canManage ? handleCalendarSlotClick : undefined}
+              onAppointmentClick={canManage ? handleAppointmentClick : undefined}
               canOpenClinical={canStartClinical}
+              canManage={canManage}
             />
           </section>
 
@@ -190,6 +211,15 @@ export function AgendaView({
             onSaved={() => router.refresh()}
           />
         ) : null}
+
+        <CalendarAppointmentDialog
+          appointment={selectedAppointment}
+          open={selectedAppointment !== null}
+          onClose={handleCloseAppointmentDialog}
+          canManage={canManage}
+          canStartClinical={canStartClinical}
+          onReschedule={canManage ? handleRescheduleFromCalendar : undefined}
+        />
       </div>
     </>
   );

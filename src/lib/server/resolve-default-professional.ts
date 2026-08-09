@@ -5,6 +5,33 @@ import { cache } from "react";
 
 import { pickDefaultProfessionalId } from "@/lib/utils/default-professional";
 
+/** Logged-in member's professional row for the active clinic. */
+export const resolveSessionProfessionalId = cache(
+  async (supabase: SupabaseClient, clinicId: string, userId: string): Promise<string | undefined> => {
+    const { data: member } = await supabase
+      .from("clinic_members")
+      .select("professional_id")
+      .eq("clinic_id", clinicId)
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (member?.professional_id) {
+      return member.professional_id;
+    }
+
+    const { data: professional } = await supabase
+      .from("professionals")
+      .select("id")
+      .eq("clinic_id", clinicId)
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    return professional?.id;
+  }
+);
+
 /** Active clinic_admin member's professional row (prescriber default for the clinic). */
 export const resolveClinicAdminProfessionalId = cache(
   async (supabase: SupabaseClient, clinicId: string): Promise<string | undefined> => {

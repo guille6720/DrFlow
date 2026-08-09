@@ -3580,6 +3580,38 @@ html[data-ui-palette="cobalt"] .drflow-ui-card dt {
   color: #1d4ed8 !important;
 }
 
+/* Nuevo turno: labels oscuros y legibles sobre tarjetas blancas */
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card dt,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard dt {
+  color: #334155 !important;
+}
+
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card-desc,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card :is(.text-slate-500, .text-slate-600, .text-slate-700) {
+  color: #475569 !important;
+}
+
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card dd,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card :is(.text-slate-900, .text-slate-950, .font-semibold, .font-bold) {
+  color: #020617 !important;
+}
+
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card-title {
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card label {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card select,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card input,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card textarea {
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
 html[data-ui-palette="cobalt"] .drflow-card-body dd {
   color: #0f172a !important;
 }

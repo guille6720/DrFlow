@@ -17,7 +17,8 @@ import {
 import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 
 export default async function TurnosAgendaPage() {
-  const { profile, clinics, clinicId, clinic, role } = await getDashboardPageContext();
+  const { profile, clinics, clinicId, clinic, role, isSuperadmin, permissionOverrides } =
+    await getDashboardPageContext();
   const supabase = await createClient();
 
   const rangeStart = subDays(new Date(), 7).toISOString();
@@ -78,6 +79,8 @@ export default async function TurnosAgendaPage() {
       scheduleBlocks={blocks.data ?? []}
       bookingSlug={bookingSlug ?? clinic?.slug ?? null}
       defaultProfessionalId={defaultProfessionalId}
+      isSuperadmin={isSuperadmin}
+      permissionOverrides={permissionOverrides}
     />
   );
 }

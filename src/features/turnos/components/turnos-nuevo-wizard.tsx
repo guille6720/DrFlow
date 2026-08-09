@@ -9,7 +9,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useCallback, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
 import { toast } from "@/core/notifications/toast";
 import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
@@ -44,12 +44,14 @@ type Props = {
   specialties: { id: string; name: string }[];
   defaultDuration: number;
   canOverbook: boolean;
+  defaultProfessionalId?: string;
+  initialStartAt?: string;
 };
 
-const LABEL_CLASS = "text-xs font-semibold uppercase tracking-wide text-slate-600";
-const VALUE_CLASS = "font-medium text-slate-900";
-const MUTED_CLASS = "text-sm text-slate-600";
-const SECTION_HEADING = "mb-2 text-xs font-bold uppercase tracking-wide text-slate-700";
+const LABEL_CLASS = "text-xs font-bold uppercase tracking-wide text-slate-800";
+const VALUE_CLASS = "font-semibold text-slate-950";
+const MUTED_CLASS = "text-sm font-medium text-slate-700";
+const SECTION_HEADING = "mb-2 text-xs font-bold uppercase tracking-wide text-slate-800";
 
 function getPatientName(appointment: AppointmentAgendaRow): string {
   const patient = appointment.patients as { first_name: string; last_name: string } | undefined;
@@ -214,13 +216,23 @@ export function TurnosNuevoWizard({
   specialties,
   defaultDuration,
   canOverbook,
+  defaultProfessionalId,
+  initialStartAt,
 }: Props) {
   const router = useRouter();
+  const defaultProfessional = useMemo(
+    () =>
+      defaultProfessionalId
+        ? professionals.find((professional) => professional.id === defaultProfessionalId)
+        : undefined,
+    [defaultProfessionalId, professionals]
+  );
+
   const [patientId, setPatientId] = useState("");
   const [selectedPatient, setSelectedPatient] = useState<(typeof patients)[number] | null>(null);
-  const [professionalId, setProfessionalId] = useState("");
-  const [specialtyId, setSpecialtyId] = useState("");
-  const [locationId, setLocationId] = useState("");
+  const [professionalId, setProfessionalId] = useState(() => defaultProfessional?.id ?? "");
+  const [specialtyId, setSpecialtyId] = useState(() => defaultProfessional?.specialty_id ?? "");
+  const [locationId, setLocationId] = useState(() => defaultProfessional?.location_id ?? "");
   const [slots, setSlots] = useState<Slot[]>([]);
   const [bookedAppointments, setBookedAppointments] = useState<AppointmentAgendaRow[]>([]);
   const [scheduleBlocks, setScheduleBlocks] = useState<
@@ -330,6 +342,49 @@ export function TurnosNuevoWizard({
     [loadProfessionalData, professionals]
   );
 
+  useEffect(() => {
+    const proId = defaultProfessional?.id;
+    if (!proId) return;
+
+    let cancelled = false;
+
+    void (async () => {
+      setLoadingSlots(true);
+      const result = await fetchTurnosWizardSlots(proId);
+      if (cancelled) return;
+
+      setLoadingSlots(false);
+
+      if (result.error) {
+        toast.error(result.error);
+        setSlots([]);
+        setBookedAppointments([]);
+        setScheduleBlocks([]);
+        return;
+      }
+
+      setSlots(result.slots);
+      setBookedAppointments(result.appointments);
+      setScheduleBlocks(result.scheduleBlocks);
+
+      if (!initialStartAt) return;
+
+      const targetTime = parseISO(initialStartAt).getTime();
+      const slot =
+        result.slots.find((entry) => entry.start_at === initialStartAt) ??
+        result.slots.find((entry) => parseISO(entry.start_at).getTime() === targetTime);
+
+      if (!slot) return;
+
+      setSelectedDay(format(parseISO(slot.start_at), "yyyy-MM-dd"));
+      setSelectedSlot(slot);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [defaultProfessional?.id, initialStartAt]);
+
   const handleSelectFreeSlot = useCallback((slot: Slot) => {
     setSelectedSlot(slot);
     setSelectedExisting(null);
@@ -424,9 +479,9 @@ export function TurnosNuevoWizard({
   const daySlots = selectedDay ? (slotsByDay.get(selectedDay) ?? []) : [];
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-4 text-slate-900">
+    <div className="turnos-nuevo-wizard mx-auto max-w-[1600px] space-y-4 text-slate-950">
       <div>
-        <h1 className="text-xl font-bold text-slate-900">Nuevo turno</h1>
+        <h1 className="text-xl font-bold text-slate-950">Nuevo turno</h1>
         <p className={MUTED_CLASS}>
           Elegí profesional, paciente y horario. Gestioná turnos existentes desde el panel de acciones.
         </p>
@@ -485,14 +540,14 @@ export function TurnosNuevoWizard({
               createPatientHref={(q) => buildCreatePatientHref(q, "/turnos/nuevo")}
             />
             {selectedPatient ? (
-              <dl className="mt-4 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+              <dl className="mt-4 space-y-2 rounded-lg border border-slate-300 bg-slate-100/80 p-3 text-sm">
                 <div className="flex justify-between gap-2">
-                  <dt className="font-medium text-slate-600">DNI</dt>
-                  <dd className="font-semibold text-slate-900">{selectedPatient.document_number ?? "—"}</dd>
+                  <dt className="font-semibold text-slate-700">DNI</dt>
+                  <dd className="font-bold text-slate-950">{selectedPatient.document_number ?? "—"}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="font-medium text-slate-600">Obra social</dt>
-                  <dd className="font-semibold text-slate-900">
+                  <dt className="font-semibold text-slate-700">Obra social</dt>
+                  <dd className="font-bold text-slate-950">
                     {selectedPatient.insurance_provider ?? "Particular"}
                   </dd>
                 </div>
@@ -528,14 +583,14 @@ export function TurnosNuevoWizard({
                         setSelectedSlot(null);
                         setSelectedExisting(null);
                       }}
-                      className={`rounded-md border px-3 py-2 text-sm text-slate-900 transition-colors ${
+                      className={`rounded-md border px-3 py-2 text-sm text-slate-950 transition-colors ${
                         selectedDay === dayKey
                           ? "border-[var(--primary)] bg-[var(--primary)]/10 font-semibold"
-                          : "border-slate-300 hover:border-[var(--primary)]"
+                          : "border-slate-400 hover:border-[var(--primary)]"
                       }`}
                     >
                       {format(date, "EEE d MMM", { locale: es })}
-                      <span className="ml-1 text-xs font-normal text-slate-600">
+                      <span className="ml-1 text-xs font-medium text-slate-700">
                         ({freeCount} libres · {bookedCount} agendados)
                       </span>
                     </button>
@@ -589,16 +644,16 @@ export function TurnosNuevoWizard({
                             key={slot.start_at}
                             type="button"
                             onClick={() => handleSelectFreeSlot(slot)}
-                            className={`rounded-md border px-3 py-2 text-left text-sm text-slate-900 transition-colors ${
+                            className={`rounded-md border px-3 py-2 text-left text-sm text-slate-950 transition-colors ${
                               selectedSlot?.start_at === slot.start_at
                                 ? "border-[var(--primary)] bg-[var(--primary)]/10 font-semibold ring-1 ring-[var(--primary)]"
-                                : "border-slate-300 hover:border-[var(--primary)]"
+                                : "border-slate-400 hover:border-[var(--primary)]"
                             }`}
                           >
                             <span className="font-semibold">
                               {format(parseISO(slot.start_at), "HH:mm", { locale: es })} hs
                             </span>
-                            <span className="block text-xs text-slate-600">{defaultDuration} min</span>
+                            <span className="block text-xs font-medium text-slate-700">{defaultDuration} min</span>
                           </button>
                         ))}
                       </div>
@@ -677,7 +732,7 @@ export function TurnosNuevoWizard({
             <Button
               type="button"
               variant="ghost"
-              className="mt-3 w-full text-slate-600"
+              className="mt-3 w-full text-slate-700"
               onClick={handleClear}
               disabled={
                 submitting ||

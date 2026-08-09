@@ -40,7 +40,9 @@ interface CalendarGridProps {
   appointments: AppointmentAgendaRow[];
   blocks?: Block[];
   onSlotClick?: (day: Date, time: string) => void;
+  onAppointmentClick?: (appointment: AppointmentAgendaRow) => void;
   canOpenClinical?: boolean;
+  canManage?: boolean;
 }
 
 function slotKey(day: Date, time: string): string {
@@ -103,16 +105,25 @@ function buildClinicalHref(appt: AppointmentAgendaRow): string {
 const CalendarAppointmentAgendaRowChip = memo(function CalendarAppointmentAgendaRowChip({
   appt,
   canOpenClinical,
+  canManage,
+  onAppointmentClick,
 }: {
   appt: AppointmentAgendaRow;
   canOpenClinical?: boolean;
+  canManage?: boolean;
+  onAppointmentClick?: (appointment: AppointmentAgendaRow) => void;
 }) {
   const status = appointmentStatusBadge[appt.status];
   const online = isOnlineBooking(appt);
   const patient = appt.patients as { first_name?: string; last_name?: string } | undefined;
   const label = `${patient?.last_name ?? "Paciente"}${online ? " (reserva web)" : ""}`;
-  const className =
-    "mb-0.5 block truncate rounded-md bg-gradient-to-r from-teal-600 to-cyan-600 px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm transition-opacity hover:opacity-90";
+  const isCancelled = appt.status === "cancelled";
+  const className = cn(
+    "mb-0.5 block w-full truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium shadow-sm transition-opacity hover:opacity-90",
+    isCancelled
+      ? "bg-slate-600/80 text-slate-300 line-through"
+      : "bg-gradient-to-r from-teal-600 to-cyan-600 text-white"
+  );
 
   const content = (
     <>
@@ -126,7 +137,23 @@ const CalendarAppointmentAgendaRowChip = memo(function CalendarAppointmentAgenda
     </>
   );
 
-  if (canOpenClinical && appt.status !== "cancelled") {
+  if (canManage && onAppointmentClick) {
+    return (
+      <button
+        type="button"
+        className={className}
+        title={`${label} — ver turno`}
+        onClick={(event) => {
+          event.stopPropagation();
+          onAppointmentClick(appt);
+        }}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  if (canOpenClinical && !isCancelled) {
     return (
       <Link
         href={buildClinicalHref(appt)}
@@ -152,14 +179,18 @@ const CalendarSlotCell = memo(function CalendarSlotCell({
   dayAppts,
   blocked,
   onSlotClick,
+  onAppointmentClick,
   canOpenClinical,
+  canManage,
 }: {
   day: Date;
   time: string;
   dayAppts: AppointmentAgendaRow[];
   blocked: boolean;
   onSlotClick?: (day: Date, time: string) => void;
+  onAppointmentClick?: (appointment: AppointmentAgendaRow) => void;
   canOpenClinical?: boolean;
+  canManage?: boolean;
 }) {
   function handleClick() {
     if (!blocked && dayAppts.length === 0 && onSlotClick) {
@@ -202,6 +233,8 @@ const CalendarSlotCell = memo(function CalendarSlotCell({
           key={appt.id}
           appt={appt}
           canOpenClinical={canOpenClinical}
+          canManage={canManage}
+          onAppointmentClick={onAppointmentClick}
         />
       ))}
     </div>
@@ -213,7 +246,9 @@ export function CalendarGrid({
   appointments,
   blocks = [],
   onSlotClick,
+  onAppointmentClick,
   canOpenClinical = false,
+  canManage = false,
 }: CalendarGridProps) {
   const gridColumnStyle = useMemo(
     () => ({ gridTemplateColumns: `64px repeat(${weekDays.length}, 1fr)` }),
@@ -262,7 +297,9 @@ export function CalendarGrid({
                   dayAppts={appointmentsBySlot.get(key) ?? []}
                   blocked={blockedSlotKeys.has(key)}
                   onSlotClick={onSlotClick}
+                  onAppointmentClick={onAppointmentClick}
                   canOpenClinical={canOpenClinical}
+                  canManage={canManage}
                 />
               );
             })}

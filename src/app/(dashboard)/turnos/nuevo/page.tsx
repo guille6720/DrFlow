@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
+import { getSession } from "@/core/auth/session.server";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { PATIENT_PICKER_INITIAL_LIMIT } from "@/core/supabase/pagination";
@@ -13,8 +14,17 @@ import {
   getCachedClinicProfessionalsAgenda,
   getCachedClinicSpecialties,
 } from "@/lib/server/cached-clinic-queries";
+import {
+  resolveDefaultProfessionalId,
+  resolveSessionProfessionalId,
+} from "@/lib/server/resolve-default-professional";
 
-export default async function TurnosNuevoPage() {
+export default async function TurnosNuevoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ professional?: string; start_at?: string }>;
+}) {
+  const { professional: professionalParam, start_at: startAtParam } = await searchParams;
   const ctx = await getDashboardPageContext();
   const { clinicId, role, isSuperadmin, permissionOverrides, clinics, profile } = ctx;
 
@@ -53,6 +63,19 @@ export default async function TurnosNuevoPage() {
     hasPermission(role, "manageClinic", isSuperadmin, permissionOverrides) ||
     hasPermission(role, "manageAppointments", isSuperadmin, permissionOverrides);
 
+  const user = await getSession();
+  const sessionProfessionalId =
+    user && clinicId ? await resolveSessionProfessionalId(supabase, clinicId, user.id) : undefined;
+
+  const defaultProfessionalId = clinicId
+    ? await resolveDefaultProfessionalId(
+        supabase,
+        clinicId,
+        professionals,
+        professionalParam ?? sessionProfessionalId
+      )
+    : undefined;
+
   return (
     <>
       <Header
@@ -75,6 +98,8 @@ export default async function TurnosNuevoPage() {
           specialties={specialties}
           defaultDuration={clinic.data?.default_appointment_duration ?? 30}
           canOverbook={canOverbook}
+          defaultProfessionalId={defaultProfessionalId}
+          initialStartAt={startAtParam}
         />
       </div>
     </>
