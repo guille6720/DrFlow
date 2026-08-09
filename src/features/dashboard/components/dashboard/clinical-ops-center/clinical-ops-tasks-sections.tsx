@@ -54,23 +54,25 @@ export function NotificationsSection({
 }: {
   notifications: ClinicalOperationsDashboardPayload["notifications"];
 }) {
-  if (notifications.length === 0) return null;
-
   return (
-    <OpsSection id="ops-notifications" title="Notificaciones" count={notifications.length}>
-      <ul className="grid gap-2 sm:grid-cols-2">
-        {notifications.map((n) => (
-          <li key={n.id}>
-            <Link
-              href={n.href}
-              className="flex items-start gap-2 rounded-lg border border-slate-700/50 px-3 py-2 transition hover:border-teal-700/50 hover:bg-slate-800/50"
-            >
-              <span className="text-sm font-medium text-slate-200">{n.label}</span>
-              <span className="text-xs text-slate-500">{n.patientName}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+    <OpsSection id="ops-notifications" title="Mensajes" count={notifications.length}>
+      {notifications.length === 0 ? (
+        <ClinicalOpsEmpty message="Sin mensajes operativos por ahora." />
+      ) : (
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {notifications.map((n) => (
+            <li key={n.id}>
+              <Link
+                href={n.href}
+                className="flex items-start gap-2 rounded-lg border border-slate-700/50 px-3 py-2 transition hover:border-teal-700/50 hover:bg-slate-800/50"
+              >
+                <span className="text-sm font-medium text-slate-200">{n.label}</span>
+                <span className="text-xs text-slate-500">{n.patientName}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </OpsSection>
   );
 }

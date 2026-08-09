@@ -1,6 +1,8 @@
 import { ClinicalOpsActivityStrip } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-activity-strip";
+import { ClinicalOpsHashScroll } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-hash-scroll";
 import {
   CriticalAlertsSection,
+  UrgentPatientsSection,
   WaitingQueueSection,
 } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-queue-sections";
 import {
@@ -22,8 +24,14 @@ type Props = {
 export function ClinicalOpsMainSections({ ops, canManageAppointments }: Props) {
   return (
     <div className="flex min-w-0 flex-col gap-4">
+      <ClinicalOpsHashScroll />
       <ClinicalOpsActivityStrip activity={ops.activity} />
+      <TodayScheduleSection
+        appointments={ops.todayAppointments}
+        canManageAppointments={canManageAppointments}
+      />
       <WaitingQueueSection rows={ops.enrichedWaiting} />
+      <UrgentPatientsSection rows={ops.urgentPatients} />
       <CriticalAlertsSection alerts={ops.actionableAlerts} />
       <PrescriptionsAndOrdersSections
         draftPrescriptions={ops.draftPrescriptions}
@@ -31,10 +39,6 @@ export function ClinicalOpsMainSections({ ops, canManageAppointments }: Props) {
       />
       <LabResultsSection items={ops.recentLabs} />
       <ClinicalOpsTodayTasksSection tasks={ops.tasks} />
-      <TodayScheduleSection
-        appointments={ops.todayAppointments}
-        canManageAppointments={canManageAppointments}
-      />
       <NotificationsSection notifications={ops.notifications} />
     </div>
   );

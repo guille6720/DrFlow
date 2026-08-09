@@ -62,7 +62,7 @@ export function OpsSection({
       id={id}
       aria-labelledby={id ? `${id}-title` : undefined}
       className={cn(
-        "rounded-xl border border-slate-700/60 bg-slate-900/40 p-4 shadow-sm",
+        "scroll-mt-24 rounded-xl border border-slate-700/60 bg-slate-900/40 p-4 shadow-sm",
         className
       )}
     >

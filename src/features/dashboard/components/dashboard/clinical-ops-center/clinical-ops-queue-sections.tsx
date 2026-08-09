@@ -18,16 +18,49 @@ import { Button } from "@/components/ui/button";
 
 export function WaitingQueueSection({
   rows,
+  id = "ops-waiting",
+  title = "Cola de espera",
+  emptyMessage = "No hay pacientes en cola de atención.",
+}: {
+  rows: ClinicalOperationsDashboardPayload["enrichedWaiting"];
+  id?: string;
+  title?: string;
+  emptyMessage?: string;
+}) {
+  return (
+    <OpsSection id={id} title={title} count={rows.length}>
+      {rows.length === 0 ? (
+        <ClinicalOpsEmpty message={emptyMessage} />
+      ) : (
+        <WaitingQueueList rows={rows} />
+      )}
+    </OpsSection>
+  );
+}
+
+export function UrgentPatientsSection({
+  rows,
+}: {
+  rows: ClinicalOperationsDashboardPayload["urgentPatients"];
+}) {
+  return (
+    <WaitingQueueSection
+      id="ops-urgent"
+      title="Pacientes urgentes"
+      rows={rows}
+      emptyMessage="No hay pacientes urgentes en espera."
+    />
+  );
+}
+
+function WaitingQueueList({
+  rows,
 }: {
   rows: ClinicalOperationsDashboardPayload["enrichedWaiting"];
 }) {
   return (
-    <OpsSection id="ops-waiting" title="Cola de espera" count={rows.length}>
-      {rows.length === 0 ? (
-        <ClinicalOpsEmpty message="No hay pacientes en cola de atención." />
-      ) : (
-        <ul className="space-y-3">
-          {rows.map((row) => {
+    <ul className="space-y-3">
+      {rows.map((row) => {
             const name = row.patients
               ? `${row.patients.last_name}, ${row.patients.first_name}`
               : "Paciente";
@@ -115,9 +148,7 @@ export function WaitingQueueSection({
               </li>
             );
           })}
-        </ul>
-      )}
-    </OpsSection>
+    </ul>
   );
 }
 

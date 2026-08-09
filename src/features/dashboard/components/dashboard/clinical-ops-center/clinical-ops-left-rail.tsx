@@ -11,8 +11,9 @@ import {
 import Link from "next/link";
 
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
-import { cn } from "@/shared/utils/cn";
 
+import type { ClinicalOpsSectionId } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-scroll";
+import { ClinicalOpsSectionNav } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-section-nav";
 import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
 
 const NAV = [
@@ -22,14 +23,18 @@ const NAV = [
   { id: "ops-alerts", label: "Alertas críticas", icon: AlertTriangle },
   { id: "ops-tasks", label: "Tareas", icon: CheckSquare },
   { id: "ops-notifications", label: "Mensajes", icon: MessageSquare },
-] as const;
+] as const satisfies ReadonlyArray<{
+  id: ClinicalOpsSectionId;
+  label: string;
+  icon: typeof CalendarDays;
+}>;
 
 type Props = {
   ops: ClinicalOperationsDashboardPayload;
 };
 
 export function ClinicalOpsLeftRail({ ops }: Props) {
-  const counts: Record<string, number> = {
+  const counts: Partial<Record<ClinicalOpsSectionId, number>> = {
     "ops-schedule": ops.todayAppointments.length,
     "ops-waiting": ops.enrichedWaiting.length,
     "ops-urgent": ops.urgentPatients.length,
@@ -46,30 +51,7 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
       <p className="px-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
         Operaciones
       </p>
-      <ul className="space-y-0.5">
-        {NAV.map(({ id, label, icon: Icon }) => {
-          const count = counts[id] ?? 0;
-          return (
-            <li key={id}>
-              <a
-                href={`#${id}`}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-teal-200",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50"
-                )}
-              >
-                <Icon className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />
-                <span className="min-w-0 flex-1 truncate">{label}</span>
-                {count > 0 ? (
-                  <span className="rounded-full bg-slate-800 px-1.5 text-xs font-bold text-teal-300">
-                    {count}
-                  </span>
-                ) : null}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
+      <ClinicalOpsSectionNav items={NAV} counts={counts} />
 
       <div className="mt-2 border-t border-slate-700/60 pt-3">
         <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
