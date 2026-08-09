@@ -154,7 +154,7 @@ export function ClinicalWorkspaceHeader({
             </Button>
           </Link>
         ) : null}
-        <Link href={`/agenda?action=new&patient=${patientId}`}>
+        <Link href={`/turnos/nuevo?patient=${patientId}`}>
           <Button size="sm" variant="ghost" type="button">
             <CalendarPlus className="h-4 w-4" aria-hidden />
             Seguimiento

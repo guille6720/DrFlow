@@ -21,7 +21,7 @@ import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-fea
 
 const ACTIONS = [
   { href: "/pacientes/nuevo", label: "Nuevo paciente", icon: Users },
-  { href: "/agenda?action=new", label: "Nuevo turno", icon: Calendar },
+  { href: "/turnos/nuevo", label: "Nuevo turno", icon: Calendar },
   { href: "#", label: "Buscar paciente", icon: Search, palette: true },
   { href: "/recetas", label: "Nueva receta", icon: Pill },
   { href: "/historias/nueva", label: "Nueva SOAP", icon: Stethoscope },

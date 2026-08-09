@@ -16,9 +16,8 @@ import { getProfessionalDisplayName } from "@/lib/utils/professional";
 type Props = {
   agenda: Pick<
     AgendaViewState,
-    | "view"
-    | "setView"
     | "currentDate"
+    | "weekDays"
     | "filterProfessional"
     | "setFilterProfessional"
     | "filterSpecialty"
@@ -31,9 +30,8 @@ type Props = {
 
 export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
   const {
-    view,
-    setView,
     currentDate,
+    weekDays,
     filterProfessional,
     setFilterProfessional,
     filterSpecialty,
@@ -41,25 +39,11 @@ export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
     shiftCalendar,
   } = agenda;
 
+  const weekStart = weekDays[0];
+  const weekEnd = weekDays[weekDays.length - 1];
+
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="flex rounded-xl border border-slate-600/80 bg-slate-800/90 p-1 shadow-lg">
-        {(["day", "week", "month"] as const).map((v) => (
-          <button
-            key={v}
-            type="button"
-            onClick={() => setView(v)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium capitalize ${
-              view === v
-                ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900"
-                : "text-slate-300 hover:bg-slate-700/80 hover:text-white"
-            }`}
-          >
-            {v === "day" ? "Día" : v === "week" ? "Semana" : "Mes"}
-          </button>
-        ))}
-      </div>
-
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
@@ -69,10 +53,9 @@ export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="min-w-[180px] text-center text-sm font-medium capitalize text-slate-200">
-          {view === "day"
-            ? format(currentDate, "d 'de' MMMM yyyy", { locale: es })
-            : format(currentDate, "MMMM yyyy", { locale: es })}
+        <span className="min-w-[220px] text-center text-sm font-medium text-slate-200">
+          {format(weekStart, "d MMM", { locale: es })} –{" "}
+          {format(weekEnd, "d MMM yyyy", { locale: es })}
         </span>
         <Button
           variant="outline"
@@ -83,6 +66,10 @@ export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
+
+      <span className="hidden text-sm text-slate-400 sm:inline">
+        {format(currentDate, "MMMM yyyy", { locale: es })}
+      </span>
 
       <Select
         options={[

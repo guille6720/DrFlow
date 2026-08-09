@@ -124,7 +124,7 @@ export function MonthOverviewGrid({
         })}
       </div>
       <p className="border-t border-slate-700/80 bg-slate-900/80 px-4 py-2 text-xs text-slate-400">
-        {format(monthDate, "MMMM yyyy", { locale: es })} — tocá un día para ver detalle en vista Día
+        {format(monthDate, "MMMM yyyy", { locale: es })} — tocá un día para centrar la semana
       </p>
     </div>
   );

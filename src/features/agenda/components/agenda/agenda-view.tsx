@@ -2,34 +2,24 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
 
-import {
-  AgendaCreateFormBottom,
-  AgendaCreateFormTop,
-} from "@/features/agenda/components/agenda/agenda-create-form";
 import { AgendaToolbar } from "@/features/agenda/components/agenda/agenda-toolbar";
-import { AppointmentRow, filterAppointmentsForDay } from "@/features/agenda/components/agenda/appointment-row";
 import { CalendarGrid } from "@/features/agenda/components/agenda/calendar-grid";
 import { EditAppointmentDialog } from "@/features/agenda/components/agenda/edit-appointment-dialog";
 import { MonthOverviewGrid } from "@/features/agenda/components/agenda/month-overview-grid";
 import { RescheduleAppointmentDialog } from "@/features/agenda/components/agenda/reschedule-appointment-dialog";
 import { useAgendaView } from "@/features/agenda/hooks/use-agenda-view";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import type { Clinic, Patient, UserRole } from "@/types/database";
 
 interface AgendaPageProps {
-  initialView?: "day" | "week" | "month";
-  initialShowForm?: boolean;
   appointments: AppointmentAgendaRow[];
   patients: Pick<Patient, "id" | "first_name" | "last_name" | "document_number">[];
   professionals: ProfessionalAgendaRow[];
@@ -46,8 +36,6 @@ interface AgendaPageProps {
 }
 
 export function AgendaView({
-  initialView = "week",
-  initialShowForm = false,
   appointments,
   patients,
   professionals,
@@ -66,66 +54,37 @@ export function AgendaView({
   const [reschedulingAppointment, setReschedulingAppointment] =
     useState<AppointmentAgendaRow | null>(null);
   const agenda = useAgendaView({
-    initialView,
-    initialShowForm,
     appointments,
-    defaultDuration,
     defaultProfessionalId,
   });
 
   const {
-    view,
     filtered,
     currentDate,
     setCurrentDate,
-    setView,
     weekDays,
-    showForm,
-    openNewAppointmentForm,
-    handleSlotClick,
     editingAppointment,
     setEditingAppointment,
-    handleCreate,
+    handleSlotClick,
   } = agenda;
 
   const canManage = hasPermission(role, "manageAppointments", false);
   const canStartClinical = hasPermission(role, "editClinicalRecords", false);
-  const handleEditAppointment = canManage ? setEditingAppointment : undefined;
-  const handleRescheduleAppointment = canManage ? setReschedulingAppointment : undefined;
 
   const handleCloseReschedule = useCallback(() => {
     setReschedulingAppointment(null);
   }, []);
 
-  const dayAppointments = useMemo(
-    () =>
-      view === "day" ? filterAppointmentsForDay(filtered, currentDate) : filtered,
-    [view, filtered, currentDate]
-  );
-
   const handleDayClick = useCallback(
     (day: Date) => {
       setCurrentDate(day);
-      setView("day");
     },
-    [setCurrentDate, setView]
+    [setCurrentDate]
   );
-
-  const handleOpenNewAppointment = useCallback(() => {
-    openNewAppointmentForm();
-  }, [openNewAppointmentForm]);
 
   const handleCloseEdit = useCallback(() => {
     setEditingAppointment(null);
   }, [setEditingAppointment]);
-
-  const createFormRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (showForm && createFormRef.current) {
-      createFormRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }, [showForm]);
 
   const handleCalendarSlotClick = useCallback(
     (day: Date, time: string) => {
@@ -149,46 +108,7 @@ export function AgendaView({
       <div className="space-y-4 p-4 sm:p-6">
         <AgendaToolbar agenda={agenda} professionals={professionals} specialties={specialties} />
 
-        {showForm && canManage ? (
-          <form
-            id="agenda-create-form"
-            onSubmit={handleCreate}
-            className="space-y-4"
-          >
-            <div ref={createFormRef}>
-              <AgendaCreateFormTop
-                agenda={agenda}
-                patients={patients}
-                professionals={professionals}
-                locations={locations}
-                specialties={specialties}
-              />
-            </div>
-
-            <section aria-label="Calendario semanal">
-              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold text-slate-200">
-                  Semana del {format(weekDays[0], "d MMM", { locale: es })} al{" "}
-                  {format(weekDays[weekDays.length - 1], "d MMM yyyy", { locale: es })}
-                </h2>
-                <p className="text-xs text-slate-400">Hacé clic en un horario libre para elegir la hora</p>
-              </div>
-              <CalendarGrid
-                weekDays={weekDays}
-                appointments={filtered}
-                blocks={scheduleBlocks}
-                onSlotClick={handleCalendarSlotClick}
-              />
-            </section>
-
-            <AgendaCreateFormBottom
-              agenda={agenda}
-              appointments={appointments}
-              scheduleBlocks={scheduleBlocks}
-              defaultDuration={defaultDuration}
-            />
-          </form>
-        ) : (
+        <div className="grid gap-4 xl:grid-cols-2">
           <section aria-label="Calendario semanal">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-sm font-semibold text-slate-200">
@@ -196,7 +116,11 @@ export function AgendaView({
                 {format(weekDays[weekDays.length - 1], "d MMM yyyy", { locale: es })}
               </h2>
               {canManage ? (
-                <p className="text-xs text-slate-400">Hacé clic en un horario libre para dar un turno</p>
+                <p className="text-xs text-slate-400">
+                  Horario libre → nuevo turno · Paciente → historia clínica
+                </p>
+              ) : canStartClinical ? (
+                <p className="text-xs text-slate-400">Clic en paciente para abrir la consulta</p>
               ) : null}
             </div>
             <CalendarGrid
@@ -204,48 +128,24 @@ export function AgendaView({
               appointments={filtered}
               blocks={scheduleBlocks}
               onSlotClick={canManage ? handleCalendarSlotClick : undefined}
+              canOpenClinical={canStartClinical}
             />
           </section>
-        )}
 
-        {view === "month" ? (
-          <MonthOverviewGrid
-            monthDate={currentDate}
-            appointments={filtered}
-            onDayClick={handleDayClick}
-          />
-        ) : view === "day" ? (
-          <Card
-            title={format(currentDate, "EEEE d 'de' MMMM", { locale: es })}
-            className="border-slate-600/80 bg-slate-800/95 [&_h3]:text-slate-100 [&_.font-medium]:text-slate-50"
-          >
-            {dayAppointments.length === 0 ? (
-              <div className="space-y-3">
-                <p className="text-sm text-slate-400">Sin turnos este día.</p>
-                {canManage ? (
-                  <Button size="sm" onClick={handleOpenNewAppointment}>
-                    <Plus className="h-4 w-4" />
-                    Nuevo turno
-                  </Button>
-                ) : null}
-              </div>
-            ) : (
-              <ul className="divide-y divide-slate-700/80">
-                {dayAppointments.map((appt) => (
-                  <AppointmentRow
-                    key={appt.id}
-                    appointment={appt}
-                    showDate
-                    canManage={canManage}
-                    canStartClinical={canStartClinical}
-                    onEdit={handleEditAppointment}
-                    onReschedule={handleRescheduleAppointment}
-                  />
-                ))}
-              </ul>
-            )}
-          </Card>
-        ) : null}
+          <section aria-label="Calendario mensual">
+            <div className="mb-2">
+              <h2 className="text-sm font-semibold text-slate-200">
+                {format(currentDate, "MMMM yyyy", { locale: es })}
+              </h2>
+              <p className="text-xs text-slate-400">Tocá un día para mover la semana</p>
+            </div>
+            <MonthOverviewGrid
+              monthDate={currentDate}
+              appointments={filtered}
+              onDayClick={handleDayClick}
+            />
+          </section>
+        </div>
 
         {bookingSlug ? (
           <p className="text-sm text-slate-400">

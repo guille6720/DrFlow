@@ -43,7 +43,7 @@ export const QA_CHECKLIST: QaChecklistSection[] = [
     id: "agenda",
     title: "Agenda",
     items: [
-      { id: "agenda-create", label: "Crear turno con datos válidos", href: "/agenda?action=new" },
+      { id: "agenda-create", label: "Crear turno con datos válidos", href: "/turnos/nuevo" },
       { id: "agenda-overlap", label: "Error al superponer turnos del mismo profesional", href: "/agenda" },
       { id: "agenda-status", label: "Confirmar / ausente cambia estado", href: "/agenda?view=day" },
       { id: "agenda-start", label: "Empezar consulta abre historia con paciente precargado", href: "/agenda?view=day" },

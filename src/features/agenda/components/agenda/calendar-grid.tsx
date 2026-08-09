@@ -3,11 +3,14 @@
 import { format, getHours, getMinutes, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Globe } from "lucide-react";
+import Link from "next/link";
 import { memo, useMemo } from "react";
 
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { cn } from "@/shared/utils/cn";
+
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 import { appointmentStatusBadge, Badge } from "@/components/ui/badge";
 import { isOnlineBooking } from "@/lib/utils/appointment";
@@ -37,6 +40,7 @@ interface CalendarGridProps {
   appointments: AppointmentAgendaRow[];
   blocks?: Block[];
   onSlotClick?: (day: Date, time: string) => void;
+  canOpenClinical?: boolean;
 }
 
 function slotKey(day: Date, time: string): string {
@@ -89,20 +93,31 @@ function buildBlockedSlotKeys(weekDays: Date[], blocks: Block[]): Set<string> {
   return set;
 }
 
+function buildClinicalHref(appt: AppointmentAgendaRow): string {
+  return buildPatientWorkspaceUrl(appt.patient_id, {
+    tab: "soap",
+    action: "nueva",
+    appointment: appt.id,
+    professional: appt.professional_id,
+  });
+}
+
 const CalendarAppointmentAgendaRowChip = memo(function CalendarAppointmentAgendaRowChip({
   appt,
+  canOpenClinical,
 }: {
   appt: AppointmentAgendaRow;
+  canOpenClinical?: boolean;
 }) {
   const status = appointmentStatusBadge[appt.status];
   const online = isOnlineBooking(appt);
   const patient = appt.patients as { first_name?: string; last_name?: string } | undefined;
+  const label = `${patient?.last_name ?? "Paciente"}${online ? " (reserva web)" : ""}`;
+  const className =
+    "mb-0.5 block truncate rounded-md bg-gradient-to-r from-teal-600 to-cyan-600 px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm transition-opacity hover:opacity-90";
 
-  return (
-    <div
-      className="mb-0.5 truncate rounded-md bg-gradient-to-r from-teal-600 to-cyan-600 px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm"
-      title={`${patient?.last_name ?? "Paciente"}${online ? " (reserva web)" : ""}`}
-    >
+  const content = (
+    <>
       {online && <Globe className="mr-0.5 inline h-2.5 w-2.5" />}
       {patient?.last_name ?? "Turno"}
       {status ? (
@@ -110,6 +125,25 @@ const CalendarAppointmentAgendaRowChip = memo(function CalendarAppointmentAgenda
           {status.label}
         </Badge>
       ) : null}
+    </>
+  );
+
+  if (canOpenClinical && appt.status !== "cancelled") {
+    return (
+      <Link
+        href={buildClinicalHref(appt)}
+        className={className}
+        title={`${label} — abrir historia clínica`}
+        onClick={(event) => event.stopPropagation()}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={className} title={label}>
+      {content}
     </div>
   );
 });
@@ -120,12 +154,14 @@ const CalendarSlotCell = memo(function CalendarSlotCell({
   dayAppts,
   blocked,
   onSlotClick,
+  canOpenClinical,
 }: {
   day: Date;
   time: string;
   dayAppts: AppointmentAgendaRow[];
   blocked: boolean;
   onSlotClick?: (day: Date, time: string) => void;
+  canOpenClinical?: boolean;
 }) {
   function handleClick() {
     if (!blocked && dayAppts.length === 0 && onSlotClick) {
@@ -164,7 +200,11 @@ const CalendarSlotCell = memo(function CalendarSlotCell({
         <span className="block truncate px-1 text-[9px] text-red-400/90">Bloqueo</span>
       ) : null}
       {dayAppts.map((appt) => (
-        <CalendarAppointmentAgendaRowChip key={appt.id} appt={appt} />
+        <CalendarAppointmentAgendaRowChip
+          key={appt.id}
+          appt={appt}
+          canOpenClinical={canOpenClinical}
+        />
       ))}
     </div>
   );
@@ -175,6 +215,7 @@ export function CalendarGrid({
   appointments,
   blocks = [],
   onSlotClick,
+  canOpenClinical = false,
 }: CalendarGridProps) {
   const gridColumnStyle = useMemo(
     () => ({ gridTemplateColumns: `64px repeat(${weekDays.length}, 1fr)` }),
@@ -193,7 +234,7 @@ export function CalendarGrid({
 
   return (
     <div className="overflow-x-auto rounded-2xl border border-slate-600/80 bg-slate-800 shadow-xl shadow-black/20">
-      <div className="min-w-[800px]">
+      <div className="min-w-[640px]">
         <div className="grid border-b border-slate-600/80" style={gridColumnStyle}>
           <div className="bg-slate-900/90 p-2" />
           {weekDays.map((day) => (
@@ -223,6 +264,7 @@ export function CalendarGrid({
                   dayAppts={appointmentsBySlot.get(key) ?? []}
                   blocked={blockedSlotKeys.has(key)}
                   onSlotClick={onSlotClick}
+                  canOpenClinical={canOpenClinical}
                 />
               );
             })}

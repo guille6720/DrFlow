@@ -16,13 +16,7 @@ import {
 } from "@/lib/server/cached-clinic-queries";
 import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 
-async function TurnosAgendaContent({
-  initialView,
-  initialShowForm,
-}: {
-  initialView: "day" | "week" | "month";
-  initialShowForm: boolean;
-}) {
+export default async function TurnosAgendaPage() {
   const { profile, clinics, clinicId, clinic, role } = await getDashboardPageContext();
   const supabase = await createClient();
 
@@ -71,8 +65,6 @@ async function TurnosAgendaContent({
 
   return (
     <AgendaView
-      initialView={initialView}
-      initialShowForm={initialShowForm}
       appointments={appointmentRows}
       patients={patients.data ?? []}
       professionals={professionalRows}
@@ -87,18 +79,5 @@ async function TurnosAgendaContent({
       bookingSlug={bookingSlug ?? clinic?.slug ?? null}
       defaultProfessionalId={defaultProfessionalId}
     />
-  );
-}
-
-export default async function TurnosAgendaPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ view?: string; action?: string }>;
-}) {
-  const { view, action } = await searchParams;
-  const initialView = view === "day" ? "day" : view === "month" ? "month" : "week";
-
-  return (
-    <TurnosAgendaContent initialView={initialView} initialShowForm={action === "new"} />
   );
 }

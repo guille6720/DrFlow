@@ -53,7 +53,7 @@ export const COMMAND_PALETTE_ACTIONS: CommandPaletteItemDef[] = [
   {
     id: "action-new-appointment",
     label: "Nuevo turno",
-    href: "/agenda?action=new",
+    href: "/turnos/nuevo",
     group: "acciones",
     icon: Calendar,
     keywords: ["agenda", "turno"],

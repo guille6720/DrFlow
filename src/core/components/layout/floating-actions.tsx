@@ -33,7 +33,7 @@ type FabAction = {
 
 const globalActions: FabAction[] = [
   {
-    href: "/agenda?action=new",
+    href: "/turnos/nuevo",
     label: "Nuevo turno",
     icon: Calendar,
     color: "bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600",
