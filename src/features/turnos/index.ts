@@ -1,6 +1,9 @@
 export { createTurnoWizard } from "@/features/turnos/actions/create-turno-wizard";
 export { rescheduleAppointment } from "@/features/turnos/actions/reschedule-appointment";
 export { AppointmentLifecycleBadge } from "@/features/turnos/components/appointment-lifecycle-badge";
+export { TurnosConfigView } from "@/features/turnos/components/turnos-config-view";
 export { TurnosNuevoWizard } from "@/features/turnos/components/turnos-nuevo-wizard";
+export { TurnosReportesView } from "@/features/turnos/components/turnos-reportes-view";
 export { WaitingListView } from "@/features/turnos/components/waiting-list-view";
 export { formatCancellationReason } from "@/features/turnos/utils/appointment-lifecycle";
+export { computeTurnosDashboardMetrics } from "@/features/turnos/utils/turnos-metrics";

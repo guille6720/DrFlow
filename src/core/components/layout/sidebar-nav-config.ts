@@ -48,6 +48,8 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
   "/turnos/nuevo": Calendar,
   "/turnos/agenda": Calendar,
   "/turnos/lista-espera": Calendar,
+  "/turnos/reportes": BarChart3,
+  "/turnos/configuracion": Settings,
   "/agenda": Calendar,
   "/sala-espera": Armchair,
   "/atenciones": ClipboardPlus,

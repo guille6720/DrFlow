@@ -465,6 +465,8 @@ export async function createScheduleBlock(formData: FormData) {
   if (error) return { error: error.message };
 
   revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
+  revalidatePath("/turnos/configuracion");
 
   return { success: true };
 
@@ -508,6 +510,8 @@ export async function createAvailabilityRule(formData: FormData) {
   revalidatePath("/configuracion");
 
   revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
+  revalidatePath("/turnos/configuracion");
 
   return { success: true };
 

@@ -107,6 +107,8 @@ export function canAccessRoute(
     "/herramientas": "viewPharmacology",
     "/caja": "manageCashRegister",
     "/turnos/nuevo": "manageAppointments",
+    "/turnos/configuracion": "manageSettings",
+    "/turnos/reportes": "viewReports",
     "/sala-espera": "manageWaitingRoom",
     "/secretaria": "manageAdminDocuments",
     "/ingreso-profesionales": "manageStaff",
