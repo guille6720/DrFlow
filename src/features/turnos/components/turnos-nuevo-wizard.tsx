@@ -7,22 +7,24 @@ import {
   CalendarClock,
   Loader2,
   RotateCcw,
-  XCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useMemo, useState } from "react";
 
 import { toast } from "@/core/notifications/toast";
 import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
 
-import { CancelAppointmentDialog } from "@/features/agenda/components/agenda/cancel-appointment-dialog";
 import { RescheduleAppointmentDialog } from "@/features/agenda/components/agenda/reschedule-appointment-dialog";
 import { useAppointmentRow } from "@/features/agenda/hooks/use-appointment-row";
 import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { buildCreatePatientHref } from "@/features/pacientes/utils/create-patient-from-search";
 import { createTurnoWizard } from "@/features/turnos/actions/create-turno-wizard";
 import { fetchTurnosWizardSlots } from "@/features/turnos/actions/fetch-turnos-wizard-slots";
-import { resolveAppointmentLifecycleLabel } from "@/features/turnos/utils/appointment-lifecycle";
+import {
+  CANCELLATION_REASON_OPTIONS,
+  type CancellationCategory,
+  resolveAppointmentLifecycleLabel,
+} from "@/features/turnos/utils/appointment-lifecycle";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,13 +46,27 @@ type Props = {
   canOverbook: boolean;
 };
 
+const LABEL_CLASS = "text-xs font-semibold uppercase tracking-wide text-slate-600";
+const VALUE_CLASS = "font-medium text-slate-900";
+const MUTED_CLASS = "text-sm text-slate-600";
+const SECTION_HEADING = "mb-2 text-xs font-bold uppercase tracking-wide text-slate-700";
+
 function getPatientName(appointment: AppointmentAgendaRow): string {
   const patient = appointment.patients as { first_name: string; last_name: string } | undefined;
   if (!patient) return "Paciente";
   return `${patient.last_name}, ${patient.first_name}`;
 }
 
-function ExistingAppointmentActions({
+function SummaryRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <dt className={LABEL_CLASS}>{label}</dt>
+      <dd className={`mt-0.5 ${VALUE_CLASS}`}>{children}</dd>
+    </div>
+  );
+}
+
+function ExistingAppointmentSummary({
   appointment,
   appointments,
   scheduleBlocks,
@@ -63,62 +79,40 @@ function ExistingAppointmentActions({
   defaultDuration: number;
   onUpdated: () => void;
 }) {
-  const row = useAppointmentRow(appointment);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const canModify = appointment.status === "pending" || appointment.status === "confirmed";
 
   return (
     <>
-      <dl className="space-y-2 text-sm">
-        <div>
-          <dt className="text-[var(--muted-foreground)]">Paciente</dt>
-          <dd className="font-medium">{getPatientName(appointment)}</dd>
-        </div>
-        <div>
-          <dt className="text-[var(--muted-foreground)]">Horario</dt>
-          <dd className="font-medium">
-            {format(parseISO(appointment.start_at), "EEE d MMM · HH:mm 'hs'", { locale: es })}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-[var(--muted-foreground)]">Estado</dt>
-          <dd>
-            <Badge variant={appointment.status === "confirmed" ? "success" : "warning"}>
-              {resolveAppointmentLifecycleLabel({
-                status: appointment.status,
-                waitingRoomStatus: appointment.waiting_room_status,
-                isOverbooking: appointment.is_overbooking ?? undefined,
-                rescheduledAt: appointment.rescheduled_at,
-              })}
-            </Badge>
-          </dd>
-        </div>
+      <dl className="space-y-3 text-sm">
+        <SummaryRow label="Paciente">{getPatientName(appointment)}</SummaryRow>
+        <SummaryRow label="Horario">
+          {format(parseISO(appointment.start_at), "EEE d MMM · HH:mm 'hs'", { locale: es })}
+        </SummaryRow>
+        <SummaryRow label="Estado">
+          <Badge variant={appointment.status === "confirmed" ? "success" : "warning"}>
+            {resolveAppointmentLifecycleLabel({
+              status: appointment.status,
+              waitingRoomStatus: appointment.waiting_room_status,
+              isOverbooking: appointment.is_overbooking ?? undefined,
+              rescheduledAt: appointment.rescheduled_at,
+            })}
+          </Badge>
+        </SummaryRow>
       </dl>
 
       {canModify ? (
-        <div className="mt-4 space-y-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => setRescheduleOpen(true)}
-          >
-            <CalendarClock className="mr-1 h-4 w-4" />
-            Reprogramar turno
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full border-red-200 text-red-700 hover:bg-red-50"
-            onClick={row.openCancelDialog}
-            disabled={row.acting}
-          >
-            <XCircle className="mr-1 h-4 w-4" />
-            Cancelar turno
-          </Button>
-        </div>
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-4 w-full"
+          onClick={() => setRescheduleOpen(true)}
+        >
+          <CalendarClock className="mr-1 h-4 w-4" />
+          Reprogramar turno
+        </Button>
       ) : (
-        <p className="mt-3 text-sm text-[var(--muted-foreground)]">
+        <p className={`mt-3 ${MUTED_CLASS}`}>
           Este turno ya no admite reprogramación ni cancelación desde acá.
         </p>
       )}
@@ -135,19 +129,81 @@ function ExistingAppointmentActions({
           onUpdated();
         }}
       />
-
-      <CancelAppointmentDialog
-        open={row.cancelOpen}
-        onClose={row.closeCancelDialog}
-        onConfirm={async (input) => {
-          await row.handleCancelConfirm(input);
-          toast.success("Turno cancelado");
-          onUpdated();
-        }}
-        patientName={getPatientName(appointment)}
-        loading={row.acting}
-      />
     </>
+  );
+}
+
+function ExistingAppointmentCancelPanel({
+  appointment,
+  onCancelled,
+}: {
+  appointment: AppointmentAgendaRow;
+  onCancelled: () => void;
+}) {
+  const row = useAppointmentRow(appointment);
+  const [category, setCategory] = useState<CancellationCategory>("clinic");
+  const [detail, setDetail] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const canCancel = appointment.status === "pending" || appointment.status === "confirmed";
+
+  if (!canCancel) return null;
+
+  async function handleCancel() {
+    const trimmed = detail.trim();
+    if (trimmed.length < 3) {
+      setError("Indicá el motivo (mín. 3 caracteres)");
+      return;
+    }
+    setError(null);
+    await row.handleCancelConfirm({ category, detail: trimmed });
+    toast.success("Turno cancelado");
+    setDetail("");
+    setCategory("clinic");
+    onCancelled();
+  }
+
+  return (
+    <div className="rounded-xl border border-red-200 bg-red-50/80 p-4">
+      <p className="text-sm font-semibold text-red-900">Cancelación</p>
+      <p className="mt-1 text-sm text-red-800/90">
+        Turno de {getPatientName(appointment)} —{" "}
+        {format(parseISO(appointment.start_at), "EEE d MMM · HH:mm 'hs'", { locale: es })}
+      </p>
+      <div className="mt-3 space-y-3">
+        <Select
+          label="Motivo"
+          required
+          value={category}
+          onChange={(e) => setCategory(e.target.value as CancellationCategory)}
+          options={CANCELLATION_REASON_OPTIONS.map((option) => ({
+            value: option.value,
+            label: option.label,
+          }))}
+        />
+        <Textarea
+          label="Motivo de cancelación"
+          required
+          value={detail}
+          onChange={(e) => {
+            setDetail(e.target.value);
+            setError(null);
+          }}
+          placeholder="Ej: El paciente avisó que no puede asistir"
+          rows={3}
+          error={error ?? undefined}
+        />
+        <Button
+          type="button"
+          variant="danger"
+          className="w-full"
+          loading={row.acting}
+          onClick={() => void handleCancel()}
+        >
+          Confirmar cancelación
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -368,10 +424,10 @@ export function TurnosNuevoWizard({
   const daySlots = selectedDay ? (slotsByDay.get(selectedDay) ?? []) : [];
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-4">
+    <div className="mx-auto max-w-[1600px] space-y-4 text-slate-900">
       <div>
-        <h1 className="text-xl font-bold">Nuevo turno</h1>
-        <p className="text-sm text-[var(--muted-foreground)]">
+        <h1 className="text-xl font-bold text-slate-900">Nuevo turno</h1>
+        <p className={MUTED_CLASS}>
           Elegí profesional, paciente y horario. Gestioná turnos existentes desde el panel de acciones.
         </p>
       </div>
@@ -429,14 +485,16 @@ export function TurnosNuevoWizard({
               createPatientHref={(q) => buildCreatePatientHref(q, "/turnos/nuevo")}
             />
             {selectedPatient ? (
-              <dl className="mt-4 space-y-1 rounded-lg bg-[var(--muted)]/40 p-3 text-sm">
+              <dl className="mt-4 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
                 <div className="flex justify-between gap-2">
-                  <dt className="text-[var(--muted-foreground)]">DNI</dt>
-                  <dd>{selectedPatient.document_number ?? "—"}</dd>
+                  <dt className="font-medium text-slate-600">DNI</dt>
+                  <dd className="font-semibold text-slate-900">{selectedPatient.document_number ?? "—"}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-[var(--muted-foreground)]">Obra social</dt>
-                  <dd>{selectedPatient.insurance_provider ?? "Particular"}</dd>
+                  <dt className="font-medium text-slate-600">Obra social</dt>
+                  <dd className="font-semibold text-slate-900">
+                    {selectedPatient.insurance_provider ?? "Particular"}
+                  </dd>
                 </div>
               </dl>
             ) : null}
@@ -445,15 +503,13 @@ export function TurnosNuevoWizard({
 
         <Card title="3 · Horarios" className="lg:col-span-6 lg:min-h-[560px]">
           {!professionalId ? (
-            <p className="text-sm text-[var(--muted-foreground)]">
-              Seleccioná un profesional para ver la disponibilidad.
-            </p>
+            <p className={MUTED_CLASS}>Seleccioná un profesional para ver la disponibilidad.</p>
           ) : loadingSlots ? (
-            <p className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
+            <p className={`flex items-center gap-2 ${MUTED_CLASS}`}>
               <Loader2 className="h-4 w-4 animate-spin" /> Cargando disponibilidad…
             </p>
           ) : dayKeys.length === 0 ? (
-            <p className="text-sm text-[var(--muted-foreground)]">
+            <p className={MUTED_CLASS}>
               No hay horarios ni turnos agendados para este profesional en las próximas semanas.
             </p>
           ) : (
@@ -472,14 +528,14 @@ export function TurnosNuevoWizard({
                         setSelectedSlot(null);
                         setSelectedExisting(null);
                       }}
-                      className={`rounded-md border px-3 py-2 text-sm transition-colors ${
+                      className={`rounded-md border px-3 py-2 text-sm text-slate-900 transition-colors ${
                         selectedDay === dayKey
                           ? "border-[var(--primary)] bg-[var(--primary)]/10 font-semibold"
-                          : "hover:border-[var(--primary)]"
+                          : "border-slate-300 hover:border-[var(--primary)]"
                       }`}
                     >
                       {format(date, "EEE d MMM", { locale: es })}
-                      <span className="ml-1 text-xs text-[var(--muted-foreground)]">
+                      <span className="ml-1 text-xs font-normal text-slate-600">
                         ({freeCount} libres · {bookedCount} agendados)
                       </span>
                     </button>
@@ -491,9 +547,7 @@ export function TurnosNuevoWizard({
                 <div className="max-h-[460px] space-y-4 overflow-y-auto">
                   {dayAppointments.length > 0 ? (
                     <div>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-                        Agendados
-                      </p>
+                      <p className={SECTION_HEADING}>Agendados</p>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {dayAppointments.map((appointment) => (
                           <button
@@ -502,17 +556,17 @@ export function TurnosNuevoWizard({
                             onClick={() => handleSelectExisting(appointment)}
                             className={`rounded-md border px-3 py-2 text-left text-sm transition-colors ${
                               selectedExisting?.id === appointment.id
-                                ? "border-orange-500 bg-orange-50 font-semibold ring-1 ring-orange-500"
-                                : "border-orange-200 bg-orange-50/60 hover:border-orange-400"
+                                ? "border-orange-500 bg-orange-50 font-semibold text-slate-900 ring-1 ring-orange-500"
+                                : "border-orange-200 bg-orange-50/80 text-slate-900 hover:border-orange-400"
                             }`}
                           >
-                            <span className="font-medium">
+                            <span className="font-semibold">
                               {format(parseISO(appointment.start_at), "HH:mm", { locale: es })} hs
                             </span>
-                            <span className="block truncate text-xs text-slate-700">
+                            <span className="block truncate text-xs font-medium text-slate-800">
                               {getPatientName(appointment)}
                             </span>
-                            <span className="block text-xs text-[var(--muted-foreground)]">
+                            <span className="block text-xs text-slate-600">
                               {resolveAppointmentLifecycleLabel({
                                 status: appointment.status,
                                 waitingRoomStatus: appointment.waiting_room_status,
@@ -528,41 +582,43 @@ export function TurnosNuevoWizard({
 
                   {daySlots.length > 0 ? (
                     <div>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-                        Disponibles
-                      </p>
+                      <p className={SECTION_HEADING}>Disponibles</p>
                       <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
                         {daySlots.map((slot) => (
                           <button
                             key={slot.start_at}
                             type="button"
                             onClick={() => handleSelectFreeSlot(slot)}
-                            className={`rounded-md border px-3 py-2 text-left text-sm transition-colors ${
+                            className={`rounded-md border px-3 py-2 text-left text-sm text-slate-900 transition-colors ${
                               selectedSlot?.start_at === slot.start_at
                                 ? "border-[var(--primary)] bg-[var(--primary)]/10 font-semibold ring-1 ring-[var(--primary)]"
-                                : "hover:border-[var(--primary)]"
+                                : "border-slate-300 hover:border-[var(--primary)]"
                             }`}
                           >
-                            {format(parseISO(slot.start_at), "HH:mm", { locale: es })} hs
-                            <span className="block text-xs text-[var(--muted-foreground)]">
-                              {defaultDuration} min
+                            <span className="font-semibold">
+                              {format(parseISO(slot.start_at), "HH:mm", { locale: es })} hs
                             </span>
+                            <span className="block text-xs text-slate-600">{defaultDuration} min</span>
                           </button>
                         ))}
                       </div>
                     </div>
                   ) : dayAppointments.length === 0 ? (
-                    <p className="text-sm text-[var(--muted-foreground)]">
-                      No hay horarios libres ni turnos este día.
-                    </p>
+                    <p className={MUTED_CLASS}>No hay horarios libres ni turnos este día.</p>
                   ) : (
-                    <p className="text-sm text-[var(--muted-foreground)]">
-                      No quedan horarios libres este día.
-                    </p>
+                    <p className={MUTED_CLASS}>No quedan horarios libres este día.</p>
                   )}
+
+                  {selectedExisting ? (
+                    <ExistingAppointmentCancelPanel
+                      key={selectedExisting.id}
+                      appointment={selectedExisting}
+                      onCancelled={() => void loadProfessionalData(professionalId)}
+                    />
+                  ) : null}
                 </div>
               ) : (
-                <p className="text-sm text-[var(--muted-foreground)]">Elegí un día para ver los horarios.</p>
+                <p className={MUTED_CLASS}>Elegí un día para ver los horarios.</p>
               )}
             </div>
           )}
@@ -571,7 +627,7 @@ export function TurnosNuevoWizard({
         <div className="flex flex-col gap-4 lg:col-span-3">
           <Card title={isExistingMode ? "4 · Turno existente" : "4 · Confirmación"} className="lg:sticky lg:top-4">
             {isExistingMode && selectedExisting ? (
-              <ExistingAppointmentActions
+              <ExistingAppointmentSummary
                 appointment={selectedExisting}
                 appointments={bookedAppointments}
                 scheduleBlocks={scheduleBlocks}
@@ -580,39 +636,27 @@ export function TurnosNuevoWizard({
               />
             ) : (
               <>
-                <dl className="space-y-2 text-sm">
-                  <div>
-                    <dt className="text-[var(--muted-foreground)]">Profesional</dt>
-                    <dd className="font-medium">
-                      {professional ? getProfessionalDisplayName(professional) : "—"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-[var(--muted-foreground)]">Paciente</dt>
-                    <dd className="font-medium">
-                      {selectedPatient
-                        ? `${selectedPatient.last_name}, ${selectedPatient.first_name}`
-                        : "—"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-[var(--muted-foreground)]">Horario</dt>
-                    <dd className="font-medium">
-                      {selectedSlot
-                        ? format(parseISO(selectedSlot.start_at), "EEE d MMM · HH:mm 'hs'", { locale: es })
-                        : "—"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-[var(--muted-foreground)]">Especialidad / Consultorio</dt>
-                    <dd>
-                      {specialty?.name ?? "—"}
-                      {location ? ` · ${location.name}` : ""}
-                    </dd>
-                  </div>
+                <dl className="space-y-3 text-sm">
+                  <SummaryRow label="Profesional">
+                    {professional ? getProfessionalDisplayName(professional) : "—"}
+                  </SummaryRow>
+                  <SummaryRow label="Paciente">
+                    {selectedPatient
+                      ? `${selectedPatient.last_name}, ${selectedPatient.first_name}`
+                      : "—"}
+                  </SummaryRow>
+                  <SummaryRow label="Horario">
+                    {selectedSlot
+                      ? format(parseISO(selectedSlot.start_at), "EEE d MMM · HH:mm 'hs'", { locale: es })
+                      : "—"}
+                  </SummaryRow>
+                  <SummaryRow label="Especialidad / Consultorio">
+                    {specialty?.name ?? "—"}
+                    {location ? ` · ${location.name}` : ""}
+                  </SummaryRow>
                 </dl>
 
-                {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
+                {error ? <p className="mt-3 text-sm font-medium text-red-600">{error}</p> : null}
 
                 <Button
                   type="button"
@@ -629,6 +673,20 @@ export function TurnosNuevoWizard({
                 </Button>
               </>
             )}
+
+            <Button
+              type="button"
+              variant="ghost"
+              className="mt-3 w-full text-slate-600"
+              onClick={handleClear}
+              disabled={
+                submitting ||
+                (!patientId && !selectedSlot && !selectedExisting && !professionalId)
+              }
+            >
+              <RotateCcw className="mr-1 h-4 w-4" />
+              Limpiar selección
+            </Button>
           </Card>
 
           {!isExistingMode ? (
@@ -695,36 +753,6 @@ export function TurnosNuevoWizard({
               </div>
             </Card>
           ) : null}
-
-          <Card title="Cancelación">
-            <p className="mb-3 text-sm text-[var(--muted-foreground)]">
-              {isExistingMode
-                ? "Usá el botón de cancelar turno arriba, o limpiá la selección."
-                : "Limpiá la selección actual para empezar de nuevo."}
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full border-red-200 text-red-700 hover:bg-red-50"
-              onClick={handleClear}
-              disabled={
-                submitting ||
-                (!patientId && !selectedSlot && !selectedExisting && !professionalId)
-              }
-            >
-              <RotateCcw className="mr-1 h-4 w-4" />
-              Limpiar selección
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="mt-2 w-full text-[var(--muted-foreground)]"
-              onClick={() => router.push("/turnos/agenda")}
-            >
-              <XCircle className="mr-1 h-4 w-4" />
-              Volver a agenda
-            </Button>
-          </Card>
         </div>
       </div>
     </div>
