@@ -5,6 +5,7 @@ import { es } from "date-fns/locale";
 import {
   CalendarCheck,
   CalendarClock,
+  Clock3,
   Loader2,
   RotateCcw,
 } from "lucide-react";
@@ -14,12 +15,21 @@ import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react
 import { toast } from "@/core/notifications/toast";
 import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
 
+import { cn } from "@/shared/utils/cn";
+
 import { RescheduleAppointmentDialog } from "@/features/agenda/components/agenda/reschedule-appointment-dialog";
 import { useAppointmentRow } from "@/features/agenda/hooks/use-appointment-row";
 import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { buildCreatePatientHref } from "@/features/pacientes/utils/create-patient-from-search";
 import { createTurnoWizard } from "@/features/turnos/actions/create-turno-wizard";
 import { fetchTurnosWizardSlots } from "@/features/turnos/actions/fetch-turnos-wizard-slots";
+import {
+  APPOINTMENT_DURATION_OPTIONS,
+  DEFAULT_APPOINTMENT_DURATION_MINUTES,
+  filterSlotsByDuration,
+  resolveAppointmentEndAt,
+  slotSupportsDuration,
+} from "@/features/turnos/utils/appointment-duration";
 import {
   CANCELLATION_REASON_OPTIONS,
   type CancellationCategory,
@@ -251,8 +261,17 @@ export function TurnosNuevoWizard({
   const [insurancePlan, setInsurancePlan] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [appointmentDuration, setAppointmentDuration] = useState(
+    DEFAULT_APPOINTMENT_DURATION_MINUTES
+  );
 
   const isExistingMode = selectedExisting !== null;
+
+  const durationFilteredSlots = useMemo(
+    () =>
+      filterSlotsByDuration(slots, appointmentDuration, bookedAppointments, scheduleBlocks),
+    [slots, appointmentDuration, bookedAppointments, scheduleBlocks]
+  );
 
   const filteredProfessionals = useMemo(() => {
     if (!specialtyId) return professionals;
@@ -261,14 +280,14 @@ export function TurnosNuevoWizard({
 
   const slotsByDay = useMemo(() => {
     const map = new Map<string, Slot[]>();
-    for (const slot of slots) {
+    for (const slot of durationFilteredSlots) {
       const dayKey = format(parseISO(slot.start_at), "yyyy-MM-dd");
       const list = map.get(dayKey) ?? [];
       list.push(slot);
       map.set(dayKey, list);
     }
     return map;
-  }, [slots]);
+  }, [durationFilteredSlots]);
 
   const appointmentsByDay = useMemo(() => {
     const map = new Map<string, AppointmentAgendaRow[]>();
@@ -391,6 +410,25 @@ export function TurnosNuevoWizard({
     setError(null);
   }, []);
 
+  const handleDurationChange = useCallback(
+    (minutes: number) => {
+      setAppointmentDuration(minutes);
+      setSelectedSlot((current) => {
+        if (!current) return null;
+        return slotSupportsDuration(
+          current.start_at,
+          minutes,
+          bookedAppointments,
+          scheduleBlocks
+        )
+          ? current
+          : null;
+      });
+      setError(null);
+    },
+    [bookedAppointments, scheduleBlocks]
+  );
+
   const handleSelectExisting = useCallback(
     (appointment: AppointmentAgendaRow) => {
       setSelectedExisting(appointment);
@@ -421,6 +459,7 @@ export function TurnosNuevoWizard({
     setOverbookingReason("");
     setInsuranceProvider("");
     setInsurancePlan("");
+    setAppointmentDuration(DEFAULT_APPOINTMENT_DURATION_MINUTES);
     setError(null);
   }, []);
 
@@ -435,7 +474,7 @@ export function TurnosNuevoWizard({
       specialty_id: specialtyId || null,
       location_id: locationId || null,
       start_at: selectedSlot.start_at,
-      end_at: selectedSlot.end_at,
+      end_at: resolveAppointmentEndAt(selectedSlot.start_at, appointmentDuration),
       notes: notes || undefined,
       consultation_modality: modality,
       is_overbooking: isOverbooking,
@@ -468,6 +507,7 @@ export function TurnosNuevoWizard({
     priority,
     insuranceProvider,
     insurancePlan,
+    appointmentDuration,
     router,
   ]);
 
@@ -557,126 +597,156 @@ export function TurnosNuevoWizard({
         </div>
 
         <Card title="3 · Horarios" className="lg:col-span-6 lg:min-h-[560px]">
-          {!professionalId ? (
-            <p className={MUTED_CLASS}>Seleccioná un profesional para ver la disponibilidad.</p>
-          ) : loadingSlots ? (
-            <p className={`flex items-center gap-2 ${MUTED_CLASS}`}>
-              <Loader2 className="h-4 w-4 animate-spin" /> Cargando disponibilidad…
-            </p>
-          ) : dayKeys.length === 0 ? (
-            <p className={MUTED_CLASS}>
-              No hay horarios ni turnos agendados para este profesional en las próximas semanas.
-            </p>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                {dayKeys.map((dayKey) => {
-                  const date = parseISO(`${dayKey}T12:00:00`);
-                  const freeCount = slotsByDay.get(dayKey)?.length ?? 0;
-                  const bookedCount = appointmentsByDay.get(dayKey)?.length ?? 0;
-                  return (
-                    <button
-                      key={dayKey}
-                      type="button"
-                      onClick={() => {
-                        setSelectedDay(dayKey);
-                        setSelectedSlot(null);
-                        setSelectedExisting(null);
-                      }}
-                      className={`rounded-md border px-3 py-2 text-sm text-slate-950 transition-colors ${
-                        selectedDay === dayKey
-                          ? "border-[var(--primary)] bg-[var(--primary)]/10 font-semibold"
-                          : "border-slate-400 hover:border-[var(--primary)]"
-                      }`}
-                    >
-                      {format(date, "EEE d MMM", { locale: es })}
-                      <span className="ml-1 text-xs font-medium text-slate-700">
-                        ({freeCount} libres · {bookedCount} agendados)
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {selectedDay ? (
-                <div className="max-h-[460px] space-y-4 overflow-y-auto">
-                  {dayAppointments.length > 0 ? (
-                    <div>
-                      <p className={SECTION_HEADING}>Agendados</p>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        {dayAppointments.map((appointment) => (
-                          <button
-                            key={appointment.id}
-                            type="button"
-                            onClick={() => handleSelectExisting(appointment)}
-                            className={`rounded-md border px-3 py-2 text-left text-sm transition-colors ${
-                              selectedExisting?.id === appointment.id
-                                ? "border-orange-500 bg-orange-50 font-semibold text-slate-900 ring-1 ring-orange-500"
-                                : "border-orange-200 bg-orange-50/80 text-slate-900 hover:border-orange-400"
-                            }`}
-                          >
-                            <span className="font-semibold">
-                              {format(parseISO(appointment.start_at), "HH:mm", { locale: es })} hs
-                            </span>
-                            <span className="block truncate text-xs font-medium text-slate-800">
-                              {getPatientName(appointment)}
-                            </span>
-                            <span className="block text-xs text-slate-600">
-                              {resolveAppointmentLifecycleLabel({
-                                status: appointment.status,
-                                waitingRoomStatus: appointment.waiting_room_status,
-                                isOverbooking: appointment.is_overbooking ?? undefined,
-                                rescheduledAt: appointment.rescheduled_at,
-                              })}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {daySlots.length > 0 ? (
-                    <div>
-                      <p className={SECTION_HEADING}>Disponibles</p>
-                      <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                        {daySlots.map((slot) => (
-                          <button
-                            key={slot.start_at}
-                            type="button"
-                            onClick={() => handleSelectFreeSlot(slot)}
-                            className={`rounded-md border px-3 py-2 text-left text-sm text-slate-950 transition-colors ${
-                              selectedSlot?.start_at === slot.start_at
-                                ? "border-[var(--primary)] bg-[var(--primary)]/10 font-semibold ring-1 ring-[var(--primary)]"
-                                : "border-slate-400 hover:border-[var(--primary)]"
-                            }`}
-                          >
-                            <span className="font-semibold">
-                              {format(parseISO(slot.start_at), "HH:mm", { locale: es })} hs
-                            </span>
-                            <span className="block text-xs font-medium text-slate-700">{defaultDuration} min</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : dayAppointments.length === 0 ? (
-                    <p className={MUTED_CLASS}>No hay horarios libres ni turnos este día.</p>
-                  ) : (
-                    <p className={MUTED_CLASS}>No quedan horarios libres este día.</p>
-                  )}
-
-                  {selectedExisting ? (
-                    <ExistingAppointmentCancelPanel
-                      key={selectedExisting.id}
-                      appointment={selectedExisting}
-                      onCancelled={() => void loadProfessionalData(professionalId)}
-                    />
-                  ) : null}
+          <div className="space-y-4">
+            {!professionalId ? (
+              <p className={MUTED_CLASS}>Seleccioná un profesional para ver la disponibilidad.</p>
+            ) : loadingSlots ? (
+              <p className={`flex items-center gap-2 ${MUTED_CLASS}`}>
+                <Loader2 className="h-4 w-4 animate-spin" /> Cargando disponibilidad…
+              </p>
+            ) : dayKeys.length === 0 ? (
+              <p className={MUTED_CLASS}>
+                No hay horarios ni turnos agendados para este profesional en las próximas semanas.
+              </p>
+            ) : (
+              <>
+                <div className="flex flex-wrap gap-2">
+                  {dayKeys.map((dayKey) => {
+                    const date = parseISO(`${dayKey}T12:00:00`);
+                    const freeCount = slotsByDay.get(dayKey)?.length ?? 0;
+                    const bookedCount = appointmentsByDay.get(dayKey)?.length ?? 0;
+                    return (
+                      <button
+                        key={dayKey}
+                        type="button"
+                        onClick={() => {
+                          setSelectedDay(dayKey);
+                          setSelectedSlot(null);
+                          setSelectedExisting(null);
+                        }}
+                        className={`rounded-md border px-3 py-2 text-sm text-slate-950 transition-colors ${
+                          selectedDay === dayKey
+                            ? "border-[var(--primary)] bg-[var(--primary)]/10 font-semibold"
+                            : "border-slate-400 hover:border-[var(--primary)]"
+                        }`}
+                      >
+                        {format(date, "EEE d MMM", { locale: es })}
+                        <span className="ml-1 text-xs font-medium text-slate-700">
+                          ({freeCount} libres · {bookedCount} agendados)
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
-              ) : (
-                <p className={MUTED_CLASS}>Elegí un día para ver los horarios.</p>
-              )}
-            </div>
-          )}
+
+                {selectedDay ? (
+                  <div className="max-h-[460px] space-y-4 overflow-y-auto">
+                    {dayAppointments.length > 0 ? (
+                      <div>
+                        <p className={SECTION_HEADING}>Agendados</p>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {dayAppointments.map((appointment) => (
+                            <button
+                              key={appointment.id}
+                              type="button"
+                              onClick={() => handleSelectExisting(appointment)}
+                              className={`rounded-md border px-3 py-2 text-left text-sm transition-colors ${
+                                selectedExisting?.id === appointment.id
+                                  ? "border-orange-500 bg-orange-50 font-semibold text-slate-900 ring-1 ring-orange-500"
+                                  : "border-orange-200 bg-orange-50/80 text-slate-900 hover:border-orange-400"
+                              }`}
+                            >
+                              <span className="font-semibold">
+                                {format(parseISO(appointment.start_at), "HH:mm", { locale: es })} hs
+                              </span>
+                              <span className="block truncate text-xs font-medium text-slate-800">
+                                {getPatientName(appointment)}
+                              </span>
+                              <span className="block text-xs text-slate-600">
+                                {resolveAppointmentLifecycleLabel({
+                                  status: appointment.status,
+                                  waitingRoomStatus: appointment.waiting_room_status,
+                                  isOverbooking: appointment.is_overbooking ?? undefined,
+                                  rescheduledAt: appointment.rescheduled_at,
+                                })}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {daySlots.length > 0 ? (
+                      <div>
+                        <p className={SECTION_HEADING}>Disponibles</p>
+                        <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                          {daySlots.map((slot) => (
+                            <button
+                              key={slot.start_at}
+                              type="button"
+                              onClick={() => handleSelectFreeSlot(slot)}
+                              className={`rounded-md border px-3 py-2 text-left text-sm text-slate-950 transition-colors ${
+                                selectedSlot?.start_at === slot.start_at
+                                  ? "border-[var(--primary)] bg-[var(--primary)]/10 font-semibold ring-1 ring-[var(--primary)]"
+                                  : "border-slate-400 hover:border-[var(--primary)]"
+                              }`}
+                            >
+                              <span className="font-semibold">
+                                {format(parseISO(slot.start_at), "HH:mm", { locale: es })} hs
+                              </span>
+                              <span className="block text-xs font-medium text-slate-700">
+                                {appointmentDuration} min
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : dayAppointments.length === 0 ? (
+                      <p className={MUTED_CLASS}>No hay horarios libres ni turnos este día.</p>
+                    ) : (
+                      <p className={MUTED_CLASS}>No quedan horarios libres este día.</p>
+                    )}
+
+                    {selectedExisting ? (
+                      <ExistingAppointmentCancelPanel
+                        key={selectedExisting.id}
+                        appointment={selectedExisting}
+                        onCancelled={() => void loadProfessionalData(professionalId)}
+                      />
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className={MUTED_CLASS}>Elegí un día para ver los horarios.</p>
+                )}
+              </>
+            )}
+
+            {professionalId && !loadingSlots ? (
+              <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-300 pt-4">
+                <span className="mr-auto flex items-center gap-1.5 text-sm font-semibold text-slate-800">
+                  <Clock3 className="h-4 w-4" />
+                  Duración de atención
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {APPOINTMENT_DURATION_OPTIONS.map((minutes) => (
+                    <button
+                      key={minutes}
+                      type="button"
+                      onClick={() => handleDurationChange(minutes)}
+                      className={cn(
+                        "rounded-md border px-3 py-1.5 text-sm font-medium transition-colors",
+                        appointmentDuration === minutes
+                          ? "border-[var(--primary)] bg-[var(--primary)]/10 font-semibold text-slate-950 ring-1 ring-[var(--primary)]"
+                          : "border-slate-400 text-slate-700 hover:border-[var(--primary)]"
+                      )}
+                    >
+                      {minutes} min
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
         </Card>
 
         <div className="flex flex-col gap-4 lg:col-span-3">
@@ -702,7 +772,7 @@ export function TurnosNuevoWizard({
                   </SummaryRow>
                   <SummaryRow label="Horario">
                     {selectedSlot
-                      ? format(parseISO(selectedSlot.start_at), "EEE d MMM · HH:mm 'hs'", { locale: es })
+                      ? `${format(parseISO(selectedSlot.start_at), "EEE d MMM · HH:mm 'hs'", { locale: es })} (${appointmentDuration} min)`
                       : "—"}
                   </SummaryRow>
                   <SummaryRow label="Especialidad / Consultorio">
