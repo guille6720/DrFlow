@@ -16,6 +16,8 @@ import {
 } from "@/core/validations/params";
 import { appointmentSchema, sanitizeText, updateAppointmentBodySchema } from "@/core/validations/schemas";
 
+import { recordAppointmentStatusHistory } from "@/features/turnos/server/record-appointment-status-history";
+
 import type { ConsultationModality } from "@/lib/constants/consultation-modality";
 
 export async function createAppointment(formData: FormData) {
@@ -74,6 +76,7 @@ export async function createAppointment(formData: FormData) {
   });
 
   revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
   revalidatePath("/dashboard");
   revalidatePath("/atenciones");
   return { data };
@@ -149,6 +152,7 @@ export async function updateAppointment(id: string, formData: FormData) {
   });
 
   revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
   revalidatePath("/dashboard");
   revalidatePath(`/pacientes/${existing.patient_id}`);
   revalidatePath("/atenciones");
@@ -159,7 +163,8 @@ export async function updateAppointmentStatus(
   id: string,
   status: string,
   cancellationReason?: string,
-  consultationModality?: ConsultationModality
+  consultationModality?: ConsultationModality,
+  cancellationCategory?: string
 ) {
   const access = await requireClinicPermission("manageAppointments");
   if (!access.ok) return { error: access.error };
@@ -179,7 +184,7 @@ export async function updateAppointmentStatus(
 
   const { data: before } = await supabase
     .from("appointments")
-    .select("id, start_at, patient_id, patients(first_name, last_name, phone)")
+    .select("id, start_at, patient_id, status, waiting_room_status, patients(first_name, last_name, phone)")
     .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
@@ -198,6 +203,9 @@ export async function updateAppointmentStatus(
     updatePayload.cancelled_at = new Date().toISOString();
     updatePayload.cancelled_by = user?.id ?? null;
     updatePayload.cancelled_by_type = "clinic";
+    if (cancellationCategory?.trim()) {
+      updatePayload.cancellation_category = cancellationCategory.trim();
+    }
   }
 
   if (statusParsed.data === "attended") {
@@ -212,6 +220,20 @@ export async function updateAppointmentStatus(
 
   if (error) return { error: error.message };
 
+  try {
+    await recordAppointmentStatusHistory(supabase, {
+      clinicId,
+      appointmentId: idParsed.data,
+      fromStatus: before?.status ?? null,
+      toStatus: statusParsed.data,
+      fromWaitingRoomStatus: before?.waiting_room_status ?? null,
+      changedBy: user?.id ?? null,
+      reason: cancellationReason ?? `Estado → ${statusParsed.data}`,
+    });
+  } catch {
+    // Non-blocking — audit log still records the change.
+  }
+
   await logAudit({
     clinicId,
     entityType: "appointment",
@@ -225,6 +247,7 @@ export async function updateAppointmentStatus(
   });
 
   revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
   revalidatePath("/dashboard");
   revalidatePath(`/pacientes/${before?.patient_id}`);
   revalidatePath("/atenciones");
@@ -331,6 +354,7 @@ export async function finalizeConsultation(
   });
 
   revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
   revalidatePath("/dashboard");
   revalidatePath("/atenciones");
   return { success: true };

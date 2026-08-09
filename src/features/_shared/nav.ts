@@ -1,6 +1,7 @@
 import type { FeatureModuleId } from "@/features/_shared/registry";
 
 export type FeatureNavPermission =
+  | "manageAppointments"
   | "managePatients"
   | "viewClinicalRecords"
   | "editClinicalRecords"
@@ -83,7 +84,9 @@ export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
     label: "Administración",
     featureId: "administracion",
     children: [
-      { featureId: "agenda", href: "/agenda", label: "Agenda", permission: null },
+      { featureId: "agenda", href: "/turnos/nuevo", label: "Nuevo turno", permission: "manageAppointments" },
+      { featureId: "agenda", href: "/turnos/agenda", label: "Agenda", permission: null },
+      { featureId: "agenda", href: "/turnos/lista-espera", label: "Lista de espera", permission: "manageAppointments" },
       { featureId: "agenda", href: "/atenciones", label: "Atenciones", permission: null },
       {
         featureId: "administracion",

@@ -45,6 +45,9 @@ export type SidebarNavEntry = SidebarNavLink | SidebarNavGroup;
 
 const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
   "/dashboard": LayoutDashboard,
+  "/turnos/nuevo": Calendar,
+  "/turnos/agenda": Calendar,
+  "/turnos/lista-espera": Calendar,
   "/agenda": Calendar,
   "/sala-espera": Armchair,
   "/atenciones": ClipboardPlus,

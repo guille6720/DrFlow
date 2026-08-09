@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Pencil, Play, Trash2, User, UserX } from "lucide-react";
+import { CalendarClock, Check, Pencil, Play, Trash2, User, UserX } from "lucide-react";
 import Link from "next/link";
 
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
@@ -16,6 +16,7 @@ type Props = {
   canManage: boolean;
   canStartClinical: boolean;
   onEdit?: (appointment: AppointmentAgendaRow) => void;
+  onReschedule?: (appointment: AppointmentAgendaRow) => void;
   acting: boolean;
   startHref: string;
   setStatus: (status: string, cancellationReason?: string) => Promise<void>;
@@ -27,6 +28,7 @@ export function AppointmentRowActions({
   canManage,
   canStartClinical,
   onEdit,
+  onReschedule,
   acting,
   startHref,
   setStatus,
@@ -63,6 +65,22 @@ export function AppointmentRowActions({
           >
             <Pencil className="h-3.5 w-3.5" />
             Editar
+          </Button>
+        )}
+
+      {canManage &&
+        appointment.status !== "cancelled" &&
+        appointment.status !== "attended" &&
+        onReschedule && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className={agendaBtn}
+            onClick={() => onReschedule(appointment)}
+          >
+            <CalendarClock className="h-3.5 w-3.5" />
+            Reprogramar
           </Button>
         )}
 

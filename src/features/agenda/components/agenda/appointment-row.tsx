@@ -11,8 +11,9 @@ import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 import { AppointmentRowActions } from "@/features/agenda/components/agenda/appointment-row-actions";
 import { CancelAppointmentDialog } from "@/features/agenda/components/agenda/cancel-appointment-dialog";
 import { useAppointmentRow } from "@/features/agenda/hooks/use-appointment-row";
+import { AppointmentLifecycleBadge } from "@/features/turnos/components/appointment-lifecycle-badge";
 
-import { appointmentStatusBadge, Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { isOnlineBooking } from "@/lib/utils/appointment";
 
 interface Props {
@@ -21,6 +22,7 @@ interface Props {
   canManage: boolean;
   canStartClinical: boolean;
   onEdit?: (appointment: AppointmentAgendaRow) => void;
+  onReschedule?: (appointment: AppointmentAgendaRow) => void;
 }
 
 export const AppointmentRow = memo(function AppointmentRow({
@@ -29,9 +31,9 @@ export const AppointmentRow = memo(function AppointmentRow({
   canManage,
   canStartClinical,
   onEdit,
+  onReschedule,
 }: Props) {
   const row = useAppointmentRow(appointment);
-  const statusInfo = appointmentStatusBadge[appointment.status];
   const online = isOnlineBooking(appointment);
 
   return (
@@ -48,7 +50,12 @@ export const AppointmentRow = memo(function AppointmentRow({
                 Web
               </Badge>
             )}
-            {statusInfo && <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>}
+            <AppointmentLifecycleBadge
+              status={appointment.status}
+              waitingRoomStatus={appointment.waiting_room_status}
+              isOverbooking={appointment.is_overbooking ?? false}
+              rescheduledAt={appointment.rescheduled_at}
+            />
           </div>
           <p className="text-sm text-slate-500">
             {showDate
@@ -62,14 +69,9 @@ export const AppointmentRow = memo(function AppointmentRow({
           {appointment.notes && (
             <p className="mt-1 text-xs text-slate-500">{appointment.notes}</p>
           )}
-          {appointment.status === "cancelled" && (
-            <p className="mt-1 text-xs text-red-700">
-              {row.cancelledByLabel}
-              {appointment.cancellation_reason
-                ? ` · ${appointment.cancellation_reason}`
-                : ""}
-            </p>
-          )}
+          {appointment.status === "cancelled" && row.cancelledByLabel ? (
+            <p className="mt-1 text-xs text-red-700">{row.cancelledByLabel}</p>
+          ) : null}
         </div>
 
         <AppointmentRowActions
@@ -77,6 +79,7 @@ export const AppointmentRow = memo(function AppointmentRow({
           canManage={canManage}
           canStartClinical={canStartClinical}
           onEdit={onEdit}
+          onReschedule={onReschedule}
           acting={row.acting}
           startHref={row.startHref}
           setStatus={row.setStatus}

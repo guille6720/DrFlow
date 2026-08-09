@@ -65,10 +65,21 @@ export type AppointmentAgendaRow = {
   notes: string | null;
   booking_source?: "manual" | "online" | null;
   cancellation_reason: string | null;
+  cancellation_category?: string | null;
   cancelled_at: string | null;
   cancelled_by: string | null;
   cancelled_by_type: "patient" | "clinic" | null;
   consultation_modality?: ConsultationModality | null;
+  waiting_room_status?:
+    | "waiting"
+    | "confirmed"
+    | "in_consultation"
+    | "finished"
+    | "cancelled"
+    | "absent"
+    | null;
+  is_overbooking?: boolean | null;
+  rescheduled_at?: string | null;
   patients?: NestedRow<{ first_name: string; last_name: string }>;
   professionals?: NestedRow<{ profiles?: NestedRow<{ full_name?: string }> }>;
   locations?: NestedRow<{ name: string }>;

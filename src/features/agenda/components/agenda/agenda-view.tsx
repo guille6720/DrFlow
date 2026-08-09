@@ -5,7 +5,7 @@ import { es } from "date-fns/locale";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
@@ -20,6 +20,7 @@ import { AppointmentRow, filterAppointmentsForDay } from "@/features/agenda/comp
 import { CalendarGrid } from "@/features/agenda/components/agenda/calendar-grid";
 import { EditAppointmentDialog } from "@/features/agenda/components/agenda/edit-appointment-dialog";
 import { MonthOverviewGrid } from "@/features/agenda/components/agenda/month-overview-grid";
+import { RescheduleAppointmentDialog } from "@/features/agenda/components/agenda/reschedule-appointment-dialog";
 import { useAgendaView } from "@/features/agenda/hooks/use-agenda-view";
 
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,8 @@ export function AgendaView({
   bookingSlug,
 }: AgendaPageProps) {
   const router = useRouter();
+  const [reschedulingAppointment, setReschedulingAppointment] =
+    useState<AppointmentAgendaRow | null>(null);
   const agenda = useAgendaView({
     initialView,
     initialShowForm,
@@ -88,6 +91,11 @@ export function AgendaView({
   const canManage = hasPermission(role, "manageAppointments", false);
   const canStartClinical = hasPermission(role, "editClinicalRecords", false);
   const handleEditAppointment = canManage ? setEditingAppointment : undefined;
+  const handleRescheduleAppointment = canManage ? setReschedulingAppointment : undefined;
+
+  const handleCloseReschedule = useCallback(() => {
+    setReschedulingAppointment(null);
+  }, []);
 
   const dayAppointments = useMemo(
     () =>
@@ -231,6 +239,7 @@ export function AgendaView({
                     canManage={canManage}
                     canStartClinical={canStartClinical}
                     onEdit={handleEditAppointment}
+                    onReschedule={handleRescheduleAppointment}
                   />
                 ))}
               </ul>
@@ -265,6 +274,19 @@ export function AgendaView({
             defaultDuration={defaultDuration}
             open
             onClose={handleCloseEdit}
+            onSaved={() => router.refresh()}
+          />
+        ) : null}
+
+        {reschedulingAppointment ? (
+          <RescheduleAppointmentDialog
+            key={reschedulingAppointment.id}
+            appointment={reschedulingAppointment}
+            appointments={appointments}
+            scheduleBlocks={scheduleBlocks}
+            defaultDuration={defaultDuration}
+            open
+            onClose={handleCloseReschedule}
             onSaved={() => router.refresh()}
           />
         ) : null}

@@ -7,7 +7,9 @@ import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 
+import type { CancelAppointmentInput } from "@/features/agenda/components/agenda/cancel-appointment-dialog";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { formatCancellationReason } from "@/features/turnos/utils/appointment-lifecycle";
 
 import { updateAppointmentStatus } from "@/lib/actions/appointments";
 import {
@@ -25,9 +27,19 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
     | undefined;
 
   const setStatus = useCallback(
-    async (status: string, cancellationReason?: string) => {
+    async (
+      status: string,
+      cancellationReason?: string,
+      cancellationCategory?: string
+    ) => {
       setActing(true);
-      const result = await updateAppointmentStatus(appointment.id, status, cancellationReason);
+      const result = await updateAppointmentStatus(
+        appointment.id,
+        status,
+        cancellationReason,
+        undefined,
+        cancellationCategory
+      );
       setActing(false);
 
       if (result.error) return;
@@ -53,9 +65,10 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
   );
 
   const handleCancelConfirm = useCallback(
-    async (reason: string) => {
+    async (input: CancelAppointmentInput) => {
+      const formatted = formatCancellationReason(input.category, input.detail);
       setActing(true);
-      await setStatus("cancelled", reason);
+      await setStatus("cancelled", formatted, input.category);
       setActing(false);
       setCancelOpen(false);
     },
@@ -76,7 +89,12 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
     appointment.status === "cancelled"
       ? appointment.cancelled_by_type === "patient"
         ? "Cancelado por el paciente"
-        : "Cancelado por el consultorio"
+        : appointment.cancellation_category
+          ? formatCancellationReason(
+              appointment.cancellation_category,
+              appointment.cancellation_reason
+            )
+          : "Cancelado por el consultorio"
       : null;
 
   return useMemo(

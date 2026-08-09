@@ -3,13 +3,24 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
+import {
+  CANCELLATION_REASON_OPTIONS,
+  type CancellationCategory,
+} from "@/features/turnos/utils/appointment-lifecycle";
+
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+
+export type CancelAppointmentInput = {
+  category: CancellationCategory;
+  detail: string;
+};
 
 interface CancelAppointmentDialogProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: (reason: string) => Promise<void>;
+  onConfirm: (input: CancelAppointmentInput) => Promise<void>;
   patientName?: string;
   loading?: boolean;
 }
@@ -21,26 +32,29 @@ export function CancelAppointmentDialog({
   patientName,
   loading = false,
 }: CancelAppointmentDialogProps) {
-  const [reason, setReason] = useState("");
+  const [category, setCategory] = useState<CancellationCategory>("clinic");
+  const [detail, setDetail] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   if (!open) return null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const trimmed = reason.trim();
+    const trimmed = detail.trim();
     if (trimmed.length < 3) {
       setError("Indicá el motivo (mín. 3 caracteres)");
       return;
     }
     setError(null);
-    await onConfirm(trimmed);
-    setReason("");
+    await onConfirm({ category, detail: trimmed });
+    setDetail("");
+    setCategory("clinic");
   }
 
   function handleClose() {
     if (loading) return;
-    setReason("");
+    setDetail("");
+    setCategory("clinic");
     setError(null);
     onClose();
   }
@@ -56,10 +70,8 @@ export function CancelAppointmentDialog({
       <div className="drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Eliminar turno</h2>
-            {patientName && (
-              <p className="mt-1 text-sm text-slate-500">{patientName}</p>
-            )}
+            <h2 className="text-lg font-semibold text-slate-900">Cancelar turno</h2>
+            {patientName ? <p className="mt-1 text-sm text-slate-500">{patientName}</p> : null}
           </div>
           <button
             type="button"
@@ -71,24 +83,35 @@ export function CancelAppointmentDialog({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <Select
+            label="Motivo"
+            required
+            value={category}
+            onChange={(e) => setCategory(e.target.value as CancellationCategory)}
+            options={CANCELLATION_REASON_OPTIONS.map((option) => ({
+              value: option.value,
+              label: option.label,
+            }))}
+          />
           <Textarea
-            label="Motivo de cancelación"
-            value={reason}
+            label="Detalle"
+            value={detail}
             onChange={(e) => {
-              setReason(e.target.value);
+              setDetail(e.target.value);
               setError(null);
             }}
-            placeholder="Ej: El médico no puede atender ese día"
+            placeholder="Ej: El paciente avisó que no puede asistir"
             rows={3}
             required
             error={error ?? undefined}
           />
           <p className="text-xs text-slate-500">
-            Quedará registrado en la agenda y en la app del paciente. Podés avisarle por WhatsApp.
+            Quedará registrado en la agenda, historial y app del paciente. Podés avisarle por
+            WhatsApp.
           </p>
           <div className="flex gap-2">
             <Button type="submit" variant="danger" loading={loading}>
-              Confirmar eliminación
+              Confirmar cancelación
             </Button>
             <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
               Volver

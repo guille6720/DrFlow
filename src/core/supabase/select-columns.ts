@@ -12,7 +12,7 @@ export const PATIENT_LIST_COLUMNS =
 export const PATIENT_PICKER_COLUMNS = "id, first_name, last_name";
 
 export const APPOINTMENT_AGENDA_COLUMNS =
-  "id, clinic_id, patient_id, professional_id, location_id, specialty_id, start_at, end_at, status, notes, booking_source, cancellation_reason, cancelled_at, cancelled_by, cancelled_by_type, consultation_modality";
+  "id, clinic_id, patient_id, professional_id, location_id, specialty_id, start_at, end_at, status, notes, booking_source, cancellation_reason, cancellation_category, cancelled_at, cancelled_by, cancelled_by_type, consultation_modality, waiting_room_status, is_overbooking, rescheduled_at";
 
 export const PROFESSIONAL_AGENDA_COLUMNS =
   "id, clinic_id, user_id, specialty_id, location_id, license_number, license_national, license_provincial, display_name, is_active";

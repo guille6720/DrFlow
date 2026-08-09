@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import Link from "next/link";
 
 import type { ProfessionalAgendaRow } from "@/core/supabase/query-types";
 
@@ -23,7 +24,6 @@ type Props = {
     | "filterSpecialty"
     | "setFilterSpecialty"
     | "shiftCalendar"
-    | "openNewAppointmentForm"
   >;
   professionals: ProfessionalAgendaRow[];
   specialties: { id: string; name: string }[];
@@ -39,7 +39,6 @@ export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
     filterSpecialty,
     setFilterSpecialty,
     shiftCalendar,
-    openNewAppointmentForm,
   } = agenda;
 
   return (
@@ -108,10 +107,13 @@ export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
         className="w-48"
       />
 
-      <Button onClick={() => openNewAppointmentForm()} className="ml-auto">
+      <Link
+        href="/turnos/nuevo"
+        className="ml-auto inline-flex items-center gap-2 rounded-md bg-[var(--primary)] px-4 py-2 text-sm font-medium text-[var(--primary-foreground)] hover:opacity-90"
+      >
         <Plus className="h-4 w-4" />
         Nuevo turno
-      </Button>
+      </Link>
     </div>
   );
 }
