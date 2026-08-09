@@ -8,92 +8,88 @@ import {
   type PatientRequestRecord,
   setStoredDocument,
 } from "@/features/pacientes/utils/patient-requests-storage";
+import {
+  mapPortalAppointmentToRequestItem,
+  mergePatientRequestItems,
+  type PatientRequestItem,
+} from "@/features/portal/utils/patient-portal-appointments";
 
 import {
   cancelPatientAppointment,
-  fetchPatientAppointmentStatuses,
+  fetchPatientPortalAppointments,
 } from "@/lib/actions/public-booking";
-
-interface AppointmentStatusRow {
-  status: string;
-  cancellationReason: string | null;
-  cancelledAt: string | null;
-  cancelledByType: string | null;
-}
-
-type StatusMap = Record<string, AppointmentStatusRow>;
 
 type Options = {
   slug: string;
   refreshTrigger?: number;
 };
 
+function mapWhatsappRequest(record: PatientRequestRecord): PatientRequestItem {
+  return {
+    id: record.localId,
+    appointmentId: record.appointmentId,
+    type: record.type,
+    channel: record.channel,
+    patientName: record.patientName,
+    startAt: record.startAt,
+    createdAt: record.createdAt,
+  };
+}
+
 export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
   const [documentNumber, setDocumentNumber] = useState("");
-  const [requests, setRequests] = useState<PatientRequestRecord[]>([]);
-  const [statuses, setStatuses] = useState<StatusMap>({});
+  const [items, setItems] = useState<PatientRequestItem[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [refreshing, startRefresh] = useTransition();
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [cancelling, startCancel] = useTransition();
 
-  const loadStatuses = useCallback((dni: string, list: PatientRequestRecord[]) => {
-    const ids = list
-      .map((r) => r.appointmentId)
-      .filter((id): id is string => Boolean(id));
-
-    if (!dni.trim() || ids.length === 0) {
-      setStatuses({});
+  const loadAppointments = useCallback((dni: string) => {
+    const trimmed = dni.trim();
+    if (!trimmed) {
+      setItems([]);
+      setLoadError(null);
       return;
     }
 
     startRefresh(async () => {
-      const result = await fetchPatientAppointmentStatuses(slug, dni, ids);
-      const map: StatusMap = {};
-      for (const row of result.statuses ?? []) {
-        map[row.appointmentId] = {
-          status: row.status,
-          cancellationReason: row.cancellationReason,
-          cancelledAt: row.cancelledAt,
-          cancelledByType: row.cancelledByType,
-        };
+      setLoadError(null);
+      const result = await fetchPatientPortalAppointments(slug, trimmed);
+      if (result.error) {
+        setLoadError(result.error);
       }
-      setStatuses(map);
+
+      const serverItems = (result.appointments ?? []).map(mapPortalAppointmentToRequestItem);
+      const localWhatsapp = getPatientRequests(slug)
+        .filter((record) => record.channel === "whatsapp" && record.documentNumber === trimmed)
+        .map(mapWhatsappRequest);
+
+      setItems(mergePatientRequestItems(serverItems, localWhatsapp));
     });
   }, [slug]);
 
   useEffect(() => {
     queueMicrotask(() => {
       const dni = getStoredDocument(slug);
-      const list = getPatientRequests(slug);
       setDocumentNumber(dni);
-      setRequests(list);
-      loadStatuses(dni, list);
+      loadAppointments(dni);
     });
-  }, [slug, refreshTrigger, loadStatuses]);
+  }, [slug, refreshTrigger, loadAppointments]);
 
   const handleRefresh = () => {
     setStoredDocument(slug, documentNumber);
-    const list = getPatientRequests(slug);
-    setRequests(list);
-    loadStatuses(documentNumber, list);
+    loadAppointments(documentNumber);
   };
 
-  const isConfirmed = (request: PatientRequestRecord) => {
-    if (!request.appointmentId) return false;
-    return statuses[request.appointmentId]?.status === "confirmed";
-  };
+  const isConfirmed = (request: PatientRequestItem) => request.status === "confirmed";
 
-  const isCancelled = (request: PatientRequestRecord) => {
-    if (!request.appointmentId) return false;
-    return statuses[request.appointmentId]?.status === "cancelled";
-  };
+  const isCancelled = (request: PatientRequestItem) => request.status === "cancelled";
 
-  const canCancel = (request: PatientRequestRecord) => {
+  const canCancel = (request: PatientRequestItem) => {
     if (!request.appointmentId) return false;
-    const status = statuses[request.appointmentId]?.status;
-    return status === "pending" || status === "confirmed";
+    return request.status === "pending" || request.status === "confirmed";
   };
 
   function handleCancelSubmit(appointmentId: string) {
@@ -118,8 +114,8 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
   return {
     documentNumber,
     setDocumentNumber,
-    requests,
-    statuses,
+    items,
+    loadError,
     refreshing,
     cancelTarget,
     setCancelTarget,

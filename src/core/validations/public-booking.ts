@@ -34,3 +34,8 @@ export const publicBookingSlotsSchema = z.object({
   slug: bookingSlugSchema,
   professional_id: entityIdSchema,
 });
+
+export const publicBookingPortalAppointmentsSchema = z.object({
+  slug: bookingSlugSchema,
+  document_number: documentNumberSchema,
+});

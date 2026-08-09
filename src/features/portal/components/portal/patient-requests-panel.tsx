@@ -28,9 +28,8 @@ export function PatientRequestsPanel({ slug, clinicName, refreshTrigger = 0 }: P
               Acá ves el estado de tus pedidos a {clinicName}. Podés cancelar turnos confirmados o
               pendientes.
             </p>
-            <p className="mt-2 text-xs text-amber-800">
-              Esta lista se guarda en este teléfono/navegador. Si cambiás de dispositivo, no vas a
-              ver los mismos pedidos salvo que vuelvas a sacar turno desde acá con el mismo DNI.
+            <p className="mt-2 text-xs text-slate-500">
+              Ingresá tu DNI para ver tus turnos online desde cualquier dispositivo.
             </p>
           </div>
         </div>
@@ -55,15 +54,22 @@ export function PatientRequestsPanel({ slug, clinicName, refreshTrigger = 0 }: P
         </Button>
       </div>
 
-      {panel.requests.length === 0 ? (
+      {panel.loadError && (
+        <p className="rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-700">
+          {panel.loadError}
+        </p>
+      )}
+
+      {panel.items.length === 0 ? (
         <p className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
-          Todavía no tenés solicitudes guardadas. Pedí un turno o escribile al consultorio por
-          WhatsApp.
+          {panel.documentNumber.trim()
+            ? "No encontramos turnos online con ese DNI."
+            : "Ingresá tu DNI para ver tus turnos o pedí uno nuevo."}
         </p>
       ) : (
         <ul className="space-y-3">
-          {panel.requests.map((request) => (
-            <PatientRequestCard key={request.localId} request={request} panel={panel} />
+          {panel.items.map((request) => (
+            <PatientRequestCard key={request.id} request={request} panel={panel} />
           ))}
         </ul>
       )}

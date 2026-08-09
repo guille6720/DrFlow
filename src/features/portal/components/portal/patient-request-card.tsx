@@ -4,22 +4,21 @@ import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 
 import type { PatientRequestsPanelState } from "@/features/pacientes/hooks/use-patient-requests-panel";
 import {
-  type PatientRequestRecord,
   requestChannelLabel,
   requestTypeLabel,
 } from "@/features/pacientes/utils/patient-requests-storage";
+import type { PatientRequestItem } from "@/features/portal/utils/patient-portal-appointments";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 interface Props {
-  request: PatientRequestRecord;
+  request: PatientRequestItem;
   panel: PatientRequestsPanelState;
 }
 
 export function PatientRequestCard({ request, panel }: Props) {
-  const apptStatus = request.appointmentId ? panel.statuses[request.appointmentId] : undefined;
   const confirmed = panel.isConfirmed(request);
   const cancelled = panel.isCancelled(request);
   const showCancel = panel.canCancel(request);
@@ -39,6 +38,9 @@ export function PatientRequestCard({ request, panel }: Props) {
               {requestChannelLabel(request.channel)}
             </Badge>
           </div>
+          {request.professionalName && (
+            <p className="mt-1 text-sm font-medium text-slate-700">{request.professionalName}</p>
+          )}
           {request.startAt && (
             <p className="mt-1 text-sm text-slate-600">
               {formatClinicDateTime(request.startAt, "EEEE d 'de' MMMM · HH:mm 'hs'")}
@@ -47,11 +49,11 @@ export function PatientRequestCard({ request, panel }: Props) {
           <p className="mt-1 text-xs text-slate-400">
             Solicitado {formatClinicDateTime(request.createdAt, "d/M/yyyy HH:mm")}
           </p>
-          {cancelled && apptStatus && (
+          {cancelled && (
             <p className="mt-2 text-xs text-red-700">
               Cancelado{" "}
-              {apptStatus.cancelledByType === "patient" ? "por vos" : "por el consultorio"}
-              {apptStatus.cancellationReason ? ` · ${apptStatus.cancellationReason}` : ""}
+              {request.cancelledByType === "patient" ? "por vos" : "por el consultorio"}
+              {request.cancellationReason ? ` · ${request.cancellationReason}` : ""}
             </p>
           )}
         </div>

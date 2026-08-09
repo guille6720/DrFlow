@@ -3,7 +3,9 @@ import { z } from "zod";
 
 import { logServerError } from "@/core/errors/log-error.server";
 import { processPendingClinicJobs } from "@/core/jobs/process";
+import { processAppointmentNotifications } from "@/core/notifications/process-appointment-notifications";
 import { authorizeCronRequest } from "@/core/observability/cron-auth";
+import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
@@ -22,7 +24,17 @@ async function runWorker(request: Request) {
 
   try {
     const result = await processPendingClinicJobs({ limit });
-    return NextResponse.json({ ok: true, ...result }, { headers: NO_STORE_HEADERS });
+
+    let notifications = { processed: 0, sent: 0, failed: 0 };
+    if (hasAdminClient()) {
+      try {
+        notifications = await processAppointmentNotifications(createAdminClient(), { limit });
+      } catch (notificationErr) {
+        logServerError("api.jobs.process.notifications", notificationErr);
+      }
+    }
+
+    return NextResponse.json({ ok: true, ...result, notifications }, { headers: NO_STORE_HEADERS });
   } catch (err) {
     logServerError("api.jobs.process", err);
     const message = err instanceof Error ? err.message : "Worker error";

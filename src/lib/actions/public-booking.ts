@@ -9,6 +9,7 @@ import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
 import {
   publicBookingCancelSchema,
+  publicBookingPortalAppointmentsSchema,
   publicBookingSchema,
   publicBookingSlotsSchema,
   publicBookingStatusesSchema,
@@ -157,6 +158,56 @@ export async function cancelPatientAppointment(
   }
 
   return { success: true };
+}
+
+export async function fetchPatientPortalAppointments(slug: string, documentNumber: string) {
+  const parsed = publicBookingPortalAppointmentsSchema.safeParse({
+    slug,
+    document_number: documentNumber.trim(),
+  });
+  if (!parsed.success) {
+    return { error: firstZodIssue(parsed.error), appointments: [] };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_patient_portal_appointments", {
+    p_slug: parsed.data.slug,
+    p_document_number: parsed.data.document_number,
+  });
+
+  if (error) {
+    return { error: "No pudimos consultar tus turnos", appointments: [] };
+  }
+
+  const appointments = (data ?? []).map(
+    (row: {
+      appointment_id: string;
+      status: string;
+      start_at: string;
+      end_at: string;
+      booking_source: string | null;
+      cancellation_reason: string | null;
+      cancelled_at: string | null;
+      cancelled_by_type: string | null;
+      professional_name: string | null;
+      patient_name: string;
+      created_at: string;
+    }) => ({
+      appointmentId: row.appointment_id,
+      status: row.status,
+      startAt: row.start_at,
+      endAt: row.end_at,
+      bookingSource: row.booking_source,
+      cancellationReason: row.cancellation_reason,
+      cancelledAt: row.cancelled_at,
+      cancelledByType: row.cancelled_by_type,
+      professionalName: row.professional_name,
+      patientName: row.patient_name,
+      createdAt: row.created_at,
+    })
+  );
+
+  return { appointments };
 }
 
 export async function loadPublicBookingSlots(
