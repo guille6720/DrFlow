@@ -39,9 +39,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  defaultInsurancePlanForProvider,
+  insurancePlanOptionsForProvider,
+  insuranceProviderOptions,
+} from "@/lib/constants/coverages";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { Patient } from "@/types/database";
 
@@ -365,10 +369,28 @@ export function TurnosNuevoWizard({
 
       setSelectedPatient(found);
       setInsuranceProvider(found?.insurance_provider ?? "");
-      setInsurancePlan(found?.insurance_plan ?? "");
+      setInsurancePlan(
+        found?.insurance_plan?.trim() ||
+          defaultInsurancePlanForProvider(found?.insurance_provider)
+      );
     },
     [patients]
   );
+
+  const insuranceProviders = useMemo(
+    () => insuranceProviderOptions(insuranceProvider),
+    [insuranceProvider]
+  );
+
+  const insurancePlans = useMemo(
+    () => insurancePlanOptionsForProvider(insuranceProvider, insurancePlan),
+    [insuranceProvider, insurancePlan]
+  );
+
+  const handleInsuranceProviderChange = useCallback((provider: string) => {
+    setInsuranceProvider(provider);
+    setInsurancePlan(defaultInsurancePlanForProvider(provider));
+  }, []);
 
   const handleProfessionalChange = useCallback(
     (id: string) => {
@@ -870,15 +892,33 @@ export function TurnosNuevoWizard({
                   ]}
                 />
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                  <Input
+                  <Select
                     label="Obra social"
                     value={insuranceProvider}
-                    onChange={(e) => setInsuranceProvider(e.target.value)}
+                    onChange={(e) => handleInsuranceProviderChange(e.target.value)}
+                    options={[
+                      { value: "", label: "Seleccioná…" },
+                      ...insuranceProviders.map((provider) => ({
+                        value: provider,
+                        label: provider,
+                      })),
+                    ]}
                   />
-                  <Input
+                  <Select
                     label="Plan"
                     value={insurancePlan}
                     onChange={(e) => setInsurancePlan(e.target.value)}
+                    disabled={!insuranceProvider}
+                    options={[
+                      {
+                        value: "",
+                        label: insuranceProvider ? "Seleccioná…" : "Elegí obra social primero",
+                      },
+                      ...insurancePlans.map((plan) => ({
+                        value: plan,
+                        label: plan,
+                      })),
+                    ]}
                   />
                 </div>
                 <Textarea

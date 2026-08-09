@@ -4,10 +4,37 @@ export const STANDARD_COVERAGES = [
   "OSDE",
   "Swiss Medical",
   "Galeno",
+  "Medifé",
   "IOMA",
-  "Medife",
+  "OMINT",
+  "Medicus",
+  "Sancor Salud",
+  "OSECAC",
+  "OSPLAD",
+  "Hospital Italiano",
+  "Accord Salud",
   "Particular",
 ] as const;
+
+/** Obras sociales y prepagas frecuentes para turnos y fichas */
+export const INSURANCE_PROVIDERS = STANDARD_COVERAGES;
+
+export const INSURANCE_PLANS_BY_PROVIDER: Record<string, readonly string[]> = {
+  PAMI: ["PMO", "Plan Especial", "Plan Nuevo"],
+  OSDE: ["210", "310", "410", "450", "510", "610", "710", "Binario"],
+  "Swiss Medical": ["SMG10", "SMG20", "SMG30", "SMG40", "SMG50", "SMG60", "SMG70"],
+  Galeno: ["Clásico", "Oro", "Platinum", "Azul"],
+  Medifé: ["Clásico", "Family", "Integra", "Pleno"],
+  IOMA: ["Plan básico", "Plan especial"],
+  OMINT: ["400", "500", "600", "700", "Premium"],
+  Medicus: ["Blanco", "Azul", "Rojo", "Verde", "Celeste"],
+  "Sancor Salud": ["1000", "2000", "3000", "4000"],
+  OSECAC: ["Convenio"],
+  OSPLAD: ["Plan básico"],
+  "Hospital Italiano": ["HI", "HIM", "HII"],
+  "Accord Salud": ["Clásico", "Superior"],
+  Particular: ["Particular"],
+};
 
 export type StandardCoverage = (typeof STANDARD_COVERAGES)[number];
 
@@ -82,5 +109,39 @@ export function resolveDefaultCoverage(
   ) {
     return defaultInsurance.trim();
   }
+  return options[0] ?? "";
+}
+
+function appendCurrentOption(options: string[], currentValue?: string | null): string[] {
+  const current = currentValue?.trim();
+  if (current && !options.some((option) => option.toLowerCase() === current.toLowerCase())) {
+    return [...options, current];
+  }
+  return options;
+}
+
+/** Opciones de obra social para selects (incluye valor actual si no está en catálogo). */
+export function insuranceProviderOptions(currentValue?: string | null): string[] {
+  return appendCurrentOption([...INSURANCE_PROVIDERS], currentValue);
+}
+
+/** Planes disponibles para la obra social elegida. */
+export function insurancePlanOptionsForProvider(
+  provider: string | null | undefined,
+  currentPlan?: string | null
+): string[] {
+  const trimmed = provider?.trim();
+  if (!trimmed) return [];
+
+  const key = Object.keys(INSURANCE_PLANS_BY_PROVIDER).find(
+    (entry) => entry.toLowerCase() === trimmed.toLowerCase()
+  );
+  const base = key ? [...INSURANCE_PLANS_BY_PROVIDER[key]!] : ["Standard"];
+  return appendCurrentOption(base, currentPlan);
+}
+
+/** Primer plan sugerido al cambiar de obra social. */
+export function defaultInsurancePlanForProvider(provider: string | null | undefined): string {
+  const options = insurancePlanOptionsForProvider(provider);
   return options[0] ?? "";
 }

@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   coverageOptionsForClinic,
+  defaultInsurancePlanForProvider,
   insuranceNumberLabel,
+  insurancePlanOptionsForProvider,
+  insuranceProviderOptions,
   normalizeCoverages,
   resolveDefaultCoverage,
   STANDARD_COVERAGES,
@@ -30,5 +33,20 @@ describe("coverages helpers", () => {
     expect(resolveDefaultCoverage(null, ["OSDE", "Particular"])).toBe("OSDE");
     expect(resolveDefaultCoverage("Particular", ["OSDE", "Particular"])).toBe("Particular");
     expect(resolveDefaultCoverage("PAMI", ["OSDE"], "OSDE")).toBe("OSDE");
+  });
+
+  it("lists common insurance providers for turnos", () => {
+    expect(insuranceProviderOptions()).toContain("PAMI");
+    expect(insuranceProviderOptions()).toContain("OSDE");
+    expect(insuranceProviderOptions("Otra prepaga")).toContain("Otra prepaga");
+  });
+
+  it("returns plans per provider and keeps custom plan", () => {
+    expect(insurancePlanOptionsForProvider("OSDE")).toContain("310");
+    expect(insurancePlanOptionsForProvider("PAMI")).toContain("PMO");
+    expect(insurancePlanOptionsForProvider("OSDE", "Plan corporativo")).toContain(
+      "Plan corporativo"
+    );
+    expect(defaultInsurancePlanForProvider("OSDE")).toBe("210");
   });
 });
