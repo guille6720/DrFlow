@@ -73,6 +73,7 @@ export function TeamInvitePanel({ members, invitations, teamAccess }: Props) {
           handleRemoveMember={panel.handleRemoveMember}
           updateClinicMemberRole={panel.updateClinicMemberRole}
           deactivateClinicMember={panel.deactivateClinicMember}
+          restoreClinicMemberLoginAccess={panel.restoreClinicMemberLoginAccess}
         />
         <TeamPendingInvitesSection
           pending={panel.pending}

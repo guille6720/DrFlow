@@ -35,18 +35,129 @@ export async function acceptPendingInvitations() {
 }
 
 async function findAuthUserIdByEmail(email: string): Promise<string | null> {
-  if (!hasAdminClient()) return null;
-  const admin = createAdminClient();
-  const { data, error } = await admin
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return null;
+
+  if (hasAdminClient()) {
+    const admin = createAdminClient();
+    const { data: profileRow } = await admin
+      .from("profiles")
+      .select("id")
+      .ilike("email", normalized)
+      .maybeSingle();
+    if (profileRow?.id) return profileRow.id;
+
+    const { data: authData, error } = await admin.auth.admin.listUsers({
+      page: 1,
+      perPage: 200,
+    });
+    if (!error) {
+      const match = authData.users.find(
+        (user) => user.email?.trim().toLowerCase() === normalized
+      );
+      if (match?.id) return match.id;
+    }
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase
     .from("profiles")
     .select("id")
-    .ilike("email", email)
+    .ilike("email", normalized)
     .maybeSingle();
-  if (error || !data) return null;
-  return data.id;
+  return data?.id ?? null;
 }
 
-export async function inviteClinicMember(formData: FormData) {
+type InviteMemberResult =
+  | { success: true; message: string; credentialsPath: string }
+  | { error: string };
+
+async function linkInvitedUserToClinic(input: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  admin: ReturnType<typeof createAdminClient>;
+  clinicId: string;
+  userId: string;
+  email: string;
+  role: UserRole;
+  fullName: string;
+  initialPassword: string;
+  credentialsPath: string;
+  via: "existing_user" | "recovered_user" | "new_user";
+}): Promise<InviteMemberResult> {
+  const {
+    supabase,
+    admin,
+    clinicId,
+    userId,
+    email,
+    role,
+    fullName,
+    initialPassword,
+    credentialsPath,
+    via,
+  } = input;
+
+  const { error: memberErr } = await supabase.rpc("accept_clinic_invitation_for_existing_user", {
+    p_clinic_id: clinicId,
+    p_user_id: userId,
+    p_email: email,
+    p_role: role,
+  });
+
+  if (memberErr) return { error: memberErr.message };
+
+  await admin.auth.admin.updateUserById(userId, {
+    password: initialPassword,
+    email_confirm: true,
+    ban_duration: "none",
+  });
+
+  const { data: clinicRow } = await supabase
+    .from("clinics")
+    .select("name")
+    .eq("id", clinicId)
+    .maybeSingle();
+
+  const emailContent = buildClinicInviteEmailContent({
+    fullName,
+    clinicName: clinicRow?.name ?? "tu consultorio",
+    email,
+    password: initialPassword,
+    credentialsPath,
+  });
+  const emailResult = await sendTransactionalEmail({
+    to: email,
+    subject: emailContent.subject,
+    text: emailContent.text,
+  });
+
+  await recordAudit({
+    clinicId,
+    module: "settings",
+    entityType: via === "new_user" ? "clinic_invitation" : "clinic_member",
+    entityId: userId,
+    action: "create",
+    metadata: { email, role, full_name: fullName, via },
+  });
+
+  revalidatePath("/configuracion");
+  revalidatePath("/ingreso-profesionales");
+
+  const linkedMessage =
+    via === "existing_user" || via === "recovered_user"
+      ? `${fullName} ya tenía cuenta y fue agregado al equipo.`
+      : `Usuario creado para ${email}.`;
+
+  return {
+    success: true as const,
+    message: emailResult.sent
+      ? `${linkedMessage} Se enviaron las credenciales por email.`
+      : `${linkedMessage} Compartí el enlace de credenciales con la persona invitada.`,
+    credentialsPath,
+  };
+}
+
+export async function inviteClinicMember(formData: FormData): Promise<InviteMemberResult> {
   const access = await requireStaffManager();
   if (!access.ok) return { error: access.error };
   const { user, clinicId } = access;
@@ -126,59 +237,18 @@ export async function inviteClinicMember(formData: FormData) {
   const existingUserId = await findAuthUserIdByEmail(email);
 
   if (existingUserId) {
-    const { error: memberErr } = await supabase.rpc(
-      "accept_clinic_invitation_for_existing_user",
-      {
-        p_clinic_id: clinicId,
-        p_user_id: existingUserId,
-        p_email: email,
-        p_role: parsed.data.role,
-      }
-    );
-
-    if (memberErr) return { error: memberErr.message };
-
-    await admin.auth.admin.updateUserById(existingUserId, {
-      password: initialPassword,
-    });
-
-    const { data: clinicRow } = await supabase
-      .from("clinics")
-      .select("name")
-      .eq("id", clinicId)
-      .maybeSingle();
-
-    const emailContent = buildClinicInviteEmailContent({
-      fullName: parsed.data.full_name,
-      clinicName: clinicRow?.name ?? "tu consultorio",
-      email,
-      password: initialPassword,
-      credentialsPath,
-    });
-    const emailResult = await sendTransactionalEmail({
-      to: email,
-      subject: emailContent.subject,
-      text: emailContent.text,
-    });
-
-    await recordAudit({
+    return linkInvitedUserToClinic({
+      supabase,
+      admin,
       clinicId,
-      module: "settings",
-      entityType: "clinic_member",
-      entityId: existingUserId,
-      action: "create",
-      metadata: { email, role: parsed.data.role, via: "existing_user" },
-    });
-
-    revalidatePath("/configuracion");
-    revalidatePath("/ingreso-profesionales");
-    return {
-      success: true,
-      message: emailResult.sent
-        ? `${parsed.data.full_name} ya tenía cuenta y fue agregado. Se enviaron las credenciales por email.`
-        : `${parsed.data.full_name} fue agregado al equipo. Compartí el enlace de credenciales con la persona invitada.`,
+      userId: existingUserId,
+      email,
+      role: parsed.data.role as UserRole,
+      fullName: parsed.data.full_name,
+      initialPassword,
       credentialsPath,
-    };
+      via: "existing_user",
+    });
   }
 
   const { data: createdUser, error: authErr } = await admin.auth.admin.createUser({
@@ -189,10 +259,28 @@ export async function inviteClinicMember(formData: FormData) {
   });
 
   if (authErr) {
+    if (authErr.message.toLowerCase().includes("already")) {
+      const recoveredUserId = await findAuthUserIdByEmail(email);
+      if (recoveredUserId) {
+        return linkInvitedUserToClinic({
+          supabase,
+          admin,
+          clinicId,
+          userId: recoveredUserId,
+          email,
+          role: parsed.data.role as UserRole,
+          fullName: parsed.data.full_name,
+          initialPassword,
+          credentialsPath,
+          via: "recovered_user",
+        });
+      }
+    }
+
     return {
       error:
         authErr.message.includes("already")
-          ? "El email ya está registrado. El usuario puede iniciar sesión y se vinculará automáticamente."
+          ? "El email ya está registrado pero no pudimos vincularlo. Contactá soporte o probá reenviar la invitación."
           : authErr.message,
     };
   }
@@ -202,51 +290,18 @@ export async function inviteClinicMember(formData: FormData) {
     return { error: "No se pudo crear el usuario de acceso." };
   }
 
-  const { error: memberErr } = await supabase.rpc("accept_clinic_invitation_for_existing_user", {
-    p_clinic_id: clinicId,
-    p_user_id: newUserId,
-    p_email: email,
-    p_role: parsed.data.role,
-  });
-
-  if (memberErr) return { error: memberErr.message };
-
-  const { data: clinicRow } = await supabase
-    .from("clinics")
-    .select("name")
-    .eq("id", clinicId)
-    .maybeSingle();
-
-  const emailContent = buildClinicInviteEmailContent({
-    fullName: parsed.data.full_name,
-    clinicName: clinicRow?.name ?? "tu consultorio",
-    email,
-    password: initialPassword,
-    credentialsPath,
-  });
-  const emailResult = await sendTransactionalEmail({
-    to: email,
-    subject: emailContent.subject,
-    text: emailContent.text,
-  });
-
-  await recordAudit({
+  return linkInvitedUserToClinic({
+    supabase,
+    admin,
     clinicId,
-    module: "settings",
-    entityType: "clinic_invitation",
-    action: "create",
-    metadata: { email, role: parsed.data.role, full_name: parsed.data.full_name },
-  });
-
-  revalidatePath("/configuracion");
-  revalidatePath("/ingreso-profesionales");
-  return {
-    success: true,
-    message: emailResult.sent
-      ? `Invitación enviada a ${email}. También podés compartir el enlace de credenciales.`
-      : `Usuario creado para ${email}. Compartí el enlace de credenciales con la persona invitada.`,
+    userId: newUserId,
+    email,
+    role: parsed.data.role as UserRole,
+    fullName: parsed.data.full_name,
+    initialPassword,
     credentialsPath,
-  };
+    via: "new_user",
+  });
 }
 
 export async function updateClinicMemberProfile(memberId: string, formData: FormData) {
@@ -539,6 +594,62 @@ export async function updateClinicMemberRole(memberId: string, role: UserRole) {
   revalidatePath("/configuracion");
   revalidatePath("/ingreso-profesionales");
   return { success: true };
+}
+
+/** Re-enable login + clinic membership for an invited team member (e.g. after a bad invite/login). */
+export async function restoreClinicMemberLoginAccess(memberId: string) {
+  const access = await requireStaffManager();
+  if (!access.ok) return { error: access.error };
+  const { clinicId } = access;
+
+  const idParsed = parseEntityId(memberId, "Miembro");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  if (!hasAdminClient()) {
+    return { error: "No se puede restablecer el acceso sin SUPABASE_SERVICE_ROLE_KEY." };
+  }
+
+  const supabase = await createClient();
+  const admin = createAdminClient();
+
+  const { data: target } = await supabase
+    .from("clinic_members")
+    .select("user_id, role, is_active, profiles(email)")
+    .eq("id", idParsed.data)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+
+  if (!target?.user_id) return { error: "Miembro no encontrado" };
+
+  const { error: memberError } = await supabase
+    .from("clinic_members")
+    .update({ is_active: true, updated_at: new Date().toISOString() })
+    .eq("id", idParsed.data)
+    .eq("clinic_id", clinicId);
+
+  if (memberError) return { error: memberError.message };
+
+  const { error: authError } = await admin.auth.admin.updateUserById(target.user_id, {
+    ban_duration: "none",
+    email_confirm: true,
+  });
+
+  if (authError) {
+    return { error: `No se pudo restablecer el login: ${authError.message}` };
+  }
+
+  await recordAudit({
+    clinicId,
+    module: "settings",
+    entityType: "clinic_member",
+    entityId: idParsed.data,
+    action: "update",
+    metadata: { user_id: target.user_id, reason: "restore_login_access" },
+  });
+
+  revalidatePath("/configuracion");
+  revalidatePath("/ingreso-profesionales");
+  return { success: true, message: "Acceso restablecido. La persona ya puede ingresar al dashboard." };
 }
 
 export async function deactivateClinicMember(memberId: string) {

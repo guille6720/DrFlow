@@ -134,6 +134,13 @@ export function useLoginForm() {
       });
       if (!bootstrap.ok) {
         logClientError("login.bootstrap", new Error(`HTTP ${bootstrap.status}`));
+        if (isInvitedFlow) {
+          setSubmitError(
+            "Iniciaste sesión, pero no pudimos vincular tu invitación al consultorio. Pedile al administrador que te reenvíe la invitación o probá con el email y contraseña del enlace de acceso (sin Google)."
+          );
+          setLoading(false);
+          return;
+        }
       }
 
       router.refresh();

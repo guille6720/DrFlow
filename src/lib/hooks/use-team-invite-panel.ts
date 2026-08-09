@@ -7,6 +7,7 @@ import {
   deactivateClinicMember,
   inviteClinicMember,
   removeClinicMemberPermanently,
+  restoreClinicMemberLoginAccess,
   revokeClinicInvitation,
   updateClinicMemberRole,
 } from "@/lib/actions/invitations";
@@ -45,8 +46,9 @@ export function useTeamInvitePanel(members: Member[], invitations: Invitation[])
     setCredentialsPath(null);
     const result = await inviteClinicMember(new FormData(e.currentTarget));
     setLoading(false);
-    if (result.error) setErr(result.error);
-    else {
+    if ("error" in result) {
+      setErr(result.error);
+    } else {
       setMsg(result.message ?? "Invitación enviada.");
       setCredentialsPath(result.credentialsPath ?? null);
       e.currentTarget.reset();
@@ -91,6 +93,7 @@ export function useTeamInvitePanel(members: Member[], invitations: Invitation[])
     activeMembers,
     updateClinicMemberRole,
     deactivateClinicMember,
+    restoreClinicMemberLoginAccess,
     revokeClinicInvitation,
   };
 }

@@ -14,6 +14,7 @@ type Props = {
   handleRemoveMember: (m: TeamMember) => void;
   updateClinicMemberRole: (id: string, role: UserRole) => Promise<{ error?: string }>;
   deactivateClinicMember: (id: string) => Promise<{ error?: string }>;
+  restoreClinicMemberLoginAccess: (id: string) => Promise<{ error?: string; message?: string }>;
 };
 
 export function TeamMembersListSection({
@@ -23,6 +24,7 @@ export function TeamMembersListSection({
   handleRemoveMember,
   updateClinicMemberRole,
   deactivateClinicMember,
+  restoreClinicMemberLoginAccess,
 }: Props) {
   return (
     <div className="mb-6">
@@ -53,6 +55,19 @@ export function TeamMembersListSection({
                   options={INVITE_ROLES.map((r) => ({ value: r.value, label: r.label }))}
                   className="min-w-[140px]"
                 />
+                {m.role !== "clinic_admin" ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    loading={acting === `${m.id}-restore`}
+                    onClick={() =>
+                      runAction(`${m.id}-restore`, () => restoreClinicMemberLoginAccess(m.id))
+                    }
+                  >
+                    Restablecer acceso
+                  </Button>
+                ) : null}
                 <Button
                   type="button"
                   size="sm"

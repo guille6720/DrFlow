@@ -2,11 +2,23 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { getProfile, getUserClinics } from "@/core/auth/session.server";
+import { createClient } from "@/core/supabase/server";
 import { parseTrialDays, TRIAL_REGISTRATION_COOKIE } from "@/core/trial/clinic-trial";
+
+import { runPostLoginBootstrap } from "@/lib/auth/post-login-bootstrap";
 
 import { OnboardingForm } from "./onboarding-form";
 
 export default async function OnboardingPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  await runPostLoginBootstrap(supabase, user);
+
   const profile = await getProfile();
   if (!profile) redirect("/login");
 

@@ -8,6 +8,7 @@ import type { PermissionOverrides } from "@/core/permissions/roles";
 import { CLINIC_COLUMNS, PROFILE_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
+import { runPostLoginBootstrap } from "@/lib/auth/post-login-bootstrap";
 import type { Clinic, ClinicMember, Profile, UserRole } from "@/types/database";
 
 const CLINIC_COOKIE = "drflow_clinic_id";
@@ -131,6 +132,15 @@ export const getPermissionContext = cache(async (): Promise<{
 });
 
 export const getDashboardShell = cache(async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    await runPostLoginBootstrap(supabase, user);
+  }
+
   const [profile, clinics, clinicId, active, permissionContext] = await Promise.all([
     getProfile(),
     getUserClinics(),
