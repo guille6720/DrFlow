@@ -4103,3 +4103,49 @@ html:not([data-ui-style="2"]) .drflow-medical-order-doc {
     color: #cbd5e1;
   }
 }
+
+/* Nuevo turno — tarjetas con degradado verde (prioridad sobre islas blancas cobalt) */
+.turnos-nuevo-wizard .turnos-nuevo-card.drflow-ui-card {
+  background: linear-gradient(135deg, #ecfdf5 0%, #bbf7d0 52%, #86efac 100%) !important;
+  border-color: #34d399 !important;
+  box-shadow:
+    0 1px 3px 0 rgb(6 78 59 / 0.08),
+    0 6px 18px rgb(16 185 129 / 0.16) !important;
+}
+
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-card-header {
+  border-bottom-color: rgb(52 211 153 / 0.45) !important;
+  background: linear-gradient(180deg, rgb(236 253 245 / 0.95) 0%, rgb(187 247 208 / 0.55) 100%) !important;
+}
+
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body,
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-card-body {
+  background: transparent !important;
+}
+
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-input,
+.turnos-nuevo-wizard .turnos-nuevo-card select,
+.turnos-nuevo-wizard .turnos-nuevo-card input:not([type="checkbox"]):not([type="radio"]),
+.turnos-nuevo-wizard .turnos-nuevo-card textarea {
+  background-color: #ffffff !important;
+  background-image: none !important;
+}
+
+.turnos-nuevo-wizard .turnos-nuevo-card :is(.bg-slate-100, [class*="bg-slate-100"]) {
+  background-color: rgb(255 255 255 / 0.82) !important;
+  border-color: #6ee7b7 !important;
+}
+
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card.drflow-ui-card {
+  background: linear-gradient(135deg, #ecfdf5 0%, #bbf7d0 52%, #86efac 100%) !important;
+  border-color: #34d399 !important;
+}
+
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-card-title,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card label,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card dt,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card dd,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card :is(.text-slate-700, .text-slate-800, .text-slate-900, .text-slate-950) {
+  color: #0f172a !important;
+}
+

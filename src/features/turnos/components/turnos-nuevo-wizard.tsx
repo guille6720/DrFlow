@@ -66,6 +66,7 @@ const LABEL_CLASS = "text-xs font-bold uppercase tracking-wide text-slate-800";
 const VALUE_CLASS = "font-semibold text-slate-950";
 const MUTED_CLASS = "text-sm font-medium text-slate-700";
 const SECTION_HEADING = "mb-2 text-xs font-bold uppercase tracking-wide text-slate-800";
+const TURNOS_CARD_CLASS = "turnos-nuevo-card";
 
 function getPatientName(appointment: AppointmentAgendaRow): string {
   const patient = appointment.patients as { first_name: string; last_name: string } | undefined;
@@ -589,7 +590,7 @@ export function TurnosNuevoWizard({
 
       <div className="grid gap-4 lg:grid-cols-12 lg:items-start">
         <div className="flex flex-col gap-4 lg:col-span-3">
-          <Card title="1 · Profesional">
+          <Card title="1 · Profesional" className={TURNOS_CARD_CLASS}>
             <div className="space-y-3">
               <Select
                 label="Especialidad"
@@ -628,7 +629,7 @@ export function TurnosNuevoWizard({
             </div>
           </Card>
 
-          <Card title="2 · Paciente" className="min-h-[280px]">
+          <Card title="2 · Paciente" className={cn(TURNOS_CARD_CLASS, "min-h-[280px]")}>
             <PatientSearchCombobox
               patients={patients}
               searchMode="remote"
@@ -656,7 +657,7 @@ export function TurnosNuevoWizard({
           </Card>
         </div>
 
-        <Card title="3 · Horarios" className="lg:col-span-6 lg:min-h-[560px]">
+        <Card title="3 · Horarios" className={cn(TURNOS_CARD_CLASS, "lg:col-span-6 lg:min-h-[560px]")}>
           <div className="space-y-4">
             {!professionalId ? (
               <p className={MUTED_CLASS}>Seleccioná un profesional para ver la disponibilidad.</p>
@@ -810,7 +811,10 @@ export function TurnosNuevoWizard({
         </Card>
 
         <div className="flex flex-col gap-4 lg:col-span-3">
-          <Card title={isExistingMode ? "4 · Turno existente" : "4 · Confirmación"} className="lg:sticky lg:top-4">
+          <Card
+            title={isExistingMode ? "4 · Turno existente" : "4 · Confirmación"}
+            className={cn(TURNOS_CARD_CLASS, "lg:sticky lg:top-4")}
+          >
             {isExistingMode && selectedExisting ? (
               <ExistingAppointmentSummary
                 appointment={selectedExisting}
@@ -875,7 +879,7 @@ export function TurnosNuevoWizard({
           </Card>
 
           {!isExistingMode ? (
-            <Card title="Modificación">
+            <Card title="Modificación" className={TURNOS_CARD_CLASS}>
               <div className="space-y-3">
                 <Select
                   label="Tipo de atención"
