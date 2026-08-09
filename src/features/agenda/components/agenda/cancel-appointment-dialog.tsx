@@ -20,7 +20,9 @@ export type CancelAppointmentInput = {
 interface CancelAppointmentDialogProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: (input: CancelAppointmentInput) => Promise<void>;
+  onConfirm: (
+    input: CancelAppointmentInput
+  ) => Promise<void | { error?: string; success?: boolean }>;
   patientName?: string;
   loading?: boolean;
 }
@@ -46,7 +48,11 @@ export function CancelAppointmentDialog({
       return;
     }
     setError(null);
-    await onConfirm({ category, detail: trimmed });
+    const result = await onConfirm({ category, detail: trimmed });
+    if (result && "error" in result && result.error) {
+      setError(result.error);
+      return;
+    }
     setDetail("");
     setCategory("clinic");
   }
@@ -60,14 +66,17 @@ export function CancelAppointmentDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-end justify-center p-4 sm:items-center">
+    <div className="fixed inset-0 z-[300] flex items-end justify-center p-4 sm:items-center">
       <button
         type="button"
         className="absolute inset-0 bg-slate-900/50"
         aria-label="Cerrar"
         onClick={handleClose}
       />
-      <div className="drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl">
+      <div
+        className="drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl"
+        onMouseDown={(event) => event.preventDefault()}
+      >
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">Cancelar turno</h2>

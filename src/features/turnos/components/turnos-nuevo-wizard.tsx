@@ -172,7 +172,12 @@ function ExistingAppointmentCancelPanel({
       return;
     }
     setError(null);
-    await row.handleCancelConfirm({ category, detail: trimmed });
+    const result = await row.handleCancelConfirm({ category, detail: trimmed });
+    if (result?.error) {
+      setError(result.error);
+      toast.error(result.error);
+      return;
+    }
     toast.success("Turno cancelado");
     setDetail("");
     setCategory("clinic");

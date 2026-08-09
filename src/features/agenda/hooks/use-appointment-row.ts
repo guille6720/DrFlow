@@ -33,33 +33,39 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
       cancellationCategory?: string
     ) => {
       setActing(true);
-      const result = await updateAppointmentStatus(
-        appointment.id,
-        status,
-        cancellationReason,
-        undefined,
-        cancellationCategory
-      );
-      setActing(false);
-
-      if (result.error) return;
-
-      if (status === "confirmed" && result.whatsapp?.phone) {
-        const message = buildAppointmentConfirmationMessage(result.whatsapp.startAt);
-        const url = buildWhatsAppUrl(result.whatsapp.phone, message);
-        if (url) window.open(url, "_blank", "noopener,noreferrer");
-      }
-
-      if (status === "cancelled" && cancellationReason && patient?.phone) {
-        const message = buildAppointmentCancellationByClinicMessage(
-          appointment.start_at,
-          cancellationReason
+      try {
+        const result = await updateAppointmentStatus(
+          appointment.id,
+          status,
+          cancellationReason,
+          undefined,
+          cancellationCategory
         );
-        const url = buildWhatsAppUrl(patient.phone, message);
-        if (url) window.open(url, "_blank", "noopener,noreferrer");
-      }
 
-      router.refresh();
+        if (result.error) {
+          return { error: result.error };
+        }
+
+        if (status === "confirmed" && result.whatsapp?.phone) {
+          const message = buildAppointmentConfirmationMessage(result.whatsapp.startAt);
+          const url = buildWhatsAppUrl(result.whatsapp.phone, message);
+          if (url) window.open(url, "_blank", "noopener,noreferrer");
+        }
+
+        if (status === "cancelled" && cancellationReason && patient?.phone) {
+          const message = buildAppointmentCancellationByClinicMessage(
+            appointment.start_at,
+            cancellationReason
+          );
+          const url = buildWhatsAppUrl(patient.phone, message);
+          if (url) window.open(url, "_blank", "noopener,noreferrer");
+        }
+
+        router.refresh();
+        return { success: true as const };
+      } finally {
+        setActing(false);
+      }
     },
     [appointment.id, appointment.start_at, patient, router]
   );
@@ -67,10 +73,12 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
   const handleCancelConfirm = useCallback(
     async (input: CancelAppointmentInput) => {
       const formatted = formatCancellationReason(input.category, input.detail);
-      setActing(true);
-      await setStatus("cancelled", formatted, input.category);
-      setActing(false);
+      const result = await setStatus("cancelled", formatted, input.category);
+      if (result?.error) {
+        return { error: result.error };
+      }
       setCancelOpen(false);
+      return { success: true as const };
     },
     [setStatus]
   );

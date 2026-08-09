@@ -19,7 +19,10 @@ type Props = {
   onReschedule?: (appointment: AppointmentAgendaRow) => void;
   acting: boolean;
   startHref: string;
-  setStatus: (status: string, cancellationReason?: string) => Promise<void>;
+  setStatus: (
+    status: string,
+    cancellationReason?: string
+  ) => Promise<void | { error?: string; success?: boolean }>;
   onCancel: () => void;
 };
 

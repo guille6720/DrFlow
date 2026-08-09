@@ -4,6 +4,7 @@ import { isSameDay, parseISO } from "date-fns";
 import { Globe } from "lucide-react";
 import { memo } from "react";
 
+import { toast } from "@/core/notifications/toast";
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
@@ -90,7 +91,12 @@ export const AppointmentRow = memo(function AppointmentRow({
       <CancelAppointmentDialog
         open={row.cancelOpen}
         onClose={row.closeCancelDialog}
-        onConfirm={row.handleCancelConfirm}
+        onConfirm={async (input) => {
+          const result = await row.handleCancelConfirm(input);
+          if (result?.error) {
+            toast.error(result.error);
+          }
+        }}
         patientName={
           row.patient ? `${row.patient.last_name}, ${row.patient.first_name}` : undefined
         }

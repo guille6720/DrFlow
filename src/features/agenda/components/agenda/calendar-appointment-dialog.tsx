@@ -44,7 +44,11 @@ function CalendarAppointmentDialogContent({
     appointment.status !== "attended";
 
   async function handleCancelConfirm(input: Parameters<typeof row.handleCancelConfirm>[0]) {
-    await row.handleCancelConfirm(input);
+    const result = await row.handleCancelConfirm(input);
+    if (result?.error) {
+      toast.error(result.error);
+      return;
+    }
     toast.success("Turno cancelado");
     onClose();
   }
@@ -56,14 +60,15 @@ function CalendarAppointmentDialogContent({
 
   return (
     <>
-      <div className="fixed inset-0 z-[200] flex items-end justify-center p-4 sm:items-center">
-        <button
-          type="button"
-          className="absolute inset-0 bg-slate-900/50"
-          aria-label="Cerrar"
-          onClick={onClose}
-        />
-        <div className="drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl">
+      {!row.cancelOpen ? (
+        <div className="fixed inset-0 z-[200] flex items-end justify-center p-4 sm:items-center">
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-900/50"
+            aria-label="Cerrar"
+            onClick={onClose}
+          />
+          <div className="drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h2 className="text-lg font-semibold text-slate-900">{patientName}</h2>
@@ -139,6 +144,7 @@ function CalendarAppointmentDialogContent({
           </div>
         </div>
       </div>
+      ) : null}
 
       <CancelAppointmentDialog
         open={row.cancelOpen}
