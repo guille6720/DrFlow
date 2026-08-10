@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { canAccessRoute, hasPermission } from "@/core/permissions/roles";
+import { canAccessRoute, hasPermission, isInvitedClinicMember } from "@/core/permissions/roles";
 
 describe("Role permissions", () => {
   it("superadmin has all permissions", () => {
@@ -63,5 +63,40 @@ describe("Role permissions", () => {
 
   it("allows unknown dashboard routes by default", () => {
     expect(canAccessRoute("doctor", "/dashboard")).toBe(true);
+  });
+
+  it("identifies invited clinic members", () => {
+    expect(isInvitedClinicMember("doctor")).toBe(true);
+    expect(isInvitedClinicMember("secretary")).toBe(true);
+    expect(isInvitedClinicMember("clinic_admin")).toBe(false);
+    expect(isInvitedClinicMember("doctor", true)).toBe(false);
+    expect(isInvitedClinicMember(null)).toBe(false);
+  });
+
+  it("applies permission overrides for manageable keys", () => {
+    expect(
+      hasPermission("secretary", "viewClinicalRecords", false, { viewClinicalRecords: true })
+    ).toBe(true);
+    expect(
+      hasPermission("doctor", "manageCashRegister", false, { manageCashRegister: false })
+    ).toBe(false);
+  });
+
+  it("maps dashboard routes to permission keys", () => {
+    expect(canAccessRoute("secretary", "/reportes")).toBe(true);
+    expect(canAccessRoute("doctor", "/reportes")).toBe(false);
+    expect(canAccessRoute("doctor", "/recetas")).toBe(true);
+    expect(canAccessRoute("secretary", "/recetas")).toBe(false);
+    expect(canAccessRoute("doctor", "/herramientas")).toBe(true);
+    expect(canAccessRoute("doctor", "/turnos/nuevo")).toBe(true);
+    expect(canAccessRoute("doctor", "/ingreso-profesionales")).toBe(false);
+    expect(canAccessRoute("clinic_admin", "/ingreso-profesionales")).toBe(true);
+    expect(canAccessRoute("doctor", "/plantillas")).toBe(true);
+    expect(canAccessRoute("doctor", "/historias/abc/editar")).toBe(true);
+    expect(canAccessRoute("secretary", "/historias/abc/editar")).toBe(false);
+  });
+
+  it("denies permissions for null role", () => {
+    expect(hasPermission(null, "managePatients")).toBe(false);
   });
 });

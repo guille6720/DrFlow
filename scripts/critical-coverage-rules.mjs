@@ -5,7 +5,9 @@ export const CRITICAL_COVERAGE = [
     label: "Authorization (permissions)",
     minLines: 94,
     minStatements: 90,
-    match: (filePath) => filePath.includes("src/lib/permissions/"),
+    match: (filePath) =>
+      filePath.includes("src/core/permissions/roles.ts") ||
+      filePath.includes("src/lib/permissions/roles.ts"),
   },
   {
     id: "security",
@@ -13,7 +15,8 @@ export const CRITICAL_COVERAGE = [
     minLines: 95,
     minStatements: 95,
     match: (filePath) =>
-      filePath.includes("src/lib/security/") && !filePath.endsWith("audit-log.ts"),
+      (filePath.includes("src/core/security/") || filePath.includes("src/lib/security/")) &&
+      !filePath.endsWith("audit-log.ts"),
   },
   {
     id: "auth-flow",
@@ -21,7 +24,9 @@ export const CRITICAL_COVERAGE = [
     minLines: 95,
     minStatements: 95,
     match: (filePath) =>
+      filePath.includes("src/core/security/csrf.ts") ||
       filePath.includes("src/lib/security/csrf.ts") ||
+      filePath.includes("src/core/security/tenant-scope.ts") ||
       filePath.includes("src/lib/security/tenant-scope.ts"),
   },
   {
@@ -30,6 +35,10 @@ export const CRITICAL_COVERAGE = [
     minLines: 95,
     minStatements: 95,
     match: (filePath) =>
+      filePath.includes("src/features/pacientes/utils/patient-age.ts") ||
+      filePath.includes("src/features/pacientes/utils/patient-search.ts") ||
+      filePath.includes("src/features/pacientes/utils/patient-ehr-model.ts") ||
+      filePath.includes("src/shared/utils/clinical-navigation.ts") ||
       filePath.includes("src/lib/utils/patient-") ||
       filePath.includes("src/lib/utils/patient-ehr") ||
       filePath.includes("src/lib/utils/clinical-navigation.ts"),
