@@ -1,0 +1,22 @@
+---
+description: URL de producción DrFlow — evitar typos de dominio
+alwaysApply: true
+---
+
+# URL de producción DrFlow
+
+**Única URL de producción:** `https://drflow.opusorg.com`
+
+## Dominios incorrectos (NO existen / NO usar)
+
+Nunca uses, linkees ni verifiques estos typos en comandos, docs, tests ni respuestas:
+
+- `drflow.epusorg.com` — typo común (`epus` en lugar de `opus`)
+- `drflow.apus.org.com` — dominio mal formado
+- Cualquier variante que no sea exactamente `drflow.opusorg.com`
+
+Si necesitás probar producción, usá siempre `https://drflow.opusorg.com`.
+
+Fallback Vercel (solo si el subdominio cae): `https://drflow-app-rho.vercel.app`
+
+Variables de entorno: `NEXT_PUBLIC_SITE_URL=https://drflow.opusorg.com`

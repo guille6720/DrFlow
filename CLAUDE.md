@@ -5,7 +5,9 @@ Stack: **Next.js 16** (App Router), **Supabase** (Auth + Postgres + RLS + Storag
 
 Referencias: `README.md`, `AUDITORIA.md`, `docs/LOCAL_SETUP.md`, `docs/DEPLOY_VERCEL.md`, `AGENTS.md` (reglas Next.js 16).
 
-Producción: `https://drflow.opusorg.com` — usar `getPublicSiteUrl()` / `NEXT_PUBLIC_SITE_URL` en emails y OAuth, nunca `localhost` en prod.
+Producción: **`https://drflow.opusorg.com`** — usar `getPublicSiteUrl()` / `NEXT_PUBLIC_SITE_URL` en emails y OAuth, nunca `localhost` en prod.
+
+**No usar typos:** `drflow.epusorg.com`, `drflow.apus.org.com` u otras variantes no existen y no son el deploy de DrFlow.
 
 ---
 

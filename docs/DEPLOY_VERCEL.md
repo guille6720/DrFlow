@@ -22,6 +22,8 @@ Guía para publicar la app y que el médico entre desde el consultorio.
 
 > **`opusorg.com` y `www.opusorg.com` no van a DrFlow** — quedan para otras apps (ej. homeflow). Solo `drflow.opusorg.com`.
 
+> **Typos que NO son producción:** `drflow.epusorg.com` (no existe en DNS/Vercel), `drflow.apus.org.com`, etc. No los uses en health checks, links ni documentación.
+
 ---
 
 ## Flujo recomendado — GitHub + Vercel (profesional)
