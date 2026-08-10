@@ -5,7 +5,7 @@ import { createTraceId } from "@/core/observability/trace-id";
 
 import { getSupabaseAnonKey, getSupabaseUrl } from "./env";
 
-const AUTH_TIMEOUT_MS = 1200;
+const AUTH_TIMEOUT_MS = 5000;
 const CLINIC_COOKIE = "drflow_clinic_id";
 
 function hasAuthCookie(request: NextRequest): boolean {

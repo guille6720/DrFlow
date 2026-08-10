@@ -5,12 +5,36 @@ import { cache } from "react";
 
 import { resolveMemberPermissionOverrides } from "@/core/permissions/member-permissions";
 import type { PermissionOverrides } from "@/core/permissions/roles";
-import { CLINIC_COLUMNS, PROFILE_COLUMNS } from "@/core/supabase/select-columns";
+import { CLINIC_COLUMNS, CLINIC_SHELL_COLUMNS, PROFILE_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
 import type { Clinic, ClinicMember, Profile, UserRole } from "@/types/database";
 
 const CLINIC_COOKIE = "drflow_clinic_id";
+const MEMBER_COLUMNS = "id, clinic_id, user_id, role, is_active";
+
+async function loadClinicsForMembers(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  members: Array<{ id: string; clinic_id: string; user_id: string; role: UserRole; is_active: boolean }>,
+  columns: string
+): Promise<ClinicMember[]> {
+  if (members.length === 0) return [];
+
+  const clinicIds = [...new Set(members.map((m) => m.clinic_id))];
+  const { data: clinics, error } = await supabase.from("clinics").select(columns).in("id", clinicIds);
+
+  if (error) {
+    console.error("[session] loadClinicsForMembers failed:", error.message);
+    return members.map((member) => ({ ...member, clinic: undefined })) as unknown as ClinicMember[];
+  }
+
+  const clinicRows = (clinics ?? []) as unknown as Clinic[];
+  const clinicById = new Map(clinicRows.map((clinic) => [clinic.id, clinic]));
+  return members.map((member) => ({
+    ...member,
+    clinic: clinicById.get(member.clinic_id),
+  })) as unknown as ClinicMember[];
+}
 
 export const getSession = cache(async () => {
   const supabase = await createClient();
@@ -44,8 +68,20 @@ export const getUserClinics = cache(async (): Promise<ClinicMember[]> => {
   const profile = await getProfile();
 
   if (profile?.is_superadmin) {
-    const { data: clinics } = await supabase.from("clinics").select(CLINIC_COLUMNS);
-    return (clinics ?? []).map((clinic) => ({
+    const { data: clinics, error } = await supabase.from("clinics").select(CLINIC_COLUMNS);
+    if (error) {
+      console.error("[session] getUserClinics superadmin full select failed:", error.message);
+      const { data: fallbackClinics } = await supabase.from("clinics").select(CLINIC_SHELL_COLUMNS);
+      return ((fallbackClinics ?? []) as unknown as Clinic[]).map((clinic) => ({
+        id: clinic.id,
+        clinic_id: clinic.id,
+        user_id: user.id,
+        role: "superadmin" as UserRole,
+        is_active: true,
+        clinic,
+      }));
+    }
+    return ((clinics ?? []) as unknown as Clinic[]).map((clinic) => ({
       id: clinic.id,
       clinic_id: clinic.id,
       user_id: user.id,
@@ -55,13 +91,43 @@ export const getUserClinics = cache(async (): Promise<ClinicMember[]> => {
     }));
   }
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("clinic_members")
-    .select(`id, clinic_id, user_id, role, is_active, clinic:clinics(${CLINIC_COLUMNS})`)
+    .select(`${MEMBER_COLUMNS}, clinic:clinics(${CLINIC_COLUMNS})`)
     .eq("user_id", user.id)
     .eq("is_active", true);
 
-  return (data ?? []) as unknown as ClinicMember[];
+  if (!error) {
+    return (data ?? []) as unknown as ClinicMember[];
+  }
+
+  console.error("[session] getUserClinics join failed:", error.message);
+
+  const { data: members, error: membersError } = await supabase
+    .from("clinic_members")
+    .select(MEMBER_COLUMNS)
+    .eq("user_id", user.id)
+    .eq("is_active", true);
+
+  if (membersError) {
+    console.error("[session] getUserClinics members fallback failed:", membersError.message);
+    return [];
+  }
+
+  const memberRows = (members ?? []) as Array<{
+    id: string;
+    clinic_id: string;
+    user_id: string;
+    role: UserRole;
+    is_active: boolean;
+  }>;
+
+  const withFullClinics = await loadClinicsForMembers(supabase, memberRows, CLINIC_COLUMNS);
+  if (withFullClinics.some((m) => m.clinic)) {
+    return withFullClinics;
+  }
+
+  return loadClinicsForMembers(supabase, memberRows, CLINIC_SHELL_COLUMNS);
 });
 
 export const getActiveClinicId = cache(async (): Promise<string | null> => {
@@ -93,9 +159,21 @@ export const getActiveClinic = cache(async (): Promise<{
   if (!clinicId) return { clinic: null, role: null, isSuperadmin, memberId: null };
 
   const membership = clinics.find((m) => m.clinic_id === clinicId);
-  const clinic =
-    membership?.clinic ??
-    (await supabase.from("clinics").select(CLINIC_COLUMNS).eq("id", clinicId).single()).data;
+  let clinic = membership?.clinic ?? null;
+
+  if (!clinic) {
+    const { data, error } = await supabase.from("clinics").select(CLINIC_COLUMNS).eq("id", clinicId).single();
+    if (!error) {
+      clinic = data as Clinic;
+    } else {
+      const { data: shellClinic } = await supabase
+        .from("clinics")
+        .select(CLINIC_SHELL_COLUMNS)
+        .eq("id", clinicId)
+        .single();
+      clinic = shellClinic as Clinic | null;
+    }
+  }
 
   return {
     clinic: clinic as Clinic | null,

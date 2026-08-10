@@ -92,6 +92,15 @@ export async function syncUserClinicMembership(
   await acceptPendingInvitationsForUser(supabase);
 }
 
+/** Ensures profile, invitations, and clinic cookie before dashboard shell loads. */
+export async function prepareDashboardSession(
+  supabase: SupabaseClient,
+  user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }
+) {
+  await syncUserClinicMembership(supabase, user);
+  await ensureActiveClinicCookie(supabase, user.id);
+}
+
 /** Profile row + pending clinic invitations after a successful sign-in. */
 export async function runPostLoginBootstrap(
   supabase: SupabaseClient,

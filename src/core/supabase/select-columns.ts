@@ -6,6 +6,10 @@ export const PROFILE_COLUMNS =
 export const CLINIC_COLUMNS =
   "id, name, slug, legal_name, phone, email, address, default_appointment_duration, timezone, is_active, trial_ends_at, default_insurance_provider, practice_profile, legal_terms_version, legal_terms_accepted_at, legal_privacy_version, accepted_coverages, voice_input_enabled, doctors_can_access_cash";
 
+/** Minimal clinic columns for membership fallback when full select fails (schema drift / PostgREST). */
+export const CLINIC_SHELL_COLUMNS =
+  "id, name, slug, timezone, is_active, trial_ends_at, voice_input_enabled, doctors_can_access_cash";
+
 export const PATIENT_LIST_COLUMNS =
   "id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, email, address, allergies, regular_medication, emergency_contact_name, emergency_contact_phone, medical_history, insurance_plan, notes, clinic_id, created_at";
 

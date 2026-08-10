@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import { getDashboardShell } from "@/core/auth/session";
+import { getDashboardShell, getSession } from "@/core/auth/session";
 import { logAudit } from "@/core/auth/session.actions";
 import { AccessibilityProvider } from "@/core/components/accessibility/accessibility-provider";
 import { RouteAnnouncer } from "@/core/components/accessibility/route-announcer";
@@ -23,6 +23,7 @@ import { UiThemeProvider } from "@/core/components/theme/ui-theme-provider";
 import { TrialBanner } from "@/core/components/trial/trial-banner";
 import { UpdateBanner } from "@/core/components/updates/update-banner";
 import { canAccessRoute } from "@/core/permissions/roles";
+import { createClient } from "@/core/supabase/server";
 import {
   isClinicTrialExpired,
   isTrialWhitelistedPath,
@@ -34,6 +35,7 @@ import { ClinicalCopilotProvider } from "@/features/ia/components/clinical-workf
 import { ClinicFeaturesProvider } from "@/features/plugins/components/plugins/clinic-features-provider";
 import { VoiceInputProvider } from "@/features/voice";
 
+import { prepareDashboardSession } from "@/lib/auth/post-login-bootstrap";
 import {
   emptyClinicFeaturesContext,
   getCachedClinicFeatures,
@@ -70,6 +72,12 @@ function DashboardShellFallback({ message }: { message: string }) {
 }
 
 async function DashboardDataShellInner({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+  const user = await getSession();
+  if (user) {
+    await prepareDashboardSession(supabase, user);
+  }
+
   const shell = await getDashboardShell();
   const { profile, clinics, clinicId, clinic, role, isSuperadmin, permissionOverrides } = shell;
 

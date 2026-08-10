@@ -5,7 +5,7 @@ import { getProfile, getUserClinics } from "@/core/auth/session.server";
 import { createClient } from "@/core/supabase/server";
 import { parseTrialDays, TRIAL_REGISTRATION_COOKIE } from "@/core/trial/clinic-trial";
 
-import { syncUserClinicMembership } from "@/lib/auth/post-login-bootstrap";
+import { ensureActiveClinicCookie, syncUserClinicMembership } from "@/lib/auth/post-login-bootstrap";
 
 import { OnboardingForm } from "./onboarding-form";
 
@@ -18,6 +18,7 @@ export default async function OnboardingPage() {
   if (!user) redirect("/login");
 
   await syncUserClinicMembership(supabase, user);
+  await ensureActiveClinicCookie(supabase, user.id);
 
   const profile = await getProfile();
   if (!profile) redirect("/login");

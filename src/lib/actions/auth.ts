@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { logAudit, setActiveClinic } from "@/core/auth/session.actions";
+import { logAudit, setActiveClinicCookie } from "@/core/auth/session.actions";
 import { logServerError } from "@/core/errors/log-error.server";
 import {
   getRpcCode,
@@ -344,7 +344,7 @@ export async function signUpClinic(formData: FormData): Promise<AuthActionResult
       await applyClinicLegalAcceptanceInternal(setup.clinicId);
     }
     await applyTrialAfterSetup(supabase, setup.clinicId, formData);
-    await setActiveClinic(setup.clinicId);
+    await setActiveClinicCookie(setup.clinicId);
   }
 
   return { success: true, redirectTo: "/dashboard" };
@@ -369,12 +369,14 @@ export async function setupClinic(formData: FormData): Promise<AuthActionResult>
 
   const { data: existingMember } = await supabase
     .from("clinic_members")
-    .select("id")
+    .select("id, clinic_id")
     .eq("user_id", user.id)
+    .eq("is_active", true)
     .limit(1)
     .maybeSingle();
 
-  if (existingMember) {
+  if (existingMember?.clinic_id) {
+    await setActiveClinicCookie(existingMember.clinic_id);
     return { success: true, redirectTo: "/dashboard" };
   }
 
@@ -393,7 +395,7 @@ export async function setupClinic(formData: FormData): Promise<AuthActionResult>
       await applyClinicLegalAcceptanceInternal(setup.clinicId);
     }
     await applyTrialAfterSetup(supabase, setup.clinicId, formData);
-    await setActiveClinic(setup.clinicId);
+    await setActiveClinicCookie(setup.clinicId);
   }
 
   return { success: true, redirectTo: "/dashboard" };
