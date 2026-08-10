@@ -53,6 +53,10 @@ type Slot = { start_at: string; end_at: string; label: string };
 
 type Props = {
   patients: Pick<Patient, "id" | "first_name" | "last_name" | "document_number" | "insurance_provider" | "insurance_plan">[];
+  initialPatient?: Pick<
+    Patient,
+    "id" | "first_name" | "last_name" | "document_number" | "insurance_provider" | "insurance_plan"
+  > | null;
   professionals: ProfessionalAgendaRow[];
   locations: { id: string; name: string }[];
   specialties: { id: string; name: string }[];
@@ -231,6 +235,7 @@ function ExistingAppointmentCancelPanel({
 
 export function TurnosNuevoWizard({
   patients,
+  initialPatient,
   professionals,
   locations,
   specialties,
@@ -240,6 +245,12 @@ export function TurnosNuevoWizard({
   initialStartAt,
 }: Props) {
   const router = useRouter();
+  const patientOptions = useMemo(() => {
+    if (!initialPatient) return patients;
+    if (patients.some((patient) => patient.id === initialPatient.id)) return patients;
+    return [initialPatient, ...patients];
+  }, [initialPatient, patients]);
+
   const defaultProfessional = useMemo(
     () =>
       defaultProfessionalId
@@ -248,8 +259,10 @@ export function TurnosNuevoWizard({
     [defaultProfessionalId, professionals]
   );
 
-  const [patientId, setPatientId] = useState("");
-  const [selectedPatient, setSelectedPatient] = useState<(typeof patients)[number] | null>(null);
+  const [patientId, setPatientId] = useState(() => initialPatient?.id ?? "");
+  const [selectedPatient, setSelectedPatient] = useState<(typeof patientOptions)[number] | null>(
+    () => initialPatient ?? null
+  );
   const [professionalId, setProfessionalId] = useState(() => defaultProfessional?.id ?? "");
   const [specialtyId, setSpecialtyId] = useState(() => defaultProfessional?.specialty_id ?? "");
   const [locationId, setLocationId] = useState(() => defaultProfessional?.location_id ?? "");
@@ -267,8 +280,15 @@ export function TurnosNuevoWizard({
   const [priority, setPriority] = useState<"normal" | "high" | "urgent">("normal");
   const [isOverbooking, setIsOverbooking] = useState(false);
   const [overbookingReason, setOverbookingReason] = useState("");
-  const [insuranceProvider, setInsuranceProvider] = useState("");
-  const [insurancePlan, setInsurancePlan] = useState("");
+  const [insuranceProvider, setInsuranceProvider] = useState(
+    () => initialPatient?.insurance_provider ?? ""
+  );
+  const [insurancePlan, setInsurancePlan] = useState(
+    () =>
+      initialPatient?.insurance_plan?.trim() ||
+      defaultInsurancePlanForProvider(initialPatient?.insurance_provider) ||
+      ""
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [appointmentDuration, setAppointmentDuration] = useState(
@@ -359,7 +379,7 @@ export function TurnosNuevoWizard({
         return;
       }
 
-      const fromList = patients.find((p) => p.id === id);
+      const fromList = patientOptions.find((p) => p.id === id);
       const found =
         fromList ??
         (picked
@@ -380,7 +400,7 @@ export function TurnosNuevoWizard({
           defaultInsurancePlanForProvider(found?.insurance_provider)
       );
     },
-    [patients]
+    [patientOptions]
   );
 
   const insuranceProviders = useMemo(
@@ -631,7 +651,7 @@ export function TurnosNuevoWizard({
 
           <Card title="2 · Paciente" className={cn(TURNOS_CARD_CLASS, "min-h-[280px]")}>
             <PatientSearchCombobox
-              patients={patients}
+              patients={patientOptions}
               searchMode="remote"
               minSearchLength={1}
               displayMode="detailed"

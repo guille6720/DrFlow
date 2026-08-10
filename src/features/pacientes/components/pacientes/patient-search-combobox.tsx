@@ -230,7 +230,8 @@ export function PatientSearchCombobox({
     Boolean(createPatientHref) &&
     trimmedQuery.length >= effectiveMinLength &&
     !loading &&
-    filtered.length === 0;
+    filtered.length === 0 &&
+    !selectedId;
   const createHref = showCreatePatient ? createPatientHref?.(trimmedQuery) : undefined;
 
   return (
@@ -272,7 +273,7 @@ export function PatientSearchCombobox({
           ? "Buscando pacientes…"
           : open && !loading && trimmedQuery && filtered.length === 0
             ? showCreatePatient
-              ? "Paciente inexistente. Podés crear la ficha."
+              ? "Paciente inexistente. Podés crearlo desde el enlace debajo."
               : isRemote && trimmedQuery.length < effectiveMinLength
                 ? `Escribí al menos ${effectiveMinLength} caracteres para buscar.`
                 : "Sin coincidencias."
@@ -354,10 +355,20 @@ export function PatientSearchCombobox({
         >
           <Link
             href={createHref}
-            className="drflow-ui-dropdown-item block px-3 py-2.5 text-sm text-teal-700 hover:bg-teal-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-inset"
+            className="drflow-ui-dropdown-item block px-3 py-2.5 text-sm font-medium text-teal-700 hover:bg-teal-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-inset"
           >
-            Paciente inexistente, crear ficha
+            Paciente inexistente, crear paciente
           </Link>
+        </div>
+      ) : null}
+      {showCreatePatient && createHref ? (
+        <div className="drflow-card-light mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
+          <p className="text-sm text-amber-950">
+            Paciente inexistente,{" "}
+            <Link href={createHref} className="font-semibold text-teal-700 underline hover:text-teal-800">
+              crear paciente
+            </Link>
+          </p>
         </div>
       ) : null}
       {open && !loading && trimmedQuery && filtered.length === 0 && !showCreatePatient ? (

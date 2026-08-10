@@ -40,3 +40,12 @@ export function buildCreatePatientHref(query: string, returnPath: string): strin
   const qs = params.toString();
   return qs ? `/pacientes/nuevo?${qs}` : "/pacientes/nuevo";
 }
+
+/** Appends the new patient id to a return path (e.g. /turnos/nuevo?patient=uuid). */
+export function buildReturnPathWithPatient(returnPath: string, patientId: string): string {
+  const [pathname, search = ""] = returnPath.split("?");
+  const params = new URLSearchParams(search);
+  params.set("patient", patientId);
+  const qs = params.toString();
+  return qs ? `${pathname}?${qs}` : pathname;
+}

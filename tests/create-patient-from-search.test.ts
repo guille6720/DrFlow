@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildCreatePatientHref,
+  buildReturnPathWithPatient,
   parsePatientSearchQueryForPrefill,
 } from "@/features/pacientes/utils/create-patient-from-search";
 
@@ -29,6 +30,15 @@ describe("create-patient-from-search", () => {
   it("builds create patient href with query and return path", () => {
     expect(buildCreatePatientHref("Lopez", "/agenda?action=new")).toBe(
       "/pacientes/nuevo?q=Lopez&return=%2Fagenda%3Faction%3Dnew"
+    );
+  });
+
+  it("appends patient id to return path", () => {
+    expect(buildReturnPathWithPatient("/turnos/nuevo", "pat-123")).toBe(
+      "/turnos/nuevo?patient=pat-123"
+    );
+    expect(buildReturnPathWithPatient("/turnos/nuevo?professional=pro-1", "pat-123")).toBe(
+      "/turnos/nuevo?professional=pro-1&patient=pat-123"
     );
   });
 });

@@ -9,6 +9,7 @@ import { Header } from "@/core/components/layout/header";
 
 import { createPatient } from "@/features/pacientes/actions/patients";
 import { PatientFormFields } from "@/features/pacientes/components/pacientes/patient-form-fields";
+import { buildReturnPathWithPatient } from "@/features/pacientes/utils/create-patient-from-search";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -53,7 +54,11 @@ export default function NuevoPacienteForm({
     if (result.error) {
       setError(result.error);
     } else if (result.data) {
-      router.push(returnPath && returnPath.startsWith("/") ? returnPath : `/pacientes/${result.data.id}`);
+      const destination =
+        returnPath && returnPath.startsWith("/")
+          ? buildReturnPathWithPatient(returnPath, result.data.id)
+          : `/pacientes/${result.data.id}`;
+      router.push(destination);
     }
   }
 

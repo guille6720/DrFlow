@@ -22,9 +22,10 @@ import {
 export default async function TurnosNuevoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ professional?: string; start_at?: string }>;
+  searchParams: Promise<{ professional?: string; start_at?: string; patient?: string }>;
 }) {
-  const { professional: professionalParam, start_at: startAtParam } = await searchParams;
+  const { professional: professionalParam, start_at: startAtParam, patient: patientParam } =
+    await searchParams;
   const ctx = await getDashboardPageContext();
   const { clinicId, role, isSuperadmin, permissionOverrides, clinics, profile } = ctx;
 
@@ -76,6 +77,19 @@ export default async function TurnosNuevoPage({
       )
     : undefined;
 
+  const initialPatient =
+    clinicId && patientParam
+      ? (
+          await supabase
+            .from("patients")
+            .select("id, first_name, last_name, document_number, insurance_provider, insurance_plan")
+            .eq("clinic_id", clinicId)
+            .eq("id", patientParam)
+            .eq("is_active", true)
+            .maybeSingle()
+        ).data
+      : null;
+
   return (
     <>
       <Header
@@ -93,6 +107,7 @@ export default async function TurnosNuevoPage({
         </p>
         <TurnosNuevoWizard
           patients={patients.data ?? []}
+          initialPatient={initialPatient}
           professionals={professionals}
           locations={locations}
           specialties={specialties}
