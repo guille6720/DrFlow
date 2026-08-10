@@ -6,9 +6,12 @@ import { useCallback, useEffect, useState } from "react";
 import {
   LEGACY_TAB_ALIASES,
   parsePatientWorkspaceTab,
-  patientWorkspacePath,
   type PatientWorkspaceTabId,
 } from "@/features/pacientes/constants/patient-workspace-tabs";
+import {
+  buildPatientWorkspaceUrl,
+  type PatientWorkspaceUrlOptions,
+} from "@/features/pacientes/utils/patient-workspace-actions";
 
 type TabSearchParams = {
   get(name: string): string | null;
@@ -39,7 +42,9 @@ export function usePatientWorkspaceTab(patientId: string, initialTab?: PatientWo
     resolveTabFromLocation(initialTab, nextSearchParams)
   );
   const [workspaceSearchParams, setWorkspaceSearchParams] = useState<URLSearchParams>(() =>
-    typeof window === "undefined" ? new URLSearchParams(nextSearchParams.toString()) : readLocationSearchParams()
+    typeof window === "undefined"
+      ? new URLSearchParams(nextSearchParams.toString())
+      : readLocationSearchParams()
   );
 
   useEffect(() => {
@@ -52,15 +57,34 @@ export function usePatientWorkspaceTab(patientId: string, initialTab?: PatientWo
     return () => window.removeEventListener("popstate", onPopState);
   }, [initialTab]);
 
-  const setTab = useCallback(
-    (tab: PatientWorkspaceTabId) => {
-      const url = patientWorkspacePath(patientId, tab);
-      setActiveTabState(tab);
-      setWorkspaceSearchParams(searchParamsFromPatientUrl(url));
+  const applyWorkspaceUrl = useCallback(
+    (url: string) => {
+      const params = searchParamsFromPatientUrl(url);
+      setWorkspaceSearchParams(params);
+      setActiveTabState(resolveTabFromLocation(initialTab, params));
       window.history.replaceState(window.history.state, "", url);
     },
-    [patientId]
+    [initialTab]
   );
 
-  return { activeTab, setTab, workspaceSearchParams };
+  const navigateWorkspace = useCallback(
+    (opts: PatientWorkspaceUrlOptions) => {
+      applyWorkspaceUrl(buildPatientWorkspaceUrl(patientId, opts));
+    },
+    [applyWorkspaceUrl, patientId]
+  );
+
+  /** Switch tab without carrying sheet/action query params from the previous tab. */
+  const setTab = useCallback(
+    (tab: PatientWorkspaceTabId) => {
+      navigateWorkspace({ tab });
+    },
+    [navigateWorkspace]
+  );
+
+  const openHcWorkspace = useCallback(() => {
+    navigateWorkspace({ tab: "soap", action: "nueva" });
+  }, [navigateWorkspace]);
+
+  return { activeTab, setTab, openHcWorkspace, navigateWorkspace, workspaceSearchParams };
 }

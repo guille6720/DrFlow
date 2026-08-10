@@ -10,9 +10,19 @@ import {
   type PatientWorkspaceUrlOptions,
 } from "@/features/pacientes/utils/patient-workspace-actions";
 
-export function usePatientWorkspaceActions(patientId: string, activeTab: PatientWorkspaceTabId) {
+type WorkspaceNavigation = {
+  workspaceSearchParams: URLSearchParams;
+  navigateWorkspace: (opts: PatientWorkspaceUrlOptions) => void;
+};
+
+export function usePatientWorkspaceActions(
+  patientId: string,
+  activeTab: PatientWorkspaceTabId,
+  navigation?: WorkspaceNavigation
+) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const fallbackSearchParams = useSearchParams();
+  const searchParams = navigation?.workspaceSearchParams ?? fallbackSearchParams;
 
   const parsed = useMemo(
     () => parsePatientWorkspaceActions(activeTab, searchParams),
@@ -21,26 +31,27 @@ export function usePatientWorkspaceActions(patientId: string, activeTab: Patient
 
   const navigate = useCallback(
     (opts: PatientWorkspaceUrlOptions) => {
+      if (navigation) {
+        navigation.navigateWorkspace(opts);
+        return;
+      }
       router.push(buildPatientWorkspaceUrl(patientId, opts), { scroll: false });
     },
-    [patientId, router]
+    [navigation, patientId, router]
   );
 
   const closeSheet = useCallback(() => {
     if (parsed.inlineConsultOpen) {
-      router.push(
-        buildPatientWorkspaceUrl(patientId, {
-          tab: "soap",
-          action: "nueva",
-          appointment: parsed.appointment ?? undefined,
-          professional: parsed.professional ?? undefined,
-        }),
-        { scroll: false }
-      );
+      navigate({
+        tab: "soap",
+        action: "nueva",
+        appointment: parsed.appointment ?? undefined,
+        professional: parsed.professional ?? undefined,
+      });
       return;
     }
-    router.push(buildPatientWorkspaceUrl(patientId, { tab: activeTab }), { scroll: false });
-  }, [activeTab, patientId, parsed.appointment, parsed.inlineConsultOpen, parsed.professional, router]);
+    navigate({ tab: activeTab });
+  }, [activeTab, navigate, parsed.appointment, parsed.inlineConsultOpen, parsed.professional]);
 
   const openNewConsult = useCallback(
     (opts?: { appointment?: string; professional?: string }) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { ClinicalWorkspaceView } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-view";
 import type { PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
@@ -87,8 +87,10 @@ export function PatientWorkspaceShell({
   canIssue,
   canManageAdminDocuments,
 }: Props) {
-  const { activeTab, setTab, workspaceSearchParams } = usePatientWorkspaceTab(patientId, initialTab);
+  const { activeTab, setTab, openHcWorkspace, navigateWorkspace, workspaceSearchParams } =
+    usePatientWorkspaceTab(patientId, initialTab);
   const [pending, startTransition] = useTransition();
+  const loadedTabsRef = useRef(new Set<string>([initialTab]));
   const [tabCache, setTabCache] = useState<Record<string, TabCacheEntry>>(() => ({
     [initialTab]: {
       workspace: initialWorkspace,
@@ -99,7 +101,7 @@ export function PatientWorkspaceShell({
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (tabCache[activeTab]) return;
+    if (loadedTabsRef.current.has(activeTab)) return;
 
     let cancelled = false;
     startTransition(async () => {
@@ -112,6 +114,7 @@ export function PatientWorkspaceShell({
         return;
       }
 
+      loadedTabsRef.current.add(activeTab);
       setTabCache((prev) => {
         if (prev[activeTab]) return prev;
         return {
@@ -128,7 +131,7 @@ export function PatientWorkspaceShell({
     return () => {
       cancelled = true;
     };
-  }, [activeTab, patientId, tabCache]);
+  }, [activeTab, patientId]);
 
   const current = tabCache[activeTab]?.workspace ?? initialWorkspace;
   const currentAuditTrail = tabCache[activeTab]?.auditTrail ?? null;
@@ -269,6 +272,8 @@ export function PatientWorkspaceShell({
     <PatientWorkspaceView
       activeTab={activeTab}
       onTabChange={setTab}
+      onOpenHcWorkspace={openHcWorkspace}
+      navigateWorkspace={navigateWorkspace}
       workspaceSearchParams={workspaceSearchParams}
       activePanel={activePanel}
       ehr={current.ehr}

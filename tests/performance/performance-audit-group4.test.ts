@@ -11,6 +11,7 @@ describe("Grupo 4 architecture performance", () => {
     );
     expect(source).toMatch(/history\.replaceState/);
     expect(source).toMatch(/workspaceSearchParams/);
+    expect(source).toMatch(/navigateWorkspace/);
     expect(source).not.toMatch(/router\.push/);
   });
 
@@ -41,6 +42,15 @@ describe("Grupo 4 architecture performance", () => {
     );
     expect(source).toMatch(/routesForRole/);
     expect(source).not.toMatch(/DASHBOARD_ROUTES = \[[\s\S]*\/ayuda/);
+  });
+
+  it("patient workspace actions use client navigation when wired", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/features/pacientes/hooks/use-patient-workspace-actions.ts"),
+      "utf8"
+    );
+    expect(source).toMatch(/navigation\.navigateWorkspace/);
+    expect(source).toMatch(/if \(navigation\)/);
   });
 
   it("professional intake navigation uses replaceState", () => {

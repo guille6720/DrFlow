@@ -10,6 +10,7 @@ import { PatientPrescriptionSheet } from "@/features/pacientes/components/pacien
 import { PatientRecordSheet } from "@/features/pacientes/components/pacientes/workspace/patient-record-sheet";
 import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
 import { usePatientWorkspaceActions } from "@/features/pacientes/hooks/use-patient-workspace-actions";
+import type { PatientWorkspaceUrlOptions } from "@/features/pacientes/utils/patient-workspace-actions";
 
 import type { Patient } from "@/types/database";
 
@@ -27,6 +28,10 @@ type Props = Pick<
 > & {
   activeTab: PatientWorkspaceTabId;
   patientRecord: Patient;
+  workspaceNavigation: {
+    workspaceSearchParams: URLSearchParams;
+    navigateWorkspace: (opts: PatientWorkspaceUrlOptions) => void;
+  };
 };
 
 export function PatientWorkspaceSheets({
@@ -41,8 +46,9 @@ export function PatientWorkspaceSheets({
   templates,
   canIssue,
   chart,
+  workspaceNavigation,
 }: Props) {
-  const actions = usePatientWorkspaceActions(patientId, activeTab);
+  const actions = usePatientWorkspaceActions(patientId, activeTab, workspaceNavigation);
   const patientName = `${patient.last_name}, ${patient.first_name}`;
   const lastConsult = ehr.consultations[0];
   const assistBase = {

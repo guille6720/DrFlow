@@ -7,6 +7,7 @@ import { ClinicalCopilotSessionSync } from "@/features/ia/components/clinical-wo
 import type { PatientWorkspaceViewProps } from "@/features/pacientes/components/pacientes/patient-workspace-types";
 import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
 import { usePatientWorkspaceActions } from "@/features/pacientes/hooks/use-patient-workspace-actions";
+import type { PatientWorkspaceUrlOptions } from "@/features/pacientes/utils/patient-workspace-actions";
 
 type Props = Pick<
   PatientWorkspaceViewProps,
@@ -14,6 +15,10 @@ type Props = Pick<
 > & {
   activeTab: PatientWorkspaceTabId;
   patientName: string;
+  workspaceNavigation: {
+    workspaceSearchParams: URLSearchParams;
+    navigateWorkspace: (opts: PatientWorkspaceUrlOptions) => void;
+  };
 };
 
 function CopilotUrlOpener({ open }: { open: boolean }) {
@@ -36,8 +41,9 @@ export function PatientWorkspaceCopilotBridge({
   ehr,
   patientRecord,
   lastMedications,
+  workspaceNavigation,
 }: Props) {
-  const actions = usePatientWorkspaceActions(patientId, activeTab);
+  const actions = usePatientWorkspaceActions(patientId, activeTab, workspaceNavigation);
   const lastConsult = ehr.consultations[0];
 
   const assistContext = useMemo(
