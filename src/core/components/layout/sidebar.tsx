@@ -27,6 +27,7 @@ import type { UserRole } from "@/types/database";
 export { FEATURE_NAV_ITEMS } from "@/features/_shared/nav";
 
 interface SidebarProps {
+  clinicId?: string | null;
   clinicName?: string;
   role: UserRole | null;
   isSuperadmin?: boolean;
@@ -85,6 +86,7 @@ function filterSidebarNavEntries(
 }
 
 export function Sidebar({
+  clinicId,
   clinicName,
   role,
   isSuperadmin,
@@ -147,6 +149,7 @@ export function Sidebar({
         )}
       >
         <SidebarNavContent
+          clinicId={clinicId}
           clinicName={clinicName}
           visibleItems={visibleItems}
           pathname={pathname}

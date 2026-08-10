@@ -15,10 +15,7 @@ import {
 } from "@/features/pacientes/utils/pacientes-page-url";
 import { applyPatientSearchFilter, findPatientIdsByPathologySearch } from "@/features/pacientes/utils/patient-search";
 
-import {
-  batchPatientConsultationCounts,
-  batchPatientRecordCounts,
-} from "@/lib/utils/batch-patient-record-counts";
+import { batchPatientRecordCounts } from "@/lib/utils/batch-patient-record-counts";
 import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
 
 export { PACIENTES_PAGE_SIZE };
@@ -117,8 +114,7 @@ async function enrichPacientesPageRows(
   }
 
   const patientIds = rawPatients.map((p) => p.id);
-  const [consultationCounts, recordCounts, shares] = await Promise.all([
-    batchPatientConsultationCounts(supabase, clinicId, patientIds),
+  const [recordCounts, shares] = await Promise.all([
     batchPatientRecordCounts(supabase, clinicId, patientIds),
     portalSlug
       ? supabase
@@ -144,14 +140,10 @@ async function enrichPacientesPageRows(
   }
 
   return {
-    patients: rawPatients.map((p) => {
-      const consultationCount = consultationCounts.get(p.id) ?? 0;
-      const recordCount = recordCounts.get(p.id) ?? 0;
-      return {
-        ...p,
-        consultationCount: consultationCount > 0 ? consultationCount : recordCount,
-      };
-    }),
+    patients: rawPatients.map((p) => ({
+      ...p,
+      consultationCount: recordCounts.get(p.id) ?? 0,
+    })),
     shareByPatient,
   };
 }

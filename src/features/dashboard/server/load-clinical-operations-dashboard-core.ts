@@ -4,6 +4,8 @@ import { endOfDay, startOfDay } from "date-fns";
 import { observeQuery } from "@/core/observability/observe-query";
 
 import {
+  APPOINTMENT_SELECT,
+  APPOINTMENT_SELECT_MINIMAL,
   buildAllergiesByPatient,
   buildAppointmentNotifications,
   collectWaitingPatientIds,
@@ -13,8 +15,8 @@ import {
   LIST_LIMIT,
   mapCriticalPatients,
   sanitizeIsoTimestamp,
+  UPCOMING_APPOINTMENT_STATUSES,
 } from "@/features/dashboard/server/load-clinical-operations-dashboard.helpers";
-import { APPOINTMENT_SELECT } from "@/features/dashboard/server/load-clinical-operations-dashboard.helpers";
 import type { ClinicalOperationsDashboardCorePayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
 import type { LiveAppointment } from "@/features/dashboard/utils/clinical-operations-types";
 import {
@@ -36,6 +38,65 @@ export async function loadClinicalOperationsDashboardCore(
   );
 }
 
+async function fetchTodayAppointments(
+  supabase: SupabaseClient,
+  clinicId: string,
+  todayStart: string,
+  todayEnd: string
+): Promise<LiveAppointment[]> {
+  for (const select of [APPOINTMENT_SELECT, APPOINTMENT_SELECT_MINIMAL]) {
+    const { data, error } = await supabase
+      .from("appointments")
+      .select(select)
+      .eq("clinic_id", clinicId)
+      .gte("start_at", todayStart)
+      .lte("start_at", todayEnd)
+      .not("status", "eq", "cancelled")
+      .order("start_at");
+
+    if (!error) {
+      return ((data ?? []) as unknown as LiveAppointment[]).map((row) => ({
+        ...row,
+        start_at: sanitizeIsoTimestamp(row.start_at),
+      }));
+    }
+    console.error(
+      `[dashboard] today appointments (${select === APPOINTMENT_SELECT ? "full" : "minimal"}) failed:`,
+      error.message
+    );
+  }
+  return [];
+}
+
+async function fetchUpcomingAppointments(
+  supabase: SupabaseClient,
+  clinicId: string,
+  nowIso: string
+): Promise<LiveAppointment[]> {
+  for (const select of [APPOINTMENT_SELECT, APPOINTMENT_SELECT_MINIMAL]) {
+    const { data, error } = await supabase
+      .from("appointments")
+      .select(select)
+      .eq("clinic_id", clinicId)
+      .gte("start_at", nowIso)
+      .in("status", [...UPCOMING_APPOINTMENT_STATUSES])
+      .order("start_at")
+      .limit(LIST_LIMIT);
+
+    if (!error) {
+      return ((data ?? []) as unknown as LiveAppointment[]).map((row) => ({
+        ...row,
+        start_at: sanitizeIsoTimestamp(row.start_at),
+      }));
+    }
+    console.error(
+      `[dashboard] upcoming appointments (${select === APPOINTMENT_SELECT ? "full" : "minimal"}) failed:`,
+      error.message
+    );
+  }
+  return [];
+}
+
 async function loadCoreInner(
   supabase: SupabaseClient,
   clinicId: string
@@ -45,41 +106,11 @@ async function loadCoreInner(
   const todayStart = startOfDay(now).toISOString();
   const todayEnd = endOfDay(now).toISOString();
 
-  const [todayResult, upcomingResult] = await Promise.all([
-    supabase
-      .from("appointments")
-      .select(APPOINTMENT_SELECT)
-      .eq("clinic_id", clinicId)
-      .gte("start_at", todayStart)
-      .lte("start_at", todayEnd)
-      .not("status", "eq", "cancelled")
-      .order("start_at"),
-    supabase
-      .from("appointments")
-      .select(APPOINTMENT_SELECT)
-      .eq("clinic_id", clinicId)
-      .gte("start_at", nowIso)
-      .not("status", "in", '("cancelled","attended")')
-      .order("start_at")
-      .limit(LIST_LIMIT),
+  const [todayAppointments, upcoming] = await Promise.all([
+    fetchTodayAppointments(supabase, clinicId, todayStart, todayEnd),
+    fetchUpcomingAppointments(supabase, clinicId, nowIso),
   ]);
 
-  if (todayResult.error) {
-    console.error("[dashboard] today appointments query failed:", todayResult.error.message);
-    throw new Error(todayResult.error.message);
-  }
-  if (upcomingResult.error) {
-    console.error("[dashboard] upcoming appointments query failed:", upcomingResult.error.message);
-    throw new Error(upcomingResult.error.message);
-  }
-
-  const todayAppointments = ((todayResult.data ?? []) as unknown as LiveAppointment[]).map(
-    (row) => ({ ...row, start_at: sanitizeIsoTimestamp(row.start_at) })
-  );
-  const upcoming = ((upcomingResult.data ?? []) as unknown as LiveAppointment[]).map((row) => ({
-    ...row,
-    start_at: sanitizeIsoTimestamp(row.start_at),
-  }));
   const waitingPatientIds = collectWaitingPatientIds(todayAppointments);
 
   const criticalRows = await fetchCriticalPatientProfiles(supabase, clinicId, waitingPatientIds);

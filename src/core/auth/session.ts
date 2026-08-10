@@ -68,40 +68,39 @@ export const getUserClinics = cache(async (): Promise<ClinicMember[]> => {
   const profile = await getProfile();
 
   if (profile?.is_superadmin) {
-    const { data: clinics, error } = await supabase.from("clinics").select(CLINIC_COLUMNS);
-    if (error) {
-      console.error("[session] getUserClinics superadmin full select failed:", error.message);
-      const { data: fallbackClinics } = await supabase.from("clinics").select(CLINIC_SHELL_COLUMNS);
-      return ((fallbackClinics ?? []) as unknown as Clinic[]).map((clinic) => ({
-        id: clinic.id,
-        clinic_id: clinic.id,
-        user_id: user.id,
-        role: "superadmin" as UserRole,
-        is_active: true,
-        clinic,
-      }));
+    for (const columns of [CLINIC_MINIMAL_COLUMNS, CLINIC_SHELL_COLUMNS, CLINIC_COLUMNS]) {
+      const { data: clinics, error } = await supabase.from("clinics").select(columns);
+      if (!error && clinics?.length) {
+        return (clinics as unknown as Clinic[]).map((clinic) => ({
+          id: clinic.id,
+          clinic_id: clinic.id,
+          user_id: user.id,
+          role: "superadmin" as UserRole,
+          is_active: true,
+          clinic,
+        }));
+      }
+      if (error) {
+        console.error(`[session] getUserClinics superadmin select failed (${columns}):`, error.message);
+      }
     }
-    return ((clinics ?? []) as unknown as Clinic[]).map((clinic) => ({
-      id: clinic.id,
-      clinic_id: clinic.id,
-      user_id: user.id,
-      role: "superadmin" as UserRole,
-      is_active: true,
-      clinic,
-    }));
+    return [];
   }
 
-  const { data, error } = await supabase
-    .from("clinic_members")
-    .select(`${MEMBER_COLUMNS}, clinic:clinics(${CLINIC_COLUMNS})`)
-    .eq("user_id", user.id)
-    .eq("is_active", true);
+  for (const columns of [CLINIC_MINIMAL_COLUMNS, CLINIC_SHELL_COLUMNS, CLINIC_COLUMNS]) {
+    const { data, error } = await supabase
+      .from("clinic_members")
+      .select(`${MEMBER_COLUMNS}, clinic:clinics(${columns})`)
+      .eq("user_id", user.id)
+      .eq("is_active", true);
 
-  if (!error) {
-    return (data ?? []) as unknown as ClinicMember[];
+    if (!error) {
+      return (data ?? []) as unknown as ClinicMember[];
+    }
+    console.error(`[session] getUserClinics join failed (${columns}):`, error.message);
   }
 
-  console.error("[session] getUserClinics join failed:", error.message);
+  console.error("[session] getUserClinics join failed for all column sets");
 
   const { data: members, error: membersError } = await supabase
     .from("clinic_members")
@@ -237,10 +236,26 @@ export const getPermissionContext = cache(async (): Promise<{
 });
 
 export const getDashboardShell = cache(async () => {
+  const supabase = await createClient();
   const profile = await getProfile();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
   const active = await getActiveClinic();
+  let clinic = active.clinic;
+
+  if (clinicId && !clinic?.name?.trim()) {
+    clinic = (await fetchClinicById(supabase, clinicId)) ?? clinic;
+  }
+
   const permissionContext = await getPermissionContext();
-  return { profile, clinics, clinicId, ...active, ...permissionContext };
+  return {
+    profile,
+    clinics,
+    clinicId,
+    clinic,
+    role: active.role,
+    isSuperadmin: active.isSuperadmin,
+    memberId: active.memberId,
+    permissionOverrides: permissionContext.permissionOverrides,
+  };
 });

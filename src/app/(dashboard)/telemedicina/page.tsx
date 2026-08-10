@@ -31,7 +31,7 @@ export default async function TelemedicinaPage() {
           .select("id, start_at, patients(first_name, last_name)")
           .eq("clinic_id", clinicId)
           .gte("start_at", new Date().toISOString())
-          .not("status", "in", '("cancelled","attended")')
+          .in("status", ["pending", "confirmed"])
           .order("start_at")
           .limit(20),
       ])

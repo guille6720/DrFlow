@@ -175,6 +175,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
                       <SkipToContent />
                       <RouteAnnouncer />
                       <Sidebar
+                        clinicId={clinicId}
                         clinicName={clinicDisplayName}
                         role={role}
                         isSuperadmin={isSuperadmin}

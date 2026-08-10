@@ -125,6 +125,7 @@ function SidebarNavGroupItem({
 }
 
 export function SidebarNavContent({
+  clinicId,
   clinicName,
   visibleItems,
   pathname,
@@ -134,6 +135,7 @@ export function SidebarNavContent({
   onToggleSidebarHidden,
   isInvitedMember = false,
 }: {
+  clinicId?: string | null;
   clinicName?: string;
   visibleItems: SidebarNavEntry[];
   pathname: string;
@@ -161,7 +163,7 @@ export function SidebarNavContent({
       <div className="border-b border-slate-700/80 px-4 py-5">
         <DrFlowLogo size="lg" href="/dashboard" centered />
         <p className="mt-2 truncate text-center text-xs font-medium text-slate-400">
-          {clinicName ?? "Sin clínica"}
+          {clinicName?.trim() || (clinicId ? "Mi clínica" : "Sin clínica")}
         </p>
         {isInvitedMember ? (
           <div className="mt-2 flex justify-center">

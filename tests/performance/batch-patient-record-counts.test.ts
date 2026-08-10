@@ -44,6 +44,28 @@ describe("batchPatientRecordCounts", () => {
     expect(counts.get("p3")).toBe(0);
   });
 
+  it("parses JSONB RPC payload returned as JSON string", async () => {
+    const supabase = {
+      rpc: async () => ({
+        data: JSON.stringify([
+          { patient_id: "p1", count: 4 },
+          { patient_id: "p2", count: 2 },
+        ]),
+        error: null,
+      }),
+      from: () => {
+        throw new Error("should not scan rows when RPC succeeds");
+      },
+    };
+
+    const counts = await batchPatientRecordCounts(createSupabaseTestDouble(supabase), "clinic-1", [
+      "p1",
+      "p2",
+    ]);
+    expect(counts.get("p1")).toBe(4);
+    expect(counts.get("p2")).toBe(2);
+  });
+
   it("falls back to row scan when RPC is unavailable", async () => {
     const supabase = {
       rpc: async () => ({ data: null, error: { message: "function not found" } }),

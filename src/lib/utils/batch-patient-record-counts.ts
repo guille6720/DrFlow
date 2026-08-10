@@ -22,6 +22,25 @@ type ClinicalRecordRow = {
   indications: string | null;
 };
 
+type PatientCountRow = { patient_id: string; count: number };
+
+/** RPC returns JSONB — PostgREST may deliver array or JSON string. */
+function parsePatientCountRpcRows(data: unknown): PatientCountRow[] | null {
+  if (data == null) return null;
+
+  let parsed: unknown = data;
+  if (typeof data === "string") {
+    try {
+      parsed = JSON.parse(data);
+    } catch {
+      return null;
+    }
+  }
+
+  if (!Array.isArray(parsed)) return null;
+  return parsed as PatientCountRow[];
+}
+
 /** Batch count clinical_records per patient — SQL GROUP BY via RPC, fallback to row scan. */
 export async function batchPatientRecordCounts(
   supabase: SupabaseClient,
@@ -40,11 +59,16 @@ export async function batchPatientRecordCounts(
     { p_clinic_id: clinicId, p_patient_ids: patientIds }
   );
 
-  if (!rpcError && Array.isArray(rpcData)) {
-    for (const row of rpcData as Array<{ patient_id: string; count: number }>) {
+  const rpcRows = !rpcError ? parsePatientCountRpcRows(rpcData) : null;
+  if (rpcRows) {
+    for (const row of rpcRows) {
       counts.set(row.patient_id, row.count);
     }
     return counts;
+  }
+
+  if (rpcError) {
+    console.error("[batchPatientRecordCounts] RPC failed:", rpcError.message);
   }
 
   const { data: records, error: scanError } = await supabase

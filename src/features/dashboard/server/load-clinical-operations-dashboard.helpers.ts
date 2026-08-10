@@ -10,6 +10,12 @@ import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-wor
 export const APPOINTMENT_SELECT =
   "id, start_at, status, booking_source, notes, patient_id, professional_id, waiting_room_status, patients(first_name, last_name, phone, document_number, birth_date), professionals(profiles(full_name))";
 
+/** Fallback when optional columns or nested joins fail in production (schema drift). */
+export const APPOINTMENT_SELECT_MINIMAL =
+  "id, start_at, status, notes, patient_id, professional_id, patients(first_name, last_name, phone, document_number, birth_date)";
+
+export const UPCOMING_APPOINTMENT_STATUSES = ["pending", "confirmed"] as const;
+
 export const LIST_LIMIT = 8;
 
 type PatientNameRef = { first_name: string; last_name: string } | null;
@@ -105,7 +111,7 @@ export async function fetchDashboardCoreQueries(
       .select(APPOINTMENT_SELECT)
       .eq("clinic_id", clinicId)
       .gte("start_at", nowIso)
-      .not("status", "in", '("cancelled","attended")')
+      .in("status", [...UPCOMING_APPOINTMENT_STATUSES])
       .order("start_at")
       .limit(LIST_LIMIT),
   ]);
