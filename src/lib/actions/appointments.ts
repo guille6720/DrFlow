@@ -218,7 +218,11 @@ export async function updateAppointmentStatus(
     .eq("id", idParsed.data)
     .eq("clinic_id", clinicId);
 
-  if (error) return { error: error.message };
+  if (error) {
+    return {
+      error: resolvePostgresUserMessage(error, { fallback: error.message }),
+    };
+  }
 
   try {
     await recordAppointmentStatusHistory(supabase, {
@@ -234,17 +238,21 @@ export async function updateAppointmentStatus(
     // Non-blocking — audit log still records the change.
   }
 
-  await logAudit({
-    clinicId,
-    entityType: "appointment",
-    entityId: idParsed.data,
-    action: "update",
-    metadata: {
-      status: statusParsed.data,
-      cancellationReason: cancellationReason ?? null,
-      cancelledBy: statusParsed.data === "cancelled" ? "clinic" : undefined,
-    },
-  });
+  try {
+    await logAudit({
+      clinicId,
+      entityType: "appointment",
+      entityId: idParsed.data,
+      action: "update",
+      metadata: {
+        status: statusParsed.data,
+        cancellationReason: cancellationReason ?? null,
+        cancelledBy: statusParsed.data === "cancelled" ? "clinic" : undefined,
+      },
+    });
+  } catch {
+    // Non-blocking — status update already persisted.
+  }
 
   revalidatePath("/agenda");
   revalidatePath("/turnos/agenda");

@@ -37,6 +37,7 @@ export function CancelAppointmentDialog({
   const [category, setCategory] = useState<CancellationCategory>("clinic");
   const [detail, setDetail] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   if (!open) return null;
 
@@ -47,17 +48,24 @@ export function CancelAppointmentDialog({
       setError("Indicá el motivo (mín. 3 caracteres)");
       return;
     }
+
     setError(null);
-    const result = await onConfirm({ category, detail: trimmed });
-    if (result?.error) {
-      setError(result.error);
-      return;
+    setSubmitting(true);
+    try {
+      const result = await onConfirm({ category, detail: trimmed });
+      if (result?.error) {
+        setError(result.error);
+        return;
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo cancelar el turno");
+    } finally {
+      setSubmitting(false);
     }
-    onClose();
   }
 
   function handleClose() {
-    if (loading) return;
+    if (submitting || loading) return;
     setDetail("");
     setCategory("clinic");
     setError(null);
@@ -113,10 +121,10 @@ export function CancelAppointmentDialog({
             WhatsApp.
           </p>
           <div className="flex gap-2">
-            <Button type="submit" variant="danger" loading={loading}>
+            <Button type="submit" variant="danger" loading={submitting || loading}>
               Confirmar cancelación
             </Button>
-            <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
+            <Button type="button" variant="outline" onClick={handleClose} disabled={submitting || loading}>
               Volver
             </Button>
           </div>

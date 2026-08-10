@@ -100,6 +100,7 @@ export const AppointmentRow = memo(function AppointmentRow({
               return { error: result.error };
             }
             toast.success("Turno cancelado");
+            row.closeCancelDialog();
             return { success: true as const };
           }}
           patientName={

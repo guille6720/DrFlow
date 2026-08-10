@@ -63,6 +63,10 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
 
         router.refresh();
         return { success: true as const };
+      } catch (err) {
+        return {
+          error: err instanceof Error ? err.message : "No se pudo actualizar el turno",
+        };
       } finally {
         setActing(false);
       }
@@ -73,12 +77,17 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
   const handleCancelConfirm = useCallback(
     async (input: CancelAppointmentInput) => {
       const formatted = formatCancellationReason(input.category, input.detail);
-      const result = await setStatus("cancelled", formatted, input.category);
-      if (result?.error) {
-        return { error: result.error };
+      try {
+        const result = await setStatus("cancelled", formatted, input.category);
+        if (result?.error) {
+          return { error: result.error };
+        }
+        return { success: true as const };
+      } catch (err) {
+        return {
+          error: err instanceof Error ? err.message : "No se pudo cancelar el turno",
+        };
       }
-      setCancelOpen(false);
-      return { success: true as const };
     },
     [setStatus]
   );
