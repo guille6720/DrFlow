@@ -49,12 +49,11 @@ export function CancelAppointmentDialog({
     }
     setError(null);
     const result = await onConfirm({ category, detail: trimmed });
-    if (result && "error" in result && result.error) {
+    if (result?.error) {
       setError(result.error);
       return;
     }
-    setDetail("");
-    setCategory("clinic");
+    onClose();
   }
 
   function handleClose() {
@@ -73,10 +72,7 @@ export function CancelAppointmentDialog({
         aria-label="Cerrar"
         onClick={handleClose}
       />
-      <div
-        className="drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl"
-        onMouseDown={(event) => event.preventDefault()}
-      >
+      <div className="drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">Cancelar turno</h2>
@@ -94,7 +90,6 @@ export function CancelAppointmentDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <Select
             label="Motivo"
-            required
             value={category}
             onChange={(e) => setCategory(e.target.value as CancellationCategory)}
             options={CANCELLATION_REASON_OPTIONS.map((option) => ({
@@ -111,7 +106,6 @@ export function CancelAppointmentDialog({
             }}
             placeholder="Ej: El paciente avisó que no puede asistir"
             rows={3}
-            required
             error={error ?? undefined}
           />
           <p className="text-xs text-slate-500">

@@ -88,20 +88,26 @@ export const AppointmentRow = memo(function AppointmentRow({
         />
       </li>
 
-      <CancelAppointmentDialog
-        open={row.cancelOpen}
-        onClose={row.closeCancelDialog}
-        onConfirm={async (input) => {
-          const result = await row.handleCancelConfirm(input);
-          if (result?.error) {
-            toast.error(result.error);
+      {row.cancelOpen ? (
+        <CancelAppointmentDialog
+          key={`cancel-${appointment.id}`}
+          open
+          onClose={row.closeCancelDialog}
+          onConfirm={async (input) => {
+            const result = await row.handleCancelConfirm(input);
+            if (result?.error) {
+              toast.error(result.error);
+              return { error: result.error };
+            }
+            toast.success("Turno cancelado");
+            return { success: true as const };
+          }}
+          patientName={
+            row.patient ? `${row.patient.last_name}, ${row.patient.first_name}` : undefined
           }
-        }}
-        patientName={
-          row.patient ? `${row.patient.last_name}, ${row.patient.first_name}` : undefined
-        }
-        loading={row.acting}
-      />
+          loading={row.acting}
+        />
+      ) : null}
     </>
   );
 });

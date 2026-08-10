@@ -47,10 +47,11 @@ function CalendarAppointmentDialogContent({
     const result = await row.handleCancelConfirm(input);
     if (result?.error) {
       toast.error(result.error);
-      return;
+      return { error: result.error };
     }
     toast.success("Turno cancelado");
     onClose();
+    return { success: true as const };
   }
 
   function handleReschedule() {
@@ -146,13 +147,16 @@ function CalendarAppointmentDialogContent({
       </div>
       ) : null}
 
-      <CancelAppointmentDialog
-        open={row.cancelOpen}
-        onClose={row.closeCancelDialog}
-        onConfirm={handleCancelConfirm}
-        patientName={patientName}
-        loading={row.acting}
-      />
+      {row.cancelOpen ? (
+        <CancelAppointmentDialog
+          key={`cancel-${appointment.id}`}
+          open
+          onClose={row.closeCancelDialog}
+          onConfirm={handleCancelConfirm}
+          patientName={patientName}
+          loading={row.acting}
+        />
+      ) : null}
     </>
   );
 }
