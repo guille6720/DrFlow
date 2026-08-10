@@ -87,7 +87,7 @@ export function PatientWorkspaceShell({
   canIssue,
   canManageAdminDocuments,
 }: Props) {
-  const { activeTab, setTab } = usePatientWorkspaceTab(patientId, initialTab);
+  const { activeTab, setTab, workspaceSearchParams } = usePatientWorkspaceTab(patientId, initialTab);
   const [pending, startTransition] = useTransition();
   const [tabCache, setTabCache] = useState<Record<string, TabCacheEntry>>(() => ({
     [initialTab]: {
@@ -269,6 +269,7 @@ export function PatientWorkspaceShell({
     <PatientWorkspaceView
       activeTab={activeTab}
       onTabChange={setTab}
+      workspaceSearchParams={workspaceSearchParams}
       activePanel={activePanel}
       ehr={current.ehr}
       patient={current.patient}

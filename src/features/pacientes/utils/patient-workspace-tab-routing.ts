@@ -30,6 +30,7 @@ export function shouldLoadWorkspaceSheets(
   const parsed = parsePatientWorkspaceActions(activeTab, searchParams);
   return (
     parsed.consultSheetOpen ||
+    parsed.inlineConsultOpen ||
     parsed.prescriptionSheetOpen ||
     parsed.orderSheetOpen ||
     parsed.archivoSheetOpen ||

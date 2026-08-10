@@ -250,7 +250,7 @@ export function buildPatientEhrWorkspaceData(input: {
     appointments: timelineAppointments,
     totalConsultations: hceRows
       ? countPatientConsultationsFromSources({ mappedRecords, hceRows })
-      : (input.totalRecords ?? mappedRecords.length),
+      : (input.clinicalRecordsPagination?.total ?? mappedRecords.length),
     usesHceExport,
     clinicalRecordsPagination: input.clinicalRecordsPagination ?? {
       total: input.totalRecords ?? mappedRecords.length,

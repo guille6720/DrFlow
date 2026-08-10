@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { PatientWorkflowActionBarHost } from "@/features/ia/components/clinical-workflow/patient-workflow-action-bar-host";
@@ -49,6 +48,7 @@ const PatientWorkspaceSheets = dynamic(
 type Props = PatientWorkspaceViewProps & {
   activeTab: PatientWorkspaceTabId;
   onTabChange: (tab: PatientWorkspaceTabId) => void;
+  workspaceSearchParams: URLSearchParams;
   activePanel: ReactNode;
   canManageAdminDocuments?: boolean;
 };
@@ -58,18 +58,18 @@ export function PatientWorkspaceView(props: Props) {
     ehr,
     activeTab,
     onTabChange,
+    workspaceSearchParams,
     activePanel,
     templates,
     patientRecord,
     canManageAdminDocuments = false,
     ...chartProps
   } = props;
-  const searchParams = useSearchParams();
 
   const patientName = `${chartProps.patient.first_name} ${chartProps.patient.last_name}`.trim();
   const showClinicalContext = CLINICAL_CONTEXT_TABS.has(activeTab);
-  const showCopilotBridge = shouldLoadCopilotBridge(activeTab, searchParams.get("action"));
-  const showWorkspaceSheets = shouldLoadWorkspaceSheets(activeTab, searchParams);
+  const showCopilotBridge = shouldLoadCopilotBridge(activeTab, workspaceSearchParams.get("action"));
+  const showWorkspaceSheets = shouldLoadWorkspaceSheets(activeTab, workspaceSearchParams);
   const lastConsultAt = ehr.consultations[0]?.created_at ?? null;
 
   return (
@@ -103,6 +103,7 @@ export function PatientWorkspaceView(props: Props) {
         <PatientWorkspaceTabBar
           patientId={chartProps.patientId}
           activeTab={activeTab}
+          workspaceSearchParams={workspaceSearchParams}
           onTabChange={onTabChange}
           canManageAdminDocuments={canManageAdminDocuments}
           className="min-w-0 flex-1"

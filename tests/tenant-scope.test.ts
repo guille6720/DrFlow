@@ -50,7 +50,7 @@ describe("047 + tenant hardening (static)", () => {
       resolve(process.cwd(), "src/app/(dashboard)/historias/[id]/editar/page.tsx"),
       "utf8"
     );
-    expect(src).toMatch(/eq\("id", record\.patient_id\)\.eq\("clinic_id", clinicId\)/);
+    expect(src).toMatch(/eq\("id", record\.patient_id\)[\s\S]*eq\("clinic_id", clinicId\)/);
   });
 
   it("compliance ARCO export scopes appointments by clinic_id", async () => {

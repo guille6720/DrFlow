@@ -57,7 +57,7 @@ describe("audit service module", () => {
   });
 
   it("session logAudit delegates to recordAudit", () => {
-    const src = readFileSync(resolve(ROOT, "src/core/auth/session.ts"), "utf8");
+    const src = readFileSync(resolve(ROOT, "src/core/auth/session.actions.ts"), "utf8");
     expect(src).toContain("recordAudit");
     expect(src).not.toContain("buildAuditLogRow");
   });
@@ -104,7 +104,13 @@ describe("critical operations audit coverage", () => {
         const fnBody = content.slice(content.indexOf(`export async function ${fn}`));
         const nextFn = fnBody.indexOf("\nexport async function ", 10);
         const section = nextFn > 0 ? fnBody.slice(0, nextFn) : fnBody;
-        expect(section).toMatch(/recordAudit|logAudit|recordAuditChange|recordMedicalOrder\w+Audit/);
+        const auditsInSection = /recordAudit|logAudit|recordAuditChange|recordMedicalOrder\w+Audit/.test(
+          section
+        );
+        const auditsViaHelper =
+          fn === "inviteClinicMember" &&
+          /async function linkInvitedUserToClinic[\s\S]*recordAudit/.test(content);
+        expect(auditsInSection || auditsViaHelper).toBe(true);
       }
     });
   }

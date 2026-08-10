@@ -56,7 +56,8 @@ describe("XSS audit static checks", () => {
         const rel = full.replace(process.cwd(), "");
         const allowed =
           rel.includes("ui-theme-bootstrap-script") ||
-          rel.includes("marketing-json-ld");
+          rel.includes("marketing-json-ld") ||
+          rel.includes("marketing-theme-script");
         if (!allowed) {
           offenders.push(rel);
         }

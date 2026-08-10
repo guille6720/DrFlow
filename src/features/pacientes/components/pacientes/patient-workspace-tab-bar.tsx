@@ -2,7 +2,6 @@
 
 import { History } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -21,6 +20,7 @@ import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-fea
 type Props = {
   patientId: string;
   activeTab: PatientWorkspaceTabId;
+  workspaceSearchParams: URLSearchParams;
   onTabChange: (tab: PatientWorkspaceTabId) => void;
   canManageAdminDocuments?: boolean;
   className?: string;
@@ -29,15 +29,15 @@ type Props = {
 export function PatientWorkspaceTabBar({
   patientId,
   activeTab,
+  workspaceSearchParams,
   onTabChange,
   canManageAdminDocuments = false,
   className,
 }: Props) {
-  const searchParams = useSearchParams();
   const timelineEnabled = useFeatureFlag("clinical_timeline");
   const auditEnabled = useFeatureFlag("patient_audit_tab");
   const priorHistoriesActive =
-    activeTab === "soap" && searchParams.get("action") !== "nueva";
+    activeTab === "soap" && workspaceSearchParams.get("action") !== "nueva";
 
   const hcSubTabs = PATIENT_HC_SUB_TABS.filter((tab) => {
     if (tab.id === "docs_admin") return canManageAdminDocuments;

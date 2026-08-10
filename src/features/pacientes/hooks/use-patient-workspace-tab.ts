@@ -14,6 +14,11 @@ type TabSearchParams = {
   get(name: string): string | null;
 };
 
+function readLocationSearchParams(): URLSearchParams {
+  if (typeof window === "undefined") return new URLSearchParams();
+  return new URLSearchParams(window.location.search);
+}
+
 function resolveTabFromLocation(
   initialTab: PatientWorkspaceTabId | undefined,
   searchParams: TabSearchParams
@@ -22,18 +27,26 @@ function resolveTabFromLocation(
   return parsePatientWorkspaceTab(rawTab ? (LEGACY_TAB_ALIASES[rawTab] ?? rawTab) : null);
 }
 
-/** Client tab state synced to the URL without triggering a full RSC reload. */
+function searchParamsFromPatientUrl(url: string): URLSearchParams {
+  const query = url.includes("?") ? url.split("?")[1] : "";
+  return new URLSearchParams(query);
+}
+
+/** Client tab + query state synced to the URL without triggering a full RSC reload. */
 export function usePatientWorkspaceTab(patientId: string, initialTab?: PatientWorkspaceTabId) {
-  const searchParams = useSearchParams();
+  const nextSearchParams = useSearchParams();
   const [activeTab, setActiveTabState] = useState<PatientWorkspaceTabId>(() =>
-    resolveTabFromLocation(initialTab, searchParams)
+    resolveTabFromLocation(initialTab, nextSearchParams)
+  );
+  const [workspaceSearchParams, setWorkspaceSearchParams] = useState<URLSearchParams>(() =>
+    typeof window === "undefined" ? new URLSearchParams(nextSearchParams.toString()) : readLocationSearchParams()
   );
 
   useEffect(() => {
     const onPopState = () => {
-      setActiveTabState(
-        resolveTabFromLocation(initialTab, new URLSearchParams(window.location.search))
-      );
+      const params = readLocationSearchParams();
+      setWorkspaceSearchParams(params);
+      setActiveTabState(resolveTabFromLocation(initialTab, params));
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -41,12 +54,13 @@ export function usePatientWorkspaceTab(patientId: string, initialTab?: PatientWo
 
   const setTab = useCallback(
     (tab: PatientWorkspaceTabId) => {
-      setActiveTabState(tab);
       const url = patientWorkspacePath(patientId, tab);
+      setActiveTabState(tab);
+      setWorkspaceSearchParams(searchParamsFromPatientUrl(url));
       window.history.replaceState(window.history.state, "", url);
     },
     [patientId]
   );
 
-  return { activeTab, setTab };
+  return { activeTab, setTab, workspaceSearchParams };
 }

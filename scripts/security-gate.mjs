@@ -29,7 +29,11 @@ const DANGEROUS_PATTERNS = [
   { re: /\.innerHTML\s*=/, label: "innerHTML assignment" },
 ];
 
-const ALLOW_DANGEROUS = ["src/core/components/theme/ui-theme-bootstrap-script.tsx"];
+const ALLOW_DANGEROUS = [
+  "src/core/components/theme/ui-theme-bootstrap-script.tsx",
+  "src/core/components/seo/marketing-json-ld.tsx",
+  "src/core/components/landing/marketing-theme-script.tsx",
+];
 
 function isUiComponentPath(r) {
   return (

@@ -4,12 +4,13 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("Grupo 4 architecture performance", () => {
-  it("patient workspace tab hook avoids router navigation", () => {
+  it("patient workspace tab hook syncs query params for client navigation", () => {
     const source = readFileSync(
       join(process.cwd(), "src/features/pacientes/hooks/use-patient-workspace-tab.ts"),
       "utf8"
     );
     expect(source).toMatch(/history\.replaceState/);
+    expect(source).toMatch(/workspaceSearchParams/);
     expect(source).not.toMatch(/router\.push/);
   });
 

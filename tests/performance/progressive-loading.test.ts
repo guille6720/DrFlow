@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+import {
+  fetchDashboardCoreQueries,
+  fetchDashboardSecondaryQueries,
+} from "@/features/dashboard/server/load-clinical-operations-dashboard.helpers";
 import { getWorkspaceFetchPlan } from "@/features/pacientes/server/patient-workspace-fetch-plan";
 
 describe("patient workspace fetch plan", () => {
@@ -33,10 +37,7 @@ describe("patient workspace fetch plan", () => {
 });
 
 describe("dashboard loader split", () => {
-  it("core and secondary query groups are disjoint", async () => {
-    const { fetchDashboardCoreQueries, fetchDashboardSecondaryQueries } = await import(
-      "@/features/dashboard/server/load-clinical-operations-dashboard.helpers"
-    );
+  it("core and secondary query groups are disjoint", () => {
     expect(fetchDashboardCoreQueries).toBeTypeOf("function");
     expect(fetchDashboardSecondaryQueries).toBeTypeOf("function");
   });
