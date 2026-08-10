@@ -4149,3 +4149,14 @@ html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card :is(.text
   color: #0f172a !important;
 }
 
+/* Lista de pacientes — texto legible en islas blancas (cobalt + clínico oscuro) */
+html[data-ui-palette="cobalt"] .drflow-mesh main article.drflow-card-light :is(.text-slate-700, .text-slate-800, .text-slate-900),
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main article.drflow-card-light :is(.text-slate-700, .text-slate-800, .text-slate-900) {
+  color: #334155 !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-mesh main article.drflow-card-light .text-xs.font-medium,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main article.drflow-card-light .text-xs.font-medium {
+  color: #475569 !important;
+}
+

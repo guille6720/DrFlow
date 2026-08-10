@@ -10,6 +10,9 @@ export const CLINIC_COLUMNS =
 export const CLINIC_SHELL_COLUMNS =
   "id, name, slug, timezone, is_active, trial_ends_at, voice_input_enabled, doctors_can_access_cash";
 
+/** Guaranteed-safe subset for sidebar/header when shell columns fail. */
+export const CLINIC_MINIMAL_COLUMNS = "id, name, slug, timezone, is_active, trial_ends_at";
+
 export const PATIENT_LIST_COLUMNS =
   "id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, email, address, allergies, regular_medication, emergency_contact_name, emergency_contact_phone, medical_history, insurance_plan, notes, clinic_id, created_at";
 

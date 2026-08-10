@@ -47,7 +47,21 @@ export async function batchPatientRecordCounts(
     return counts;
   }
 
-  // RPC required at scale — return zero counts rather than scanning clinical_records.
+  const { data: records, error: scanError } = await supabase
+    .from("clinical_records")
+    .select("patient_id")
+    .eq("clinic_id", clinicId)
+    .in("patient_id", patientIds);
+
+  if (scanError) {
+    console.error("[batchPatientRecordCounts] fallback scan failed:", scanError.message);
+    return counts;
+  }
+
+  for (const record of (records ?? []) as Array<{ patient_id: string }>) {
+    counts.set(record.patient_id, (counts.get(record.patient_id) ?? 0) + 1);
+  }
+
   return counts;
 }
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import { getDashboardShell, getSession } from "@/core/auth/session";
+import { getDashboardShell, getSession, resolveClinicDisplayName } from "@/core/auth/session";
 import { logAudit } from "@/core/auth/session.actions";
 import { AccessibilityProvider } from "@/core/components/accessibility/accessibility-provider";
 import { RouteAnnouncer } from "@/core/components/accessibility/route-announcer";
@@ -80,6 +80,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
 
   const shell = await getDashboardShell();
   const { profile, clinics, clinicId, clinic, role, isSuperadmin, permissionOverrides } = shell;
+  const clinicDisplayName = resolveClinicDisplayName(clinicId, clinic, clinics);
 
   if (!profile) {
     redirect(
@@ -174,7 +175,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
                       <SkipToContent />
                       <RouteAnnouncer />
                       <Sidebar
-                        clinicName={clinic?.name}
+                        clinicName={clinicDisplayName}
                         role={role}
                         isSuperadmin={isSuperadmin}
                         permissionOverrides={permissionOverrides}

@@ -64,6 +64,15 @@ async function loadCoreInner(
       .limit(LIST_LIMIT),
   ]);
 
+  if (todayResult.error) {
+    console.error("[dashboard] today appointments query failed:", todayResult.error.message);
+    throw new Error(todayResult.error.message);
+  }
+  if (upcomingResult.error) {
+    console.error("[dashboard] upcoming appointments query failed:", upcomingResult.error.message);
+    throw new Error(upcomingResult.error.message);
+  }
+
   const todayAppointments = ((todayResult.data ?? []) as unknown as LiveAppointment[]).map(
     (row) => ({ ...row, start_at: sanitizeIsoTimestamp(row.start_at) })
   );

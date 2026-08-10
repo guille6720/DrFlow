@@ -5,7 +5,7 @@ import { cache } from "react";
 
 import { resolveMemberPermissionOverrides } from "@/core/permissions/member-permissions";
 import type { PermissionOverrides } from "@/core/permissions/roles";
-import { CLINIC_COLUMNS, CLINIC_SHELL_COLUMNS, PROFILE_COLUMNS } from "@/core/supabase/select-columns";
+import { CLINIC_COLUMNS, CLINIC_MINIMAL_COLUMNS, CLINIC_SHELL_COLUMNS, PROFILE_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
 import type { Clinic, ClinicMember, Profile, UserRole } from "@/types/database";
@@ -127,8 +127,46 @@ export const getUserClinics = cache(async (): Promise<ClinicMember[]> => {
     return withFullClinics;
   }
 
-  return loadClinicsForMembers(supabase, memberRows, CLINIC_SHELL_COLUMNS);
+  const withShellClinics = await loadClinicsForMembers(supabase, memberRows, CLINIC_SHELL_COLUMNS);
+  if (withShellClinics.some((m) => m.clinic)) {
+    return withShellClinics;
+  }
+
+  return loadClinicsForMembers(supabase, memberRows, CLINIC_MINIMAL_COLUMNS);
 });
+
+async function fetchClinicById(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  clinicId: string
+): Promise<Clinic | null> {
+  for (const columns of [CLINIC_COLUMNS, CLINIC_SHELL_COLUMNS, CLINIC_MINIMAL_COLUMNS]) {
+    const { data, error } = await supabase
+      .from("clinics")
+      .select(columns)
+      .eq("id", clinicId)
+      .maybeSingle();
+
+    if (!error && data) {
+      return data as unknown as Clinic;
+    }
+    if (error) {
+      console.error(`[session] fetchClinicById failed (${columns}):`, error.message);
+    }
+  }
+  return null;
+}
+
+export function resolveClinicDisplayName(
+  clinicId: string | null | undefined,
+  clinic: Clinic | null | undefined,
+  clinics: ClinicMember[]
+): string | undefined {
+  if (clinic?.name?.trim()) return clinic.name.trim();
+  if (!clinicId) return undefined;
+  const fromMembership = clinics.find((member) => member.clinic_id === clinicId)?.clinic?.name;
+  if (fromMembership?.trim()) return fromMembership.trim();
+  return "Mi clínica";
+}
 
 export const getActiveClinicId = cache(async (): Promise<string | null> => {
   const cookieStore = await cookies();
@@ -162,17 +200,7 @@ export const getActiveClinic = cache(async (): Promise<{
   let clinic = membership?.clinic ?? null;
 
   if (!clinic) {
-    const { data, error } = await supabase.from("clinics").select(CLINIC_COLUMNS).eq("id", clinicId).single();
-    if (!error) {
-      clinic = data as Clinic;
-    } else {
-      const { data: shellClinic } = await supabase
-        .from("clinics")
-        .select(CLINIC_SHELL_COLUMNS)
-        .eq("id", clinicId)
-        .single();
-      clinic = shellClinic as Clinic | null;
-    }
+    clinic = await fetchClinicById(supabase, clinicId);
   }
 
   return {
@@ -209,12 +237,10 @@ export const getPermissionContext = cache(async (): Promise<{
 });
 
 export const getDashboardShell = cache(async () => {
-  const [profile, clinics, clinicId, active, permissionContext] = await Promise.all([
-    getProfile(),
-    getUserClinics(),
-    getActiveClinicId(),
-    getActiveClinic(),
-    getPermissionContext(),
-  ]);
+  const profile = await getProfile();
+  const clinics = await getUserClinics();
+  const clinicId = await getActiveClinicId();
+  const active = await getActiveClinic();
+  const permissionContext = await getPermissionContext();
   return { profile, clinics, clinicId, ...active, ...permissionContext };
 });

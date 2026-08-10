@@ -132,7 +132,7 @@ const PatientListCard = memo(function PatientListCard({
             Editar
           </Link>
         </div>
-        <p className="text-[11px] font-medium text-slate-600 sm:text-right">
+        <p className="text-xs font-medium text-slate-700 sm:text-right">
           {formatPatientConsultationCountShort(p.consultationCount)}
         </p>
       </div>

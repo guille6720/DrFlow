@@ -2,13 +2,12 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Suspense } from "react";
 
-import { getDashboardShell } from "@/core/auth/session";
+import { getDashboardShell, resolveClinicDisplayName } from "@/core/auth/session";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 
 import { ClinicalOpsSecondarySkeleton } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-secondary-skeleton";
 import { ClinicalOpsDashboardAsync } from "@/features/dashboard/components/dashboard/clinical-ops-dashboard-async";
-import { ClinicalOpsDashboardBoundary } from "@/features/dashboard/components/dashboard/clinical-ops-dashboard-boundary";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +30,7 @@ function DashboardOpsSkeleton() {
 export default async function DashboardPage() {
   const shell = await getDashboardShell();
   const { profile, clinics, clinicId, clinic, role, isSuperadmin } = shell;
+  const clinicDisplayName = resolveClinicDisplayName(clinicId, clinic, clinics) ?? "Consultorio";
   const now = new Date();
 
   return (
@@ -47,19 +47,17 @@ export default async function DashboardPage() {
 
       <div className="p-4 sm:p-6">
         {clinicId ? (
-          <ClinicalOpsDashboardBoundary>
-            <Suspense fallback={<DashboardOpsSkeleton />}>
-              <ClinicalOpsDashboardAsync
-                clinicId={clinicId}
-                clinicName={clinic?.name ?? "Consultorio"}
-                professionalName={profile?.full_name}
-                canManageAppointments={hasPermission(role, "manageAppointments", isSuperadmin)}
-                canManageCash={hasPermission(role, "manageCashRegister", isSuperadmin)}
-                canManageWaitingRoom={hasPermission(role, "manageWaitingRoom", isSuperadmin)}
-                canManageSettings={hasPermission(role, "manageSettings", isSuperadmin)}
-              />
-            </Suspense>
-          </ClinicalOpsDashboardBoundary>
+          <Suspense fallback={<DashboardOpsSkeleton />}>
+            <ClinicalOpsDashboardAsync
+              clinicId={clinicId}
+              clinicName={clinicDisplayName}
+              professionalName={profile?.full_name}
+              canManageAppointments={hasPermission(role, "manageAppointments", isSuperadmin)}
+              canManageCash={hasPermission(role, "manageCashRegister", isSuperadmin)}
+              canManageWaitingRoom={hasPermission(role, "manageWaitingRoom", isSuperadmin)}
+              canManageSettings={hasPermission(role, "manageSettings", isSuperadmin)}
+            />
+          </Suspense>
         ) : (
           <p className="text-sm text-slate-500">
             Seleccioná un consultorio para ver operaciones del día.
