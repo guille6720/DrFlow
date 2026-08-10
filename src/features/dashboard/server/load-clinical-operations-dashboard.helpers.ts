@@ -343,7 +343,7 @@ export function mapQueuedReminders(
       appointment_id: row.appointment_id ? String(row.appointment_id) : null,
       appointments: appt
         ? {
-            start_at: appt.start_at,
+            start_at: sanitizeIsoTimestamp(appt.start_at),
             patients: patient,
           }
         : null,

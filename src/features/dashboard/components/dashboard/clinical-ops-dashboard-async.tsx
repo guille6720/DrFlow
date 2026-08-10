@@ -5,7 +5,7 @@ import { createClient } from "@/core/supabase/server";
 import { ClinicalOpsCenter } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-center";
 import { ClinicalOpsSecondarySections } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-secondary-sections";
 import { ClinicalOpsSecondarySkeleton } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-secondary-skeleton";
-import { loadClinicalOperationsDashboardCore } from "@/features/dashboard/server/load-clinical-operations-dashboard-core";
+import { safeLoadClinicalOperationsDashboardCore } from "@/features/dashboard/server/load-clinical-operations-dashboard-safe";
 import { normalizeClinicalOpsCorePayload } from "@/features/dashboard/utils/normalize-clinical-ops-payload";
 
 type Props = {
@@ -28,7 +28,7 @@ export async function ClinicalOpsDashboardAsync({
   canManageSettings,
 }: Props) {
   const supabase = await createClient();
-  const coreRaw = await loadClinicalOperationsDashboardCore(supabase, clinicId);
+  const coreRaw = await safeLoadClinicalOperationsDashboardCore(supabase, clinicId);
   const core = normalizeClinicalOpsCorePayload(coreRaw);
 
   return (

@@ -109,9 +109,9 @@ function WaitingQueueList({
                         Alergias: {row.allergies.trim()}
                       </p>
                     ) : null}
-                    {row.alerts.length > 0 ? (
+                    {(row.alerts?.length ?? 0) > 0 ? (
                       <ul className="mt-1 flex flex-wrap gap-1">
-                        {row.alerts.map((a) => (
+                        {(row.alerts ?? []).map((a) => (
                           <li
                             key={a}
                             className="rounded border border-amber-800/50 bg-amber-950/30 px-1.5 py-0.5 text-[10px] text-amber-200"

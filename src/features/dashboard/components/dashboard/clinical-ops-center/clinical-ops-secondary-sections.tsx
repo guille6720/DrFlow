@@ -5,7 +5,7 @@ import {
   LabResultsSection,
   PrescriptionsAndOrdersSections,
 } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-worklist-sections";
-import { loadClinicalOperationsDashboardSecondary } from "@/features/dashboard/server/load-clinical-operations-dashboard-secondary";
+import { safeLoadClinicalOperationsDashboardSecondary } from "@/features/dashboard/server/load-clinical-operations-dashboard-safe";
 import type { ClinicalOperationsDashboardCorePayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
 
 type Props = {
@@ -15,7 +15,7 @@ type Props = {
 
 export async function ClinicalOpsSecondarySections({ clinicId, core }: Props) {
   const supabase = await createClient();
-  const secondary = await loadClinicalOperationsDashboardSecondary(supabase, clinicId, core);
+  const secondary = await safeLoadClinicalOperationsDashboardSecondary(supabase, clinicId, core);
 
   return (
     <>

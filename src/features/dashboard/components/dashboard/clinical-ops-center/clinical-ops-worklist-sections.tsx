@@ -13,20 +13,23 @@ import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-wor
 import { Button } from "@/components/ui/button";
 
 export function PrescriptionsAndOrdersSections({
-  draftPrescriptions,
-  pendingOrders,
+  draftPrescriptions = [],
+  pendingOrders = [],
 }: {
-  draftPrescriptions: ClinicalOperationsDashboardPayload["draftPrescriptions"];
-  pendingOrders: ClinicalOperationsDashboardPayload["pendingOrders"];
+  draftPrescriptions?: ClinicalOperationsDashboardPayload["draftPrescriptions"];
+  pendingOrders?: ClinicalOperationsDashboardPayload["pendingOrders"];
 }) {
+  const rxList = draftPrescriptions ?? [];
+  const orderList = pendingOrders ?? [];
+
   return (
     <div className="grid gap-4 xl:grid-cols-2">
-      <OpsSection id="ops-prescriptions" title="Recetas pendientes" count={draftPrescriptions.length}>
-        {draftPrescriptions.length === 0 ? (
+      <OpsSection id="ops-prescriptions" title="Recetas pendientes" count={rxList.length}>
+        {rxList.length === 0 ? (
           <ClinicalOpsEmpty message="No hay recetas pendientes de firma." />
         ) : (
           <ul className="space-y-2 text-sm">
-            {draftPrescriptions.map((rx) => (
+            {rxList.map((rx) => (
               <li
                 key={rx.id}
                 className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-700/50 bg-slate-900/30 px-3 py-2"
@@ -59,12 +62,12 @@ export function PrescriptionsAndOrdersSections({
         )}
       </OpsSection>
 
-      <OpsSection id="ops-orders" title="Órdenes médicas pendientes" count={pendingOrders.length}>
-        {pendingOrders.length === 0 ? (
+      <OpsSection id="ops-orders" title="Órdenes médicas pendientes" count={orderList.length}>
+        {orderList.length === 0 ? (
           <ClinicalOpsEmpty message="No hay órdenes médicas pendientes." />
         ) : (
           <ul className="space-y-2 text-sm">
-            {pendingOrders.map((order) => (
+            {orderList.map((order) => (
               <li
                 key={order.id}
                 className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-700/50 bg-slate-900/30 px-3 py-2"
@@ -102,11 +105,11 @@ export function PrescriptionsAndOrdersSections({
 }
 
 export function LabResultsSection({
-  items,
+  items = [],
 }: {
-  items: ClinicalOperationsDashboardPayload["recentLabs"];
+  items?: ClinicalOperationsDashboardPayload["recentLabs"];
 }) {
-  const labs = items.filter((l) => l.isLab);
+  const labs = (items ?? []).filter((l) => l.isLab);
 
   return (
     <OpsSection id="ops-labs" title="Resultados de laboratorio recientes" count={labs.length}>

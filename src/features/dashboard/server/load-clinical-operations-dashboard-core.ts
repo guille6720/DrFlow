@@ -12,6 +12,7 @@ import {
   filterWaitingAppointments,
   LIST_LIMIT,
   mapCriticalPatients,
+  sanitizeIsoTimestamp,
 } from "@/features/dashboard/server/load-clinical-operations-dashboard.helpers";
 import { APPOINTMENT_SELECT } from "@/features/dashboard/server/load-clinical-operations-dashboard.helpers";
 import type { ClinicalOperationsDashboardCorePayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
@@ -63,8 +64,13 @@ async function loadCoreInner(
       .limit(LIST_LIMIT),
   ]);
 
-  const todayAppointments = (todayResult.data ?? []) as unknown as LiveAppointment[];
-  const upcoming = (upcomingResult.data ?? []) as unknown as LiveAppointment[];
+  const todayAppointments = ((todayResult.data ?? []) as unknown as LiveAppointment[]).map(
+    (row) => ({ ...row, start_at: sanitizeIsoTimestamp(row.start_at) })
+  );
+  const upcoming = ((upcomingResult.data ?? []) as unknown as LiveAppointment[]).map((row) => ({
+    ...row,
+    start_at: sanitizeIsoTimestamp(row.start_at),
+  }));
   const waitingPatientIds = collectWaitingPatientIds(todayAppointments);
 
   const criticalRows = await fetchCriticalPatientProfiles(supabase, clinicId, waitingPatientIds);

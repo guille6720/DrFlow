@@ -93,7 +93,7 @@ export function buildAdminOpsSnapshotFromDashboard(
     | import("@/features/dashboard/utils/clinical-operations-dashboard-types").ClinicalOperationsDashboardPayload
     | import("@/features/dashboard/utils/clinical-operations-dashboard-types").ClinicalOperationsDashboardCorePayload
 ): AdminOpsSnapshot {
-  const waiting = ops.waiting.slice(0, 8).map((row) => {
+  const waiting = (ops.waiting ?? []).slice(0, 8).map((row) => {
     const name = row.patients
       ? `${row.patients.last_name}, ${row.patients.first_name}`
       : "Paciente";
@@ -118,21 +118,21 @@ export function buildAdminOpsSnapshotFromDashboard(
     priority: t.priority,
   }));
 
-  const notifications = ops.notifications.slice(0, 6).map((n) => ({
+  const notifications = (ops.notifications ?? []).slice(0, 6).map((n) => ({
     label: n.label,
     patientName: n.patientName,
     href: n.href,
   }));
 
   return {
-    waitingCount: ops.waiting.length,
-    overdueCount: ops.overdue.length,
+    waitingCount: (ops.waiting ?? []).length,
+    overdueCount: (ops.overdue ?? []).length,
     draftPrescriptionsCount: ("draftPrescriptions" in ops ? ops.draftPrescriptions?.length : 0) ?? 0,
     pendingStudiesCount: ("pendingStudies" in ops ? ops.pendingStudies?.length : 0) ?? 0,
     tasksCount: ("tasks" in ops ? ops.tasks?.length : 0) ?? 0,
     highPriorityTasksCount: ("tasks" in ops ? (ops.tasks ?? []).filter((t) => t.priority === "high").length : 0),
-    notificationsCount: ops.notifications.length,
-    criticalPatientsCount: ops.criticalPatients.length,
+    notificationsCount: (ops.notifications ?? []).length,
+    criticalPatientsCount: (ops.criticalPatients ?? []).length,
     waiting,
     tasks,
     notifications,

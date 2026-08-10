@@ -10,44 +10,46 @@ import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 import { cn } from "@/shared/utils/cn";
 
 import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+import { EMPTY_CLINICAL_OPS_ACTIVITY } from "@/features/dashboard/utils/normalize-clinical-ops-payload";
 
 export function ClinicalOpsActivityStrip({
   activity,
 }: {
-  activity: ClinicalOperationsDashboardPayload["activity"];
+  activity?: ClinicalOperationsDashboardPayload["activity"];
 }) {
+  const metrics = activity ?? EMPTY_CLINICAL_OPS_ACTIVITY;
   const cards = [
     {
       label: "En espera",
-      value: activity.waitingCount,
+      value: metrics.waitingCount,
       icon: Clock,
-      tone: activity.waitingCount > 0 ? "text-amber-300" : "text-slate-300",
+      tone: metrics.waitingCount > 0 ? "text-amber-300" : "text-slate-300",
     },
     {
       label: "Atendidos",
-      value: activity.attendedCount,
+      value: metrics.attendedCount,
       icon: UserCheck,
       tone: "text-teal-300",
     },
     {
       label: "Espera prom.",
-      value: activity.averageWaitingMinutes != null ? `${activity.averageWaitingMinutes} min` : "—",
+      value: metrics.averageWaitingMinutes != null ? `${metrics.averageWaitingMinutes} min` : "—",
       icon: HeartPulse,
       tone: "text-slate-300",
     },
     {
       label: "Próximo turno",
-      value: activity.nextAppointment
-        ? formatClinicDateTime(activity.nextAppointment.start_at, "HH:mm")
+      value: metrics.nextAppointment
+        ? formatClinicDateTime(metrics.nextAppointment.start_at, "HH:mm")
         : "—",
       icon: CalendarClock,
       tone: "text-teal-300",
     },
     {
       label: "Demorados",
-      value: activity.delayedCount,
+      value: metrics.delayedCount,
       icon: AlertTriangle,
-      tone: activity.delayedCount > 0 ? "text-red-300" : "text-slate-300",
+      tone: metrics.delayedCount > 0 ? "text-red-300" : "text-slate-300",
     },
   ];
 
