@@ -3,8 +3,6 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
-import { toast } from "@/core/notifications/toast";
-
 import {
   CANCELLATION_REASON_OPTIONS,
   type CancellationCategory,
@@ -48,7 +46,6 @@ export function CancelAppointmentDialog({
     if (trimmed.length < 3) {
       const message = "Indicá el motivo (mín. 3 caracteres)";
       setError(message);
-      toast.error(message);
       return;
     }
 
@@ -58,13 +55,10 @@ export function CancelAppointmentDialog({
       const result = await onConfirm({ category, detail: trimmed });
       if (result?.error) {
         setError(result.error);
-        toast.error(result.error);
         return;
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "No se pudo cancelar el turno";
-      setError(message);
-      toast.error(message);
+      setError(err instanceof Error ? err.message : "No se pudo cancelar el turno");
     } finally {
       setSubmitting(false);
     }

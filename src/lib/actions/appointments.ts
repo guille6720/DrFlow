@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { getSession, logAudit } from "@/core/auth/session.server";
+import { getSession } from "@/core/auth/session.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { verifyAppointmentForeignKeys } from "@/core/security/ownership-guard";
@@ -112,7 +112,7 @@ export async function createAppointment(formData: FormData) {
     };
   }
 
-  await logAudit({
+  await recordAudit({
     clinicId,
     entityType: "appointment",
     entityId: data.id,
@@ -188,7 +188,7 @@ export async function updateAppointment(id: string, formData: FormData) {
     };
   }
 
-  await logAudit({
+  await recordAudit({
     clinicId,
     entityType: "appointment",
     entityId: idParsed.data,
@@ -204,6 +204,28 @@ export async function updateAppointment(id: string, formData: FormData) {
 }
 
 export async function updateAppointmentStatus(
+  id: string,
+  status: string,
+  cancellationReason?: string,
+  consultationModality?: ConsultationModality,
+  cancellationCategory?: string
+) {
+  try {
+    return await updateAppointmentStatusInternal(
+      id,
+      status,
+      cancellationReason,
+      consultationModality,
+      cancellationCategory
+    );
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "No se pudo actualizar el turno",
+    };
+  }
+}
+
+async function updateAppointmentStatusInternal(
   id: string,
   status: string,
   cancellationReason?: string,
@@ -269,35 +291,29 @@ export async function updateAppointmentStatus(
     };
   }
 
-  try {
-    await recordAppointmentStatusHistory(supabase, {
-      clinicId,
-      appointmentId: idParsed.data,
-      fromStatus: before?.status ?? null,
-      toStatus: statusParsed.data,
-      fromWaitingRoomStatus: before?.waiting_room_status ?? null,
-      changedBy: user?.id ?? null,
-      reason: cancellationReason ?? `Estado → ${statusParsed.data}`,
-    });
-  } catch {
-    // Non-blocking — audit log still records the change.
-  }
-
-  try {
-    await logAudit({
-      clinicId,
-      entityType: "appointment",
-      entityId: idParsed.data,
-      action: "update",
-      metadata: {
-        status: statusParsed.data,
-        cancellationReason: cancellationReason ?? null,
-        cancelledBy: statusParsed.data === "cancelled" ? "clinic" : undefined,
-      },
-    });
-  } catch {
+  void recordAppointmentStatusHistory(supabase, {
+    clinicId,
+    appointmentId: idParsed.data,
+    fromStatus: before?.status ?? null,
+    toStatus: statusParsed.data,
+    fromWaitingRoomStatus: before?.waiting_room_status ?? null,
+    changedBy: user?.id ?? null,
+    reason: cancellationReason ?? `Estado → ${statusParsed.data}`,
+  }).catch(() => {
     // Non-blocking — status update already persisted.
-  }
+  });
+
+  void recordAudit({
+    clinicId,
+    entityType: "appointment",
+    entityId: idParsed.data,
+    action: "update",
+    metadata: {
+      status: statusParsed.data,
+      cancellationReason: cancellationReason ?? null,
+      cancelledBy: statusParsed.data === "cancelled" ? "clinic" : undefined,
+    },
+  });
 
   revalidatePath("/agenda");
   revalidatePath("/turnos/agenda");

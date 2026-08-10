@@ -53,12 +53,16 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
         }
 
         if (status === "cancelled" && cancellationReason && patient?.phone) {
-          const message = buildAppointmentCancellationByClinicMessage(
-            appointment.start_at,
-            cancellationReason
-          );
-          const url = buildWhatsAppUrl(patient.phone, message);
-          if (url) window.open(url, "_blank", "noopener,noreferrer");
+          try {
+            const message = buildAppointmentCancellationByClinicMessage(
+              appointment.start_at,
+              cancellationReason
+            );
+            const url = buildWhatsAppUrl(patient.phone, message);
+            if (url) window.open(url, "_blank", "noopener,noreferrer");
+          } catch {
+            // Non-blocking — cancellation already persisted.
+          }
         }
 
         router.refresh();
