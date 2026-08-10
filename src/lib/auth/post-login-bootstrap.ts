@@ -59,18 +59,23 @@ export async function ensureActiveClinicCookie(
   const current = cookieStore.get(CLINIC_COOKIE)?.value;
   if (current === clinicId) return clinicId;
 
-  cookieStore.set(CLINIC_COOKIE, clinicId, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 365,
-  });
+  try {
+    cookieStore.set(CLINIC_COOKIE, clinicId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  } catch (err) {
+    logServerError("post-login-bootstrap.ensure-active-clinic-cookie", err);
+    return clinicId;
+  }
 
   return clinicId;
 }
 
-/** Profile row + pending clinic invitations after a successful sign-in. */
-export async function runPostLoginBootstrap(
+/** Profile + pending invitations (safe during Server Component render). */
+export async function syncUserClinicMembership(
   supabase: SupabaseClient,
   user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }
 ) {
@@ -82,5 +87,13 @@ export async function runPostLoginBootstrap(
     user.user_metadata?.full_name as string | undefined
   );
   await acceptPendingInvitationsForUser(supabase);
+}
+
+/** Profile row + pending clinic invitations after a successful sign-in. */
+export async function runPostLoginBootstrap(
+  supabase: SupabaseClient,
+  user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }
+) {
+  await syncUserClinicMembership(supabase, user);
   await ensureActiveClinicCookie(supabase, user.id);
 }
