@@ -7,7 +7,7 @@ import { useState } from "react";
 import { CommandPaletteTrigger } from "@/core/components/command-palette/command-palette-trigger";
 import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-context";
 import { openGuestAppearanceModal } from "@/core/components/layout/guest-appearance-events";
-import { hasPermission, isInvitedClinicMember, ROLE_LABELS } from "@/core/permissions/roles";
+import { hasPermission, ROLE_LABELS } from "@/core/permissions/roles";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -40,7 +40,7 @@ export function Header({
 }: HeaderProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const showSettings = hasPermission(role, "manageSettings", isSuperadmin);
-  const showGuestAppearance = isInvitedClinicMember(role, isSuperadmin);
+  const showAppearance = Boolean(role) || isSuperadmin;
   const { hidden: sidebarHidden } = useDashboardSidebar();
   const shellDark = true;
 
@@ -70,7 +70,7 @@ export function Header({
           )}
         </div>
         <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
-          {showGuestAppearance && (
+          {showAppearance && (
             <button
               type="button"
               onClick={openGuestAppearanceModal}

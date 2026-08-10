@@ -16,6 +16,7 @@ export function normalizePatientSearchResult(raw: ApiPatient): PatientSearchOpti
       birth_date: raw.birth_date,
       phone: raw.phone,
       insurance_provider: raw.insurance_provider,
+      insurance_plan: raw.insurance_plan,
     };
   }
 
@@ -30,6 +31,7 @@ export function normalizePatientSearchResult(raw: ApiPatient): PatientSearchOpti
       phone: raw.phone,
       birth_date: raw.birth_date,
       insurance_provider: raw.insurance_provider,
+      insurance_plan: raw.insurance_plan,
     };
   }
 
@@ -41,5 +43,6 @@ export function normalizePatientSearchResult(raw: ApiPatient): PatientSearchOpti
     birth_date: raw.birth_date,
     phone: raw.phone,
     insurance_provider: raw.insurance_provider,
+    insurance_plan: raw.insurance_plan,
   };
 }

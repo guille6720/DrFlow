@@ -26,7 +26,7 @@ export async function loadTurnosWizardSlots(
       .eq("is_active", true),
     supabase
       .from("appointments")
-      .select(`${APPOINTMENT_AGENDA_COLUMNS}, patients(first_name, last_name)`)
+      .select(`${APPOINTMENT_AGENDA_COLUMNS}, patients(first_name, last_name, document_number, insurance_provider, insurance_plan)`)
       .eq("clinic_id", clinicId)
       .eq("professional_id", professionalId)
       .neq("status", "cancelled")

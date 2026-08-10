@@ -9,7 +9,9 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
   coverageOptionsForClinic,
+  defaultInsurancePlanForProvider,
   insuranceNumberLabel,
+  insurancePlanOptionsForProvider,
   resolveDefaultCoverage,
 } from "@/lib/constants/coverages";
 import type { Patient } from "@/types/database";
@@ -43,6 +45,13 @@ export function PatientFormFields({
   );
 
   const [coverage, setCoverage] = useState(initialCoverage);
+  const planOptions = useMemo(
+    () => insurancePlanOptionsForProvider(coverage, patient?.insurance_plan),
+    [coverage, patient?.insurance_plan]
+  );
+  const [plan, setPlan] = useState(
+    () => patient?.insurance_plan?.trim() || defaultInsurancePlanForProvider(initialCoverage)
+  );
   const numberLabel = insuranceNumberLabel(coverage);
   const usingClinicList = (acceptedCoverages?.length ?? 0) > 0;
 
@@ -84,9 +93,24 @@ export function PatientFormFields({
         name="insurance_provider"
         label="Cobertura"
         value={coverage}
-        onChange={(e) => setCoverage(e.target.value)}
+        onChange={(e) => {
+          const nextCoverage = e.target.value;
+          setCoverage(nextCoverage);
+          setPlan(defaultInsurancePlanForProvider(nextCoverage));
+        }}
         options={options.map((c) => ({ value: c, label: c }))}
         placeholder={usingClinicList ? undefined : "Elegí cobertura"}
+      />
+      <Select
+        name="insurance_plan"
+        label="Plan"
+        value={plan}
+        onChange={(e) => setPlan(e.target.value)}
+        disabled={!coverage}
+        options={[
+          { value: "", label: coverage ? "Seleccioná…" : "Elegí cobertura primero" },
+          ...planOptions.map((option) => ({ value: option, label: option })),
+        ]}
       />
       <Input
         name="insurance_number"

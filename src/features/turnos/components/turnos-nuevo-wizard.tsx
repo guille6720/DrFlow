@@ -77,6 +77,22 @@ const MUTED_CLASS = "text-sm font-medium text-slate-700";
 const SECTION_HEADING = "mb-2 text-xs font-bold uppercase tracking-wide text-slate-800";
 const TURNOS_CARD_CLASS = "turnos-nuevo-card";
 
+function mergePatientSelection(
+  id: string,
+  fromList?: Props["patients"][number],
+  picked?: PatientSearchOption
+): Props["patients"][number] | null {
+  if (!fromList && !picked) return null;
+
+  return {
+    id,
+    first_name: picked?.first_name ?? fromList?.first_name ?? "",
+    last_name: picked?.last_name ?? fromList?.last_name ?? "",
+    document_number: picked?.document_number ?? fromList?.document_number ?? "",
+    insurance_provider: picked?.insurance_provider ?? fromList?.insurance_provider ?? null,
+    insurance_plan: picked?.insurance_plan ?? fromList?.insurance_plan ?? null,
+  };
+}
 function getPatientName(appointment: AppointmentAgendaRow): string {
   const patient = appointment.patients as { first_name: string; last_name: string } | undefined;
   if (!patient) return "Paciente";
@@ -292,6 +308,11 @@ export function TurnosNuevoWizard({
   const [selectedPatient, setSelectedPatient] = useState<(typeof patientOptions)[number] | null>(
     () => initialPatient ?? null
   );
+  const displayedPatient = useMemo(() => {
+    if (!patientId) return null;
+    if (selectedPatient?.id === patientId) return selectedPatient;
+    return patientOptions.find((patient) => patient.id === patientId) ?? selectedPatient;
+  }, [patientId, patientOptions, selectedPatient]);
   const [professionalId, setProfessionalId] = useState(() => defaultProfessional?.id ?? "");
   const [specialtyId, setSpecialtyId] = useState(() => defaultProfessional?.specialty_id ?? "");
   const [locationId, setLocationId] = useState(() => defaultProfessional?.location_id ?? "");
@@ -420,18 +441,7 @@ export function TurnosNuevoWizard({
       }
 
       const fromList = patientOptions.find((p) => p.id === id);
-      const found =
-        fromList ??
-        (picked
-          ? {
-              id: picked.id,
-              first_name: picked.first_name,
-              last_name: picked.last_name,
-              document_number: picked.document_number,
-              insurance_provider: picked.insurance_provider ?? null,
-              insurance_plan: null,
-            }
-          : null);
+      const found = mergePatientSelection(id, fromList, picked);
 
       setSelectedPatient(found);
       setInsuranceProvider(found?.insurance_provider ?? "");
@@ -548,7 +558,13 @@ export function TurnosNuevoWizard({
       setSelectedSlot(null);
       setError(null);
       const apptPatient = appointment.patients as
-        | { first_name: string; last_name: string }
+        | {
+            first_name: string;
+            last_name: string;
+            document_number?: string;
+            insurance_provider?: string | null;
+            insurance_plan?: string | null;
+          }
         | undefined;
       handlePatientChange(
         appointment.patient_id,
@@ -557,7 +573,9 @@ export function TurnosNuevoWizard({
               id: appointment.patient_id,
               first_name: apptPatient.first_name,
               last_name: apptPatient.last_name,
-              document_number: "",
+              document_number: apptPatient.document_number ?? "",
+              insurance_provider: apptPatient.insurance_provider ?? null,
+              insurance_plan: apptPatient.insurance_plan ?? null,
             }
           : undefined
       );
@@ -704,16 +722,24 @@ export function TurnosNuevoWizard({
               onPatientChange={handlePatientChange}
               createPatientHref={(q) => buildCreatePatientHref(q, "/turnos/nuevo")}
             />
-            {selectedPatient ? (
+            {displayedPatient ? (
               <dl className="mt-4 space-y-2 rounded-lg border border-slate-300 bg-slate-100/80 p-3 text-sm">
                 <div className="flex justify-between gap-2">
                   <dt className="font-semibold text-slate-700">DNI</dt>
-                  <dd className="font-bold text-slate-950">{selectedPatient.document_number ?? "—"}</dd>
+                  <dd className="font-bold text-slate-950">{displayedPatient.document_number || "—"}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
                   <dt className="font-semibold text-slate-700">Obra social</dt>
                   <dd className="font-bold text-slate-950">
-                    {selectedPatient.insurance_provider ?? "Particular"}
+                    {displayedPatient.insurance_provider ?? "Particular"}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <dt className="font-semibold text-slate-700">Plan</dt>
+                  <dd className="font-bold text-slate-950">
+                    {displayedPatient.insurance_plan?.trim() ||
+                      defaultInsurancePlanForProvider(displayedPatient.insurance_provider) ||
+                      "—"}
                   </dd>
                 </div>
               </dl>
@@ -894,8 +920,8 @@ export function TurnosNuevoWizard({
                     {professional ? getProfessionalDisplayName(professional) : "—"}
                   </SummaryRow>
                   <SummaryRow label="Paciente">
-                    {selectedPatient
-                      ? `${selectedPatient.last_name}, ${selectedPatient.first_name}`
+                    {displayedPatient
+                      ? `${displayedPatient.last_name}, ${displayedPatient.first_name}`
                       : "—"}
                   </SummaryRow>
                   <SummaryRow label="Horario">

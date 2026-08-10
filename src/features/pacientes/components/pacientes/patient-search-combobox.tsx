@@ -26,6 +26,7 @@ export type PatientSearchOption = {
   birth_date?: string | null;
   phone?: string | null;
   insurance_provider?: string | null;
+  insurance_plan?: string | null;
 };
 
 interface Props {
@@ -57,8 +58,8 @@ function normalize(s: string) {
     .toLowerCase();
 }
 
-function formatLabel(p: PatientSearchOption) {
-  return `${p.last_name}, ${p.first_name} · DNI ${p.document_number}`;
+function formatSelectedLabel(p: PatientSearchOption) {
+  return `${p.last_name}, ${p.first_name}`;
 }
 
 function optionId(listboxId: string, patientId: string) {
@@ -71,6 +72,7 @@ function buildPatientOptionMeta(p: PatientSearchOption): string {
     formatAgeLabel(p.birth_date),
     p.phone,
     p.insurance_provider ?? "Sin obra social",
+    p.insurance_plan,
   ].filter(Boolean);
 
   return parts.join(" · ");
@@ -96,7 +98,7 @@ export function PatientSearchCombobox({
   const statusId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const initial = patients.find((p) => p.id === defaultPatientId);
-  const [query, setQuery] = useState(initial ? formatLabel(initial) : "");
+  const [query, setQuery] = useState(initial ? formatSelectedLabel(initial) : "");
   const [selectedId, setSelectedId] = useState(defaultPatientId ?? "");
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -108,7 +110,7 @@ export function PatientSearchCombobox({
     const p = patients.find((x) => x.id === defaultPatientId);
     if (defaultPatientId && p) {
       setSelectedId(defaultPatientId);
-      setQuery(formatLabel(p));
+      setQuery(formatSelectedLabel(p));
     } else {
       setSelectedId("");
       setQuery("");
@@ -163,7 +165,7 @@ export function PatientSearchCombobox({
 
   function pick(p: PatientSearchOption) {
     setSelectedId(p.id);
-    setQuery(formatLabel(p));
+    setQuery(formatSelectedLabel(p));
     setOpen(false);
     setActiveIndex(-1);
     onPatientChange?.(p.id, p);

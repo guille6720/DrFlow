@@ -11,6 +11,7 @@ export type PatientSearchRow = {
   document_number: string;
   birth_date?: string | null;
   insurance_provider?: string | null;
+  insurance_plan?: string | null;
   insurance_number?: string | null;
   phone?: string | null;
   address?: string | null;
