@@ -40,7 +40,7 @@ const RPC_CODE_PATTERN = /^[A-Z][A-Z0-9_]{2,}$/;
 const FUNCTION_MIGRATION_HINTS: Record<string, string> = {
   accept_clinic_invitations_for_user: "Ejecutá la migración 018 en Supabase SQL Editor.",
   delete_own_account:
-    "Ejecutá la migración 039 en Supabase SQL Editor (delete_own_account) y volvé a intentar.",
+    "Ejecutá la migración 039/093 en Supabase SQL Editor (delete_own_account) y volvé a intentar.",
   remove_clinic_member_user:
     "Ejecutá las migraciones 035 y 036 en Supabase SQL Editor y volvé a intentar.",
   seed_demo_patients_for_clinic:
@@ -213,6 +213,10 @@ export function resolvePostgresUserMessage(
   if (parsed.pgCode === PG_ERROR_CODES.CHECK_VIOLATION && parsed.checkConstraintName) {
     const hint = CHECK_CONSTRAINT_HINTS[parsed.checkConstraintName];
     if (hint) return hint;
+  }
+
+  if (parsed.message?.includes("clinical_record_audit_changed_by_fkey")) {
+    return "Falta la migración 093 en Supabase. Ejecutá supabase/scripts/prod-fix-delete-own-account-audit.sql y volvé a intentar.";
   }
 
   for (const [needle, hint] of Object.entries(SCHEMA_CACHE_HINTS)) {
