@@ -1,13 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 const BOOTSTRAP_SESSION_KEY = "drflow_session_bootstrapped";
 
 /** Runs post-login bootstrap once per browser session (membership + clinic cookie). */
 export function DashboardSessionBootstrap() {
-  const router = useRouter();
   const started = useRef(false);
 
   useEffect(() => {
@@ -16,21 +14,19 @@ export function DashboardSessionBootstrap() {
 
     if (sessionStorage.getItem(BOOTSTRAP_SESSION_KEY) === "1") return;
 
-    void (async () => {
-      try {
-        const response = await fetch("/api/auth/bootstrap", {
-          method: "POST",
-          credentials: "same-origin",
-        });
-        if (!response.ok) return;
-
-        sessionStorage.setItem(BOOTSTRAP_SESSION_KEY, "1");
-        router.refresh();
-      } catch {
+    void fetch("/api/auth/bootstrap", {
+      method: "POST",
+      credentials: "same-origin",
+    })
+      .then((response) => {
+        if (response.ok) {
+          sessionStorage.setItem(BOOTSTRAP_SESSION_KEY, "1");
+        }
+      })
+      .catch(() => {
         // Non-blocking: dashboard still loads with cached session state.
-      }
-    })();
-  }, [router]);
+      });
+  }, []);
 
   return null;
 }

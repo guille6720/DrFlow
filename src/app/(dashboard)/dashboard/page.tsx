@@ -7,7 +7,9 @@ import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
 import { ClinicalOperationsDashboard } from "@/features/dashboard/components/dashboard/clinical-operations-dashboard";
+import { ClinicalOpsDashboardBoundary } from "@/features/dashboard/components/dashboard/clinical-ops-dashboard-boundary";
 import { loadClinicalOperationsDashboard } from "@/features/dashboard/server/load-clinical-operations-dashboard";
+import { normalizeClinicalOpsPayload } from "@/features/dashboard/utils/normalize-clinical-ops-payload";
 
 export const dynamic = "force-dynamic";
 
@@ -59,16 +61,18 @@ async function DashboardPageContent() {
 
       <div className="p-4 sm:p-6">
         {ops && clinicId ? (
-          <ClinicalOperationsDashboard
-            clinicId={clinicId}
-            clinicName={clinic?.name ?? "Consultorio"}
-            professionalName={profile?.full_name}
-            ops={ops}
-            canManageAppointments={hasPermission(role, "manageAppointments", isSuperadmin)}
-            canManageCash={hasPermission(role, "manageCashRegister", isSuperadmin)}
-            canManageWaitingRoom={hasPermission(role, "manageWaitingRoom", isSuperadmin)}
-            canManageSettings={hasPermission(role, "manageSettings", isSuperadmin)}
-          />
+          <ClinicalOpsDashboardBoundary>
+            <ClinicalOperationsDashboard
+              clinicId={clinicId}
+              clinicName={clinic?.name ?? "Consultorio"}
+              professionalName={profile?.full_name}
+              ops={normalizeClinicalOpsPayload(ops)}
+              canManageAppointments={hasPermission(role, "manageAppointments", isSuperadmin)}
+              canManageCash={hasPermission(role, "manageCashRegister", isSuperadmin)}
+              canManageWaitingRoom={hasPermission(role, "manageWaitingRoom", isSuperadmin)}
+              canManageSettings={hasPermission(role, "manageSettings", isSuperadmin)}
+            />
+          </ClinicalOpsDashboardBoundary>
         ) : clinicId ? (
           <DashboardPageFallback message="No pudimos cargar operaciones del día. Refrescá la página o probá de nuevo en unos segundos." />
         ) : (

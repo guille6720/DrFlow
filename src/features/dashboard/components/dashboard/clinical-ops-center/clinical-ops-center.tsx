@@ -40,7 +40,7 @@ export function ClinicalOpsCenter({
       <ClinicalOpsTopBar
         clinicName={clinicName}
         professionalName={professionalName}
-        notificationCount={ops.notifications.length}
+        notificationCount={ops.notifications?.length ?? 0}
       />
 
       <div className="clinical-ops-grid grid gap-4 lg:grid-cols-[minmax(11rem,13rem)_minmax(0,1fr)]">

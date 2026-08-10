@@ -35,12 +35,12 @@ type Props = {
 
 export function ClinicalOpsLeftRail({ ops }: Props) {
   const counts: Partial<Record<ClinicalOpsSectionId, number>> = {
-    "ops-schedule": ops.todayAppointments.length,
-    "ops-waiting": ops.enrichedWaiting.length,
-    "ops-urgent": ops.urgentPatients.length,
-    "ops-alerts": ops.actionableAlerts.length,
-    "ops-tasks": ops.tasks.length,
-    "ops-notifications": ops.notifications.length,
+    "ops-schedule": ops.todayAppointments?.length ?? 0,
+    "ops-waiting": ops.enrichedWaiting?.length ?? 0,
+    "ops-urgent": ops.urgentPatients?.length ?? 0,
+    "ops-alerts": ops.actionableAlerts?.length ?? 0,
+    "ops-tasks": ops.tasks?.length ?? 0,
+    "ops-notifications": ops.notifications?.length ?? 0,
   };
 
   return (
@@ -88,7 +88,7 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
         </ul>
       </div>
 
-      {ops.activity.nextAppointment ? (
+      {ops.activity?.nextAppointment ? (
         <div className="mt-auto rounded-lg border border-teal-800/40 bg-teal-950/30 p-2 text-xs text-teal-200">
           <p className="font-semibold">Próximo turno</p>
           <p className="mt-0.5 text-teal-100/90">
