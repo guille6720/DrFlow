@@ -13,6 +13,7 @@ import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
 import { CashClosureView } from "@/features/caja";
+import { loadCashClosureDayTotals } from "@/features/caja/server/load-cash-closure-day-totals";
 import { AdminOpsAnalyticsBridge } from "@/features/ia/components/admin-ops/admin-ops-analytics-bridge";
 
 import { Button } from "@/components/ui/button";
@@ -50,32 +51,10 @@ export default async function CajaCierrePage() {
   if (!closure) {
     const dayStart = startOfDay(new Date()).toISOString();
     const dayEnd = endOfDay(new Date()).toISOString();
-    const { data: charges } = await supabase
-      .from("cash_charges")
-      .select("amount, payment_method, attention_type, charge_kind, patient_id")
-      .eq("clinic_id", clinicId)
-      .eq("status", "collected")
-      .gte("charged_at", dayStart)
-      .lte("charged_at", dayEnd);
-
-    totals = { general: 0, particular: 0, copago: 0, coseguro: 0, art: 0, obra_social: 0 };
-    for (const m of ["cash", "debit", "credit", "transfer", "mercadopago", "qr", "account"]) {
-      totals[m] = 0;
-    }
-    const patients = new Set<string>();
-    for (const c of charges ?? []) {
-      patients.add(c.patient_id);
-      const amt = Number(c.amount);
-      totals.general += amt;
-      if (c.payment_method in totals) totals[c.payment_method] += amt;
-      if (c.charge_kind === "consulta_particular") totals.particular += amt;
-      if (c.charge_kind === "copago_autorizado") totals.copago += amt;
-      if (c.charge_kind === "coseguro_autorizado") totals.coseguro += amt;
-      if (c.attention_type === "art") totals.art += amt;
-      if (c.attention_type === "obra_social") totals.obra_social += amt;
-    }
-    patientCount = patients.size;
-    consultationCount = charges?.length ?? 0;
+    const dayTotals = await loadCashClosureDayTotals(supabase, clinicId, dayStart, dayEnd);
+    totals = dayTotals.totals;
+    patientCount = dayTotals.patientCount;
+    consultationCount = dayTotals.consultationCount;
   }
 
   return (

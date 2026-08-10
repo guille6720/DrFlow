@@ -8,7 +8,8 @@ import {
   WAITING_LIST_PAGE_SIZE,
 } from "@/core/supabase/pagination";
 
-import { applyPatientSearchFilter, sanitizePatientSearchTerm } from "@/features/pacientes/utils/patient-search";
+import { findPatientIdsByTextSearch } from "@/features/pacientes/server/search-patients";
+import { sanitizePatientSearchTerm } from "@/features/pacientes/utils/patient-search";
 import type { WaitingListRow } from "@/features/turnos/components/waiting-list-view";
 
 export { parsePageParam as parseWaitingListPage, WAITING_LIST_PAGE_SIZE };
@@ -58,15 +59,19 @@ export async function loadWaitingListPageData(
   let patientIds: string[] | null = null;
 
   if (searchQuery) {
-    let patientQuery = supabase
-      .from("patients")
-      .select("id")
-      .eq("clinic_id", clinicId)
-      .eq("is_active", true);
-
-    patientQuery = applyPatientSearchFilter(patientQuery, searchQuery);
-    const { data: matches } = await patientQuery.limit(500);
-    patientIds = (matches ?? []).map((p) => p.id);
+    const { patientIds: matches, error: searchError } = await findPatientIdsByTextSearch(
+      supabase,
+      clinicId,
+      searchQuery
+    );
+    if (searchError) {
+      return {
+        entries: [],
+        pageMeta: buildPageMeta(0, page, WAITING_LIST_PAGE_SIZE),
+        searchQuery,
+      };
+    }
+    patientIds = matches;
 
     if (patientIds.length === 0) {
       return {

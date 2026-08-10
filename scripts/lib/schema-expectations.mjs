@@ -89,6 +89,8 @@ export const EXPECTED_RPCS = [
   "search_pathologies_by_symptoms",
   "search_pami_vademecum",
   "search_patients_for_clinic",
+  "count_patients_for_clinic_search",
+  "summarize_collected_cash_charges_for_closure",
   "search_patient_ids_by_pathology",
   "count_clinical_records_by_patients",
 ];
