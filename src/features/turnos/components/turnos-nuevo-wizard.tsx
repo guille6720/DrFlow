@@ -725,6 +725,12 @@ export function TurnosNuevoWizard({
             {displayedPatient ? (
               <dl className="mt-4 space-y-2 rounded-lg border border-slate-300 bg-slate-100/80 p-3 text-sm">
                 <div className="flex justify-between gap-2">
+                  <dt className="font-semibold text-slate-700">Nombre</dt>
+                  <dd className="font-bold text-slate-950">
+                    {`${displayedPatient.last_name}, ${displayedPatient.first_name}`}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-2">
                   <dt className="font-semibold text-slate-700">DNI</dt>
                   <dd className="font-bold text-slate-950">{displayedPatient.document_number || "—"}</dd>
                 </div>
