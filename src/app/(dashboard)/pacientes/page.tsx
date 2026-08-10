@@ -48,12 +48,26 @@ export default async function PacientesPage({
       ? "historias"
       : "pacientes";
 
-  const pageData = await loadPacientesPageData(supabase, clinicId, q, page, cobertura, patologia);
-
   const historiasData =
     seccion === "historias" && canViewClinical
       ? await loadHistoriasPageData(supabase, clinicId, q, page)
       : null;
+
+  const pageData =
+    seccion === "historias" && canViewClinical
+      ? {
+          patients: [],
+          total: 0,
+          portalSlug: null,
+          doctorInfo: null,
+          shareByPatient: new Map<
+            string,
+            { sharedAt: string; sharedByName?: string | null; channel?: string | null }
+          >(),
+          totalPages: 1,
+          page,
+        }
+      : await loadPacientesPageData(supabase, clinicId, q, page, cobertura, patologia);
 
   const headerSubtitle =
     seccion === "historias"

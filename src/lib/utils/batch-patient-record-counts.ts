@@ -9,6 +9,9 @@ import {
 
 import type { HceExportRow } from "@/lib/utils/hce-export-parse";
 
+const CLINICAL_RECORD_COUNT_COLUMNS =
+  "patient_id, id, created_at, chief_complaint, diagnosis, evolution, indications";
+
 type ClinicalRecordRow = {
   patient_id: string;
   id: string;
@@ -17,7 +20,6 @@ type ClinicalRecordRow = {
   diagnosis: string | null;
   evolution: string | null;
   indications: string | null;
-  professionals: unknown;
 };
 
 /** Batch count clinical_records per patient — SQL GROUP BY via RPC, fallback to row scan. */
@@ -62,9 +64,7 @@ async function batchClinicalRecordsByPatient(
 
   const { data: records } = await supabase
     .from("clinical_records")
-    .select(
-      "patient_id, id, created_at, chief_complaint, diagnosis, evolution, indications, professionals(license_national, license_provincial, profiles(full_name, email))"
-    )
+    .select(CLINICAL_RECORD_COUNT_COLUMNS)
     .eq("clinic_id", clinicId)
     .in("patient_id", patientIds)
     .order("created_at", { ascending: true });
@@ -79,7 +79,11 @@ async function batchClinicalRecordsByPatient(
   }
 
   for (const patientId of patientIds) {
-    byPatient.set(patientId, mapClinicalRecordsForEhr(rawByPatient.get(patientId) ?? []));
+    const rawRows = (rawByPatient.get(patientId) ?? []).map((record) => ({
+      ...record,
+      professionals: null,
+    }));
+    byPatient.set(patientId, mapClinicalRecordsForEhr(rawRows));
   }
 
   return byPatient;
@@ -100,8 +104,11 @@ async function batchHceRowsByPatient(
     .eq("file_name", HCE_SUMMARY_ATTACHMENT_NAME)
     .in("patient_id", patientIds);
 
+  const attachmentRows = attachments ?? [];
+  if (attachmentRows.length === 0) return rowsByPatient;
+
   await Promise.all(
-    (attachments ?? []).map(async (attachment) => {
+    attachmentRows.map(async (attachment) => {
       const rows = await loadPatientHceSummaryRowsFromPath(supabase, attachment.file_path);
       if (!rows?.length) return;
       rowsByPatient.set(attachment.patient_id, rows);

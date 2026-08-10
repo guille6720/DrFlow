@@ -89,6 +89,8 @@ export const EXPECTED_RPCS = [
   "search_pathologies_by_symptoms",
   "search_pami_vademecum",
   "search_patients_for_clinic",
+  "search_patient_ids_by_pathology",
+  "count_clinical_records_by_patients",
 ];
 
 /** Composite indexes required for hot paths (054 + 046). */

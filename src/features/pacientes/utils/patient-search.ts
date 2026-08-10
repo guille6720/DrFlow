@@ -85,6 +85,13 @@ function buildClinicalPathologyOrFilter(token: string): string {
 
 type PathologySearchClient = Pick<SupabaseClient, "from">;
 
+type PathologyRpcClient = PathologySearchClient & {
+  rpc: (
+    fn: "search_patient_ids_by_pathology",
+    args: { p_clinic_id: string; p_query: string }
+  ) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
+};
+
 /** Resuelve IDs de pacientes con diagnóstico o motivo de consulta que coincidan (AND entre tokens). */
 export async function findPatientIdsByPathologySearch(
   supabase: PathologySearchClient,
@@ -93,6 +100,16 @@ export async function findPatientIdsByPathologySearch(
 ): Promise<{ patientIds: string[]; error?: string }> {
   const tokens = patientSearchTokens(pathologyQ);
   if (tokens.length === 0) return { patientIds: [] };
+
+  const rpcClient = supabase as PathologyRpcClient;
+  const { data: rpcData, error: rpcError } = await rpcClient.rpc("search_patient_ids_by_pathology", {
+    p_clinic_id: clinicId,
+    p_query: pathologyQ,
+  });
+
+  if (!rpcError && Array.isArray(rpcData)) {
+    return { patientIds: rpcData.filter((id): id is string => typeof id === "string") };
+  }
 
   let matchedIds: string[] | null = null;
 
