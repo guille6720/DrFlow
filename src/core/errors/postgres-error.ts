@@ -216,7 +216,11 @@ export function resolvePostgresUserMessage(
   }
 
   if (parsed.message?.includes("clinical_record_audit_changed_by_fkey")) {
-    return "Falta la migración 093 en Supabase. Ejecutá supabase/scripts/prod-fix-delete-own-account-audit.sql y volvé a intentar.";
+    return "Falta la migración 093 en Supabase. Ejecutá supabase/scripts/prod-fix-user-deletion-complete.sql y volvé a intentar.";
+  }
+
+  if (parsed.message?.includes("appointment_status_history_changed_by_fkey")) {
+    return "Falta la migración 094 en Supabase. Ejecutá supabase/scripts/prod-fix-user-deletion-complete.sql y volvé a intentar.";
   }
 
   for (const [needle, hint] of Object.entries(SCHEMA_CACHE_HINTS)) {
