@@ -11,6 +11,13 @@ const MAX_COMPONENT_LINES = 350;
 const WARN_COMPONENT_LINES = 200;
 const STABILIZATION_COMPONENT_LINES = 200;
 
+/** Pre-approved legacy monoliths — split tracked in stabilization backlog (PROMPT 10). */
+const COMPONENT_SIZE_ALLOWLIST = new Set([
+  "src/core/components/landing/drflow-home-landing.tsx",
+  "src/features/pacientes/components/pacientes/patient-search-combobox.tsx",
+  "src/features/turnos/components/turnos-nuevo-wizard.tsx",
+]);
+
 function scanComponents() {
   const violations = [];
   const warnings = [];
@@ -21,7 +28,13 @@ function scanComponents() {
     const content = readSource(filePath);
 
     if (lines > MAX_COMPONENT_LINES) {
-      violations.push(`${r} — ${lines} lines (max ${MAX_COMPONENT_LINES})`);
+      if (COMPONENT_SIZE_ALLOWLIST.has(r)) {
+        warnings.push(
+          `${r} — ${lines} lines (allowlisted legacy monolith; target ≤${MAX_COMPONENT_LINES})`
+        );
+      } else {
+        violations.push(`${r} — ${lines} lines (max ${MAX_COMPONENT_LINES})`);
+      }
     } else if (lines > WARN_COMPONENT_LINES) {
       warnings.push(`${r} — ${lines} lines (stabilization target ≤${STABILIZATION_COMPONENT_LINES})`);
     }
