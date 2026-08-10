@@ -11,6 +11,7 @@ import { SkipToContent } from "@/core/components/accessibility/skip-to-content";
 import { CommandPaletteProvider } from "@/core/components/command-palette/command-palette-provider";
 import { ClinicalTopNav } from "@/core/components/layout/clinical-top-nav";
 import { DashboardMain } from "@/core/components/layout/dashboard-main";
+import { DashboardSessionBootstrap } from "@/core/components/layout/dashboard-session-bootstrap";
 import { DashboardSidebarProvider } from "@/core/components/layout/dashboard-sidebar-context";
 import { DashboardSidebarReveal } from "@/core/components/layout/dashboard-sidebar-reveal";
 import { LazyDashboardCopilotHosts } from "@/core/components/layout/lazy-dashboard-copilot-hosts";
@@ -132,6 +133,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
 
   return (
     <div className="min-h-screen drflow-mesh">
+      <DashboardSessionBootstrap />
       <PwaRegister />
       <PerformanceMonitor />
       <UpdateBanner />

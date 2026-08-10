@@ -4,12 +4,20 @@ import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz";
 export const DEFAULT_CLINIC_TIMEZONE = "America/Argentina/Buenos_Aires";
 
 export function formatClinicDateTime(
-  isoOrDate: string | Date,
+  isoOrDate: string | Date | null | undefined,
   pattern: string,
   timeZone: string = DEFAULT_CLINIC_TIMEZONE
 ): string {
+  if (isoOrDate == null || isoOrDate === "") return "—";
+
   const iso = typeof isoOrDate === "string" ? isoOrDate : isoOrDate.toISOString();
-  return formatInTimeZone(iso, timeZone, pattern, { locale: es });
+  if (Number.isNaN(Date.parse(iso))) return "—";
+
+  try {
+    return formatInTimeZone(iso, timeZone, pattern, { locale: es });
+  } catch {
+    return "—";
+  }
 }
 
 /** Interpreta HH:mm como hora de pared en la zona de la clínica → Date UTC. */

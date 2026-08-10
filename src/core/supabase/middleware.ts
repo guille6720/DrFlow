@@ -6,6 +6,7 @@ import { createTraceId } from "@/core/observability/trace-id";
 import { getSupabaseAnonKey, getSupabaseUrl } from "./env";
 
 const AUTH_TIMEOUT_MS = 1200;
+const CLINIC_COOKIE = "drflow_clinic_id";
 
 function hasAuthCookie(request: NextRequest): boolean {
   return request.cookies.getAll().some((cookie) => cookie.name.includes("-auth-token"));
@@ -41,6 +42,34 @@ function isPwaAsset(path: string): boolean {
 function withRequestPath(response: NextResponse, path: string, traceId: string): NextResponse {
   response.headers.set("x-drflow-path", path);
   response.headers.set("x-drflow-trace-id", traceId);
+  return response;
+}
+
+async function ensureActiveClinicCookieOnResponse(
+  request: NextRequest,
+  response: NextResponse,
+  supabase: ReturnType<typeof createServerClient>,
+  userId: string
+): Promise<NextResponse> {
+  if (request.cookies.get(CLINIC_COOKIE)?.value) return response;
+
+  const { data: members } = await supabase
+    .from("clinic_members")
+    .select("clinic_id")
+    .eq("user_id", userId)
+    .eq("is_active", true)
+    .limit(1);
+
+  const clinicId = members?.[0]?.clinic_id;
+  if (!clinicId) return response;
+
+  response.cookies.set(CLINIC_COOKIE, clinicId, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 365,
+  });
+
   return response;
 }
 
@@ -133,6 +162,15 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return withRequestPath(NextResponse.redirect(url), path, traceId);
+  }
+
+  if (user) {
+    supabaseResponse = await ensureActiveClinicCookieOnResponse(
+      request,
+      supabaseResponse,
+      supabase,
+      user.id
+    );
   }
 
   return withRequestPath(supabaseResponse, path, traceId);

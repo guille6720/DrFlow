@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 
-import { setActiveClinic } from "@/core/auth/session.actions";
 import { createClient } from "@/core/supabase/server";
 
 import { syncUserClinicMembership } from "@/lib/auth/post-login-bootstrap";
@@ -29,7 +28,6 @@ export default async function AuthCompletePage() {
     .maybeSingle();
 
   if (membership?.clinic_id) {
-    await setActiveClinic(membership.clinic_id);
     redirect("/dashboard");
   }
 

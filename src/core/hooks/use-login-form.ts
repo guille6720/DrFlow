@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useMemo, useState } from "react";
 
+import { clearDashboardSessionBootstrapFlag } from "@/core/components/layout/dashboard-session-bootstrap";
 import { logClientError } from "@/core/errors/log-error.client";
 import { sanitizeAuthErrorParam } from "@/core/security/xss";
 import { createClient } from "@/core/supabase/client";
@@ -97,6 +98,7 @@ export function useLoginForm() {
     event.preventDefault();
     setSubmitError(null);
     setLoading(true);
+    clearDashboardSessionBootstrapFlag();
 
     const formData = new FormData(event.currentTarget);
     const parsed = loginSchema.safeParse({

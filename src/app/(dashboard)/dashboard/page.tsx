@@ -27,22 +27,19 @@ async function loadDashboardPageData() {
   return { ...shell, ops, now: new Date() };
 }
 
-export default async function DashboardPage() {
-  let data: Awaited<ReturnType<typeof loadDashboardPageData>> | null = null;
+function DashboardPageFallback({ message }: { message: string }) {
+  return (
+    <div className="p-6">
+      <p className="text-sm text-amber-700">{message}</p>
+    </div>
+  );
+}
 
-  try {
-    data = await loadDashboardPageData();
-  } catch (err) {
-    console.error("[dashboard] page data load failed:", err);
-  }
-
+async function DashboardPageContent() {
+  const data = await loadDashboardPageData();
   if (!data) {
     return (
-      <div className="p-6">
-        <p className="text-sm text-amber-700">
-          No pudimos cargar el dashboard. Refrescá la página o probá de nuevo en unos segundos.
-        </p>
-      </div>
+      <DashboardPageFallback message="No pudimos cargar el dashboard. Refrescá la página o probá de nuevo en unos segundos." />
     );
   }
 
@@ -73,9 +70,7 @@ export default async function DashboardPage() {
             canManageSettings={hasPermission(role, "manageSettings", isSuperadmin)}
           />
         ) : clinicId ? (
-          <p className="text-sm text-amber-700">
-            No pudimos cargar operaciones del día. Refrescá la página o probá de nuevo en unos segundos.
-          </p>
+          <DashboardPageFallback message="No pudimos cargar operaciones del día. Refrescá la página o probá de nuevo en unos segundos." />
         ) : (
           <p className="text-sm text-slate-500">
             Seleccioná un consultorio para ver operaciones del día.
@@ -84,4 +79,15 @@ export default async function DashboardPage() {
       </div>
     </>
   );
+}
+
+export default async function DashboardPage() {
+  try {
+    return await DashboardPageContent();
+  } catch (err) {
+    console.error("[dashboard] page render failed:", err);
+    return (
+      <DashboardPageFallback message="No pudimos cargar el dashboard. Refrescá la página o probá de nuevo en unos segundos." />
+    );
+  }
 }
