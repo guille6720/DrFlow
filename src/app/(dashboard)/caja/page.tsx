@@ -20,7 +20,6 @@ import {
   getCachedClinicProfessionalsAgenda,
   getCachedClinicSettings,
 } from "@/lib/server/cached-clinic-queries";
-import { loadPatientPickerList } from "@/lib/server/load-patient-picker-list";
 import { loadRevenueSnapshot } from "@/lib/server/load-revenue-snapshot";
 import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
@@ -49,9 +48,7 @@ export default async function CajaPage() {
   const todayStart = startOfDay(new Date()).toISOString();
   const todayEnd = endOfDay(new Date()).toISOString();
 
-  const [{ patients }, professionals, { data: charges }, analytics] =
-    await Promise.all([
-    loadPatientPickerList(supabase, clinicId),
+  const [professionals, { data: charges }, analytics] = await Promise.all([
     getCachedClinicProfessionalsAgenda(clinicId),
     supabase
       .from("cash_charges")
@@ -106,10 +103,6 @@ export default async function CajaPage() {
         </div>
         <CashRegisterView
           defaultProfessionalId={defaultProfessionalId}
-          patients={(patients ?? []).map((p) => ({
-            id: p.id,
-            label: `${p.last_name}, ${p.first_name} — DNI ${p.document_number}`,
-          }))}
           professionals={(professionals ?? []).map((p) => {
             const prof = p as {
               id: string;

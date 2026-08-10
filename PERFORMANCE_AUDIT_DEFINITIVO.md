@@ -91,12 +91,12 @@ DrFlow ya tiene bases sólidas (paginación en listados clave, RPC de búsqueda 
 | `092_performance_audit_group2.sql` | Agregación SQL turnos |
 | `load-cuenta-corriente-page.ts` + `cuenta-corriente-view.tsx` | Remote picker + paginación |
 
-### Grupo 3 — Frontend / UX
-- [ ] Caja remote patient picker
-- [ ] Agenda split RSC + dynamic dialogs
-- [ ] Config/Profesionales loaders por sección
-- [ ] Reemplazar poll+refresh por deltas
-- [ ] loading.tsx rutas calientes
+### Grupo 3 — Frontend / UX (aplicado)
+- [x] Caja remote patient picker (`PatientSearchCombobox`, sin `loadPatientPickerList`)
+- [x] Agenda split RSC + dynamic dialogs (`Header` en page, `dynamic()` dialogs)
+- [x] Config loaders por sección (`load-configuracion-section-extras.ts`)
+- [x] Reemplazar poll+refresh 30s (realtime + debounce sala espera)
+- [x] `loading.tsx` rutas calientes (`pacientes`, `caja`, `pagos`, `pacientes/[id]`)
 
 ### Grupo 4 — Arquitectura ficha paciente
 - [ ] Tab navigation sin full RSC reload
@@ -129,11 +129,23 @@ DrFlow ya tiene bases sólidas (paginación en listados clave, RPC de búsqueda 
 
 **Deploy requerido:** migración **092** en Supabase.
 
-### Pendiente (Grupos 3–4)
+### Grupo 3 (aplicado)
+
+| Métrica | Before | After |
+| ------- | ------ | ----- |
+| Caja alta de cargo | `loadPatientPickerList` (200 pacientes) | `PatientSearchCombobox` remoto |
+| Agenda bundle inicial | Header + 3 dialogs en chunk principal | Header RSC; dialogs `dynamic()` |
+| Configuración | 5+ fetches en cada visita | Extras solo para sección activa |
+| Dashboard / sala espera | `setInterval` 30s + `router.refresh` | Solo realtime (+ debounce 1.5s) |
+| Rutas calientes | Sin skeleton | `PageSkeleton` en pacientes/caja/pagos/ficha |
+
+**Deploy requerido:** solo frontend (sin migración).
+
+### Pendiente (Grupo 4)
 
 | Métrica | Before (estimado) | After (objetivo) |
 | ------- | ----------------- | ---------------- |
-| Dashboard TTFB | Core+secondary ~7 queries | Sin cambio aún |
-| Agenda | ±21d SSR, cap 1000 | Fetch incremental |
+| Ficha paciente tabs | Full RSC reload por tab | Client navigation sin refetch |
 | Bundle shell | ~1.2 MB | Lazy islands |
-| Poll router.refresh | 30s dashboard/sala espera | Delta updates |
+| Agenda | ±21d SSR, cap 1000 | Fetch incremental por semana |
+| Ingreso profesionales | Fetch-all | Loaders paginados |

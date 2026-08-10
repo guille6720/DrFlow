@@ -139,6 +139,16 @@ export function WaitingRoomView({
 
   useEffect(() => {
     const supabase = createClient();
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const scheduleRefresh = () => {
+      if (refreshTimer) return;
+      refreshTimer = setTimeout(() => {
+        refreshTimer = null;
+        router.refresh();
+      }, 1500);
+    };
+
     const channel = supabase
       .channel(`waiting-room-${clinicId}`)
       .on(
@@ -149,15 +159,13 @@ export function WaitingRoomView({
           table: "appointments",
           filter: `clinic_id=eq.${clinicId}`,
         },
-        () => router.refresh()
+        scheduleRefresh
       )
       .subscribe();
 
-    const poll = setInterval(() => router.refresh(), 30000);
-
     return () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
       void supabase.removeChannel(channel);
-      clearInterval(poll);
     };
   }, [clinicId, router]);
 

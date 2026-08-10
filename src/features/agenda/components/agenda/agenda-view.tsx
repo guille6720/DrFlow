@@ -2,23 +2,44 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
-import { Header } from "@/core/components/layout/header";
 import { hasPermission, type PermissionOverrides } from "@/core/permissions/roles";
 import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
 
 import { AgendaToolbar } from "@/features/agenda/components/agenda/agenda-toolbar";
-import { CalendarAppointmentDialog } from "@/features/agenda/components/agenda/calendar-appointment-dialog";
 import { CalendarGrid } from "@/features/agenda/components/agenda/calendar-grid";
-import { EditAppointmentDialog } from "@/features/agenda/components/agenda/edit-appointment-dialog";
 import { MonthOverviewGrid } from "@/features/agenda/components/agenda/month-overview-grid";
-import { RescheduleAppointmentDialog } from "@/features/agenda/components/agenda/reschedule-appointment-dialog";
 import { useAgendaView } from "@/features/agenda/hooks/use-agenda-view";
 
-import type { Clinic, Patient, UserRole } from "@/types/database";
+import type { Patient, UserRole } from "@/types/database";
+
+const EditAppointmentDialog = dynamic(
+  () =>
+    import("@/features/agenda/components/agenda/edit-appointment-dialog").then((m) => ({
+      default: m.EditAppointmentDialog,
+    })),
+  { loading: () => null }
+);
+
+const RescheduleAppointmentDialog = dynamic(
+  () =>
+    import("@/features/agenda/components/agenda/reschedule-appointment-dialog").then((m) => ({
+      default: m.RescheduleAppointmentDialog,
+    })),
+  { loading: () => null }
+);
+
+const CalendarAppointmentDialog = dynamic(
+  () =>
+    import("@/features/agenda/components/agenda/calendar-appointment-dialog").then((m) => ({
+      default: m.CalendarAppointmentDialog,
+    })),
+  { loading: () => null }
+);
 
 interface AgendaPageProps {
   appointments: AppointmentAgendaRow[];
@@ -26,10 +47,8 @@ interface AgendaPageProps {
   professionals: ProfessionalAgendaRow[];
   locations: { id: string; name: string }[];
   specialties: { id: string; name: string }[];
-  clinics: { clinic_id: string; clinic?: Clinic }[];
   clinicId: string | null;
   role: UserRole | null;
-  userName?: string;
   defaultDuration: number;
   defaultProfessionalId?: string;
   scheduleBlocks?: { start_at: string; end_at: string; reason: string | null }[];
@@ -44,10 +63,8 @@ export function AgendaView({
   professionals,
   locations,
   specialties,
-  clinics,
-  clinicId,
+  clinicId: _clinicId,
   role,
-  userName,
   defaultDuration,
   defaultProfessionalId,
   scheduleBlocks = [],
@@ -114,17 +131,7 @@ export function AgendaView({
   );
 
   return (
-    <>
-      <Header
-        title="Agenda médica"
-        subtitle="Gestión de turnos y disponibilidad"
-        clinics={clinics}
-        activeClinicId={clinicId}
-        role={role}
-        userName={userName}
-      />
-
-      <div className="space-y-4 p-4 sm:p-6">
+    <div className="space-y-4 p-4 sm:p-6">
         <AgendaToolbar agenda={agenda} professionals={professionals} specialties={specialties} />
 
         <div className="grid gap-4 xl:grid-cols-2">
@@ -220,7 +227,6 @@ export function AgendaView({
           canStartClinical={canStartClinical}
           onReschedule={canManage ? handleRescheduleFromCalendar : undefined}
         />
-      </div>
-    </>
+    </div>
   );
 }

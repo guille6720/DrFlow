@@ -1,6 +1,7 @@
 import { addDays, endOfWeek, startOfWeek, subDays } from "date-fns";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
+import { Header } from "@/core/components/layout/header";
 import { APPOINTMENTS_AGENDA_MAX } from "@/core/supabase/pagination";
 import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
 import { APPOINTMENT_AGENDA_COLUMNS } from "@/core/supabase/select-columns";
@@ -58,22 +59,30 @@ export default async function TurnosAgendaPage() {
   const appointmentRows: AppointmentAgendaRow[] = appointments.data ?? [];
 
   return (
-    <AgendaView
-      appointments={appointmentRows}
-      patients={[]}
-      professionals={professionalRows}
-      locations={locations}
-      specialties={specialties}
-      clinics={clinics}
-      clinicId={clinicId}
-      role={role}
-      userName={profile?.full_name}
-      defaultDuration={clinic?.default_appointment_duration ?? 30}
-      scheduleBlocks={blocks.data ?? []}
-      bookingSlug={bookingSlug ?? clinic?.slug ?? null}
-      defaultProfessionalId={defaultProfessionalId}
-      isSuperadmin={isSuperadmin}
-      permissionOverrides={permissionOverrides}
-    />
+    <>
+      <Header
+        title="Agenda médica"
+        subtitle="Gestión de turnos y disponibilidad"
+        clinics={clinics}
+        activeClinicId={clinicId}
+        role={role}
+        userName={profile?.full_name}
+      />
+      <AgendaView
+        appointments={appointmentRows}
+        patients={[]}
+        professionals={professionalRows}
+        locations={locations}
+        specialties={specialties}
+        clinicId={clinicId}
+        role={role}
+        defaultDuration={clinic?.default_appointment_duration ?? 30}
+        scheduleBlocks={blocks.data ?? []}
+        bookingSlug={bookingSlug ?? clinic?.slug ?? null}
+        defaultProfessionalId={defaultProfessionalId}
+        isSuperadmin={isSuperadmin}
+        permissionOverrides={permissionOverrides}
+      />
+    </>
   );
 }

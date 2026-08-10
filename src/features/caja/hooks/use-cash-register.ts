@@ -5,20 +5,11 @@ import { useState, useTransition } from "react";
 
 import { createCashCharge, voidCashCharge } from "@/lib/actions/cash-register";
 
-type PatientOption = { id: string; label: string };
-
 export function useCashRegister() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [patientSearch, setPatientSearch] = useState("");
   const [patientId, setPatientId] = useState("");
-
-  function filterPatients(patients: PatientOption[]) {
-    return patients.filter((p) =>
-      patientSearch.trim() ? p.label.toLowerCase().includes(patientSearch.toLowerCase()) : true
-    );
-  }
 
   function handleCharge(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -56,11 +47,8 @@ export function useCashRegister() {
   return {
     pending,
     error,
-    patientSearch,
-    setPatientSearch,
     patientId,
     setPatientId,
-    filterPatients,
     handleCharge,
     handleVoid,
   };

@@ -6,7 +6,6 @@ import { useCashRegister } from "@/features/caja/hooks/use-cash-register";
 
 import { Card } from "@/components/ui/card";
 
-type PatientOption = { id: string; label: string };
 type ProfessionalOption = { id: string; label: string };
 
 type ChargeRow = {
@@ -21,18 +20,15 @@ type ChargeRow = {
 };
 
 export function CashRegisterView({
-  patients,
   professionals,
   recentCharges,
   defaultProfessionalId,
 }: {
-  patients: PatientOption[];
   professionals: ProfessionalOption[];
   recentCharges: ChargeRow[];
   defaultProfessionalId?: string;
 }) {
   const register = useCashRegister();
-  const filteredPatients = register.filterPatients(patients);
 
   return (
     <div className="space-y-6">
@@ -43,9 +39,6 @@ export function CashRegisterView({
         <CashChargeFormSection
           professionals={professionals}
           defaultProfessionalId={defaultProfessionalId}
-          filteredPatients={filteredPatients}
-          patientSearch={register.patientSearch}
-          setPatientSearch={register.setPatientSearch}
           patientId={register.patientId}
           setPatientId={register.setPatientId}
           pending={register.pending}
