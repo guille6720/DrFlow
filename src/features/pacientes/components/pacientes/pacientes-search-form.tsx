@@ -3,6 +3,7 @@
 import { Search, Stethoscope } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 
 import { useDebouncedPacientesSearch } from "@/features/pacientes/hooks/use-debounced-pacientes-search";
 import { resolvePacientesClearHref } from "@/features/pacientes/utils/pacientes-page-url";
@@ -14,14 +15,22 @@ type Props = {
   patologia?: string;
   cobertura?: string;
   trailing?: ReactNode;
+  onNavigatingChange?: (isNavigating: boolean) => void;
 };
 
-export function PacientesSearchForm({ q, patologia = "", cobertura, trailing }: Props) {
-  const { query, setQuery, pathology, setPathology, submitSearch } = useDebouncedPacientesSearch(
-    q,
-    patologia,
-    cobertura
-  );
+export function PacientesSearchForm({
+  q,
+  patologia = "",
+  cobertura,
+  trailing,
+  onNavigatingChange,
+}: Props) {
+  const { query, setQuery, pathology, setPathology, submitSearch, isNavigating } =
+    useDebouncedPacientesSearch(q, patologia, cobertura);
+
+  useEffect(() => {
+    onNavigatingChange?.(isNavigating);
+  }, [isNavigating, onNavigatingChange]);
   const clearHref = resolvePacientesClearHref(q, cobertura, patologia);
 
   return (

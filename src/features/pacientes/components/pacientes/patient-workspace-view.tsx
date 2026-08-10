@@ -68,6 +68,8 @@ type Props = PatientWorkspaceViewProps & {
   canManageAdminDocuments?: boolean;
   initialAuditEvents?: import("@/core/security/audit-types").PatientAuditEvent[];
   initialAuditError?: string | null;
+  initialAuditNextCursor?: string | null;
+  initialAuditHasMore?: boolean;
 };
 
 export function PatientWorkspaceView(props: Props) {
@@ -87,6 +89,8 @@ export function PatientWorkspaceView(props: Props) {
     canManageAdminDocuments = false,
     initialAuditEvents,
     initialAuditError = null,
+    initialAuditNextCursor = null,
+    initialAuditHasMore = false,
     ...chartProps
   } = props;
   const searchParams = useSearchParams();
@@ -157,6 +161,8 @@ export function PatientWorkspaceView(props: Props) {
             patientId={chartProps.patientId}
             initialEvents={initialAuditEvents}
             initialError={initialAuditError}
+            initialNextCursor={initialAuditNextCursor}
+            initialHasMore={initialAuditHasMore}
           />
         ) : null}
       </div>

@@ -156,30 +156,29 @@ async function loadPacientesPageDataInner(
     doctorInfo = portalContext.doctorInfo;
 
     if (rawPatients.length > 0) {
-      const recordCounts = await batchPatientConsultationCounts(
-        supabase,
-        clinicId,
-        rawPatients.map((p) => p.id)
-      );
+      const patientIds = rawPatients.map((p) => p.id);
+      const [recordCounts, shares] = await Promise.all([
+        batchPatientConsultationCounts(supabase, clinicId, patientIds),
+        portalSlug
+          ? supabase
+              .from("patient_app_share_log")
+              .select("patient_id, shared_at, channel, profiles(full_name)")
+              .eq("clinic_id", clinicId)
+              .in("patient_id", patientIds)
+          : Promise.resolve({ data: [] as Array<{
+              patient_id: string;
+              shared_at: string;
+              channel: string;
+              profiles: { full_name?: string } | null;
+            }> }),
+      ]);
+
       patients = rawPatients.map((p) => ({
         ...p,
         consultationCount: recordCounts.get(p.id) ?? 0,
       }));
-    } else {
-      patients = [];
-    }
 
-    if (patients.length > 0 && portalSlug) {
-      const { data: shares } = await supabase
-        .from("patient_app_share_log")
-        .select("patient_id, shared_at, channel, profiles(full_name)")
-        .eq("clinic_id", clinicId)
-        .in(
-          "patient_id",
-          patients.map((p) => p.id)
-        );
-
-      for (const row of shares ?? []) {
+      for (const row of shares.data ?? []) {
         const profileRow = row.profiles as { full_name?: string } | null;
         shareByPatient.set(row.patient_id, {
           sharedAt: row.shared_at,
@@ -187,6 +186,8 @@ async function loadPacientesPageDataInner(
           channel: row.channel,
         });
       }
+    } else {
+      patients = [];
     }
 
   const totalPages = Math.max(1, Math.ceil(total / PACIENTES_PAGE_SIZE));

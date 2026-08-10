@@ -12,7 +12,6 @@ import {
   getCachedClinicalTemplates,
   getCachedClinicProfessionalsList,
 } from "@/lib/server/cached-clinic-queries";
-import { loadPatientPickerList } from "@/lib/server/load-patient-picker-list";
 import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 
 import NuevaConsultaForm from "./nueva-consulta-form";
@@ -46,13 +45,12 @@ export default async function NuevaConsultaPage({
   }
 
   const supabase = await createClient();
-  const [patientPicker, professionals, templates] = clinicId
+  const [professionals, templates] = clinicId
     ? await Promise.all([
-        loadPatientPickerList(supabase, clinicId, { pageSize: 500, includeClinicalFields: true }),
         getCachedClinicProfessionalsList(clinicId),
         getCachedClinicalTemplates(clinicId),
       ])
-    : [{ patients: [] }, [], []];
+    : [[], []];
 
   const defaultProfessionalId = clinicId
     ? await resolveDefaultProfessionalId(supabase, clinicId, professionals, professional)
@@ -64,7 +62,7 @@ export default async function NuevaConsultaPage({
       clinicId={clinicId}
       role={role}
       userName={profile?.full_name}
-      patients={patientPicker.patients}
+      patients={[]}
       professionals={professionals}
       templates={templates}
       defaultProfessionalId={defaultProfessionalId}

@@ -1,11 +1,9 @@
 import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+  getDashboardPageContext,
+} from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { parsePageParam } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
 
 import { loadHistoriasPageData } from "@/features/historias/server/load-historias-page";
@@ -34,11 +32,9 @@ export default async function PacientesPage({
     await searchParams;
   const q = sanitizePatientSearchTerm(qRaw);
   const patologia = sanitizePatientPathologySearchTerm(patologiaRaw);
-  const page = Math.max(1, parseInt(pageStr ?? "1", 10) || 1);
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const page = parsePageParam(pageStr);
+
+  const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
   const canIssuePrescriptions = hasPermission(role, "issuePrescriptions", isSuperadmin);
   const canViewClinical = hasPermission(role, "viewClinicalRecords", isSuperadmin);
   const supabase = await createClient();

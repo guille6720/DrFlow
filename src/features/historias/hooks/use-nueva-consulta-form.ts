@@ -8,6 +8,7 @@ import type { ConsultPatientPickerRow } from "@/core/supabase/query-types";
 import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation";
 
 import { createClinicalRecord } from "@/features/historias/actions/clinical-records";
+import type { PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 import { startConsultationFromAppointment } from "@/lib/actions/appointments";
@@ -109,6 +110,7 @@ export function useNuevaConsultaForm({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [patientId, setPatientId] = useState(defaultPatient);
+  const [pickedPatient, setPickedPatient] = useState<PatientSearchOption | null>(null);
   const [professionalId, setProfessionalId] = useState(defaultProfessional);
   const [evolution, setEvolution] = useState("");
   const [chiefComplaint, setChiefComplaint] = useState("");
@@ -127,7 +129,30 @@ export function useNuevaConsultaForm({
     isDirty: false,
   });
 
-  const selectedPatient = patients.find((p) => p.id === patientId);
+  const selectedPatient = useMemo((): ConsultPatientPickerRow | undefined => {
+    if (pickedPatient && pickedPatient.id === patientId) {
+      return {
+        id: pickedPatient.id,
+        first_name: pickedPatient.first_name,
+        last_name: pickedPatient.last_name,
+        document_number: pickedPatient.document_number,
+        allergies: null,
+        regular_medication: null,
+        medical_history: null,
+        birth_date: pickedPatient.birth_date ?? null,
+        insurance_provider: pickedPatient.insurance_provider ?? null,
+      } as ConsultPatientPickerRow & {
+        birth_date?: string | null;
+        insurance_provider?: string | null;
+      };
+    }
+    return patients.find((p) => p.id === patientId);
+  }, [pickedPatient, patients, patientId]);
+
+  function handlePatientChange(id: string, patient?: PatientSearchOption) {
+    setPatientId(id);
+    setPickedPatient(patient ?? null);
+  }
   const activeProfessionalId = fromAppointment ? defaultProfessional : professionalId;
   const activeProfessional = professionals.find((p) => p.id === activeProfessionalId);
   const isDirty =
@@ -370,6 +395,7 @@ export function useNuevaConsultaForm({
     defaultProfessional,
     patientId,
     setPatientId,
+    handlePatientChange,
     selectedPatient,
     consultationContext,
     error,

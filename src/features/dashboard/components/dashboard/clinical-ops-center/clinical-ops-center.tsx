@@ -1,27 +1,31 @@
+import type { ReactNode } from "react";
+
 import { ClinicalOpsLeftRail } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-left-rail";
-import { ClinicalOpsMainSections } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-main-sections";
+import { ClinicalOpsMainSectionsCore } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-main-sections-core";
 import { ClinicalOpsRealtime } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-realtime";
 import { ClinicalOpsTopBar } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-top-bar";
-import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+import type { ClinicalOperationsDashboardCorePayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
 import { AdminOpsDashboardBridge } from "@/features/ia/components/admin-ops/admin-ops-dashboard-bridge";
 
 type Props = {
   clinicId: string;
   clinicName: string;
   professionalName?: string | null;
-  ops: ClinicalOperationsDashboardPayload;
+  core: ClinicalOperationsDashboardCorePayload;
+  secondary?: ReactNode;
   canManageAppointments: boolean;
   canManageCash?: boolean;
   canManageWaitingRoom?: boolean;
   canManageSettings?: boolean;
 };
 
-/** Clinical Operations Center — decision-focused workspace for physicians and staff. */
+/** Clinical Operations Center — core streams first; secondary widgets defer via Suspense. */
 export function ClinicalOpsCenter({
   clinicId,
   clinicName,
   professionalName,
-  ops,
+  core,
+  secondary,
   canManageAppointments,
   canManageCash,
   canManageWaitingRoom,
@@ -31,7 +35,7 @@ export function ClinicalOpsCenter({
     <section aria-label="Centro de operaciones clínicas" className="clinical-ops-center space-y-4">
       <ClinicalOpsRealtime clinicId={clinicId} />
       <AdminOpsDashboardBridge
-        ops={ops}
+        ops={core}
         canManageCash={canManageCash}
         canManageWaitingRoom={canManageWaitingRoom}
         canManageSettings={canManageSettings}
@@ -40,15 +44,19 @@ export function ClinicalOpsCenter({
       <ClinicalOpsTopBar
         clinicName={clinicName}
         professionalName={professionalName}
-        notificationCount={ops.notifications?.length ?? 0}
+        notificationCount={core.notifications?.length ?? 0}
       />
 
       <div className="clinical-ops-grid grid gap-4 lg:grid-cols-[minmax(11rem,13rem)_minmax(0,1fr)]">
         <div className="hidden lg:block">
-          <ClinicalOpsLeftRail ops={ops} />
+          <ClinicalOpsLeftRail ops={core} />
         </div>
 
-        <ClinicalOpsMainSections ops={ops} canManageAppointments={canManageAppointments} />
+        <ClinicalOpsMainSectionsCore
+          ops={core}
+          canManageAppointments={canManageAppointments}
+          secondary={secondary}
+        />
       </div>
     </section>
   );

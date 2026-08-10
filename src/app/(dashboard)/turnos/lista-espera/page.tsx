@@ -1,31 +1,24 @@
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { parsePageParam } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
 
-import { type WaitingListRow, WaitingListView } from "@/features/turnos/components/waiting-list-view";
+import { WaitingListView } from "@/features/turnos/components/waiting-list-view";
+import {
+  buildWaitingListUrl,
+  loadWaitingListPageData,
+} from "@/features/turnos/server/load-waiting-list-page";
 
-function normalizeWaitingListRows(raw: unknown[]): WaitingListRow[] {
-  return raw.map((row) => {
-    const entry = row as Record<string, unknown>;
-    const patients = entry.patients;
-    const professionals = entry.professionals;
-    const specialties = entry.specialties;
+export default async function TurnosListaEsperaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; q?: string }>;
+}) {
+  const sp = await searchParams;
+  const page = parsePageParam(sp.page);
+  const q = sp.q ?? "";
 
-    return {
-      ...(entry as Omit<WaitingListRow, "patients" | "professionals" | "specialties">),
-      patients: Array.isArray(patients) ? patients[0] ?? null : (patients as WaitingListRow["patients"]),
-      professionals: Array.isArray(professionals)
-        ? professionals[0] ?? null
-        : (professionals as WaitingListRow["professionals"]),
-      specialties: Array.isArray(specialties)
-        ? specialties[0] ?? null
-        : (specialties as WaitingListRow["specialties"]),
-    };
-  });
-}
-
-export default async function TurnosListaEsperaPage() {
   const ctx = await getDashboardPageContext();
   const { clinicId, role, isSuperadmin, permissionOverrides, clinics, profile } = ctx;
 
@@ -45,20 +38,13 @@ export default async function TurnosListaEsperaPage() {
   }
 
   const supabase = await createClient();
-  const { data: entries } = clinicId
-    ? await supabase
-        .from("waiting_list")
-        .select(
-          `id, status, notes, consultation_modality, preferred_date_from, preferred_date_to,
-           preferred_time_from, preferred_time_to, created_at,
-           patients(first_name, last_name, document_number, phone),
-           professionals(display_name, profiles(full_name)),
-           specialties(name)`
-        )
-        .eq("clinic_id", clinicId)
-        .in("status", ["active", "contacted"])
-        .order("created_at", { ascending: true })
-    : { data: [] };
+  const data = clinicId
+    ? await loadWaitingListPageData(supabase, clinicId, q, page)
+    : {
+        entries: [],
+        pageMeta: { page: 1, pageSize: 25, total: 0, totalPages: 1 },
+        searchQuery: q,
+      };
 
   return (
     <>
@@ -70,7 +56,12 @@ export default async function TurnosListaEsperaPage() {
         isSuperadmin={isSuperadmin}
       />
       <div className="p-4">
-        <WaitingListView entries={normalizeWaitingListRows(entries ?? [])} />
+        <WaitingListView
+          entries={data.entries}
+          pageMeta={data.pageMeta}
+          searchQuery={data.searchQuery}
+          buildPageHref={(nextPage) => buildWaitingListUrl(nextPage, data.searchQuery)}
+        />
       </div>
     </>
   );

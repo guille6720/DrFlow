@@ -33,3 +33,24 @@ export type ClinicalOperationsDashboardPayload = ClinicalOperationsPayload & {
   recentLabs: ClinicalOpsLabResult[];
   urgentPatients: ClinicalOpsEnrichedWaitingRow[];
 };
+
+/** Above-the-fold dashboard slice — streams first. */
+export type ClinicalOperationsDashboardCorePayload = Pick<
+  ClinicalOperationsDashboardPayload,
+  | "waiting"
+  | "upcoming"
+  | "overdue"
+  | "criticalPatients"
+  | "notifications"
+  | "todayAppointments"
+  | "activity"
+  | "enrichedWaiting"
+  | "actionableAlerts"
+  | "urgentPatients"
+>;
+
+/** Below-the-fold widgets — deferred via Suspense. */
+export type ClinicalOperationsDashboardSecondaryPayload = Pick<
+  ClinicalOperationsDashboardPayload,
+  "draftPrescriptions" | "pendingStudies" | "tasks" | "pendingOrders" | "recentLabs"
+>;

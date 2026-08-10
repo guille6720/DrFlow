@@ -65,6 +65,22 @@ export async function fetchDashboardPrimaryQueries(
   nowIso: string,
   studiesSince: string
 ) {
+  const [core, secondary] = await Promise.all([
+    fetchDashboardCoreQueries(supabase, clinicId, todayStart, todayEnd, nowIso),
+    fetchDashboardSecondaryQueries(supabase, clinicId, todayStart, studiesSince),
+  ]);
+  const [todayResult, upcomingResult] = core;
+  const [draftRx, pendingStudies, queuedReminders, pendingOrdersResult] = secondary;
+  return [todayResult, upcomingResult, draftRx, pendingStudies, queuedReminders, pendingOrdersResult] as const;
+}
+
+export async function fetchDashboardCoreQueries(
+  supabase: SupabaseClient,
+  clinicId: string,
+  todayStart: string,
+  todayEnd: string,
+  nowIso: string
+) {
   return Promise.all([
     supabase
       .from("appointments")
@@ -82,6 +98,16 @@ export async function fetchDashboardPrimaryQueries(
       .not("status", "in", '("cancelled","attended")')
       .order("start_at")
       .limit(LIST_LIMIT),
+  ]);
+}
+
+export async function fetchDashboardSecondaryQueries(
+  supabase: SupabaseClient,
+  clinicId: string,
+  todayStart: string,
+  studiesSince: string
+) {
+  return Promise.all([
     supabase
       .from("prescription_drafts")
       .select("id, created_at, patient_id, status, medications, patients(first_name, last_name, document_number)")

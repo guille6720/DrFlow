@@ -1,7 +1,5 @@
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 
-import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
-
 import type { AdminAnalyticsSnapshot } from "@/lib/utils/admin-analytics-types";
 
 export type AdminOpsPageHint =
@@ -91,7 +89,9 @@ export type AdminOpsResponse = {
 };
 
 export function buildAdminOpsSnapshotFromDashboard(
-  ops: ClinicalOperationsDashboardPayload
+  ops:
+    | import("@/features/dashboard/utils/clinical-operations-dashboard-types").ClinicalOperationsDashboardPayload
+    | import("@/features/dashboard/utils/clinical-operations-dashboard-types").ClinicalOperationsDashboardCorePayload
 ): AdminOpsSnapshot {
   const waiting = ops.waiting.slice(0, 8).map((row) => {
     const name = row.patients
@@ -110,7 +110,8 @@ export function buildAdminOpsSnapshotFromDashboard(
     };
   });
 
-  const tasks = ops.tasks.slice(0, 10).map((t) => ({
+  const taskList = "tasks" in ops && ops.tasks ? ops.tasks : [];
+  const tasks = taskList.slice(0, 10).map((t) => ({
     label: t.label,
     detail: t.detail,
     href: t.href,
@@ -126,10 +127,10 @@ export function buildAdminOpsSnapshotFromDashboard(
   return {
     waitingCount: ops.waiting.length,
     overdueCount: ops.overdue.length,
-    draftPrescriptionsCount: ops.draftPrescriptions.length,
-    pendingStudiesCount: ops.pendingStudies.length,
-    tasksCount: ops.tasks.length,
-    highPriorityTasksCount: ops.tasks.filter((t) => t.priority === "high").length,
+    draftPrescriptionsCount: ("draftPrescriptions" in ops ? ops.draftPrescriptions?.length : 0) ?? 0,
+    pendingStudiesCount: ("pendingStudies" in ops ? ops.pendingStudies?.length : 0) ?? 0,
+    tasksCount: ("tasks" in ops ? ops.tasks?.length : 0) ?? 0,
+    highPriorityTasksCount: ("tasks" in ops ? (ops.tasks ?? []).filter((t) => t.priority === "high").length : 0),
     notificationsCount: ops.notifications.length,
     criticalPatientsCount: ops.criticalPatients.length,
     waiting,

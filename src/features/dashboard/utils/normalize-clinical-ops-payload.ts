@@ -1,4 +1,7 @@
-import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+import type {
+  ClinicalOperationsDashboardCorePayload,
+  ClinicalOperationsDashboardPayload,
+} from "@/features/dashboard/utils/clinical-operations-dashboard-types";
 import type { ClinicalOpsActivityMetrics } from "@/features/dashboard/utils/clinical-operations-types";
 
 const EMPTY_ACTIVITY: ClinicalOpsActivityMetrics = {
@@ -8,6 +11,25 @@ const EMPTY_ACTIVITY: ClinicalOpsActivityMetrics = {
   nextAppointment: null,
   delayedCount: 0,
 };
+
+/** Guards dashboard render when optional sections are missing from cached payloads. */
+export function normalizeClinicalOpsCorePayload(
+  ops: ClinicalOperationsDashboardCorePayload
+): ClinicalOperationsDashboardCorePayload {
+  return {
+    ...ops,
+    waiting: ops.waiting ?? [],
+    upcoming: ops.upcoming ?? [],
+    overdue: ops.overdue ?? [],
+    criticalPatients: ops.criticalPatients ?? [],
+    notifications: ops.notifications ?? [],
+    todayAppointments: ops.todayAppointments ?? [],
+    activity: ops.activity ?? EMPTY_ACTIVITY,
+    enrichedWaiting: ops.enrichedWaiting ?? [],
+    actionableAlerts: ops.actionableAlerts ?? [],
+    urgentPatients: ops.urgentPatients ?? [],
+  };
+}
 
 /** Guards dashboard render when optional sections are missing from cached payloads. */
 export function normalizeClinicalOpsPayload(

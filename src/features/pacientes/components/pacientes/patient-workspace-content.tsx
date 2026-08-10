@@ -52,7 +52,7 @@ export async function PatientWorkspaceContent({
 }: Props) {
   const supabase = await createClient();
   const [workspace, auditTrail] = await Promise.all([
-    loadPatientWorkspacePageData(supabase, clinicId, patient),
+    loadPatientWorkspacePageData(supabase, clinicId, patient, initialTab),
     initialTab === "auditoria" ? loadPatientAuditTrail(patientId) : Promise.resolve(null),
   ]);
 
@@ -200,6 +200,8 @@ export async function PatientWorkspaceContent({
       canManageAdminDocuments={canManageAdminDocuments}
       initialAuditEvents={auditTrail?.data}
       initialAuditError={auditTrail?.error ?? null}
+      initialAuditNextCursor={auditTrail?.nextCursor ?? null}
+      initialAuditHasMore={auditTrail?.hasMore ?? false}
       arcoExport={
         canManagePatients ? (
           <PatientArcoExportButton
