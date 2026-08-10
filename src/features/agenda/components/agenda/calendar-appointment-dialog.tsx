@@ -7,6 +7,11 @@ import { toast } from "@/core/notifications/toast";
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
+import {
+  formatPatientDocument,
+  formatPatientName,
+  resolveAppointmentPatient,
+} from "@/shared/utils/patient-display";
 
 import { CancelAppointmentDialog } from "@/features/agenda/components/agenda/cancel-appointment-dialog";
 import { useAppointmentRow } from "@/features/agenda/hooks/use-appointment-row";
@@ -32,8 +37,9 @@ function CalendarAppointmentDialogContent({
 }: Props) {
   const row = useAppointmentRow(appointment);
 
-  const patient = row.patient;
-  const patientName = patient ? `${patient.last_name}, ${patient.first_name}` : "Paciente";
+  const patient = resolveAppointmentPatient(appointment.patients);
+  const patientName = formatPatientName(appointment.patients);
+  const patientDni = formatPatientDocument(patient?.document_number);
   const professionalName =
     (appointment.professionals as { profiles?: { full_name?: string } } | undefined)?.profiles
       ?.full_name ?? null;
@@ -74,6 +80,9 @@ function CalendarAppointmentDialogContent({
           <div className="mb-4 flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h2 className="text-lg font-semibold text-slate-900">{patientName}</h2>
+              {patientDni ? (
+                <p className="mt-0.5 text-sm font-medium text-slate-600">DNI {patientDni}</p>
+              ) : null}
               <p className="mt-1 text-sm text-slate-600">
                 {formatClinicDateTime(appointment.start_at, "EEE d MMM yyyy · HH:mm 'hs'")}
               </p>

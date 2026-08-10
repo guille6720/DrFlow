@@ -48,6 +48,7 @@ const MonthDayCell = memo(function MonthDayCell({
 }) {
   const inMonth = isSameMonth(day, monthDate);
   const today = isSameDay(day, new Date());
+  const busy = count >= 3;
 
   function handleClick() {
     onDayClick?.(day);
@@ -58,15 +59,17 @@ const MonthDayCell = memo(function MonthDayCell({
       type="button"
       onClick={handleClick}
       className={cn(
-        "flex min-h-[5.5rem] flex-col border-b border-r border-slate-700/80 p-2 text-left transition-colors",
-        inMonth ? "bg-slate-800/90" : "bg-slate-900/50",
-        onDayClick && inMonth && "cursor-pointer hover:bg-slate-700/90"
+        "flex min-h-[5.5rem] flex-col border-b border-r border-slate-700/50 p-2 text-left transition-all",
+        inMonth ? "bg-slate-800/80" : "bg-slate-950/60",
+        onDayClick && inMonth && "cursor-pointer hover:bg-slate-700/80 hover:ring-1 hover:ring-inset hover:ring-teal-500/25",
+        today && inMonth && "bg-teal-950/30",
+        busy && inMonth && count > 0 && "bg-teal-950/20"
       )}
     >
       <span
         className={cn(
-          "inline-flex h-7 w-7 items-center justify-center rounded-lg text-sm font-semibold",
-          today && "bg-teal-500 text-white",
+          "inline-flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold transition-colors",
+          today && "bg-gradient-to-br from-teal-500 to-cyan-500 text-white shadow-md shadow-teal-500/30",
           !today && inMonth && "text-slate-200",
           !inMonth && "text-slate-600"
         )}
@@ -74,10 +77,21 @@ const MonthDayCell = memo(function MonthDayCell({
         {format(day, "d")}
       </span>
       {count > 0 ? (
-        <span className="mt-auto text-xs font-medium text-teal-300">
-          {count} turno{count === 1 ? "" : "s"}
-        </span>
-      ) : null}
+        <div className="mt-auto space-y-1">
+          <span
+            className={cn(
+              "inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold",
+              busy
+                ? "bg-teal-500/20 text-teal-200 ring-1 ring-teal-400/30"
+                : "bg-slate-700/80 text-teal-300"
+            )}
+          >
+            {count} turno{count === 1 ? "" : "s"}
+          </span>
+        </div>
+      ) : (
+        <span className="mt-auto text-[10px] text-slate-600">{inMonth ? "—" : ""}</span>
+      )}
     </button>
   );
 });
@@ -98,18 +112,18 @@ export function MonthOverviewGrid({
   const dayCounts = useMemo(() => buildDayCounts(appointments), [appointments]);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-600/80 bg-slate-800 shadow-xl shadow-black/20">
-      <div className="grid grid-cols-7 border-b border-slate-600/80 bg-slate-900/90">
+    <div className="overflow-hidden rounded-2xl border border-slate-600/60 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 shadow-xl shadow-black/30 ring-1 ring-white/5">
+      <div className="grid grid-cols-7 border-b border-slate-600/60 bg-slate-950/80">
         {WEEK_LABELS.map((label) => (
           <div
             key={label}
-            className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-400"
+            className="px-2 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400"
           >
             {label}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 auto-rows-[minmax(5.5rem,1fr)]">
+      <div className="grid auto-rows-[minmax(5.5rem,1fr)] grid-cols-7">
         {days.map((day) => {
           const key = format(day, "yyyy-MM-dd");
           return (
@@ -123,8 +137,8 @@ export function MonthOverviewGrid({
           );
         })}
       </div>
-      <p className="border-t border-slate-700/80 bg-slate-900/80 px-4 py-2 text-xs text-slate-400">
-        {format(monthDate, "MMMM yyyy", { locale: es })} — tocá un día para centrar la semana
+      <p className="border-t border-slate-700/60 bg-slate-950/70 px-4 py-2.5 text-xs text-slate-400">
+        {format(monthDate, "MMMM yyyy", { locale: es })} — tocá un día para verlo en la agenda diaria
       </p>
     </div>
   );

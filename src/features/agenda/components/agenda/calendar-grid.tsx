@@ -1,6 +1,6 @@
 "use client";
 
-import { format, getHours, getMinutes, parseISO } from "date-fns";
+import { format, getHours, getMinutes, isSameDay, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Globe } from "lucide-react";
 import Link from "next/link";
@@ -9,6 +9,11 @@ import { memo, useMemo } from "react";
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { cn } from "@/shared/utils/cn";
+import {
+  formatPatientDocument,
+  formatPatientName,
+  resolveAppointmentPatient,
+} from "@/shared/utils/patient-display";
 
 import { buildAppointmentConsultationUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
@@ -28,6 +33,19 @@ const TIME_SLOTS: string[] = (() => {
   }
   return slots;
 })();
+
+const STATUS_CARD_STYLES: Record<string, string> = {
+  pending:
+    "border-l-amber-400 bg-gradient-to-r from-amber-950/90 via-amber-900/70 to-slate-800/80 text-amber-50",
+  confirmed:
+    "border-l-teal-400 bg-gradient-to-r from-teal-900/90 via-cyan-900/70 to-slate-800/80 text-teal-50",
+  attended:
+    "border-l-emerald-400 bg-gradient-to-r from-emerald-950/90 via-emerald-900/60 to-slate-800/80 text-emerald-50",
+  cancelled:
+    "border-l-slate-500 bg-slate-800/90 text-slate-400 line-through opacity-75",
+  no_show:
+    "border-l-red-400 bg-gradient-to-r from-red-950/90 via-red-900/60 to-slate-800/80 text-red-100",
+};
 
 interface Block {
   start_at: string;
@@ -102,7 +120,14 @@ function buildClinicalHref(appt: AppointmentAgendaRow): string {
   });
 }
 
-const CalendarAppointmentAgendaRowChip = memo(function CalendarAppointmentAgendaRowChip({
+function appointmentCardTitle(appt: AppointmentAgendaRow): string {
+  const name = formatPatientName(appt.patients);
+  const dni = formatPatientDocument(resolveAppointmentPatient(appt.patients)?.document_number);
+  const time = format(parseISO(appt.start_at), "HH:mm");
+  return dni ? `${name} · DNI ${dni} · ${time} hs` : `${name} · ${time} hs`;
+}
+
+const CalendarAppointmentCard = memo(function CalendarAppointmentCard({
   appt,
   canOpenClinical,
   canManage,
@@ -115,25 +140,43 @@ const CalendarAppointmentAgendaRowChip = memo(function CalendarAppointmentAgenda
 }) {
   const status = appointmentStatusBadge[appt.status];
   const online = isOnlineBooking(appt);
-  const patient = appt.patients as { first_name?: string; last_name?: string } | undefined;
-  const label = `${patient?.last_name ?? "Paciente"}${online ? " (reserva web)" : ""}`;
+  const patient = resolveAppointmentPatient(appt.patients);
+  const fullName = formatPatientName(appt.patients);
+  const dni = formatPatientDocument(patient?.document_number);
   const isCancelled = appt.status === "cancelled";
+  const timeLabel = format(parseISO(appt.start_at), "HH:mm");
+  const cardTitle = appointmentCardTitle(appt);
+
   const className = cn(
-    "mb-0.5 block w-full truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium shadow-sm transition-opacity hover:opacity-90",
-    isCancelled
-      ? "bg-slate-600/80 text-slate-300 line-through"
-      : "bg-gradient-to-r from-teal-600 to-cyan-600 text-white"
+    "group mb-1 w-full rounded-lg border-l-[3px] px-2 py-1.5 text-left shadow-sm ring-1 ring-white/5 transition hover:brightness-110 hover:shadow-md",
+    STATUS_CARD_STYLES[appt.status] ?? STATUS_CARD_STYLES.confirmed
   );
 
   const content = (
     <>
-      {online && <Globe className="mr-0.5 inline h-2.5 w-2.5" />}
-      {patient?.last_name ?? "Turno"}
-      {status ? (
-        <Badge variant={status.variant} className="ml-1 scale-75">
-          {status.label}
-        </Badge>
-      ) : null}
+      <div className="flex items-start justify-between gap-1.5">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs font-semibold leading-snug">
+            {online ? <Globe className="mr-0.5 inline h-3 w-3 shrink-0 opacity-90" /> : null}
+            {fullName}
+          </p>
+          {dni ? (
+            <p className="mt-0.5 truncate text-[10px] font-medium opacity-85">DNI {dni}</p>
+          ) : (
+            <p className="mt-0.5 truncate text-[10px] italic opacity-60">Sin DNI</p>
+          )}
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-0.5">
+          <span className="rounded-md bg-black/20 px-1.5 py-0.5 text-[9px] font-semibold tabular-nums">
+            {timeLabel}
+          </span>
+          {status ? (
+            <Badge variant={status.variant} className="scale-[0.72] origin-top-right px-1.5">
+              {status.label}
+            </Badge>
+          ) : null}
+        </div>
+      </div>
     </>
   );
 
@@ -142,7 +185,7 @@ const CalendarAppointmentAgendaRowChip = memo(function CalendarAppointmentAgenda
       <button
         type="button"
         className={className}
-        title={`${label} — ver turno`}
+        title={cardTitle}
         onClick={(event) => {
           event.stopPropagation();
           onAppointmentClick(appt);
@@ -158,7 +201,7 @@ const CalendarAppointmentAgendaRowChip = memo(function CalendarAppointmentAgenda
       <Link
         href={buildClinicalHref(appt)}
         className={className}
-        title={`${label} — abrir historia clínica`}
+        title={`${cardTitle} — abrir historia clínica`}
         onClick={(event) => event.stopPropagation()}
       >
         {content}
@@ -167,7 +210,7 @@ const CalendarAppointmentAgendaRowChip = memo(function CalendarAppointmentAgenda
   }
 
   return (
-    <div className={className} title={label}>
+    <div className={className} title={cardTitle}>
       {content}
     </div>
   );
@@ -182,6 +225,7 @@ const CalendarSlotCell = memo(function CalendarSlotCell({
   onAppointmentClick,
   canOpenClinical,
   canManage,
+  isHourStart,
 }: {
   day: Date;
   time: string;
@@ -191,6 +235,7 @@ const CalendarSlotCell = memo(function CalendarSlotCell({
   onAppointmentClick?: (appointment: AppointmentAgendaRow) => void;
   canOpenClinical?: boolean;
   canManage?: boolean;
+  isHourStart?: boolean;
 }) {
   function handleClick() {
     if (!blocked && dayAppts.length === 0 && onSlotClick) {
@@ -201,9 +246,13 @@ const CalendarSlotCell = memo(function CalendarSlotCell({
   return (
     <div
       className={cn(
-        "relative min-h-[28px] border-l border-slate-700/50 bg-slate-800/60 p-0.5 transition-colors",
-        blocked && "bg-red-950/40",
-        !blocked && dayAppts.length === 0 && onSlotClick && "cursor-pointer hover:bg-teal-950/30 hover:ring-1 hover:ring-teal-500/40"
+        "relative min-h-[3.25rem] border-l border-slate-700/40 p-1 transition-colors",
+        isHourStart ? "bg-slate-800/70" : "bg-slate-800/40",
+        blocked && "bg-red-950/30",
+        !blocked &&
+          dayAppts.length === 0 &&
+          onSlotClick &&
+          "cursor-pointer hover:bg-teal-950/25 hover:ring-1 hover:ring-inset hover:ring-teal-500/30"
       )}
       onClick={handleClick}
       onKeyDown={(event) => {
@@ -226,10 +275,12 @@ const CalendarSlotCell = memo(function CalendarSlotCell({
       }
     >
       {blocked && dayAppts.length === 0 ? (
-        <span className="block truncate px-1 text-[9px] text-red-400/90">Bloqueo</span>
+        <span className="block truncate px-1 text-[9px] font-medium uppercase tracking-wide text-red-400/90">
+          Bloqueo
+        </span>
       ) : null}
       {dayAppts.map((appt) => (
-        <CalendarAppointmentAgendaRowChip
+        <CalendarAppointmentCard
           key={appt.id}
           appt={appt}
           canOpenClinical={canOpenClinical}
@@ -251,7 +302,7 @@ export function CalendarGrid({
   canManage = false,
 }: CalendarGridProps) {
   const gridColumnStyle = useMemo(
-    () => ({ gridTemplateColumns: `64px repeat(${weekDays.length}, 1fr)` }),
+    () => ({ gridTemplateColumns: `72px repeat(${weekDays.length}, 1fr)` }),
     [weekDays.length]
   );
 
@@ -265,46 +316,94 @@ export function CalendarGrid({
     [weekDays, blocks]
   );
 
+  const today = useMemo(() => new Date(), []);
+
   return (
-    <div className="overflow-x-auto rounded-2xl border border-slate-600/80 bg-slate-800 shadow-xl shadow-black/20">
+    <div className="overflow-hidden rounded-2xl border border-slate-600/60 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 shadow-xl shadow-black/30 ring-1 ring-white/5">
       <div className="min-w-[640px]">
-        <div className="grid border-b border-slate-600/80" style={gridColumnStyle}>
-          <div className="bg-slate-900/90 p-2" />
-          {weekDays.map((day) => (
-            <div
-              key={day.toISOString()}
-              className="border-l border-slate-700/80 bg-slate-900/70 p-2 text-center"
-            >
-              <p className="text-xs font-medium uppercase text-teal-400/90">
-                {format(day, "EEE", { locale: es })}
-              </p>
-              <p className="text-lg font-bold text-slate-100">{format(day, "d")}</p>
-            </div>
-          ))}
+        <div className="grid border-b border-slate-600/60" style={gridColumnStyle}>
+          <div className="bg-slate-950/80 p-2" />
+          {weekDays.map((day) => {
+            const isToday = isSameDay(day, today);
+            return (
+              <div
+                key={day.toISOString()}
+                className={cn(
+                  "border-l border-slate-700/50 p-3 text-center",
+                  isToday
+                    ? "bg-gradient-to-b from-teal-600/25 to-slate-900/80"
+                    : "bg-slate-900/80"
+                )}
+              >
+                <p
+                  className={cn(
+                    "text-[11px] font-semibold uppercase tracking-wider",
+                    isToday ? "text-teal-300" : "text-slate-400"
+                  )}
+                >
+                  {format(day, "EEE", { locale: es })}
+                </p>
+                <p
+                  className={cn(
+                    "mt-0.5 text-2xl font-bold tabular-nums",
+                    isToday ? "text-teal-100" : "text-slate-100"
+                  )}
+                >
+                  {format(day, "d")}
+                </p>
+                <p className="mt-0.5 text-[10px] capitalize text-slate-500">
+                  {format(day, "MMM yyyy", { locale: es })}
+                </p>
+              </div>
+            );
+          })}
         </div>
-        {TIME_SLOTS.map((time) => (
-          <div key={time} className="grid border-b border-slate-700/60" style={gridColumnStyle}>
-            <div className="bg-slate-900/80 px-2 py-1 text-right text-[10px] font-medium text-slate-500">
-              {time}
+        {TIME_SLOTS.map((time) => {
+          const isHourStart = time.endsWith(":00");
+          return (
+            <div
+              key={time}
+              className={cn(
+                "grid border-b border-slate-700/40",
+                isHourStart && "border-slate-600/50"
+              )}
+              style={gridColumnStyle}
+            >
+              <div
+                className={cn(
+                  "flex items-start justify-end px-2 py-1.5 text-right",
+                  isHourStart ? "bg-slate-950/70" : "bg-slate-950/50"
+                )}
+              >
+                <span
+                  className={cn(
+                    "text-[10px] font-medium tabular-nums",
+                    isHourStart ? "text-slate-300" : "text-slate-600"
+                  )}
+                >
+                  {time}
+                </span>
+              </div>
+              {weekDays.map((day) => {
+                const key = slotKey(day, time);
+                return (
+                  <CalendarSlotCell
+                    key={key}
+                    day={day}
+                    time={time}
+                    dayAppts={appointmentsBySlot.get(key) ?? []}
+                    blocked={blockedSlotKeys.has(key)}
+                    onSlotClick={onSlotClick}
+                    onAppointmentClick={onAppointmentClick}
+                    canOpenClinical={canOpenClinical}
+                    canManage={canManage}
+                    isHourStart={isHourStart}
+                  />
+                );
+              })}
             </div>
-            {weekDays.map((day) => {
-              const key = slotKey(day, time);
-              return (
-                <CalendarSlotCell
-                  key={key}
-                  day={day}
-                  time={time}
-                  dayAppts={appointmentsBySlot.get(key) ?? []}
-                  blocked={blockedSlotKeys.has(key)}
-                  onSlotClick={onSlotClick}
-                  onAppointmentClick={onAppointmentClick}
-                  canOpenClinical={canOpenClinical}
-                  canManage={canManage}
-                />
-              );
-            })}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
