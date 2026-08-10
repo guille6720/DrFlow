@@ -53,22 +53,26 @@ async function ensureActiveClinicCookieOnResponse(
 ): Promise<NextResponse> {
   if (request.cookies.get(CLINIC_COOKIE)?.value) return response;
 
-  const { data: members } = await supabase
-    .from("clinic_members")
-    .select("clinic_id")
-    .eq("user_id", userId)
-    .eq("is_active", true)
-    .limit(1);
+  try {
+    const { data: members } = await supabase
+      .from("clinic_members")
+      .select("clinic_id")
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .limit(1);
 
-  const clinicId = members?.[0]?.clinic_id;
-  if (!clinicId) return response;
+    const clinicId = members?.[0]?.clinic_id;
+    if (!clinicId) return response;
 
-  response.cookies.set(CLINIC_COOKIE, clinicId, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 365,
-  });
+    response.cookies.set(CLINIC_COOKIE, clinicId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  } catch {
+    // Non-blocking: dashboard resolves clinic from membership when cookie is missing.
+  }
 
   return response;
 }

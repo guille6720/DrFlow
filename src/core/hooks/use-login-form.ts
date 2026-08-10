@@ -1,29 +1,12 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { type FormEvent, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { clearDashboardSessionBootstrapFlag } from "@/core/components/layout/dashboard-session-bootstrap";
-import { logClientError } from "@/core/errors/log-error.client";
 import { sanitizeAuthErrorParam } from "@/core/security/xss";
 import { createClient } from "@/core/supabase/client";
 import { resolveClientPublicSiteUrl } from "@/core/supabase/client-public-url";
-import { firstZodIssue } from "@/core/validations/params";
-import { loginSchema } from "@/core/validations/schemas";
-
-function mapAuthError(message: string): string {
-  const lower = message.toLowerCase();
-  if (lower.includes("email not confirmed") || lower.includes("confirm")) {
-    return "Tu email no está confirmado. Revisá tu bandeja (y spam) o usá «Restablecer contraseña» abajo.";
-  }
-  if (lower.includes("invalid login") || lower.includes("invalid credentials")) {
-    return "No pudimos iniciar sesión con ese email y contraseña.";
-  }
-  if (lower.includes("rate limit")) {
-    return "Demasiados intentos. Esperá unos minutos.";
-  }
-  return message;
-}
 
 function readPasswordLeakFromUrl(): { email: string; error: string } | null {
   if (typeof window === "undefined") return null;
@@ -52,7 +35,7 @@ export function useLoginForm() {
     };
   }, [searchParams]);
   const [email, setEmail] = useState(bootstrap.email);
-  const [loading, setLoading] = useState(false);
+  const [hasActiveSession, setHasActiveSession] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [resetMessage, setResetMessage] = useState<string | null>(
     searchParams.get("reset") === "sent"
@@ -62,9 +45,26 @@ export function useLoginForm() {
         : null
   );
   const [resetError, setResetError] = useState<string | null>(null);
-  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const isInvitedFlow = searchParams.get("invited") === "1";
+
+  useEffect(() => {
+    clearDashboardSessionBootstrapFlag();
+  }, []);
+
+  useEffect(() => {
+    void createClient()
+      .auth.getSession()
+      .then(({ data: { session } }) => {
+        if (!session) return;
+        setHasActiveSession(true);
+
+        const hasLoginError = Boolean(searchParams.get("error"));
+        if (!hasLoginError) {
+          router.replace("/dashboard");
+        }
+      });
+  }, [router, searchParams]);
 
   const { formError, info } = useMemo(() => {
     if (bootstrap.passwordLeakError) {
@@ -89,69 +89,10 @@ export function useLoginForm() {
     }
 
     return {
-      formError: submitError ?? sanitizeAuthErrorParam(errorParam),
+      formError: sanitizeAuthErrorParam(errorParam),
       info: infoMessage,
     };
-  }, [bootstrap.passwordLeakError, searchParams, submitError]);
-
-  async function handleLoginSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSubmitError(null);
-    setLoading(true);
-    clearDashboardSessionBootstrapFlag();
-
-    const formData = new FormData(event.currentTarget);
-    const parsed = loginSchema.safeParse({
-      email: String(formData.get("email") ?? "").trim(),
-      password: String(formData.get("password") ?? ""),
-    });
-
-    if (!parsed.success) {
-      setSubmitError(firstZodIssue(parsed.error));
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword(parsed.data);
-      if (error) {
-        setSubmitError(mapAuthError(error.message));
-        setLoading(false);
-        return;
-      }
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        setSubmitError("No se pudo establecer la sesión. Probá de nuevo.");
-        setLoading(false);
-        return;
-      }
-
-      const bootstrap = await fetch("/api/auth/bootstrap", {
-        method: "POST",
-        credentials: "same-origin",
-      });
-      if (!bootstrap.ok) {
-        logClientError("login.bootstrap", new Error(`HTTP ${bootstrap.status}`));
-        if (isInvitedFlow) {
-          setSubmitError(
-            "Iniciaste sesión, pero no pudimos vincular tu invitación al consultorio. Pedile al administrador que te reenvíe la invitación o probá con el email y contraseña del enlace de acceso (sin Google)."
-          );
-          setLoading(false);
-          return;
-        }
-      }
-
-      router.refresh();
-      window.location.assign("/dashboard");
-    } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : "No se pudo iniciar sesión.");
-      setLoading(false);
-    }
-  }
+  }, [bootstrap.passwordLeakError, searchParams]);
 
   async function handleResetPassword() {
     setResetError(null);
@@ -199,7 +140,7 @@ export function useLoginForm() {
   return {
     email,
     setEmail,
-    loading,
+    hasActiveSession,
     resetLoading,
     resetMessage,
     resetError,
@@ -207,6 +148,5 @@ export function useLoginForm() {
     info,
     isInvitedFlow,
     handleResetPassword,
-    handleLoginSubmit,
   };
 }

@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 
 import { LoginBrandPanel } from "@/core/components/auth/login-brand-panel";
+import { LoginSubmitButton } from "@/core/components/auth/login-submit-button";
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import { useLoginForm } from "@/core/hooks/use-login-form";
 
@@ -21,7 +22,7 @@ export function LoginFormView() {
   const {
     email,
     setEmail,
-    loading,
+    hasActiveSession,
     resetLoading,
     resetMessage,
     resetError,
@@ -29,7 +30,6 @@ export function LoginFormView() {
     info,
     isInvitedFlow,
     handleResetPassword,
-    handleLoginSubmit,
   } = useLoginForm();
 
   return (
@@ -42,20 +42,23 @@ export function LoginFormView() {
             <DrFlowLogo size="lg" href="/" centered />
           </div>
           <h2 className="text-2xl font-bold text-slate-900">Iniciar sesión</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            ¿Te invitaron al consultorio?{" "}
-            <Link href="/acceso-invitado" className="text-blue-700 hover:underline">
-              Ver tus credenciales
-            </Link>
-          </p>
-          <p className="mt-1 text-sm text-slate-500">
-            ¿No tenés cuenta?{" "}
-            <Link href="/register" className="text-blue-700 hover:underline">
-              Registrar clínica
-            </Link>
-          </p>
+          {isInvitedFlow ? (
+            <p className="mt-1 text-sm text-slate-500">
+              ¿Te invitaron al consultorio?{" "}
+              <Link href="/acceso-invitado" className="text-blue-700 hover:underline">
+                Ver tus credenciales
+              </Link>
+            </p>
+          ) : (
+            <p className="mt-1 text-sm text-slate-500">
+              ¿No tenés cuenta?{" "}
+              <Link href="/register" className="text-blue-700 hover:underline">
+                Registrar clínica
+              </Link>
+            </p>
+          )}
 
-          <form onSubmit={handleLoginSubmit} className="mt-8 space-y-4">
+          <form action="/api/auth/login" method="post" className="mt-8 space-y-4">
             {(info || resetMessage) && (
               <div
                 role="status"
@@ -100,9 +103,7 @@ export function LoginFormView() {
               minLength={8}
               autoComplete="current-password"
             />
-            <Button type="submit" className="w-full" loading={loading}>
-              Ingresar
-            </Button>
+            <LoginSubmitButton />
           </form>
 
           <div className="relative my-6">
@@ -122,14 +123,16 @@ export function LoginFormView() {
             </p>
           )}
 
-          <form action="/api/auth/signout" method="post" className="mt-3 text-center">
-            <button
-              type="submit"
-              className="text-xs text-slate-500 underline hover:text-slate-700"
-            >
-              Cerrar sesión e ingresar con otra cuenta
-            </button>
-          </form>
+          {hasActiveSession ? (
+            <form action="/api/auth/signout" method="post" className="mt-3 text-center">
+              <button
+                type="submit"
+                className="text-xs text-slate-500 underline hover:text-slate-700"
+              >
+                Cerrar sesión e ingresar con otra cuenta
+              </button>
+            </form>
+          ) : null}
 
           <div className="mt-4 border-t border-slate-100 pt-4">
             <p className="mb-2 text-xs text-slate-500">

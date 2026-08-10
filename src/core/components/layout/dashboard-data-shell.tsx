@@ -73,7 +73,12 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
   const shell = await getDashboardShell();
   const { profile, clinics, clinicId, clinic, role, isSuperadmin, permissionOverrides } = shell;
 
-  if (!profile) redirect("/login");
+  if (!profile) {
+    redirect(
+      "/login?error=" +
+        encodeURIComponent("No encontramos tu perfil. Cerrá sesión e ingresá de nuevo.")
+    );
+  }
   if (clinics.length === 0 && !isSuperadmin) redirect("/onboarding");
 
   const path = (await headers()).get("x-drflow-path") ?? "";

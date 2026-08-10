@@ -19,11 +19,14 @@ export async function ensureUserProfile(
     .maybeSingle();
 
   if (!existing) {
-    await supabase.from("profiles").insert({
+    const { error } = await supabase.from("profiles").insert({
       id: userId,
       email,
       full_name: fullName ?? email.split("@")[0],
     });
+    if (error) {
+      logServerError("post-login-bootstrap.ensure-user-profile", error);
+    }
   }
 }
 
