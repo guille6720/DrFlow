@@ -4,15 +4,17 @@ Informe de auditoría e implementación (2026-07-30).
 
 ## Resumen
 
-DrFlow usa una estrategia en **tres capas**:
+DrFlow usa una estrategia en **tres capas** (actualizado 2026-08-10):
 
 | Capa | Mecanismo | Alcance | Uso |
 |------|-----------|---------|-----|
 | 1 | `React.cache()` | Una petición HTTP | Dedupe de sesión, perfil, clínicas y lecturas repetidas en la misma renderización |
-| 2 | `unstable_cache()` + tags | Cross-request (Data Cache de Next.js) | Metadatos semi-estáticos de clínica y referencia farmacológica |
-| 3 | `revalidatePath()` | Invalidación por ruta | Tras mutaciones clínicas y de UI (existente) |
+| 2 | `unstable_cache()` + tags | Cross-request (Data Cache de Next.js) | Metadatos semi-estáticos de clínica vía `createAdminClient()` + filtro `clinic_id` |
+| 3 | `updateTag()` + `revalidatePath()` | Invalidación | Tras mutaciones en server actions |
 
-La consistencia se garantiza con **TTL conservadores** + **`revalidateTag`** en cada server action que muta datos cacheados.
+**Auth gate:** cookies/sesión fuera del cache. Ver `INTELLIGENT_CACHE_AUDIT.md` para detalle completo.
+
+**Fallback:** sin `SUPABASE_SERVICE_ROLE_KEY`, capa 2 desactivada — solo dedupe por request.
 
 ---
 
@@ -47,7 +49,8 @@ La consistencia se garantiza con **TTL conservadores** + **`revalidateTag`** en 
 | Professionals (settings) | 300 s | mismo tag | `/configuracion` (incluye inactivos) |
 | Locations | 600 s | `clinic-{id}-locations` | `/agenda` |
 | Specialties | 600 s | `clinic-{id}-specialties` | `/agenda` |
-| Clinical templates | 600 s | `clinic-{id}-clinical-templates` | workspace, `/historias/nueva`, `/historias/[id]/editar` |
+| Clinical templates | 600 s | `clinic-{id}-clinical-templates` | workspace, `/historias/nueva`, `/historias/[id]/editar`, `/plantillas` (admin) |
+| Clinic settings | 300 s | `clinic-{id}-settings` | turnos config, caja (doctors_can_access_cash) |
 
 **Invalidación:** `settings.ts` (CRUD specialties/locations/professionals, portal), `professional-intake.ts` (alta/edición de profesionales).
 
@@ -78,8 +81,9 @@ La consistencia se garantiza con **TTL conservadores** + **`revalidateTag`** en 
 
 ```
 src/core/cache/cache-tags.ts           — constantes de tags
-src/core/cache/revalidate-clinic-cache.ts — helpers revalidateTag
-src/lib/server/cached-clinic-metadata.ts  — unstable_cache por recurso
+src/core/cache/revalidate-clinic-cache.ts — helpers updateTag
+src/lib/server/clinic-metadata-unstable-cache.ts — helper unstable_cache + TTLs
+src/lib/server/cached-clinic-metadata.ts  — loaders por recurso
 src/lib/server/cached-reference-data.ts   — pathology_drugs cacheado
 ```
 

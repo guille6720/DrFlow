@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
+import {
+  revalidateClinicProfessionalsCache,
+  revalidateClinicSpecialtiesCache,
+} from "@/core/cache/revalidate-clinic-cache";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { createClient } from "@/core/supabase/server";
@@ -150,6 +154,8 @@ export async function updateMyDoctorProfile(formData: FormData) {
     userId: access.user.id,
   });
 
+  revalidateClinicProfessionalsCache(clinicId);
+  revalidateClinicSpecialtiesCache(clinicId);
   revalidatePath("/", "layout");
   revalidatePath("/dashboard");
   revalidatePath("/configuracion");

@@ -16,6 +16,7 @@ import {
   ProfessionalIntakeView,
 } from "@/features/profesionales";
 
+import { getCachedClinicLocations } from "@/lib/server/cached-clinic-queries";
 import { enrichTeamMembers, filterSidebarInvitedMembers } from "@/lib/utils/team-member-display";
 
 export default async function IngresoProfesionalesPage({
@@ -37,18 +38,14 @@ export default async function IngresoProfesionalesPage({
   const supabase = await createClient();
 
   const [
-    { data: locations },
+    locations,
     { data: professionals },
     { data: rules },
     { data: members },
     { data: invitations },
   ] = clinicId
     ? await Promise.all([
-        supabase
-          .from("locations")
-          .select("id, name, address")
-          .eq("clinic_id", clinicId)
-          .order("name"),
+        getCachedClinicLocations(clinicId),
         supabase
           .from("professionals")
           .select(
@@ -72,7 +69,7 @@ export default async function IngresoProfesionalesPage({
           .select("id, email, full_name, status, initial_password")
           .eq("clinic_id", clinicId),
       ])
-    : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }];
+    : [[], { data: [] }, { data: [] }, { data: [] }, { data: [] }];
 
   const professionalList: ProfessionalIntakeDetail[] = (professionals ?? []).map((p) => {
     const row = p as Record<string, unknown>;

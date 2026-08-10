@@ -12,6 +12,10 @@ import {
   type TurnosMetricAppointment,
 } from "@/features/turnos/utils/turnos-metrics";
 
+import {
+  getCachedClinicProfessionalsAgenda,
+  getCachedClinicSettings,
+} from "@/lib/server/cached-clinic-queries";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 
 const DAY_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -40,8 +44,7 @@ export async function loadTurnosConfigPageData(supabase: SupabaseClient, clinicI
   const now = new Date();
   const blocksFrom = startOfClinicDay(now).toISOString();
 
-  const [{ data: rules }, { data: blocks }, { data: professionals }, { data: clinic }] =
-    await Promise.all([
+  const [{ data: rules }, { data: blocks }, professionals, clinic] = await Promise.all([
       supabase
         .from("availability_rules")
         .select(
@@ -58,17 +61,8 @@ export async function loadTurnosConfigPageData(supabase: SupabaseClient, clinicI
         .eq("clinic_id", clinicId)
         .gte("start_at", blocksFrom)
         .order("start_at"),
-      supabase
-        .from("professionals")
-        .select("id, display_name, profiles(full_name)")
-        .eq("clinic_id", clinicId)
-        .eq("is_active", true)
-        .order("display_name"),
-      supabase
-        .from("clinics")
-        .select("default_appointment_duration, timezone")
-        .eq("id", clinicId)
-        .single(),
+      getCachedClinicProfessionalsAgenda(clinicId),
+      getCachedClinicSettings(clinicId),
     ]);
 
   const mappedRules: TurnosConfigRuleRow[] = (rules ?? []).map((row) => {
@@ -120,8 +114,7 @@ export async function loadTurnosReportesPageData(supabase: SupabaseClient, clini
   const rangeStart = addDays(startOfClinicDay(now), -30).toISOString();
   const rangeEnd = addDays(startOfClinicDay(now), 1).toISOString();
 
-  const [{ data: appointments }, { data: rules }, { data: professionals }, { data: clinic }] =
-    await Promise.all([
+  const [{ data: appointments }, { data: rules }, professionals, clinic] = await Promise.all([
     supabase
       .from("appointments")
       .select("id, status, start_at, end_at, is_overbooking, professional_id")
@@ -133,16 +126,8 @@ export async function loadTurnosReportesPageData(supabase: SupabaseClient, clini
       .select("day_of_week, start_time, end_time, slot_duration, is_active, professional_id")
       .eq("clinic_id", clinicId)
       .eq("is_active", true),
-    supabase
-      .from("professionals")
-      .select("id, display_name, profiles(full_name)")
-      .eq("clinic_id", clinicId)
-      .eq("is_active", true),
-    supabase
-      .from("clinics")
-      .select("default_appointment_duration")
-      .eq("id", clinicId)
-      .single(),
+    getCachedClinicProfessionalsAgenda(clinicId),
+    getCachedClinicSettings(clinicId),
   ]);
 
   const defaultSlotDuration = clinic?.default_appointment_duration ?? 30;
