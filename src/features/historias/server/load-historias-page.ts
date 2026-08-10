@@ -5,7 +5,7 @@ import { HISTORIAS_PAGE_SIZE } from "@/core/supabase/pagination";
 import type { PatientRecordGroup } from "@/features/historias/components/historias/clinical-records-grouped-list";
 import { searchPatientsForClinic } from "@/features/pacientes/server/search-patients";
 
-import { batchPatientRecordCounts } from "@/lib/utils/batch-patient-record-counts";
+import { batchPatientConsultationCounts } from "@/lib/utils/batch-patient-record-counts";
 import type { ClinicalRecordListRow } from "@/lib/utils/clinical-record-list-types";
 
 export { HISTORIAS_PAGE_SIZE };
@@ -115,7 +115,7 @@ export async function loadHistoriasPageData(
   const uniquePatientIds = [...new Set(records.map((r) => r.patient_id as string))];
   const patientCountCache =
     clinicId && uniquePatientIds.length > 0
-      ? await batchPatientRecordCounts(supabase, clinicId, uniquePatientIds)
+      ? await batchPatientConsultationCounts(supabase, clinicId, uniquePatientIds)
       : new Map<string, number>();
 
   const groupsMap = new Map<string, PatientRecordGroup>();

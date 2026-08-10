@@ -15,7 +15,7 @@ import {
 } from "@/features/pacientes/utils/pacientes-page-url";
 import { applyPatientSearchFilter, findPatientIdsByPathologySearch } from "@/features/pacientes/utils/patient-search";
 
-import { batchPatientRecordCounts } from "@/lib/utils/batch-patient-record-counts";
+import { batchPatientConsultationCounts } from "@/lib/utils/batch-patient-record-counts";
 import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
 
 export { PACIENTES_PAGE_SIZE };
@@ -115,7 +115,7 @@ async function enrichPacientesPageRows(
 
   const patientIds = rawPatients.map((p) => p.id);
   const [recordCounts, shares] = await Promise.all([
-    batchPatientRecordCounts(supabase, clinicId, patientIds),
+    batchPatientConsultationCounts(supabase, clinicId, patientIds),
     portalSlug
       ? supabase
           .from("patient_app_share_log")

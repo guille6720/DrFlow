@@ -149,6 +149,70 @@ describe("batchPatientConsultationCounts", () => {
     expect(counts.get("p1")).toBe(2);
   });
 
+  it("dedupes multiple records on the same calendar day", async () => {
+    const supabase = {
+      from: mockClinicalRecordsFrom({
+        clinical_records: {
+          select: () => ({
+            eq: () => ({
+              in: () => ({
+                order: async () => ({
+                  data: [
+                    {
+                      patient_id: "p1",
+                      id: "r1",
+                      created_at: "2023-03-14T10:00:00.000Z",
+                      chief_complaint: "Control",
+                      diagnosis: "HTA",
+                      evolution: "Primera evolución del día con texto clínico suficiente.",
+                      indications: "",
+                      professionals: null,
+                    },
+                    {
+                      patient_id: "p1",
+                      id: "r2",
+                      created_at: "2023-03-14T18:00:00.000Z",
+                      chief_complaint: "Control",
+                      diagnosis: "HTA",
+                      evolution: "Segunda evolución del mismo día con texto clínico.",
+                      indications: "",
+                      professionals: null,
+                    },
+                  ],
+                }),
+              }),
+            }),
+          }),
+        },
+        patient_attachments: {
+          select: () => ({
+            eq: () => ({
+              eq: () => ({
+                in: async () => ({ data: [] }),
+              }),
+            }),
+          }),
+        },
+      }),
+      rpc: async () => ({
+        data: [{ patient_id: "p1", count: 2 }],
+        error: null,
+      }),
+    };
+
+    const consultationCounts = await batchPatientConsultationCounts(
+      createSupabaseTestDouble(supabase),
+      "clinic-1",
+      ["p1"]
+    );
+    const recordCounts = await batchPatientRecordCounts(createSupabaseTestDouble(supabase), "clinic-1", [
+      "p1",
+    ]);
+
+    expect(consultationCounts.get("p1")).toBe(1);
+    expect(recordCounts.get("p1")).toBe(2);
+  });
+
   it("counts consultations from clinical_records without HCE attachment", async () => {
     const supabase = {
       from: mockClinicalRecordsFrom({
