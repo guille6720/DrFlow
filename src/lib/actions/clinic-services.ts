@@ -11,6 +11,10 @@ import { enqueueClinicJob } from "@/core/jobs/enqueue";
 import { processPendingClinicJobs } from "@/core/jobs/process";
 import { recordAudit } from "@/core/security/audit-service";
 import { verifyPaymentForeignKeys } from "@/core/security/ownership-guard";
+import {
+  APPOINTMENT_REMINDER_COLUMNS,
+  APPOINTMENT_TELEMEDICINE_COLUMNS,
+} from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 import { mockPaymentSchema } from "@/core/validations/cash-schemas";
 import { firstZodIssue, parseEntityId, reminderChannelSchema } from "@/core/validations/params";
@@ -36,7 +40,7 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
   const supabase = await createClient();
   const { data: appointment } = await supabase
     .from("appointments")
-    .select("*, patients(first_name, last_name, email, phone), professionals(profiles(full_name))")
+    .select(`${APPOINTMENT_REMINDER_COLUMNS}, patients(first_name, last_name, email, phone), professionals(profiles(full_name))`)
     .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
@@ -184,7 +188,7 @@ export async function createTelemedicineSession(appointmentId: string) {
   const supabase = await createClient();
   const { data: appointment } = await supabase
     .from("appointments")
-    .select("*, patients(first_name, last_name)")
+    .select(`${APPOINTMENT_TELEMEDICINE_COLUMNS}, patients(first_name, last_name)`)
     .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();

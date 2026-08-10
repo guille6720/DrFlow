@@ -9,6 +9,7 @@ import {
 } from "@/core/auth/session";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
 import { PatientWorkspaceContent } from "@/features/pacientes";
@@ -22,6 +23,8 @@ import {
   parsePatientWorkspaceTab,
 } from "@/features/pacientes/constants/patient-workspace-tabs";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
+
+import type { Patient } from "@/types/database";
 
 export default async function PacienteDetailPage({
   params,
@@ -43,12 +46,14 @@ export default async function PacienteDetailPage({
 
   const { data: patient } = await supabase
     .from("patients")
-    .select("*")
+    .select(PATIENT_DETAIL_COLUMNS)
     .eq("id", id)
     .eq("clinic_id", clinicId)
     .single();
 
   if (!patient) notFound();
+
+  const patientRow = patient as Patient;
 
   const canManagePatients = hasPermission(role, "managePatients", isSuperadmin);
   const canEditClinical = hasPermission(role, "editClinicalRecords", isSuperadmin);
@@ -67,8 +72,8 @@ export default async function PacienteDetailPage({
   return (
     <>
       <Header
-        title={`${patient.last_name}, ${patient.first_name}`}
-        subtitle={`DNI ${patient.document_number}${formatAgeLabel(patient.birth_date) ? ` · ${formatAgeLabel(patient.birth_date)}` : ""}`}
+        title={`${patientRow.last_name}, ${patientRow.first_name}`}
+        subtitle={`DNI ${patientRow.document_number}${formatAgeLabel(patientRow.birth_date) ? ` · ${formatAgeLabel(patientRow.birth_date)}` : ""}`}
         clinics={clinics}
         activeClinicId={clinicId}
         role={role}
@@ -86,14 +91,14 @@ export default async function PacienteDetailPage({
           </Suspense>
           {canManagePatients && (
             <DeletePatientButton
-              patientId={patient.id}
-              patientName={`${patient.last_name}, ${patient.first_name}`}
+              patientId={patientRow.id}
+              patientName={`${patientRow.last_name}, ${patientRow.first_name}`}
             />
           )}
         </div>
 
         {!canViewClinical ? (
-          <PatientAdminDetailView patient={patient} />
+          <PatientAdminDetailView patient={patientRow} />
         ) : (
           <Suspense fallback={<PatientWorkspaceSkeleton />}>
             <PatientWorkspaceContent
@@ -103,8 +108,8 @@ export default async function PacienteDetailPage({
                 address: clinic?.address ?? null,
                 phone: clinic?.phone ?? null,
               }}
-              patient={patient}
-              patientRecord={patient}
+              patient={patientRow}
+              patientRecord={patientRow}
               patientId={id}
               initialTab={initialTab}
               canEditClinical={canEditClinical}

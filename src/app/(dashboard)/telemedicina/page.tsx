@@ -2,12 +2,12 @@ import { redirect } from "next/navigation";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { canAccessRoute } from "@/core/permissions/roles";
+import { TELEMEDICINE_SESSION_LIST_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
 import { TelemedicinaView } from "@/features/telemedicina";
 
-const TELEMEDICINE_SESSION_COLUMNS =
-  "id, clinic_id, appointment_id, room_url, status, started_at, ended_at, created_at";
+const TELEMEDICINE_SESSION_COLUMNS = TELEMEDICINE_SESSION_LIST_COLUMNS;
 
 export default async function TelemedicinaPage() {
   const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();

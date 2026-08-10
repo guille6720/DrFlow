@@ -1,6 +1,7 @@
 import { isUniqueViolation } from "@/core/errors/postgres-error";
 import type { DbClient, RepoResult } from "@/core/repositories/types";
 import { mapPostgresError, repoErr, repoOk } from "@/core/repositories/types";
+import { MEDICAL_ORDER_IDEMPOTENCY_COLUMNS } from "@/core/supabase/select-columns";
 
 import {
   MEDICAL_ORDER_CONCURRENCY_ERROR,
@@ -67,7 +68,7 @@ export async function findMedicalOrderByIdempotencyKey(
 ): Promise<RepoResult<MedicalOrder | null>> {
   const { data, error } = await db
     .from("medical_orders")
-    .select("*")
+    .select(MEDICAL_ORDER_IDEMPOTENCY_COLUMNS)
     .eq("clinic_id", clinicId)
     .eq("idempotency_key", idempotencyKey)
     .maybeSingle();

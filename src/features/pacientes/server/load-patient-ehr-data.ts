@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { PATIENT_ATTACHMENTS_LIMIT } from "@/core/supabase/pagination";
+import { MEDICAL_ORDER_LIST_COLUMNS } from "@/core/supabase/select-columns";
 
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
@@ -292,7 +293,7 @@ export async function loadPatientEhrWorkspaceData(
       .limit(PATIENT_RX_FETCH_LIMIT),
     supabase
       .from("medical_orders")
-      .select("*")
+      .select(MEDICAL_ORDER_LIST_COLUMNS)
       .eq("clinic_id", clinicId)
       .eq("patient_id", patientId)
       .order("issued_at", { ascending: false })

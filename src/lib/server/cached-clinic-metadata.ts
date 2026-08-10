@@ -2,6 +2,7 @@ import type { ProfessionalAgendaRow, ProfessionalListRow, SettingsProfessionalRo
 import {
   CLINICAL_TEMPLATE_COLUMNS,
   PROFESSIONAL_AGENDA_COLUMNS,
+  PROFESSIONAL_PRESCRIBER_COLUMNS,
 } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
@@ -68,7 +69,7 @@ export async function loadClinicProfessionalsFullCached(clinicId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("professionals")
-    .select("*, profiles(full_name), specialties(name)")
+    .select(PROFESSIONAL_PRESCRIBER_COLUMNS)
     .eq("clinic_id", clinicId)
     .eq("is_active", true);
   return resolveProfessionalSignatureUrls(supabase, data ?? []);

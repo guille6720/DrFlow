@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { PRESCRIPTION_RECENT_LIST_COLUMNS } from "@/core/supabase/select-columns";
+
 import { getCachedClinicProfessionalsFull } from "@/lib/server/cached-clinic-queries";
 import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 import type { MedicalOrder } from "@/types/medical-order";
@@ -70,7 +72,7 @@ export async function loadRecetasPageData(
         supabase
           .from("prescription_drafts")
           .select(
-            "*, patients(first_name, last_name, document_number, birth_date, insurance_provider), professionals(display_name, license_number, profiles(full_name), specialties(name))"
+            `${PRESCRIPTION_RECENT_LIST_COLUMNS}, patients(first_name, last_name, document_number, birth_date, insurance_provider), professionals(display_name, license_number, profiles(full_name), specialties(name))`
           )
           .eq("clinic_id", clinicId)
           .order("created_at", { ascending: false })
@@ -78,7 +80,7 @@ export async function loadRecetasPageData(
       ])
     : [[], { data: [] }];
 
-  const recentPrescriptions = (recentRxRes.data ?? []) as RecetasPageData["recentPrescriptions"];
+  const recentPrescriptions = (recentRxRes.data ?? []) as unknown as RecetasPageData["recentPrescriptions"];
   const defaultProfessionalId = clinicId
     ? await resolveDefaultProfessionalId(supabase, clinicId, professionals, professionalParam)
     : undefined;

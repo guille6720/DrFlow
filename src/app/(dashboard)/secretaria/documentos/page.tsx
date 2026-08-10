@@ -5,6 +5,7 @@ import {
   getActiveClinicId,
 } from "@/core/auth/session.server";
 import { hasPermission } from "@/core/permissions/roles";
+import { PATIENT_ADMIN_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
 import { AdminDocumentsPanel } from "@/features/administracion/components/secretaria/admin-documents-panel";
@@ -35,7 +36,7 @@ export default async function SecretariaDocumentosPage({
     const [{ data: patient }, { data: documents }] = await Promise.all([
       supabase
         .from("patients")
-        .select("*")
+        .select(PATIENT_ADMIN_COLUMNS)
         .eq("id", patientIdParam)
         .eq("clinic_id", clinicId)
         .single(),
