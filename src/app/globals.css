@@ -1195,17 +1195,17 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main a.text-blue-70
   text-decoration: underline;
 }
 
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-ui-button.border-slate-200,
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-ui-button.bg-white,
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-ui-button.text-slate-700,
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-ui-button.text-slate-800 {
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-ui-button.border-slate-200:not(.drflow-agenda-view *),
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-ui-button.bg-white:not(.drflow-agenda-view *),
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-ui-button.text-slate-700:not(.drflow-agenda-view *),
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-ui-button.text-slate-800:not(.drflow-agenda-view *) {
   border-color: #64748b !important;
   background-color: #334155 !important;
   color: #f8fafc !important;
 }
 
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-ui-button.border-slate-200:hover,
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-ui-button.bg-white:hover {
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-ui-button.border-slate-200:not(.drflow-agenda-view *):hover,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-ui-button.bg-white:not(.drflow-agenda-view *):hover {
   background-color: #475569 !important;
 }
 
@@ -1232,9 +1232,9 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar button.text-s
   color: #fca5a5 !important;
 }
 
-/* Estilo 1 (mesh oscuro): botones blancos sueltos en main */
-.drflow-mesh main button.bg-white.text-slate-700,
-.drflow-mesh main button.border-slate-300.bg-white {
+/* Estilo 1 (mesh oscuro): botones blancos sueltos en main — excepto agenda clara */
+.drflow-mesh main button.bg-white.text-slate-700:not(.drflow-agenda-view *),
+.drflow-mesh main button.border-slate-300.bg-white:not(.drflow-agenda-view *) {
   border-color: #64748b !important;
   background-color: #334155 !important;
   color: #f8fafc !important;
@@ -3732,13 +3732,13 @@ html[data-ui-palette="cobalt"] .drflow-ui-header-dark :is(.text-slate-300, .text
 }
 
 /* Texto sobre el mesh azul (fuera de tarjetas blancas) */
-html[data-ui-palette="cobalt"] .drflow-mesh main > :not(.drflow-ui-card):not(.drflow-bento) :is(h1, h2, h3).text-slate-900,
-html[data-ui-palette="cobalt"] .drflow-mesh main .text-slate-900:not(.drflow-ui-card *):not(.drflow-card-light *):not(.bg-white *) {
+html[data-ui-palette="cobalt"] .drflow-mesh main > :not(.drflow-ui-card):not(.drflow-bento):not(.drflow-agenda-view) :is(h1, h2, h3).text-slate-900,
+html[data-ui-palette="cobalt"] .drflow-mesh main .text-slate-900:not(.drflow-ui-card *):not(.drflow-card-light *):not(.drflow-agenda-view *):not(.bg-white *) {
   color: #f8fafc !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-mesh main :is(p, span, li).text-slate-600:not(.drflow-ui-card *):not(.drflow-card-light *),
-html[data-ui-palette="cobalt"] .drflow-mesh main :is(p, span, li).text-slate-500:not(.drflow-ui-card *):not(.drflow-card-light *) {
+html[data-ui-palette="cobalt"] .drflow-mesh main :is(p, span, li).text-slate-600:not(.drflow-ui-card *):not(.drflow-card-light *):not(.drflow-agenda-view *),
+html[data-ui-palette="cobalt"] .drflow-mesh main :is(p, span, li).text-slate-500:not(.drflow-ui-card *):not(.drflow-card-light *):not(.drflow-agenda-view *) {
   color: #dbeafe !important;
 }
 
@@ -4160,7 +4160,7 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main article.drflow
   color: #475569 !important;
 }
 
-/* Agenda: legibilidad sobre mesh oscuro (franja de fechas, hints, textos secundarios) */
+/* Agenda: isla clara a prueba del mesh oscuro / paleta cobalt */
 .drflow-mesh main .drflow-agenda-view {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4168,29 +4168,104 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main article.drflow
   color: #0f172a;
 }
 
-.drflow-mesh main .drflow-agenda-view :is(p, span, li, dd, h1, h2, h3).text-slate-400 {
-  color: #64748b !important;
-}
-
-.drflow-mesh main .drflow-agenda-view :is(p, span, li, dd, h1, h2, h3).text-slate-500 {
-  color: #475569 !important;
-}
-
-.drflow-mesh main .drflow-agenda-view :is(p, span, li, dd, h1, h2, h3).text-slate-600 {
-  color: #334155 !important;
-}
-
-.drflow-mesh main .drflow-agenda-view :is(p, span, li, dd, h1, h2, h3).text-slate-700 {
-  color: #334155 !important;
-}
-
-.drflow-mesh main .drflow-agenda-view :is(p, span, li, dd, h1, h2, h3).text-slate-800,
-.drflow-mesh main .drflow-agenda-view :is(p, span, li, dd, h1, h2, h3).text-slate-900 {
+.drflow-mesh main .drflow-agenda-view :is(h1, h2, h3, h4) {
   color: #0f172a !important;
 }
 
-.drflow-mesh main .drflow-agenda-view .drflow-card-light {
+.drflow-mesh main .drflow-agenda-view :is(p, span, li, dd, dt).text-slate-400 {
+  color: #64748b !important;
+}
+
+.drflow-mesh main .drflow-agenda-view :is(p, span, li, dd, dt).text-slate-500 {
+  color: #475569 !important;
+}
+
+.drflow-mesh main .drflow-agenda-view :is(p, span, li, dd, dt).text-slate-600 {
+  color: #334155 !important;
+}
+
+.drflow-mesh main .drflow-agenda-view :is(p, span, li, dd, dt).text-slate-700 {
+  color: #334155 !important;
+}
+
+.drflow-mesh main .drflow-agenda-view :is(p, span, li, dd, dt).text-slate-800,
+.drflow-mesh main .drflow-agenda-view :is(p, span, li, dd, dt).text-slate-900 {
+  color: #0f172a !important;
+}
+
+.drflow-mesh main .drflow-agenda-view .drflow-card-light,
+.drflow-mesh main .drflow-agenda-view .drflow-surface-light {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.drflow-mesh main .drflow-agenda-view .drflow-agenda-nav-btn {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 0.75rem;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155 !important;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.drflow-mesh main .drflow-agenda-view .drflow-agenda-nav-btn:hover {
+  border-color: #94a3b8 !important;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.drflow-mesh main .drflow-agenda-view .drflow-agenda-date-btn {
+  border: 1px solid #e2e8f0 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.drflow-mesh main .drflow-agenda-view .drflow-agenda-date-btn:hover {
+  border-color: #94a3b8 !important;
+  background-color: #f8fafc !important;
+}
+
+.drflow-mesh main .drflow-agenda-view .drflow-agenda-date-btn[data-selected="true"] {
+  border-color: #0891b2 !important;
+  background-color: #0891b2 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgb(8 145 178 / 0.35);
+}
+
+.drflow-mesh main .drflow-agenda-view .drflow-agenda-date-btn[data-selected="true"] :is(span) {
+  color: #ffffff !important;
+}
+
+.drflow-mesh main .drflow-agenda-view .drflow-ui-input,
+.drflow-mesh main .drflow-agenda-view .drflow-ui-select {
+  border-color: #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.drflow-mesh main .drflow-agenda-view .drflow-ui-button.border-slate-200,
+.drflow-mesh main .drflow-agenda-view .drflow-ui-button.bg-white {
+  border-color: #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #334155 !important;
+}
+
+.drflow-mesh main .drflow-agenda-view .drflow-ui-button.border-slate-200:hover,
+.drflow-mesh main .drflow-agenda-view .drflow-ui-button.bg-white:hover {
+  border-color: #94a3b8 !important;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.drflow-mesh main .drflow-agenda-view [class*="rounded-full"].text-xs {
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 

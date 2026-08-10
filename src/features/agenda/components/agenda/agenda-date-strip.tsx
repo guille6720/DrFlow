@@ -23,7 +23,7 @@ export const AgendaDateStrip = memo(function AgendaDateStrip({
   }, [selectedDay]);
 
   return (
-    <div className="drflow-card-light overflow-hidden rounded-2xl bg-white p-3 shadow-lg shadow-slate-900/5 ring-1 ring-slate-200/80 sm:p-4">
+    <div className="drflow-card-light overflow-hidden rounded-2xl bg-white p-3 ring-1 ring-slate-200 sm:p-4">
       <div className="grid grid-cols-7 gap-2">
         {weekDays.map((day) => {
           const selected = isSameDay(day, selectedDay);
@@ -33,36 +33,20 @@ export const AgendaDateStrip = memo(function AgendaDateStrip({
             <button
               key={day.toISOString()}
               type="button"
+              data-selected={selected ? "true" : "false"}
               onClick={() => onSelectDay(day)}
               className={cn(
-                "flex w-full flex-col items-center rounded-xl px-2 py-3 text-center transition-all",
-                selected
-                  ? "bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-md shadow-cyan-500/30"
-                  : "bg-slate-50 text-slate-800 ring-1 ring-slate-200 hover:bg-white hover:ring-slate-300"
+                "drflow-agenda-date-btn flex w-full flex-col items-center rounded-xl px-2 py-3 text-center transition-all",
+                !selected && "hover:shadow-sm"
               )}
             >
-              <span
-                className={cn(
-                  "text-xs font-bold uppercase tracking-wide",
-                  selected ? "text-white" : "text-slate-600"
-                )}
-              >
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-600">
                 {WEEKDAY_LABELS[weekdayIndex]}
               </span>
-              <span
-                className={cn(
-                  "mt-1 text-2xl font-bold tabular-nums leading-none",
-                  selected ? "text-white" : "text-slate-900"
-                )}
-              >
+              <span className="mt-1 text-2xl font-bold tabular-nums leading-none text-slate-900">
                 {format(day, "d")}
               </span>
-              <span
-                className={cn(
-                  "mt-1 text-xs font-semibold capitalize",
-                  selected ? "text-white/90" : "text-slate-600"
-                )}
-              >
+              <span className="mt-1 text-xs font-semibold capitalize text-slate-600">
                 {format(day, "MMM", { locale: es })}
               </span>
             </button>

@@ -124,7 +124,7 @@ export function AgendaView({
   }, [setEditingAppointment]);
 
   return (
-    <div className="drflow-agenda-view space-y-5 p-4 sm:p-6">
+    <div className="drflow-agenda-view drflow-surface-light mx-3 mb-6 space-y-5 rounded-3xl bg-white p-4 shadow-xl ring-1 ring-slate-200/90 sm:mx-4 sm:p-6">
       <AgendaToolbar agenda={agenda} professionals={professionals} specialties={specialties} />
 
       <AgendaDateStrip selectedDay={selectedDay} onSelectDay={setCurrentDate} />

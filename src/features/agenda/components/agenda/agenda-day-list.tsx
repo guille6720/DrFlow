@@ -80,7 +80,7 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
             rescheduledAt={appointment.rescheduled_at}
           />
         </div>
-        <p className="mt-1.5 text-sm font-medium text-slate-700">{metaParts.join(" · ")}</p>
+        <p className="mt-2 text-base font-medium text-slate-800">{metaParts.join(" · ")}</p>
         {appointment.notes ? (
           <p className="mt-1 line-clamp-2 text-sm text-slate-600">{appointment.notes}</p>
         ) : null}
@@ -89,7 +89,7 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
   );
 
   const rowClassName =
-    "flex w-full items-center gap-5 border-b border-slate-200 px-5 py-3 text-left transition-colors last:border-b-0 hover:bg-slate-50";
+    "flex w-full items-center gap-5 border-b border-slate-200 px-5 py-4 text-left transition-colors last:border-b-0 hover:bg-slate-50/80";
 
   if (canManage && onAppointmentClick) {
     return (
@@ -113,7 +113,7 @@ export const AgendaDayList = memo(function AgendaDayList({
   const dayAppointments = filterAppointmentsForDay(appointments, day);
 
   return (
-    <section className="drflow-card-light overflow-hidden rounded-2xl bg-white text-slate-900 shadow-lg shadow-slate-900/5 ring-1 ring-slate-200/80">
+    <section className="drflow-card-light overflow-hidden rounded-2xl bg-white text-slate-900 ring-1 ring-slate-200">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
         <div>
           <h2 className="text-lg font-bold capitalize text-slate-900">

@@ -77,7 +77,7 @@ export const AgendaSummaryCards = memo(function AgendaSummaryCards({
           <article
             key={card.label}
             className={cn(
-              "drflow-card-light rounded-2xl bg-gradient-to-br p-4 shadow-sm ring-1",
+              "drflow-card-light rounded-2xl bg-gradient-to-br p-4 ring-1",
               card.className
             )}
           >
