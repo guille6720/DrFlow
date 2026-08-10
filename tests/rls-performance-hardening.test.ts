@@ -8,6 +8,14 @@ describe("090 RLS performance hardening migration", () => {
     "utf8"
   );
 
+  it("defines is_clinic_staff before using it in policies", () => {
+    expect(sql).toMatch(/CREATE OR REPLACE FUNCTION is_clinic_staff/);
+    const fnIdx = sql.indexOf("CREATE OR REPLACE FUNCTION is_clinic_staff");
+    const policyIdx = sql.indexOf("appointment_status_history_insert");
+    expect(fnIdx).toBeGreaterThan(-1);
+    expect(policyIdx).toBeGreaterThan(fnIdx);
+  });
+
   it("adds indexes for clinic_members and patient portal RLS paths", () => {
     expect(sql).toMatch(/idx_clinic_members_user_active_clinic/);
     expect(sql).toMatch(/ON clinic_members \(user_id, clinic_id\)/);

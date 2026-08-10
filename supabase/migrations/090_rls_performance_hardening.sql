@@ -18,6 +18,18 @@ COMMENT ON INDEX idx_patients_user_id IS
   'RLS hot path: patient portal subqueries on patients.user_id = auth.uid().';
 
 -- ---------------------------------------------------------------------------
+-- Helper (058): ensure is_clinic_staff exists before policy rewrites
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION is_clinic_staff(p_clinic_id UUID)
+RETURNS BOOLEAN AS $$
+  SELECT is_superadmin()
+    OR user_role_in_clinic(p_clinic_id) IN ('clinic_admin', 'doctor', 'secretary');
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
+
+COMMENT ON FUNCTION is_clinic_staff IS
+  'True for clinic_admin, doctor, secretary, or superadmin — excludes patient role.';
+
+-- ---------------------------------------------------------------------------
 -- 084 appointment module: use SECURITY DEFINER user_clinic_ids() + is_clinic_staff()
 -- (inline clinic_members subqueries run as invoker; stacked helpers duplicate lookups)
 -- ---------------------------------------------------------------------------
