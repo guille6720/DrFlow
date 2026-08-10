@@ -124,7 +124,7 @@ export function AgendaView({
   }, [setEditingAppointment]);
 
   return (
-    <div className="space-y-4 p-4 sm:p-6">
+    <div className="drflow-agenda-view space-y-5 p-4 sm:p-6">
       <AgendaToolbar agenda={agenda} professionals={professionals} specialties={specialties} />
 
       <AgendaDateStrip selectedDay={selectedDay} onSelectDay={setCurrentDate} />
@@ -151,11 +151,11 @@ export function AgendaView({
       <AgendaSummaryCards appointments={filtered} anchorDay={selectedDay} />
 
       {canManage ? (
-        <p className="text-sm text-slate-400">
+        <p className="text-sm font-medium text-slate-600">
           Tocá un turno para gestionarlo · Usá la franja de fechas para cambiar de día
         </p>
       ) : canStartClinical ? (
-        <p className="text-sm text-slate-400">Tocá un turno para ver detalle o abrir la consulta</p>
+        <p className="text-sm font-medium text-slate-600">Tocá un turno para ver detalle o abrir la consulta</p>
       ) : null}
 
       {bookingSlug ? (

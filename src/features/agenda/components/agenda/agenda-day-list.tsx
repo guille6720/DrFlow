@@ -62,18 +62,15 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
 
   const content = (
     <>
-      <div className="flex w-24 shrink-0 items-start gap-2 sm:w-28">
-        <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-600" />
-        <div>
-          <p className="text-sm font-bold tabular-nums text-slate-900">{timeLabel}</p>
-          <p className="text-[11px] text-slate-500">hs</p>
-        </div>
+      <div className="flex w-24 shrink-0 items-center gap-2 sm:w-28">
+        <Clock3 className="h-4 w-4 shrink-0 text-cyan-600" />
+        <p className="text-base font-bold tabular-nums text-slate-900">{timeLabel} hs</p>
       </div>
 
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className={cn("font-semibold text-slate-900", isCancelled && "line-through opacity-70")}>
-            {online ? <Globe className="mr-1 inline h-3.5 w-3.5 text-sky-600" /> : null}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <p className={cn("text-base font-bold text-slate-900", isCancelled && "line-through opacity-70")}>
+            {online ? <Globe className="mr-1 inline h-4 w-4 text-sky-600" /> : null}
             {fullName}
           </p>
           <AppointmentLifecycleBadge
@@ -83,16 +80,16 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
             rescheduledAt={appointment.rescheduled_at}
           />
         </div>
-        <p className="mt-1 text-sm text-slate-600">{metaParts.join(" · ")}</p>
+        <p className="mt-1.5 text-sm font-medium text-slate-700">{metaParts.join(" · ")}</p>
         {appointment.notes ? (
-          <p className="mt-1 line-clamp-2 text-xs text-slate-500">{appointment.notes}</p>
+          <p className="mt-1 line-clamp-2 text-sm text-slate-600">{appointment.notes}</p>
         ) : null}
       </div>
     </>
   );
 
   const rowClassName =
-    "flex w-full gap-4 border-b border-slate-100 px-4 py-4 text-left transition-colors last:border-b-0 hover:bg-slate-50/80";
+    "flex w-full items-center gap-5 border-b border-slate-200 px-5 py-3 text-left transition-colors last:border-b-0 hover:bg-slate-50";
 
   if (canManage && onAppointmentClick) {
     return (
@@ -117,12 +114,12 @@ export const AgendaDayList = memo(function AgendaDayList({
 
   return (
     <section className="drflow-card-light overflow-hidden rounded-2xl bg-white text-slate-900 shadow-lg shadow-slate-900/5 ring-1 ring-slate-200/80">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
         <div>
-          <h2 className="text-lg font-semibold capitalize text-slate-900">
+          <h2 className="text-lg font-bold capitalize text-slate-900">
             {format(day, "EEEE, d 'de' MMMM", { locale: es })}
           </h2>
-          <p className="mt-0.5 text-sm text-slate-500">
+          <p className="mt-1 text-sm font-medium text-slate-600">
             {dayAppointments.length === 0
               ? "Sin turnos programados"
               : `${dayAppointments.length} turno${dayAppointments.length === 1 ? "" : "s"} programado${dayAppointments.length === 1 ? "" : "s"}`}

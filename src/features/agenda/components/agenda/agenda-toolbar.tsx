@@ -52,7 +52,7 @@ export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
           </span>
           <div>
             <h1 className="text-xl font-bold text-slate-900">Agenda y calendario</h1>
-            <p className="mt-0.5 text-sm text-slate-500">
+            <p className="mt-1 text-base font-medium capitalize text-slate-700">
               {format(visibleDay, "EEEE d 'de' MMMM yyyy", { locale: es })}
             </p>
           </div>
@@ -88,7 +88,7 @@ export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="mt-4 flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:flex-wrap sm:items-center">
         <Select
           options={[
             { value: "", label: "Todos los médicos" },
@@ -112,7 +112,7 @@ export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
           className="w-full sm:w-52"
         />
 
-        <span className="hidden text-sm capitalize text-slate-500 sm:inline">
+        <span className="hidden text-sm font-medium capitalize text-slate-600 sm:inline">
           {format(currentDate, "MMMM yyyy", { locale: es })}
         </span>
 

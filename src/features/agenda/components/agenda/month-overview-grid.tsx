@@ -58,7 +58,7 @@ const MonthDayCell = memo(function MonthDayCell({
       type="button"
       onClick={handleClick}
       className={cn(
-        "flex min-h-[4.5rem] flex-col border-b border-r border-slate-100 p-2 text-left transition-colors",
+        "flex min-h-[4.5rem] flex-col border-b border-r border-slate-200 p-2 text-left transition-colors",
         inMonth ? "bg-white" : "bg-slate-50/80",
         onDayClick && inMonth && "cursor-pointer hover:bg-cyan-50/60"
       )}
@@ -74,7 +74,7 @@ const MonthDayCell = memo(function MonthDayCell({
         {format(day, "d")}
       </span>
       {count > 0 ? (
-        <span className="mt-auto text-[10px] font-semibold text-teal-700">
+        <span className="mt-auto text-xs font-bold text-teal-800">
           {count} turno{count === 1 ? "" : "s"}
         </span>
       ) : null}
@@ -99,17 +99,17 @@ export function MonthOverviewGrid({
 
   return (
     <div className="drflow-card-light overflow-hidden rounded-2xl bg-white text-slate-900 shadow-lg shadow-slate-900/5 ring-1 ring-slate-200/80">
-      <div className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-4 py-3">
-        <h2 className="text-sm font-semibold capitalize text-slate-900">
+      <div className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-4 py-3">
+        <h2 className="text-base font-bold capitalize text-slate-900">
           {format(monthDate, "MMMM yyyy", { locale: es })}
         </h2>
-        <p className="text-xs text-slate-500">Vista mensual</p>
+        <p className="text-sm font-medium text-slate-600">Vista mensual</p>
       </div>
-      <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50/80">
+      <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
         {WEEK_LABELS.map((label) => (
           <div
             key={label}
-            className="px-1 py-2 text-center text-[10px] font-semibold uppercase tracking-wide text-slate-500"
+            className="px-1 py-2 text-center text-xs font-bold uppercase tracking-wide text-slate-600"
           >
             {label}
           </div>

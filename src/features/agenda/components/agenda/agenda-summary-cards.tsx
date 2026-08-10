@@ -84,10 +84,10 @@ export const AgendaSummaryCards = memo(function AgendaSummaryCards({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-3xl font-bold tabular-nums">{card.value}</p>
-                <p className="mt-1 text-sm font-medium opacity-90">{card.label}</p>
+                <p className="mt-1 text-sm font-semibold">{card.label}</p>
               </div>
-              <span className="rounded-xl bg-white/70 p-2 shadow-sm">
-                <Icon className="h-5 w-5 opacity-80" />
+              <span className="rounded-xl bg-white/80 p-2 shadow-sm">
+                <Icon className="h-5 w-5" />
               </span>
             </div>
           </article>

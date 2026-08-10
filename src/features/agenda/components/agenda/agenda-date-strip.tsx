@@ -23,35 +23,52 @@ export const AgendaDateStrip = memo(function AgendaDateStrip({
   }, [selectedDay]);
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1">
-      {weekDays.map((day) => {
-        const selected = isSameDay(day, selectedDay);
-        const weekdayIndex = day.getDay();
+    <div className="drflow-card-light overflow-hidden rounded-2xl bg-white p-3 shadow-lg shadow-slate-900/5 ring-1 ring-slate-200/80 sm:p-4">
+      <div className="grid grid-cols-7 gap-2">
+        {weekDays.map((day) => {
+          const selected = isSameDay(day, selectedDay);
+          const weekdayIndex = day.getDay();
 
-        return (
-          <button
-            key={day.toISOString()}
-            type="button"
-            onClick={() => onSelectDay(day)}
-            className={cn(
-              "flex min-w-[4.5rem] flex-col items-center rounded-2xl px-3 py-2.5 text-center transition-all",
-              selected
-                ? "bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-lg shadow-cyan-500/30"
-                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:ring-slate-300"
-            )}
-          >
-            <span className={cn("text-[11px] font-semibold uppercase tracking-wide", selected ? "text-white/90" : "text-slate-500")}>
-              {WEEKDAY_LABELS[weekdayIndex]}
-            </span>
-            <span className={cn("mt-0.5 text-xl font-bold tabular-nums", selected ? "text-white" : "text-slate-900")}>
-              {format(day, "d")}
-            </span>
-            <span className={cn("mt-0.5 text-[10px] capitalize", selected ? "text-white/80" : "text-slate-400")}>
-              {format(day, "MMM", { locale: es })}
-            </span>
-          </button>
-        );
-      })}
+          return (
+            <button
+              key={day.toISOString()}
+              type="button"
+              onClick={() => onSelectDay(day)}
+              className={cn(
+                "flex w-full flex-col items-center rounded-xl px-2 py-3 text-center transition-all",
+                selected
+                  ? "bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-md shadow-cyan-500/30"
+                  : "bg-slate-50 text-slate-800 ring-1 ring-slate-200 hover:bg-white hover:ring-slate-300"
+              )}
+            >
+              <span
+                className={cn(
+                  "text-xs font-bold uppercase tracking-wide",
+                  selected ? "text-white" : "text-slate-600"
+                )}
+              >
+                {WEEKDAY_LABELS[weekdayIndex]}
+              </span>
+              <span
+                className={cn(
+                  "mt-1 text-2xl font-bold tabular-nums leading-none",
+                  selected ? "text-white" : "text-slate-900"
+                )}
+              >
+                {format(day, "d")}
+              </span>
+              <span
+                className={cn(
+                  "mt-1 text-xs font-semibold capitalize",
+                  selected ? "text-white/90" : "text-slate-600"
+                )}
+              >
+                {format(day, "MMM", { locale: es })}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 });
