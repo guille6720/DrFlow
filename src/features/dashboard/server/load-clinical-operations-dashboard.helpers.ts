@@ -14,6 +14,16 @@ export const LIST_LIMIT = 8;
 
 type PatientNameRef = { first_name: string; last_name: string } | null;
 
+/** Avoid `"null"` / invalid timestamps breaking date-fns in dashboard widgets. */
+export function sanitizeIsoTimestamp(value: unknown): string {
+  if (value == null || value === "") return new Date(0).toISOString();
+  const iso = typeof value === "string" ? value : String(value);
+  if (iso === "null" || iso === "undefined" || Number.isNaN(Date.parse(iso))) {
+    return new Date(0).toISOString();
+  }
+  return iso;
+}
+
 function appointmentPatientName(appt: LiveAppointment): string {
   return appt.patients ? `${appt.patients.last_name}, ${appt.patients.first_name}` : "Paciente";
 }
@@ -275,7 +285,7 @@ export function mapDraftPrescriptions(
     const patient = unwrapJoin(row.patients ?? null);
     return {
       id: String(row.id),
-      created_at: String(row.created_at),
+      created_at: sanitizeIsoTimestamp(row.created_at),
       patient_id: String(row.patient_id),
       status: String(row.status ?? "draft"),
       medicationsSummary: summarizeMedications(row.medications),
@@ -298,7 +308,7 @@ export function mapPendingStudies(
     return {
       id: String(row.id),
       file_name: String(row.file_name),
-      created_at: String(row.created_at),
+      created_at: sanitizeIsoTimestamp(row.created_at),
       patient_id: String(row.patient_id),
       patients: patient,
     };
@@ -328,7 +338,7 @@ export function mapQueuedReminders(
     const patient = unwrapJoin(appt?.patients ?? null);
     return {
       id: String(row.id),
-      created_at: String(row.created_at),
+      created_at: sanitizeIsoTimestamp(row.created_at),
       channel: String(row.channel),
       appointment_id: row.appointment_id ? String(row.appointment_id) : null,
       appointments: appt
@@ -357,7 +367,7 @@ export function mapPendingOrders(
       id: String(row.id),
       order_text: String(row.order_text),
       status: String(row.status),
-      created_at: String(row.created_at),
+      created_at: sanitizeIsoTimestamp(row.created_at),
       patient_id: String(row.patient_id),
       patients: patient,
     };

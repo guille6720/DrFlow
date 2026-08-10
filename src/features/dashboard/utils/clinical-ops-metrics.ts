@@ -23,7 +23,9 @@ export function computePatientAge(
 }
 
 export function computeWaitingMinutes(startAt: string, now = new Date()): number {
-  return Math.max(0, differenceInMinutes(now, new Date(startAt)));
+  const parsed = new Date(startAt);
+  if (Number.isNaN(parsed.getTime())) return 0;
+  return Math.max(0, differenceInMinutes(now, parsed));
 }
 
 export function waitingPriority(
@@ -33,7 +35,8 @@ export function waitingPriority(
   now = new Date()
 ): ClinicalOpsWaitingPriority {
   if (hasCriticalAllergy) return "urgent";
-  if (startAt < now.toISOString()) return "high";
+  const parsed = new Date(startAt);
+  if (!Number.isNaN(parsed.getTime()) && parsed.toISOString() < now.toISOString()) return "high";
   if (waitingRoomStatus === "called") return "high";
   return "normal";
 }
@@ -96,7 +99,10 @@ export function prioritizeLabResults(
   return studies
     .map((study) => {
       const isLab = isLikelyLabFile(study.file_name);
-      const isRecent = differenceInMinutes(now, new Date(study.created_at)) <= 48 * 60;
+      const createdAt = new Date(study.created_at);
+      const createdMs = createdAt.getTime();
+      const isRecent =
+        !Number.isNaN(createdMs) && differenceInMinutes(now, createdAt) <= 48 * 60;
       const severity: ClinicalOpsLabResult["severity"] =
         isLab && isRecent ? "review" : isLab ? "normal" : "normal";
       return {
@@ -109,7 +115,9 @@ export function prioritizeLabResults(
       const rank = (s: ClinicalOpsLabResult) =>
         s.severity === "critical" ? 0 : s.severity === "review" ? 1 : 2;
       if (rank(a) !== rank(b)) return rank(a) - rank(b);
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      const aMs = new Date(a.created_at).getTime();
+      const bMs = new Date(b.created_at).getTime();
+      return (Number.isNaN(bMs) ? 0 : bMs) - (Number.isNaN(aMs) ? 0 : aMs);
     });
 }
 
@@ -178,7 +186,10 @@ function buildRowAlerts(
 ): string[] {
   const alerts: string[] = [];
   if (allergies?.trim()) alerts.push(`Alergia: ${allergies.trim()}`);
-  if (startAt < now.toISOString()) alerts.push("Turno demorado");
+  const parsed = new Date(startAt);
+  if (!Number.isNaN(parsed.getTime()) && parsed.toISOString() < now.toISOString()) {
+    alerts.push("Turno demorado");
+  }
   return alerts;
 }
 

@@ -1,8 +1,7 @@
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { FileText, FlaskConical, Pill } from "lucide-react";
 import Link from "next/link";
 
+import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 import { cn } from "@/shared/utils/cn";
 
 import { OpsSection } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-shared";
@@ -39,7 +38,7 @@ export function PrescriptionsAndOrdersSections({
                   <p className="text-xs text-slate-400">
                     <Pill className="mr-1 inline h-3 w-3" aria-hidden />
                     {rx.medicationsSummary} · {rx.status} ·{" "}
-                    {format(new Date(rx.created_at), "d MMM HH:mm", { locale: es })}
+                    {formatClinicDateTime(rx.created_at, "d MMM HH:mm")}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-1">
@@ -78,7 +77,7 @@ export function PrescriptionsAndOrdersSections({
                   </p>
                   <p className="truncate text-xs text-slate-400">
                     <FileText className="mr-1 inline h-3 w-3" aria-hidden />
-                    {order.order_text} · {format(new Date(order.created_at), "d MMM HH:mm", { locale: es })}
+                    {order.order_text} · {formatClinicDateTime(order.created_at, "d MMM HH:mm")}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-1">
@@ -132,7 +131,7 @@ export function LabResultsSection({
                 </p>
                 <p className="text-xs text-slate-400">
                   {lab.patients ? `${lab.patients.last_name}, ${lab.patients.first_name}` : "Paciente"} ·{" "}
-                  {format(new Date(lab.created_at), "d MMM HH:mm", { locale: es })}
+                  {formatClinicDateTime(lab.created_at, "d MMM HH:mm")}
                 </p>
               </div>
               <Link href={patientWorkspacePath(lab.patient_id, "estudios")}>

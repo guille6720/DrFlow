@@ -40,7 +40,7 @@ export function useCompletedOpsTasks(tasks: ClinicalOpsTask[]) {
   );
 
   const openTasks = useMemo(
-    () => tasks.filter((t) => !done.has(t.id)),
+    () => (tasks ?? []).filter((t) => !done.has(t.id)),
     [tasks, done]
   );
 

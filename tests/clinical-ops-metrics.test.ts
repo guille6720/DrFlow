@@ -23,6 +23,7 @@ describe("clinical-ops-metrics", () => {
 
   it("computes waiting minutes from appointment start", () => {
     expect(computeWaitingMinutes("2026-07-30T14:30:00.000Z", NOW)).toBe(30);
+    expect(computeWaitingMinutes("null", NOW)).toBe(0);
   });
 
   it("assigns urgent priority when allergies present", () => {
