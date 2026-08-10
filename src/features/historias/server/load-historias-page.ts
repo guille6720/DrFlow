@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { HISTORIAS_PAGE_SIZE } from "@/core/supabase/pagination";
 
 import type { PatientRecordGroup } from "@/features/historias/components/historias/clinical-records-grouped-list";
-import { applyPatientSearchFilter } from "@/features/pacientes/utils/patient-search";
+import { searchPatientsForClinic } from "@/features/pacientes/server/search-patients";
 
 import { batchPatientRecordCounts } from "@/lib/utils/batch-patient-record-counts";
 import type { ClinicalRecordListRow } from "@/lib/utils/clinical-record-list-types";
@@ -46,18 +46,21 @@ export async function loadHistoriasPageData(
     let patientIds: string[] | null = null;
 
     if (q) {
-      const { data: matched } = await applyPatientSearchFilter(
-        supabase
-          .from("patients")
-          .select("id, first_name, last_name, document_number")
-          .eq("clinic_id", clinicId)
-          .eq("is_active", true),
-        q
-      ).limit(50);
-
-      if (!matched?.length) {
+      const { patients: matchedPatients, error: searchError } = await searchPatientsForClinic(
+        supabase,
+        { clinicId, q, limit: 50 }
+      );
+      if (searchError) {
+        noMatchPatients = true;
+      } else if (!matchedPatients.length) {
         noMatchPatients = true;
       } else {
+        const matched = matchedPatients.map((p) => ({
+          id: p.id,
+          first_name: p.first_name,
+          last_name: p.last_name,
+          document_number: p.document_number,
+        }));
         patientIds = matched.map((p) => p.id);
         if (matched.length === 1) {
           listTitle = `Resultados · ${matched[0].last_name}, ${matched[0].first_name}`;

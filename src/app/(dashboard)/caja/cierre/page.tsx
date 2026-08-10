@@ -34,7 +34,9 @@ export default async function CajaCierrePage() {
   const [{ data: closure }, analytics] = await Promise.all([
     supabase
       .from("cash_daily_closures")
-      .select("*")
+      .select(
+        "id, clinic_id, closure_date, totals, patient_count, consultation_count, cash_difference, notes, closed_by, closed_at"
+      )
       .eq("clinic_id", clinicId)
       .eq("closure_date", date)
       .maybeSingle(),
