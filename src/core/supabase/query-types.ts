@@ -80,7 +80,7 @@ export type AppointmentAgendaRow = {
     | null;
   is_overbooking?: boolean | null;
   rescheduled_at?: string | null;
-  patients?: NestedRow<{ first_name: string; last_name: string }>;
+  patients?: NestedRow<{ first_name: string; last_name: string; document_number?: string }>;
   professionals?: NestedRow<{ profiles?: NestedRow<{ full_name?: string }> }>;
   locations?: NestedRow<{ name: string }>;
   specialties?: NestedRow<{ name: string }>;

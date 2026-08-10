@@ -6,17 +6,12 @@ import { logClientError } from "@/core/errors";
 import { PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
 
 import type { PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
-import { normalizePatientSearchResult } from "@/features/pacientes/utils/patient-search-result";
-
-type ApiPatient = PatientSearchOption & {
-  label?: string;
-  description?: string;
-  insurance_number?: string | null;
-  phone?: string | null;
-  address?: string | null;
-  birth_date?: string | null;
-  insurance_provider?: string | null;
-};
+import {
+  fetchPatientSearchResults,
+  PATIENT_SEARCH_DEBOUNCE_MS,
+  resolvePatientSearchMinLength,
+  shouldExecutePatientSearch,
+} from "@/features/pacientes/utils/fetch-patient-search";
 
 type Options = {
   minLength?: number;
@@ -25,52 +20,73 @@ type Options = {
   limit?: number;
 };
 
-/** Debounced patient search against `/api/command-palette/patients`. */
+/** Debounced patient search against `/api/patients/search` with request cancellation. */
 export function useAsyncPatientSearch(query: string, options: Options = {}) {
   const { minLength = 2, cobertura, enabled = true, limit = PATIENT_SEARCH_API_LIMIT } = options;
-  const [results, setResults] = useState<ApiPatient[]>([]);
+  const [results, setResults] = useState<PatientSearchOption[]>([]);
   const [loading, setLoading] = useState(false);
-  const fetchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
 
-    const q = query.trim();
-    if (q.length < minLength) {
+    const trimmed = query.trim();
+    const effectiveMin = resolvePatientSearchMinLength(trimmed, minLength);
+
+    if (!shouldExecutePatientSearch(trimmed, effectiveMin)) {
+      abortRef.current?.abort();
+      abortRef.current = null;
       const resetTimer = setTimeout(() => {
         setResults([]);
         setLoading(false);
+        setError(null);
       }, 0);
       return () => clearTimeout(resetTimer);
     }
 
-    if (fetchRef.current) clearTimeout(fetchRef.current);
-    const loadingTimer = window.setTimeout(() => setLoading(true), 0);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    abortRef.current?.abort();
 
-    fetchRef.current = setTimeout(() => {
-      const params = new URLSearchParams({ q });
-      if (cobertura) params.set("cobertura", cobertura);
-      params.set("limit", String(limit));
-      params.set("format", "picker");
-      params.set("extended", "1");
+    const loadingTimer = window.setTimeout(() => {
+      setLoading(true);
+      setError(null);
+    }, 0);
 
-      void fetch(`/api/command-palette/patients?${params.toString()}`)
-        .then((res) => (res.ok ? res.json() : { patients: [] }))
-        .then((data: { patients?: ApiPatient[] }) => {
-          setResults((data.patients ?? []).map(normalizePatientSearchResult));
+    debounceRef.current = setTimeout(() => {
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      void fetchPatientSearchResults(trimmed, {
+        cobertura,
+        limit,
+        extended: true,
+        signal: controller.signal,
+      })
+        .then(({ patients, error: fetchError }) => {
+          if (controller.signal.aborted) return;
+          setResults(patients);
+          setError(fetchError ?? null);
         })
         .catch((err) => {
-          logClientError("async-patient-search", err, { query: q });
+          if (controller.signal.aborted) return;
+          logClientError("async-patient-search", err, { query: trimmed });
           setResults([]);
+          setError("No se pudo buscar pacientes.");
         })
-        .finally(() => setLoading(false));
-    }, 200);
+        .finally(() => {
+          if (controller.signal.aborted) return;
+          setLoading(false);
+        });
+    }, PATIENT_SEARCH_DEBOUNCE_MS);
 
     return () => {
-      if (fetchRef.current) clearTimeout(fetchRef.current);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      abortRef.current?.abort();
       window.clearTimeout(loadingTimer);
     };
   }, [query, minLength, cobertura, enabled, limit]);
 
-  return { results, loading };
+  return { results, loading, error };
 }

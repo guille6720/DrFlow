@@ -4,7 +4,6 @@ import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { getSession } from "@/core/auth/session.server";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
-import { PATIENT_PICKER_INITIAL_LIMIT } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
 
 import { TurnosNuevoWizard } from "@/features/turnos/components/turnos-nuevo-wizard";
@@ -40,15 +39,8 @@ export default async function TurnosNuevoPage({
 
   const supabase = await createClient();
 
-  const [patients, professionals, locations, specialties, clinic] = clinicId
+  const [professionals, locations, specialties, clinic] = clinicId
     ? await Promise.all([
-        supabase
-          .from("patients")
-          .select("id, first_name, last_name, document_number, insurance_provider, insurance_plan")
-          .eq("clinic_id", clinicId)
-          .eq("is_active", true)
-          .order("last_name")
-          .limit(PATIENT_PICKER_INITIAL_LIMIT),
         getCachedClinicProfessionalsAgenda(clinicId),
         getCachedClinicLocations(clinicId),
         getCachedClinicSpecialties(clinicId),
@@ -58,7 +50,7 @@ export default async function TurnosNuevoPage({
           .eq("id", clinicId)
           .single(),
       ])
-    : [{ data: [] }, [], [], [], { data: null }];
+    : [[], [], [], { data: null }];
 
   const canOverbook =
     hasPermission(role, "manageClinic", isSuperadmin, permissionOverrides) ||
@@ -106,7 +98,7 @@ export default async function TurnosNuevoPage({
           </Link>
         </p>
         <TurnosNuevoWizard
-          patients={patients.data ?? []}
+          patients={initialPatient ? [initialPatient] : []}
           initialPatient={initialPatient}
           professionals={professionals}
           locations={locations}

@@ -10,11 +10,9 @@ import { createClient } from "@/core/supabase/server";
 import { searchPatientsForClinic } from "@/features/pacientes/server/search-patients";
 import { validatePatientSearchQuery } from "@/features/pacientes/utils/patient-search-query";
 
-import { mapPatientHits } from "@/lib/utils/command-palette-search";
-
 const limitSchema = z.coerce.number().int().min(1).max(50).optional();
 
-export const GET = withObservabilityApiRoute("command_palette_patients", async (request, ctx) => {
+export const GET = withObservabilityApiRoute("patients_search", async (request, ctx) => {
   const user = await getSession();
   if (!user) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -27,9 +25,6 @@ export const GET = withObservabilityApiRoute("command_palette_patients", async (
   }
 
   const cobertura = url.searchParams.get("cobertura");
-  const format = url.searchParams.get("format");
-  const extended = url.searchParams.get("extended") === "1";
-  const pickerFormat = format === "picker";
   const limitParsed = limitSchema.safeParse(url.searchParams.get("limit") ?? undefined);
   const limit = limitParsed.success ? limitParsed.data : PATIENT_SEARCH_API_LIMIT;
 
@@ -48,7 +43,7 @@ export const GET = withObservabilityApiRoute("command_palette_patients", async (
   }
 
   const supabase = await createClient();
-  const { patients: rows, error } = await searchPatientsForClinic(supabase, {
+  const { patients, error } = await searchPatientsForClinic(supabase, {
     clinicId,
     q: parsed.q,
     limit,
@@ -58,18 +53,6 @@ export const GET = withObservabilityApiRoute("command_palette_patients", async (
   if (error) {
     return NextResponse.json({ patients: [], error }, { status: 500 });
   }
-
-  const patients =
-    pickerFormat || extended
-      ? rows
-      : mapPatientHits(
-          rows.map((row) => ({
-            id: row.id,
-            first_name: row.first_name,
-            last_name: row.last_name,
-            document_number: row.document_number,
-          }))
-        );
 
   return NextResponse.json({ patients });
 });

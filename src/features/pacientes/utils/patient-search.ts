@@ -51,6 +51,7 @@ function buildPatientFieldOrFilter(token: string): string {
     `first_name.ilike.${pattern}`,
     `last_name.ilike.${pattern}`,
     `document_number.ilike.${pattern}`,
+    `phone.ilike.${pattern}`,
   ].join(",");
 }
 

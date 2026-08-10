@@ -64,15 +64,8 @@ export async function loadRecetasPageData(
   clinicAddress?: string | null,
   clinicPhone?: string | null
 ): Promise<RecetasPageData> {
-  const [patientsRes, professionals, recentRxRes] = clinicId
+  const [professionals, recentRxRes] = clinicId
     ? await Promise.all([
-        supabase
-          .from("patients")
-          .select("id, first_name, last_name, document_number")
-          .eq("clinic_id", clinicId)
-          .eq("is_active", true)
-          .order("last_name")
-          .limit(80),
         getCachedClinicProfessionalsFull(clinicId),
         supabase
           .from("prescription_drafts")
@@ -83,16 +76,15 @@ export async function loadRecetasPageData(
           .order("created_at", { ascending: false })
           .limit(30),
       ])
-    : [{ data: [] }, [], { data: [] }];
+    : [[], { data: [] }];
 
-  const patients = patientsRes.data ?? [];
   const recentPrescriptions = (recentRxRes.data ?? []) as RecetasPageData["recentPrescriptions"];
   const defaultProfessionalId = clinicId
     ? await resolveDefaultProfessionalId(supabase, clinicId, professionals, professionalParam)
     : undefined;
 
   return {
-    patients,
+    patients: [],
     professionals,
     recentPrescriptions,
     selectedPatient: null,

@@ -43,9 +43,23 @@ function durationMinutes(startAt: string, endAt: string) {
   );
 }
 
+function appointmentPatientSeed(
+  appointment: AppointmentAgendaRow
+): { id: string; first_name: string; last_name: string; document_number: string } | null {
+  const nested = appointment.patients;
+  const patient = Array.isArray(nested) ? nested[0] : nested;
+  if (!patient?.first_name || !patient?.last_name) return null;
+  return {
+    id: appointment.patient_id,
+    first_name: patient.first_name,
+    last_name: patient.last_name,
+    document_number: patient.document_number ?? "",
+  };
+}
+
 export function EditAppointmentDialog({
   appointment,
-  patients,
+  patients: _patients,
   professionals,
   locations,
   specialties,
@@ -99,6 +113,8 @@ export function EditAppointmentDialog({
 
   const otherAppointments = appointments.filter((a) => a.id !== appointment.id);
 
+  const seedPatient = appointmentPatientSeed(appointment);
+
   return (
     <div className="fixed inset-0 z-[200] flex items-end justify-center p-4 sm:items-center">
       <button
@@ -126,16 +142,11 @@ export function EditAppointmentDialog({
 
         <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
           <PatientSearchCombobox
-            patients={patients.map((p) => ({
-              id: p.id,
-              first_name: p.first_name,
-              last_name: p.last_name,
-              document_number: p.document_number,
-            }))}
+            patients={seedPatient ? [seedPatient] : []}
             defaultPatientId={appointment.patient_id}
             searchMode="remote"
             minSearchLength={1}
-            searchResultLimit={30}
+            searchResultLimit={20}
             displayMode="detailed"
             createPatientHref={(q) => buildCreatePatientHref(q, "/agenda")}
             required

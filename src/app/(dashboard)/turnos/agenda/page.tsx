@@ -1,7 +1,7 @@
 import { addDays, subDays } from "date-fns";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
-import { APPOINTMENTS_AGENDA_MAX, PATIENT_PICKER_INITIAL_LIMIT } from "@/core/supabase/pagination";
+import { APPOINTMENTS_AGENDA_MAX } from "@/core/supabase/pagination";
 import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
 import { APPOINTMENT_AGENDA_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
@@ -24,26 +24,19 @@ export default async function TurnosAgendaPage() {
   const rangeStart = subDays(new Date(), 7).toISOString();
   const rangeEnd = addDays(new Date(), 30).toISOString();
 
-  const [appointments, patients, professionals, locations, specialties, blocks, bookingSlug] =
+  const [appointments, professionals, locations, specialties, blocks, bookingSlug] =
     clinicId
       ? await Promise.all([
           supabase
             .from("appointments")
             .select(
-              `${APPOINTMENT_AGENDA_COLUMNS}, patients(first_name, last_name), professionals(profiles(full_name)), locations(name), specialties(name)`
+              `${APPOINTMENT_AGENDA_COLUMNS}, patients(first_name, last_name, document_number), professionals(profiles(full_name)), locations(name), specialties(name)`
             )
             .eq("clinic_id", clinicId)
             .gte("start_at", rangeStart)
             .lte("start_at", rangeEnd)
             .order("start_at")
             .limit(APPOINTMENTS_AGENDA_MAX),
-          supabase
-            .from("patients")
-            .select("id, first_name, last_name, document_number")
-            .eq("clinic_id", clinicId)
-            .eq("is_active", true)
-            .order("last_name")
-            .limit(PATIENT_PICKER_INITIAL_LIMIT),
           getCachedClinicProfessionalsAgenda(clinicId),
           getCachedClinicLocations(clinicId),
           getCachedClinicSpecialties(clinicId),
@@ -55,7 +48,7 @@ export default async function TurnosAgendaPage() {
             .lte("start_at", rangeEnd),
           getCachedActiveBookingSlug(clinicId),
         ])
-      : [{ data: [] }, { data: [] }, [], [], [], { data: [] }, null];
+      : [{ data: [] }, [], [], [], { data: [] }, null];
 
   const defaultProfessionalId = clinicId
     ? await resolveDefaultProfessionalId(supabase, clinicId, professionals as Array<{ id: string }>)
@@ -67,7 +60,7 @@ export default async function TurnosAgendaPage() {
   return (
     <AgendaView
       appointments={appointmentRows}
-      patients={patients.data ?? []}
+      patients={[]}
       professionals={professionalRows}
       locations={locations}
       specialties={specialties}
