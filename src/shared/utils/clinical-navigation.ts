@@ -6,6 +6,11 @@ export function patientClinicalHistoryPath(patientId: string): string {
   return `/pacientes/${patientId}?tab=soap&action=nueva`;
 }
 
+/** Datos del paciente: alta/edición de ficha administrativa y perfil clínico. */
+export function patientFichaPath(patientId: string): string {
+  return `/pacientes/${patientId}/editar`;
+}
+
 /** Agrega ?from=historia para que «Volver» regrese a la HC del paciente. */
 export function withClinicalHistoryReturn(path: string, patientId: string): string {
   const [pathname, query = ""] = path.split("?");

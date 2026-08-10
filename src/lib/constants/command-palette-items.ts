@@ -22,6 +22,8 @@ import {
 
 import type { PERMISSIONS } from "@/core/permissions/roles";
 
+import { patientFichaPath } from "@/shared/utils/clinical-navigation";
+
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 import { pamiNavMessages } from "@/locales/es-AR/pami/nav";
@@ -252,11 +254,11 @@ export function buildPatientContextPaletteActions(patientId: string): CommandPal
     {
       id: "ctx-chart",
       label: "Ficha del paciente",
-      href: `/pacientes/${patientId}`,
+      href: patientFichaPath(patientId),
       group: "acciones",
       icon: HeartPulse,
-      keywords: ["ficha", "resumen"],
-      permission: "viewClinicalRecords",
+      keywords: ["ficha", "datos", "editar"],
+      permission: "managePatients",
     },
   ];
 }

@@ -5,6 +5,8 @@ import Link from "next/link";
 
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
+import { patientFichaPath } from "@/shared/utils/clinical-navigation";
+
 import { Button } from "@/components/ui/button";
 import { canStartConsultation } from "@/lib/utils/appointment";
 
@@ -39,7 +41,7 @@ export function AppointmentRowActions({
 }: Props) {
   return (
     <div className="flex flex-wrap gap-2">
-      <Link href={`/pacientes/${appointment.patient_id}`}>
+      <Link href={patientFichaPath(appointment.patient_id)}>
         <Button type="button" size="sm" variant="outline" className={agendaBtn}>
           <User className="h-3.5 w-3.5" />
           Ficha

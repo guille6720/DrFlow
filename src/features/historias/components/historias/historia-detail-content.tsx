@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   backHrefFromClinicalSubpage,
   patientClinicalHistoryPath,
+  patientFichaPath,
   withClinicalHistoryReturn,
 } from "@/shared/utils/clinical-navigation";
 
@@ -88,7 +89,7 @@ export function HistoriaDetailContent({
           <ArrowLeft className="h-4 w-4" /> Volver
         </Link>
         <Link
-          href={withClinicalHistoryReturn(`/pacientes/${patient.id}`, patient.id)}
+          href={withClinicalHistoryReturn(patientFichaPath(patient.id), patient.id)}
           className="drflow-link text-sm"
         >
           Ficha del paciente

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
+import { patientClinicalHistoryPath, patientFichaPath } from "@/shared/utils/clinical-navigation";
 
 import type { PatientRecordGroup } from "@/features/historias/components/historias/clinical-records-grouped-list";
 import { ClinicalCopilotAccessButton } from "@/features/ia/components/clinical-workflow/clinical-copilot-access-button";
@@ -45,7 +45,7 @@ export function ClinicalRecordsGroupSummaryActions({ group, whatsappName }: Prop
         Toda su historia
       </Link>
       <Link
-        href={`/pacientes/${group.patientId}`}
+        href={patientFichaPath(group.patientId)}
         className="text-xs text-slate-600 hover:underline"
         onClick={(e) => e.stopPropagation()}
       >

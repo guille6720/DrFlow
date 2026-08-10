@@ -4,7 +4,7 @@ import { FileText, ScrollText } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback } from "react";
 
-import { patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
+import { patientClinicalHistoryPath, patientFichaPath } from "@/shared/utils/clinical-navigation";
 
 import {
   buildPatientContextMenuItems,
@@ -120,16 +120,10 @@ const PatientListCard = memo(function PatientListCard({
             </Link>
           ) : null}
           <Link
-            href={`/pacientes/${p.id}`}
+            href={patientFichaPath(p.id)}
             className="text-xs font-semibold text-slate-800 underline-offset-2 hover:text-teal-800 hover:underline"
           >
             Ficha
-          </Link>
-          <Link
-            href={`/pacientes/${p.id}/editar`}
-            className="text-xs font-semibold text-slate-800 underline-offset-2 hover:text-teal-800 hover:underline"
-          >
-            Editar
           </Link>
         </div>
         <p className="text-xs font-medium text-slate-700 sm:text-right">

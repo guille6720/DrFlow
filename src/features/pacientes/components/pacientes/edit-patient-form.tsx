@@ -79,7 +79,7 @@ export function EditPatientForm({
       />
       <div className="p-4 sm:p-6">
         <Link href={`/pacientes/${patient.id}`} className="mb-4 inline-flex items-center gap-1 text-sm text-blue-700 hover:underline">
-          <ArrowLeft className="h-4 w-4" /> Volver a la ficha
+          <ArrowLeft className="h-4 w-4" /> Volver al paciente
         </Link>
         <Card title="Datos del paciente">
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">

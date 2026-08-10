@@ -1,7 +1,7 @@
 import { User } from "lucide-react";
 import Link from "next/link";
 
-import { patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
+import { patientClinicalHistoryPath, patientFichaPath } from "@/shared/utils/clinical-navigation";
 
 import type { PrescriptionsOrdersPatient } from "@/features/recetas/components/recetas/prescriptions-orders-types";
 
@@ -29,7 +29,7 @@ export function PrescriptionsOrdersPatientHeader({ patient }: { patient: Prescri
             Historia clínica
           </Button>
         </Link>
-        <Link href={`/pacientes/${patient.id}`}>
+        <Link href={patientFichaPath(patient.id)}>
           <Button variant="outline" size="sm">
             Ficha del paciente
           </Button>
