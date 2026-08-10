@@ -148,15 +148,13 @@ export function SidebarNavContent({
   const [appearanceOpen, setAppearanceOpen] = useState(false);
 
   useEffect(() => {
-    if (!isInvitedMember) return;
-
     function handleOpenAppearance() {
       setAppearanceOpen(true);
     }
 
     window.addEventListener(GUEST_APPEARANCE_OPEN_EVENT, handleOpenAppearance);
     return () => window.removeEventListener(GUEST_APPEARANCE_OPEN_EVENT, handleOpenAppearance);
-  }, [isInvitedMember]);
+  }, []);
 
   return (
     <>

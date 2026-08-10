@@ -6,9 +6,18 @@ import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
 import { TurnosReportesView } from "@/features/turnos/components/turnos-reportes-view";
-import { loadTurnosReportesPageData } from "@/features/turnos/server/load-turnos-config-page";
+import {
+  loadTurnosPeriodReportData,
+} from "@/features/turnos/server/load-turnos-config-page";
+import { parseTurnosReportPeriod } from "@/features/turnos/utils/turnos-metrics";
 
-export default async function TurnosReportesPage() {
+export default async function TurnosReportesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string }>;
+}) {
+  const { period: periodParam } = await searchParams;
+  const period = parseTurnosReportPeriod(periodParam);
   const ctx = await getDashboardPageContext();
   const { clinicId, role, isSuperadmin, permissionOverrides, clinics, profile } = ctx;
 
@@ -32,7 +41,7 @@ export default async function TurnosReportesPage() {
   }
 
   const supabase = await createClient();
-  const { metrics } = await loadTurnosReportesPageData(supabase, clinicId);
+  const { metrics } = await loadTurnosPeriodReportData(supabase, clinicId, period);
 
   return (
     <>

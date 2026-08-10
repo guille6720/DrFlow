@@ -48,6 +48,121 @@ export type TurnosDashboardMetrics = {
   }>;
 };
 
+export type TurnosReportPeriod = "week" | "month" | "year";
+
+export type TurnosPeriodReportMetrics = {
+  period: TurnosReportPeriod;
+  periodLabel: string;
+  summary: {
+    total: number;
+    cancelled: number;
+    noShow: number;
+    attended: number;
+    cancellationRate: number;
+    noShowRate: number;
+  };
+  occupancy: {
+    bookedMinutes: number;
+    capacityMinutes: number;
+    occupancyRate: number;
+  };
+  byProfessional: Array<{
+    professionalId: string;
+    professionalName: string;
+    count: number;
+  }>;
+};
+
+export const TURNOS_REPORT_PERIOD_LABELS: Record<TurnosReportPeriod, string> = {
+  week: "Semana",
+  month: "Mes",
+  year: "Año",
+};
+
+export function parseTurnosReportPeriod(value: string | undefined): TurnosReportPeriod {
+  if (value === "month" || value === "year") return value;
+  return "week";
+}
+
+export function turnosReportPeriodDays(period: TurnosReportPeriod): number {
+  switch (period) {
+    case "week":
+      return 7;
+    case "month":
+      return 30;
+    case "year":
+      return 365;
+  }
+}
+
+function countStatus(rows: TurnosMetricAppointment[], status: string) {
+  return rows.filter((row) => row.status === status).length;
+}
+
+function summarizeAppointmentRows(rows: TurnosMetricAppointment[]) {
+  const cancelled = countStatus(rows, "cancelled");
+  const noShow = countStatus(rows, "no_show");
+  const attended = countStatus(rows, "attended");
+  const resolved = rows.filter(
+    (row) => row.status === "attended" || row.status === "no_show" || row.status === "cancelled"
+  );
+
+  return {
+    total: rows.length,
+    cancelled,
+    noShow,
+    attended,
+    cancellationRate:
+      resolved.length > 0 ? Math.round((cancelled / resolved.length) * 100) : 0,
+    noShowRate:
+      attended + noShow > 0 ? Math.round((noShow / (attended + noShow)) * 100) : 0,
+  };
+}
+
+export function computePeriodReportMetrics(input: {
+  appointments: TurnosMetricAppointment[];
+  rules: TurnosAvailabilityRule[];
+  period: TurnosReportPeriod;
+  professionals: Array<{ id: string; name: string }>;
+  now?: Date;
+  timeZone?: string;
+}): TurnosPeriodReportMetrics {
+  const now = input.now ?? new Date();
+  const timeZone = input.timeZone ?? "America/Argentina/Buenos_Aires";
+  const days = turnosReportPeriodDays(input.period);
+  const todayStart = startOfClinicDay(now, timeZone);
+  const todayEnd = addDays(todayStart, 1);
+  const periodStart = addDays(todayStart, -days);
+
+  const periodRows = input.appointments.filter((row) => {
+    const start = parseISO(row.start_at);
+    return start >= periodStart && start < todayEnd;
+  });
+
+  const occupancyRows = periodRows.filter((row) => row.status !== "cancelled");
+  const bookedMinutes = occupancyRows.reduce((sum, row) => sum + appointmentMinutes(row), 0);
+  const capacityMinutes = capacityMinutesForRange(input.rules, periodStart, days, timeZone);
+
+  const byProfessional = input.professionals.map((professional) => ({
+    professionalId: professional.id,
+    professionalName: professional.name,
+    count: periodRows.filter((row) => row.professional_id === professional.id).length,
+  }));
+
+  return {
+    period: input.period,
+    periodLabel: TURNOS_REPORT_PERIOD_LABELS[input.period],
+    summary: summarizeAppointmentRows(periodRows),
+    occupancy: {
+      bookedMinutes,
+      capacityMinutes,
+      occupancyRate:
+        capacityMinutes > 0 ? Math.round((bookedMinutes / capacityMinutes) * 100) : 0,
+    },
+    byProfessional,
+  };
+}
+
 function appointmentMinutes(row: TurnosMetricAppointment): number {
   const start = parseISO(row.start_at).getTime();
   const end = parseISO(row.end_at).getTime();

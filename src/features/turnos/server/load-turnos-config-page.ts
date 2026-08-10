@@ -9,9 +9,13 @@ import { startOfClinicDay } from "@/shared/utils/clinic-timezone";
 
 import {
   capacityMinutesForRange,
+  computePeriodReportMetrics,
   computeTurnosDashboardMetrics,
   type TurnosDashboardMetrics,
   type TurnosMetricAppointment,
+  type TurnosPeriodReportMetrics,
+  type TurnosReportPeriod,
+  turnosReportPeriodDays,
 } from "@/features/turnos/utils/turnos-metrics";
 
 import {
@@ -278,6 +282,53 @@ export async function loadTurnosReportesPageData(supabase: SupabaseClient, clini
       now,
     });
   }
+
+  return { metrics };
+}
+
+export async function loadTurnosPeriodReportData(
+  supabase: SupabaseClient,
+  clinicId: string,
+  period: TurnosReportPeriod
+): Promise<{ metrics: TurnosPeriodReportMetrics }> {
+  const now = new Date();
+  const todayStart = startOfClinicDay(now);
+  const todayEnd = addDays(todayStart, 1);
+  const days = turnosReportPeriodDays(period);
+  const rangeStart = addDays(todayStart, -days);
+
+  const [{ data: rules }, professionals, { data: appointments }] = await Promise.all([
+    supabase
+      .from("availability_rules")
+      .select("day_of_week, start_time, end_time, slot_duration, is_active, professional_id")
+      .eq("clinic_id", clinicId)
+      .eq("is_active", true),
+    getCachedClinicProfessionalsAgenda(clinicId),
+    supabase
+      .from("appointments")
+      .select("id, status, start_at, end_at, is_overbooking, professional_id")
+      .eq("clinic_id", clinicId)
+      .gte("start_at", rangeStart.toISOString())
+      .lt("start_at", todayEnd.toISOString()),
+  ]);
+
+  const mappedRules = (rules ?? []).map((rule) => ({
+    day_of_week: rule.day_of_week,
+    start_time: String(rule.start_time),
+    end_time: String(rule.end_time),
+    is_active: rule.is_active,
+  }));
+
+  const metrics = computePeriodReportMetrics({
+    appointments: (appointments ?? []) as TurnosMetricAppointment[],
+    rules: mappedRules,
+    period,
+    professionals: (professionals ?? []).map((professional) => ({
+      id: professional.id,
+      name: getProfessionalDisplayName(professional),
+    })),
+    now,
+  });
 
   return { metrics };
 }
