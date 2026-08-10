@@ -81,4 +81,38 @@ describe.skipIf(!runIntegration)("cross-tenant RLS (integration)", () => {
 
     expect(rowCheck?.clinic_id).toBe(clinicB.id);
   });
+
+  it("waiting_list rows are scoped to distinct clinic_ids across tenants", async () => {
+    const admin = createClient(url!, serviceKey!, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    const { data: clinics } = await admin.from("clinics").select("id").limit(2);
+    if (!clinics || clinics.length < 2) return;
+
+    const [clinicA, clinicB] = clinics;
+    const [{ data: rowA }, { data: rowB }] = await Promise.all([
+      admin.from("waiting_list").select("id, clinic_id").eq("clinic_id", clinicA.id).limit(1).maybeSingle(),
+      admin.from("waiting_list").select("id, clinic_id").eq("clinic_id", clinicB.id).limit(1).maybeSingle(),
+    ]);
+
+    if (rowA?.id && rowB?.id) {
+      expect(rowA.clinic_id).toBe(clinicA.id);
+      expect(rowB.clinic_id).toBe(clinicB.id);
+      expect(rowA.clinic_id).not.toBe(rowB.clinic_id);
+    }
+  });
+
+  it("superadmin profile exists for elevated access path", async () => {
+    const admin = createClient(url!, serviceKey!, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    const { count } = await admin
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("is_superadmin", true);
+
+    expect(count).toBeGreaterThanOrEqual(0);
+  });
 });

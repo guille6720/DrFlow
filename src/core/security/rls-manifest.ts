@@ -47,6 +47,17 @@ export const TABLES_REQUIRING_RLS = [
   "cash_invoices",
   "cash_daily_closures",
   "patient_admin_documents",
+  "user_ai_connections",
+  "clinic_member_permissions",
+  "clinic_shared_ai_connections",
+  "pami_planilla_categories",
+  "pami_planilla_templates",
+  "pami_planilla_template_versions",
+  "pami_planilla_template_fields",
+  "pami_planilla_clinic_template_settings",
+  "appointment_status_history",
+  "waiting_list",
+  "appointment_notification_queue",
 ] as const;
 
 /** RPC SECURITY DEFINER que deben acotar tenant (nombre → migración de referencia). */
