@@ -91,6 +91,7 @@ export const EXPECTED_RPCS = [
   "search_patients_for_clinic",
   "count_patients_for_clinic_search",
   "summarize_collected_cash_charges_for_closure",
+  "summarize_appointments_for_turnos_reportes",
   "search_patient_ids_by_pathology",
   "count_clinical_records_by_patients",
 ];

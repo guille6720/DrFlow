@@ -1,3 +1,5 @@
+import { PATIENT_EHR_RECORD_PAGE_SIZE } from "@/core/supabase/pagination";
+
 import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
 
 export type WorkspaceFetchPlan = {
@@ -12,14 +14,15 @@ export type WorkspaceFetchPlan = {
   recordLimit?: number;
 };
 
-const FULL: WorkspaceFetchPlan = {
+const TIMELINE: WorkspaceFetchPlan = {
   clinicalRecords: true,
   attachments: true,
   prescriptions: true,
   orders: true,
   appointments: true,
   hceSummary: true,
-  templates: true,
+  templates: false,
+  recordLimit: PATIENT_EHR_RECORD_PAGE_SIZE,
 };
 
 const LIGHT_SHELL: WorkspaceFetchPlan = {
@@ -60,7 +63,7 @@ export function getWorkspaceFetchPlan(tab: PatientWorkspaceTabId): WorkspaceFetc
       return {
         ...LIGHT_SHELL,
         clinicalRecords: true,
-        recordLimit: 200,
+        recordLimit: 100,
         hceSummary: true,
       };
 
@@ -73,16 +76,17 @@ export function getWorkspaceFetchPlan(tab: PatientWorkspaceTabId): WorkspaceFetc
         appointments: false,
         hceSummary: true,
         templates: true,
-        recordLimit: 500,
+        recordLimit: 120,
       };
 
     case "timeline":
-      return FULL;
+      return TIMELINE;
 
     case "resumen":
       return {
-        ...FULL,
-        recordLimit: 200,
+        ...TIMELINE,
+        templates: false,
+        recordLimit: PATIENT_EHR_RECORD_PAGE_SIZE,
       };
 
     case "problemas":
@@ -96,11 +100,11 @@ export function getWorkspaceFetchPlan(tab: PatientWorkspaceTabId): WorkspaceFetc
         clinicalRecords: true,
         attachments: true,
         prescriptions: true,
-        recordLimit: 150,
+        recordLimit: 100,
         hceSummary: true,
       };
 
     default:
-      return FULL;
+      return TIMELINE;
   }
 }

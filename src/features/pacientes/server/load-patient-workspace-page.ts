@@ -1,7 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { unwrapNestedRow } from "@/core/supabase/nested-row";
-import { PATIENT_ATTACHMENTS_LIMIT } from "@/core/supabase/pagination";
+import {
+  encodeDescCursor,
+  PATIENT_ATTACHMENTS_LIMIT,
+  PATIENT_EHR_RECORD_PAGE_SIZE,
+} from "@/core/supabase/pagination";
 import type { ProfessionalListRow } from "@/core/supabase/query-types";
 
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
@@ -113,7 +117,7 @@ export async function loadPatientWorkspacePageData(
 ): Promise<PatientWorkspacePagePayload> {
   const patientId = patient.id;
   const plan = getWorkspaceFetchPlan(activeTab ?? "resumen");
-  const recordLimit = plan.recordLimit ?? PATIENT_EHR_RECORD_LIMIT;
+  const recordLimit = Math.min(plan.recordLimit ?? PATIENT_EHR_RECORD_PAGE_SIZE, PATIENT_EHR_RECORD_LIMIT);
 
   const portalContextPromise = getCachedPortalContext(clinicId);
   const professionalsPromise = getCachedClinicProfessionalsList(clinicId);
@@ -136,7 +140,8 @@ export async function loadPatientWorkspacePageData(
         )
         .eq("clinic_id", clinicId)
         .eq("patient_id", patientId)
-        .order("created_at", { ascending: true })
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
         .limit(recordLimit)
     : Promise.resolve({ data: [], count: 0 });
 
@@ -233,10 +238,24 @@ export async function loadPatientWorkspacePageData(
   const patientWithClinical = mergePatientClinicalFields(patient, clinicalProfileResult.data);
 
   const mappedRecords = mapClinicalRecordsForEhr(records);
-  const clinicalDocuments = mapClinicalDocuments(attachments);
-  const issuedPrescriptions = (rxList ?? []).filter((rx) => rx.status === "issued");
-  const lastRx = issuedPrescriptions[0];
-  const lastMedications = (lastRx?.medications as PrescriptionMedication[] | null) ?? null;
+  const loadedRecords = mappedRecords.length;
+  const totalRecordCount = typeof totalRecords === "number" ? totalRecords : loadedRecords;
+  const hasMoreRecords = loadedRecords < totalRecordCount;
+  const oldestLoaded = records?.at(-1);
+  const clinicalRecordsPagination = plan.clinicalRecords
+    ? {
+        total: totalRecordCount,
+        hasMore: hasMoreRecords,
+        nextCursor:
+          hasMoreRecords && oldestLoaded
+            ? encodeDescCursor(oldestLoaded.created_at, oldestLoaded.id)
+            : null,
+      }
+    : {
+        total: 0,
+        hasMore: false,
+        nextCursor: null,
+      };
 
   const ehr = buildPatientEhrWorkspaceData({
     patient,
@@ -247,7 +266,13 @@ export async function loadPatientWorkspacePageData(
     orders: (orders ?? []) as (MedicalOrder & { order_type?: string })[],
     timelineAppointments: mapTimelineAppointments(timelineAppointments),
     hceRows,
+    clinicalRecordsPagination,
   });
+
+  const clinicalDocuments = mapClinicalDocuments(attachments);
+  const issuedPrescriptions = (rxList ?? []).filter((rx) => rx.status === "issued");
+  const lastRx = issuedPrescriptions[0];
+  const lastMedications = (lastRx?.medications as PrescriptionMedication[] | null) ?? null;
 
   const chart = buildPatientChartPayload({
     patient: {

@@ -8,7 +8,9 @@ import { generateAvailableSlots } from "@/core/booking/slots";
 import { startOfClinicDay } from "@/shared/utils/clinic-timezone";
 
 import {
+  capacityMinutesForRange,
   computeTurnosDashboardMetrics,
+  type TurnosDashboardMetrics,
   type TurnosMetricAppointment,
 } from "@/features/turnos/utils/turnos-metrics";
 
@@ -111,16 +113,29 @@ export async function loadTurnosConfigPageData(supabase: SupabaseClient, clinicI
 
 export async function loadTurnosReportesPageData(supabase: SupabaseClient, clinicId: string) {
   const now = new Date();
-  const rangeStart = addDays(startOfClinicDay(now), -30).toISOString();
-  const rangeEnd = addDays(startOfClinicDay(now), 1).toISOString();
+  const todayStart = startOfClinicDay(now);
+  const todayEnd = addDays(todayStart, 1);
+  const last7Start = addDays(todayStart, -7);
+  const rangeStart = addDays(todayStart, -30);
+  const rangeEnd = todayEnd;
 
-  const [{ data: appointments }, { data: rules }, professionals, clinic] = await Promise.all([
-    supabase
-      .from("appointments")
-      .select("id, status, start_at, end_at, is_overbooking, professional_id")
-      .eq("clinic_id", clinicId)
-      .gte("start_at", rangeStart)
-      .lt("start_at", rangeEnd),
+  const [
+    rpcResult,
+    { data: rules },
+    professionals,
+    clinic,
+    { data: todayAppointments },
+    { data: todayBlocks },
+    fallbackAppointments,
+  ] = await Promise.all([
+    supabase.rpc("summarize_appointments_for_turnos_reportes", {
+      p_clinic_id: clinicId,
+      p_range_start: rangeStart.toISOString(),
+      p_range_end: rangeEnd.toISOString(),
+      p_today_start: todayStart.toISOString(),
+      p_today_end: todayEnd.toISOString(),
+      p_last7_start: last7Start.toISOString(),
+    }),
     supabase
       .from("availability_rules")
       .select("day_of_week, start_time, end_time, slot_duration, is_active, professional_id")
@@ -128,14 +143,6 @@ export async function loadTurnosReportesPageData(supabase: SupabaseClient, clini
       .eq("is_active", true),
     getCachedClinicProfessionalsAgenda(clinicId),
     getCachedClinicSettings(clinicId),
-  ]);
-
-  const defaultSlotDuration = clinic?.default_appointment_duration ?? 30;
-
-  const todayStart = startOfClinicDay(now);
-  const todayEnd = addDays(todayStart, 1);
-
-  const [{ data: todayAppointments }, { data: todayBlocks }] = await Promise.all([
     supabase
       .from("appointments")
       .select("professional_id, start_at, end_at")
@@ -149,7 +156,21 @@ export async function loadTurnosReportesPageData(supabase: SupabaseClient, clini
       .eq("clinic_id", clinicId)
       .gte("start_at", todayStart.toISOString())
       .lt("start_at", todayEnd.toISOString()),
+    supabase
+      .from("appointments")
+      .select("id, status, start_at, end_at, is_overbooking, professional_id")
+      .eq("clinic_id", clinicId)
+      .gte("start_at", rangeStart.toISOString())
+      .lt("start_at", rangeEnd.toISOString()),
   ]);
+
+  const defaultSlotDuration = clinic?.default_appointment_duration ?? 30;
+  const mappedRules = (rules ?? []).map((rule) => ({
+    day_of_week: rule.day_of_week,
+    start_time: String(rule.start_time),
+    end_time: String(rule.end_time),
+    is_active: rule.is_active,
+  }));
 
   let freeSlotsToday = 0;
   for (const professional of professionals ?? []) {
@@ -175,32 +196,88 @@ export async function loadTurnosReportesPageData(supabase: SupabaseClient, clini
     }).length;
   }
 
-  const professionalCounts = (professionals ?? []).map((professional) => {
-    const count = (appointments ?? []).filter(
-      (row) =>
-        row.professional_id === professional.id &&
-        parseISO(row.start_at) >= todayStart &&
-        parseISO(row.start_at) < todayEnd
-    ).length;
-    return {
-      professionalId: professional.id,
-      professionalName: getProfessionalDisplayName(professional),
-      count,
-    };
-  });
+  let metrics: TurnosDashboardMetrics;
 
-  const metrics = computeTurnosDashboardMetrics({
-    appointments: (appointments ?? []) as TurnosMetricAppointment[],
-    rules: (rules ?? []).map((rule) => ({
-      day_of_week: rule.day_of_week,
-      start_time: String(rule.start_time),
-      end_time: String(rule.end_time),
-      is_active: rule.is_active,
-    })),
-    freeSlotsToday,
-    professionalCounts,
-    now,
-  });
+  if (!rpcResult.error && rpcResult.data && typeof rpcResult.data === "object") {
+    const summary = rpcResult.data as {
+      today: TurnosDashboardMetrics["today"];
+      last30_days: {
+        total: number;
+        cancelled: number;
+        no_show: number;
+        attended: number;
+      };
+      last7_booked_minutes: number;
+      by_professional_today: Array<{ professional_id: string; count: number }>;
+    };
+
+    const last30Resolved =
+      summary.last30_days.cancelled + summary.last30_days.no_show + summary.last30_days.attended;
+    const capacityMinutes = capacityMinutesForRange(mappedRules, last7Start, 7);
+
+    const countsByPro = new Map(
+      (summary.by_professional_today ?? []).map((row) => [row.professional_id, row.count])
+    );
+
+    metrics = {
+      today: summary.today,
+      last30Days: {
+        total: summary.last30_days.total,
+        cancelled: summary.last30_days.cancelled,
+        noShow: summary.last30_days.no_show,
+        attended: summary.last30_days.attended,
+        cancellationRate:
+          last30Resolved > 0
+            ? Math.round((summary.last30_days.cancelled / last30Resolved) * 100)
+            : 0,
+        noShowRate:
+          summary.last30_days.attended + summary.last30_days.no_show > 0
+            ? Math.round(
+                (summary.last30_days.no_show /
+                  (summary.last30_days.attended + summary.last30_days.no_show)) *
+                  100
+              )
+            : 0,
+      },
+      last7Days: {
+        bookedMinutes: Number(summary.last7_booked_minutes ?? 0),
+        capacityMinutes,
+        occupancyRate:
+          capacityMinutes > 0
+            ? Math.round((Number(summary.last7_booked_minutes ?? 0) / capacityMinutes) * 100)
+            : 0,
+        freeSlotsToday,
+      },
+      byProfessional: (professionals ?? []).map((professional) => ({
+        professionalId: professional.id,
+        professionalName: getProfessionalDisplayName(professional),
+        count: countsByPro.get(professional.id) ?? 0,
+      })),
+    };
+  } else {
+    const appointments = (fallbackAppointments.data ?? []) as TurnosMetricAppointment[];
+    const professionalCounts = (professionals ?? []).map((professional) => {
+      const count = appointments.filter(
+        (row) =>
+          row.professional_id === professional.id &&
+          parseISO(row.start_at) >= todayStart &&
+          parseISO(row.start_at) < todayEnd
+      ).length;
+      return {
+        professionalId: professional.id,
+        professionalName: getProfessionalDisplayName(professional),
+        count,
+      };
+    });
+
+    metrics = computeTurnosDashboardMetrics({
+      appointments,
+      rules: mappedRules,
+      freeSlotsToday,
+      professionalCounts,
+      now,
+    });
+  }
 
   return { metrics };
 }

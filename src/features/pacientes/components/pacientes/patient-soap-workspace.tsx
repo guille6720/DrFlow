@@ -13,6 +13,7 @@ import { PatientEhrStateProvider } from "@/features/historias/components/histori
 import type { PatientEhrViewProps } from "@/features/historias/components/historias/patient-ehr-types";
 import { useNuevaConsultaForm } from "@/features/historias/hooks/use-nueva-consulta-form";
 import type { PatientChartProfessional } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
+import type { PatientEhrClinicalRecordsPagination } from "@/features/pacientes/server/load-patient-ehr-data";
 import {
   buildPatientWorkspaceUrl,
   parsePatientWorkspaceActions,
@@ -36,6 +37,7 @@ type Props = PatientEhrViewProps & {
   professionals: PatientChartProfessional[];
   templates: Template[];
   defaultProfessionalId?: string | null;
+  clinicalRecordsPagination?: PatientEhrClinicalRecordsPagination;
 };
 
 export function PatientSoapWorkspace({
@@ -52,6 +54,7 @@ export function PatientSoapWorkspace({
   professionals,
   templates,
   defaultProfessionalId,
+  clinicalRecordsPagination,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -107,6 +110,8 @@ export function PatientSoapWorkspace({
       diagnosisRows={diagnosisRows}
       treatmentRows={treatmentRows}
       initialSelectedId={parsed.consulta}
+      patientId={patient.id}
+      clinicalRecordsPagination={clinicalRecordsPagination}
     >
       <PatientEhrShellFrame embedded={embedded}>
         {!embedded ? (

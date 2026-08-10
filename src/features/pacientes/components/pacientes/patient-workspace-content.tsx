@@ -108,6 +108,7 @@ export async function PatientWorkspaceContent({
         professionals={workspace.professionals}
         templates={workspace.templates}
         defaultProfessionalId={workspace.defaultProfessionalId}
+        clinicalRecordsPagination={workspace.ehr.clinicalRecordsPagination}
       />
     ) : undefined;
 

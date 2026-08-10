@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
 
 import { toast } from "@/core/notifications/toast";
 
@@ -20,6 +20,8 @@ import {
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import { printEhrClinicalDocument } from "@/features/historias/utils/print-ehr-clinical-document";
 import { getPatientClinicalDocumentUrl } from "@/features/pacientes/actions/patient-attachments";
+import { loadMorePatientClinicalRecords } from "@/features/pacientes/server/load-more-patient-clinical-records";
+import type { PatientEhrClinicalRecordsPagination } from "@/features/pacientes/server/load-patient-ehr-data";
 import { HCE_SUMMARY_ATTACHMENT_NAME } from "@/features/pacientes/utils/patient-ehr-from-hce";
 import type {
   PatientEhrAttachment,
@@ -48,18 +50,58 @@ type PrintBundle = {
   treatmentRows: PatientEhrTreatmentRow[];
 };
 
+function mergeById<T extends { id: string }>(base: T[], extra: T[]): T[] {
+  const seen = new Set(base.map((row) => row.id));
+  const merged = [...base];
+  for (const row of extra) {
+    if (seen.has(row.id)) continue;
+    seen.add(row.id);
+    merged.push(row);
+  }
+  return merged;
+}
+
 export function usePatientEhrState(
   consultations: PatientEhrConsultation[],
   attachments: PatientEhrAttachment[],
   printBundle: PrintBundle,
-  initialSelectedId?: string | null
+  initialSelectedId?: string | null,
+  options?: {
+    patientId?: string;
+    clinicalRecordsPagination?: PatientEhrClinicalRecordsPagination;
+  }
 ) {
+  const [extraConsultations, setExtraConsultations] = useState<PatientEhrConsultation[]>([]);
+  const [extraDiagnosisRows, setExtraDiagnosisRows] = useState<PatientEhrDiagnosisRow[]>([]);
+  const [extraTreatmentRows, setExtraTreatmentRows] = useState<PatientEhrTreatmentRow[]>([]);
+  const [recordsPagination, setRecordsPagination] = useState<PatientEhrClinicalRecordsPagination>(
+    options?.clinicalRecordsPagination ?? {
+      total: consultations.length,
+      hasMore: false,
+      nextCursor: null,
+    }
+  );
+  const [loadingMoreRecords, startLoadMoreRecords] = useTransition();
+
+  const mergedConsultations = useMemo(
+    () => mergeById(consultations, extraConsultations),
+    [consultations, extraConsultations]
+  );
+  const mergedDiagnosisRows = useMemo(
+    () => mergeById(printBundle.diagnosisRows, extraDiagnosisRows),
+    [printBundle.diagnosisRows, extraDiagnosisRows]
+  );
+  const mergedTreatmentRows = useMemo(
+    () => mergeById(printBundle.treatmentRows, extraTreatmentRows),
+    [printBundle.treatmentRows, extraTreatmentRows]
+  );
+
   const sorted = useMemo(
     () =>
-      [...consultations].sort(
+      [...mergedConsultations].sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       ),
-    [consultations]
+    [mergedConsultations]
   );
 
   const evolutionList = useMemo(() => buildEvolutionList(sorted), [sorted]);
@@ -136,18 +178,42 @@ export function usePatientEhrState(
 
   const vitalsRows = useMemo(() => sorted.filter((c) => c.category === "vitals"), [sorted]);
 
+  const loadMoreRecords = useCallback(() => {
+    if (!options?.patientId || !recordsPagination.hasMore || loadingMoreRecords) return;
+
+    startLoadMoreRecords(async () => {
+      const result = await loadMorePatientClinicalRecords(
+        options.patientId!,
+        recordsPagination.nextCursor ?? undefined
+      );
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+
+      setExtraConsultations((current) => mergeById(current, result.consultations ?? []));
+      setExtraDiagnosisRows((current) => mergeById(current, result.diagnosisRows ?? []));
+      setExtraTreatmentRows((current) => mergeById(current, result.treatmentRows ?? []));
+      setRecordsPagination((current) => ({
+        total: current.total,
+        hasMore: result.hasMore ?? false,
+        nextCursor: result.nextCursor ?? null,
+      }));
+    });
+  }, [loadingMoreRecords, options, recordsPagination.hasMore, recordsPagination.nextCursor]);
+
   function triggerPrint(scope: PatientEhrPrintScope) {
     if (scope === "day" && dayPrintConsultations.length === 0) return;
 
     const dayCreatedAt = selected?.created_at ?? dayPrintConsultations[0]?.created_at ?? null;
     const diagnosisRows =
       scope === "day"
-        ? filterClinicalRowsByConsultationDay(printBundle.diagnosisRows, dayCreatedAt)
-        : printBundle.diagnosisRows;
+        ? filterClinicalRowsByConsultationDay(mergedDiagnosisRows, dayCreatedAt)
+        : mergedDiagnosisRows;
     const treatmentRows =
       scope === "day"
-        ? filterClinicalRowsByConsultationDay(printBundle.treatmentRows, dayCreatedAt)
-        : printBundle.treatmentRows;
+        ? filterClinicalRowsByConsultationDay(mergedTreatmentRows, dayCreatedAt)
+        : mergedTreatmentRows;
 
     const result = printEhrClinicalDocument({
       scope,
@@ -183,5 +249,10 @@ export function usePatientEhrState(
     vitalsRows,
     dayPrintConsultations,
     triggerPrint,
+    diagnosisRows: mergedDiagnosisRows,
+    treatmentRows: mergedTreatmentRows,
+    clinicalRecordsPagination: recordsPagination,
+    loadMoreRecords,
+    loadingMoreRecords,
   };
 }

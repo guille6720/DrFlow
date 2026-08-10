@@ -72,10 +72,24 @@ DrFlow ya tiene bases sólidas (paginación en listados clave, RPC de búsqueda 
 | `load-cash-closure-day-totals.ts` | Agregación RPC cierre con fallback |
 | `091_performance_audit_group1.sql` | offset search + count + closure summary RPC |
 
-### Grupo 2 — Paginación faltante
-- [ ] EHR cursor pagination (2000 → 50+load-more)
-- [ ] Turnos reportes RPC agregados
-- [ ] Cuenta corriente paginada
+### Grupo 2 — Paginación faltante (aplicado)
+- [x] EHR cursor pagination (80 inicial + "Cargar más consultas")
+- [x] Turnos reportes RPC agregados (092)
+- [x] Cuenta corriente: remote search + ledger 50/página
+- [x] Tests + typecheck + lint + build
+
+**Deploy requerido:** migración **092** en Supabase.
+
+### Grupo 2 — Cambios aplicados
+
+| Archivo | Cambio |
+| ------- | ------ |
+| `load-patient-ehr-data.ts` | Límite 80; paginación clínica |
+| `load-more-patient-clinical-records.ts` | Server action cursor |
+| `patient-ehr-sidebar.tsx` | Botón "Cargar más" |
+| `load-turnos-config-page.ts` | RPC `summarize_appointments_for_turnos_reportes` |
+| `092_performance_audit_group2.sql` | Agregación SQL turnos |
+| `load-cuenta-corriente-page.ts` + `cuenta-corriente-view.tsx` | Remote picker + paginación |
 
 ### Grupo 3 — Frontend / UX
 - [ ] Caja remote patient picker
@@ -105,14 +119,21 @@ DrFlow ya tiene bases sólidas (paginación en listados clave, RPC de búsqueda 
 
 **Deploy requerido:** migración **091** en Supabase.
 
-### Pendiente (Grupos 2–4)
+### Grupo 2 (aplicado)
+
+| Métrica | Before | After |
+| ------- | ------ | ----- |
+| Apertura ficha paciente / EHR | Hasta 2000 records | 80 inicial + "Cargar más consultas" |
+| Turnos reportes | Fetch-all 30 días | RPC `summarize_appointments_for_turnos_reportes` |
+| Cuenta corriente | 200 pacientes `<select>` + 100 movimientos | Remote search + 50/página |
+
+**Deploy requerido:** migración **092** en Supabase.
+
+### Pendiente (Grupos 3–4)
 
 | Métrica | Before (estimado) | After (objetivo) |
 | ------- | ----------------- | ---------------- |
-| Apertura ficha paciente | Hasta 2000 records | 50–100 inicial + cursor |
-| Turnos reportes | Fetch-all 30 días | RPC agregados |
 | Dashboard TTFB | Core+secondary ~7 queries | Sin cambio aún |
 | Agenda | ±21d SSR, cap 1000 | Fetch incremental |
-| Historia clínica timeline | 2000 cap | Cursor load-more |
-| Payload ficha EHR | Hasta MB | <100 KB inicial |
 | Bundle shell | ~1.2 MB | Lazy islands |
+| Poll router.refresh | 30s dashboard/sala espera | Delta updates |

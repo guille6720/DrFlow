@@ -22,12 +22,13 @@ describe("patient workspace fetch plan", () => {
     expect(plan.recordLimit).toBe(50);
   });
 
-  it("loads full bundle for timeline", () => {
+  it("loads timeline bundle with paginated clinical records", () => {
     const plan = getWorkspaceFetchPlan("timeline");
     expect(plan.clinicalRecords).toBe(true);
     expect(plan.attachments).toBe(true);
     expect(plan.appointments).toBe(true);
     expect(plan.hceSummary).toBe(true);
+    expect(plan.recordLimit).toBe(80);
   });
 });
 
