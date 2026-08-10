@@ -7,7 +7,7 @@ import { PamiPlanillaCategorySection } from "@/features/pami/components/pami/pam
 import { PAMI_PLANILLA_FALLBACK_CATALOG } from "@/features/pami/seed/pami-planilla-fallback-catalog";
 
 vi.mock("@/core/hooks/use-async-patient-search", () => ({
-  useAsyncPatientSearch: () => ({ results: [], loading: false }),
+  useAsyncPatientSearch: () => ({ results: [], loading: false, error: null }),
 }));
 
 vi.mock("next/navigation", () => ({

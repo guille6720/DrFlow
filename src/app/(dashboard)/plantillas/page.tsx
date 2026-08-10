@@ -8,11 +8,13 @@ import {
 } from "@/core/auth/session.server";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
-import { createClient } from "@/core/supabase/server";
 
 import { ClinicalTemplatesManager } from "@/features/historias/components/historias/clinical-templates-manager";
 
-import { getCachedClinicSpecialties } from "@/lib/server/cached-clinic-queries";
+import {
+  getCachedClinicalTemplatesAdmin,
+  getCachedClinicSpecialties,
+} from "@/lib/server/cached-clinic-queries";
 
 export default async function PlantillasPage() {
   const profile = await getProfile();
@@ -28,15 +30,8 @@ export default async function PlantillasPage() {
     redirect("/dashboard");
   }
 
-  const supabase = await createClient();
-  const [{ data: templates }, specialties] = await Promise.all([
-    supabase
-      .from("clinical_templates")
-      .select(
-        "id, name, specialty_id, chief_complaint_template, diagnosis_template, evolution_template, indications_template, is_active"
-      )
-      .eq("clinic_id", clinicId)
-      .order("name"),
+  const [templates, specialties] = await Promise.all([
+    getCachedClinicalTemplatesAdmin(clinicId),
     getCachedClinicSpecialties(clinicId),
   ]);
 
@@ -55,7 +50,7 @@ export default async function PlantillasPage() {
           clínica.
         </p>
         <ClinicalTemplatesManager
-          templates={templates ?? []}
+          templates={templates}
           specialties={specialties.map((s) => ({ id: s.id, name: s.name }))}
         />
       </div>

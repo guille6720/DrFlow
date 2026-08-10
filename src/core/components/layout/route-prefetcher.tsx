@@ -3,27 +3,38 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-const DASHBOARD_ROUTES = [
+import type { UserRole } from "@/types/database";
+
+const CORE_DASHBOARD_ROUTES = [
   "/dashboard",
-  "/agenda",
-  "/atenciones",
   "/pacientes",
+  "/turnos/agenda",
   "/historias",
-  "/recetas",
-  "/herramientas/farmacologia",
-  "/recordatorios",
-  "/reportes",
-  "/guia-pami",
-  "/ayuda",
-  "/ingreso-profesionales",
-  "/plantillas",
-  "/firmas",
-  "/configuracion",
+  "/caja",
 ] as const;
 
-/** Precarga rutas del panel en segundo plano (menos "Compiling" al navegar en dev). */
-export function RoutePrefetcher({ routes = DASHBOARD_ROUTES }: { routes?: readonly string[] }) {
+const STAFF_EXTRA_ROUTES = ["/ingreso-profesionales", "/configuracion"] as const;
+
+function routesForRole(role: UserRole | null, isSuperadmin: boolean): readonly string[] {
+  if (isSuperadmin || role === "superadmin" || role === "clinic_admin") {
+    return [...CORE_DASHBOARD_ROUTES, ...STAFF_EXTRA_ROUTES];
+  }
+  if (role === "secretary") {
+    return [...CORE_DASHBOARD_ROUTES, "/turnos/lista-espera", "/sala-espera"];
+  }
+  return CORE_DASHBOARD_ROUTES;
+}
+
+/** Precarga rutas clave del panel en idle — acotado por rol para no competir con la navegación real. */
+export function RoutePrefetcher({
+  role,
+  isSuperadmin = false,
+}: {
+  role?: UserRole | null;
+  isSuperadmin?: boolean;
+}) {
   const router = useRouter();
+  const routes = routesForRole(role ?? null, isSuperadmin);
 
   useEffect(() => {
     let cancelled = false;
@@ -33,13 +44,13 @@ export function RoutePrefetcher({ routes = DASHBOARD_ROUTES }: { routes?: readon
       routes.forEach((route, index) => {
         const timer = setTimeout(() => {
           if (!cancelled) router.prefetch(route);
-        }, index * 150);
+        }, 400 + index * 250);
         timers.push(timer);
       });
     };
 
     if (typeof window.requestIdleCallback === "function") {
-      const idleId = window.requestIdleCallback(prefetchAll, { timeout: 3000 });
+      const idleId = window.requestIdleCallback(prefetchAll, { timeout: 5000 });
       return () => {
         cancelled = true;
         timers.forEach(clearTimeout);
@@ -47,7 +58,7 @@ export function RoutePrefetcher({ routes = DASHBOARD_ROUTES }: { routes?: readon
       };
     }
 
-    const startTimer = setTimeout(prefetchAll, 800);
+    const startTimer = setTimeout(prefetchAll, 1200);
     timers.push(startTimer);
 
     return () => {

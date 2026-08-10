@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { getActiveClinic, getActiveClinicId } from "@/core/auth/session.server";
+import { revalidateClinicSettingsCache } from "@/core/cache/revalidate-clinic-cache";
 import { hasPermission } from "@/core/permissions/roles";
 import { recordAuditChange } from "@/core/security/audit-service";
 import { createClient } from "@/core/supabase/server";
@@ -95,6 +96,7 @@ export async function updateClinicCoverages(formData: FormData): Promise<{
     keys: ["accepted_coverages", "default_insurance_provider"],
   });
 
+  revalidateClinicSettingsCache(clinicId);
   revalidatePath("/configuracion");
   revalidatePath("/pacientes");
   revalidatePath("/pacientes/nuevo");

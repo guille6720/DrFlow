@@ -1,12 +1,17 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { unwrapNestedRow } from "@/core/supabase/nested-row";
-import { PATIENT_ATTACHMENTS_LIMIT } from "@/core/supabase/pagination";
+import {
+  encodeDescCursor,
+  PATIENT_ATTACHMENTS_LIMIT,
+  PATIENT_EHR_RECORD_PAGE_SIZE,
+} from "@/core/supabase/pagination";
 import type { ProfessionalListRow } from "@/core/supabase/query-types";
 
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
 import type { PatientChartAppointment, PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { ClinicalTemplateRow } from "@/features/pacientes/components/pacientes/patient-workspace-types";
+import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
 import {
   buildPatientEhrWorkspaceData,
   mapClinicalRecordsForEhr,
@@ -20,6 +25,7 @@ import {
   mergePatientClinicalFields,
   type PatientClinicalProfileFields,
 } from "@/features/pacientes/server/patient-clinical-profile";
+import { getWorkspaceFetchPlan } from "@/features/pacientes/server/patient-workspace-fetch-plan";
 import { buildPatientChartPayload } from "@/features/pacientes/utils/patient-chart-model";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 import { HCE_SUMMARY_ATTACHMENT_NAME, loadPatientHceSummaryRows } from "@/features/pacientes/utils/patient-ehr-from-hce";
@@ -102,13 +108,86 @@ function mapProfessionals(rows: ProfessionalListRow[] | null): PatientWorkspaceP
   );
 }
 
-/** Single parallel fetch for patient workspace — avoids duplicate Supabase round-trips. */
+/** Parallel fetch for patient workspace — scoped to active tab when provided. */
 export async function loadPatientWorkspacePageData(
   supabase: SupabaseClient,
   clinicId: string,
-  patient: PatientRow
+  patient: PatientRow,
+  activeTab?: PatientWorkspaceTabId
 ): Promise<PatientWorkspacePagePayload> {
   const patientId = patient.id;
+  const plan = getWorkspaceFetchPlan(activeTab ?? "resumen");
+  const recordLimit = Math.min(plan.recordLimit ?? PATIENT_EHR_RECORD_PAGE_SIZE, PATIENT_EHR_RECORD_LIMIT);
+
+  const portalContextPromise = getCachedPortalContext(clinicId);
+  const professionalsPromise = getCachedClinicProfessionalsList(clinicId);
+  const clinicalProfilePromise = supabase
+    .from("patient_clinical_profiles")
+    .select("medical_history, allergies, regular_medication, notes")
+    .eq("patient_id", patientId)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+  const templatesPromise = plan.templates
+    ? getCachedClinicalTemplates(clinicId)
+    : Promise.resolve([] as ClinicalTemplateRow[]);
+
+  const recordsPromise = plan.clinicalRecords
+    ? supabase
+        .from("clinical_records")
+        .select(
+          "id, created_at, chief_complaint, diagnosis, evolution, indications, professionals(profiles(full_name))",
+          { count: "exact" }
+        )
+        .eq("clinic_id", clinicId)
+        .eq("patient_id", patientId)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .limit(recordLimit)
+    : Promise.resolve({ data: [], count: 0 });
+
+  const attachmentsPromise = plan.attachments
+    ? supabase
+        .from("patient_attachments")
+        .select("id, file_name, file_path, file_size, category, created_at, profiles:uploaded_by(full_name)")
+        .eq("patient_id", patientId)
+        .eq("clinic_id", clinicId)
+        .order("created_at", { ascending: false })
+        .limit(PATIENT_ATTACHMENTS_LIMIT)
+    : Promise.resolve({ data: [] });
+
+  const rxPromise = plan.prescriptions
+    ? supabase
+        .from("prescription_drafts")
+        .select(
+          "id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, notes, professional_id"
+        )
+        .eq("patient_id", patientId)
+        .eq("clinic_id", clinicId)
+        .order("created_at", { ascending: false })
+        .limit(PATIENT_RX_FETCH_LIMIT)
+    : Promise.resolve({ data: [] });
+
+  const ordersPromise = plan.orders
+    ? supabase
+        .from("medical_orders")
+        .select("id, order_text, notes, status, issued_at, created_at, updated_at, version, professional_id, patient_id, clinical_record_id, order_type")
+        .eq("clinic_id", clinicId)
+        .eq("patient_id", patientId)
+        .order("issued_at", { ascending: false })
+        .limit(50)
+    : Promise.resolve({ data: [] });
+
+  const appointmentsPromise = plan.appointments
+    ? supabase
+        .from("appointments")
+        .select(
+          "id, start_at, status, cancellation_reason, cancelled_by_type, professionals(profiles(full_name))"
+        )
+        .eq("patient_id", patientId)
+        .eq("clinic_id", clinicId)
+        .order("start_at", { ascending: false })
+        .limit(PATIENT_TIMELINE_APPOINTMENT_LIMIT)
+    : Promise.resolve({ data: [] });
 
   const [
     portalContext,
@@ -121,68 +200,28 @@ export async function loadPatientWorkspacePageData(
     clinicalProfileResult,
     templates,
   ] = await Promise.all([
-    getCachedPortalContext(clinicId),
-    supabase
-      .from("clinical_records")
-      .select(
-        "id, created_at, chief_complaint, diagnosis, evolution, indications, professionals(profiles(full_name))",
-        { count: "exact" }
-      )
-      .eq("clinic_id", clinicId)
-      .eq("patient_id", patientId)
-      .order("created_at", { ascending: true })
-      .limit(PATIENT_EHR_RECORD_LIMIT),
-    supabase
-      .from("patient_attachments")
-      .select("id, file_name, file_path, file_size, category, created_at, profiles:uploaded_by(full_name)")
-      .eq("patient_id", patientId)
-      .eq("clinic_id", clinicId)
-      .order("created_at", { ascending: false })
-      .limit(PATIENT_ATTACHMENTS_LIMIT),
-    supabase
-      .from("prescription_drafts")
-      .select(
-        "id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, notes, professional_id"
-      )
-      .eq("patient_id", patientId)
-      .eq("clinic_id", clinicId)
-      .order("created_at", { ascending: false })
-      .limit(PATIENT_RX_FETCH_LIMIT),
-    supabase
-      .from("medical_orders")
-      .select("id, order_text, notes, status, issued_at, created_at, updated_at, version, professional_id, patient_id, clinical_record_id, order_type")
-      .eq("clinic_id", clinicId)
-      .eq("patient_id", patientId)
-      .order("issued_at", { ascending: false })
-      .limit(50),
-    supabase
-      .from("appointments")
-      .select(
-        "id, start_at, status, cancellation_reason, cancelled_by_type, professionals(profiles(full_name))"
-      )
-      .eq("patient_id", patientId)
-      .eq("clinic_id", clinicId)
-      .order("start_at", { ascending: false })
-      .limit(PATIENT_TIMELINE_APPOINTMENT_LIMIT),
-    getCachedClinicProfessionalsList(clinicId),
-    supabase
-      .from("patient_clinical_profiles")
-      .select("medical_history, allergies, regular_medication, notes")
-      .eq("patient_id", patientId)
-      .eq("clinic_id", clinicId)
-      .maybeSingle(),
-    getCachedClinicalTemplates(clinicId),
+    portalContextPromise,
+    recordsPromise,
+    attachmentsPromise,
+    rxPromise,
+    ordersPromise,
+    appointmentsPromise,
+    professionalsPromise,
+    clinicalProfilePromise,
+    templatesPromise,
   ]);
 
   const { portalSlug, doctorInfo } = portalContext;
 
   const hceAttachment = attachments?.find((a) => a.file_name === HCE_SUMMARY_ATTACHMENT_NAME);
-  const hceRows = await loadPatientHceSummaryRows(
-    supabase,
-    clinicId,
-    patientId,
-    hceAttachment?.file_path ?? null
-  );
+  const hceRows = plan.hceSummary
+    ? await loadPatientHceSummaryRows(
+        supabase,
+        clinicId,
+        patientId,
+        hceAttachment?.file_path ?? null
+      )
+    : [];
 
   const appShareResult = portalSlug
     ? await supabase
@@ -199,10 +238,24 @@ export async function loadPatientWorkspacePageData(
   const patientWithClinical = mergePatientClinicalFields(patient, clinicalProfileResult.data);
 
   const mappedRecords = mapClinicalRecordsForEhr(records);
-  const clinicalDocuments = mapClinicalDocuments(attachments);
-  const issuedPrescriptions = (rxList ?? []).filter((rx) => rx.status === "issued");
-  const lastRx = issuedPrescriptions[0];
-  const lastMedications = (lastRx?.medications as PrescriptionMedication[] | null) ?? null;
+  const loadedRecords = mappedRecords.length;
+  const totalRecordCount = typeof totalRecords === "number" ? totalRecords : loadedRecords;
+  const hasMoreRecords = loadedRecords < totalRecordCount;
+  const oldestLoaded = records?.at(-1);
+  const clinicalRecordsPagination = plan.clinicalRecords
+    ? {
+        total: totalRecordCount,
+        hasMore: hasMoreRecords,
+        nextCursor:
+          hasMoreRecords && oldestLoaded
+            ? encodeDescCursor(oldestLoaded.created_at, oldestLoaded.id)
+            : null,
+      }
+    : {
+        total: 0,
+        hasMore: false,
+        nextCursor: null,
+      };
 
   const ehr = buildPatientEhrWorkspaceData({
     patient,
@@ -213,7 +266,13 @@ export async function loadPatientWorkspacePageData(
     orders: (orders ?? []) as (MedicalOrder & { order_type?: string })[],
     timelineAppointments: mapTimelineAppointments(timelineAppointments),
     hceRows,
+    clinicalRecordsPagination,
   });
+
+  const clinicalDocuments = mapClinicalDocuments(attachments);
+  const issuedPrescriptions = (rxList ?? []).filter((rx) => rx.status === "issued");
+  const lastRx = issuedPrescriptions[0];
+  const lastMedications = (lastRx?.medications as PrescriptionMedication[] | null) ?? null;
 
   const chart = buildPatientChartPayload({
     patient: {

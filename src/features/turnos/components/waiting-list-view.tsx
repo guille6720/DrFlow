@@ -2,11 +2,19 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import type { PageMeta } from "@/core/supabase/pagination";
 
 import { updateWaitingListStatus } from "@/features/turnos/actions/waiting-list";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ListPagination, ListPaginationLabel } from "@/components/ui/list-pagination";
 
 export type WaitingListRow = {
   id: string;
@@ -30,10 +38,41 @@ const STATUS_LABEL: Record<string, string> = {
   cancelled: "Cancelado",
 };
 
-export function WaitingListView({ entries }: { entries: WaitingListRow[] }) {
+type Props = {
+  entries: WaitingListRow[];
+  pageMeta?: PageMeta;
+  searchQuery?: string;
+  buildPageHref?: (page: number) => string;
+};
+
+export function WaitingListView({
+  entries,
+  pageMeta,
+  searchQuery = "",
+  buildPageHref,
+}: Props) {
+  const router = useRouter();
+  const [q, setQ] = useState(searchQuery);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
   async function handleStatus(id: string, status: "contacted" | "scheduled" | "cancelled") {
+    setUpdatingId(id);
     await updateWaitingListStatus(id, status);
+    setUpdatingId(null);
+    router.refresh();
   }
+
+  function submitSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    const term = q.trim();
+    if (term) params.set("q", term);
+    const qs = params.toString();
+    router.push(qs ? `/turnos/lista-espera?${qs}` : "/turnos/lista-espera");
+  }
+
+  const { page = 1, totalPages = 1, total = entries.length } = pageMeta ?? {};
+  const hasPagination = Boolean(buildPageHref && pageMeta && totalPages > 1);
 
   return (
     <div className="space-y-4">
@@ -44,9 +83,38 @@ export function WaitingListView({ entries }: { entries: WaitingListRow[] }) {
         </p>
       </div>
 
+      <form onSubmit={submitSearch} className="flex flex-wrap gap-2">
+        <Input
+          label="Buscar paciente"
+          placeholder="Nombre, apellido o DNI"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          className="min-w-[240px] flex-1"
+          type="search"
+          autoComplete="off"
+        />
+        <Button type="submit" variant="secondary" className="self-end">
+          Buscar
+        </Button>
+      </form>
+
+      {pageMeta ? (
+        <p className="text-sm text-[var(--muted-foreground)]">
+          {total} en lista · mostrando {entries.length} fila(s) en esta página
+          {searchQuery ? (
+            <>
+              {" "}
+              · filtro: <span className="font-medium">{searchQuery}</span>
+            </>
+          ) : null}
+        </p>
+      ) : null}
+
       {entries.length === 0 ? (
         <Card>
-          <p className="text-sm text-[var(--muted-foreground)]">No hay pacientes en lista de espera.</p>
+          <p className="text-sm text-[var(--muted-foreground)]">
+            {searchQuery ? "No hay coincidencias en la lista de espera." : "No hay pacientes en lista de espera."}
+          </p>
         </Card>
       ) : (
         entries.map((entry) => {
@@ -56,6 +124,7 @@ export function WaitingListView({ entries }: { entries: WaitingListRow[] }) {
             professional?.display_name ??
             (professional?.profiles as { full_name?: string } | null)?.full_name ??
             "Cualquier profesional";
+          const busy = updatingId === entry.id;
 
           return (
             <Card key={entry.id}>
@@ -102,6 +171,7 @@ export function WaitingListView({ entries }: { entries: WaitingListRow[] }) {
                         type="button"
                         variant="outline"
                         size="sm"
+                        loading={busy}
                         onClick={() => void handleStatus(entry.id, "contacted")}
                       >
                         Marcar contactado
@@ -110,6 +180,7 @@ export function WaitingListView({ entries }: { entries: WaitingListRow[] }) {
                     <Button
                       type="button"
                       size="sm"
+                      loading={busy}
                       onClick={() => void handleStatus(entry.id, "scheduled")}
                     >
                       Turno agendado
@@ -118,6 +189,8 @@ export function WaitingListView({ entries }: { entries: WaitingListRow[] }) {
                       type="button"
                       variant="outline"
                       size="sm"
+                      loading={busy}
+                      disabled={busy}
                       onClick={() => void handleStatus(entry.id, "cancelled")}
                     >
                       Cancelar
@@ -129,6 +202,38 @@ export function WaitingListView({ entries }: { entries: WaitingListRow[] }) {
           );
         })
       )}
+
+      {hasPagination && buildPageHref ? (
+        <ListPagination>
+          {page > 1 ? (
+            <Link href={buildPageHref(page - 1)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-slate-500 bg-slate-700/80 text-slate-100 hover:bg-slate-600"
+              >
+                <ChevronLeft className="h-4 w-4" /> Anterior
+              </Button>
+            </Link>
+          ) : null}
+          <ListPaginationLabel
+            current={page}
+            totalPages={totalPages}
+            suffix={`${total} en lista`}
+          />
+          {page < totalPages ? (
+            <Link href={buildPageHref(page + 1)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-slate-500 bg-slate-700/80 text-slate-100 hover:bg-slate-600"
+              >
+                Siguiente <ChevronRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          ) : null}
+        </ListPagination>
+      ) : null}
     </div>
   );
 }

@@ -78,6 +78,7 @@ export function HistoriaDetailContent({
             slug={portalSlug}
             doctor={doctorInfo}
             share={patientShare}
+            refreshOnShare={false}
           />
         </Card>
       )}

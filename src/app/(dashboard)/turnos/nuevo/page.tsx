@@ -4,14 +4,15 @@ import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { getSession } from "@/core/auth/session.server";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
-import { PATIENT_PICKER_INITIAL_LIMIT } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
 
 import { TurnosNuevoWizard } from "@/features/turnos/components/turnos-nuevo-wizard";
+import { loadTurnosWizardSlots } from "@/features/turnos/server/load-turnos-wizard-slots";
 
 import {
   getCachedClinicLocations,
   getCachedClinicProfessionalsAgenda,
+  getCachedClinicSettings,
   getCachedClinicSpecialties,
 } from "@/lib/server/cached-clinic-queries";
 import {
@@ -40,25 +41,14 @@ export default async function TurnosNuevoPage({
 
   const supabase = await createClient();
 
-  const [patients, professionals, locations, specialties, clinic] = clinicId
+  const [professionals, locations, specialties, clinicSettings] = clinicId
     ? await Promise.all([
-        supabase
-          .from("patients")
-          .select("id, first_name, last_name, document_number, insurance_provider, insurance_plan")
-          .eq("clinic_id", clinicId)
-          .eq("is_active", true)
-          .order("last_name")
-          .limit(PATIENT_PICKER_INITIAL_LIMIT),
         getCachedClinicProfessionalsAgenda(clinicId),
         getCachedClinicLocations(clinicId),
         getCachedClinicSpecialties(clinicId),
-        supabase
-          .from("clinics")
-          .select("default_appointment_duration")
-          .eq("id", clinicId)
-          .single(),
+        getCachedClinicSettings(clinicId),
       ])
-    : [{ data: [] }, [], [], [], { data: null }];
+    : [[], [], [], null];
 
   const canOverbook =
     hasPermission(role, "manageClinic", isSuperadmin, permissionOverrides) ||
@@ -90,6 +80,11 @@ export default async function TurnosNuevoPage({
         ).data
       : null;
 
+  const initialWizardSlots =
+    clinicId && defaultProfessionalId
+      ? await loadTurnosWizardSlots(supabase, clinicId, defaultProfessionalId)
+      : null;
+
   return (
     <>
       <Header
@@ -106,15 +101,24 @@ export default async function TurnosNuevoPage({
           </Link>
         </p>
         <TurnosNuevoWizard
-          patients={patients.data ?? []}
+          patients={initialPatient ? [initialPatient] : []}
           initialPatient={initialPatient}
           professionals={professionals}
           locations={locations}
           specialties={specialties}
-          defaultDuration={clinic.data?.default_appointment_duration ?? 30}
+          defaultDuration={clinicSettings?.default_appointment_duration ?? 30}
           canOverbook={canOverbook}
           defaultProfessionalId={defaultProfessionalId}
           initialStartAt={startAtParam}
+          initialWizardSlots={
+            initialWizardSlots
+              ? {
+                  slots: initialWizardSlots.slots,
+                  appointments: initialWizardSlots.appointments,
+                  scheduleBlocks: initialWizardSlots.scheduleBlocks,
+                }
+              : undefined
+          }
         />
       </div>
     </>

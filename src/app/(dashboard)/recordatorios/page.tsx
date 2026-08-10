@@ -1,25 +1,20 @@
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { createClient } from "@/core/supabase/server";
 
 import { RecordatoriosView } from "@/features/agenda/components/recordatorios/recordatorios-view";
 
+const REMINDER_LOG_COLUMNS =
+  "id, clinic_id, appointment_id, recipient, channel, status, message, sent_at, error_message, created_at";
+
 export default async function RecordatoriosPage() {
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role } = await getActiveClinic();
+  const { profile, clinics, clinicId, role } = await getDashboardPageContext();
   const supabase = await createClient();
 
   const [logs, appointments] = clinicId
     ? await Promise.all([
         supabase
           .from("reminder_logs")
-          .select("*")
+          .select(REMINDER_LOG_COLUMNS)
           .eq("clinic_id", clinicId)
           .order("created_at", { ascending: false })
           .limit(50),

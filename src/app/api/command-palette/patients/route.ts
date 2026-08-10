@@ -6,9 +6,9 @@ import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { hasPermission } from "@/core/permissions/roles";
 import { PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
-import { patientPickerSearchQuerySchema } from "@/core/validations/params";
 
-import { applyPatientSearchFilter } from "@/features/pacientes/utils/patient-search";
+import { searchPatientsForClinic } from "@/features/pacientes/server/search-patients";
+import { validatePatientSearchQuery } from "@/features/pacientes/utils/patient-search-query";
 
 import { mapPatientHits } from "@/lib/utils/command-palette-search";
 
@@ -21,11 +21,11 @@ export const GET = withObservabilityApiRoute("command_palette_patients", async (
   }
 
   const url = new URL(request.url);
-  const qParsed = patientPickerSearchQuerySchema.safeParse(url.searchParams.get("q")?.trim() ?? "");
-  if (!qParsed.success) {
+  const parsed = validatePatientSearchQuery(url.searchParams.get("q")?.trim() ?? "");
+  if (!parsed.ok) {
     return NextResponse.json({ patients: [] });
   }
-  const q = qParsed.data;
+
   const cobertura = url.searchParams.get("cobertura");
   const format = url.searchParams.get("format");
   const extended = url.searchParams.get("extended") === "1";
@@ -48,38 +48,28 @@ export const GET = withObservabilityApiRoute("command_palette_patients", async (
   }
 
   const supabase = await createClient();
+  const { patients: rows, error } = await searchPatientsForClinic(supabase, {
+    clinicId,
+    q: parsed.q,
+    limit,
+    cobertura: cobertura === "pami" ? "pami" : undefined,
+  });
 
-  let query = extended || pickerFormat
-    ? supabase
-        .from("patients")
-        .select(
-          "id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, address"
-        )
-        .eq("clinic_id", clinicId)
-        .eq("is_active", true)
-        .order("last_name")
-        .limit(limit ?? PATIENT_SEARCH_API_LIMIT)
-    : supabase
-        .from("patients")
-        .select("id, first_name, last_name, document_number")
-        .eq("clinic_id", clinicId)
-        .eq("is_active", true)
-        .order("last_name")
-        .limit(limit ?? PATIENT_SEARCH_API_LIMIT);
-
-  if (cobertura === "pami") {
-    query = query.ilike("insurance_provider", "%PAMI%");
-  }
-
-  query = applyPatientSearchFilter(query, q);
-
-  const { data, error } = await query;
   if (error) {
-    return NextResponse.json({ patients: [], error: error.message }, { status: 500 });
+    return NextResponse.json({ patients: [], error }, { status: 500 });
   }
 
-  const rows = data ?? [];
-  const patients = pickerFormat || extended ? rows : mapPatientHits(rows);
+  const patients =
+    pickerFormat || extended
+      ? rows
+      : mapPatientHits(
+          rows.map((row) => ({
+            id: row.id,
+            first_name: row.first_name,
+            last_name: row.last_name,
+            document_number: row.document_number,
+          }))
+        );
 
   return NextResponse.json({ patients });
 });

@@ -24,11 +24,11 @@ describe("RLS policy manifest (static audit)", () => {
 
     for (const table of TABLES_REQUIRING_RLS) {
       const enablePattern = new RegExp(
-        `ALTER\\s+TABLE\\s+${table}\\s+ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY`,
+        `ALTER\\s+TABLE\\s+(?:public\\.)?${table}\\s+ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY`,
         "i"
       );
       const policyPattern = new RegExp(
-        `CREATE\\s+POLICY\\s+\\w+\\s+ON\\s+${table}\\s+`,
+        `CREATE\\s+POLICY\\s+\\w+\\s+ON\\s+(?:public\\.)?${table}\\s+`,
         "i"
       );
 

@@ -1,51 +1,37 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { Suspense } from "react";
 
 import { getDashboardShell } from "@/core/auth/session";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
-import { createClient } from "@/core/supabase/server";
 
-import { ClinicalOperationsDashboard } from "@/features/dashboard/components/dashboard/clinical-operations-dashboard";
+import { ClinicalOpsSecondarySkeleton } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-secondary-skeleton";
+import { ClinicalOpsDashboardAsync } from "@/features/dashboard/components/dashboard/clinical-ops-dashboard-async";
 import { ClinicalOpsDashboardBoundary } from "@/features/dashboard/components/dashboard/clinical-ops-dashboard-boundary";
-import { loadClinicalOperationsDashboard } from "@/features/dashboard/server/load-clinical-operations-dashboard";
-import { normalizeClinicalOpsPayload } from "@/features/dashboard/utils/normalize-clinical-ops-payload";
 
 export const dynamic = "force-dynamic";
 
-async function loadDashboardPageData() {
-  const shell = await getDashboardShell();
-  const supabase = await createClient();
-
-  let ops: Awaited<ReturnType<typeof loadClinicalOperationsDashboard>> | null = null;
-  if (shell.clinicId) {
-    try {
-      ops = await loadClinicalOperationsDashboard(supabase, shell.clinicId);
-    } catch (err) {
-      console.error("[dashboard] loadClinicalOperationsDashboard failed:", err);
-    }
-  }
-
-  return { ...shell, ops, now: new Date() };
-}
-
-function DashboardPageFallback({ message }: { message: string }) {
+function DashboardOpsSkeleton() {
   return (
-    <div className="p-6">
-      <p className="text-sm text-amber-700">{message}</p>
+    <div className="space-y-4" aria-busy="true" aria-label="Cargando operaciones del día">
+      <div className="h-10 animate-pulse rounded-lg bg-slate-800/60" />
+      <div className="grid gap-4 lg:grid-cols-[minmax(11rem,13rem)_minmax(0,1fr)]">
+        <div className="hidden h-64 animate-pulse rounded-xl bg-slate-800/40 lg:block" />
+        <div className="space-y-4">
+          <div className="h-16 animate-pulse rounded-xl bg-slate-800/50" />
+          <div className="h-40 animate-pulse rounded-xl bg-slate-800/50" />
+          <ClinicalOpsSecondarySkeleton />
+        </div>
+      </div>
     </div>
   );
 }
 
-async function DashboardPageContent() {
-  const data = await loadDashboardPageData();
-  if (!data) {
-    return (
-      <DashboardPageFallback message="No pudimos cargar el dashboard. Refrescá la página o probá de nuevo en unos segundos." />
-    );
-  }
-
-  const { profile, clinics, clinicId, clinic, role, isSuperadmin, ops, now } = data;
+export default async function DashboardPage() {
+  const shell = await getDashboardShell();
+  const { profile, clinics, clinicId, clinic, role, isSuperadmin } = shell;
+  const now = new Date();
 
   return (
     <>
@@ -60,21 +46,20 @@ async function DashboardPageContent() {
       />
 
       <div className="p-4 sm:p-6">
-        {ops && clinicId ? (
+        {clinicId ? (
           <ClinicalOpsDashboardBoundary>
-            <ClinicalOperationsDashboard
-              clinicId={clinicId}
-              clinicName={clinic?.name ?? "Consultorio"}
-              professionalName={profile?.full_name}
-              ops={normalizeClinicalOpsPayload(ops)}
-              canManageAppointments={hasPermission(role, "manageAppointments", isSuperadmin)}
-              canManageCash={hasPermission(role, "manageCashRegister", isSuperadmin)}
-              canManageWaitingRoom={hasPermission(role, "manageWaitingRoom", isSuperadmin)}
-              canManageSettings={hasPermission(role, "manageSettings", isSuperadmin)}
-            />
+            <Suspense fallback={<DashboardOpsSkeleton />}>
+              <ClinicalOpsDashboardAsync
+                clinicId={clinicId}
+                clinicName={clinic?.name ?? "Consultorio"}
+                professionalName={profile?.full_name}
+                canManageAppointments={hasPermission(role, "manageAppointments", isSuperadmin)}
+                canManageCash={hasPermission(role, "manageCashRegister", isSuperadmin)}
+                canManageWaitingRoom={hasPermission(role, "manageWaitingRoom", isSuperadmin)}
+                canManageSettings={hasPermission(role, "manageSettings", isSuperadmin)}
+              />
+            </Suspense>
           </ClinicalOpsDashboardBoundary>
-        ) : clinicId ? (
-          <DashboardPageFallback message="No pudimos cargar operaciones del día. Refrescá la página o probá de nuevo en unos segundos." />
         ) : (
           <p className="text-sm text-slate-500">
             Seleccioná un consultorio para ver operaciones del día.
@@ -83,15 +68,4 @@ async function DashboardPageContent() {
       </div>
     </>
   );
-}
-
-export default async function DashboardPage() {
-  try {
-    return await DashboardPageContent();
-  } catch (err) {
-    console.error("[dashboard] page render failed:", err);
-    return (
-      <DashboardPageFallback message="No pudimos cargar el dashboard. Refrescá la página o probá de nuevo en unos segundos." />
-    );
-  }
 }

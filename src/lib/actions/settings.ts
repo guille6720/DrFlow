@@ -10,6 +10,7 @@ import {
   revalidateClinicLocationsCache,
   revalidateClinicPortalCache,
   revalidateClinicProfessionalsCache,
+  revalidateClinicSettingsCache,
   revalidateClinicSpecialtiesCache,
 } from "@/core/cache/revalidate-clinic-cache";
 import { hasPermission } from "@/core/permissions/roles";
@@ -100,6 +101,7 @@ export async function updateClinicSettings(formData: FormData) {
     keys: ["name", "phone", "email", "address", "default_appointment_duration", "voice_input_enabled"],
   });
 
+  revalidateClinicSettingsCache(clinicId);
   revalidatePath("/configuracion");
 
   revalidatePath("/agenda");

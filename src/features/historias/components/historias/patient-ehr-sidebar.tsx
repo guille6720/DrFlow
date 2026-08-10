@@ -17,6 +17,11 @@ type Props = {
   selectedId: string | null | undefined;
   pendingConsultation?: PendingSidebarConsultation | null;
   onSelect: (id: string) => void;
+  hasMoreRecords?: boolean;
+  loadingMoreRecords?: boolean;
+  onLoadMoreRecords?: () => void;
+  loadedRecordsCount?: number;
+  totalRecordsCount?: number;
 };
 
 export function PatientEhrSidebar({
@@ -24,6 +29,11 @@ export function PatientEhrSidebar({
   selectedId,
   pendingConsultation = null,
   onSelect,
+  hasMoreRecords = false,
+  loadingMoreRecords = false,
+  onLoadMoreRecords,
+  loadedRecordsCount: _loadedRecordsCount,
+  totalRecordsCount,
 }: Props) {
   return (
     <aside className="drflow-ehr-sidebar w-full shrink-0 border-b border-[var(--border)] lg:w-56 lg:border-b-0 lg:border-r">
@@ -70,6 +80,22 @@ export function PatientEhrSidebar({
             })}
           </ul>
         )}
+        {hasMoreRecords && onLoadMoreRecords ? (
+          <div className="border-t border-[var(--border)] p-3">
+            <button
+              type="button"
+              onClick={onLoadMoreRecords}
+              disabled={loadingMoreRecords}
+              className="w-full rounded-md border border-[var(--border)] px-3 py-2 text-xs font-medium transition hover:opacity-90 disabled:opacity-60"
+            >
+              {loadingMoreRecords
+                ? "Cargando consultas…"
+                : totalRecordsCount
+                  ? `Cargar más (${sidebarList.length}/${totalRecordsCount})`
+                  : "Cargar más consultas"}
+            </button>
+          </div>
+        ) : null}
       </div>
     </aside>
   );

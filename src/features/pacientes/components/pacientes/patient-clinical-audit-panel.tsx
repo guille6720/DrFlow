@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Shield } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { auditModuleLabel } from "@/core/security/audit-log";
 import {
@@ -16,10 +16,15 @@ import {
 import { loadPatientAuditTrail } from "@/features/pacientes/server/load-patient-audit-trail";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 type Props = {
   patientId: string;
+  initialEvents?: PatientAuditEvent[];
+  initialError?: string | null;
+  initialNextCursor?: string | null;
+  initialHasMore?: boolean;
 };
 
 function AuditDiffSummary({ event }: { event: PatientAuditEvent }) {
@@ -51,23 +56,53 @@ function AuditDiffSummary({ event }: { event: PatientAuditEvent }) {
   );
 }
 
-export function PatientClinicalAuditPanel({ patientId }: Props) {
-  const [events, setEvents] = useState<PatientAuditEvent[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+export function PatientClinicalAuditPanel({
+  patientId,
+  initialEvents,
+  initialError = null,
+  initialNextCursor = null,
+  initialHasMore = false,
+}: Props) {
+  const serverPrefetched = initialEvents !== undefined;
+  const [events, setEvents] = useState<PatientAuditEvent[]>(initialEvents ?? []);
+  const [error, setError] = useState<string | null>(initialError);
+  const [loading, setLoading] = useState(!serverPrefetched);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
+  const [hasMore, setHasMore] = useState(initialHasMore);
 
   useEffect(() => {
+    if (serverPrefetched) return;
+
     let cancelled = false;
     loadPatientAuditTrail(patientId).then((result) => {
       if (cancelled) return;
       if (result.error) setError(result.error);
-      else setEvents(result.data ?? []);
+      else {
+        setEvents(result.data ?? []);
+        setNextCursor(result.nextCursor ?? null);
+        setHasMore(Boolean(result.hasMore));
+      }
       setLoading(false);
     });
     return () => {
       cancelled = true;
     };
-  }, [patientId]);
+  }, [patientId, serverPrefetched]);
+
+  const loadMore = useCallback(async () => {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    const result = await loadPatientAuditTrail(patientId, { cursor: nextCursor });
+    setLoadingMore(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    setEvents((prev) => [...prev, ...(result.data ?? [])]);
+    setNextCursor(result.nextCursor ?? null);
+    setHasMore(Boolean(result.hasMore));
+  }, [patientId, nextCursor, loadingMore]);
 
   return (
     <Card title="Auditoría clínica">
@@ -86,40 +121,50 @@ export function PatientClinicalAuditPanel({ patientId }: Props) {
       ) : events.length === 0 ? (
         <p className="text-sm text-slate-500">Sin eventos de auditoría para este paciente.</p>
       ) : (
-        <ul className="divide-y divide-slate-100">
-          {events.map((event) => (
-            <li key={event.id} className="py-3 text-sm">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="info">{auditActionLabel(event.action)}</Badge>
-                {event.module ? (
-                  <Badge variant="default">{auditModuleLabel(event.module)}</Badge>
-                ) : null}
-                <span className="font-medium">
-                  {event.what ?? auditEntityLabel(event.entityType)}
-                </span>
-                {event.clinicalRecordId ? (
-                  <Link
-                    href={`/historias/${event.clinicalRecordId}`}
-                    className="text-xs text-teal-700 hover:underline"
-                  >
-                    Ver consulta
-                  </Link>
-                ) : null}
-              </div>
-              <p className="mt-1 text-slate-600">
-                {event.actorName} · {format(new Date(event.occurredAt), "PPp", { locale: es })}
-              </p>
-              {(event.ipAddress || event.userAgent) && (
-                <p className="text-xs text-slate-400">
-                  {event.ipAddress ? `IP ${event.ipAddress}` : null}
-                  {event.ipAddress && event.userAgent ? " · " : null}
-                  {event.userAgent ? event.userAgent.slice(0, 60) : null}
+        <>
+          <p className="mb-3 text-sm text-slate-500">{events.length} evento(s) cargados</p>
+          <ul className="divide-y divide-slate-100">
+            {events.map((event) => (
+              <li key={event.id} className="py-3 text-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="info">{auditActionLabel(event.action)}</Badge>
+                  {event.module ? (
+                    <Badge variant="default">{auditModuleLabel(event.module)}</Badge>
+                  ) : null}
+                  <span className="font-medium">
+                    {event.what ?? auditEntityLabel(event.entityType)}
+                  </span>
+                  {event.clinicalRecordId ? (
+                    <Link
+                      href={`/historias/${event.clinicalRecordId}`}
+                      className="text-xs text-teal-700 hover:underline"
+                    >
+                      Ver consulta
+                    </Link>
+                  ) : null}
+                </div>
+                <p className="mt-1 text-slate-600">
+                  {event.actorName} · {format(new Date(event.occurredAt), "PPp", { locale: es })}
                 </p>
-              )}
-              <AuditDiffSummary event={event} />
-            </li>
-          ))}
-        </ul>
+                {(event.ipAddress || event.userAgent) && (
+                  <p className="text-xs text-slate-400">
+                    {event.ipAddress ? `IP ${event.ipAddress}` : null}
+                    {event.ipAddress && event.userAgent ? " · " : null}
+                    {event.userAgent ? event.userAgent.slice(0, 60) : null}
+                  </p>
+                )}
+                <AuditDiffSummary event={event} />
+              </li>
+            ))}
+          </ul>
+          {hasMore && nextCursor ? (
+            <div className="mt-4 flex justify-center">
+              <Button type="button" variant="outline" loading={loadingMore} onClick={() => void loadMore()}>
+                Cargar más eventos
+              </Button>
+            </div>
+          ) : null}
+        </>
       )}
     </Card>
   );

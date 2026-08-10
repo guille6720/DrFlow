@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { getActiveClinic, getActiveClinicId, getProfile } from "@/core/auth/session.server";
+import { revalidateClinicProfessionalsCache } from "@/core/cache/revalidate-clinic-cache";
 import { hasPermission } from "@/core/permissions/roles";
 import { recordAudit } from "@/core/security/audit-service";
 import {
@@ -63,7 +64,8 @@ async function requireSignatureEditor(professionalId: string) {
   };
 }
 
-function revalidateSignatureViews() {
+function revalidateSignatureViews(clinicId: string) {
+  revalidateClinicProfessionalsCache(clinicId);
   revalidatePath("/firmas");
   revalidatePath("/historias", "layout");
   revalidatePath("/pacientes", "layout");
@@ -98,7 +100,7 @@ export async function updateProfessionalSignatureText(formData: FormData) {
     metadata: { field: "signature_text" },
   });
 
-  revalidateSignatureViews();
+  revalidateSignatureViews(access.clinicId);
   return { ok: true as const };
 }
 
@@ -165,7 +167,7 @@ export async function uploadProfessionalSignature(formData: FormData) {
     metadata: { field: "signature_image_path" },
   });
 
-  revalidateSignatureViews();
+  revalidateSignatureViews(access.clinicId);
   return { ok: true as const };
 }
 
@@ -200,6 +202,6 @@ export async function removeProfessionalSignature(professionalId: string) {
     metadata: { field: "signature_image_removed" },
   });
 
-  revalidateSignatureViews();
+  revalidateSignatureViews(access.clinicId);
   return { ok: true as const };
 }

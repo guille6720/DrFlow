@@ -7,6 +7,7 @@ export type TurnosMetricAppointment = {
   start_at: string;
   end_at: string;
   is_overbooking?: boolean | null;
+  professional_id?: string | null;
 };
 
 export type TurnosAvailabilityRule = {

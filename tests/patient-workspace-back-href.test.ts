@@ -11,11 +11,13 @@ describe("patientWorkspaceBackHref", () => {
         record: "record-1",
         mode: "view",
       })
-    ).toBe("/pacientes/patient-1?tab=soap");
+    ).toBe("/pacientes/patient-1?tab=soap&action=nueva");
   });
 
   it("returns HC root from other HC sub-tabs", () => {
-    expect(patientWorkspaceBackHref(patientId, "recetas")).toBe("/pacientes/patient-1?tab=soap");
+    expect(patientWorkspaceBackHref(patientId, "recetas")).toBe(
+      "/pacientes/patient-1?tab=soap&action=nueva"
+    );
   });
 
   it("returns patient chart from clean soap tab", () => {

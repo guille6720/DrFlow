@@ -1,6 +1,9 @@
 "use client";
 
-import { Banknote, Search } from "lucide-react";
+import { Banknote } from "lucide-react";
+import { useState } from "react";
+
+import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
@@ -10,15 +13,11 @@ import {
   CASH_PAYMENT_METHODS,
 } from "@/lib/constants/cash-register";
 
-type PatientOption = { id: string; label: string };
 type ProfessionalOption = { id: string; label: string };
 
 type Props = {
   professionals: ProfessionalOption[];
   defaultProfessionalId?: string;
-  filteredPatients: PatientOption[];
-  patientSearch: string;
-  setPatientSearch: (v: string) => void;
   patientId: string;
   setPatientId: (v: string) => void;
   pending: boolean;
@@ -29,44 +28,44 @@ type Props = {
 export function CashChargeFormSection({
   professionals,
   defaultProfessionalId,
-  filteredPatients,
-  patientSearch,
-  setPatientSearch,
   patientId,
   setPatientId,
   pending,
   error,
   onSubmit,
 }: Props) {
+  const [selectedPatientLabel, setSelectedPatientLabel] = useState<
+    { id: string; first_name: string; last_name: string; document_number: string } | undefined
+  >(undefined);
+
   return (
     <>
       <form onSubmit={onSubmit} className="grid gap-4 lg:grid-cols-2">
         <div className="lg:col-span-2">
-          <label className="drflow-ui-label mb-1 block text-sm font-medium">Paciente</label>
-          <div className="relative mb-2">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 opacity-40" />
-            <input
-              type="search"
-              placeholder="Buscar por nombre o DNI…"
-              value={patientSearch}
-              onChange={(e) => setPatientSearch(e.target.value)}
-              className="drflow-ui-input w-full rounded-xl border py-2 pl-9 pr-3 text-sm"
-            />
-          </div>
-          <select
-            required
-            value={patientId}
-            onChange={(e) => setPatientId(e.target.value)}
-            className="drflow-ui-input drflow-ui-select w-full rounded-xl border px-3 py-2.5 text-sm"
-            size={Math.min(5, Math.max(3, filteredPatients.length))}
-          >
-            <option value="">— Elegir paciente —</option>
-            {filteredPatients.slice(0, 80).map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.label}
-              </option>
-            ))}
-          </select>
+          <PatientSearchCombobox
+            patients={
+              selectedPatientLabel
+                ? [selectedPatientLabel]
+                : patientId
+                  ? [{ id: patientId, first_name: "", last_name: "", document_number: "" }]
+                  : []
+            }
+            defaultPatientId={patientId || undefined}
+            label="Paciente"
+            placeholder="Escribí nombre, apellido o DNI…"
+            displayMode="detailed"
+            onPatientChange={(id, patient) => {
+              setPatientId(id);
+              if (patient) {
+                setSelectedPatientLabel({
+                  id: patient.id,
+                  first_name: patient.first_name,
+                  last_name: patient.last_name,
+                  document_number: patient.document_number,
+                });
+              }
+            }}
+          />
         </div>
 
         <Select

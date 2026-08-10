@@ -40,8 +40,8 @@ type Props = {
 
 export function PatientEhrInteractiveBody({
   patientId,
-  diagnosisRows,
-  treatmentRows,
+  diagnosisRows: _diagnosisRows,
+  treatmentRows: _treatmentRows,
   prescriptions,
   totalConsultations,
   usesHceExport = false,
@@ -66,6 +66,11 @@ export function PatientEhrInteractiveBody({
     consultationAttachmentById,
     vitalsRows,
     dayPrintConsultations,
+    diagnosisRows: mergedDiagnosisRows,
+    treatmentRows: mergedTreatmentRows,
+    clinicalRecordsPagination,
+    loadMoreRecords,
+    loadingMoreRecords,
   } = usePatientEhrStateContext();
 
   function handleSidebarSelect(id: string) {
@@ -82,14 +87,14 @@ export function PatientEhrInteractiveBody({
     dayPrintConsultations.length > 0 ? dayPrintConsultations : selected ? [selected] : [];
 
   const screenDiagnosisRows = useMemo(() => {
-    if (!filters.evolutions || inlineConsultOpen || !selected) return diagnosisRows;
-    return filterClinicalRowsByConsultationDay(diagnosisRows, selected.created_at);
-  }, [diagnosisRows, filters.evolutions, inlineConsultOpen, selected]);
+    if (!filters.evolutions || inlineConsultOpen || !selected) return mergedDiagnosisRows;
+    return filterClinicalRowsByConsultationDay(mergedDiagnosisRows, selected.created_at);
+  }, [mergedDiagnosisRows, filters.evolutions, inlineConsultOpen, selected]);
 
   const screenTreatmentRows = useMemo(() => {
-    if (!filters.evolutions || inlineConsultOpen || !selected) return treatmentRows;
-    return filterClinicalRowsByConsultationDay(treatmentRows, selected.created_at);
-  }, [treatmentRows, filters.evolutions, inlineConsultOpen, selected]);
+    if (!filters.evolutions || inlineConsultOpen || !selected) return mergedTreatmentRows;
+    return filterClinicalRowsByConsultationDay(mergedTreatmentRows, selected.created_at);
+  }, [mergedTreatmentRows, filters.evolutions, inlineConsultOpen, selected]);
 
   const screenVitalsRows = useMemo(() => {
     if (!filters.evolutions || inlineConsultOpen || !selected) return vitalsRows;
@@ -112,6 +117,11 @@ export function PatientEhrInteractiveBody({
             selectedId={selectedId}
             pendingConsultation={pendingSidebarConsultation}
             onSelect={handleSidebarSelect}
+            hasMoreRecords={clinicalRecordsPagination.hasMore}
+            loadingMoreRecords={loadingMoreRecords}
+            onLoadMoreRecords={loadMoreRecords}
+            loadedRecordsCount={sidebarList.length}
+            totalRecordsCount={clinicalRecordsPagination.total}
           />
         ) : null}
 

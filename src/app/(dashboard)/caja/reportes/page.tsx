@@ -1,5 +1,6 @@
 import { format, subDays } from "date-fns";
 import { es } from "date-fns/locale";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -11,12 +12,18 @@ import {
 } from "@/core/auth/session.server";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { parsePageParam } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
 
+import {
+  buildCajaReportesUrl,
+  loadCajaReportesPageData,
+} from "@/features/facturacion/server/load-caja-reportes-page";
 import { AdminOpsAnalyticsBridge } from "@/features/ia/components/admin-ops/admin-ops-analytics-bridge";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ListPagination, ListPaginationLabel } from "@/components/ui/list-pagination";
 import {
   labelForAttentionType,
   labelForChargeKind,
@@ -27,7 +34,7 @@ import { loadRevenueSnapshot } from "@/lib/server/load-revenue-snapshot";
 export default async function CajaReportesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string }>;
+  searchParams: Promise<{ from?: string; to?: string; page?: string }>;
 }) {
   const sp = await searchParams;
   const profile = await getProfile();
@@ -41,24 +48,16 @@ export default async function CajaReportesPage({
 
   const from = sp.from ?? format(subDays(new Date(), 30), "yyyy-MM-dd");
   const to = sp.to ?? format(new Date(), "yyyy-MM-dd");
+  const page = parsePageParam(sp.page);
 
   const supabase = await createClient();
-  const [{ data: charges }, analytics] = await Promise.all([
-    supabase
-    .from("cash_charges")
-    .select(
-      "id, charged_at, amount, charge_kind, attention_type, payment_method, status, patients(last_name, first_name), professionals(display_name, profiles(full_name))"
-    )
-    .eq("clinic_id", clinicId)
-    .gte("charged_at", `${from}T00:00:00.000Z`)
-    .lte("charged_at", `${to}T23:59:59.999Z`)
-    .order("charged_at", { ascending: false })
-    .limit(500),
+  const [reportData, analytics] = await Promise.all([
+    loadCajaReportesPageData(supabase, clinicId, from, to, page),
     loadRevenueSnapshot(supabase, clinicId),
   ]);
 
-  const collected = (charges ?? []).filter((c) => c.status === "collected");
-  const total = collected.reduce((s, c) => s + Number(c.amount), 0);
+  const { charges, pageMeta, periodTotal, periodCount } = reportData;
+  const { page: currentPage, totalPages, total } = pageMeta;
 
   return (
     <>
@@ -82,7 +81,9 @@ export default async function CajaReportesPage({
             Volver
           </Button>
         </Link>
-        <Card title={`Ingresos: $${total.toLocaleString("es-AR")} (${collected.length} cobros)`}>
+        <Card
+          title={`Ingresos del período: $${periodTotal.toLocaleString("es-AR")} (${periodCount} cobros)`}
+        >
           <form className="mb-4 flex flex-wrap gap-2">
             <input type="date" name="from" defaultValue={from} className="drflow-ui-input rounded-lg border px-2 py-1 text-sm" />
             <input type="date" name="to" defaultValue={to} className="drflow-ui-input rounded-lg border px-2 py-1 text-sm" />
@@ -90,6 +91,9 @@ export default async function CajaReportesPage({
               Filtrar
             </Button>
           </form>
+          <p className="mb-3 text-sm text-slate-500">
+            Mostrando {charges.length} de {total} cobros en esta página
+          </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -103,7 +107,7 @@ export default async function CajaReportesPage({
                 </tr>
               </thead>
               <tbody>
-                {collected.map((c) => {
+                {charges.map((c) => {
                   const raw = c.patients;
                   const p = Array.isArray(raw) ? raw[0] : raw;
                   return (
@@ -120,6 +124,37 @@ export default async function CajaReportesPage({
               </tbody>
             </table>
           </div>
+          {(totalPages > 1 || total > 0) && (
+            <ListPagination className="mt-4">
+              {currentPage > 1 && (
+                <Link href={buildCajaReportesUrl(from, to, currentPage - 1)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-slate-500 bg-slate-700/80 text-slate-100 hover:bg-slate-600"
+                  >
+                    <ChevronLeft className="h-4 w-4" /> Anterior
+                  </Button>
+                </Link>
+              )}
+              <ListPaginationLabel
+                current={currentPage}
+                totalPages={totalPages}
+                suffix={`${total} cobros`}
+              />
+              {currentPage < totalPages && (
+                <Link href={buildCajaReportesUrl(from, to, currentPage + 1)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-slate-500 bg-slate-700/80 text-slate-100 hover:bg-slate-600"
+                  >
+                    Siguiente <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
+            </ListPagination>
+          )}
         </Card>
       </div>
     </>

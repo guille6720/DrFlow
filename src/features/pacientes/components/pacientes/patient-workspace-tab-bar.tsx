@@ -1,8 +1,6 @@
 "use client";
 
 import { History } from "lucide-react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -15,29 +13,31 @@ import {
   type PatientWorkspacePrimaryTabId,
   type PatientWorkspaceTabId,
 } from "@/features/pacientes/constants/patient-workspace-tabs";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
 type Props = {
   patientId: string;
   activeTab: PatientWorkspaceTabId;
+  workspaceSearchParams: URLSearchParams;
   onTabChange: (tab: PatientWorkspaceTabId) => void;
+  onOpenHcWorkspace?: () => void;
   canManageAdminDocuments?: boolean;
   className?: string;
 };
 
 export function PatientWorkspaceTabBar({
-  patientId,
+  patientId: _patientId,
   activeTab,
+  workspaceSearchParams,
   onTabChange,
+  onOpenHcWorkspace,
   canManageAdminDocuments = false,
   className,
 }: Props) {
-  const searchParams = useSearchParams();
   const timelineEnabled = useFeatureFlag("clinical_timeline");
   const auditEnabled = useFeatureFlag("patient_audit_tab");
   const priorHistoriesActive =
-    activeTab === "soap" && searchParams.get("action") !== "nueva";
+    activeTab === "soap" && workspaceSearchParams.get("action") !== "nueva";
 
   const hcSubTabs = PATIENT_HC_SUB_TABS.filter((tab) => {
     if (tab.id === "docs_admin") return canManageAdminDocuments;
@@ -54,7 +54,12 @@ export function PatientWorkspaceTabBar({
 
   function onPrimaryTabClick(id: PatientWorkspacePrimaryTabId) {
     if (id === "hc") {
-      onTabChange(isHcWorkspaceTab(activeTab) ? activeTab : DEFAULT_HC_WORKSPACE_TAB);
+      if (isHcWorkspaceTab(activeTab)) return;
+      if (onOpenHcWorkspace) {
+        onOpenHcWorkspace();
+      } else {
+        onTabChange(DEFAULT_HC_WORKSPACE_TAB);
+      }
       return;
     }
     onTabChange(id);
@@ -105,9 +110,9 @@ export function PatientWorkspaceTabBar({
                 <span>{label}</span>
               </button>
             ))}
-            <Link
-              href={buildPatientWorkspaceUrl(patientId, { tab: "soap" })}
-              scroll={false}
+            <button
+              type="button"
+              onClick={() => onTabChange("soap")}
               aria-current={priorHistoriesActive ? "page" : undefined}
               className={cn(
                 "drflow-patient-workspace-tab drflow-patient-workspace-hc-subtab",
@@ -116,7 +121,7 @@ export function PatientWorkspaceTabBar({
             >
               <History className="h-3.5 w-3.5 shrink-0" aria-hidden />
               <span>Historias Anteriores</span>
-            </Link>
+            </button>
           </div>
         </nav>
       ) : null}

@@ -8,6 +8,7 @@ import {
   clinicPluginsTag,
   clinicPortalTag,
   clinicProfessionalsTag,
+  clinicSettingsTag,
   clinicSpecialtiesTag,
   pathologyDrugsTag,
 } from "@/core/cache/cache-tags";
@@ -39,6 +40,10 @@ export function revalidateClinicSpecialtiesCache(clinicId: string): void {
 
 export function revalidateClinicClinicalTemplatesCache(clinicId: string): void {
   updateTag(clinicClinicalTemplatesTag(clinicId));
+}
+
+export function revalidateClinicSettingsCache(clinicId: string): void {
+  updateTag(clinicSettingsTag(clinicId));
 }
 
 /** Plugins, flags, portal, professionals, locations, specialties, templates. */

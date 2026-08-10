@@ -21,12 +21,8 @@ import {
   resolveConfiguracionSection,
 } from "@/features/configuracion/components/configuracion/configuracion-sections";
 import { DeleteAccountPanel } from "@/features/configuracion/components/configuracion/delete-account-panel";
+import { loadConfiguracionSectionExtras } from "@/features/configuracion/server/load-configuracion-section-extras";
 
-import { getClinicFeatureFlagSettings } from "@/lib/actions/clinic-feature-flags";
-import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
-import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
-import { getClinicObservabilityDashboard } from "@/lib/actions/observability";
-import { loadPamiPlanillaAdminCatalog } from "@/lib/actions/pami-planilla-admin";
 import { loadTeamPermissionsPanelData } from "@/lib/actions/team-permissions";
 import { getClinicSharedAiConnectionPublic } from "@/lib/ai/clinic-shared-ai.server";
 import { getCachedActiveBookingSlug, getCachedClinicProfessionalsSettings } from "@/lib/server/cached-clinic-queries";
@@ -94,14 +90,9 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
       : undefined,
   };
 
-  const [pluginSettingsResult, flagSettingsResult, jobsResult, observabilityResult, pamiAdminResult] =
-    await Promise.all([
-      getClinicPluginSettings(),
-      getClinicFeatureFlagSettings(),
-      getClinicJobsList(),
-      getClinicObservabilityDashboard(),
-      activeSection === "pami" && clinicId ? loadPamiPlanillaAdminCatalog() : Promise.resolve(null),
-    ]);
+  const sectionExtras = activeSection
+    ? await loadConfiguracionSectionExtras(activeSection, clinicId)
+    : await loadConfiguracionSectionExtras(undefined, clinicId);
 
   const sectionContent = activeSection
     ? renderConfiguracionSectionContent(activeSection, settingsProps, {
@@ -109,14 +100,7 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
         practiceProfile: clinic?.practice_profile ?? null,
         defaultInsurance: clinic?.default_insurance_provider ?? null,
         acceptedCoverages: clinic?.accepted_coverages ?? null,
-        pluginSettings: pluginSettingsResult.data ?? [],
-        flagSettings: flagSettingsResult.data ?? [],
-        jobSettings: jobsResult.data ?? [],
-        observability: observabilityResult.data,
-        pamiPlanillaAdminCatalog:
-          pamiAdminResult && "catalog" in pamiAdminResult ? pamiAdminResult.catalog : undefined,
-        pamiPlanillaAdminError:
-          pamiAdminResult && "error" in pamiAdminResult ? pamiAdminResult.error : undefined,
+        ...sectionExtras,
       })
     : undefined;
 

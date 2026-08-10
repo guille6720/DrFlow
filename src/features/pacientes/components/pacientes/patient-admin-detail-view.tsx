@@ -5,7 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { Patient } from "@/types/database";
 
-export function PatientAdminDetailView({ patient }: { patient: Patient }) {
+type PatientAdminDetail = Pick<
+  Patient,
+  | "id"
+  | "first_name"
+  | "last_name"
+  | "document_number"
+  | "phone"
+  | "email"
+  | "address"
+  | "insurance_provider"
+  | "insurance_number"
+  | "emergency_contact_name"
+  | "emergency_contact_phone"
+>;
+
+export function PatientAdminDetailView({ patient }: { patient: PatientAdminDetail }) {
   return (
     <div className="space-y-4">
       <Card title="Datos administrativos">

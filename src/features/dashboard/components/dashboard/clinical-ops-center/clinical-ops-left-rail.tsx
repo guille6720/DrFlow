@@ -14,7 +14,7 @@ import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 
 import type { ClinicalOpsSectionId } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-scroll";
 import { ClinicalOpsSectionNav } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-section-nav";
-import type { ClinicalOperationsDashboardPayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+import type { ClinicalOperationsDashboardCorePayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
 
 const NAV = [
   { id: "ops-schedule", label: "Agenda de hoy", icon: CalendarDays },
@@ -30,7 +30,7 @@ const NAV = [
 }>;
 
 type Props = {
-  ops: ClinicalOperationsDashboardPayload;
+  ops: ClinicalOperationsDashboardCorePayload;
 };
 
 export function ClinicalOpsLeftRail({ ops }: Props) {
@@ -39,7 +39,7 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
     "ops-waiting": ops.enrichedWaiting?.length ?? 0,
     "ops-urgent": ops.urgentPatients?.length ?? 0,
     "ops-alerts": ops.actionableAlerts?.length ?? 0,
-    "ops-tasks": ops.tasks?.length ?? 0,
+    "ops-tasks": undefined,
     "ops-notifications": ops.notifications?.length ?? 0,
   };
 

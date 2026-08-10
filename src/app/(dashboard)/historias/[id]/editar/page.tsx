@@ -7,6 +7,10 @@ import {
   getUserClinics,
 } from "@/core/auth/session";
 import { hasPermission } from "@/core/permissions/roles";
+import {
+  CLINICAL_RECORD_EDIT_COLUMNS,
+  PATIENT_CLINICAL_CONTEXT_COLUMNS,
+} from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
 import { backHrefFromClinicalSubpage, patientClinicalHistoryPath } from "@/shared/utils/clinical-navigation";
@@ -14,6 +18,7 @@ import { backHrefFromClinicalSubpage, patientClinicalHistoryPath } from "@/share
 import { EditConsultaForm } from "@/features/historias";
 
 import { getCachedClinicalTemplates } from "@/lib/server/cached-clinic-queries";
+import type { Patient } from "@/types/database";
 
 export default async function EditarHistoriaPage({
   params,
@@ -38,7 +43,7 @@ export default async function EditarHistoriaPage({
 
   const { data: record } = await supabase
     .from("clinical_records")
-    .select("*")
+    .select(CLINICAL_RECORD_EDIT_COLUMNS)
     .eq("id", id)
     .eq("clinic_id", clinicId)
     .single();
@@ -46,7 +51,12 @@ export default async function EditarHistoriaPage({
   if (!record) notFound();
 
   const [patientRes, templates] = await Promise.all([
-    supabase.from("patients").select("*").eq("id", record.patient_id).eq("clinic_id", clinicId).maybeSingle(),
+    supabase
+      .from("patients")
+      .select(PATIENT_CLINICAL_CONTEXT_COLUMNS)
+      .eq("id", record.patient_id)
+      .eq("clinic_id", clinicId)
+      .maybeSingle(),
     getCachedClinicalTemplates(clinicId),
   ]);
 
@@ -59,7 +69,7 @@ export default async function EditarHistoriaPage({
   return (
     <EditConsultaForm
       record={record}
-      patient={patientRes.data}
+      patient={(patientRes.data as Patient | null) ?? null}
       clinics={clinics}
       clinicId={clinicId}
       role={role}

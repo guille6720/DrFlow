@@ -16,7 +16,10 @@ import { CashRegisterView } from "@/features/caja";
 import { AdminOpsAnalyticsBridge } from "@/features/ia/components/admin-ops/admin-ops-analytics-bridge";
 
 import { Button } from "@/components/ui/button";
-import { loadPatientPickerList } from "@/lib/server/load-patient-picker-list";
+import {
+  getCachedClinicProfessionalsAgenda,
+  getCachedClinicSettings,
+} from "@/lib/server/cached-clinic-queries";
 import { loadRevenueSnapshot } from "@/lib/server/load-revenue-snapshot";
 import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
@@ -36,12 +39,8 @@ export default async function CajaPage() {
   const supabase = await createClient();
 
   if (role === "doctor" && !isSuperadmin) {
-    const { data: clinic } = await supabase
-      .from("clinics")
-      .select("doctors_can_access_cash")
-      .eq("id", clinicId)
-      .single();
-    if (clinic && clinic.doctors_can_access_cash === false) {
+    const clinicSettings = await getCachedClinicSettings(clinicId);
+    if (clinicSettings && clinicSettings.doctors_can_access_cash === false) {
       redirect("/dashboard");
     }
   }
@@ -49,14 +48,8 @@ export default async function CajaPage() {
   const todayStart = startOfDay(new Date()).toISOString();
   const todayEnd = endOfDay(new Date()).toISOString();
 
-  const [{ patients }, { data: professionals }, { data: charges }, analytics] =
-    await Promise.all([
-    loadPatientPickerList(supabase, clinicId),
-    supabase
-      .from("professionals")
-      .select("id, display_name, profiles(full_name)")
-      .eq("clinic_id", clinicId)
-      .eq("is_active", true),
+  const [professionals, { data: charges }, analytics] = await Promise.all([
+    getCachedClinicProfessionalsAgenda(clinicId),
     supabase
       .from("cash_charges")
       .select("id, charged_at, amount, charge_kind, payment_method, status, motive, patients(first_name, last_name)")
@@ -110,10 +103,6 @@ export default async function CajaPage() {
         </div>
         <CashRegisterView
           defaultProfessionalId={defaultProfessionalId}
-          patients={(patients ?? []).map((p) => ({
-            id: p.id,
-            label: `${p.last_name}, ${p.first_name} — DNI ${p.document_number}`,
-          }))}
           professionals={(professionals ?? []).map((p) => {
             const prof = p as {
               id: string;

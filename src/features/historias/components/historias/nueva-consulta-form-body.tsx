@@ -11,6 +11,7 @@ import { cn } from "@/shared/utils/cn";
 
 import type { NuevaConsultaFormState } from "@/features/historias/hooks/use-nueva-consulta-form";
 import { ConsultationPhysicianAssist } from "@/features/ia/components/clinical-workflow/consultation-physician-assist";
+import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 
 import { Button, ButtonLink, buttonSurfaceClassName } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -53,7 +54,7 @@ export function NuevaConsultaFormBody({
     defaultPatient,
     defaultProfessional,
     patientId,
-    setPatientId,
+    handlePatientChange,
     selectedPatient,
     consultationContext,
     error,
@@ -104,17 +105,19 @@ export function NuevaConsultaFormBody({
             </>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              <Select
+              <PatientSearchCombobox
+                patients={patients.map((p) => ({
+                  id: p.id,
+                  first_name: p.first_name,
+                  last_name: p.last_name,
+                  document_number: p.document_number ?? "",
+                }))}
                 name="patient_id"
                 label="Paciente"
                 required
-                value={patientId}
-                onChange={(e) => setPatientId(e.target.value)}
-                options={patients.map((p) => ({
-                  value: p.id,
-                  label: `${p.last_name}, ${p.first_name}`,
-                }))}
-                placeholder="Seleccionar"
+                searchMode="remote"
+                defaultPatientId={patientId || undefined}
+                onPatientChange={handlePatientChange}
               />
               <Select
                 name="professional_id"

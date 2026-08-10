@@ -8,6 +8,7 @@ import { useState } from "react";
 
 import { Header } from "@/core/components/layout/header";
 import { SafeExternalLink } from "@/core/components/safe-link";
+import { unwrapJoin } from "@/core/supabase/unwrap-join";
 
 import { formatPatientName } from "@/shared/utils/patient-display";
 
@@ -26,7 +27,10 @@ interface Session {
   appointments?: {
     start_at: string;
     patients?: { first_name: string; last_name: string } | { first_name: string; last_name: string }[] | null;
-  } | null;
+  } | {
+    start_at: string;
+    patients?: { first_name: string; last_name: string } | { first_name: string; last_name: string }[] | null;
+  }[] | null;
 }
 
 interface Props {
@@ -105,7 +109,7 @@ export function TelemedicinaView({ sessions, appointments, clinics, clinicId, ro
                 <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                   <div>
                     <p className="font-medium">
-                      {formatPatientName(s.appointments?.patients)}
+                      {formatPatientName(unwrapJoin(s.appointments ?? null)?.patients)}
                     </p>
                     <Badge variant="info">{s.status}</Badge>
                   </div>

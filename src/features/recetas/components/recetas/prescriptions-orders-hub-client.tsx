@@ -7,12 +7,11 @@ import { usePrescriptionsOrdersHub } from "@/features/recetas/hooks/use-prescrip
 
 type Props = Pick<
   PrescriptionsOrdersHubProps,
-  "patients" | "recentPrescriptions" | "clinic" | "selectedPatient"
+  "recentPrescriptions" | "clinic" | "selectedPatient"
 >;
 
 /** Client islands for patient search and recent prescription navigation. */
 export function PrescriptionsOrdersHubClient({
-  patients,
   recentPrescriptions,
   clinic,
   selectedPatient,
@@ -25,7 +24,6 @@ export function PrescriptionsOrdersHubClient({
   return (
     <>
       <PrescriptionsOrdersPatientSearch
-        patients={patients}
         selectedPatientId={selectedPatient?.id}
         onPatientChange={(id) => navigate(id)}
       />

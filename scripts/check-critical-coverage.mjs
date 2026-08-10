@@ -10,7 +10,10 @@ import { CRITICAL_COVERAGE } from "./critical-coverage-rules.mjs";
 const SUMMARY_PATH = resolve(process.cwd(), "coverage/coverage-summary.json");
 
 function normalizePath(p) {
-  return p.replace(/\\/g, "/");
+  const normalized = p.replace(/\\/g, "/");
+  const srcIdx = normalized.indexOf("/src/");
+  if (srcIdx !== -1) return normalized.slice(srcIdx + 1);
+  return normalized;
 }
 
 function main() {

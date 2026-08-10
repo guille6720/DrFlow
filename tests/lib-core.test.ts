@@ -125,6 +125,7 @@ describe("patient-search", () => {
     expect(calls).toHaveLength(2);
     expect(calls[0]).toContain("first_name.ilike.*Juan*");
     expect(calls[0]).not.toContain("%");
+    expect(calls[0]).toContain("phone.ilike.*Juan*");
     expect(calls[1]).toContain("document_number.ilike.*123*");
   });
 });

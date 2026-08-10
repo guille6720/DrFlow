@@ -8,6 +8,7 @@ import {
 } from "@/features/flags/lib/resolve";
 
 import {
+  loadClinicClinicalTemplatesAdminCached,
   loadClinicClinicalTemplatesCached,
   loadClinicFeatureFlagsCached,
   loadClinicLocationsCached,
@@ -17,6 +18,7 @@ import {
   loadClinicProfessionalsFullCached,
   loadClinicProfessionalsListCached,
   loadClinicProfessionalsSettingsCached,
+  loadClinicSettingsCached,
   loadClinicSpecialtiesCached,
   loadPamiPlanillaCatalogCached,
 } from "@/lib/server/cached-clinic-metadata";
@@ -85,6 +87,14 @@ export const getCachedClinicSpecialties = cache(async (clinicId: string) => {
 
 export const getCachedClinicalTemplates = cache(async (clinicId: string) => {
   return loadClinicClinicalTemplatesCached(clinicId);
+});
+
+export const getCachedClinicalTemplatesAdmin = cache(async (clinicId: string) => {
+  return loadClinicClinicalTemplatesAdminCached(clinicId);
+});
+
+export const getCachedClinicSettings = cache(async (clinicId: string) => {
+  return loadClinicSettingsCached(clinicId);
 });
 
 /** Per-request dedupe for PAMI planilla catalog (categories + templates). */

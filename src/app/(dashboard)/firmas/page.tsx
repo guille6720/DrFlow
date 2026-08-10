@@ -14,7 +14,7 @@ import { createClient } from "@/core/supabase/server";
 import type { ProfessionalSignatureRow } from "@/features/profesionales/components/profesionales/professional-signatures-manager";
 import { ProfessionalSignaturesManager } from "@/features/profesionales/components/profesionales/professional-signatures-manager";
 
-import { resolveProfessionalSignatureUrls } from "@/lib/server/resolve-professional-signature-urls";
+import { getCachedClinicProfessionalsList } from "@/lib/server/cached-clinic-queries";
 import { buildProfessionalSignature } from "@/lib/utils/professional";
 
 export default async function FirmasPage() {
@@ -31,37 +31,46 @@ export default async function FirmasPage() {
     redirect("/dashboard");
   }
 
-  const supabase = await createClient();
   const canManageAll = hasPermission(role, "manageStaff", isSuperadmin);
+  const supabase = await createClient();
 
-  let query = supabase
-    .from("professionals")
-    .select(
-      "id, display_name, license_number, license_national, license_provincial, signature_text, signature_image_path, user_id, profiles(full_name)"
-    )
-    .eq("clinic_id", clinicId)
-    .eq("is_active", true)
-    .order("display_name");
+  const cachedProfessionals = canManageAll
+    ? await getCachedClinicProfessionalsList(clinicId)
+    : await (async () => {
+        let query = supabase
+          .from("professionals")
+          .select(
+            "id, display_name, license_number, license_national, license_provincial, signature_text, signature_image_path, user_id, profiles(full_name)"
+          )
+          .eq("clinic_id", clinicId)
+          .eq("is_active", true)
+          .order("display_name");
 
-  if (!canManageAll && profile?.id) {
-    query = query.eq("user_id", profile.id);
-  }
+        if (profile?.id) {
+          query = query.eq("user_id", profile.id);
+        }
 
-  const { data: professionals } = await query;
-  const withUrls = await resolveProfessionalSignatureUrls(supabase, professionals ?? []);
+        const { data: professionals } = await query;
+        const { resolveProfessionalSignatureUrls } = await import(
+          "@/lib/server/resolve-professional-signature-urls"
+        );
+        return resolveProfessionalSignatureUrls(supabase, professionals ?? []);
+      })();
 
-  const rows: ProfessionalSignatureRow[] = withUrls.map((pro) => {
-    const profile = unwrapNestedRow(pro.profiles);
+  const rows: ProfessionalSignatureRow[] = cachedProfessionals.map((pro) => {
+    const profileRow = unwrapNestedRow(
+      pro.profiles as { full_name?: string } | { full_name?: string }[] | null
+    );
     return {
       id: pro.id,
       display_name: pro.display_name,
       license_number: pro.license_number,
-      license_national: pro.license_national,
-      license_provincial: pro.license_provincial,
+      license_national: pro.license_national ?? null,
+      license_provincial: pro.license_provincial ?? null,
       signature_text: pro.signature_text?.trim() || buildProfessionalSignature(pro),
       signature_image_path: pro.signature_image_path,
       signature_image_url: pro.signature_image_url,
-      profiles: profile ? { full_name: profile.full_name } : null,
+      profiles: profileRow?.full_name ? { full_name: String(profileRow.full_name) } : null,
     };
   });
 

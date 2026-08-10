@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { PATIENT_ATTACHMENTS_LIMIT } from "@/core/supabase/pagination";
+import { encodeDescCursor, PATIENT_ATTACHMENTS_LIMIT, PATIENT_EHR_RECORD_PAGE_SIZE } from "@/core/supabase/pagination";
+import { MEDICAL_ORDER_LIST_COLUMNS } from "@/core/supabase/select-columns";
 
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
@@ -24,7 +25,7 @@ import type { HceExportRow } from "@/lib/utils/hce-export-parse";
 import { filterRecordsForEhrSupplement } from "@/lib/utils/hce-export-parse";
 import type { MedicalOrder } from "@/types/medical-order";
 
-export const PATIENT_EHR_RECORD_LIMIT = 2000;
+export const PATIENT_EHR_RECORD_LIMIT = PATIENT_EHR_RECORD_PAGE_SIZE;
 export const PATIENT_TIMELINE_APPOINTMENT_LIMIT = 80;
 export const PATIENT_CHART_APPOINTMENT_LIMIT = 10;
 export const PATIENT_RX_FETCH_LIMIT = 100;
@@ -32,6 +33,12 @@ export const PATIENT_RX_FETCH_LIMIT = 100;
 export type PatientEhrWorkspacePrescription = PatientEhrPrescription & {
   issued_at: string | null;
   status: string;
+};
+
+export type PatientEhrClinicalRecordsPagination = {
+  total: number;
+  hasMore: boolean;
+  nextCursor: string | null;
 };
 
 export type PatientEhrWorkspaceData = {
@@ -46,6 +53,7 @@ export type PatientEhrWorkspaceData = {
   appointments: PatientEhrAppointment[];
   totalConsultations: number;
   usesHceExport: boolean;
+  clinicalRecordsPagination: PatientEhrClinicalRecordsPagination;
 };
 
 export type PatientEhrPatientRow = {
@@ -190,6 +198,7 @@ export function buildPatientEhrWorkspaceData(input: {
   orders: (MedicalOrder & { order_type?: string })[] | null;
   timelineAppointments: PatientEhrAppointment[];
   hceRows: HceExportRow[] | null;
+  clinicalRecordsPagination?: PatientEhrClinicalRecordsPagination;
 }): PatientEhrWorkspaceData {
   const { patient, mappedRecords, attachments, rxList, orders, timelineAppointments, hceRows } =
     input;
@@ -239,8 +248,15 @@ export function buildPatientEhrWorkspaceData(input: {
     prescriptionRecords: rxList ?? [],
     orders: orders ?? [],
     appointments: timelineAppointments,
-    totalConsultations: countPatientConsultationsFromSources({ mappedRecords, hceRows }),
+    totalConsultations: hceRows
+      ? countPatientConsultationsFromSources({ mappedRecords, hceRows })
+      : (input.clinicalRecordsPagination?.total ?? mappedRecords.length),
     usesHceExport,
+    clinicalRecordsPagination: input.clinicalRecordsPagination ?? {
+      total: input.totalRecords ?? mappedRecords.length,
+      hasMore: false,
+      nextCursor: null,
+    },
   };
 }
 
@@ -272,8 +288,9 @@ export async function loadPatientEhrWorkspaceData(
       )
       .eq("clinic_id", clinicId)
       .eq("patient_id", patientId)
-      .order("created_at", { ascending: true })
-      .limit(PATIENT_EHR_RECORD_LIMIT),
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(PATIENT_EHR_RECORD_PAGE_SIZE),
     supabase
       .from("patient_attachments")
       .select("id, file_name, created_at, category")
@@ -292,7 +309,7 @@ export async function loadPatientEhrWorkspaceData(
       .limit(PATIENT_RX_FETCH_LIMIT),
     supabase
       .from("medical_orders")
-      .select("*")
+      .select(MEDICAL_ORDER_LIST_COLUMNS)
       .eq("clinic_id", clinicId)
       .eq("patient_id", patientId)
       .order("issued_at", { ascending: false })
@@ -308,14 +325,27 @@ export async function loadPatientEhrWorkspaceData(
     loadPatientHceSummaryRows(supabase, clinicId, patientId),
   ]);
 
+  const mappedRecords = mapClinicalRecordsForEhr(records);
+  const loadedRecords = mappedRecords.length;
+  const totalRecordCount = totalRecords ?? loadedRecords;
+  const oldestLoaded = records?.at(-1);
+
   return buildPatientEhrWorkspaceData({
     patient,
     totalRecords,
-    mappedRecords: mapClinicalRecordsForEhr(records),
+    mappedRecords,
     attachments,
     rxList,
     orders: (orders ?? []) as (MedicalOrder & { order_type?: string })[],
     timelineAppointments: mapTimelineAppointments(appointments),
     hceRows,
+    clinicalRecordsPagination: {
+      total: totalRecordCount,
+      hasMore: loadedRecords < totalRecordCount,
+      nextCursor:
+        loadedRecords < totalRecordCount && oldestLoaded
+          ? encodeDescCursor(oldestLoaded.created_at, oldestLoaded.id)
+          : null,
+    },
   });
 }

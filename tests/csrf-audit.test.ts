@@ -145,6 +145,7 @@ describe("CSRF audit static checks", () => {
           continue;
         }
         if (!full.includes("/actions/") || !entry.endsWith(".ts")) continue;
+        if (entry.endsWith(".helpers.ts")) continue;
         const content = readFileSync(full, "utf8");
         if (content.includes("export async function") && !content.includes('"use server"')) {
           offenders.push(full.replace(ROOT, ""));

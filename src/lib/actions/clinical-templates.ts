@@ -44,6 +44,7 @@ function revalidateTemplateViews(clinicId: string) {
   revalidateClinicClinicalTemplatesCache(clinicId);
   revalidatePath("/plantillas");
   revalidatePath("/historias/nueva");
+  revalidatePath("/historias/[id]/editar", "page");
   revalidatePath("/pacientes", "layout");
 }
 

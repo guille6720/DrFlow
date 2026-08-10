@@ -4,26 +4,24 @@ import Link from "next/link";
 
 import {
   PatientSearchCombobox,
-  type PatientSearchOption,
 } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 
 import { Card } from "@/components/ui/card";
 
 type Props = {
-  patients: PatientSearchOption[];
   selectedPatientId?: string;
   onPatientChange: (patientId: string | null) => void;
 };
 
 export function PrescriptionsOrdersPatientSearch({
-  patients,
   selectedPatientId,
   onPatientChange,
 }: Props) {
   return (
     <Card title="Paciente">
       <PatientSearchCombobox
-        patients={patients}
+        patients={[]}
+        searchMode="remote"
         label="Buscar paciente"
         placeholder="Nombre, apellido o DNI…"
         defaultPatientId={selectedPatientId}

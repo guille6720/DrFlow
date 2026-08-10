@@ -147,7 +147,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
       )}
       <DashboardSidebarProvider>
         <ClinicFeaturesProvider plugins={clinicFeatures.plugins} flags={clinicFeatures.flags}>
-          <LazyDashboardInteractionHosts />
+          <LazyDashboardInteractionHosts role={role} isSuperadmin={isSuperadmin} />
           <ClinicalCopilotProvider>
             <AdminOpsCopilotProvider>
               <CommandPaletteProvider

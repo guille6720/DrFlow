@@ -1,5 +1,6 @@
 import type { DbClient, RepoResult } from "@/core/repositories/types";
 import { mapPostgresError, repoErr, repoOk } from "@/core/repositories/types";
+import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
 
 import type { Patient } from "@/types/database";
 
@@ -32,7 +33,7 @@ export async function findPatientById(
 ): Promise<Patient | null> {
   const { data } = await db
     .from("patients")
-    .select("*")
+    .select(PATIENT_DETAIL_COLUMNS)
     .eq("id", patientId)
     .eq("clinic_id", clinicId)
     .maybeSingle();

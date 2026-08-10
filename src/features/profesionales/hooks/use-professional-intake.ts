@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 
+import type { ProfessionalListItem } from "@/features/profesionales/components/profesionales/professional-intake-sidebar";
 import type {
   AvailabilityRuleRow,
   ProfessionalIntakeDetail,
@@ -10,6 +11,7 @@ import type {
   ProfessionalIntakeNewStep,
 } from "@/features/profesionales/components/profesionales/professional-intake-types";
 import { normalizeAgendaRules } from "@/features/profesionales/components/profesionales/professional-schedule-editor";
+import { loadProfessionalIntakeDetailPanel } from "@/features/profesionales/server/load-professional-intake-detail-panel";
 
 import {
   saveProfessionalSchedule,
@@ -24,25 +26,60 @@ import {
 import type { EnrichedTeamMember } from "@/lib/utils/team-member-display";
 
 type Params = {
-  professionals: ProfessionalIntakeDetail[];
+  sidebarProfessionals: ProfessionalListItem[];
+  initialSelectedProfessional: ProfessionalIntakeDetail | null;
+  initialScheduleRules: AvailabilityRuleRow[];
   teamMembers: EnrichedTeamMember[];
-  scheduleByProfessional: Record<string, AvailabilityRuleRow[]>;
 };
 
-export function useProfessionalIntake({ professionals, teamMembers, scheduleByProfessional }: Params) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+type SelectionState = {
+  selectedId: string | null;
+  selectedMemberId: string | null;
+  isNew: boolean;
+};
 
+type TabSearchParams = {
+  get(name: string): string | null;
+};
+
+function intakePath(params: URLSearchParams): string {
+  const qs = params.toString();
+  return qs ? `/ingreso-profesionales?${qs}` : "/ingreso-profesionales";
+}
+
+function readSelection(searchParams: TabSearchParams, sidebarCount: number): SelectionState {
   const selectedId = searchParams.get("id");
   const selectedMemberId = searchParams.get("miembro");
   const isNew =
     searchParams.get("nuevo") === "1" ||
-    (!selectedId && !selectedMemberId && professionals.length === 0);
+    (!selectedId && !selectedMemberId && sidebarCount === 0);
+  return { selectedId, selectedMemberId, isNew };
+}
 
-  const selected = useMemo(
-    () => professionals.find((p) => p.id === selectedId) ?? null,
-    [professionals, selectedId]
+function rulesFromRows(rows: AvailabilityRuleRow[]): AgendaRuleDraft[] {
+  return rows.length > 0
+    ? normalizeAgendaRules(rows)
+    : AGENDA_PRESETS[0].rules.map((r) => ({ ...r }));
+}
+
+export function useProfessionalIntake({
+  sidebarProfessionals,
+  initialSelectedProfessional,
+  initialScheduleRules,
+  teamMembers,
+}: Params) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [pending, startTransition] = useTransition();
+  const [selection, setSelection] = useState<SelectionState>(() =>
+    readSelection(searchParams, sidebarProfessionals.length)
   );
+
+  const { selectedId, selectedMemberId, isNew } = selection;
+
+  const [selected, setSelected] = useState<ProfessionalIntakeDetail | null>(initialSelectedProfessional);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
 
   const selectedMember = useMemo(
     () => teamMembers.find((m) => m.id === selectedMemberId) ?? null,
@@ -56,34 +93,89 @@ export function useProfessionalIntake({ professionals, teamMembers, scheduleByPr
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showReference, setShowReference] = useState(false);
-  const [agendaRules, setAgendaRules] = useState<AgendaRuleDraft[]>(
-    AGENDA_PRESETS[0].rules.map((r) => ({ ...r }))
-  );
-  const [prevSelectedId, setPrevSelectedId] = useState<string | null>(selected?.id ?? null);
+  const [agendaRules, setAgendaRules] = useState<AgendaRuleDraft[]>(rulesFromRows(initialScheduleRules));
 
-  if ((selected?.id ?? null) !== prevSelectedId) {
-    setPrevSelectedId(selected?.id ?? null);
-    const rows = selected ? (scheduleByProfessional[selected.id] ?? []) : [];
-    setAgendaRules(
-      rows.length > 0
-        ? normalizeAgendaRules(rows)
-        : AGENDA_PRESETS[0].rules.map((r) => ({ ...r }))
-    );
-    setDetailTab("perfil");
-    setError(null);
-    setSuccess(null);
-  }
+  const replaceSelection = useCallback((next: SelectionState) => {
+    setSelection(next);
+    const params = new URLSearchParams();
+    if (next.isNew) params.set("nuevo", "1");
+    else if (next.selectedMemberId) params.set("miembro", next.selectedMemberId);
+    else if (next.selectedId) params.set("id", next.selectedId);
+    window.history.replaceState(window.history.state, "", intakePath(params));
+  }, []);
+
+  const loadProfessionalDetail = useCallback(
+    (professionalId: string) => {
+      if (initialSelectedProfessional?.id === professionalId) {
+        setSelected(initialSelectedProfessional);
+        setAgendaRules(rulesFromRows(initialScheduleRules));
+        setDetailTab("perfil");
+        setError(null);
+        setSuccess(null);
+        setDetailError(null);
+        return;
+      }
+
+      setDetailLoading(true);
+      setDetailError(null);
+      startTransition(async () => {
+        const result = await loadProfessionalIntakeDetailPanel(professionalId);
+        setDetailLoading(false);
+
+        if (result.error || !result.professional) {
+          setDetailError(result.error ?? "No se pudo cargar el profesional");
+          setSelected(null);
+          return;
+        }
+
+        setSelected(result.professional);
+        setAgendaRules(rulesFromRows(result.rules ?? []));
+        setDetailTab("perfil");
+        setError(null);
+        setSuccess(null);
+      });
+    },
+    [initialScheduleRules, initialSelectedProfessional]
+  );
+
+  useEffect(() => {
+    const onPopState = () => {
+      const next = readSelection(new URLSearchParams(window.location.search), sidebarProfessionals.length);
+      setSelection(next);
+      if (next.selectedId && !next.selectedMemberId && !next.isNew) {
+        loadProfessionalDetail(next.selectedId);
+      } else {
+        setSelected(null);
+      }
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [loadProfessionalDetail, sidebarProfessionals.length]);
 
   function navigateTo(id: string | null, nuevo = false) {
-    const params = new URLSearchParams();
-    if (nuevo) params.set("nuevo", "1");
-    else if (id) params.set("id", id);
-    const qs = params.toString();
-    router.push(qs ? `/ingreso-profesionales?${qs}` : "/ingreso-profesionales");
+    replaceSelection({
+      selectedId: nuevo ? null : id,
+      selectedMemberId: null,
+      isNew: nuevo,
+    });
+
+    if (nuevo || !id) {
+      setSelected(null);
+      setDetailError(null);
+      return;
+    }
+
+    loadProfessionalDetail(id);
   }
 
   function navigateToMember(memberId: string) {
-    router.push(`/ingreso-profesionales?miembro=${memberId}`);
+    replaceSelection({
+      selectedId: null,
+      selectedMemberId: memberId,
+      isNew: false,
+    });
+    setSelected(null);
+    setDetailError(null);
   }
 
   function clearError(name: string) {
@@ -194,8 +286,8 @@ export function useProfessionalIntake({ professionals, teamMembers, scheduleByPr
     newStep,
     setNewStep,
     fieldErrors,
-    loading,
-    error,
+    loading: loading || detailLoading || pending,
+    error: error ?? detailError,
     success,
     showReference,
     setShowReference,

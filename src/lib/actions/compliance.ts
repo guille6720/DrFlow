@@ -7,6 +7,7 @@ import {
   LEGAL_TERMS_VERSION,
 } from "@/core/legal/documents";
 import { hasPermission } from "@/core/permissions/roles";
+import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 import { parseEntityId } from "@/core/validations/params";
 
@@ -59,7 +60,7 @@ export async function exportPatientArcoBundle(patientId: string) {
 
   const { data: patient } = await supabase
     .from("patients")
-    .select("*")
+    .select(PATIENT_DETAIL_COLUMNS)
     .eq("id", patientParsed.data)
     .eq("clinic_id", clinicId)
     .single();

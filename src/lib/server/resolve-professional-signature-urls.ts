@@ -21,13 +21,39 @@ export async function resolveProfessionalSignatureUrls<T extends { signature_ima
   supabase: SupabaseClient,
   professionals: T[]
 ): Promise<Array<T & { signature_image_url: string | null }>> {
-  return Promise.all(
-    professionals.map(async (professional) => ({
+  const uniquePaths = [
+    ...new Set(
+      professionals
+        .map((professional) => professional.signature_image_path?.trim())
+        .filter((path): path is string => Boolean(path))
+    ),
+  ];
+
+  const urlByPath = new Map<string, string | null>();
+
+  if (uniquePaths.length === 1) {
+    urlByPath.set(
+      uniquePaths[0],
+      await resolveProfessionalSignatureUrl(supabase, uniquePaths[0])
+    );
+  } else if (uniquePaths.length > 1) {
+    const { data, error } = await supabase.storage
+      .from("clinical-files")
+      .createSignedUrls(uniquePaths, SIGNATURE_URL_TTL_SECONDS);
+
+    if (!error && data) {
+      for (const item of data) {
+        if (!item.path) continue;
+        urlByPath.set(item.path, item.signedUrl ?? null);
+      }
+    }
+  }
+
+  return professionals.map((professional) => {
+    const path = professional.signature_image_path?.trim();
+    return {
       ...professional,
-      signature_image_url: await resolveProfessionalSignatureUrl(
-        supabase,
-        professional.signature_image_path
-      ),
-    }))
-  );
+      signature_image_url: path ? (urlByPath.get(path) ?? null) : null,
+    };
+  });
 }

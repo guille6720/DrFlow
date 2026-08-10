@@ -1,28 +1,18 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { PatientWorkflowActionBarHost } from "@/features/ia/components/clinical-workflow/patient-workflow-action-bar-host";
-import { PatientWorkspacePanelSkeleton } from "@/features/pacientes/components/pacientes/patient-workspace-panel-skeleton";
 import { PatientWorkspaceTabBar } from "@/features/pacientes/components/pacientes/patient-workspace-tab-bar";
 import type { PatientWorkspaceViewProps } from "@/features/pacientes/components/pacientes/patient-workspace-types";
-import { usePatientWorkspaceTab } from "@/features/pacientes/hooks/use-patient-workspace-tab";
+import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
+import type { PatientWorkspaceUrlOptions } from "@/features/pacientes/utils/patient-workspace-actions";
 import {
-  chartFocusForTab,
   CLINICAL_CONTEXT_TABS,
   shouldLoadCopilotBridge,
   shouldLoadWorkspaceSheets,
 } from "@/features/pacientes/utils/patient-workspace-tab-routing";
-
-const PatientClinicalAuditPanel = dynamic(
-  () =>
-    import("@/features/pacientes/components/pacientes/patient-clinical-audit-panel").then((m) => ({
-      default: m.PatientClinicalAuditPanel,
-    })),
-  { loading: () => <PatientWorkspacePanelSkeleton /> }
-);
 
 const PreVisitBriefPanel = dynamic(
   () =>
@@ -57,42 +47,35 @@ const PatientWorkspaceSheets = dynamic(
 );
 
 type Props = PatientWorkspaceViewProps & {
-  resumenPanel?: ReactNode;
-  soapPanel?: ReactNode;
-  diagnosticosPanel?: ReactNode;
-  recetasPanel?: ReactNode;
-  ordenesPanel?: ReactNode;
-  docsAdminPanel?: ReactNode;
-  timelinePanel?: ReactNode;
-  chartPanel?: ReactNode;
+  activeTab: PatientWorkspaceTabId;
+  onTabChange: (tab: PatientWorkspaceTabId) => void;
+  onOpenHcWorkspace?: () => void;
+  navigateWorkspace: (opts: PatientWorkspaceUrlOptions) => void;
+  workspaceSearchParams: URLSearchParams;
+  activePanel: ReactNode;
   canManageAdminDocuments?: boolean;
 };
 
 export function PatientWorkspaceView(props: Props) {
   const {
     ehr,
-    initialTab,
+    activeTab,
+    onTabChange,
+    onOpenHcWorkspace,
+    navigateWorkspace,
+    workspaceSearchParams,
+    activePanel,
     templates,
     patientRecord,
-    resumenPanel,
-    soapPanel,
-    diagnosticosPanel,
-    recetasPanel,
-    ordenesPanel,
-    docsAdminPanel,
-    timelinePanel,
-    chartPanel,
     canManageAdminDocuments = false,
     ...chartProps
   } = props;
-  const searchParams = useSearchParams();
-  const { activeTab, setTab } = usePatientWorkspaceTab(chartProps.patientId, initialTab);
 
-  const chartFocus = chartFocusForTab(activeTab);
   const patientName = `${chartProps.patient.first_name} ${chartProps.patient.last_name}`.trim();
   const showClinicalContext = CLINICAL_CONTEXT_TABS.has(activeTab);
-  const showCopilotBridge = shouldLoadCopilotBridge(activeTab, searchParams.get("action"));
-  const showWorkspaceSheets = shouldLoadWorkspaceSheets(activeTab, searchParams);
+  const showCopilotBridge = shouldLoadCopilotBridge(activeTab, workspaceSearchParams.get("action"));
+  const showWorkspaceSheets = shouldLoadWorkspaceSheets(activeTab, workspaceSearchParams);
+  const workspaceNavigation = { workspaceSearchParams, navigateWorkspace };
   const lastConsultAt = ehr.consultations[0]?.created_at ?? null;
 
   return (
@@ -113,6 +96,7 @@ export function PatientWorkspaceView(props: Props) {
       {showCopilotBridge ? (
         <PatientWorkspaceCopilotBridge
           activeTab={activeTab}
+          workspaceNavigation={workspaceNavigation}
           patient={chartProps.patient}
           patientId={chartProps.patientId}
           patientName={patientName}
@@ -126,7 +110,9 @@ export function PatientWorkspaceView(props: Props) {
         <PatientWorkspaceTabBar
           patientId={chartProps.patientId}
           activeTab={activeTab}
-          onTabChange={setTab}
+          workspaceSearchParams={workspaceSearchParams}
+          onTabChange={onTabChange}
+          onOpenHcWorkspace={onOpenHcWorkspace}
           canManageAdminDocuments={canManageAdminDocuments}
           className="min-w-0 flex-1"
         />
@@ -139,23 +125,12 @@ export function PatientWorkspaceView(props: Props) {
         ) : null}
       </div>
 
-      <div className="drflow-patient-workspace-panel">
-        {activeTab === "resumen" ? resumenPanel : null}
-        {activeTab === "soap" ? soapPanel : null}
-        {activeTab === "diagnosticos" ? diagnosticosPanel : null}
-        {chartFocus ? chartPanel : null}
-        {activeTab === "recetas" ? recetasPanel : null}
-        {activeTab === "ordenes" ? ordenesPanel : null}
-        {activeTab === "docs_admin" ? docsAdminPanel : null}
-        {activeTab === "timeline" ? timelinePanel : null}
-        {activeTab === "auditoria" ? (
-          <PatientClinicalAuditPanel patientId={chartProps.patientId} />
-        ) : null}
-      </div>
+      <div className="drflow-patient-workspace-panel">{activePanel}</div>
 
       {showWorkspaceSheets ? (
         <PatientWorkspaceSheets
           activeTab={activeTab}
+          workspaceNavigation={workspaceNavigation}
           patient={chartProps.patient}
           patientId={chartProps.patientId}
           patientRecord={patientRecord}

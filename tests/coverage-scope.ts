@@ -1,32 +1,33 @@
 /** Core business logic — target 90% (Phase 19). Módulos críticos con suite activa. */
 export const COVERAGE_INCLUDE = [
-  "src/lib/app-release.ts",
-  "src/lib/booking/**",
-  "src/lib/permissions/**",
-  "src/lib/security/csrf.ts",
-  "src/lib/security/tenant-scope.ts",
-  "src/lib/security/audit-types.ts",
-  "src/lib/security/rls-manifest.ts",
-  "src/lib/validations/form-errors.ts",
-  "src/lib/jobs/registry.ts",
-  "src/lib/jobs/enqueue.ts",
-  "src/lib/jobs/types.ts",
-  "src/lib/features/flags/**",
-  "src/lib/observability/types.ts",
-  "src/lib/observability/trace-id.ts",
-  "src/lib/accessibility/**",
+  "src/core/app-release.ts",
+  "src/core/booking/**",
+  "src/core/permissions/roles.ts",
+  "src/core/security/csrf.ts",
+  "src/core/security/tenant-scope.ts",
+  "src/core/security/audit-types.ts",
+  "src/core/security/rls-manifest.ts",
+  "src/core/validations/form-errors.ts",
+  "src/core/jobs/registry.ts",
+  "src/core/jobs/enqueue.ts",
+  "src/core/jobs/types.ts",
+  "src/features/flags/lib/**",
+  "src/core/observability/types.ts",
+  "src/core/observability/trace-id.ts",
+  "src/core/accessibility/**",
   "src/plugins/**",
-  "src/lib/qa/**",
   "src/lib/constants/pami-planillas.ts",
   "src/lib/constants/cash-register.ts",
   "src/lib/constants/command-palette-items.ts",
-  "src/lib/utils/cn.ts",
-  "src/lib/utils/clinical-navigation.ts",
+  "src/shared/utils/cn.ts",
+  "src/shared/utils/clinical-navigation.ts",
   "src/lib/utils/normalize-dni.ts",
-  "src/lib/utils/whatsapp.ts",
-  "src/lib/utils/patient-search.ts",
+  "src/shared/utils/whatsapp.ts",
+  "src/features/pacientes/utils/patient-search.ts",
+  "src/features/pacientes/utils/patient-age.ts",
+  "src/features/pacientes/utils/patient-ehr-model.ts",
   "src/lib/utils/clinical-indicators.ts",
-  "src/lib/utils/clinic-timezone.ts",
+  "src/shared/utils/clinic-timezone.ts",
   "src/lib/utils/clinical-assistant.ts",
   "src/lib/utils/pre-visit-brief.ts",
   "src/lib/utils/consultation-documentation.ts",
@@ -47,12 +48,10 @@ export const COVERAGE_INCLUDE = [
   "src/lib/utils/ehr-clinical-category.ts",
   "src/lib/utils/unified-clinical-evolution.ts",
   "src/lib/utils/parse-evolution-medications.ts",
-  "src/lib/utils/patient-age.ts",
-  "src/lib/utils/patient-ehr-model.ts",
   "src/lib/utils/sanitize-clinical-display.ts",
-  "src/lib/utils/clinical-workspace-alerts.ts",
-  "src/lib/utils/stabilization-limits.ts",
-  "src/lib/utils/clinical-ops-metrics.ts",
+  "src/features/pacientes/utils/clinical-workspace-alerts.ts",
+  "src/shared/utils/stabilization-limits.ts",
+  "src/features/dashboard/utils/clinical-ops-metrics.ts",
   "src/lib/utils/yearly-attended-patients.ts",
 ];
 
@@ -65,7 +64,9 @@ export const CRITICAL_COVERAGE = [
     label: "Authorization (permissions)",
     minLines: 94,
     minStatements: 90,
-    match: (filePath: string) => filePath.includes("src/lib/permissions/"),
+    match: (filePath: string) =>
+      filePath.includes("src/core/permissions/roles.ts") ||
+      filePath.includes("src/lib/permissions/roles.ts"),
   },
   {
     id: "security",
@@ -73,7 +74,8 @@ export const CRITICAL_COVERAGE = [
     minLines: 95,
     minStatements: 95,
     match: (filePath: string) =>
-      filePath.includes("src/lib/security/") && !filePath.endsWith("audit-log.ts"),
+      (filePath.includes("src/core/security/") || filePath.includes("src/lib/security/")) &&
+      !filePath.endsWith("audit-log.ts"),
   },
   {
     id: "auth-flow",
@@ -81,7 +83,9 @@ export const CRITICAL_COVERAGE = [
     minLines: 95,
     minStatements: 95,
     match: (filePath: string) =>
+      filePath.includes("src/core/security/csrf.ts") ||
       filePath.includes("src/lib/security/csrf.ts") ||
+      filePath.includes("src/core/security/tenant-scope.ts") ||
       filePath.includes("src/lib/security/tenant-scope.ts"),
   },
   {
@@ -90,6 +94,10 @@ export const CRITICAL_COVERAGE = [
     minLines: 95,
     minStatements: 95,
     match: (filePath: string) =>
+      filePath.includes("src/features/pacientes/utils/patient-age.ts") ||
+      filePath.includes("src/features/pacientes/utils/patient-search.ts") ||
+      filePath.includes("src/features/pacientes/utils/patient-ehr-model.ts") ||
+      filePath.includes("src/shared/utils/clinical-navigation.ts") ||
       filePath.includes("src/lib/utils/patient-") ||
       filePath.includes("src/lib/utils/patient-ehr") ||
       filePath.includes("src/lib/utils/clinical-navigation.ts"),

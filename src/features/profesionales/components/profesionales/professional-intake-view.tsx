@@ -25,10 +25,11 @@ export function ProfessionalIntakeView({
   role,
   userName,
   locations,
-  professionals,
+  sidebarProfessionals,
+  initialSelectedProfessional,
+  initialScheduleRules,
   teamMembers,
   invitedMembers,
-  scheduleByProfessional,
 }: ProfessionalIntakeViewProps) {
   const {
     selectedId,
@@ -56,7 +57,12 @@ export function ProfessionalIntakeView({
     handleUpdateProfile,
     handleUpdateBankDetails,
     handleSaveSchedule,
-  } = useProfessionalIntake({ professionals, teamMembers, scheduleByProfessional });
+  } = useProfessionalIntake({
+    sidebarProfessionals,
+    initialSelectedProfessional,
+    initialScheduleRules,
+    teamMembers,
+  });
 
   const memberPanel = useClinicTeamMemberPanel(selectedMember);
 
@@ -73,7 +79,7 @@ export function ProfessionalIntakeView({
 
       <div className="flex flex-col gap-4 p-4 lg:flex-row lg:gap-6 lg:p-6">
         <ProfessionalIntakeSidebar
-          professionals={professionals}
+          professionals={sidebarProfessionals}
           invitedMembers={invitedMembers}
           selectedId={selectedId}
           selectedMemberId={selectedMemberId}

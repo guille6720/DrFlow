@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 
 import { PublicBookingForm } from "@/core/components/booking/public-booking-form";
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
+import { PUBLIC_BOOKING_LINK_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
+import { unwrapJoin } from "@/core/supabase/unwrap-join";
 
 export default async function SolicitarTurnoPage({
   params,
@@ -15,14 +17,14 @@ export default async function SolicitarTurnoPage({
 
   const { data: link } = await supabase
     .from("public_booking_links")
-    .select("*, clinics(id, name, phone, address)")
+    .select(`${PUBLIC_BOOKING_LINK_COLUMNS}, clinics(id, name, phone, address)`)
     .eq("slug", slug)
     .eq("is_active", true)
     .single();
 
   if (!link) notFound();
 
-  const clinic = link.clinics as {
+  const clinic = unwrapJoin(link.clinics) as {
     id: string;
     name: string;
     phone: string | null;

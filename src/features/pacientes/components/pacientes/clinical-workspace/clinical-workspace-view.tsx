@@ -1,3 +1,5 @@
+"use client";
+
 import { ClinicalWorkspaceAiSection } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-ai-section";
 import { ClinicalWorkspaceAlertsStrip } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-alerts-strip";
 import { ClinicalWorkspaceHeader } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-header";

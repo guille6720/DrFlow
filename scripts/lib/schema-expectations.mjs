@@ -88,16 +88,25 @@ export const EXPECTED_RPCS = [
   "search_symptoms",
   "search_pathologies_by_symptoms",
   "search_pami_vademecum",
+  "search_patients_for_clinic",
+  "count_patients_for_clinic_search",
+  "summarize_collected_cash_charges_for_closure",
+  "summarize_appointments_for_turnos_reportes",
+  "search_patient_ids_by_pathology",
+  "count_clinical_records_by_patients",
 ];
 
 /** Composite indexes required for hot paths (054 + 046). */
 export const EXPECTED_INDEXES = [
   "idx_patients_clinic_active_lastname",
+  "idx_patients_clinic_pami_active",
   "idx_clinical_records_clinic_created",
   "idx_clinical_records_clinic_patient_created",
+  "idx_clinical_records_diagnosis_trgm",
   "idx_patient_attachments_clinic_patient_created",
   "idx_audit_logs_module_created",
   "idx_clinic_members_professional",
+  "idx_appointments_clinic_upcoming_active",
 ];
 
 /** Migration files in numeric order (excluding seed-only 003, 005b, 017, 019). */

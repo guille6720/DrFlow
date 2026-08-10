@@ -1,3 +1,5 @@
+import type { ProfessionalListItem } from "@/features/profesionales/components/profesionales/professional-intake-sidebar";
+
 import type { EnrichedTeamMember } from "@/lib/utils/team-member-display";
 import type { Clinic, UserRole } from "@/types/database";
 
@@ -46,10 +48,11 @@ export type ProfessionalIntakeViewProps = {
   role: UserRole | null;
   userName?: string;
   locations: ProfessionalIntakeLocation[];
-  professionals: ProfessionalIntakeDetail[];
+  sidebarProfessionals: ProfessionalListItem[];
+  initialSelectedProfessional: ProfessionalIntakeDetail | null;
+  initialScheduleRules: AvailabilityRuleRow[];
   teamMembers: EnrichedTeamMember[];
   invitedMembers: EnrichedTeamMember[];
-  scheduleByProfessional: Record<string, AvailabilityRuleRow[]>;
 };
 
 export type ProfessionalIntakeDetailTab = "perfil" | "consultorio" | "horarios" | "datos_bancarios";
