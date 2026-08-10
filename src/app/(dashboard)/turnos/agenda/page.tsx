@@ -1,4 +1,4 @@
-import { addDays, endOfWeek, startOfWeek, subDays } from "date-fns";
+import { addDays, subDays } from "date-fns";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
@@ -23,8 +23,8 @@ export default async function TurnosAgendaPage() {
   const supabase = await createClient();
 
   const now = new Date();
-  const rangeStart = subDays(startOfWeek(now, { weekStartsOn: 1 }), 7).toISOString();
-  const rangeEnd = addDays(endOfWeek(now, { weekStartsOn: 1 }), 14).toISOString();
+  const rangeStart = subDays(now, 30).toISOString();
+  const rangeEnd = addDays(now, 60).toISOString();
 
   const [appointments, professionals, locations, specialties, blocks, bookingSlug] = clinicId
     ? await Promise.all([

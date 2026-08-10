@@ -39,8 +39,7 @@ export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
     shiftCalendar,
   } = agenda;
 
-  const weekStart = weekDays[0];
-  const weekEnd = weekDays[weekDays.length - 1];
+  const visibleDay = weekDays[0];
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -50,18 +49,19 @@ export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
           size="sm"
           className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700"
           onClick={() => shiftCalendar(true)}
+          aria-label="Día anterior"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="min-w-[220px] text-center text-sm font-medium text-slate-200">
-          {format(weekStart, "d MMM", { locale: es })} –{" "}
-          {format(weekEnd, "d MMM yyyy", { locale: es })}
+        <span className="min-w-[220px] text-center text-sm font-medium capitalize text-slate-200">
+          {format(visibleDay, "EEEE d MMM yyyy", { locale: es })}
         </span>
         <Button
           variant="outline"
           size="sm"
           className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700"
           onClick={() => shiftCalendar(false)}
+          aria-label="Día siguiente"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>

@@ -135,11 +135,10 @@ export function AgendaView({
         <AgendaToolbar agenda={agenda} professionals={professionals} specialties={specialties} />
 
         <div className="grid gap-4 xl:grid-cols-2">
-          <section aria-label="Calendario semanal">
+          <section aria-label="Calendario diario">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-slate-200">
-                Semana del {format(weekDays[0], "d MMM", { locale: es })} al{" "}
-                {format(weekDays[weekDays.length - 1], "d MMM yyyy", { locale: es })}
+              <h2 className="text-sm font-semibold capitalize text-slate-200">
+                {format(weekDays[0], "EEEE d 'de' MMMM yyyy", { locale: es })}
               </h2>
               {canManage ? (
                 <p className="text-xs text-slate-400">
@@ -165,7 +164,7 @@ export function AgendaView({
               <h2 className="text-sm font-semibold text-slate-200">
                 {format(currentDate, "MMMM yyyy", { locale: es })}
               </h2>
-              <p className="text-xs text-slate-400">Tocá un día para mover la semana</p>
+              <p className="text-xs text-slate-400">Tocá un día para ver ese día</p>
             </div>
             <MonthOverviewGrid
               monthDate={currentDate}

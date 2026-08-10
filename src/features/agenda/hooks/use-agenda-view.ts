@@ -1,11 +1,9 @@
 "use client";
 
 import {
-  addWeeks,
-  eachDayOfInterval,
-  endOfWeek,
-  startOfWeek,
-  subWeeks,
+  addDays,
+  startOfDay,
+  subDays,
 } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
@@ -37,11 +35,7 @@ export function useAgendaView({
     [appointments, filterProfessional, filterSpecialty]
   );
 
-  const weekDays = useMemo(() => {
-    const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-    const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
-    return eachDayOfInterval({ start: weekStart, end: weekEnd });
-  }, [currentDate]);
+  const weekDays = useMemo(() => [startOfDay(currentDate)], [currentDate]);
 
   const openNewAppointmentForm = useCallback(() => {
     router.push("/turnos/nuevo");
@@ -51,7 +45,7 @@ export function useAgendaView({
 
   const shiftCalendar = useCallback(
     (back: boolean) => {
-      setCurrentDate(back ? subWeeks(currentDate, 1) : addWeeks(currentDate, 1));
+      setCurrentDate(back ? subDays(currentDate, 1) : addDays(currentDate, 1));
     },
     [currentDate]
   );
