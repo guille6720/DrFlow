@@ -20,6 +20,50 @@ import { recordAppointmentStatusHistory } from "@/features/turnos/server/record-
 
 import type { ConsultationModality } from "@/lib/constants/consultation-modality";
 
+function isMissingAppointmentsColumnError(
+  error: { code?: string | null; message?: string | null },
+  column: string
+): boolean {
+  const message = error.message ?? "";
+  return (
+    error.code === "42703" ||
+    message.includes(`'${column}' column`) ||
+    message.includes(`"${column}"`) ||
+    message.includes(`'${column}'`) ||
+    message.includes(`"${column}"`)
+  );
+}
+
+async function updateAppointmentRow(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  id: string,
+  clinicId: string,
+  updatePayload: Record<string, unknown>
+) {
+  let payload = updatePayload;
+  let result = await supabase
+    .from("appointments")
+    .update(payload)
+    .eq("id", id)
+    .eq("clinic_id", clinicId);
+
+  if (
+    result.error &&
+    payload.cancellation_category &&
+    isMissingAppointmentsColumnError(result.error, "cancellation_category")
+  ) {
+    const { cancellation_category: _removed, ...fallbackPayload } = payload;
+    payload = fallbackPayload;
+    result = await supabase
+      .from("appointments")
+      .update(payload)
+      .eq("id", id)
+      .eq("clinic_id", clinicId);
+  }
+
+  return result;
+}
+
 export async function createAppointment(formData: FormData) {
   const access = await requireClinicPermission("manageAppointments");
   if (!access.ok) return { error: access.error };
@@ -212,11 +256,12 @@ export async function updateAppointmentStatus(
     updatePayload.consultation_modality = modalityParsed.data;
   }
 
-  const { error } = await supabase
-    .from("appointments")
-    .update(updatePayload)
-    .eq("id", idParsed.data)
-    .eq("clinic_id", clinicId);
+  const { error } = await updateAppointmentRow(
+    supabase,
+    idParsed.data,
+    clinicId,
+    updatePayload
+  );
 
   if (error) {
     return {

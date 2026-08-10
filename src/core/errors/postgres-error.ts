@@ -61,6 +61,8 @@ const COLUMN_MIGRATION_HINTS: Record<string, string> = {
   "medical_orders.version": "Falta la migración 074 en Supabase (version en medical_orders).",
   "patients.insurance_plan":
     "Falta actualizar la base de datos (columna insurance_plan). En Supabase → SQL Editor ejecutá supabase/migrations/041_patients_insurance_plan.sql y volvé a intentar.",
+  "appointments.cancellation_category":
+    "Falta la migración 085 en Supabase. Ejecutá supabase/scripts/prod-fix-appointment-cancellation.sql y volvé a intentar.",
   "prescription_drafts.diagnosis_cie10":
     "Falta la migración de recetas en Supabase. Ejecutá en el SQL Editor el archivo supabase/migrations/014_repair_prescription_schema.sql (o 013) y volvé a intentar.",
   "prescription_drafts.prescription_type":
@@ -221,6 +223,13 @@ export function resolvePostgresUserMessage(
 
   if (parsed.message?.includes("appointment_status_history_changed_by_fkey")) {
     return "Falta la migración 094 en Supabase. Ejecutá supabase/scripts/prod-fix-user-deletion-complete.sql y volvé a intentar.";
+  }
+
+  if (parsed.message?.includes("cancellation_category")) {
+    return (
+      COLUMN_MIGRATION_HINTS["appointments.cancellation_category"] ??
+      "Falta actualizar la base de datos para cancelaciones. Ejecutá supabase/scripts/prod-fix-appointment-cancellation.sql."
+    );
   }
 
   for (const [needle, hint] of Object.entries(SCHEMA_CACHE_HINTS)) {

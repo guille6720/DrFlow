@@ -3,6 +3,8 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
+import { toast } from "@/core/notifications/toast";
+
 import {
   CANCELLATION_REASON_OPTIONS,
   type CancellationCategory,
@@ -41,11 +43,12 @@ export function CancelAppointmentDialog({
 
   if (!open) return null;
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleConfirm() {
     const trimmed = detail.trim();
     if (trimmed.length < 3) {
-      setError("Indicá el motivo (mín. 3 caracteres)");
+      const message = "Indicá el motivo (mín. 3 caracteres)";
+      setError(message);
+      toast.error(message);
       return;
     }
 
@@ -55,10 +58,13 @@ export function CancelAppointmentDialog({
       const result = await onConfirm({ category, detail: trimmed });
       if (result?.error) {
         setError(result.error);
+        toast.error(result.error);
         return;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo cancelar el turno");
+      const message = err instanceof Error ? err.message : "No se pudo cancelar el turno";
+      setError(message);
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
@@ -72,32 +78,48 @@ export function CancelAppointmentDialog({
     onClose();
   }
 
+  const busy = submitting || loading;
+
   return (
     <div className="fixed inset-0 z-[300] flex items-end justify-center p-4 sm:items-center">
       <button
         type="button"
-        className="absolute inset-0 bg-slate-900/50"
+        className="absolute inset-0 bg-slate-900/50 pointer-events-auto"
         aria-label="Cerrar"
         onClick={handleClose}
       />
-      <div className="drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl">
+      <div
+        className="drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl pointer-events-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cancel-appointment-title"
+      >
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Cancelar turno</h2>
+            <h2 id="cancel-appointment-title" className="text-lg font-semibold text-slate-900">
+              Cancelar turno
+            </h2>
             {patientName ? <p className="mt-1 text-sm text-slate-500">{patientName}</p> : null}
           </div>
           <button
             type="button"
             onClick={handleClose}
             className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+            disabled={busy}
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleConfirm();
+          }}
+        >
           <Select
-            label="Motivo"
+            label="Motivo de cancelación"
             value={category}
             onChange={(e) => setCategory(e.target.value as CancellationCategory)}
             options={CANCELLATION_REASON_OPTIONS.map((option) => ({
@@ -117,14 +139,19 @@ export function CancelAppointmentDialog({
             error={error ?? undefined}
           />
           <p className="text-xs text-slate-500">
-            Quedará registrado en la agenda, historial y app del paciente. Podés avisarle por
-            WhatsApp.
+            Quedará registrado en la agenda, historial y app del paciente. Si el paciente tiene
+            teléfono, podés avisarle por WhatsApp al confirmar.
           </p>
+          {error ? (
+            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {error}
+            </p>
+          ) : null}
           <div className="flex gap-2">
-            <Button type="submit" variant="danger" loading={submitting || loading}>
+            <Button type="submit" variant="danger" loading={busy}>
               Confirmar cancelación
             </Button>
-            <Button type="button" variant="outline" onClick={handleClose} disabled={submitting || loading}>
+            <Button type="button" variant="outline" onClick={handleClose} disabled={busy}>
               Volver
             </Button>
           </div>
