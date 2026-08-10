@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 import {
   LEGACY_TAB_ALIASES,
@@ -10,20 +10,42 @@ import {
   type PatientWorkspaceTabId,
 } from "@/features/pacientes/constants/patient-workspace-tabs";
 
-export function usePatientWorkspaceTab(patientId: string, initialTab?: PatientWorkspaceTabId) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+type TabSearchParams = {
+  get(name: string): string | null;
+};
 
+function resolveTabFromLocation(
+  initialTab: PatientWorkspaceTabId | undefined,
+  searchParams: TabSearchParams
+): PatientWorkspaceTabId {
   const rawTab = searchParams.get("tab") ?? initialTab ?? null;
-  const activeTab = parsePatientWorkspaceTab(
-    rawTab ? (LEGACY_TAB_ALIASES[rawTab] ?? rawTab) : null
+  return parsePatientWorkspaceTab(rawTab ? (LEGACY_TAB_ALIASES[rawTab] ?? rawTab) : null);
+}
+
+/** Client tab state synced to the URL without triggering a full RSC reload. */
+export function usePatientWorkspaceTab(patientId: string, initialTab?: PatientWorkspaceTabId) {
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTabState] = useState<PatientWorkspaceTabId>(() =>
+    resolveTabFromLocation(initialTab, searchParams)
   );
+
+  useEffect(() => {
+    const onPopState = () => {
+      setActiveTabState(
+        resolveTabFromLocation(initialTab, new URLSearchParams(window.location.search))
+      );
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [initialTab]);
 
   const setTab = useCallback(
     (tab: PatientWorkspaceTabId) => {
-      router.push(patientWorkspacePath(patientId, tab), { scroll: false });
+      setActiveTabState(tab);
+      const url = patientWorkspacePath(patientId, tab);
+      window.history.replaceState(window.history.state, "", url);
     },
-    [patientId, router]
+    [patientId]
   );
 
   return { activeTab, setTab };

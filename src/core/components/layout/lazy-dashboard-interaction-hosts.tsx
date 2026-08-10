@@ -1,6 +1,9 @@
 "use client";
 
+import { RoutePrefetcher } from "@/core/components/layout/route-prefetcher";
 import { safeClientDynamic } from "@/core/components/layout/safe-client-dynamic";
+
+import type { UserRole } from "@/types/database";
 
 const ClinicalContextMenuHost = safeClientDynamic(() =>
   import("@/features/ia/components/clinical-workflow/clinical-context-menu").then((mod) => ({
@@ -14,17 +17,17 @@ const ClinicalWorkflowShortcuts = safeClientDynamic(() =>
   }))
 );
 
-const RoutePrefetcher = safeClientDynamic(() =>
-  import("@/core/components/layout/route-prefetcher").then((mod) => ({
-    default: mod.RoutePrefetcher,
-  }))
-);
-
 /** Non-critical dashboard interactions — deferred to reduce first-load JS. */
-export function LazyDashboardInteractionHosts() {
+export function LazyDashboardInteractionHosts({
+  role,
+  isSuperadmin,
+}: {
+  role?: UserRole | null;
+  isSuperadmin?: boolean;
+}) {
   return (
     <>
-      <RoutePrefetcher />
+      <RoutePrefetcher role={role} isSuperadmin={isSuperadmin} />
       <ClinicalContextMenuHost />
       <ClinicalWorkflowShortcuts />
     </>

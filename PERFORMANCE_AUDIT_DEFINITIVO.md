@@ -98,9 +98,21 @@ DrFlow ya tiene bases sólidas (paginación en listados clave, RPC de búsqueda 
 - [x] Reemplazar poll+refresh 30s (realtime + debounce sala espera)
 - [x] `loading.tsx` rutas calientes (`pacientes`, `caja`, `pagos`, `pacientes/[id]`)
 
-### Grupo 4 — Arquitectura ficha paciente
-- [ ] Tab navigation sin full RSC reload
-- [ ] Bundle shell reduction
+### Grupo 4 — Arquitectura ficha paciente (aplicado)
+- [x] Tab navigation sin full RSC reload (`replaceState` + `loadPatientWorkspaceTabPanel`)
+- [x] Bundle shell reduction (prefetch acotado por rol)
+- [x] Ingreso profesionales: sidebar liviano + detalle bajo demanda
+
+### Grupo 4 — Cambios aplicados
+
+| Archivo | Cambio |
+| ------- | ------ |
+| `patient-workspace-shell.tsx` | Client shell con cache por tab + lazy server action |
+| `load-patient-workspace-tab-panel.ts` | Fetch tab-scoped sin navegación RSC |
+| `use-patient-workspace-tab.ts` | `history.replaceState` en lugar de `router.push` |
+| `load-professional-intake-page-data.ts` | Sidebar liviano + detalle/reglas del seleccionado |
+| `load-professional-intake-detail-panel.ts` | Server action al cambiar profesional |
+| `route-prefetcher.tsx` | 5–7 rutas core según rol (antes 15 fijas) |
 
 ---
 
@@ -141,11 +153,14 @@ DrFlow ya tiene bases sólidas (paginación en listados clave, RPC de búsqueda 
 
 **Deploy requerido:** solo frontend (sin migración).
 
-### Pendiente (Grupo 4)
+**Deploy requerido:** solo frontend (sin migración).
 
-| Métrica | Before (estimado) | After (objetivo) |
-| ------- | ----------------- | ---------------- |
-| Ficha paciente tabs | Full RSC reload por tab | Client navigation sin refetch |
-| Bundle shell | ~1.2 MB | Lazy islands |
-| Agenda | ±21d SSR, cap 1000 | Fetch incremental por semana |
-| Ingreso profesionales | Fetch-all | Loaders paginados |
+### Grupo 4 (aplicado)
+
+| Métrica | Before | After |
+| ------- | ------ | ----- |
+| Cambio tab ficha paciente | Full RSC reload (~10 queries) | Client tab + 1 server action tab-scoped |
+| Prefetch dashboard idle | 15 rutas fijas | 5–7 rutas según rol |
+| Ingreso profesionales | Roster + reglas + detalle full de todos | Sidebar liviano; detalle/reglas del seleccionado |
+
+**Deploy requerido:** solo frontend (sin migración).
