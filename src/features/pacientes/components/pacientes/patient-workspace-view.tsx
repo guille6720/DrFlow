@@ -66,6 +66,8 @@ type Props = PatientWorkspaceViewProps & {
   timelinePanel?: ReactNode;
   chartPanel?: ReactNode;
   canManageAdminDocuments?: boolean;
+  initialAuditEvents?: import("@/core/security/audit-types").PatientAuditEvent[];
+  initialAuditError?: string | null;
 };
 
 export function PatientWorkspaceView(props: Props) {
@@ -83,6 +85,8 @@ export function PatientWorkspaceView(props: Props) {
     timelinePanel,
     chartPanel,
     canManageAdminDocuments = false,
+    initialAuditEvents,
+    initialAuditError = null,
     ...chartProps
   } = props;
   const searchParams = useSearchParams();
@@ -149,7 +153,11 @@ export function PatientWorkspaceView(props: Props) {
         {activeTab === "docs_admin" ? docsAdminPanel : null}
         {activeTab === "timeline" ? timelinePanel : null}
         {activeTab === "auditoria" ? (
-          <PatientClinicalAuditPanel patientId={chartProps.patientId} />
+          <PatientClinicalAuditPanel
+            patientId={chartProps.patientId}
+            initialEvents={initialAuditEvents}
+            initialError={initialAuditError}
+          />
         ) : null}
       </div>
 

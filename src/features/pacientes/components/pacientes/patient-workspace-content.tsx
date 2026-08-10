@@ -12,6 +12,7 @@ import { PatientWorkspacePrescriptionsPanel } from "@/features/pacientes/compone
 import { PatientWorkspaceTimelinePanel } from "@/features/pacientes/components/pacientes/patient-workspace-timeline-panel";
 import { PatientWorkspaceView } from "@/features/pacientes/components/pacientes/patient-workspace-view";
 import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
+import { loadPatientAuditTrail } from "@/features/pacientes/server/load-patient-audit-trail";
 import { loadPatientWorkspacePageData } from "@/features/pacientes/server/load-patient-workspace-page";
 import { chartFocusForTab } from "@/features/pacientes/utils/patient-workspace-tab-routing";
 
@@ -50,7 +51,10 @@ export async function PatientWorkspaceContent({
   canManageAdminDocuments,
 }: Props) {
   const supabase = await createClient();
-  const workspace = await loadPatientWorkspacePageData(supabase, clinicId, patient);
+  const [workspace, auditTrail] = await Promise.all([
+    loadPatientWorkspacePageData(supabase, clinicId, patient),
+    initialTab === "auditoria" ? loadPatientAuditTrail(patientId) : Promise.resolve(null),
+  ]);
 
   const adminDocuments =
     initialTab === "docs_admin" && canManageAdminDocuments
@@ -194,6 +198,8 @@ export async function PatientWorkspaceContent({
       timelinePanel={timelinePanel}
       chartPanel={chartPanel}
       canManageAdminDocuments={canManageAdminDocuments}
+      initialAuditEvents={auditTrail?.data}
+      initialAuditError={auditTrail?.error ?? null}
       arcoExport={
         canManagePatients ? (
           <PatientArcoExportButton

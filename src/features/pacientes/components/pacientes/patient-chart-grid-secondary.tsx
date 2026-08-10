@@ -201,6 +201,7 @@ export function PatientChartGridSecondary({
               slug={portalSlug}
               doctor={doctorInfo}
               share={patientShare}
+              refreshOnShare={false}
             />
           </Card>
         </div>

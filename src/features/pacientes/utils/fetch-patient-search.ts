@@ -1,5 +1,3 @@
-"use client";
-
 import type { PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import {
   PATIENT_SEARCH_DEBOUNCE_MS,

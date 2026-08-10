@@ -29,7 +29,6 @@ export function DeletePatientButton({ patientId, patientName }: DeletePatientBut
     }
     setOpen(false);
     router.push("/pacientes");
-    router.refresh();
   }
 
   return (

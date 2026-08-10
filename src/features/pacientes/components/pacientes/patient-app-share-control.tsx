@@ -34,6 +34,8 @@ interface PatientAppShareControlProps {
   doctor: DoctorShareInfo;
   share?: PatientAppShareInfo | null;
   compact?: boolean;
+  /** When false, rely on localShare state instead of full-page refresh (detail views). */
+  refreshOnShare?: boolean;
   className?: string;
 }
 
@@ -46,6 +48,7 @@ export function PatientAppShareControl({
   doctor,
   share,
   compact = false,
+  refreshOnShare = true,
   className,
 }: PatientAppShareControlProps) {
   const router = useRouter();
@@ -78,7 +81,9 @@ export function PatientAppShareControl({
       if (result.sharedAt) {
         setLocalShare({ sharedAt: result.sharedAt, channel });
       }
-      router.refresh();
+      if (refreshOnShare) {
+        router.refresh();
+      }
       onDone();
     });
   }

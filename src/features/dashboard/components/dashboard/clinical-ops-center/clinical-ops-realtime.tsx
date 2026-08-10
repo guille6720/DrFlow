@@ -60,7 +60,10 @@ export function ClinicalOpsRealtime({ clinicId }: { clinicId: string }) {
       )
       .subscribe();
 
-    const poll = setInterval(refresh, 30000);
+    const poll = setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      refresh();
+    }, 30000);
 
     return () => {
       void supabase.removeChannel(channel);

@@ -20,6 +20,8 @@ import { Card } from "@/components/ui/card";
 
 type Props = {
   patientId: string;
+  initialEvents?: PatientAuditEvent[];
+  initialError?: string | null;
 };
 
 function AuditDiffSummary({ event }: { event: PatientAuditEvent }) {
@@ -51,12 +53,19 @@ function AuditDiffSummary({ event }: { event: PatientAuditEvent }) {
   );
 }
 
-export function PatientClinicalAuditPanel({ patientId }: Props) {
-  const [events, setEvents] = useState<PatientAuditEvent[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+export function PatientClinicalAuditPanel({
+  patientId,
+  initialEvents,
+  initialError = null,
+}: Props) {
+  const serverPrefetched = initialEvents !== undefined;
+  const [events, setEvents] = useState<PatientAuditEvent[]>(initialEvents ?? []);
+  const [error, setError] = useState<string | null>(initialError);
+  const [loading, setLoading] = useState(!serverPrefetched);
 
   useEffect(() => {
+    if (serverPrefetched) return;
+
     let cancelled = false;
     loadPatientAuditTrail(patientId).then((result) => {
       if (cancelled) return;
@@ -67,7 +76,7 @@ export function PatientClinicalAuditPanel({ patientId }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [patientId]);
+  }, [patientId, serverPrefetched]);
 
   return (
     <Card title="Auditoría clínica">

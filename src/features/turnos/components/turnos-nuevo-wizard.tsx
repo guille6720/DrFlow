@@ -10,7 +10,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "@/core/notifications/toast";
 import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
@@ -64,6 +64,11 @@ type Props = {
   canOverbook: boolean;
   defaultProfessionalId?: string;
   initialStartAt?: string;
+  initialWizardSlots?: {
+    slots: Slot[];
+    appointments: AppointmentAgendaRow[];
+    scheduleBlocks: { start_at: string; end_at: string; reason: string | null }[];
+  };
 };
 
 const LABEL_CLASS = "text-xs font-bold uppercase tracking-wide text-slate-800";
@@ -233,6 +238,29 @@ function ExistingAppointmentCancelPanel({
   );
 }
 
+function resolveInitialSlotSelection(
+  initialStartAt: string | undefined,
+  initialWizardSlots: Props["initialWizardSlots"]
+): { day: string | null; slot: Slot | null } {
+  if (!initialStartAt || !initialWizardSlots?.slots.length) {
+    return { day: null, slot: null };
+  }
+
+  const targetTime = parseISO(initialStartAt).getTime();
+  const slot =
+    initialWizardSlots.slots.find((entry) => entry.start_at === initialStartAt) ??
+    initialWizardSlots.slots.find(
+      (entry) => parseISO(entry.start_at).getTime() === targetTime
+    );
+
+  if (!slot) return { day: null, slot: null };
+
+  return {
+    day: format(parseISO(slot.start_at), "yyyy-MM-dd"),
+    slot,
+  };
+}
+
 export function TurnosNuevoWizard({
   patients,
   initialPatient,
@@ -243,6 +271,7 @@ export function TurnosNuevoWizard({
   canOverbook,
   defaultProfessionalId,
   initialStartAt,
+  initialWizardSlots,
 }: Props) {
   const router = useRouter();
   const patientOptions = useMemo(() => {
@@ -266,14 +295,25 @@ export function TurnosNuevoWizard({
   const [professionalId, setProfessionalId] = useState(() => defaultProfessional?.id ?? "");
   const [specialtyId, setSpecialtyId] = useState(() => defaultProfessional?.specialty_id ?? "");
   const [locationId, setLocationId] = useState(() => defaultProfessional?.location_id ?? "");
-  const [slots, setSlots] = useState<Slot[]>([]);
-  const [bookedAppointments, setBookedAppointments] = useState<AppointmentAgendaRow[]>([]);
+  const [slots, setSlots] = useState<Slot[]>(() => initialWizardSlots?.slots ?? []);
+  const [bookedAppointments, setBookedAppointments] = useState<AppointmentAgendaRow[]>(
+    () => initialWizardSlots?.appointments ?? []
+  );
   const [scheduleBlocks, setScheduleBlocks] = useState<
     { start_at: string; end_at: string; reason: string | null }[]
-  >([]);
+  >(() => initialWizardSlots?.scheduleBlocks ?? []);
   const [loadingSlots, setLoadingSlots] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+  const prefetchedProfessionalIdRef = useRef(
+    initialWizardSlots && defaultProfessionalId ? defaultProfessionalId : undefined
+  );
+  const initialSlotSelection = useMemo(
+    () => resolveInitialSlotSelection(initialStartAt, initialWizardSlots),
+    [initialStartAt, initialWizardSlots]
+  );
+  const [selectedDay, setSelectedDay] = useState<string | null>(
+    () => initialSlotSelection.day
+  );
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(() => initialSlotSelection.slot);
   const [selectedExisting, setSelectedExisting] = useState<AppointmentAgendaRow | null>(null);
   const [modality, setModality] = useState<"presencial" | "virtual">("presencial");
   const [notes, setNotes] = useState("");
@@ -433,6 +473,11 @@ export function TurnosNuevoWizard({
     const proId = defaultProfessional?.id;
     if (!proId) return;
 
+    if (prefetchedProfessionalIdRef.current === proId) {
+      prefetchedProfessionalIdRef.current = undefined;
+      return;
+    }
+
     let cancelled = false;
 
     void (async () => {
@@ -470,7 +515,7 @@ export function TurnosNuevoWizard({
     return () => {
       cancelled = true;
     };
-  }, [defaultProfessional?.id, initialStartAt]);
+  }, [defaultProfessional?.id, initialStartAt, initialWizardSlots]);
 
   const handleSelectFreeSlot = useCallback((slot: Slot) => {
     setSelectedSlot(slot);
@@ -574,7 +619,6 @@ export function TurnosNuevoWizard({
 
     toast.success(isOverbooking ? "Sobreturno confirmado" : "Turno confirmado");
     router.push("/turnos/agenda");
-    router.refresh();
   }, [
     selectedSlot,
     patientId,
