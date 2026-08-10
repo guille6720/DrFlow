@@ -1,7 +1,5 @@
 "use client";
 
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,8 +8,10 @@ import { useCallback, useState } from "react";
 import { hasPermission, type PermissionOverrides } from "@/core/permissions/roles";
 import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
 
+import { AgendaDateStrip } from "@/features/agenda/components/agenda/agenda-date-strip";
+import { AgendaDayList } from "@/features/agenda/components/agenda/agenda-day-list";
+import { AgendaSummaryCards } from "@/features/agenda/components/agenda/agenda-summary-cards";
 import { AgendaToolbar } from "@/features/agenda/components/agenda/agenda-toolbar";
-import { CalendarGrid } from "@/features/agenda/components/agenda/calendar-grid";
 import { MonthOverviewGrid } from "@/features/agenda/components/agenda/month-overview-grid";
 import { useAgendaView } from "@/features/agenda/hooks/use-agenda-view";
 
@@ -89,11 +89,12 @@ export function AgendaView({
     weekDays,
     editingAppointment,
     setEditingAppointment,
-    handleSlotClick,
+    openNewAppointmentForm,
   } = agenda;
 
   const canManage = hasPermission(role, "manageAppointments", isSuperadmin, permissionOverrides);
   const canStartClinical = hasPermission(role, "editClinicalRecords", isSuperadmin, permissionOverrides);
+  const selectedDay = weekDays[0];
 
   const handleCloseReschedule = useCallback(() => {
     setReschedulingAppointment(null);
@@ -122,110 +123,93 @@ export function AgendaView({
     setEditingAppointment(null);
   }, [setEditingAppointment]);
 
-  const handleCalendarSlotClick = useCallback(
-    (day: Date, time: string) => {
-      if (!canManage) return;
-      handleSlotClick(day, time);
-    },
-    [canManage, handleSlotClick]
-  );
-
   return (
     <div className="space-y-4 p-4 sm:p-6">
-        <AgendaToolbar agenda={agenda} professionals={professionals} specialties={specialties} />
+      <AgendaToolbar agenda={agenda} professionals={professionals} specialties={specialties} />
 
-        <div className="grid gap-4 xl:grid-cols-2">
-          <section aria-label="Calendario diario">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold capitalize text-slate-200">
-                {format(weekDays[0], "EEEE d 'de' MMMM yyyy", { locale: es })}
-              </h2>
-              {canManage ? (
-                <p className="text-xs text-slate-400">
-                  Horario libre → nuevo turno · Turno → gestionar o cancelar
-                </p>
-              ) : canStartClinical ? (
-                <p className="text-xs text-slate-400">Clic en paciente para abrir la consulta</p>
-              ) : null}
-            </div>
-            <CalendarGrid
-              weekDays={weekDays}
-              appointments={filtered}
-              blocks={scheduleBlocks}
-              onSlotClick={canManage ? handleCalendarSlotClick : undefined}
-              onAppointmentClick={canManage ? handleAppointmentClick : undefined}
-              canOpenClinical={canStartClinical}
-              canManage={canManage}
-            />
-          </section>
+      <AgendaDateStrip selectedDay={selectedDay} onSelectDay={setCurrentDate} />
 
-          <section aria-label="Calendario mensual">
-            <div className="mb-2">
-              <h2 className="text-sm font-semibold text-slate-200">
-                {format(currentDate, "MMMM yyyy", { locale: es })}
-              </h2>
-              <p className="text-xs text-slate-400">Tocá un día para ver ese día</p>
-            </div>
-            <MonthOverviewGrid
-              monthDate={currentDate}
-              appointments={filtered}
-              onDayClick={handleDayClick}
-            />
-          </section>
-        </div>
-
-        {bookingSlug ? (
-          <p className="text-sm text-slate-400">
-            Link público:{" "}
-            <Link
-              href={`/solicitar-turno/${bookingSlug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-teal-300 hover:underline"
-            >
-              /solicitar-turno/{bookingSlug}
-            </Link>
-          </p>
-        ) : null}
-
-        {editingAppointment ? (
-          <EditAppointmentDialog
-            key={editingAppointment.id}
-            appointment={editingAppointment}
-            patients={patients}
-            professionals={professionals}
-            locations={locations}
-            specialties={specialties}
-            appointments={appointments}
-            scheduleBlocks={scheduleBlocks}
-            defaultDuration={defaultDuration}
-            open
-            onClose={handleCloseEdit}
-            onSaved={() => router.refresh()}
-          />
-        ) : null}
-
-        {reschedulingAppointment ? (
-          <RescheduleAppointmentDialog
-            key={reschedulingAppointment.id}
-            appointment={reschedulingAppointment}
-            appointments={appointments}
-            scheduleBlocks={scheduleBlocks}
-            defaultDuration={defaultDuration}
-            open
-            onClose={handleCloseReschedule}
-            onSaved={() => router.refresh()}
-          />
-        ) : null}
-
-        <CalendarAppointmentDialog
-          appointment={selectedAppointment}
-          open={selectedAppointment !== null}
-          onClose={handleCloseAppointmentDialog}
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <AgendaDayList
+          day={selectedDay}
+          appointments={filtered}
           canManage={canManage}
           canStartClinical={canStartClinical}
-          onReschedule={canManage ? handleRescheduleFromCalendar : undefined}
+          onAppointmentClick={canManage ? handleAppointmentClick : undefined}
+          onEmptySlotClick={canManage ? openNewAppointmentForm : undefined}
         />
+
+        <aside aria-label="Calendario mensual">
+          <MonthOverviewGrid
+            monthDate={currentDate}
+            appointments={filtered}
+            onDayClick={handleDayClick}
+          />
+        </aside>
+      </div>
+
+      <AgendaSummaryCards appointments={filtered} anchorDay={selectedDay} />
+
+      {canManage ? (
+        <p className="text-sm text-slate-400">
+          Tocá un turno para gestionarlo · Usá la franja de fechas para cambiar de día
+        </p>
+      ) : canStartClinical ? (
+        <p className="text-sm text-slate-400">Tocá un turno para ver detalle o abrir la consulta</p>
+      ) : null}
+
+      {bookingSlug ? (
+        <p className="text-sm text-slate-500">
+          Link público:{" "}
+          <Link
+            href={`/solicitar-turno/${bookingSlug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-teal-700 hover:underline"
+          >
+            /solicitar-turno/{bookingSlug}
+          </Link>
+        </p>
+      ) : null}
+
+      {editingAppointment ? (
+        <EditAppointmentDialog
+          key={editingAppointment.id}
+          appointment={editingAppointment}
+          patients={patients}
+          professionals={professionals}
+          locations={locations}
+          specialties={specialties}
+          appointments={appointments}
+          scheduleBlocks={scheduleBlocks}
+          defaultDuration={defaultDuration}
+          open
+          onClose={handleCloseEdit}
+          onSaved={() => router.refresh()}
+        />
+      ) : null}
+
+      {reschedulingAppointment ? (
+        <RescheduleAppointmentDialog
+          key={reschedulingAppointment.id}
+          appointment={reschedulingAppointment}
+          appointments={appointments}
+          scheduleBlocks={scheduleBlocks}
+          defaultDuration={defaultDuration}
+          open
+          onClose={handleCloseReschedule}
+          onSaved={() => router.refresh()}
+        />
+      ) : null}
+
+      <CalendarAppointmentDialog
+        appointment={selectedAppointment}
+        open={selectedAppointment !== null}
+        onClose={handleCloseAppointmentDialog}
+        canManage={canManage}
+        canStartClinical={canStartClinical}
+        onReschedule={canManage ? handleRescheduleFromCalendar : undefined}
+      />
     </div>
   );
 }
