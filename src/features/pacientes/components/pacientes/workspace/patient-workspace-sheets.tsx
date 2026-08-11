@@ -108,6 +108,13 @@ export function PatientWorkspaceSheets({
   const prefillIndications =
     inlineSnapshot?.indications?.trim() || selectedConsult?.indications?.trim() || "";
 
+  const prefillMedications =
+    inlineSnapshot?.medications && inlineSnapshot.medications.length > 0
+      ? inlineSnapshot.medications
+      : fromHcEvolution
+        ? undefined
+        : lastMedications ?? undefined;
+
   return (
     <>
       <PatientConsultSheet
@@ -148,7 +155,7 @@ export function PatientWorkspaceSheets({
         patientAddress={patient.address}
         patientPhone={patient.phone}
         clinic={clinic}
-        initialMedications={fromHcEvolution ? undefined : (lastMedications ?? undefined)}
+        initialMedications={prefillMedications}
         onClose={actions.closeSheet}
         onSaved={actions.onRxOrOrderSaved}
         coverageRuleOverrides={coverageRuleOverrides}

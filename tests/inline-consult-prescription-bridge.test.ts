@@ -29,6 +29,17 @@ describe("inline-consult-prescription-bridge", () => {
       diagnosis: "Hipertensión arterial",
       indications: "Control en 30 días",
       evolution: "Paciente estable",
+      medications: [
+        {
+          generic_name: "Rosuvastatina",
+          brand_name: "ROSUVAST 10 MG",
+          presentation: "Comprimidos x 30",
+          quantity: 1,
+          posology: "",
+          vademecum_code: "42415",
+          search_source: "pami",
+        },
+      ],
       savedAt: "2026-08-11T12:00:00.000Z",
     });
 
@@ -36,6 +47,8 @@ describe("inline-consult-prescription-bridge", () => {
     expect(snapshot?.diagnosis).toBe("Hipertensión arterial");
     expect(snapshot?.indications).toBe("Control en 30 días");
     expect(snapshot?.evolution).toBe("Paciente estable");
+    expect(snapshot?.medications).toHaveLength(1);
+    expect(snapshot?.medications?.[0]?.generic_name).toBe("Rosuvastatina");
   });
 
   it("rejects snapshot when patientId does not match", () => {

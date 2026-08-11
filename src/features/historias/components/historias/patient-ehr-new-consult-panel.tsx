@@ -7,6 +7,7 @@ import { SignatureImage } from "@/core/components/ui/signature-image";
 
 import { cn } from "@/shared/utils/cn";
 
+import { ConsultTreatmentField } from "@/features/historias/components/historias/consult-treatment-field";
 import type { NuevaConsultaFormState } from "@/features/historias/hooks/use-nueva-consulta-form";
 import type { PatientWorkspaceFocus } from "@/features/pacientes/utils/patient-workspace-actions";
 
@@ -55,6 +56,8 @@ export function PatientEhrNewConsultPanel({
     setDiagnosis,
     indications,
     setIndications,
+    treatmentMedications,
+    setTreatmentMedications,
     vitals,
     setVitals,
     professionalId,
@@ -73,7 +76,7 @@ export function PatientEhrNewConsultPanel({
 
   const evolutionRef = useRef<HTMLTextAreaElement>(null);
   const diagnosisRef = useRef<HTMLTextAreaElement>(null);
-  const treatmentRef = useRef<HTMLTextAreaElement>(null);
+  const treatmentSearchRef = useRef<HTMLInputElement>(null);
   const vitalsRef = useRef<HTMLTextAreaElement>(null);
   const {
     fileInputRef,
@@ -89,7 +92,7 @@ export function PatientEhrNewConsultPanel({
       focus === "diagnostico"
         ? diagnosisRef
         : focus === "tratamiento"
-          ? treatmentRef
+          ? treatmentSearchRef
           : focus === "vitales"
             ? vitalsRef
             : evolutionRef;
@@ -188,16 +191,13 @@ export function PatientEhrNewConsultPanel({
         </div>
 
         <div id={sectionId("tratamiento")}>
-          <Textarea
-            ref={treatmentRef}
-            name="indications"
-            label="Tratamiento"
-            rows={2}
-            voiceInput
-            value={indications}
-            onChange={(e) => setIndications(e.target.value)}
-            placeholder="Medicación, indicaciones y plan terapéutico"
-            className={cn(focus === "tratamiento" && "ring-2 ring-teal-400/60")}
+          <ConsultTreatmentField
+            medications={treatmentMedications}
+            onMedicationsChange={setTreatmentMedications}
+            indications={indications}
+            onIndicationsChange={setIndications}
+            searchInputRef={treatmentSearchRef}
+            highlighted={focus === "tratamiento"}
           />
         </div>
 

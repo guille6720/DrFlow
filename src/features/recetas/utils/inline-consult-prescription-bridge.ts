@@ -1,3 +1,5 @@
+import type { PrescriptionMedication } from "@/types/prescription";
+
 /** Snapshot de consulta inline para precargar receta sin perder la evolución. */
 
 export type InlineConsultPrescriptionSnapshot = {
@@ -7,6 +9,7 @@ export type InlineConsultPrescriptionSnapshot = {
   diagnosis: string;
   indications: string;
   evolution: string;
+  medications?: PrescriptionMedication[];
   savedAt: string;
 };
 

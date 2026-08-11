@@ -10,6 +10,7 @@ import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation"
 import { createClinicalRecord } from "@/features/historias/actions/clinical-records";
 import type { PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { buildConsultIndicationsText } from "@/features/recetas/utils/build-consult-indications-text";
 import { saveInlineConsultPrescriptionSnapshot } from "@/features/recetas/utils/inline-consult-prescription-bridge";
 
 import { startConsultationFromAppointment } from "@/lib/actions/appointments";
@@ -22,6 +23,7 @@ import {
   saveConsultationEvolution,
 } from "@/lib/utils/consultation-draft";
 import { buildProfessionalSignature } from "@/lib/utils/professional";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 type Template = {
   id: string;
@@ -82,6 +84,7 @@ type ConsultFormDraft = {
   chiefComplaint: string;
   diagnosis: string;
   indications: string;
+  treatmentMedications: PrescriptionMedication[];
   vitals: string;
   isDirty: boolean;
 };
@@ -117,6 +120,7 @@ export function useNuevaConsultaForm({
   const [chiefComplaint, setChiefComplaint] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
   const [indications, setIndications] = useState("");
+  const [treatmentMedications, setTreatmentMedications] = useState<PrescriptionMedication[]>([]);
   const [vitals, setVitals] = useState("");
   const [consultationAt, setConsultationAt] = useState(() => toDatetimeLocalValue(new Date()));
   const savingRef = useRef(false);
@@ -126,6 +130,7 @@ export function useNuevaConsultaForm({
     chiefComplaint: "",
     diagnosis: "",
     indications: "",
+    treatmentMedications: [],
     vitals: "",
     isDirty: false,
   });
@@ -161,6 +166,7 @@ export function useNuevaConsultaForm({
     chiefComplaint.trim().length > 0 ||
     diagnosis.trim().length > 0 ||
     indications.trim().length > 0 ||
+    treatmentMedications.length > 0 ||
     vitals.trim().length > 0;
 
   useEffect(() => {
@@ -169,10 +175,11 @@ export function useNuevaConsultaForm({
       chiefComplaint,
       diagnosis,
       indications,
+      treatmentMedications,
       vitals,
       isDirty,
     };
-  }, [evolution, chiefComplaint, diagnosis, indications, vitals, isDirty]);
+  }, [evolution, chiefComplaint, diagnosis, indications, treatmentMedications, vitals, isDirty]);
 
   function signatureForProfessionalId(id: string): string {
     const pro = professionals.find((p) => p.id === id);
@@ -258,7 +265,7 @@ export function useNuevaConsultaForm({
       if (appointmentId) formData.set("appointment_id", appointmentId);
       formData.set("chief_complaint", draft.chiefComplaint);
       formData.set("diagnosis", draft.diagnosis);
-      formData.set("indications", draft.indications);
+      formData.set("indications", buildConsultIndicationsText(draft.treatmentMedications, draft.indications));
       formData.set("evolution", buildEvolutionWithVitals(draft.evolution, draft.vitals));
       formData.set("professional_signature", professionalSignature);
       formData.set("consultation_at", new Date(consultationAt).toISOString());
@@ -279,6 +286,7 @@ export function useNuevaConsultaForm({
           setChiefComplaint("");
           setDiagnosis("");
           setIndications("");
+          setTreatmentMedications([]);
           setVitals("");
         }
         if (workspace) {
@@ -348,6 +356,7 @@ export function useNuevaConsultaForm({
         diagnosis,
         indications,
         evolution,
+        medications: treatmentMedications,
         savedAt: new Date().toISOString(),
       });
     }
@@ -397,6 +406,7 @@ export function useNuevaConsultaForm({
     setDiagnosis(templateText(t.diagnosis_template));
     setEvolution(templateText(t.evolution_template));
     setIndications(templateText(t.indications_template));
+    setTreatmentMedications([]);
   }
 
   return {
@@ -422,6 +432,8 @@ export function useNuevaConsultaForm({
     setDiagnosis,
     indications,
     setIndications,
+    treatmentMedications,
+    setTreatmentMedications,
     vitals,
     setVitals,
     consultationAt,
