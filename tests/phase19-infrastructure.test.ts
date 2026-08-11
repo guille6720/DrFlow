@@ -15,6 +15,7 @@ describe("Phase 19 testing infrastructure", () => {
     expect(readFileSync(resolve("vitest.config.ts"), "utf8")).toMatch(/coverage-scope/);
     expect(readFileSync(resolve("scripts/check-coverage.mjs"), "utf8")).toMatch(/MIN_LINES/);
     expect(readFileSync(resolve("e2e/smoke.spec.ts"), "utf8")).toMatch(/health API/);
+    expect(readFileSync(resolve("e2e/prescription-wizard.spec.ts"), "utf8")).toMatch(/Prescription wizard E2E/);
   });
 
   it("documents testing in TESTING.md", () => {

@@ -67,9 +67,35 @@ npm run test:e2e
 Smoke tests (`e2e/smoke.spec.ts`):
 
 - Login page
+- Patient workspace redirect to login (sin sesión)
 - `/privacidad`
 - `/api/health` JSON
 - `/api/version` JSON
+
+### Recetas (autenticado, opcional)
+
+`e2e/prescription-wizard.spec.ts` — login → workspace paciente → wizard 3 pasos → guardar borrador (o emitir con `E2E_ISSUE_RX=1`).
+
+Requiere Supabase real en el servidor de prueba y variables:
+
+```powershell
+$env:E2E_EMAIL="medico@clinica.com"
+$env:E2E_PASSWORD="********"
+$env:E2E_PATIENT_ID="uuid-del-paciente"
+# Opcional PAMI:
+$env:E2E_INSURANCE_NUMBER="12345678901"
+# Emitir en lugar de borrador:
+$env:E2E_ISSUE_RX="1"
+
+# Usar el mismo proyecto Supabase que la app:
+$env:NEXT_PUBLIC_SUPABASE_URL="https://....supabase.co"
+$env:NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="eyJ..."
+
+npm run build
+npm run test:e2e
+```
+
+Sin credenciales E2E, el spec de recetas se **omite** y CI sigue pasando solo con smoke.
 
 Playwright levanta `next start` automáticamente (salvo `PLAYWRIGHT_SKIP_WEBSERVER=1`).
 
