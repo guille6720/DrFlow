@@ -50,8 +50,23 @@ export function usePatientWorkspaceActions(
       });
       return;
     }
+    if (parsed.sheet === "receta" || parsed.sheet === "orden") {
+      navigate({
+        tab: "soap",
+        consulta: parsed.consulta ?? undefined,
+      });
+      return;
+    }
     navigate({ tab: activeTab });
-  }, [activeTab, navigate, parsed.appointment, parsed.inlineConsultOpen, parsed.professional]);
+  }, [
+    activeTab,
+    navigate,
+    parsed.appointment,
+    parsed.consulta,
+    parsed.inlineConsultOpen,
+    parsed.professional,
+    parsed.sheet,
+  ]);
 
   const openNewConsult = useCallback(
     (opts?: { appointment?: string; professional?: string }) => {

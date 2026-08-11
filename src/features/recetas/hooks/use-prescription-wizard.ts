@@ -59,6 +59,7 @@ type Options = {
   initialMedications?: PrescriptionMedication[];
   diagnosisDefault?: string;
   cie10Default?: string;
+  notesDefault?: string;
   professionals: Professional[];
   defaultProfessionalId?: string;
   onSuccess?: () => void;
@@ -78,13 +79,14 @@ function buildWizardBootstrap(
   patient: PrescriptionWizardPatient | null | undefined,
   initialMedications: PrescriptionMedication[] | undefined,
   diagnosisDefault: string,
-  cie10Default: string
+  cie10Default: string,
+  notesDefault: string
 ) {
   const reuse = consumePrescriptionReusePrefill(patientId);
   return {
     patientInsurance:
       reuse?.patient_insurance?.trim() || patient?.insurance_provider?.trim() || "",
-    notes: reuse?.notes?.trim() ?? "",
+    notes: reuse?.notes?.trim() || notesDefault.trim() || "",
     diagnosisText: reuse?.diagnosis_text?.trim() || diagnosisDefault,
     cie10: reuse?.diagnosis_cie10?.trim() || cie10Default,
     medications:
@@ -108,6 +110,7 @@ export function usePrescriptionWizard({
   initialMedications,
   diagnosisDefault = "",
   cie10Default = "",
+  notesDefault = "",
   professionals,
   defaultProfessionalId,
   onSuccess,
@@ -124,7 +127,8 @@ export function usePrescriptionWizard({
       patient,
       initialMedications,
       diagnosisDefault,
-      cie10Default
+      cie10Default,
+      notesDefault
     )
   );
 

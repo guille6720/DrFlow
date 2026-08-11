@@ -1,5 +1,6 @@
 "use client";
 
+import type { PatientEhrTreatmentRow } from "@/features/pacientes/utils/patient-ehr-model";
 import { PrescriptionWizard } from "@/features/recetas/components/recetas/prescription-wizard";
 import type { PrescriptionWizardPatient } from "@/features/recetas/hooks/use-prescription-wizard";
 import type { CoverageRuleOverridesMap } from "@/features/recetas/utils/coverage-rules-admin";
@@ -20,9 +21,12 @@ interface Props {
   patientId: string;
   patient?: PrescriptionWizardPatient | null;
   patientInsurance?: string | null;
+  patientAllergies?: string | null;
   clinicalRecordId?: string;
   diagnosisDefault?: string;
   cie10Default?: string;
+  notesDefault?: string;
+  hceTreatments?: PatientEhrTreatmentRow[];
   professionals: Professional[];
   defaultProfessionalId?: string;
   initialMedications?: PrescriptionMedication[];
@@ -35,9 +39,12 @@ export function PrescriptionForm({
   patientId,
   patient,
   patientInsurance,
+  patientAllergies,
   clinicalRecordId,
   diagnosisDefault = "",
   cie10Default = "",
+  notesDefault = "",
+  hceTreatments = [],
   professionals,
   defaultProfessionalId,
   initialMedications,
@@ -49,9 +56,12 @@ export function PrescriptionForm({
       patientId={patientId}
       patient={patient}
       patientInsurance={patientInsurance}
+      patientAllergies={patientAllergies}
       clinicalRecordId={clinicalRecordId}
       diagnosisDefault={diagnosisDefault}
       cie10Default={cie10Default}
+      notesDefault={notesDefault}
+      hceTreatments={hceTreatments}
       professionals={professionals}
       defaultProfessionalId={defaultProfessionalId}
       initialMedications={initialMedications}

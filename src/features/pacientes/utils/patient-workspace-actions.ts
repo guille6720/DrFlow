@@ -116,10 +116,10 @@ export function parsePatientWorkspaceActions(
     inlineConsultOpen: inlineConsult,
     prescriptionSheetOpen:
       (action === "nueva" && tab === "recetas") ||
-      (inlineConsult && sheet === "receta"),
+      (tab === "soap" && sheet === "receta"),
     orderSheetOpen:
       (action === "nueva" && tab === "ordenes") ||
-      (inlineConsult && sheet === "orden"),
+      (tab === "soap" && sheet === "orden"),
     archivoSheetOpen: inlineConsult && sheet === "archivo",
     recordSheetOpen: Boolean(record && tab === "soap" && action !== "nueva"),
     dischargeSheetOpen: action === "alta",

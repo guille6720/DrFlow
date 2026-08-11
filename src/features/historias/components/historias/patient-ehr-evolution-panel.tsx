@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, Loader2 } from "lucide-react";
+import { ExternalLink, Loader2, Plus } from "lucide-react";
 import Link from "next/link";
 
 import { withClinicalHistoryReturn } from "@/shared/utils/clinical-navigation";
@@ -12,6 +12,7 @@ import {
   patientEhrEvolutionBody,
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import type { PatientEhrAttachment, PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 type Props = {
   patientId: string;
@@ -20,6 +21,7 @@ type Props = {
   openingAttachmentId: string | null;
   attachmentError?: string | null;
   onOpenAttachment: (id: string) => void;
+  canIssue?: boolean;
 };
 
 export function PatientEhrEvolutionPanel({
@@ -29,6 +31,7 @@ export function PatientEhrEvolutionPanel({
   openingAttachmentId,
   attachmentError = null,
   onOpenAttachment,
+  canIssue = false,
 }: Props) {
   const referencedFileName = selected ? extractConsultationFileName(selected) : null;
 
@@ -46,6 +49,19 @@ export function PatientEhrEvolutionPanel({
               <span>{formatPatientEhrSidebarDate(selected.created_at)}</span>
             )}
             <span>· {selected.professional_name}</span>
+            {canIssue && !selected.id.startsWith("hce-") ? (
+              <Link
+                href={buildPatientWorkspaceUrl(patientId, {
+                  tab: "soap",
+                  consulta: selected.id,
+                  sheet: "receta",
+                })}
+                className="ml-auto inline-flex items-center gap-1 rounded-md bg-teal-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-teal-700"
+              >
+                <Plus className="h-3 w-3" />
+                Nueva receta
+              </Link>
+            ) : null}
           </div>
           <div className="min-h-[180px] whitespace-pre-wrap text-sm leading-relaxed drflow-ehr-evolution-text">
             {selected.category === "document" && referencedFileName ? (

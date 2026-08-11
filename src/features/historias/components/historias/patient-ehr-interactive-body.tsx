@@ -31,6 +31,7 @@ type Props = {
   usesHceExport?: boolean;
   actionLinks: ReactNode;
   inlineConsultOpen?: boolean;
+  canIssue?: boolean;
   pendingSidebarConsultation?: {
     createdAt: string;
     professionalName: string;
@@ -47,6 +48,7 @@ export function PatientEhrInteractiveBody({
   usesHceExport = false,
   actionLinks,
   inlineConsultOpen = false,
+  canIssue = false,
   pendingSidebarConsultation = null,
   consultPanel,
 }: Props) {
@@ -140,6 +142,7 @@ export function PatientEhrInteractiveBody({
                       key={consultation.id}
                       patientId={patientId}
                       selected={consultation}
+                      canIssue={canIssue}
                       documentAttachment={consultationAttachmentById.get(consultation.id) ?? null}
                       openingAttachmentId={openingAttachmentId}
                       attachmentError={attachmentError}

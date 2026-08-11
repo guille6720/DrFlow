@@ -1,6 +1,7 @@
 "use client";
 
 import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
+import type { PatientEhrTreatmentRow } from "@/features/pacientes/utils/patient-ehr-model";
 import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
 import type { PrescriptionWizardPatient } from "@/features/recetas/hooks/use-prescription-wizard";
 import type { CoverageRuleOverridesMap } from "@/features/recetas/utils/coverage-rules-admin";
@@ -22,12 +23,15 @@ type Props = {
   patientId: string;
   patient?: PrescriptionWizardPatient | null;
   patientInsurance?: string | null;
+  patientAllergies?: string | null;
   patientName: string;
   professionals: Professional[];
   defaultProfessionalId?: string;
   clinicalRecordId?: string;
   prefillDiagnosis?: string;
   prefillCie10?: string;
+  prefillIndications?: string;
+  hceTreatments?: PatientEhrTreatmentRow[];
   initialMedications?: PrescriptionMedication[];
   onClose: () => void;
   onSaved: () => void;
@@ -39,12 +43,15 @@ export function PatientPrescriptionSheet({
   patientId,
   patient,
   patientInsurance,
+  patientAllergies,
   patientName,
   professionals,
   defaultProfessionalId,
   clinicalRecordId,
   prefillDiagnosis,
   prefillCie10,
+  prefillIndications,
+  hceTreatments = [],
   initialMedications,
   onClose,
   onSaved,
@@ -62,9 +69,12 @@ export function PatientPrescriptionSheet({
         patientId={patientId}
         patient={patient}
         patientInsurance={patientInsurance}
+        patientAllergies={patientAllergies}
         clinicalRecordId={clinicalRecordId}
         diagnosisDefault={prefillDiagnosis ?? ""}
         cie10Default={prefillCie10 ?? ""}
+        notesDefault={prefillIndications ?? ""}
+        hceTreatments={hceTreatments}
         professionals={professionals}
         defaultProfessionalId={defaultProfessionalId}
         initialMedications={initialMedications}

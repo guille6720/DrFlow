@@ -10,6 +10,7 @@ import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation"
 import { createClinicalRecord } from "@/features/historias/actions/clinical-records";
 import type { PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { saveInlineConsultPrescriptionSnapshot } from "@/features/recetas/utils/inline-consult-prescription-bridge";
 
 import { startConsultationFromAppointment } from "@/lib/actions/appointments";
 import {
@@ -339,6 +340,17 @@ export function useNuevaConsultaForm({
 
   function flushEvolutionDraft() {
     if (draftKey) saveConsultationEvolution(draftKey, evolution);
+    if (patientId) {
+      saveInlineConsultPrescriptionSnapshot({
+        patientId,
+        appointmentId: appointmentId || undefined,
+        professionalId: activeProfessionalId || undefined,
+        diagnosis,
+        indications,
+        evolution,
+        savedAt: new Date().toISOString(),
+      });
+    }
   }
 
   function recetaHref(tab: "receta" | "orden" = "receta") {

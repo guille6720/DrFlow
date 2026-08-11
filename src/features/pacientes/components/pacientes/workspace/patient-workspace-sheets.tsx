@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+
 import { CloseEncounterWizardSheet } from "@/features/ia/components/clinical-workflow/close-encounter-wizard-sheet";
 import type { PatientWorkspaceViewProps } from "@/features/pacientes/components/pacientes/patient-workspace-types";
 import { PatientConsultSheet } from "@/features/pacientes/components/pacientes/workspace/patient-consult-sheet";
@@ -11,6 +13,7 @@ import { PatientRecordSheet } from "@/features/pacientes/components/pacientes/wo
 import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
 import { usePatientWorkspaceActions } from "@/features/pacientes/hooks/use-patient-workspace-actions";
 import type { PatientWorkspaceUrlOptions } from "@/features/pacientes/utils/patient-workspace-actions";
+import { readInlineConsultPrescriptionSnapshot } from "@/features/recetas/utils/inline-consult-prescription-bridge";
 
 import type { Patient } from "@/types/database";
 
@@ -80,6 +83,31 @@ export function PatientWorkspaceSheets({
     ? ehr.consultations.find((c) => c.id === actions.record) ?? null
     : null;
 
+  const selectedConsult = actions.consulta
+    ? ehr.consultations.find((c) => c.id === actions.consulta) ?? null
+    : null;
+
+  const inlineSnapshot = useMemo(
+    () =>
+      actions.prescriptionSheetOpen
+        ? readInlineConsultPrescriptionSnapshot(patientId, actions.appointment ?? undefined)
+        : null,
+    [actions.appointment, actions.prescriptionSheetOpen, patientId]
+  );
+
+  const fromHcEvolution =
+    actions.prescriptionSheetOpen &&
+    (actions.inlineConsultOpen || Boolean(actions.consulta));
+
+  const prefillDiagnosis =
+    inlineSnapshot?.diagnosis?.trim() ||
+    selectedConsult?.diagnosis?.trim() ||
+    assistBase.lastDiagnosis ||
+    "";
+
+  const prefillIndications =
+    inlineSnapshot?.indications?.trim() || selectedConsult?.indications?.trim() || "";
+
   return (
     <>
       <PatientConsultSheet
@@ -110,10 +138,14 @@ export function PatientWorkspaceSheets({
         }}
         patientInsurance={patient.insurance_provider}
         patientName={patientName}
+        patientAllergies={patientRecord.allergies}
         professionals={professionals}
         defaultProfessionalId={actions.professional ?? defaultProfessionalId ?? undefined}
         clinicalRecordId={actions.consulta ?? undefined}
-        initialMedications={lastMedications ?? undefined}
+        prefillDiagnosis={prefillDiagnosis}
+        prefillIndications={prefillIndications}
+        hceTreatments={ehr.treatmentRows}
+        initialMedications={fromHcEvolution ? undefined : (lastMedications ?? undefined)}
         onClose={actions.closeSheet}
         onSaved={actions.onRxOrOrderSaved}
         coverageRuleOverrides={coverageRuleOverrides}

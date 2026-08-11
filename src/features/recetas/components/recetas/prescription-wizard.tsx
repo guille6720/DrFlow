@@ -3,6 +3,8 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect } from "react";
 
+import type { PatientEhrTreatmentRow } from "@/features/pacientes/utils/patient-ehr-model";
+import { PrescriptionClinicalAssistPanel } from "@/features/recetas/components/recetas/prescription-clinical-assist-panel";
 import { PrescriptionDiagnosisFields } from "@/features/recetas/components/recetas/prescription-diagnosis-fields";
 import { PrescriptionMedicationsSection } from "@/features/recetas/components/recetas/prescription-medications-section";
 import { PrescriptionTemplatePicker } from "@/features/recetas/components/recetas/prescription-template-picker";
@@ -35,9 +37,12 @@ interface Props {
   patientId: string;
   patient?: PrescriptionWizardPatient | null;
   patientInsurance?: string | null;
+  patientAllergies?: string | null;
   clinicalRecordId?: string;
   diagnosisDefault?: string;
   cie10Default?: string;
+  notesDefault?: string;
+  hceTreatments?: PatientEhrTreatmentRow[];
   professionals: Professional[];
   defaultProfessionalId?: string;
   initialMedications?: PrescriptionMedication[];
@@ -59,9 +64,12 @@ export function PrescriptionWizard({
   patientId,
   patient,
   patientInsurance,
+  patientAllergies,
   clinicalRecordId,
   diagnosisDefault = "",
   cie10Default = "",
+  notesDefault = "",
+  hceTreatments = [],
   professionals,
   defaultProfessionalId,
   initialMedications,
@@ -81,6 +89,7 @@ export function PrescriptionWizard({
     initialMedications,
     diagnosisDefault,
     cie10Default,
+    notesDefault,
     professionals,
     defaultProfessionalId,
     onSuccess,
@@ -307,6 +316,31 @@ export function PrescriptionWizard({
 
       {step === 2 ? (
         <div className="space-y-4">
+          <PrescriptionClinicalAssistPanel
+            patient={patient}
+            allergiesText={patientAllergies}
+            diagnosisText={diagnosisText}
+            evolutionIndications={notesDefault}
+            notes={notes}
+            onNotesChange={setNotes}
+            medications={medications}
+            onAddMedications={(meds) =>
+              setMedications((prev) =>
+                meds.reduce(
+                  (acc, med) =>
+                    acc.some(
+                      (m) =>
+                        m.generic_name.trim().toLowerCase() ===
+                        med.generic_name.trim().toLowerCase()
+                    )
+                      ? acc
+                      : [...acc, med],
+                  prev
+                )
+              )
+            }
+            hceTreatments={hceTreatments}
+          />
           <PrescriptionTemplatePicker
             key={professionalId}
             professionalId={professionalId}

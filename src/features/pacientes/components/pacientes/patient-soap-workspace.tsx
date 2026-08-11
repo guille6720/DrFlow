@@ -38,6 +38,7 @@ type Props = PatientEhrViewProps & {
   templates: Template[];
   defaultProfessionalId?: string | null;
   clinicalRecordsPagination?: PatientEhrClinicalRecordsPagination;
+  canIssue?: boolean;
 };
 
 export function PatientSoapWorkspace({
@@ -55,6 +56,7 @@ export function PatientSoapWorkspace({
   templates,
   defaultProfessionalId,
   clinicalRecordsPagination,
+  canIssue = false,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -133,6 +135,7 @@ export function PatientSoapWorkspace({
           totalConsultations={totalConsultations}
           usesHceExport={usesHceExport}
           inlineConsultOpen={parsed.inlineConsultOpen}
+          canIssue={canIssue}
           pendingSidebarConsultation={pendingSidebarConsultation}
           consultPanel={
             parsed.inlineConsultOpen ? (
@@ -153,6 +156,9 @@ export function PatientSoapWorkspace({
               saveLoading={form.loading}
               activeSheet={parsed.sheet}
               activeFocus={parsed.focus}
+              canIssue={canIssue}
+              selectedConsultaId={parsed.consulta}
+              onBeforeRecetaOpen={parsed.inlineConsultOpen ? form.flushEvolutionDraft : undefined}
             />
           }
         />

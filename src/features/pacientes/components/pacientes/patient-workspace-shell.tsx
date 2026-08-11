@@ -186,6 +186,7 @@ export function PatientWorkspaceShell({
             templates={current.templates}
             defaultProfessionalId={current.defaultProfessionalId}
             clinicalRecordsPagination={current.ehr.clinicalRecordsPagination}
+            canIssue={canIssue}
           />
         );
       case "diagnosticos":
