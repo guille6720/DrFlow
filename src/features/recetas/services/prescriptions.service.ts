@@ -9,6 +9,7 @@ import { prescriptionDraftSchema, sanitizeText } from "@/core/validations/schema
 import {
   buildPrescriptionContext,
   enrichDraftFromPatient,
+  resolveAuthoritativeCoverageForIssue,
   validatePrescriptionDraft,
 } from "@/features/recetas/engine/prescription-engine";
 import type { CoverageRuleConfig, PrescriptionDraftInput } from "@/features/recetas/engine/types";
@@ -145,7 +146,7 @@ function buildDraftRow(
     medications: parsed.medications,
     notes: parsed.notes ? sanitizeText(parsed.notes) : null,
     validity_days: parsed.validity_days,
-    disclaimer_accepted: true,
+    disclaimer_accepted: parsed.disclaimer_accepted,
     status: "draft",
     refeps_status: "local",
     created_by: userId,
@@ -282,21 +283,22 @@ export async function issuePrescriptionRecord(
   const professionalResult = await loadProfessionalContext(db, clinicId, draft.professional_id);
   if (!professionalResult.ok) return { ok: false, error: professionalResult.error };
 
-  const insurance =
-    draft.patient_insurance?.trim() || patientResult.data.insurance_provider?.trim() || null;
-  const coverageKind = draft.coverage_kind ?? null;
+  const authoritative = resolveAuthoritativeCoverageForIssue(patientResult.data, {
+    insurance_number: draft.insurance_number,
+    insurance_plan: draft.insurance_plan,
+  });
   const ruleOverride = await loadClinicRuleOverride(
     db,
     clinicId,
-    coverageKind ?? "PARTICULAR"
+    authoritative.coverageKind
   );
 
   const ctx = buildPrescriptionContext({
     clinicId,
     patient: patientResult.data,
     professional: professionalResult.data,
-    patientInsurance: insurance,
-    coverageKind: coverageKind ?? undefined,
+    patientInsurance: authoritative.patientInsurance,
+    coverageKind: authoritative.coverageKind,
     clinicRuleOverrides: ruleOverride,
   });
 
@@ -310,11 +312,10 @@ export async function issuePrescriptionRecord(
     medications: draft.medications,
     notes: draft.notes,
     validity_days: draft.validity_days,
-    patient_insurance: insurance,
-    coverage_kind: draft.coverage_kind ?? ctx.coverageKind,
-    insurance_number:
-      draft.insurance_number?.trim() || patientResult.data.insurance_number?.trim() || null,
-    insurance_plan: draft.insurance_plan?.trim() || patientResult.data.insurance_plan?.trim() || null,
+    patient_insurance: authoritative.patientInsurance,
+    coverage_kind: authoritative.coverageKind,
+    insurance_number: authoritative.insuranceNumber,
+    insurance_plan: authoritative.insurancePlan,
     disclaimer_accepted: draft.disclaimer_accepted,
   };
 

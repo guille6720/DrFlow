@@ -1,3 +1,5 @@
+import qrcode from "qrcode-generator";
+
 import type { CoverageRuleConfig } from "@/features/recetas/engine/types";
 import {
   getEffectiveCoverageRule,
@@ -66,8 +68,14 @@ export function buildPrescriptionQrPayload(input: {
   return parts.join("|");
 }
 
+/** Local QR data URL — generated in-app; no third-party PHI exposure. */
 export function buildPrescriptionQrImageUrl(payload: string, size = 120): string {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(payload)}`;
+  const qr = qrcode(0, "M");
+  qr.addData(payload);
+  qr.make();
+  const moduleCount = qr.getModuleCount();
+  const cellSize = Math.max(2, Math.floor(size / moduleCount));
+  return qr.createDataURL(cellSize, 0);
 }
 
 export function formatPrescriptionCoverageLines(coverage: PrescriptionDocumentCoverage): string[] {

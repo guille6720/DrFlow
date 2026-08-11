@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { buildPrescriptionDocumentData } from "@/features/recetas/utils/build-prescription-document-data";
 import { buildPrescriptionShareSummary } from "@/features/recetas/utils/build-prescription-share-summary";
 import {
+  buildPrescriptionQrImageUrl,
   buildPrescriptionQrPayload,
   shouldShowPrescriptionDocumentQr,
 } from "@/features/recetas/utils/prescription-document-coverage";
@@ -96,5 +97,11 @@ describe("prescription document Etapa 4", () => {
       coverageKind: "PAMI",
     });
     expect(payload).toBe("DRFLOW|RX|RX-1|30123456|2026-08-11|PAMI");
+  });
+
+  it("generates local QR data URL without third-party host", () => {
+    const url = buildPrescriptionQrImageUrl("DRFLOW|RX|TEST");
+    expect(url.startsWith("data:image/")).toBe(true);
+    expect(url).not.toContain("qrserver.com");
   });
 });

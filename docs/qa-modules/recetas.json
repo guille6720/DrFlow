@@ -8,84 +8,82 @@
     "data": "Capa de datos / validación",
     "ui": "Interfaz / componentes"
   },
-  "layerOrder": [
-    "auth",
-    "business",
-    "data",
-    "ui"
-  ],
+  "layerOrder": ["auth", "business", "data", "ui"],
   "exportCodeCommand": "node scripts/export-qa-module-code.mjs recetas",
   "module": {
     "id": "recetas",
-    "name": "Recetas y órdenes médicas",
+    "name": "Motor de recetas y órdenes",
     "status": "ready",
     "summary": {
-      "what": "Prescripciones y órdenes PAMI con preview/imprimir/editar.",
-      "inputs": "FormData orden/receta, patientId, professionalId.",
-      "outputs": "Documentos imprimibles, filas DB, audit."
+      "what": "Motor único configurable (PAMI/OS/prepaga/particular), wizard, plantillas, PDF/QR local, idempotencia.",
+      "inputs": "FormData receta, patientId, professionalId, coverage_rules overrides.",
+      "outputs": "prescription_drafts issued, documentData, prescription_events audit."
     },
     "layers": [
       {
+        "layerId": "auth",
+        "layerLabel": "Autenticación / guards",
+        "what": "issuePrescriptions, manageSettings, verifyPrescriptionForeignKeys, RLS clinic-scoped.",
+        "inputs": "patient_id, professional_id, clinic_id from session.",
+        "outputs": "OwnershipResult, permission errors.",
+        "files": [
+          "src/core/security/ownership-guard.ts",
+          "src/features/recetas/actions/prescriptions.ts",
+          "src/features/recetas/actions/coverage-rules.ts",
+          "supabase/migrations/096_prescription_engine.sql",
+          "supabase/migrations/097_coverage_rules_manage_settings_rls.sql"
+        ]
+      },
+      {
         "layerId": "business",
         "layerLabel": "Lógica de negocio / servicios",
-        "what": "Prescripciones Ley 25.649, órdenes PAMI, preview/print/edit/void y audit log.",
-        "inputs": "FormData orden/receta, patientId, professionalId.",
-        "outputs": "Filas DB, documentData imprimible, audit before/after.",
+        "what": "PrescriptionEngine, coverage strategies, issue idempotency, templates, document build.",
+        "inputs": "FormData, idempotency_key, clinic coverage_rules.",
+        "outputs": "Issued Rx, validation issues, PDF/QR payload.",
         "files": [
-          "src/features/recetas/actions/medical-orders.ts",
-          "src/features/recetas/services/medical-orders.service.ts",
-          "src/features/recetas/utils/build-medical-order-document-data.ts",
-          "src/features/recetas/utils/print-medical-order-document.ts"
+          "src/features/recetas/engine/prescription-engine.ts",
+          "src/features/recetas/engine/strategies/coverage-strategies.ts",
+          "src/features/recetas/services/prescriptions.service.ts",
+          "src/features/recetas/utils/build-prescription-document-data.ts",
+          "src/features/recetas/utils/print-prescription-document.ts"
         ]
       },
       {
         "layerId": "data",
         "layerLabel": "Capa de datos / validación",
-        "what": "Repos medical_orders/prescriptions, tipos MedicalOrder y validación Zod.",
-        "inputs": "Insert/update rows, order_type, status.",
-        "outputs": "RepoResult<MedicalOrder>, errores migración 015.",
+        "what": "Repos drafts/templates/coverage_rules, Zod schemas, unique idempotency index.",
+        "inputs": "Insert/update rows, medications JSONB.",
+        "outputs": "RepoResult, validation errors.",
         "files": [
-          "src/features/recetas/repositories/medical-orders.repository.ts",
-          "src/types/medical-order.ts",
-          "src/types/prescription.ts",
-          "src/core/validations/medical-order.ts"
+          "src/features/recetas/repositories/prescription-drafts.repository.ts",
+          "src/features/recetas/repositories/prescription-templates.repository.ts",
+          "src/features/recetas/repositories/coverage-rules.repository.ts",
+          "src/core/validations/schemas.ts"
         ]
       },
       {
         "layerId": "ui",
         "layerLabel": "Interfaz / componentes",
-        "what": "Formularios receta/orden, listas con action buttons, preview sheet y edit overlay.",
-        "inputs": "Click preview/print/edit/delete, existingOrder.",
-        "outputs": "Modales, window.print(), toast éxito/error.",
+        "what": "Wizard 3 pasos, historial, plantillas, preview/print, WhatsApp confirm.",
+        "inputs": "Tab recetas workspace, template picker, reuse prefill.",
+        "outputs": "Modales, print window, share summary.",
         "files": [
-          "src/features/recetas/components/recetas/medical-order-list.tsx",
-          "src/features/recetas/components/recetas/medical-order-action-buttons.tsx",
-          "src/features/recetas/components/recetas/medical-order-preview-sheet.tsx",
-          "src/features/recetas/components/recetas/medical-order-edit-sheet.tsx"
+          "src/features/recetas/components/recetas/prescription-wizard.tsx",
+          "src/features/recetas/components/recetas/prescription-list.tsx",
+          "src/features/recetas/components/recetas/prescription-templates-manager.tsx",
+          "src/features/configuracion/components/configuracion/prescription-coverage-rules-panel.tsx"
         ]
       }
     ],
     "checks": [
-      {
-        "id": "mod-rx-preview",
-        "label": "Preview orden con contraste correcto",
-        "href": "/pacientes"
-      },
-      {
-        "id": "mod-rx-print",
-        "label": "Imprimir no abre pantalla en blanco",
-        "href": "/pacientes"
-      },
-      {
-        "id": "mod-rx-edit",
-        "label": "Editar orden guarda cambios",
-        "href": "/pacientes"
-      },
-      {
-        "id": "mod-rx-del",
-        "label": "Eliminar anula la orden",
-        "href": "/pacientes"
-      }
+      { "id": "mod-rx-wizard", "label": "Wizard emite receta PAMI con beneficio", "href": "/pacientes" },
+      { "id": "mod-rx-particular", "label": "Particular emite sin afiliado", "href": "/pacientes" },
+      { "id": "mod-rx-template", "label": "Plantilla prefill sin auto-emitir", "href": "/plantillas-recetas" },
+      { "id": "mod-rx-idempotency", "label": "Doble emitir no duplica (idempotency)", "href": "/pacientes" },
+      { "id": "mod-rx-coverage-pdf", "label": "PDF con cobertura + QR local", "href": "/pacientes" },
+      { "id": "mod-rx-pami-config", "label": "Config reglas PAMI (manageSettings)", "href": "/configuracion?seccion=pami" },
+      { "id": "mod-rx-preview", "label": "Preview orden con contraste correcto", "href": "/pacientes" },
+      { "id": "mod-rx-print", "label": "Imprimir no abre pantalla en blanco", "href": "/pacientes" }
     ]
   }
 }

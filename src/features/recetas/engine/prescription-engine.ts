@@ -174,6 +174,30 @@ export function getPrescriptionWarnings(
   return strategy.getWarnings(ctx, draft);
 }
 
+export function resolveAuthoritativeCoverageForIssue(
+  patient: PrescriptionPatientContext,
+  draft: Pick<
+    PrescriptionDraftInput,
+    "insurance_number" | "insurance_plan"
+  >
+): {
+  patientInsurance: string | null;
+  coverageKind: CoverageKind;
+  insuranceNumber: string | null;
+  insurancePlan: string | null;
+} {
+  const patientInsurance = patient.insurance_provider?.trim() || null;
+  const coverageKind = resolveCoverageKind(patientInsurance);
+
+  return {
+    patientInsurance,
+    coverageKind,
+    insuranceNumber:
+      draft.insurance_number?.trim() || patient.insurance_number?.trim() || null,
+    insurancePlan: draft.insurance_plan?.trim() || patient.insurance_plan?.trim() || null,
+  };
+}
+
 export function enrichDraftFromPatient(
   draft: PrescriptionDraftInput,
   patient: PrescriptionPatientContext
