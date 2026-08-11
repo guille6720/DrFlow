@@ -25,6 +25,8 @@ interface Props {
   setMedications: React.Dispatch<React.SetStateAction<PrescriptionMedication[]>>;
   updateMed: (index: number, field: keyof PrescriptionMedication, value: string | number | boolean) => void;
   medicationSearch?: MedicationSearchSource;
+  diagnosisText?: string;
+  cie10?: string;
   onPathologySelect?: (pathology: PathologySearchResult) => void;
 }
 
@@ -33,6 +35,8 @@ export function PrescriptionMedicationsSection({
   setMedications,
   updateMed,
   medicationSearch = "medication_catalog",
+  diagnosisText = "",
+  cie10 = "",
   onPathologySelect,
 }: Props) {
   const existingGenericNames = medications.map((m) => m.generic_name.trim()).filter(Boolean);
@@ -59,6 +63,8 @@ export function PrescriptionMedicationsSection({
         <PrescriptionMedicationSearch
           onAdd={addMedicationFromSearch}
           existingGenericNames={existingGenericNames}
+          diagnosisText={diagnosisText}
+          cie10={cie10}
         />
       ) : null}
 

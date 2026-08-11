@@ -412,6 +412,8 @@ export function PrescriptionSinglePageForm({
         <PrescriptionMedicationSearch
           onAdd={addMedication}
           existingGenericNames={existingGenericNames}
+          diagnosisText={diagnosisText}
+          cie10={cie10}
           className="w-full"
         />
       </div>

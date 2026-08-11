@@ -395,6 +395,8 @@ export function PrescriptionWizard({
               setMedications={setMedications}
               updateMed={updateMed}
               medicationSearch={effectiveMedicationSearch}
+              diagnosisText={diagnosisText}
+              cie10={cie10}
               onPathologySelect={handlePathologySelect}
             />
           </PrescriptionFormSection>

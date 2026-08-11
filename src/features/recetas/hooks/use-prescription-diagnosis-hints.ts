@@ -8,6 +8,7 @@ import type { PathologyDrug } from "@/types/pharmacology";
 
 type Options = {
   diagnosisText: string;
+  cie10?: string;
   enabled?: boolean;
 };
 
@@ -17,8 +18,12 @@ type FetchState = {
 };
 
 /** Ayuda contextual por diagnóstico — sugerencias, sin auto-selección. */
-export function usePrescriptionDiagnosisHints({ diagnosisText, enabled = true }: Options) {
-  const query = diagnosisText.trim();
+export function usePrescriptionDiagnosisHints({
+  diagnosisText,
+  cie10 = "",
+  enabled = true,
+}: Options) {
+  const query = [cie10.trim(), diagnosisText.trim()].filter(Boolean).join(" ").trim();
   const { pathologies, loading: searching } = useDeferredPathologySearch({
     query,
     minLength: 3,
