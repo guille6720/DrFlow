@@ -45,9 +45,10 @@ export function usePrescriptionDiagnosisHints({ diagnosisText, enabled = true }:
   }, [activePathology?.id]);
 
   const pathologyName = activePathology?.name ?? null;
+  const activePathologyId = activePathology?.id ?? null;
   const drugs =
-    activePathology && fetchState?.pathologyId === activePathology.id ? fetchState.drugs : [];
-  const loadingDrugs = Boolean(activePathology) && fetchState?.pathologyId !== activePathology.id;
+    activePathologyId && fetchState?.pathologyId === activePathologyId ? fetchState.drugs : [];
+  const loadingDrugs = Boolean(activePathologyId) && fetchState?.pathologyId !== activePathologyId;
 
   return {
     pathologyName,
