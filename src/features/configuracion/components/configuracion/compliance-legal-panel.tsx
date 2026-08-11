@@ -5,11 +5,17 @@ import Link from "next/link";
 import { ClinicHabeasExportButton } from "@/core/components/legal/clinic-habeas-export-button";
 import { CLINICAL_RECORD_RETENTION_YEARS, LEGAL_PRIVACY_VERSION, LEGAL_TERMS_VERSION } from "@/core/legal/documents";
 
+import { SensitiveAccessLogPanel } from "@/features/configuracion/components/configuracion/sensitive-access-log-panel";
+import { loadClinicSensitiveAccessLogs } from "@/features/configuracion/server/load-clinic-sensitive-access-logs";
+
 import { Card } from "@/components/ui/card";
 import { getClinicComplianceSummary } from "@/lib/actions/compliance";
 
 export async function ComplianceLegalPanel() {
-  const summary = await getClinicComplianceSummary();
+  const [summary, accessLogs] = await Promise.all([
+    getClinicComplianceSummary(),
+    loadClinicSensitiveAccessLogs(),
+  ]);
   if ("error" in summary && summary.error) {
     return null;
   }
@@ -82,12 +88,18 @@ export async function ComplianceLegalPanel() {
             <strong>no sustituye homologación REFEPS</strong> hasta trámite nacional.
           </li>
           <li>
+            Accesos a datos clínicos: registrados automáticamente al abrir fichas, historias y
+            exportaciones (ver panel abajo).
+          </li>
+          <li>
             Exportación Habeas Data: desde la ficha de cada paciente (JSON completo) o export de
             clínica abajo.
           </li>
         </ul>
 
         <ClinicHabeasExportButton clinicSlug={clinic?.name ?? null} />
+
+        <SensitiveAccessLogPanel rows={accessLogs.rows} error={accessLogs.error} />
 
         <p className="text-xs text-slate-600">
           Documentación interna:{" "}

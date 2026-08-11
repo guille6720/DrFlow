@@ -30,7 +30,8 @@ Este documento resume el marco aplicable, el gap analysis y lo implementado en p
 | Aceptación alta consultorio | No | Checkbox registro/onboarding + columnas `clinics.legal_*` |
 | Registro consentimientos | Tabla vacía | Inserts en `consent_records` |
 | Export Habeas Data | Parcial | JSON completo por paciente + export clínica (Configuración) |
-| Panel cumplimiento | No | Configuración → Cumplimiento legal |
+| Logs acceso datos sensibles | No | `recordSensitiveAccess` — view en fichas, HC, docs admin; panel Configuración |
+| Panel cumplimiento | No | Configuración → Cumplimiento legal + accesos sensibles |
 | Receta REFEPS | Disclaimer | Sin cambio (correcto) |
 | Consentimiento informado acto médico | Paper / criterio médico | **Pendiente** flujo digital dedicado |
 | Inscripción bases AAIP encargado | Trámite administrativo | **Pendiente** (consultorio/proveedor) |
@@ -53,7 +54,9 @@ Este documento resume el marco aplicable, el gap analysis y lo implementado en p
 - `src/app/aviso-paciente/page.tsx` — información al paciente
 - `src/components/legal/legal-consent-fields.tsx` — checkboxes
 - `src/components/legal/patient-arco-export-button.tsx`
-- `src/components/configuracion/compliance-legal-panel.tsx`
+- `src/core/security/sensitive-access-audit.ts` — registro de lecturas (`view`) con dedupe 15 min
+- `src/features/configuracion/server/load-clinic-sensitive-access-logs.ts`
+- `src/features/configuracion/components/configuracion/sensitive-access-log-panel.tsx`
 
 ### Flujos
 - `src/lib/actions/public-booking.ts` — valida consentimiento + registra RPC
@@ -101,6 +104,9 @@ Este documento resume el marco aplicable, el gap analysis y lo implementado en p
 - [ ] Registro con checkbox → `clinics.legal_terms_accepted_at` poblado
 - [ ] Turno web sin checkbox → error Zod
 - [ ] Turno web OK → `consent_records` + `patient_data_processing_booking`
-- [ ] Export ARCO en ficha → JSON descargado + `audit_logs` view
+- [ ] Export ARCO en ficha → JSON descargado + `audit_logs` export
+- [ ] Abrir ficha paciente (tab clínico) → `audit_logs` view con `access_kind`
+- [ ] Abrir historia clínica → `audit_logs` view `clinical_record_detail`
+- [ ] Panel Configuración → lista de accesos sensibles recientes
 - [ ] Panel Configuración muestra versiones y conteo consentimientos
 - [ ] Links portal → aviso-paciente y privacidad

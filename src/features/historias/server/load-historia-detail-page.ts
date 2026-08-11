@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { voidRecordSensitiveAccess } from "@/core/security/sensitive-access-audit";
+
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
 import type {
   HistoriaMedicalOrderSummary,
@@ -155,6 +157,14 @@ export async function loadHistoriaDetailPageData(
 
   const professional = record.professionals as unknown as HistoriaDetailPageData["professional"];
   const professionalList = (professionals ?? []) as unknown as HistoriaDetailProfessional[];
+
+  voidRecordSensitiveAccess({
+    clinicId,
+    patientId: patient.id,
+    kind: "clinical_record_detail",
+    entityType: "clinical_record",
+    entityId: id,
+  });
 
   return {
     record: record as HistoriaDetailPageData["record"],

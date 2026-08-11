@@ -2,6 +2,7 @@
 
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { hasPermission } from "@/core/permissions/roles";
+import { voidRecordSensitiveAccess } from "@/core/security/sensitive-access-audit";
 import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 import { parseEntityId } from "@/core/validations/params";
@@ -72,6 +73,14 @@ export async function loadPatientWorkspaceTabPanel(
           .limit(50)
       : Promise.resolve({ data: [] }),
   ]);
+
+  if (tab === "docs_admin" && canManageAdminDocuments) {
+    voidRecordSensitiveAccess({
+      clinicId,
+      patientId: parsedPatientId.data,
+      kind: "patient_admin_documents",
+    });
+  }
 
   return {
     workspace,

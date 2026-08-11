@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import {
+  shouldLogWorkspaceSensitiveAccess,
+  voidRecordSensitiveAccess,
+} from "@/core/security/sensitive-access-audit";
 import { unwrapNestedRow } from "@/core/supabase/nested-row";
 import {
   encodeDescCursor,
@@ -324,6 +328,16 @@ export async function loadPatientWorkspacePageData(
     coverageRulesResult.ok && coverageRulesResult.data.length > 0
       ? buildCoverageRuleOverridesMap(coverageRulesResult.data)
       : {};
+
+  const tab = activeTab ?? "resumen";
+  if (shouldLogWorkspaceSensitiveAccess(tab, plan)) {
+    voidRecordSensitiveAccess({
+      clinicId,
+      patientId,
+      kind: "patient_workspace",
+      tab,
+    });
+  }
 
   return {
     patient: patientWithClinical,

@@ -36,7 +36,7 @@
 - [ ] Consentimiento informado digital
 - [x] Exportación completa de datos (Habeas Data) — bundle JSON por paciente y por clínica
 - [ ] Retención y políticas de eliminación
-- [ ] Logs de acceso a datos sensibles
+- [x] Logs de acceso a datos sensibles — `recordSensitiveAccess` en fichas/HC + panel Configuración
 
 ## Fase 4 — Producto avanzado
 

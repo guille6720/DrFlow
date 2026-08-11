@@ -1,4 +1,5 @@
 import { PatientArcoExportButton } from "@/core/components/legal/patient-arco-export-button";
+import { voidRecordSensitiveAccess } from "@/core/security/sensitive-access-audit";
 import { createClient } from "@/core/supabase/server";
 
 import type { PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
@@ -59,6 +60,14 @@ export async function PatientWorkspaceContent({
             .limit(50)
         ).data ?? []
       : [];
+
+  if (initialTab === "docs_admin" && canManageAdminDocuments) {
+    voidRecordSensitiveAccess({
+      clinicId,
+      patientId,
+      kind: "patient_admin_documents",
+    });
+  }
 
   return (
     <>
