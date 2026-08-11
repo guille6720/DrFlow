@@ -99,6 +99,12 @@ export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
       { featureId: "agenda", href: "/turnos/configuracion", label: "Config. agenda", permission: "manageSettings" },
       { featureId: "agenda", href: "/atenciones", label: "Atenciones", permission: null },
       {
+        featureId: "telemedicina",
+        href: "/telemedicina",
+        label: "Telemedicina",
+        permission: "viewClinicalRecords",
+      },
+      {
         featureId: "administracion",
         href: "/sala-espera",
         label: "Sala de espera",

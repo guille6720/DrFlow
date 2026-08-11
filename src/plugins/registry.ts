@@ -75,9 +75,9 @@ export const PLUGIN_REGISTRY: PluginDefinition[] = [
   {
     id: "telemedicina",
     label: "Telemedicina",
-    description: "Videoconsulta (integración Jitsi — laboratorio).",
-    tier: "lab",
-    defaultEnabled: false,
+    description: "Videoconsulta integrada (Jitsi embed, Daily.co opcional).",
+    tier: "optional",
+    defaultEnabled: true,
     routes: ["/telemedicina"],
     featureModuleId: "telemedicina",
   },

@@ -109,6 +109,8 @@ export const EXPECTED_RPCS = [
   "summarize_appointments_for_turnos_reportes",
   "search_patient_ids_by_pathology",
   "count_clinical_records_by_patients",
+  "create_telemedicine_session_atomic",
+  "update_telemedicine_session_status",
 ];
 
 /** Composite indexes required for hot paths (054 + 046). */

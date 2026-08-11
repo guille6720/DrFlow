@@ -60,4 +60,4 @@ export const PRESCRIPTION_RECENT_LIST_COLUMNS =
 export const PUBLIC_BOOKING_LINK_COLUMNS = "id, clinic_id, slug, is_active";
 
 export const TELEMEDICINE_SESSION_LIST_COLUMNS =
-  "id, clinic_id, appointment_id, room_url, status, started_at, ended_at, created_at";
+  "id, clinic_id, appointment_id, room_url, status, provider, patient_join_url, expires_at, started_at, ended_at, created_at";

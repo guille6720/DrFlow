@@ -28,8 +28,9 @@ export default async function TelemedicinaPage() {
           .limit(20),
         supabase
           .from("appointments")
-          .select("id, start_at, patients(first_name, last_name)")
+          .select("id, start_at, consultation_modality, patients(first_name, last_name)")
           .eq("clinic_id", clinicId)
+          .eq("consultation_modality", "virtual")
           .gte("start_at", new Date().toISOString())
           .in("status", ["pending", "confirmed"])
           .order("start_at")

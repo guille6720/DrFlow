@@ -37,7 +37,7 @@ describe("resolveClinicPlugins", () => {
   it("uses defaults when no rows", () => {
     const resolved = resolveClinicPlugins([]);
     expect(resolved.pami).toBe(true);
-    expect(resolved.telemedicina).toBe(false);
+    expect(resolved.telemedicina).toBe(true);
   });
 
   it("overrides with DB row", () => {

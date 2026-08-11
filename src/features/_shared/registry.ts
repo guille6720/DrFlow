@@ -115,8 +115,8 @@ export const FEATURE_MODULES: FeatureModuleDef[] = [
     id: "telemedicina",
     label: "Telemedicina",
     routes: ["/telemedicina"],
-    status: "lab",
-    description: "Videoconsulta (stub Jitsi).",
+    status: "ready",
+    description: "Videoconsulta integrada con embed y link para pacientes.",
   },
   {
     id: "configuracion",

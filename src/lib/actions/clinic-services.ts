@@ -13,7 +13,6 @@ import { recordAudit } from "@/core/security/audit-service";
 import { verifyPaymentForeignKeys } from "@/core/security/ownership-guard";
 import {
   APPOINTMENT_REMINDER_COLUMNS,
-  APPOINTMENT_TELEMEDICINE_COLUMNS,
 } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 import { mockPaymentSchema } from "@/core/validations/cash-schemas";
@@ -21,10 +20,10 @@ import { firstZodIssue, parseEntityId, reminderChannelSchema } from "@/core/vali
 
 import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 
+import { getOrCreateTelemedicineSession } from "@/lib/actions/telemedicine";
 import { buildPamiReminderMessage } from "@/lib/constants/pami-cabecera";
 import { paymentService } from "@/lib/services/payments";
 import { buildAppointmentReminderMessage, reminderService } from "@/lib/services/reminders";
-import { telemedicineService } from "@/lib/services/telemedicine";
 
 export async function sendReminder(appointmentId: string, channel: "email" | "whatsapp" | "internal") {
   const access = await requireClinicPermission("manageAppointments");
@@ -177,54 +176,7 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
 }
 
 export async function createTelemedicineSession(appointmentId: string) {
-  const access = await requireClinicPermission("viewClinicalRecords");
-  if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
-
-  const idParsed = parseEntityId(appointmentId, "Turno");
-  if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
-  const { data: appointment } = await supabase
-    .from("appointments")
-    .select(`${APPOINTMENT_TELEMEDICINE_COLUMNS}, patients(first_name, last_name)`)
-    .eq("id", idParsed.data)
-    .eq("clinic_id", clinicId)
-    .single();
-
-  if (!appointment) return { error: "Turno no encontrado" };
-
-  const patient = appointment.patients as unknown as { first_name: string; last_name: string };
-  const room = await telemedicineService.createRoom(
-    idParsed.data,
-    `${patient.first_name} ${patient.last_name}`
-  );
-
-  const { data, error } = await supabase.rpc("create_telemedicine_session_atomic", {
-    p_clinic_id: clinicId,
-    p_appointment_id: idParsed.data,
-    p_room_url: room.roomUrl,
-    p_status: room.status,
-    p_created_by: user?.id ?? null,
-  });
-
-  if (error) return { error: error.message };
-
-  await recordAudit({
-    clinicId,
-    module: "appointments",
-    entityType: "appointment",
-    entityId: idParsed.data,
-    patientId: appointment.patient_id as string | undefined,
-    action: "create",
-    what: "Creó sesión de telemedicina",
-    metadata: { session_id: (data as { id: string }).id },
-  });
-
-  revalidatePath("/telemedicina");
-  revalidatePath("/atenciones");
-  return { data };
+  return getOrCreateTelemedicineSession(appointmentId);
 }
 
 export async function createMockPayment(formData: FormData) {

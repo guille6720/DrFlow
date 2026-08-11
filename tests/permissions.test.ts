@@ -32,15 +32,18 @@ describe("Role permissions", () => {
     expect(canAccessRoute("clinic_admin", "/configuracion")).toBe(true);
   });
 
+  it("allows doctors to access telemedicina", () => {
+    expect(canAccessRoute("doctor", "/telemedicina")).toBe(true);
+  });
+
   it("blocks lab routes for non-superadmin roles", () => {
-    expect(canAccessRoute("doctor", "/telemedicina")).toBe(false);
     expect(canAccessRoute("clinic_admin", "/pagos")).toBe(false);
     expect(canAccessRoute("doctor", "/qa")).toBe(false);
   });
 
   it("allows superadmin lab routes", () => {
     expect(canAccessRoute("superadmin", "/qa", true)).toBe(true);
-    expect(canAccessRoute(null, "/telemedicina", true)).toBe(true);
+    expect(canAccessRoute(null, "/pagos", true)).toBe(true);
   });
 
   it("requires edit permission for nueva historia", () => {

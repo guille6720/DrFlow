@@ -1,7 +1,7 @@
 "use client";
 
 import { isSameDay, parseISO } from "date-fns";
-import { Globe } from "lucide-react";
+import { Globe, Video } from "lucide-react";
 import { memo } from "react";
 
 import { toast } from "@/core/notifications/toast";
@@ -11,6 +11,7 @@ import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 
 import { AppointmentRowActions } from "@/features/agenda/components/agenda/appointment-row-actions";
 import { CancelAppointmentDialog } from "@/features/agenda/components/agenda/cancel-appointment-dialog";
+import { TelemedicineJoinButton } from "@/features/agenda/components/agenda/telemedicine-join-button";
 import { useAppointmentRow } from "@/features/agenda/hooks/use-appointment-row";
 import { AppointmentLifecycleBadge } from "@/features/turnos/components/appointment-lifecycle-badge";
 
@@ -22,6 +23,7 @@ interface Props {
   showDate?: boolean;
   canManage: boolean;
   canStartClinical: boolean;
+  telemedicineEnabled?: boolean;
   onEdit?: (appointment: AppointmentAgendaRow) => void;
   onReschedule?: (appointment: AppointmentAgendaRow) => void;
 }
@@ -31,11 +33,13 @@ export const AppointmentRow = memo(function AppointmentRow({
   showDate = false,
   canManage,
   canStartClinical,
+  telemedicineEnabled = false,
   onEdit,
   onReschedule,
 }: Props) {
   const row = useAppointmentRow(appointment);
   const online = isOnlineBooking(appointment);
+  const isVirtual = appointment.consultation_modality === "virtual";
 
   return (
     <>
@@ -49,6 +53,12 @@ export const AppointmentRow = memo(function AppointmentRow({
               <Badge variant="info" className="gap-1">
                 <Globe className="h-3 w-3" />
                 Web
+              </Badge>
+            )}
+            {isVirtual && (
+              <Badge variant="info" className="gap-1">
+                <Video className="h-3 w-3" />
+                Virtual
               </Badge>
             )}
             <AppointmentLifecycleBadge
@@ -74,6 +84,10 @@ export const AppointmentRow = memo(function AppointmentRow({
             <p className="mt-1 text-xs text-red-700">{row.cancelledByLabel}</p>
           ) : null}
         </div>
+
+        {telemedicineEnabled && isVirtual && canStartClinical && appointment.status !== "cancelled" ? (
+          <TelemedicineJoinButton appointmentId={appointment.id} compact />
+        ) : null}
 
         <AppointmentRowActions
           appointment={appointment}

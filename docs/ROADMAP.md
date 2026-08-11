@@ -28,7 +28,7 @@
 - [x] **2A Mercado Pago** — Checkout Pro, webhooks, suscripciones (migración 100)
 - [x] **2B Email** — Resend/SMTP en recordatorios + invitaciones + notificaciones de turnos
 - [ ] **2C WhatsApp Business API** — envío automático (hoy: abrir chat)
-- [ ] **2D Telemedicina** — embed propio o Daily.co (hoy: Jitsi lab)
+- [x] **2D Telemedicina** — Jitsi embed, link paciente, email/WhatsApp, Daily.co opcional (migración 101)
 - [ ] **2E REFEPS / RENaPDiS** — homologación + firma digital
 
 ## Fase 3 — Compliance

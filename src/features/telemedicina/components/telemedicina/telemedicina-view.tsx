@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ExternalLink, Video } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -12,23 +13,29 @@ import { unwrapJoin } from "@/core/supabase/unwrap-join";
 
 import { formatPatientName } from "@/shared/utils/patient-display";
 
+import { TelemedicineJoinButton } from "@/features/agenda/components/agenda/telemedicine-join-button";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { createTelemedicineSession } from "@/lib/actions/clinic-services";
+import { consultationModalityLabel } from "@/lib/constants/consultation-modality";
 import type { Clinic, UserRole } from "@/types/database";
 
 interface Session {
   id: string;
   room_url: string;
   status: string;
+  provider?: string | null;
+  patient_join_url?: string | null;
   appointment_id: string;
   appointments?: {
     start_at: string;
+    consultation_modality?: string | null;
     patients?: { first_name: string; last_name: string } | { first_name: string; last_name: string }[] | null;
   } | {
     start_at: string;
+    consultation_modality?: string | null;
     patients?: { first_name: string; last_name: string } | { first_name: string; last_name: string }[] | null;
   }[] | null;
 }
@@ -38,6 +45,7 @@ interface Props {
   appointments: Array<{
     id: string;
     start_at: string;
+    consultation_modality?: string | null;
     patients?: { first_name: string; last_name: string } | { first_name: string; last_name: string }[] | null;
   }>;
   clinics: { clinic_id: string; clinic?: Clinic }[];
@@ -48,20 +56,21 @@ interface Props {
 
 export function TelemedicinaView({ sessions, appointments, clinics, clinicId, role, userName }: Props) {
   const router = useRouter();
-  const [loading, setLoading] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  async function handleCreate(appointmentId: string) {
-    setLoading(appointmentId);
-    await createTelemedicineSession(appointmentId);
-    setLoading(null);
+  async function handleRefresh() {
+    setRefreshing(true);
     router.refresh();
+    setRefreshing(false);
   }
+
+  const virtualAppointments = appointments.filter((a) => a.consultation_modality === "virtual");
 
   return (
     <>
       <Header
         title="Telemedicina"
-        subtitle="Lab: salas Jitsi de prueba — no es telemedicina clínica homologada"
+        subtitle="Videoconsultas integradas — Jitsi embed (Daily.co opcional con DAILY_API_KEY)"
         clinics={clinics}
         activeClinicId={clinicId}
         role={role}
@@ -69,59 +78,81 @@ export function TelemedicinaView({ sessions, appointments, clinics, clinicId, ro
       />
 
       <div className="space-y-6 p-4 sm:p-6">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-          Generá un link de sala virtual de prueba. La integración definitiva queda pendiente.
+        <div className="rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-950">
+          Creá o uníte a salas desde turnos virtuales. Enviá el link al paciente por email o WhatsApp.
+          El paciente ingresa desde <code className="rounded bg-white/70 px-1">/videoconsulta/…</code> sin
+          login.
         </div>
-        <Card title="Crear sala virtual">
-          {appointments.length === 0 ? (
-            <p className="text-sm text-slate-500">No hay turnos próximos para videoconsulta.</p>
+
+        <Card title="Turnos virtuales próximos">
+          {virtualAppointments.length === 0 ? (
+            <p className="text-sm text-slate-500">
+              No hay turnos virtuales próximos. Marcá un turno como Virtual al reservarlo.
+            </p>
           ) : (
             <ul className="divide-y divide-slate-100">
-              {appointments.map((a) => (
-                <li key={a.id} className="flex items-center justify-between py-3">
+              {virtualAppointments.map((a) => (
+                <li key={a.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="font-medium">
-                      {formatPatientName(a.patients)}
-                    </p>
+                    <p className="font-medium">{formatPatientName(a.patients)}</p>
                     <p className="text-sm text-slate-500">
                       {format(new Date(a.start_at), "PPp", { locale: es })}
                     </p>
+                    <Badge variant="info" className="mt-1">
+                      {consultationModalityLabel(a.consultation_modality)}
+                    </Badge>
                   </div>
-                  <Button size="sm" loading={loading === a.id} onClick={() => handleCreate(a.id)}>
-                    <Video className="h-4 w-4" /> Crear sala
-                  </Button>
+                  <TelemedicineJoinButton appointmentId={a.id} compact />
                 </li>
               ))}
             </ul>
           )}
         </Card>
 
-        <Card title="Sesiones activas">
+        <Card title="Sesiones recientes">
           {sessions.length === 0 ? (
             <EmptyState
               icon={Video}
               title="Sin videoconsultas"
-              description="Creá una sala virtual desde un turno programado."
+              description="Creá una sala desde un turno virtual en la agenda o arriba."
             />
           ) : (
             <ul className="divide-y divide-slate-100">
-              {sessions.map((s) => (
-                <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                  <div>
-                    <p className="font-medium">
-                      {formatPatientName(unwrapJoin(s.appointments ?? null)?.patients)}
-                    </p>
-                    <Badge variant="info">{s.status}</Badge>
-                  </div>
-                  <SafeExternalLink href={s.room_url}>
-                    <Button size="sm" variant="outline" type="button">
-                      <ExternalLink className="h-4 w-4" /> Abrir sala
-                    </Button>
-                  </SafeExternalLink>
-                </li>
-              ))}
+              {sessions.map((s) => {
+                const appt = unwrapJoin(s.appointments ?? null);
+                return (
+                  <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                    <div>
+                      <p className="font-medium">{formatPatientName(appt?.patients)}</p>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        <Badge variant="info">{s.status}</Badge>
+                        {s.provider ? <Badge variant="default">{s.provider}</Badge> : null}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Link href={`/telemedicina/sala/${s.id}`}>
+                        <Button size="sm" type="button">
+                          <Video className="h-4 w-4" /> Unirse
+                        </Button>
+                      </Link>
+                      {s.patient_join_url ? (
+                        <SafeExternalLink href={s.patient_join_url}>
+                          <Button size="sm" variant="outline" type="button">
+                            <ExternalLink className="h-4 w-4" /> Link paciente
+                          </Button>
+                        </SafeExternalLink>
+                      ) : null}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
+          <div className="mt-4">
+            <Button type="button" variant="ghost" size="sm" loading={refreshing} onClick={handleRefresh}>
+              Actualizar
+            </Button>
+          </div>
         </Card>
       </div>
     </>

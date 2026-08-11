@@ -14,7 +14,9 @@ import {
 } from "@/shared/utils/patient-display";
 
 import { CancelAppointmentDialog } from "@/features/agenda/components/agenda/cancel-appointment-dialog";
+import { TelemedicineJoinButton } from "@/features/agenda/components/agenda/telemedicine-join-button";
 import { useAppointmentRow } from "@/features/agenda/hooks/use-appointment-row";
+import { useClinicFeatures } from "@/features/plugins/components/plugins/clinic-features-provider";
 import { AppointmentLifecycleBadge } from "@/features/turnos/components/appointment-lifecycle-badge";
 
 import { Button } from "@/components/ui/button";
@@ -36,6 +38,9 @@ function CalendarAppointmentDialogContent({
   onReschedule,
 }: Props) {
   const row = useAppointmentRow(appointment);
+  const clinicFeatures = useClinicFeatures();
+  const telemedicineEnabled = clinicFeatures.plugins.telemedicina;
+  const isVirtual = appointment.consultation_modality === "virtual";
 
   const patient = resolveAppointmentPatient(appointment.patients);
   const patientName = formatPatientName(appointment.patients);
@@ -115,6 +120,10 @@ function CalendarAppointmentDialogContent({
           </div>
 
           <div className="flex flex-col gap-2">
+            {telemedicineEnabled && isVirtual && canStartClinical && appointment.status !== "cancelled" ? (
+              <TelemedicineJoinButton appointmentId={appointment.id} />
+            ) : null}
+
             {canStartClinical && canStartConsultation(appointment.status) ? (
               <Link href={row.startHref} onClick={onClose}>
                 <Button type="button" className="w-full">

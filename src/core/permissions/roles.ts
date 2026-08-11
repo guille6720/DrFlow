@@ -81,11 +81,7 @@ export function canAccessRoute(
   if (isSuperadmin || role === "superadmin") return true;
 
   // Mocks / QA interno: fuera del producto clínico
-  if (
-    route.startsWith("/qa") ||
-    route.startsWith("/pagos") ||
-    route.startsWith("/telemedicina")
-  ) {
+  if (route.startsWith("/qa") || route.startsWith("/pagos")) {
     return false;
   }
 
@@ -115,6 +111,7 @@ export function canAccessRoute(
     "/plantillas": "editClinicalRecords",
     "/plantillas-recetas": "issuePrescriptions",
     "/firmas": "editClinicalRecords",
+    "/telemedicina": "viewClinicalRecords",
   };
 
   for (const [prefix, permission] of Object.entries(routePermissions)) {

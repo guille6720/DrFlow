@@ -1,3 +1,8 @@
+import {
+  createTelemedicineRoom,
+  type TelemedicineProviderId,
+} from "@/core/telemedicine/provider";
+
 import type { TelemedicineStatus } from "@/types/database";
 
 export interface TelemedicineRoom {
@@ -5,36 +10,56 @@ export interface TelemedicineRoom {
   appointmentId: string;
   roomUrl: string;
   status: TelemedicineStatus;
+  provider: TelemedicineProviderId;
+  externalRoomId: string | null;
+  expiresAt: string | null;
 }
 
 export interface TelemedicineService {
-  createRoom(appointmentId: string, patientName: string): Promise<TelemedicineRoom>;
+  createRoom(
+    appointmentId: string,
+    patientName: string,
+    appointmentStartAt: string
+  ): Promise<TelemedicineRoom>;
 }
 
-class JitsiTelemedicineService implements TelemedicineService {
+class DrFlowTelemedicineService implements TelemedicineService {
   async createRoom(
     appointmentId: string,
-    _patientName: string
+    _patientName: string,
+    appointmentStartAt: string
   ): Promise<TelemedicineRoom> {
-    const roomName = `drflow-${appointmentId.slice(0, 8)}-${Date.now()}`;
-    const roomUrl = `https://meet.jit.si/${roomName}`;
+    const room = await createTelemedicineRoom({ appointmentId, appointmentStartAt });
 
     return {
       id: crypto.randomUUID(),
       appointmentId,
-      roomUrl,
+      roomUrl: room.roomUrl,
       status: "scheduled",
+      provider: room.provider,
+      externalRoomId: room.externalRoomId,
+      expiresAt: room.expiresAt,
     };
   }
 }
 
-export const telemedicineService: TelemedicineService =
-  new JitsiTelemedicineService();
+export const telemedicineService: TelemedicineService = new DrFlowTelemedicineService();
 
-export function buildTelemedicineMessage(
-  patientName: string,
-  roomUrl: string,
-  appointmentDate: string
-): string {
-  return `Hola ${patientName}, tu videoconsulta está programada para ${appointmentDate}. Ingresá acá: ${roomUrl}`;
+export function buildTelemedicineMessage(input: {
+  patientName: string;
+  appointmentDate: string;
+  clinicName: string;
+  joinUrl: string;
+}): string {
+  return [
+    `Hola ${input.patientName},`,
+    "",
+    `Tu videoconsulta con ${input.clinicName} está programada para ${input.appointmentDate}.`,
+    "",
+    `Ingresá acá: ${input.joinUrl}`,
+    "",
+    "Recomendamos usar Chrome o Safari con cámara y micrófono habilitados.",
+    "",
+    "DrFlow",
+  ].join("\n");
 }
