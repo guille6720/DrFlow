@@ -6,7 +6,7 @@
     "dev": "next dev",
     "dev:webpack": "next dev --webpack",
     "preview": "next build && next start",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
     "lint:fix": "eslint src tests scripts e2e --fix --max-warnings 0 && node scripts/fix-import-spacing.mjs",
