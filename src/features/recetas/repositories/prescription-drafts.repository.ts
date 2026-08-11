@@ -143,3 +143,22 @@ export async function voidPrescriptionDraft(
   if (error) return repoErr(formatPrescriptionDbError(error));
   return repoOk(data as ElectronicPrescription);
 }
+
+export async function markPrescriptionDispensed(
+  db: DbClient,
+  prescriptionId: string,
+  clinicId: string
+): Promise<RepoResult<ElectronicPrescription>> {
+  const { data, error } = await db
+    .from("prescription_drafts")
+    .update({ dispensed_at: new Date().toISOString() })
+    .eq("id", prescriptionId)
+    .eq("clinic_id", clinicId)
+    .eq("status", "issued")
+    .is("dispensed_at", null)
+    .select()
+    .single();
+
+  if (error) return repoErr(formatPrescriptionDbError(error));
+  return repoOk(data as ElectronicPrescription);
+}

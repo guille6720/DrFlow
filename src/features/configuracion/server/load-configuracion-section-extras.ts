@@ -2,7 +2,7 @@ import { createClient } from "@/core/supabase/server";
 
 import type { ConfiguracionSectionExtras } from "@/features/configuracion/components/configuracion/configuracion-section-content";
 import type { ConfiguracionSectionId } from "@/features/configuracion/components/configuracion/configuracion-sections";
-import { loadCoverageRuleForKind } from "@/features/recetas/repositories/coverage-rules.repository";
+import { loadActiveCoverageRulesForClinic } from "@/features/recetas/repositories/coverage-rules.repository";
 
 import { getClinicFeatureFlagSettings } from "@/lib/actions/clinic-feature-flags";
 import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
@@ -20,6 +20,8 @@ const EMPTY_EXTRAS: Pick<
   | "pamiPlanillaAdminError"
   | "pamiCoverageRule"
   | "pamiCoverageRuleError"
+  | "prescriptionCoverageRules"
+  | "prescriptionCoverageRulesError"
 > = {
   pluginSettings: [],
   flagSettings: [],
@@ -29,6 +31,8 @@ const EMPTY_EXTRAS: Pick<
   pamiPlanillaAdminError: undefined,
   pamiCoverageRule: undefined,
   pamiCoverageRuleError: undefined,
+  prescriptionCoverageRules: undefined,
+  prescriptionCoverageRulesError: undefined,
 };
 
 /** Loads heavy configuracion panels only for the active section. */
@@ -55,21 +59,25 @@ export async function loadConfiguracionSectionExtras(
       const result = await getClinicObservabilityDashboard();
       return { ...EMPTY_EXTRAS, observability: result.data };
     }
+    case "coberturas": {
+      if (!clinicId) return EMPTY_EXTRAS;
+      const supabase = await createClient();
+      const rulesResult = await loadActiveCoverageRulesForClinic(supabase, clinicId);
+      return {
+        ...EMPTY_EXTRAS,
+        prescriptionCoverageRules: rulesResult.ok ? rulesResult.data : undefined,
+        prescriptionCoverageRulesError: rulesResult.ok ? undefined : rulesResult.error,
+      };
+    }
     case "pami": {
       if (!clinicId) return EMPTY_EXTRAS;
-      const [planillaResult, supabase] = await Promise.all([
-        loadPamiPlanillaAdminCatalog(),
-        createClient(),
-      ]);
-      const coverageRuleResult = await loadCoverageRuleForKind(supabase, clinicId, "PAMI");
+      const planillaResult = await loadPamiPlanillaAdminCatalog();
       return {
         ...EMPTY_EXTRAS,
         pamiPlanillaAdminCatalog:
           planillaResult && "catalog" in planillaResult ? planillaResult.catalog : undefined,
         pamiPlanillaAdminError:
           planillaResult && "error" in planillaResult ? planillaResult.error : undefined,
-        pamiCoverageRule: coverageRuleResult.ok ? coverageRuleResult.data : undefined,
-        pamiCoverageRuleError: coverageRuleResult.ok ? undefined : coverageRuleResult.error,
       };
     }
     default:

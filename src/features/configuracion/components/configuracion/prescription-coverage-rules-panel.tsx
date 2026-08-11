@@ -14,6 +14,7 @@ import type { CoverageKind } from "@/features/recetas/engine/types";
 import type { CoverageRuleRow } from "@/features/recetas/repositories/coverage-rules.repository";
 import {
   COVERAGE_REQUIRED_FIELD_OPTIONS,
+  coverageKindLabel,
   defaultRuleSummary,
   formatInfoMessagesText,
   getEffectiveCoverageRule,
@@ -93,7 +94,7 @@ export function PrescriptionCoverageRulesPanel({
   }
 
   async function handleReset() {
-    if (!window.confirm("¿Restaurar los defaults de la app para PAMI?")) return;
+    if (!window.confirm(`¿Restaurar los defaults de la app para ${coverageKindLabel(coverageKind)}?`)) return;
     setLoading(true);
     setError(null);
     setMessage(null);
@@ -108,9 +109,9 @@ export function PrescriptionCoverageRulesPanel({
   }
 
   return (
-    <Card title="Motor de recetas — reglas PAMI">
+    <Card title={`Motor de recetas — reglas ${coverageKindLabel(coverageKind)}`}>
       <p className="mb-3 text-sm text-slate-600">
-        Configurá validaciones al emitir recetas para pacientes PAMI. Los cambios aplican en el
+        Configurá validaciones al emitir recetas para esta cobertura. Los cambios aplican en el
         servidor al guardar o emitir; no inventan normativa REFEPS/PMO.
       </p>
 
@@ -187,7 +188,7 @@ export function PrescriptionCoverageRulesPanel({
 
         <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
           <Button type="submit" loading={loading}>
-            Guardar reglas PAMI
+            Guardar reglas {coverageKindLabel(coverageKind)}
           </Button>
           <Button type="button" variant="outline" loading={loading} onClick={() => void handleReset()}>
             <RotateCcw className="h-4 w-4" />

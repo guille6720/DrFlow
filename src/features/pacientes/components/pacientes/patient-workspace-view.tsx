@@ -68,6 +68,7 @@ export function PatientWorkspaceView(props: Props) {
     templates,
     patientRecord,
     canManageAdminDocuments = false,
+    coverageRuleOverrides = {},
     ...chartProps
   } = props;
 
@@ -141,6 +142,7 @@ export function PatientWorkspaceView(props: Props) {
           templates={templates}
           canIssue={chartProps.canIssue}
           chart={chartProps.chart}
+          coverageRuleOverrides={coverageRuleOverrides}
         />
       ) : null}
     </div>

@@ -25,6 +25,7 @@ type Props = Pick<
   | "templates"
   | "canIssue"
   | "chart"
+  | "coverageRuleOverrides"
 > & {
   activeTab: PatientWorkspaceTabId;
   patientRecord: Patient;
@@ -46,6 +47,7 @@ export function PatientWorkspaceSheets({
   templates,
   canIssue,
   chart,
+  coverageRuleOverrides = {},
   workspaceNavigation,
 }: Props) {
   const actions = usePatientWorkspaceActions(patientId, activeTab, workspaceNavigation);
@@ -106,6 +108,7 @@ export function PatientWorkspaceSheets({
         initialMedications={lastMedications ?? undefined}
         onClose={actions.closeSheet}
         onSaved={actions.onRxOrOrderSaved}
+        coverageRuleOverrides={coverageRuleOverrides}
       />
 
       <PatientOrderSheet

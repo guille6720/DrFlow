@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { getPrescriptionCoverageRuleOverrides } from "@/features/recetas/actions/coverage-rules";
 import { savePrescriptionTemplateFromDraft } from "@/features/recetas/actions/prescription-templates";
 import { issuePrescription, savePrescriptionDraft } from "@/features/recetas/actions/prescriptions";
 import { emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
@@ -14,6 +15,11 @@ import {
 import { resolveCoverageKind } from "@/features/recetas/engine/resolve-coverage-kind";
 import type { ValidationIssue } from "@/features/recetas/engine/types";
 import type { PrescriptionTemplateRow } from "@/features/recetas/repositories/prescription-templates.repository";
+import {
+  type CoverageRuleOverridesMap,
+  getEffectiveCoverageRule,
+  resolveCoverageRuleOverride,
+} from "@/features/recetas/utils/coverage-rules-admin";
 import { createPrescriptionIdempotencyKey } from "@/features/recetas/utils/prescription-idempotency";
 import { consumePrescriptionReusePrefill } from "@/features/recetas/utils/prescription-reuse-prefill";
 
@@ -55,6 +61,7 @@ type Options = {
   professionals: Professional[];
   defaultProfessionalId?: string;
   onSuccess?: () => void;
+  coverageRuleOverrides?: CoverageRuleOverridesMap | null;
 };
 
 function specialtyName(
@@ -103,9 +110,13 @@ export function usePrescriptionWizard({
   professionals,
   defaultProfessionalId,
   onSuccess,
+  coverageRuleOverrides: initialCoverageRuleOverrides = null,
 }: Options) {
   const router = useRouter();
   const idempotencyRef = useRef<string | null>(null);
+  const [coverageRuleOverrides, setCoverageRuleOverrides] = useState<CoverageRuleOverridesMap | null>(
+    initialCoverageRuleOverrides
+  );
   const [bootstrap] = useState(() =>
     buildWizardBootstrap(
       patientId,
@@ -139,10 +150,34 @@ export function usePrescriptionWizard({
   const [saveTemplateName, setSaveTemplateName] = useState("");
   const reuseNotice = bootstrap.reuseNotice;
 
+  useEffect(() => {
+    if (initialCoverageRuleOverrides) return;
+    let cancelled = false;
+    void getPrescriptionCoverageRuleOverrides().then((result) => {
+      if (!cancelled && result.data) {
+        setCoverageRuleOverrides(result.data);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [initialCoverageRuleOverrides]);
+
   const coverageKind = useMemo(
     () => resolveCoverageKind(patientInsurance || null),
     [patientInsurance]
   );
+
+  const effectiveCoverageRule = useMemo(
+    () =>
+      getEffectiveCoverageRule(
+        coverageKind,
+        resolveCoverageRuleOverride(coverageKind, coverageRuleOverrides)
+      ),
+    [coverageKind, coverageRuleOverrides]
+  );
+
+  const coverageInfoMessages = effectiveCoverageRule.infoMessages ?? [];
 
   const affiliateLabel = useMemo(
     () => insuranceNumberLabel(patientInsurance || null),
@@ -222,6 +257,7 @@ export function usePrescriptionWizard({
       }
 
       const draft = buildDraftInput(mode === "issue");
+      const ruleOverride = resolveCoverageRuleOverride(coverageKind, coverageRuleOverrides);
       const ctx = buildPrescriptionContext({
         clinicId: "local",
         patient: {
@@ -239,6 +275,7 @@ export function usePrescriptionWizard({
         },
         patientInsurance,
         coverageKind,
+        clinicRuleOverrides: ruleOverride,
       });
 
       const result = validatePrescriptionDraft(ctx, draft, mode);
@@ -273,6 +310,7 @@ export function usePrescriptionWizard({
       patient?.document_number,
       selectedProfessional,
       coverageKind,
+      coverageRuleOverrides,
     ]
   );
 
@@ -483,5 +521,7 @@ export function usePrescriptionWizard({
     saveTemplateName,
     setSaveTemplateName,
     reuseNotice,
+    coverageInfoMessages,
+    effectiveMaxValidityDays: effectiveCoverageRule.maxValidityDays ?? 30,
   };
 }

@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { recordAudit } from "@/core/security/audit-service";
+import { requireClinicalIssueAccess } from "@/core/services/clinical-access.service";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
 
@@ -17,8 +18,10 @@ import {
   upsertCoverageRule,
 } from "@/features/recetas/repositories/coverage-rules.repository";
 import {
+  buildCoverageRuleOverridesMap,
   buildCoverageRulePayload,
   coverageRuleConfigSchema,
+  type CoverageRuleOverridesMap,
   isCoverageKind,
   parseInfoMessagesText,
 } from "@/features/recetas/utils/coverage-rules-admin";
@@ -39,6 +42,20 @@ export async function getClinicCoverageRules(): Promise<{
   const result = await loadActiveCoverageRulesForClinic(supabase, access.clinicId);
   if (!result.ok) return { error: result.error };
   return { data: result.data };
+}
+
+/** For prescribers — wizard validation aligned with clinic overrides. */
+export async function getPrescriptionCoverageRuleOverrides(): Promise<{
+  data?: CoverageRuleOverridesMap;
+  error?: string;
+}> {
+  const access = await requireClinicalIssueAccess();
+  if (!access.ok) return { error: access.error };
+
+  const supabase = await createClient();
+  const result = await loadActiveCoverageRulesForClinic(supabase, access.data.clinicId);
+  if (!result.ok) return { error: result.error };
+  return { data: buildCoverageRuleOverridesMap(result.data) };
 }
 
 export async function getClinicCoverageRule(

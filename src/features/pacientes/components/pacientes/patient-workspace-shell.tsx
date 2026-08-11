@@ -295,6 +295,7 @@ export function PatientWorkspaceShell({
       templates={current.templates}
       patientRecord={patientRecord}
       canManageAdminDocuments={canManageAdminDocuments}
+      coverageRuleOverrides={current.coverageRuleOverrides}
     />
   );
 }

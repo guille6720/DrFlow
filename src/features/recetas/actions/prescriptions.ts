@@ -13,6 +13,7 @@ import { prescriptionDraftSchema } from "@/core/validations/schemas";
 import {
   buildPrescriptionPayload,
   issuePrescriptionRecord,
+  markPrescriptionDispensedRecord,
   savePrescriptionDraftRecord,
   voidPrescriptionRecord,
 } from "@/features/recetas/services/prescriptions.service";
@@ -148,5 +149,49 @@ export async function voidPrescription(id: string) {
 
   revalidatePath("/recetas");
   revalidatePath("/historias");
+  return { data: result.data };
+}
+
+export async function markPrescriptionDispensed(id: string) {
+  const access = await requireClinicalIssueAccess();
+  if (!access.ok) return { error: access.error };
+
+  const idParsed = parseEntityId(id, "Receta");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const supabase = await createClient();
+  const { data: before } = await supabase
+    .from("prescription_drafts")
+    .select("id, patient_id, status, dispensed_at")
+    .eq("id", idParsed.data)
+    .eq("clinic_id", access.data.clinicId)
+    .maybeSingle();
+
+  if (!before) return { error: "Receta no encontrada." };
+  if (before.status !== "issued") return { error: "Solo se pueden marcar recetas emitidas." };
+  if (before.dispensed_at) return { error: "La receta ya está marcada como dispensada." };
+
+  const result = await markPrescriptionDispensedRecord(
+    supabase,
+    idParsed.data,
+    access.data.clinicId,
+    access.data.userId
+  );
+  if (!result.ok) return { error: result.error };
+
+  await recordAudit({
+    clinicId: access.data.clinicId,
+    module: "prescriptions",
+    entityType: "prescription",
+    entityId: idParsed.data,
+    patientId: before.patient_id,
+    action: "update",
+    what: "Marcó receta como dispensada",
+    metadata: { dispensed_at: result.data.dispensed_at },
+  });
+
+  revalidatePath("/recetas");
+  revalidatePath("/historias");
+  revalidatePath(`/pacientes/${before.patient_id}`);
   return { data: result.data };
 }

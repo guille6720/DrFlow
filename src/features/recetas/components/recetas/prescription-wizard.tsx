@@ -10,6 +10,7 @@ import {
   type PrescriptionWizardPatient,
   usePrescriptionWizard,
 } from "@/features/recetas/hooks/use-prescription-wizard";
+import type { CoverageRuleOverridesMap } from "@/features/recetas/utils/coverage-rules-admin";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,7 @@ interface Props {
   defaultProfessionalId?: string;
   initialMedications?: PrescriptionMedication[];
   onSuccess?: () => void;
+  coverageRuleOverrides?: CoverageRuleOverridesMap | null;
 }
 
 const STEP_LABELS = ["Paciente y cobertura", "Medicamentos", "Revisar y emitir"] as const;
@@ -63,6 +65,7 @@ export function PrescriptionWizard({
   defaultProfessionalId,
   initialMedications,
   onSuccess,
+  coverageRuleOverrides = null,
 }: Props) {
   const wizard = usePrescriptionWizard({
     patientId,
@@ -80,6 +83,7 @@ export function PrescriptionWizard({
     professionals,
     defaultProfessionalId,
     onSuccess,
+    coverageRuleOverrides,
   });
 
   const {
@@ -126,6 +130,7 @@ export function PrescriptionWizard({
     saveTemplateName,
     setSaveTemplateName,
     reuseNotice,
+    coverageInfoMessages,
   } = wizard;
 
   useEffect(() => {
@@ -195,6 +200,14 @@ export function PrescriptionWizard({
                 <p className="mt-1 text-xs font-medium text-teal-800">Cobertura PAMI detectada</p>
               ) : null}
             </div>
+          ) : null}
+
+          {coverageInfoMessages.length > 0 ? (
+            <ul className="space-y-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+              {coverageInfoMessages.map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
           ) : null}
 
           <div className="grid gap-4 sm:grid-cols-2">

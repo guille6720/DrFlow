@@ -244,4 +244,35 @@ describe("prescription engine QA matrix", () => {
       expect(parsed.success).toBe(true);
     });
   });
+
+  describe("wizard — clinic rule overrides", () => {
+    it("applies clinic override for required fields in validation context", () => {
+      const patient = {
+        id: baseDraft.patient_id,
+        insurance_provider: "Particular",
+        insurance_number: null,
+        insurance_plan: null,
+      };
+      const ctx = buildPrescriptionContext({
+        clinicId: "clinic-1",
+        patient,
+        professional,
+        patientInsurance: "Particular",
+        coverageKind: "PARTICULAR",
+        clinicRuleOverrides: { requiredFields: ["diagnosis_cie10"] },
+      });
+      const result = validatePrescriptionDraft(
+        ctx,
+        {
+          ...baseDraft,
+          diagnosis_cie10: "",
+          patient_insurance: "Particular",
+          coverage_kind: "PARTICULAR",
+        },
+        "issue"
+      );
+      expect(result.valid).toBe(false);
+      expect(result.issues.some((i) => i.field === "diagnosis_cie10")).toBe(true);
+    });
+  });
 });

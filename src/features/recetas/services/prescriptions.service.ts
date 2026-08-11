@@ -19,6 +19,7 @@ import {
   getPrescriptionDraftForIssue,
   insertPrescriptionDraft,
   issuePrescriptionDraft,
+  markPrescriptionDispensed as markPrescriptionDispensedRow,
   type PrescriptionDraftInsertRow,
   updatePrescriptionDraft,
   voidPrescriptionDraft,
@@ -159,7 +160,7 @@ async function recordPrescriptionEvent(
     prescriptionId: string;
     clinicId: string;
     actorId: string;
-    eventType: "created" | "updated" | "validated" | "issued" | "voided";
+    eventType: "created" | "updated" | "validated" | "issued" | "voided" | "dispensed";
     payload?: Record<string, unknown>;
   }
 ) {
@@ -380,6 +381,25 @@ export async function voidPrescriptionRecord(
     clinicId,
     actorId: userId,
     eventType: "voided",
+  });
+
+  return fromRepo(result);
+}
+
+export async function markPrescriptionDispensedRecord(
+  db: DbClient,
+  prescriptionId: string,
+  clinicId: string,
+  userId: string
+): Promise<ServiceResult<ElectronicPrescription>> {
+  const result = await markPrescriptionDispensedRow(db, prescriptionId, clinicId);
+  if (!result.ok) return fromRepo(result);
+
+  await recordPrescriptionEvent(db, {
+    prescriptionId,
+    clinicId,
+    actorId: userId,
+    eventType: "dispensed",
   });
 
   return fromRepo(result);

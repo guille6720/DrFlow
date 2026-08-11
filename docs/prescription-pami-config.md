@@ -26,9 +26,9 @@ Cuando la cobertura del paciente es PAMI (`isPamiCoverage()`):
 
 ### UI (recomendado)
 
-**Configuración → Coberturas → PAMI** (`/configuracion?seccion=pami&grupo=coberturas`)
+**Configuración → Coberturas** (`/configuracion?seccion=coberturas&grupo=coberturas`)
 
-Panel **Motor de recetas — reglas PAMI**:
+Panel **Motor de recetas** con pestañas PAMI / Obras sociales / Prepagas / Particular:
 
 - Campos obligatorios al emitir
 - Vigencia máxima (días)

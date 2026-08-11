@@ -195,9 +195,7 @@ export async function loadPatientWorkspacePageData(
         .limit(PATIENT_TIMELINE_APPOINTMENT_LIMIT)
     : Promise.resolve({ data: [] });
 
-  const coverageRulesPromise = plan.prescriptions
-    ? loadActiveCoverageRulesForClinic(supabase, clinicId)
-    : Promise.resolve({ ok: true as const, data: [] });
+  const coverageRulesPromise = loadActiveCoverageRulesForClinic(supabase, clinicId);
 
   const [
     portalContext,

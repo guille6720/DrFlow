@@ -3,11 +3,13 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import type { HistoriaPrescriptionSummary } from "@/features/historias/types/historia-clinical-summaries";
 import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
 import type { PatientWorkspaceProfessional } from "@/features/pacientes/server/load-patient-workspace-page";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { markPrescriptionDispensed } from "@/features/recetas/actions/prescriptions";
 import { PrescriptionList } from "@/features/recetas/components/recetas/prescription-list";
 import type { CoverageRuleOverridesMap } from "@/features/recetas/utils/coverage-rules-admin";
 import { storePrescriptionReusePrefill } from "@/features/recetas/utils/prescription-reuse-prefill";
@@ -47,7 +49,15 @@ export function PatientWorkspacePrescriptionsPanel({
   coverageRuleOverrides = null,
 }: Props) {
   const router = useRouter();
+  const [actingId, setActingId] = useState<string | null>(null);
   const prescriptions = ehr.prescriptionRecords as HistoriaPrescriptionSummary[];
+
+  async function handleMarkDispensed(id: string) {
+    setActingId(id);
+    await markPrescriptionDispensed(id);
+    setActingId(null);
+    router.refresh();
+  }
 
   function handleReuseMedications(rx: HistoriaPrescriptionSummary) {
     const medications = Array.isArray(rx.medications)
@@ -91,6 +101,8 @@ export function PatientWorkspacePrescriptionsPanel({
         clinic={clinic}
         professionals={professionals}
         canIssue={canIssue}
+        actingId={actingId}
+        onMarkDispensed={canIssue ? handleMarkDispensed : undefined}
         onReuseMedications={canIssue ? handleReuseMedications : undefined}
         coverageRuleOverrides={coverageRuleOverrides}
       />

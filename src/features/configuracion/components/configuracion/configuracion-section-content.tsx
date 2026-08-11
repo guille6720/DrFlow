@@ -12,7 +12,7 @@ import { CoveragesPanel } from "@/features/configuracion/components/configuracio
 import { DemoDataPanel } from "@/features/configuracion/components/configuracion/demo-data-panel";
 import { PamiPlanillasAdminPanel } from "@/features/configuracion/components/configuracion/pami-planillas-admin-panel";
 import { PamiSetupPanel } from "@/features/configuracion/components/configuracion/pami-setup-panel";
-import { PrescriptionCoverageRulesPanel } from "@/features/configuracion/components/configuracion/prescription-coverage-rules-panel";
+import { PrescriptionCoverageRulesManager } from "@/features/configuracion/components/configuracion/prescription-coverage-rules-manager";
 import type { SettingsPanelProps } from "@/features/configuracion/components/configuracion/settings-panel";
 import type { CoverageRuleRow } from "@/features/recetas/repositories/coverage-rules.repository";
 
@@ -61,6 +61,8 @@ export interface ConfiguracionSectionExtras {
   pamiPlanillaAdminError?: string;
   pamiCoverageRule?: CoverageRuleRow | null;
   pamiCoverageRuleError?: string;
+  prescriptionCoverageRules?: CoverageRuleRow[];
+  prescriptionCoverageRulesError?: string;
 }
 
 export function renderConfiguracionSectionContent(
@@ -77,10 +79,20 @@ export function renderConfiguracionSectionContent(
       return <AiProviderPanel />;
     case "coberturas":
       return (
-        <CoveragesPanel
-          acceptedCoverages={extras.acceptedCoverages}
-          defaultInsurance={extras.defaultInsurance}
-        />
+        <div className="space-y-6">
+          <CoveragesPanel
+            acceptedCoverages={extras.acceptedCoverages}
+            defaultInsurance={extras.defaultInsurance}
+          />
+          <PrescriptionCoverageRulesManager
+            savedRules={extras.prescriptionCoverageRules ?? []}
+          />
+          {extras.prescriptionCoverageRulesError ? (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+              {extras.prescriptionCoverageRulesError}
+            </div>
+          ) : null}
+        </div>
       );
     case "pami":
       return (
@@ -89,15 +101,6 @@ export function renderConfiguracionSectionContent(
             practiceProfile={extras.practiceProfile}
             defaultInsurance={extras.defaultInsurance}
           />
-          <PrescriptionCoverageRulesPanel
-            coverageKind="PAMI"
-            savedRule={extras.pamiCoverageRule ?? null}
-          />
-          {extras.pamiCoverageRuleError ? (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-              {extras.pamiCoverageRuleError}
-            </div>
-          ) : null}
           {extras.pamiPlanillaAdminCatalog ? (
             <PamiPlanillasAdminPanel initialCatalog={extras.pamiPlanillaAdminCatalog} />
           ) : extras.pamiPlanillaAdminError ? (

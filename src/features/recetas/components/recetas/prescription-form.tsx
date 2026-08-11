@@ -2,6 +2,7 @@
 
 import { PrescriptionWizard } from "@/features/recetas/components/recetas/prescription-wizard";
 import type { PrescriptionWizardPatient } from "@/features/recetas/hooks/use-prescription-wizard";
+import type { CoverageRuleOverridesMap } from "@/features/recetas/utils/coverage-rules-admin";
 
 import type { PrescriptionMedication } from "@/types/prescription";
 
@@ -26,6 +27,7 @@ interface Props {
   defaultProfessionalId?: string;
   initialMedications?: PrescriptionMedication[];
   onSuccess?: () => void;
+  coverageRuleOverrides?: CoverageRuleOverridesMap | null;
 }
 
 /** Wizard de 3 pasos: cobertura → medicamentos → emitir */
@@ -40,6 +42,7 @@ export function PrescriptionForm({
   defaultProfessionalId,
   initialMedications,
   onSuccess,
+  coverageRuleOverrides = null,
 }: Props) {
   return (
     <PrescriptionWizard
@@ -53,6 +56,7 @@ export function PrescriptionForm({
       defaultProfessionalId={defaultProfessionalId}
       initialMedications={initialMedications}
       onSuccess={onSuccess}
+      coverageRuleOverrides={coverageRuleOverrides}
     />
   );
 }

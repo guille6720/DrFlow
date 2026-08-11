@@ -3,6 +3,7 @@
 import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
 import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
 import type { PrescriptionWizardPatient } from "@/features/recetas/hooks/use-prescription-wizard";
+import type { CoverageRuleOverridesMap } from "@/features/recetas/utils/coverage-rules-admin";
 
 import type { PrescriptionMedication } from "@/types/prescription";
 
@@ -30,6 +31,7 @@ type Props = {
   initialMedications?: PrescriptionMedication[];
   onClose: () => void;
   onSaved: () => void;
+  coverageRuleOverrides?: CoverageRuleOverridesMap | null;
 };
 
 export function PatientPrescriptionSheet({
@@ -46,6 +48,7 @@ export function PatientPrescriptionSheet({
   initialMedications,
   onClose,
   onSaved,
+  coverageRuleOverrides = null,
 }: Props) {
   return (
     <PatientWorkspaceOverlay
@@ -66,6 +69,7 @@ export function PatientPrescriptionSheet({
         defaultProfessionalId={defaultProfessionalId}
         initialMedications={initialMedications}
         onSuccess={onSaved}
+        coverageRuleOverrides={coverageRuleOverrides}
       />
     </PatientWorkspaceOverlay>
   );

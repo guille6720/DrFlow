@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Eye, Printer, RefreshCw } from "lucide-react";
+import { Eye, Pill, Printer, RefreshCw } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 
 import { cn } from "@/shared/utils/cn";
@@ -51,6 +51,7 @@ type Props = {
   actingId?: string | null;
   onIssue?: (id: string) => void;
   onVoid?: (id: string) => void;
+  onMarkDispensed?: (id: string) => void;
   onReuseMedications?: (prescription: HistoriaPrescriptionSummary) => void;
   shareSlot?: (prescription: HistoriaPrescriptionSummary) => ReactNode;
   coverageRuleOverrides?: CoverageRuleOverridesMap | null;
@@ -85,6 +86,7 @@ export function PrescriptionList({
   actingId = null,
   onIssue,
   onVoid,
+  onMarkDispensed,
   onReuseMedications,
   shareSlot,
   coverageRuleOverrides = null,
@@ -229,6 +231,17 @@ export function PrescriptionList({
                     >
                       <RefreshCw className="h-4 w-4" />
                       Reutilizar meds
+                    </Button>
+                  ) : null}
+                  {isIssued && !isVoid && !rx.dispensed_at && onMarkDispensed ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      loading={actingId === rx.id}
+                      onClick={() => onMarkDispensed(rx.id)}
+                    >
+                      <Pill className="h-4 w-4" />
+                      Marcar dispensada
                     </Button>
                   ) : null}
                   {canIssue && rx.status === "draft" && onIssue ? (
