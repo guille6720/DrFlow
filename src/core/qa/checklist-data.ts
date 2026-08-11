@@ -111,7 +111,7 @@ export const QA_CHECKLIST: QaChecklistSection[] = [
     title: "Portal paciente y coberturas",
     items: [
       { id: "portal-pami", label: "Portal dice Receta PAMI solo si la clínica acepta PAMI", href: "/portal" },
-      { id: "portal-turns", label: "Mis turnos avisa que la lista es por dispositivo", href: "/portal" },
+      { id: "portal-turns", label: "Mis turnos carga turnos web por DNI (servidor)", href: "/portal" },
       { id: "atenciones-cov", label: "Atenciones resume por cobertura + CSV", href: "/atenciones" },
     ],
   },

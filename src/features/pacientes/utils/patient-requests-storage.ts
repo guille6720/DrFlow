@@ -12,7 +12,8 @@ export interface PatientRequestRecord {
   createdAt: string;
 }
 
-const requestsKey = (slug: string) => `drflow-solicitudes-${slug}`;
+/** Local cache for WhatsApp intents only — web turnos load from server by DNI. */
+const whatsappRequestsKey = (slug: string) => `drflow-solicitudes-${slug}`;
 const dniKey = (slug: string) => `drflow-dni-${slug}`;
 
 function readJson<T>(key: string, fallback: T): T {
@@ -53,7 +54,12 @@ export function setStoredDocument(slug: string, documentNumber: string): void {
 }
 
 export function getPatientRequests(slug: string): PatientRequestRecord[] {
-  return readJson<PatientRequestRecord[]>(requestsKey(slug), []);
+  return readJson<PatientRequestRecord[]>(whatsappRequestsKey(slug), []);
+}
+
+/** WhatsApp-only requests cached on device until the patient opens chat. */
+export function getWhatsappPatientRequests(slug: string): PatientRequestRecord[] {
+  return getPatientRequests(slug).filter((record) => record.channel === "whatsapp");
 }
 
 export function addPatientRequest(
@@ -63,20 +69,18 @@ export function addPatientRequest(
     createdAt?: string;
   }
 ): PatientRequestRecord {
+  if (record.channel !== "whatsapp") {
+    throw new Error("Only WhatsApp patient requests are stored locally.");
+  }
+
   const entry: PatientRequestRecord = {
     ...record,
     localId: record.localId ?? crypto.randomUUID(),
     createdAt: record.createdAt ?? new Date().toISOString(),
   };
 
-  const existing = getPatientRequests(slug).filter(
-    (r) =>
-      !(
-        record.appointmentId &&
-        r.appointmentId === record.appointmentId
-      )
-  );
-  writeJson(requestsKey(slug), [entry, ...existing].slice(0, 20));
+  const existing = getWhatsappPatientRequests(slug);
+  writeJson(whatsappRequestsKey(slug), [entry, ...existing].slice(0, 20));
   setStoredDocument(slug, record.documentNumber);
   return entry;
 }

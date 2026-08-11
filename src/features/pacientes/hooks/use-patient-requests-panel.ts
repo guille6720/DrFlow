@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState, useTransition } from "react";
 
 import {
-  getPatientRequests,
   getStoredDocument,
+  getWhatsappPatientRequests,
   type PatientRequestRecord,
   setStoredDocument,
 } from "@/features/pacientes/utils/patient-requests-storage";
@@ -62,8 +62,8 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
       }
 
       const serverItems = (result.appointments ?? []).map(mapPortalAppointmentToRequestItem);
-      const localWhatsapp = getPatientRequests(slug)
-        .filter((record) => record.channel === "whatsapp" && record.documentNumber === trimmed)
+      const localWhatsapp = getWhatsappPatientRequests(slug)
+        .filter((record) => record.documentNumber === trimmed)
         .map(mapWhatsappRequest);
 
       setItems(mergePatientRequestItems(serverItems, localWhatsapp));

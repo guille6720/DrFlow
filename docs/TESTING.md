@@ -114,6 +114,12 @@ npm run test:e2e
 
 Sin slug activo, el spec se **omite**.
 
+### Atender ahora (autenticado, opcional)
+
+`e2e/attend-now.spec.ts` — login → ficha paciente → **Iniciar consulta** → formulario SOAP.
+
+Requiere las mismas credenciales que recetas (`E2E_EMAIL`, `E2E_PASSWORD`, `E2E_PATIENT_ID`).
+
 Playwright levanta `next start` automáticamente (salvo `PLAYWRIGHT_SKIP_WEBSERVER=1`).
 
 ---

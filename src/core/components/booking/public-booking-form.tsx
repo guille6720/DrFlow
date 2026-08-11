@@ -6,7 +6,7 @@ import { useEffect, useState, useTransition } from "react";
 
 import { PatientDataConsentCheckbox } from "@/core/components/legal/legal-consent-fields";
 
-import { addPatientRequest } from "@/features/pacientes/utils/patient-requests-storage";
+import { setStoredDocument } from "@/features/pacientes/utils/patient-requests-storage";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -67,17 +67,12 @@ export function PublicBookingForm({ slug, clinicName, professionals, onRequestSa
       if (result.error) {
         setError(result.error);
       } else {
-        if (result.appointmentId) {
-          addPatientRequest(slug, {
-            appointmentId: result.appointmentId,
-            type: "turno",
-            channel: "web",
-            documentNumber: result.documentNumber ?? String(formData.get("document_number") ?? ""),
-            patientName: result.patientName ?? "Paciente",
-            startAt: result.startAt ?? startAt,
-          });
-          onRequestSaved?.();
+        const documentNumber =
+          result.documentNumber ?? String(formData.get("document_number") ?? "");
+        if (documentNumber.trim()) {
+          setStoredDocument(slug, documentNumber);
         }
+        onRequestSaved?.();
         setSuccess(true);
         router.refresh();
       }
@@ -91,8 +86,8 @@ export function PublicBookingForm({ slug, clinicName, professionals, onRequestSa
           <CheckCircle2 className="h-14 w-14 text-emerald-600" />
           <h2 className="mt-4 text-xl font-bold text-slate-900">¡Solicitud enviada!</h2>
           <p className="mt-2 max-w-sm text-sm text-slate-600">
-            {clinicName} recibió tu pedido por <strong>web</strong>. Cuando confirmen, vas a ver
-            el tilde verde en <strong>Mis solicitudes</strong>.
+            {clinicName} recibió tu pedido por <strong>web</strong>. Ingresá tu DNI en{" "}
+            <strong>Mis turnos</strong> para ver el estado desde cualquier dispositivo.
           </p>
         </div>
       </Card>

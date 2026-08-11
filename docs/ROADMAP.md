@@ -18,10 +18,10 @@
 
 - [x] CI/CD con GitHub Actions (lint, test, build, smoke health) — ver [PRODUCTION.md](./PRODUCTION.md)
 - [x] Cobertura 90% core lib + E2E smoke (Playwright) — ver [TESTING.md](./TESTING.md)
-- [ ] E2E ampliado (auth, atender ahora, booking) — recetas wizard smoke en `e2e/prescription-wizard.spec.ts` (opcional con credenciales)
-- [ ] Monitoreo de errores (Sentry)
-- [ ] Listado/edición/borrado de reglas de disponibilidad
-- [ ] Mis turnos del portal backeados por servidor (hoy: localStorage)
+- [x] E2E ampliado (auth, atender ahora, booking, recetas wizard)
+- [x] Monitoreo de errores (Sentry)
+- [x] Listado/edición/borrado de reglas de disponibilidad
+- [x] Mis turnos del portal backeados por servidor (WhatsApp offline en localStorage)
 
 ## Fase 2 — Integraciones reales
 
