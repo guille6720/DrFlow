@@ -48,9 +48,15 @@ export function TelemedicineJoinButton({ appointmentId, compact = false }: Props
         setMode("idle");
         return;
       }
-      if (result.channel === "whatsapp" && result.whatsappUrl) {
-        window.open(result.whatsappUrl, "_blank", "noopener,noreferrer");
-        toast.success("Link listo para enviar por WhatsApp");
+      if (result.channel === "whatsapp") {
+        if (result.sentViaApi) {
+          toast.success("Link de videoconsulta enviado por WhatsApp");
+        } else if (result.whatsappUrl) {
+          window.open(result.whatsappUrl, "_blank", "noopener,noreferrer");
+          toast.success("Link listo para enviar por WhatsApp");
+        } else {
+          toast.success("Link de videoconsulta enviado por WhatsApp");
+        }
       } else {
         toast.success("Link de videoconsulta enviado por email");
       }

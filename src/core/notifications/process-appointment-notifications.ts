@@ -5,6 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildAppointmentNotificationMessage } from "@/core/notifications/appointment-notification-message";
 
 import { sendTransactionalEmail } from "@/lib/services/transactional-email";
+import { deliverWhatsAppMessage } from "@/lib/services/whatsapp-message";
 import type { ReminderChannel, ReminderStatus } from "@/types/database";
 
 export type AppointmentNotificationRow = {
@@ -58,9 +59,25 @@ export async function sendAppointmentNotification(
   }
 
   if (row.channel === "whatsapp") {
+    const result = await deliverWhatsAppMessage({
+      to: row.recipient,
+      text,
+    });
+
+    if (result.status === "sent") {
+      return { status: "sent" };
+    }
+
+    if (result.status === "manual") {
+      return {
+        status: "simulated",
+        errorMessage: "WhatsApp manual — abrí el chat desde Recordatorios para enviar el mensaje.",
+      };
+    }
+
     return {
-      status: "simulated",
-      errorMessage: "WhatsApp automático pendiente — mensaje preparado para envío manual",
+      status: "failed",
+      errorMessage: result.errorMessage ?? "No se pudo enviar WhatsApp",
     };
   }
 

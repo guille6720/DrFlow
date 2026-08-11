@@ -129,7 +129,7 @@ export const QA_CHECKLIST: QaChecklistSection[] = [
     id: "ops",
     title: "Labs / experimentales (ocultos en nav core)",
     items: [
-      { id: "ops-reminders", label: "Abrir WhatsApp vs email simulado — copy honesto", href: "/recordatorios" },
+      { id: "ops-reminders", label: "WhatsApp API vs wa.me manual — copy honesto", href: "/recordatorios" },
       { id: "ops-tele", label: "Telemedicina genera link Jitsi (lab)", href: "/telemedicina" },
       { id: "ops-payments", label: "Pago mock registra transacción (lab)", href: "/pagos" },
       { id: "ops-reports", label: "Reportes y export CSV", href: "/reportes" },

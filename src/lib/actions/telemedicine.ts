@@ -19,10 +19,9 @@ import {
 } from "@/core/telemedicine/provider";
 import { parseEntityId } from "@/core/validations/params";
 
-import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
-
-import { buildTelemedicineMessage, telemedicineService } from "@/lib/services/telemedicine";
+import { telemedicineService } from "@/lib/services/telemedicine";
 import { deliverTelemedicineLinkEmail } from "@/lib/services/telemedicine-email";
+import { deliverTelemedicineLinkWhatsApp } from "@/lib/services/telemedicine-whatsapp";
 import type { TelemedicineStatus } from "@/types/database";
 
 const APPOINTMENT_TELE_SELECT = `${APPOINTMENT_TELEMEDICINE_COLUMNS}, start_at, consultation_modality, patients(first_name, last_name, email, phone)`;
@@ -224,15 +223,39 @@ export async function sendTelemedicineLinkToPatient(appointmentId: string) {
   }
 
   if (patient.phone?.trim()) {
-    const message = buildTelemedicineMessage({
+    const whatsappResult = await deliverTelemedicineLinkWhatsApp({
+      to: patient.phone.trim(),
       patientName,
       appointmentDate: dateLabel,
       clinicName,
       joinUrl,
     });
-    const whatsappUrl = buildWhatsAppUrl(patient.phone.trim(), message);
-    if (!whatsappUrl) return { error: "Teléfono de WhatsApp inválido" };
-    return { success: true, channel: "whatsapp" as const, joinUrl, whatsappUrl };
+
+    if (whatsappResult.status === "sent") {
+      await recordAudit({
+        clinicId,
+        module: "appointments",
+        entityType: "telemedicine_session",
+        entityId: sessionResult.data.id,
+        patientId: appointment.patient_id as string | undefined,
+        action: "update",
+        what: "Envió link de videoconsulta por WhatsApp API",
+        metadata: { message_id: whatsappResult.messageId },
+      });
+      return { success: true, channel: "whatsapp" as const, joinUrl, sentViaApi: true };
+    }
+
+    if (whatsappResult.status === "manual") {
+      return {
+        success: true,
+        channel: "whatsapp" as const,
+        joinUrl,
+        whatsappUrl: whatsappResult.whatsappUrl,
+        sentViaApi: false,
+      };
+    }
+
+    return { error: whatsappResult.errorMessage };
   }
 
   return { error: "El paciente no tiene email ni teléfono registrado" };

@@ -18,12 +18,11 @@ import { createClient } from "@/core/supabase/server";
 import { mockPaymentSchema } from "@/core/validations/cash-schemas";
 import { firstZodIssue, parseEntityId, reminderChannelSchema } from "@/core/validations/params";
 
-import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
-
 import { getOrCreateTelemedicineSession } from "@/lib/actions/telemedicine";
 import { buildPamiReminderMessage } from "@/lib/constants/pami-cabecera";
 import { paymentService } from "@/lib/services/payments";
-import { buildAppointmentReminderMessage, reminderService } from "@/lib/services/reminders";
+import { deliverReminderWhatsApp } from "@/lib/services/reminder-whatsapp";
+import { buildAppointmentReminderMessage } from "@/lib/services/reminders";
 
 export async function sendReminder(appointmentId: string, channel: "email" | "whatsapp" | "internal") {
   const access = await requireClinicPermission("manageAppointments");
@@ -85,22 +84,23 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
       : buildAppointmentReminderMessage(patientFullName, dateLabel, profName);
 
   if (selectedChannel === "whatsapp") {
-    const result = await reminderService.send({
-      clinicId,
-      appointmentId: idParsed.data,
-      recipient,
-      channel: selectedChannel,
+    const delivery = await deliverReminderWhatsApp({
+      to: recipient,
       message,
     });
 
     await supabase.from("reminder_logs").insert({
       clinic_id: clinicId,
       appointment_id: idParsed.data,
-      recipient: result.recipient,
-      channel: result.channel,
-      status: result.status,
-      message: result.message,
-      sent_at: result.sent_at,
+      recipient,
+      channel: selectedChannel,
+      status: delivery.status,
+      message,
+      sent_at:
+        delivery.status === "sent" || delivery.status === "simulated"
+          ? new Date().toISOString()
+          : null,
+      error_message: delivery.errorMessage ?? null,
     });
 
     await recordAudit({
@@ -110,15 +110,29 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
       entityId: idParsed.data,
       patientId: appointment.patient_id as string | undefined,
       action: "update",
-      what: "Envió recordatorio de turno",
-      metadata: { channel: selectedChannel },
+      what:
+        delivery.status === "sent"
+          ? "Envió recordatorio de turno por WhatsApp API"
+          : "Preparó recordatorio de turno por WhatsApp",
+      metadata: {
+        channel: selectedChannel,
+        deliveryMode: delivery.deliveryMode ?? null,
+        messageId: delivery.messageId ?? null,
+      },
     });
 
     revalidatePath("/recordatorios");
+
+    if (delivery.status === "failed") {
+      return { error: delivery.errorMessage ?? "No se pudo enviar WhatsApp." };
+    }
+
     return {
       success: true,
-      whatsappUrl: patient.phone ? buildWhatsAppUrl(patient.phone, message) : undefined,
+      whatsappUrl: delivery.whatsappUrl,
       message,
+      deliveryMode: delivery.deliveryMode,
+      sentViaApi: delivery.status === "sent",
     };
   }
 

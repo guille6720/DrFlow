@@ -29,6 +29,7 @@ interface Props {
   role: UserRole | null;
   userName?: string;
   emailConfigured?: boolean;
+  whatsappConfigured?: boolean;
 }
 
 const channelLabels = { email: "Email", whatsapp: "WhatsApp", internal: "Interna" };
@@ -36,10 +37,10 @@ const statusVariant = { queued: "warning", sent: "success", failed: "danger", si
 
 function statusLabel(log: ReminderLog): string {
   if (log.status === "queued") return "En cola";
-  if (log.status === "sent") return "Enviado";
+  if (log.status === "sent") return log.channel === "whatsapp" ? "WhatsApp enviado" : "Enviado";
   if (log.status === "failed") return "Falló";
   if (log.status === "simulated") {
-    return log.channel === "whatsapp" ? "WhatsApp abierto" : "Simulado";
+    return log.channel === "whatsapp" ? "WhatsApp manual" : "Simulado";
   }
   return log.status;
 }
@@ -52,6 +53,7 @@ export function RecordatoriosView({
   role,
   userName,
   emailConfigured = false,
+  whatsappConfigured = false,
 }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
@@ -60,11 +62,17 @@ export function RecordatoriosView({
     setLoading(`${appointmentId}-${channel}`);
     const result = await sendReminder(appointmentId, channel);
     setLoading(null);
-    if (result.whatsappUrl) {
+    if (result.error) {
+      window.alert(result.error);
+    } else if (result.whatsappUrl) {
       window.open(result.whatsappUrl, "_blank", "noopener,noreferrer");
     }
     router.refresh();
   }
+
+  const whatsappSubtitle = whatsappConfigured
+    ? "WhatsApp: envío automático vía Cloud API"
+    : "WhatsApp: abre chat con mensaje prellenado";
 
   return (
     <>
@@ -72,8 +80,8 @@ export function RecordatoriosView({
         title="Recordatorios"
         subtitle={
           emailConfigured
-            ? "WhatsApp: abre chat · Email: envío real vía Resend/SMTP"
-            : "WhatsApp: abre chat · Email: configurá RESEND o SMTP en Vercel"
+            ? `${whatsappSubtitle} · Email: envío real vía Resend/SMTP`
+            : `${whatsappSubtitle} · Email: configurá RESEND o SMTP en Vercel`
         }
         clinics={clinics}
         activeClinicId={clinicId}
@@ -84,8 +92,18 @@ export function RecordatoriosView({
       <div className="space-y-6 p-4 sm:p-6">
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
           <p>
-            <strong>WhatsApp</strong> abre la app con el mensaje cargado: tenés que tocar Enviar.
-            No hay API de WhatsApp Business todavía (Fase 2C).
+            <strong>WhatsApp</strong>{" "}
+            {whatsappConfigured ? (
+              <>se envía automáticamente vía Meta Cloud API cuando el paciente tiene teléfono.</>
+            ) : (
+              <>
+                abre la app con el mensaje cargado: tenés que tocar Enviar. Para envío automático
+                configurá{" "}
+                <code className="rounded bg-amber-100 px-1">WHATSAPP_ACCESS_TOKEN</code> y{" "}
+                <code className="rounded bg-amber-100 px-1">WHATSAPP_PHONE_NUMBER_ID</code> en
+                Vercel.
+              </>
+            )}
           </p>
           <p className="mt-1">
             <strong>Email</strong>{" "}
@@ -131,7 +149,8 @@ export function RecordatoriosView({
                       loading={loading === `${a.id}-whatsapp`}
                       onClick={() => handleSend(a.id, "whatsapp")}
                     >
-                      <MessageCircle className="h-4 w-4" /> Abrir WhatsApp
+                      <MessageCircle className="h-4 w-4" />{" "}
+                      {whatsappConfigured ? "Enviar WhatsApp" : "Abrir WhatsApp"}
                     </Button>
                   </div>
                 </li>
@@ -145,7 +164,7 @@ export function RecordatoriosView({
             <EmptyState
               icon={Bell}
               title="Sin recordatorios registrados"
-              description="Acá vas a ver WhatsApp abiertos y emails enviados o fallidos, con destinatario, canal y estado."
+              description="Acá vas a ver WhatsApp enviados (API o manual) y emails enviados o fallidos, con destinatario, canal y estado."
             />
           ) : (
             <div className="overflow-x-auto">
