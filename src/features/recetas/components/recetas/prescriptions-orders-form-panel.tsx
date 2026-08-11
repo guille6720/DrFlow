@@ -80,6 +80,14 @@ export function PrescriptionsOrdersFormPanel({
                 : "default"
             }
             patientId={patient.id}
+            patient={{
+              id: patient.id,
+              first_name: patient.first_name,
+              last_name: patient.last_name,
+              document_number: patient.document_number,
+              insurance_provider: patient.insurance_provider,
+              insurance_number: patient.insurance_number,
+            }}
             patientInsurance={patient.insurance_provider}
             diagnosisDefault={diagnosisForForm}
             cie10Default={prefillCie10}

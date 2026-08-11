@@ -128,6 +128,7 @@ export function PatientChartGridPrimary({
         {canIssue && professionals.length > 0 && (
           <RenewMedicationPanel
             patientId={patientId}
+            patient={patient}
             patientInsurance={patient.insurance_provider}
             regularMedication={regularMedication}
             lastMedications={lastMedications}

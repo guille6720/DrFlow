@@ -79,6 +79,7 @@ export function PatientChartMedicationPanel({
         <div className="mt-4">
           <RenewMedicationPanel
             patientId={patientId}
+            patient={patient}
             lastMedications={lastMedications}
             professionals={professionals}
             defaultProfessionalId={defaultProfessionalId}

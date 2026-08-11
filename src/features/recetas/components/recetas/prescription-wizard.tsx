@@ -1,0 +1,389 @@
+"use client";
+
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect } from "react";
+
+import { PrescriptionDiagnosisFields } from "@/features/recetas/components/recetas/prescription-diagnosis-fields";
+import { PrescriptionMedicationsSection } from "@/features/recetas/components/recetas/prescription-medications-section";
+import {
+  type PrescriptionWizardPatient,
+  usePrescriptionWizard,
+} from "@/features/recetas/hooks/use-prescription-wizard";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { coverageOptionsForClinic, isPamiCoverage } from "@/lib/constants/coverages";
+import { getProfessionalDisplayName } from "@/lib/utils/professional";
+import type { PrescriptionMedication } from "@/types/prescription";
+
+interface Professional {
+  id: string;
+  license_number?: string | null;
+  license_national?: string | null;
+  license_provincial?: string | null;
+  display_name?: string | null;
+  profiles?: { full_name: string } | null;
+  specialties?: { name: string } | { name: string }[] | null;
+}
+
+interface Props {
+  patientId: string;
+  patient?: PrescriptionWizardPatient | null;
+  patientInsurance?: string | null;
+  clinicalRecordId?: string;
+  diagnosisDefault?: string;
+  cie10Default?: string;
+  professionals: Professional[];
+  defaultProfessionalId?: string;
+  initialMedications?: PrescriptionMedication[];
+  onSuccess?: () => void;
+}
+
+const STEP_LABELS = ["Paciente y cobertura", "Medicamentos", "Revisar y emitir"] as const;
+
+function specialtyLabel(
+  specialties: Professional["specialties"]
+): string | null {
+  if (!specialties) return null;
+  if (Array.isArray(specialties)) return specialties[0]?.name ?? null;
+  return specialties.name ?? null;
+}
+
+export function PrescriptionWizard({
+  patientId,
+  patient,
+  patientInsurance,
+  clinicalRecordId,
+  diagnosisDefault = "",
+  cie10Default = "",
+  professionals,
+  defaultProfessionalId,
+  initialMedications,
+  onSuccess,
+}: Props) {
+  const wizard = usePrescriptionWizard({
+    patientId,
+    patient: patient ?? {
+      id: patientId,
+      first_name: "",
+      last_name: "",
+      document_number: "",
+      insurance_provider: patientInsurance,
+    },
+    clinicalRecordId,
+    initialMedications,
+    diagnosisDefault,
+    cie10Default,
+    professionals,
+    defaultProfessionalId,
+    onSuccess,
+  });
+
+  const {
+    step,
+    goNext,
+    goBack,
+    professionalId,
+    setProfessionalId,
+    prescriptionType,
+    setPrescriptionType,
+    patientInsurance: insurance,
+    setPatientInsurance,
+    insuranceNumber,
+    setInsuranceNumber,
+    insurancePlan,
+    setInsurancePlan,
+    validityDays,
+    setValidityDays,
+    notes,
+    setNotes,
+    diagnosisText,
+    setDiagnosisText,
+    cie10,
+    setCie10,
+    medications,
+    setMedications,
+    updateMed,
+    error,
+    loading,
+    disclaimerAccepted,
+    setDisclaimerAccepted,
+    confirmIssue,
+    setConfirmIssue,
+    handleSubmit,
+    coverageKind,
+    affiliateLabel,
+    planOptions,
+    selectedProfessional,
+    buildDraftInput,
+  } = wizard;
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (step !== 3 || loading) return;
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        void handleSubmit(true);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [step, loading, handleSubmit]);
+
+  const coverageOptions = coverageOptionsForClinic(null, insurance);
+  const draftPreview = buildDraftInput(true);
+  const patientDisplay = patient
+    ? `${patient.last_name}, ${patient.first_name}`
+    : null;
+
+  return (
+    <div className="space-y-5">
+      <nav aria-label="Pasos de la receta" className="flex flex-wrap gap-2">
+        {STEP_LABELS.map((label, index) => {
+          const n = (index + 1) as 1 | 2 | 3;
+          const active = step === n;
+          const done = step > n;
+          return (
+            <div
+              key={label}
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                active
+                  ? "bg-teal-600 text-white"
+                  : done
+                    ? "bg-teal-100 text-teal-800"
+                    : "bg-slate-100 text-slate-600"
+              }`}
+            >
+              {n}. {label}
+            </div>
+          );
+        })}
+      </nav>
+
+      {step === 1 ? (
+        <div className="space-y-4">
+          {patientDisplay ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <p className="font-semibold text-slate-900">{patientDisplay}</p>
+              <p className="mt-0.5 text-sm text-slate-600">
+                DNI {patient?.document_number ?? "—"}
+                {insurance ? ` · ${insurance}` : ""}
+              </p>
+              {isPamiCoverage(insurance) ? (
+                <p className="mt-1 text-xs font-medium text-teal-800">Cobertura PAMI detectada</p>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Select
+              label="Profesional prescriptor"
+              required
+              value={professionalId}
+              onChange={(e) => setProfessionalId(e.target.value)}
+              options={professionals.map((p) => ({
+                value: p.id,
+                label: `${getProfessionalDisplayName(p)}${
+                  p.license_number || p.license_national
+                    ? ` — Mat. ${p.license_number ?? p.license_national}`
+                    : ""
+                }`,
+              }))}
+              placeholder="Seleccionar"
+            />
+            <Select
+              label="Tipo de receta"
+              required
+              value={prescriptionType}
+              onChange={(e) => setPrescriptionType(e.target.value as typeof prescriptionType)}
+              options={[
+                { value: "ambulatoria", label: "Ambulatoria" },
+                { value: "cronica", label: "Crónica / prolongada" },
+                { value: "duplicado", label: "Duplicado (psicotrópicos)" },
+              ]}
+            />
+            <Select
+              label="Cobertura"
+              value={insurance}
+              onChange={(e) => setPatientInsurance(e.target.value)}
+              options={coverageOptions.map((c) => ({ value: c, label: c }))}
+            />
+            <Input
+              label={affiliateLabel}
+              value={insuranceNumber}
+              onChange={(e) => setInsuranceNumber(e.target.value)}
+              placeholder={coverageKind === "PAMI" ? "N° beneficio" : "N° afiliado"}
+            />
+            {planOptions.length > 0 ? (
+              <Select
+                label="Plan"
+                value={insurancePlan}
+                onChange={(e) => setInsurancePlan(e.target.value)}
+                options={planOptions.map((p) => ({ value: p, label: p }))}
+              />
+            ) : (
+              <Input
+                label="Plan"
+                value={insurancePlan}
+                onChange={(e) => setInsurancePlan(e.target.value)}
+              />
+            )}
+            <Input
+              label="Vigencia (días)"
+              type="number"
+              min={1}
+              max={365}
+              value={validityDays}
+              onChange={(e) => setValidityDays(Number(e.target.value) || 30)}
+            />
+          </div>
+
+          <PrescriptionDiagnosisFields
+            diagnosisText={diagnosisText}
+            cie10={cie10}
+            onDiagnosisTextChange={setDiagnosisText}
+            onCie10Change={setCie10}
+          />
+
+          {selectedProfessional ? (
+            <p className="text-xs text-slate-600">
+              Especialidad: {specialtyLabel(selectedProfessional.specialties) ?? "—"}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {step === 2 ? (
+        <PrescriptionMedicationsSection
+          medications={medications}
+          setMedications={setMedications}
+          updateMed={updateMed}
+        />
+      ) : null}
+
+      {step === 3 ? (
+        <div className="space-y-4">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-800">
+            <p className="font-semibold text-slate-900">Resumen</p>
+            <ul className="mt-2 space-y-1">
+              <li>
+                <span className="text-slate-500">Paciente:</span>{" "}
+                {patientDisplay ?? patientId}
+              </li>
+              <li>
+                <span className="text-slate-500">Cobertura:</span> {insurance || "Particular"} (
+                {coverageKind})
+              </li>
+              {insuranceNumber ? (
+                <li>
+                  <span className="text-slate-500">{affiliateLabel}:</span> {insuranceNumber}
+                </li>
+              ) : null}
+              <li>
+                <span className="text-slate-500">Profesional:</span>{" "}
+                {selectedProfessional
+                  ? getProfessionalDisplayName(selectedProfessional)
+                  : "—"}
+              </li>
+              <li>
+                <span className="text-slate-500">Diagnóstico:</span> {draftPreview.diagnosis_text} (
+                {draftPreview.diagnosis_cie10})
+              </li>
+              <li>
+                <span className="text-slate-500">Medicamentos:</span>{" "}
+                {medications.filter((m) => m.generic_name.trim()).length}
+              </li>
+            </ul>
+            <ol className="mt-3 list-decimal space-y-2 pl-5">
+              {medications
+                .filter((m) => m.generic_name.trim())
+                .map((m, i) => (
+                  <li key={`${m.generic_name}-${i}`}>
+                    <span className="font-medium">{m.generic_name}</span>
+                    {m.presentation ? ` — ${m.presentation}` : ""}
+                    <span className="block text-slate-600">{m.posology}</span>
+                  </li>
+                ))}
+            </ol>
+          </div>
+
+          <Textarea
+            label="Observaciones"
+            rows={2}
+            placeholder="Indicaciones adicionales para farmacia"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+
+          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-sm text-amber-950">
+            <input
+              type="checkbox"
+              className="mt-1 h-4 w-4 shrink-0 rounded border-amber-400 text-amber-700 focus:ring-amber-500"
+              checked={disclaimerAccepted}
+              onChange={(e) => setDisclaimerAccepted(e.target.checked)}
+            />
+            <span>
+              Entiendo que esta es una <strong>receta local / borrador</strong> y{" "}
+              <strong>no constituye homologación REFEPS</strong>.
+            </span>
+          </label>
+
+          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-teal-200 bg-teal-50/80 p-3 text-sm text-teal-950">
+            <input
+              type="checkbox"
+              className="mt-1 h-4 w-4 shrink-0 rounded border-teal-400 text-teal-700 focus:ring-teal-500"
+              checked={confirmIssue}
+              onChange={(e) => setConfirmIssue(e.target.checked)}
+            />
+            <span>Confirmo que revisé paciente, cobertura y medicamentos antes de emitir.</span>
+          </label>
+
+          <p className="text-xs text-slate-500">Atajo: Ctrl+Enter para emitir</p>
+        </div>
+      ) : null}
+
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+
+      <div className="flex flex-wrap justify-between gap-2 border-t border-slate-100 pt-4">
+        <div>
+          {step > 1 ? (
+            <Button type="button" variant="outline" onClick={goBack} disabled={loading}>
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </Button>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {step < 3 ? (
+            <Button type="button" onClick={goNext}>
+              Siguiente
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          ) : (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                loading={loading}
+                disabled={!disclaimerAccepted}
+                onClick={() => void handleSubmit(false)}
+              >
+                Guardar borrador
+              </Button>
+              <Button
+                type="button"
+                loading={loading}
+                disabled={!disclaimerAccepted || !confirmIssue}
+                onClick={() => void handleSubmit(true)}
+              >
+                Emitir receta
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

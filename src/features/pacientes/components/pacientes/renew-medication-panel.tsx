@@ -19,6 +19,14 @@ interface Professional {
 
 interface Props {
   patientId: string;
+  patient?: {
+    first_name: string;
+    last_name: string;
+    document_number: string;
+    insurance_provider?: string | null;
+    insurance_number?: string | null;
+    insurance_plan?: string | null;
+  } | null;
   patientInsurance?: string | null;
   regularMedication?: string | null;
   lastMedications?: PrescriptionMedication[] | null;
@@ -31,6 +39,7 @@ interface Props {
 
 export function RenewMedicationPanel({
   patientId,
+  patient,
   patientInsurance,
   regularMedication,
   lastMedications,
@@ -78,7 +87,20 @@ export function RenewMedicationPanel({
   ) : (
     <PrescriptionForm
       patientId={patientId}
-      patientInsurance={patientInsurance}
+      patient={
+        patient
+          ? {
+              id: patientId,
+              first_name: patient.first_name,
+              last_name: patient.last_name,
+              document_number: patient.document_number,
+              insurance_provider: patient.insurance_provider,
+              insurance_number: patient.insurance_number,
+              insurance_plan: patient.insurance_plan,
+            }
+          : undefined
+      }
+      patientInsurance={patientInsurance ?? patient?.insurance_provider}
       professionals={professionals}
       defaultProfessionalId={defaultProfessionalId ?? professionals[0]?.id}
       initialMedications={initial.length > 0 ? initial : undefined}

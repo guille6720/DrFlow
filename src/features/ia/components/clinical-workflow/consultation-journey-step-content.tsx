@@ -87,6 +87,15 @@ export function ConsultationJourneyStepContent({
         <JourneySkipWrapper onSkip={() => journey.skipStep("prescription")} skipLabel="Omitir receta">
           <PrescriptionForm
             patientId={patient.id}
+            patient={{
+              id: patient.id,
+              first_name: patient.first_name,
+              last_name: patient.last_name,
+              document_number: patient.document_number,
+              insurance_provider: patient.insurance_provider,
+              insurance_number: patient.insurance_number,
+              insurance_plan: patient.insurance_plan,
+            }}
             patientInsurance={patient.insurance_provider}
             clinicalRecordId={journey.clinicalRecordId ?? undefined}
             professionals={professionals}

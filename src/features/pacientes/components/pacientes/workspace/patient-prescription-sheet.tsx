@@ -2,19 +2,24 @@
 
 import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
 import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
+import type { PrescriptionWizardPatient } from "@/features/recetas/hooks/use-prescription-wizard";
 
 import type { PrescriptionMedication } from "@/types/prescription";
 
 type Professional = {
   id: string;
   license_number?: string | null;
+  license_national?: string | null;
+  license_provincial?: string | null;
   display_name?: string | null;
   profiles?: { full_name: string } | null;
+  specialties?: { name: string } | null;
 };
 
 type Props = {
   open: boolean;
   patientId: string;
+  patient?: PrescriptionWizardPatient | null;
   patientInsurance?: string | null;
   patientName: string;
   professionals: Professional[];
@@ -30,6 +35,7 @@ type Props = {
 export function PatientPrescriptionSheet({
   open,
   patientId,
+  patient,
   patientInsurance,
   patientName,
   professionals,
@@ -51,6 +57,7 @@ export function PatientPrescriptionSheet({
     >
       <PrescriptionForm
         patientId={patientId}
+        patient={patient}
         patientInsurance={patientInsurance}
         clinicalRecordId={clinicalRecordId}
         diagnosisDefault={prefillDiagnosis ?? ""}
