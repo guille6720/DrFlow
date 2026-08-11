@@ -111,7 +111,7 @@ export function PatientEhrInteractiveBody({
         usesHceExport={usesHceExport}
       />
 
-      <div className="drflow-ehr-layout flex flex-col lg:flex-row lg:items-stretch">
+      <div className="drflow-ehr-layout flex min-h-0 flex-1 flex-col lg:flex-row lg:items-stretch">
         {filters.evolutions ? (
           <PatientEhrSidebar
             sidebarList={sidebarList}

@@ -146,7 +146,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
     path !== "/trial-expirado";
 
   return (
-    <div className="min-h-screen drflow-mesh">
+    <div className="drflow-app-shell drflow-mesh flex min-h-[100dvh] flex-col">
       <DashboardSessionBootstrap />
       <PwaRegister />
       <PerformanceMonitor />

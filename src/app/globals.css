@@ -1357,6 +1357,57 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body :is(.bg-white,
   color: #0f766e !important;
 }
 
+/* ——— App shell: viewport fill + scroll en contenido de página ——— */
+.drflow-app-shell {
+  min-height: 100dvh;
+}
+
+.drflow-app-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.drflow-app-main > .drflow-ui-header,
+.drflow-app-main > .drflow-ui-topnav {
+  flex-shrink: 0;
+}
+
+/* Cuerpo de página: típicamente Header + un div de contenido (fragment React) */
+.drflow-app-main > :not(.drflow-ui-header):not(.drflow-ui-topnav):last-child {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.drflow-page-fill {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.drflow-page-fill > .drflow-patient-workspace {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.drflow-sticky-rail {
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100dvh - 8rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 1024px) {
+  .drflow-sticky-rail {
+    max-height: calc(100dvh - 8rem);
+  }
+}
+
 /* ——— Historia clínica EHR (layout referencia, colores alineados al tab HC activo) ——— */
 .drflow-ehr-shell {
   --ehr-accent: #14b8a6;
@@ -2094,6 +2145,7 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-summ
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  min-height: 0;
 }
 
 .drflow-patient-workspace-tabs-row {
@@ -2207,10 +2259,30 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-workspace-
 
 .drflow-patient-workspace-panel {
   min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.drflow-ehr-embedded {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
 .drflow-ehr-embedded .drflow-ehr-layout {
-  min-height: 420px;
+  flex: 1 1 auto;
+  min-height: min(420px, 100%);
+}
+
+.drflow-ehr-layout {
+  min-height: 0;
+}
+
+@media (min-width: 1024px) {
+  .drflow-ehr-layout .drflow-ehr-sidebar {
+    min-height: 0;
+  }
 }
 
 .drflow-clinical-timeline-filters {

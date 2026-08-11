@@ -46,7 +46,7 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
   return (
     <nav
       aria-label="Navegación operativa del día"
-      className="flex flex-col gap-3 rounded-xl border border-slate-700/60 bg-slate-900/40 p-3 lg:sticky lg:top-4 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto"
+      className="drflow-sticky-rail flex flex-col gap-3 rounded-xl border border-slate-700/60 bg-slate-900/40 p-3"
     >
       <p className="px-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
         Operaciones

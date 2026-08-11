@@ -13,9 +13,8 @@ export function PatientEhrShellFrame({ children, embedded }: Props) {
   return (
     <div
       className={cn(
-        embedded
-          ? "drflow-ehr-shell drflow-ehr-embedded print:bg-white"
-          : "drflow-ehr-shell min-h-[calc(100vh-10rem)] print:bg-white"
+        "drflow-ehr-shell flex min-h-0 flex-1 flex-col print:bg-white",
+        embedded && "drflow-ehr-embedded"
       )}
     >
       {children}

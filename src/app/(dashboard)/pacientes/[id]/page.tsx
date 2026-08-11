@@ -80,7 +80,7 @@ export default async function PacienteDetailPage({
         userName={profile?.full_name}
       />
 
-      <div className="p-3 sm:p-4">
+      <div className="drflow-page-fill p-3 sm:p-4">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <Suspense fallback={null}>
             <PatientWorkspaceBackLink

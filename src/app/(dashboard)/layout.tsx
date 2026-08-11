@@ -30,7 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <DashboardClientErrorBoundary>
       <Suspense
         fallback={
-          <div className="flex min-h-screen items-center justify-center drflow-mesh">
+          <div className="flex min-h-[100dvh] items-center justify-center drflow-mesh">
             <p className="text-sm text-slate-500">Cargando panel…</p>
           </div>
         }

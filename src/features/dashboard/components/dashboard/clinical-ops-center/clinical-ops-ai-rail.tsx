@@ -33,7 +33,7 @@ export function ClinicalOpsAiRail({ ops }: Props) {
   return (
     <aside
       aria-label="Asistente clínico"
-      className="flex flex-col gap-3 rounded-xl border border-slate-700/60 bg-slate-900/40 p-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto"
+      className="drflow-sticky-rail flex flex-col gap-3 rounded-xl border border-slate-700/60 bg-slate-900/40 p-4"
     >
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-200">

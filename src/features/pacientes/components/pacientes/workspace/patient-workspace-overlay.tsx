@@ -54,7 +54,7 @@ export function PatientWorkspaceOverlay({
         className={cn(
           "relative z-10 flex w-full flex-col bg-white shadow-xl",
           fullscreen
-            ? "h-full max-h-none rounded-none"
+            ? "h-[100dvh] max-h-[100dvh] rounded-none"
             : cn(
                 "max-h-[92vh] rounded-t-2xl sm:max-h-[90vh] sm:rounded-2xl",
                 wide ? "max-w-4xl" : "max-w-2xl"

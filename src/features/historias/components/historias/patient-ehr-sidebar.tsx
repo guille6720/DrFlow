@@ -36,8 +36,8 @@ export function PatientEhrSidebar({
   totalRecordsCount,
 }: Props) {
   return (
-    <aside className="drflow-ehr-sidebar w-full shrink-0 border-b border-[var(--border)] lg:w-56 lg:border-b-0 lg:border-r">
-      <div className="max-h-48 overflow-y-auto lg:max-h-[calc(100vh-16rem)] lg:min-h-[320px]">
+    <aside className="drflow-ehr-sidebar w-full shrink-0 border-b border-[var(--border)] lg:flex lg:w-56 lg:min-h-0 lg:flex-col lg:border-b-0 lg:border-r">
+      <div className="max-h-48 overflow-y-auto lg:min-h-0 lg:max-h-none lg:flex-1 lg:overflow-y-auto">
         {sidebarList.length === 0 && !pendingConsultation ? (
           <p className="p-4 text-center text-xs drflow-ehr-muted">Sin evoluciones</p>
         ) : (
