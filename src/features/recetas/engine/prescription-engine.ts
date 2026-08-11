@@ -130,6 +130,8 @@ export function validatePrescriptionDraft(
   const strategy = getCoverageStrategy(ctx.coverageKind);
   const issues: ValidationIssue[] = [...baseValidation(draft)];
 
+  issues.push(...strategy.validate(ctx, draft));
+
   if (mode === "issue") {
     if (!draft.disclaimer_accepted) {
       issues.push({
@@ -148,8 +150,6 @@ export function validatePrescriptionDraft(
         message: "El profesional debe tener matrícula cargada para emitir.",
       });
     }
-
-    issues.push(...strategy.validate(ctx, draft));
 
     const maxValidity = ctx.rules.maxValidityDays;
     if (maxValidity != null && draft.validity_days > maxValidity) {

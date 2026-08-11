@@ -234,11 +234,11 @@ describe("prescription engine QA matrix", () => {
       expect(enriched.patient_insurance).toBe("PAMI");
 
       const draftResult = validatePrescriptionDraft(ctx, enriched, "draft");
-      expect(draftResult.valid).toBe(true);
+      expect(draftResult.valid).toBe(false);
+      expect(draftResult.issues.some((i) => i.field === "insurance_number")).toBe(true);
 
       const issueResult = validatePrescriptionDraft(ctx, enriched, "issue");
       expect(issueResult.valid).toBe(false);
-      expect(issueResult.issues.some((i) => i.field === "insurance_number")).toBe(true);
     });
   });
 

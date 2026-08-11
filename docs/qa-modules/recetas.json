@@ -81,7 +81,9 @@
       { "id": "mod-rx-template", "label": "Plantilla prefill sin auto-emitir", "href": "/plantillas-recetas" },
       { "id": "mod-rx-idempotency", "label": "Doble emitir no duplica (idempotency)", "href": "/pacientes" },
       { "id": "mod-rx-coverage-pdf", "label": "PDF con cobertura + QR local", "href": "/pacientes" },
-      { "id": "mod-rx-pami-config", "label": "Config reglas PAMI (manageSettings)", "href": "/configuracion?seccion=pami" },
+      { "id": "mod-rx-pami-config", "label": "Config reglas por cobertura (manageSettings)", "href": "/configuracion?seccion=coberturas" },
+      { "id": "mod-rx-dispensed", "label": "Marcar receta dispensada", "href": "/pacientes" },
+      { "id": "mod-rx-coverage-lock", "label": "Paciente PAMI no puede pasar a Particular en wizard", "href": "/pacientes" },
       { "id": "mod-rx-preview", "label": "Preview orden con contraste correcto", "href": "/pacientes" },
       { "id": "mod-rx-print", "label": "Imprimir no abre pantalla en blanco", "href": "/pacientes" }
     ]

@@ -128,6 +128,10 @@ export function ExportPrescriptionPdfButton({
         doc.text(`Marca sugerida: ${med.brand_name}`, 28, y);
         y += 5;
       }
+      if (med.vademecum_code) {
+        doc.text(`Cód. vademécum PAMI: ${med.vademecum_code}`, 28, y);
+        y += 5;
+      }
       const detail = [
         med.presentation,
         med.concentration,

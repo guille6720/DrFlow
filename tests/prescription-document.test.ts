@@ -81,6 +81,27 @@ describe("prescription document Etapa 4", () => {
     expect(html).toContain("DRFLOW|RX");
   });
 
+  it("renders PAMI vademecum code in print HTML", () => {
+    const data = buildPrescriptionDocumentData(
+      {
+        ...basePrescription,
+        medications: [
+          {
+            generic_name: "Rosuvastatina",
+            quantity: 1,
+            posology: "1/día",
+            vademecum_code: "42415",
+          },
+        ],
+      },
+      patient,
+      clinic,
+      professionals
+    );
+    const html = buildPrescriptionDocumentHtml(data);
+    expect(html).toContain("Cód. vademécum PAMI: 42415");
+  });
+
   it("includes coverage in WhatsApp share summary", () => {
     const summary = buildPrescriptionShareSummary(basePrescription, patient);
     expect(summary).toContain("PAMI");

@@ -106,6 +106,27 @@ describe("validatePrescriptionDraft", () => {
     expect(enriched.patient_insurance).toBe("IOMA");
   });
 
+  it("requires PAMI beneficio on draft save", () => {
+    const ctx = buildPrescriptionContext({
+      clinicId: "clinic-1",
+      patient: { ...patient, insurance_number: null },
+      professional,
+      patientInsurance: "PAMI",
+    });
+
+    const result = validatePrescriptionDraft(
+      ctx,
+      enrichDraftFromPatient(
+        { ...baseDraft, insurance_number: null, patient_insurance: "PAMI" },
+        { ...patient, insurance_number: null }
+      ),
+      "draft"
+    );
+
+    expect(result.valid).toBe(false);
+    expect(result.issues.some((i) => i.field === "insurance_number")).toBe(true);
+  });
+
   it("requires PAMI beneficio on issue", () => {
     const ctx = buildPrescriptionContext({
       clinicId: "clinic-1",
