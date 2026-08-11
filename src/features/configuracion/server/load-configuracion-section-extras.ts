@@ -9,6 +9,7 @@ import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
 import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
 import { getClinicObservabilityDashboard } from "@/lib/actions/observability";
 import { loadPamiPlanillaAdminCatalog } from "@/lib/actions/pami-planilla-admin";
+import { listClinicApiKeys } from "@/lib/actions/public-api-keys";
 import { getRefepsClinicSettings } from "@/lib/actions/refeps";
 
 const EMPTY_EXTRAS: Pick<
@@ -25,6 +26,7 @@ const EMPTY_EXTRAS: Pick<
   | "prescriptionCoverageRulesError"
   | "refepsSettings"
   | "refepsSettingsError"
+  | "apiPublicKeys"
 > = {
   pluginSettings: [],
   flagSettings: [],
@@ -38,6 +40,7 @@ const EMPTY_EXTRAS: Pick<
   prescriptionCoverageRulesError: undefined,
   refepsSettings: undefined,
   refepsSettingsError: undefined,
+  apiPublicKeys: undefined,
 };
 
 /** Loads heavy configuracion panels only for the active section. */
@@ -89,6 +92,11 @@ export async function loadConfiguracionSectionExtras(
         pamiPlanillaAdminError:
           planillaResult && "error" in planillaResult ? planillaResult.error : undefined,
       };
+    }
+    case "api-publica": {
+      if (!clinicId) return EMPTY_EXTRAS;
+      const keys = await listClinicApiKeys(clinicId);
+      return { ...EMPTY_EXTRAS, apiPublicKeys: keys };
     }
     default:
       return EMPTY_EXTRAS;

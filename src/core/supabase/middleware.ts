@@ -97,6 +97,10 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
+  if (path.startsWith("/api/v1/")) {
+    return NextResponse.next({ request });
+  }
+
   if (path.startsWith("/auth/")) {
     return NextResponse.next({ request });
   }

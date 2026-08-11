@@ -142,9 +142,9 @@ export const FEATURE_MODULES: FeatureModuleDef[] = [
   {
     id: "integraciones",
     label: "Integraciones",
-    routes: ["/datos"],
+    routes: ["/datos", "/configuracion?grupo=sistema&seccion=api-publica"],
     status: "ready",
-    description: "Importación, exportación y migraciones.",
+    description: "Importación, exportación y API pública v1.",
   },
   {
     id: "pharmacology",

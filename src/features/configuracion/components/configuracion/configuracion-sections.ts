@@ -11,6 +11,7 @@ import {
   CreditCard,
   Database,
   HeartPulse,
+  KeyRound,
   ListTodo,
   Palette,
   Puzzle,
@@ -44,7 +45,8 @@ export type ConfiguracionSectionId =
   | "flags"
   | "jobs"
   | "observabilidad"
-  | "accesibilidad";
+  | "accesibilidad"
+  | "api-publica";
 
 export type ConfiguracionGroupId = "consultorio" | "agenda" | "coberturas" | "sistema";
 
@@ -183,6 +185,12 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
     description: "Pacientes ficticios para probar la agenda y HC.",
     icon: Database,
   },
+  {
+    id: "api-publica",
+    title: "API pública",
+    description: "Claves Bearer para integraciones externas (turnos, profesionales).",
+    icon: KeyRound,
+  },
 ];
 
 export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
@@ -221,6 +229,7 @@ export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
       "jobs",
       "observabilidad",
       "accesibilidad",
+      "api-publica",
       "demo",
     ],
   },

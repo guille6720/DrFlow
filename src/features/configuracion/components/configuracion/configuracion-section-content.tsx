@@ -14,6 +14,7 @@ import { DemoDataPanel } from "@/features/configuracion/components/configuracion
 import { PamiPlanillasAdminPanel } from "@/features/configuracion/components/configuracion/pami-planillas-admin-panel";
 import { PamiSetupPanel } from "@/features/configuracion/components/configuracion/pami-setup-panel";
 import { PrescriptionCoverageRulesManager } from "@/features/configuracion/components/configuracion/prescription-coverage-rules-manager";
+import { PublicApiKeysPanel } from "@/features/configuracion/components/configuracion/public-api-keys-panel";
 import { RefepsSettingsPanel } from "@/features/configuracion/components/configuracion/refeps-settings-panel";
 import type { SettingsPanelProps } from "@/features/configuracion/components/configuracion/settings-panel";
 import type { CoverageRuleRow } from "@/features/recetas/repositories/coverage-rules.repository";
@@ -68,6 +69,7 @@ export interface ConfiguracionSectionExtras {
   prescriptionCoverageRulesError?: string;
   refepsSettings?: import("@/lib/actions/refeps").RefepsClinicSettingsView;
   refepsSettingsError?: string;
+  apiPublicKeys?: import("@/lib/actions/public-api-keys").ClinicApiKeyRow[];
 }
 
 export function renderConfiguracionSectionContent(
@@ -141,6 +143,8 @@ export function renderConfiguracionSectionContent(
       return <ClinicAccessibilityPanel />;
     case "demo":
       return <DemoDataPanel patientCount={extras.patientCount} />;
+    case "api-publica":
+      return <PublicApiKeysPanel keys={extras.apiPublicKeys ?? []} />;
     case "clinica":
       return <SettingsPanel section="clinica" {...settingsProps} />;
     case "equipo":
