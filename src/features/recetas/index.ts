@@ -2,4 +2,11 @@ export { createMedicalOrder } from "@/features/recetas/actions/medical-orders";
 export { issuePrescription, savePrescriptionDraft } from "@/features/recetas/actions/prescriptions";
 export { PrescriptionPanel } from "@/features/recetas/components/recetas/prescription-panel";
 export { PrescriptionsOrdersHub } from "@/features/recetas/components/recetas/prescriptions-orders-hub";
-export { orderTypeLabel } from "@/features/recetas/utils/order-type-label";
+export {
+  buildPrescriptionContext,
+  enrichDraftFromPatient,
+  resolveCoverageKind,
+  validatePrescriptionDraft,
+} from "@/features/recetas/engine/prescription-engine";
+export type { CoverageKind, ValidationIssue } from "@/features/recetas/engine/types";
+export { createPrescriptionIdempotencyKey } from "@/features/recetas/utils/prescription-idempotency";

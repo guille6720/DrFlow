@@ -198,6 +198,26 @@ export const prescriptionDraftSchema = z
           maxLength: 200,
         })
       ),
+    insurance_number: z
+      .string()
+      .optional()
+      .superRefine(
+        optionalClinicalTextRefinement({
+          fieldLabel: "El número de afiliado",
+          maxLength: 80,
+        })
+      ),
+    insurance_plan: z
+      .string()
+      .optional()
+      .superRefine(
+        optionalClinicalTextRefinement({
+          fieldLabel: "El plan",
+          maxLength: 120,
+        })
+      ),
+    coverage_kind: z.enum(["PAMI", "OBRAS_SOCIALES", "PREPAGAS", "PARTICULAR"]).optional(),
+    idempotency_key: z.string().uuid().optional().nullable(),
     medications: z.array(prescriptionMedicationSchema).min(1, "Agregá al menos un medicamento"),
     notes: z
       .string()

@@ -1,6 +1,7 @@
 export type PrescriptionType = "ambulatoria" | "cronica" | "duplicado";
 export type PrescriptionStatus = "draft" | "issued" | "void";
 export type RefepsStatus = "local" | "pending_refeps" | "submitted";
+export type PrescriptionCoverageKind = "PAMI" | "OBRAS_SOCIALES" | "PREPAGAS" | "PARTICULAR";
 
 export interface PrescriptionMedication {
   generic_name: string;
@@ -11,6 +12,15 @@ export interface PrescriptionMedication {
   posology: string;
   route?: string;
   prolonged_treatment?: boolean;
+  /** Extended fields (optional, backward compatible) */
+  active_ingredient?: string;
+  pharmaceutical_form?: string;
+  dose?: string;
+  frequency?: string;
+  duration_days?: number;
+  instructions?: string;
+  vademecum_code?: string;
+  search_source?: "pami" | "generic" | "manual";
 }
 
 export interface ElectronicPrescription {
@@ -32,6 +42,12 @@ export interface ElectronicPrescription {
   refeps_status: RefepsStatus;
   refeps_id: string | null;
   patient_insurance: string | null;
+  coverage_kind: PrescriptionCoverageKind | null;
+  insurance_number: string | null;
+  insurance_plan: string | null;
+  idempotency_key: string | null;
+  dispensed_at: string | null;
+  version: number;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -48,6 +64,17 @@ export const PRESCRIPTION_STATUS_LABELS: Record<PrescriptionStatus, string> = {
   issued: "Emitida",
   void: "Anulada",
 };
+
+/** UI alias for cancelled prescriptions */
+export const PRESCRIPTION_STATUS_UI_ALIASES: Partial<Record<PrescriptionStatus, string>> = {
+  void: "Cancelada",
+};
+
+export function resolvePrescriptionDisplayStatus(row: Pick<ElectronicPrescription, "status" | "dispensed_at">): string {
+  if (row.status === "issued" && row.dispensed_at) return "Dispensada";
+  if (row.status === "void") return PRESCRIPTION_STATUS_UI_ALIASES.void ?? PRESCRIPTION_STATUS_LABELS.void;
+  return PRESCRIPTION_STATUS_LABELS[row.status];
+}
 
 export const ARGENTINA_PRESCRIPTION_DISCLAIMER =
   "Receta local / borrador — no es homologación REFEPS. " +

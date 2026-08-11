@@ -12,6 +12,9 @@ export type PrescriptionDraftInsertRow = {
   diagnosis_cie10: string;
   diagnosis_text: string;
   patient_insurance: string | null;
+  coverage_kind?: string | null;
+  insurance_number?: string | null;
+  insurance_plan?: string | null;
   medications: unknown;
   notes: string | null;
   validity_days: number;
@@ -21,7 +24,15 @@ export type PrescriptionDraftInsertRow = {
   created_by: string;
 };
 
-export function formatPrescriptionDbError(error: { message?: string; code?: string; details?: string; hint?: string }): string {
+const PRESCRIPTION_ISSUE_COLUMNS =
+  "id, clinic_id, patient_id, clinical_record_id, professional_id, prescription_type, diagnosis_cie10, diagnosis_text, patient_insurance, coverage_kind, insurance_number, insurance_plan, medications, notes, validity_days, disclaimer_accepted, status, prescription_number, issued_at, refeps_status, idempotency_key, version";
+
+export function formatPrescriptionDbError(error: {
+  message?: string;
+  code?: string;
+  details?: string;
+  hint?: string;
+}): string {
   return mapPostgresError(error);
 }
 
@@ -53,16 +64,55 @@ export async function updatePrescriptionDraft(
   return repoOk(data as ElectronicPrescription);
 }
 
-export async function issuePrescriptionDraft(
+export async function getPrescriptionDraftForIssue(
   db: DbClient,
   draftId: string,
   clinicId: string
+): Promise<RepoResult<ElectronicPrescription | null>> {
+  const { data, error } = await db
+    .from("prescription_drafts")
+    .select(PRESCRIPTION_ISSUE_COLUMNS)
+    .eq("id", draftId)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+
+  if (error) return repoErr(formatPrescriptionDbError(error));
+  return repoOk((data as ElectronicPrescription | null) ?? null);
+}
+
+export async function findPrescriptionByIdempotencyKey(
+  db: DbClient,
+  clinicId: string,
+  idempotencyKey: string
+): Promise<RepoResult<ElectronicPrescription | null>> {
+  const { data, error } = await db
+    .from("prescription_drafts")
+    .select(PRESCRIPTION_ISSUE_COLUMNS)
+    .eq("clinic_id", clinicId)
+    .eq("idempotency_key", idempotencyKey)
+    .maybeSingle();
+
+  if (error) return repoErr(formatPrescriptionDbError(error));
+  return repoOk((data as ElectronicPrescription | null) ?? null);
+}
+
+export async function issuePrescriptionDraft(
+  db: DbClient,
+  draftId: string,
+  clinicId: string,
+  patch?: {
+    coverage_kind?: string | null;
+    insurance_number?: string | null;
+    insurance_plan?: string | null;
+    idempotency_key?: string | null;
+  }
 ): Promise<RepoResult<ElectronicPrescription>> {
   const { data, error } = await db
     .from("prescription_drafts")
     .update({
       status: "issued",
       refeps_status: "local",
+      ...patch,
     })
     .eq("id", draftId)
     .eq("clinic_id", clinicId)

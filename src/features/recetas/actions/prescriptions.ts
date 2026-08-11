@@ -65,7 +65,7 @@ export async function savePrescriptionDraft(formData: FormData) {
   return { data: result.data };
 }
 
-export async function issuePrescription(id: string) {
+export async function issuePrescription(id: string, idempotencyKey?: string | null) {
   const access = await requireClinicalIssueAccess();
   if (!access.ok) return { error: access.error };
 
@@ -80,22 +80,35 @@ export async function issuePrescription(id: string) {
     .eq("clinic_id", access.data.clinicId)
     .maybeSingle();
 
-  const result = await issuePrescriptionRecord(supabase, idParsed.data, access.data.clinicId);
+  const result = await issuePrescriptionRecord(
+    supabase,
+    idParsed.data,
+    access.data.clinicId,
+    access.data.userId,
+    idempotencyKey
+  );
   if (!result.ok) return { error: result.error };
 
-  await recordAudit({
-    clinicId: access.data.clinicId,
-    module: "prescriptions",
-    entityType: "prescription",
-    entityId: idParsed.data,
-    patientId: before?.patient_id ?? undefined,
-    action: "update",
-    what: "Emitió receta electrónica",
-    metadata: { status: "issued" },
-  });
+  if (result.created) {
+    await recordAudit({
+      clinicId: access.data.clinicId,
+      module: "prescriptions",
+      entityType: "prescription",
+      entityId: idParsed.data,
+      patientId: before?.patient_id ?? result.data.patient_id,
+      action: "update",
+      what: "Emitió receta electrónica",
+      metadata: {
+        status: "issued",
+        coverage_kind: result.data.coverage_kind,
+        prescription_number: result.data.prescription_number,
+      },
+    });
+  }
 
   revalidatePath("/recetas");
   revalidatePath("/historias");
+  revalidatePath(`/pacientes/${result.data.patient_id}`);
   return { data: result.data };
 }
 
@@ -114,7 +127,12 @@ export async function voidPrescription(id: string) {
     .eq("clinic_id", access.data.clinicId)
     .maybeSingle();
 
-  const result = await voidPrescriptionRecord(supabase, idParsed.data, access.data.clinicId);
+  const result = await voidPrescriptionRecord(
+    supabase,
+    idParsed.data,
+    access.data.clinicId,
+    access.data.userId
+  );
   if (!result.ok) return { error: result.error };
 
   await recordAudit({

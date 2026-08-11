@@ -23,6 +23,9 @@ export const EXPECTED_TABLES = [
   "clinical_record_audit",
   "clinical_templates",
   "prescription_drafts",
+  "prescription_events",
+  "prescription_templates",
+  "coverage_rules",
   "reminder_logs",
   "telemedicine_sessions",
   "payments",
@@ -60,7 +63,17 @@ export const EXPECTED_COLUMNS = {
   patient_clinical_profiles: ["medical_history", "allergies", "regular_medication", "notes"],
   clinic_feature_flags: ["flag_id", "enabled"],
   appointments: ["consultation_modality", "waiting_room_status", "booking_source"],
-  prescription_drafts: ["prescription_number", "refeps_status", "validity_days"],
+  prescription_drafts: [
+    "prescription_number",
+    "refeps_status",
+    "validity_days",
+    "coverage_kind",
+    "insurance_number",
+    "insurance_plan",
+    "idempotency_key",
+    "dispensed_at",
+    "version",
+  ],
   professionals: ["license_national", "license_provincial", "intake_completed_at"],
 };
 
