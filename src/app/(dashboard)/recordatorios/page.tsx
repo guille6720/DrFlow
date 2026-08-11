@@ -3,6 +3,8 @@ import { createClient } from "@/core/supabase/server";
 
 import { RecordatoriosView } from "@/features/agenda/components/recordatorios/recordatorios-view";
 
+import { isTransactionalEmailConfigured } from "@/lib/services/transactional-email";
+
 const REMINDER_LOG_COLUMNS =
   "id, clinic_id, appointment_id, recipient, channel, status, message, sent_at, error_message, created_at";
 
@@ -37,6 +39,7 @@ export default async function RecordatoriosPage() {
       clinicId={clinicId}
       role={role}
       userName={profile?.full_name}
+      emailConfigured={isTransactionalEmailConfigured()}
     />
   );
 }

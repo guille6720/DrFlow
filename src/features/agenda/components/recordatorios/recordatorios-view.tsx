@@ -28,6 +28,7 @@ interface Props {
   clinicId: string | null;
   role: UserRole | null;
   userName?: string;
+  emailConfigured?: boolean;
 }
 
 const channelLabels = { email: "Email", whatsapp: "WhatsApp", internal: "Interna" };
@@ -35,13 +36,23 @@ const statusVariant = { queued: "warning", sent: "success", failed: "danger", si
 
 function statusLabel(log: ReminderLog): string {
   if (log.status === "queued") return "En cola";
+  if (log.status === "sent") return "Enviado";
+  if (log.status === "failed") return "Falló";
   if (log.status === "simulated") {
     return log.channel === "whatsapp" ? "WhatsApp abierto" : "Simulado";
   }
   return log.status;
 }
 
-export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId, role, userName }: Props) {
+export function RecordatoriosView({
+  logs,
+  pendingAppointments,
+  clinics,
+  clinicId,
+  role,
+  userName,
+  emailConfigured = false,
+}: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -59,7 +70,11 @@ export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId
     <>
       <Header
         title="Recordatorios"
-        subtitle="WhatsApp: abre chat listo · Email: cola asíncrona (no bloquea la pantalla)"
+        subtitle={
+          emailConfigured
+            ? "WhatsApp: abre chat · Email: envío real vía Resend/SMTP"
+            : "WhatsApp: abre chat · Email: configurá RESEND o SMTP en Vercel"
+        }
         clinics={clinics}
         activeClinicId={clinicId}
         role={role}
@@ -70,11 +85,19 @@ export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
           <p>
             <strong>WhatsApp</strong> abre la app con el mensaje cargado: tenés que tocar Enviar.
-            No hay API de WhatsApp Business todavía.
+            No hay API de WhatsApp Business todavía (Fase 2C).
           </p>
           <p className="mt-1">
-            <strong>Email</strong> se encola y procesa en segundo plano (estado <em>queued</em> →{" "}
-            <em>simulated</em> hasta integrar SMTP real).
+            <strong>Email</strong>{" "}
+            {emailConfigured ? (
+              <>se envía en segundo plano con Resend o SMTP configurado en el servidor.</>
+            ) : (
+              <>
+                requiere <code className="rounded bg-amber-100 px-1">RESEND_API_KEY</code> o SMTP +
+                <code className="rounded bg-amber-100 px-1">EMAIL_FROM</code> en Vercel — ver{" "}
+                <code className="rounded bg-amber-100 px-1">.env.example</code>.
+              </>
+            )}
           </p>
         </div>
 
@@ -100,7 +123,7 @@ export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId
                       loading={loading === `${a.id}-email`}
                       onClick={() => handleSend(a.id, "email")}
                     >
-                      <Mail className="h-4 w-4" /> Email (cola)
+                      <Mail className="h-4 w-4" /> {emailConfigured ? "Enviar email" : "Email (sin SMTP)"}
                     </Button>
                     <Button
                       size="sm"
@@ -122,7 +145,7 @@ export function RecordatoriosView({ logs, pendingAppointments, clinics, clinicId
             <EmptyState
               icon={Bell}
               title="Sin recordatorios registrados"
-              description="Acá vas a ver WhatsApp abiertos y emails simulados, con destinatario, canal y estado."
+              description="Acá vas a ver WhatsApp abiertos y emails enviados o fallidos, con destinatario, canal y estado."
             />
           ) : (
             <div className="overflow-x-auto">

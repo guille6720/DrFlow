@@ -25,11 +25,11 @@
 
 ## Fase 2 — Integraciones reales
 
-- [ ] **Mercado Pago** — Checkout Pro, webhooks
-- [ ] **Email** — SendGrid/Resend (sacar “simulado”)
-- [ ] **WhatsApp Business API** — envío automático (hoy: abrir chat)
-- [ ] **Telemedicina** — embed propio o Daily.co
-- [ ] **REFEPS / RENaPDiS** — homologación + firma digital
+- [ ] **2A Mercado Pago** — Checkout Pro, webhooks (ver `docs/MONETIZACION-PLAN.md`)
+- [x] **2B Email** — Resend/SMTP en recordatorios + invitaciones + notificaciones de turnos
+- [ ] **2C WhatsApp Business API** — envío automático (hoy: abrir chat)
+- [ ] **2D Telemedicina** — embed propio o Daily.co (hoy: Jitsi lab)
+- [ ] **2E REFEPS / RENaPDiS** — homologación + firma digital
 
 ## Fase 3 — Compliance
 

@@ -128,6 +128,16 @@ export function getEmailConfigurationHint(): string {
   return "Configurá RESEND_API_KEY o SMTP_HOST + EMAIL_FROM en Vercel (Settings → Environment Variables). Ver .env.example.";
 }
 
+/** True when EMAIL_FROM and Resend or SMTP credentials are present (server env). */
+export function isTransactionalEmailConfigured(): boolean {
+  if (!process.env.EMAIL_FROM?.trim()) return false;
+  if (process.env.RESEND_API_KEY?.trim()) return true;
+  const host = process.env.SMTP_HOST?.trim();
+  const user = process.env.SMTP_USER?.trim();
+  const pass = getSmtpPassword();
+  return Boolean(host && user && pass);
+}
+
 export async function sendTransactionalEmail(
   input: SendTransactionalEmailInput
 ): Promise<SendTransactionalEmailResult> {

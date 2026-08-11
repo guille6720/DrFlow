@@ -184,6 +184,7 @@ export interface ReminderLog {
   status: ReminderStatus;
   message: string | null;
   sent_at: string | null;
+  error_message?: string | null;
   created_at: string;
 }
 
