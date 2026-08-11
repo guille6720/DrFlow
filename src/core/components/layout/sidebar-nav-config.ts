@@ -58,6 +58,7 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
   "/secretaria/documentos": FolderOpen,
   "/ingreso-profesionales": Stethoscope,
   "/plantillas": ClipboardList,
+  "/plantillas-recetas": Pill,
   "/firmas": PenLine,
   "/historias": FileText,
   "/datos": ArrowDownUp,

@@ -73,6 +73,12 @@ export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
         permission: "editClinicalRecords",
       },
       {
+        featureId: "recetas",
+        href: "/plantillas-recetas",
+        label: "Plantillas recetas",
+        permission: "issuePrescriptions",
+      },
+      {
         featureId: "profesionales",
         href: "/firmas",
         label: "Firmas",

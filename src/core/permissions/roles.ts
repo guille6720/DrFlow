@@ -113,6 +113,7 @@ export function canAccessRoute(
     "/secretaria": "manageAdminDocuments",
     "/ingreso-profesionales": "manageStaff",
     "/plantillas": "editClinicalRecords",
+    "/plantillas-recetas": "issuePrescriptions",
     "/firmas": "editClinicalRecords",
   };
 

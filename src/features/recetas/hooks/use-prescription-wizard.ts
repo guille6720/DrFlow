@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
 
+import { savePrescriptionTemplateFromDraft } from "@/features/recetas/actions/prescription-templates";
 import { issuePrescription, savePrescriptionDraft } from "@/features/recetas/actions/prescriptions";
 import { emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
 import {
@@ -12,7 +13,9 @@ import {
 } from "@/features/recetas/engine/prescription-engine";
 import { resolveCoverageKind } from "@/features/recetas/engine/resolve-coverage-kind";
 import type { ValidationIssue } from "@/features/recetas/engine/types";
+import type { PrescriptionTemplateRow } from "@/features/recetas/repositories/prescription-templates.repository";
 import { createPrescriptionIdempotencyKey } from "@/features/recetas/utils/prescription-idempotency";
+import { consumePrescriptionReusePrefill } from "@/features/recetas/utils/prescription-reuse-prefill";
 
 import {
   insuranceNumberLabel,
@@ -62,6 +65,34 @@ function specialtyName(
   return specialties.name ?? null;
 }
 
+function buildWizardBootstrap(
+  patientId: string,
+  patient: PrescriptionWizardPatient | null | undefined,
+  initialMedications: PrescriptionMedication[] | undefined,
+  diagnosisDefault: string,
+  cie10Default: string
+) {
+  const reuse = consumePrescriptionReusePrefill(patientId);
+  return {
+    patientInsurance:
+      reuse?.patient_insurance?.trim() || patient?.insurance_provider?.trim() || "",
+    notes: reuse?.notes?.trim() ?? "",
+    diagnosisText: reuse?.diagnosis_text?.trim() || diagnosisDefault,
+    cie10: reuse?.diagnosis_cie10?.trim() || cie10Default,
+    medications:
+      reuse?.medications?.length
+        ? reuse.medications
+        : initialMedications && initialMedications.length > 0
+          ? initialMedications
+          : [emptyPrescriptionMedication()],
+    reuseNotice: reuse
+      ? reuse.sourcePrescriptionId
+        ? "Medicamentos cargados desde una receta anterior. Revisá cobertura y diagnóstico antes de emitir."
+        : "Datos precargados. Revisá cobertura y diagnóstico antes de emitir."
+      : null,
+  };
+}
+
 export function usePrescriptionWizard({
   patientId,
   patient,
@@ -75,31 +106,38 @@ export function usePrescriptionWizard({
 }: Options) {
   const router = useRouter();
   const idempotencyRef = useRef<string | null>(null);
+  const [bootstrap] = useState(() =>
+    buildWizardBootstrap(
+      patientId,
+      patient,
+      initialMedications,
+      diagnosisDefault,
+      cie10Default
+    )
+  );
 
   const [step, setStep] = useState<PrescriptionWizardStep>(1);
   const [professionalId, setProfessionalId] = useState(
     defaultProfessionalId ?? professionals[0]?.id ?? ""
   );
   const [prescriptionType, setPrescriptionType] = useState<PrescriptionType>("ambulatoria");
-  const [patientInsurance, setPatientInsurance] = useState(
-    patient?.insurance_provider?.trim() ?? ""
-  );
+  const [patientInsurance, setPatientInsurance] = useState(bootstrap.patientInsurance);
   const [insuranceNumber, setInsuranceNumber] = useState(patient?.insurance_number?.trim() ?? "");
   const [insurancePlan, setInsurancePlan] = useState(patient?.insurance_plan?.trim() ?? "");
   const [validityDays, setValidityDays] = useState(30);
-  const [notes, setNotes] = useState("");
-  const [diagnosisText, setDiagnosisText] = useState(diagnosisDefault);
-  const [cie10, setCie10] = useState(cie10Default);
-  const [medications, setMedications] = useState<PrescriptionMedication[]>(
-    initialMedications && initialMedications.length > 0
-      ? initialMedications
-      : [emptyPrescriptionMedication()]
-  );
+  const [notes, setNotes] = useState(bootstrap.notes);
+  const [diagnosisText, setDiagnosisText] = useState(bootstrap.diagnosisText);
+  const [cie10, setCie10] = useState(bootstrap.cie10);
+  const [medications, setMedications] = useState<PrescriptionMedication[]>(bootstrap.medications);
   const [error, setError] = useState<string | null>(null);
   const [fieldIssues, setFieldIssues] = useState<ValidationIssue[]>([]);
   const [loading, setLoading] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [confirmIssue, setConfirmIssue] = useState(false);
+  const [templateMessage, setTemplateMessage] = useState<string | null>(null);
+  const [templateSaving, setTemplateSaving] = useState(false);
+  const [saveTemplateName, setSaveTemplateName] = useState("");
+  const reuseNotice = bootstrap.reuseNotice;
 
   const coverageKind = useMemo(
     () => resolveCoverageKind(patientInsurance || null),
@@ -341,6 +379,64 @@ export function usePrescriptionWizard({
     ]
   );
 
+  const applyTemplate = useCallback((template: PrescriptionTemplateRow) => {
+    setError(null);
+    setTemplateMessage(null);
+    if (template.medications.length > 0) {
+      setMedications(template.medications);
+    }
+    if (template.diagnosis_text?.trim()) setDiagnosisText(template.diagnosis_text);
+    if (template.diagnosis_cie10?.trim()) setCie10(template.diagnosis_cie10);
+    if (template.notes?.trim()) setNotes(template.notes);
+    setTemplateMessage(`Plantilla "${template.name}" aplicada. Revisá antes de emitir.`);
+    setStep(2);
+  }, []);
+
+  const saveAsTemplate = useCallback(async () => {
+    const name = saveTemplateName.trim();
+    if (name.length < 2) {
+      setError("Ingresá un nombre de al menos 2 caracteres para la plantilla.");
+      return;
+    }
+
+    const filledMeds = medications.filter((m) => m.generic_name.trim());
+    if (filledMeds.length === 0) {
+      setError("Agregá al menos un medicamento antes de guardar la plantilla.");
+      return;
+    }
+
+    setTemplateSaving(true);
+    setError(null);
+    setTemplateMessage(null);
+
+    const result = await savePrescriptionTemplateFromDraft({
+      name,
+      professional_id: professionalId || null,
+      coverage_kind: coverageKind,
+      medications: filledMeds,
+      notes: notes || null,
+      diagnosis_cie10: cie10 || null,
+      diagnosis_text: diagnosisText || null,
+    });
+
+    setTemplateSaving(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+
+    setTemplateMessage(`Plantilla "${name}" guardada.`);
+    setSaveTemplateName("");
+  }, [
+    saveTemplateName,
+    medications,
+    professionalId,
+    coverageKind,
+    notes,
+    cie10,
+    diagnosisText,
+  ]);
+
   return {
     step,
     setStep,
@@ -380,5 +476,12 @@ export function usePrescriptionWizard({
     planOptions,
     selectedProfessional,
     buildDraftInput,
+    applyTemplate,
+    saveAsTemplate,
+    templateMessage,
+    templateSaving,
+    saveTemplateName,
+    setSaveTemplateName,
+    reuseNotice,
   };
 }

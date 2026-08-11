@@ -5,6 +5,7 @@ import { useEffect } from "react";
 
 import { PrescriptionDiagnosisFields } from "@/features/recetas/components/recetas/prescription-diagnosis-fields";
 import { PrescriptionMedicationsSection } from "@/features/recetas/components/recetas/prescription-medications-section";
+import { PrescriptionTemplatePicker } from "@/features/recetas/components/recetas/prescription-template-picker";
 import {
   type PrescriptionWizardPatient,
   usePrescriptionWizard,
@@ -118,6 +119,13 @@ export function PrescriptionWizard({
     planOptions,
     selectedProfessional,
     buildDraftInput,
+    applyTemplate,
+    saveAsTemplate,
+    templateMessage,
+    templateSaving,
+    saveTemplateName,
+    setSaveTemplateName,
+    reuseNotice,
   } = wizard;
 
   useEffect(() => {
@@ -161,6 +169,18 @@ export function PrescriptionWizard({
           );
         })}
       </nav>
+
+      {reuseNotice ? (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+          {reuseNotice}
+        </p>
+      ) : null}
+
+      {templateMessage ? (
+        <p className="rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-900">
+          {templateMessage}
+        </p>
+      ) : null}
 
       {step === 1 ? (
         <div className="space-y-4">
@@ -256,11 +276,18 @@ export function PrescriptionWizard({
       ) : null}
 
       {step === 2 ? (
-        <PrescriptionMedicationsSection
-          medications={medications}
-          setMedications={setMedications}
-          updateMed={updateMed}
-        />
+        <div className="space-y-4">
+          <PrescriptionTemplatePicker
+            key={professionalId}
+            professionalId={professionalId}
+            onApply={applyTemplate}
+          />
+          <PrescriptionMedicationsSection
+            medications={medications}
+            setMedications={setMedications}
+            updateMed={updateMed}
+          />
+        </div>
       ) : null}
 
       {step === 3 ? (
@@ -341,6 +368,32 @@ export function PrescriptionWizard({
           </label>
 
           <p className="text-xs text-slate-500">Atajo: Ctrl+Enter para emitir</p>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <p className="text-sm font-semibold text-slate-900">Guardar como plantilla</p>
+            <p className="mt-1 text-xs text-slate-600">
+              Reutilizá esta combinación de medicamentos en futuras recetas.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Input
+                label="Nombre de plantilla"
+                value={saveTemplateName}
+                onChange={(e) => setSaveTemplateName(e.target.value)}
+                placeholder="Ej. HTA ambulatoria"
+                className="min-w-[200px] flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="self-end"
+                loading={templateSaving}
+                onClick={() => void saveAsTemplate()}
+              >
+                Guardar plantilla
+              </Button>
+            </div>
+          </div>
         </div>
       ) : null}
 

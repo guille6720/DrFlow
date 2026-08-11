@@ -72,7 +72,7 @@ export const FEATURE_MODULES: FeatureModuleDef[] = [
   {
     id: "recetas",
     label: "Recetas y órdenes",
-    routes: ["/recetas"],
+    routes: ["/recetas", "/plantillas-recetas"],
     status: "ready",
     description: "Prescripciones y órdenes médicas.",
   },

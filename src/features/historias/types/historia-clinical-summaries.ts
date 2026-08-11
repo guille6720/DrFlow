@@ -1,5 +1,10 @@
 import type { MedicalOrder } from "@/types/medical-order";
-import type { PrescriptionMedication, PrescriptionStatus, PrescriptionType } from "@/types/prescription";
+import type {
+  PrescriptionCoverageKind,
+  PrescriptionMedication,
+  PrescriptionStatus,
+  PrescriptionType,
+} from "@/types/prescription";
 
 /** Prescription row loaded on historia detail (partial select). */
 export type HistoriaPrescriptionSummary = {
@@ -15,6 +20,10 @@ export type HistoriaPrescriptionSummary = {
   prescription_type?: PrescriptionType;
   validity_days?: number;
   patient_insurance?: string | null;
+  coverage_kind?: PrescriptionCoverageKind | null;
+  insurance_number?: string | null;
+  insurance_plan?: string | null;
+  dispensed_at?: string | null;
   notes?: string | null;
 };
 

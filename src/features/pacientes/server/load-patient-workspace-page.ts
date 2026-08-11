@@ -159,7 +159,7 @@ export async function loadPatientWorkspacePageData(
     ? supabase
         .from("prescription_drafts")
         .select(
-          "id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, notes, professional_id"
+          "id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, coverage_kind, insurance_number, insurance_plan, dispensed_at, notes, professional_id"
         )
         .eq("patient_id", patientId)
         .eq("clinic_id", clinicId)

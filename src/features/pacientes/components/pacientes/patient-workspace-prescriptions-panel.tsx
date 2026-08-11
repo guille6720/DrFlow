@@ -1,14 +1,19 @@
+"use client";
+
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import type { HistoriaPrescriptionSummary } from "@/features/historias/types/historia-clinical-summaries";
 import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
 import type { PatientWorkspaceProfessional } from "@/features/pacientes/server/load-patient-workspace-page";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { PrescriptionList } from "@/features/recetas/components/recetas/prescription-list";
+import { storePrescriptionReusePrefill } from "@/features/recetas/utils/prescription-reuse-prefill";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 type Props = {
   ehr: PatientEhrWorkspaceData;
@@ -38,7 +43,30 @@ export function PatientWorkspacePrescriptionsPanel({
   professionals,
   canIssue,
 }: Props) {
+  const router = useRouter();
   const prescriptions = ehr.prescriptionRecords as HistoriaPrescriptionSummary[];
+
+  function handleReuseMedications(rx: HistoriaPrescriptionSummary) {
+    const medications = Array.isArray(rx.medications)
+      ? (rx.medications as PrescriptionMedication[])
+      : [];
+
+    storePrescriptionReusePrefill(patientId, {
+      medications,
+      diagnosis_cie10: rx.diagnosis_cie10,
+      diagnosis_text: rx.diagnosis_text,
+      notes: rx.notes,
+      patient_insurance: rx.patient_insurance,
+      sourcePrescriptionId: rx.id,
+    });
+
+    router.push(
+      buildPatientWorkspaceUrl(patientId, {
+        tab: "recetas",
+        action: "nueva",
+      })
+    );
+  }
 
   return (
     <Card
@@ -59,6 +87,8 @@ export function PatientWorkspacePrescriptionsPanel({
         patient={patient}
         clinic={clinic}
         professionals={professionals}
+        canIssue={canIssue}
+        onReuseMedications={canIssue ? handleReuseMedications : undefined}
       />
     </Card>
   );

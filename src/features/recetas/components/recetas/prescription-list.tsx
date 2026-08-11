@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Eye, Printer } from "lucide-react";
+import { Eye, Printer, RefreshCw } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 
 import { cn } from "@/shared/utils/cn";
@@ -16,7 +16,7 @@ import { printPrescriptionDocument } from "@/features/recetas/utils/print-prescr
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { PrescriptionMedication } from "@/types/prescription";
-import { PRESCRIPTION_STATUS_LABELS } from "@/types/prescription";
+import { PRESCRIPTION_TYPE_LABELS, resolvePrescriptionDisplayStatus } from "@/types/prescription";
 
 type PatientInfo = {
   first_name: string;
@@ -50,12 +50,21 @@ type Props = {
   actingId?: string | null;
   onIssue?: (id: string) => void;
   onVoid?: (id: string) => void;
+  onReuseMedications?: (prescription: HistoriaPrescriptionSummary) => void;
   shareSlot?: (prescription: HistoriaPrescriptionSummary) => ReactNode;
 };
 
-function statusVariant(status: string): "default" | "success" | "warning" | "danger" {
-  if (status === "issued") return "success";
-  if (status === "void") return "danger";
+function displayStatus(rx: HistoriaPrescriptionSummary): string {
+  return resolvePrescriptionDisplayStatus({
+    status: rx.status,
+    dispensed_at: rx.dispensed_at ?? null,
+  });
+}
+
+function statusVariant(rx: HistoriaPrescriptionSummary): "default" | "success" | "warning" | "danger" {
+  if (rx.status === "issued" && rx.dispensed_at) return "default";
+  if (rx.status === "issued") return "success";
+  if (rx.status === "void") return "danger";
   return "warning";
 }
 
@@ -74,6 +83,7 @@ export function PrescriptionList({
   actingId = null,
   onIssue,
   onVoid,
+  onReuseMedications,
   shareSlot,
 }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -160,14 +170,25 @@ export function PrescriptionList({
                     <span className="text-xs font-semibold uppercase tracking-wide text-slate-700">
                       {rx.prescription_number ?? rx.id.slice(0, 8)}
                     </span>
-                    <Badge variant={statusVariant(rx.status)}>
-                      {PRESCRIPTION_STATUS_LABELS[rx.status]}
+                    <Badge variant={statusVariant(rx)}>
+                      {displayStatus(rx)}
                     </Badge>
+                    {medications.length > 0 ? (
+                      <Badge variant="default">{medications.length} med.</Badge>
+                    ) : null}
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
                     {format(new Date(rx.issued_at ?? rx.created_at), "PPp", { locale: es })}
                     {rx.diagnosis_cie10 ? ` · CIE-10 ${rx.diagnosis_cie10}` : ""}
+                    {rx.patient_insurance ? ` · ${rx.patient_insurance}` : ""}
+                    {rx.coverage_kind ? ` (${rx.coverage_kind})` : ""}
                   </p>
+                  {rx.prescription_type ? (
+                    <p className="mt-0.5 text-xs text-slate-500">
+                      {PRESCRIPTION_TYPE_LABELS[rx.prescription_type]}
+                      {rx.validity_days ? ` · vigencia ${rx.validity_days} días` : ""}
+                    </p>
+                  ) : null}
                   <p className="mt-2 line-clamp-2 text-slate-800">
                     {rx.diagnosis_text?.trim() || "—"}
                   </p>
@@ -191,6 +212,16 @@ export function PrescriptionList({
                       />
                       {shareSlot?.(rx)}
                     </>
+                  ) : null}
+                  {isIssued && !isVoid && onReuseMedications && medications.length > 0 ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onReuseMedications(rx)}
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Reutilizar meds
+                    </Button>
                   ) : null}
                   {canIssue && rx.status === "draft" && onIssue ? (
                     <Button size="sm" loading={actingId === rx.id} onClick={() => onIssue(rx.id)}>
