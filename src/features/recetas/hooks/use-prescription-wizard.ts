@@ -538,6 +538,7 @@ export function usePrescriptionWizard({
     confirmIssue,
     setConfirmIssue,
     handleSubmit,
+    validateStep,
     coverageKind,
     affiliateLabel,
     planOptions,

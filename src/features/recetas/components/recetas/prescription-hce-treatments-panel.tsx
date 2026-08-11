@@ -14,6 +14,7 @@ type Props = {
   treatments: PatientEhrTreatmentRow[];
   onApplyMedications: (medications: PrescriptionMedication[]) => void;
   existingGenericNames: string[];
+  embedded?: boolean;
 };
 
 function treatmentToMedication(row: PatientEhrTreatmentRow): PrescriptionMedication {
@@ -30,10 +31,13 @@ export function PrescriptionHceTreatmentsPanel({
   treatments,
   onApplyMedications,
   existingGenericNames,
+  embedded = false,
 }: Props) {
   const [show, setShow] = useState(false);
 
   if (treatments.length === 0) return null;
+
+  const visible = embedded || show;
 
   const recent = treatments.slice(0, 12);
 
@@ -48,18 +52,20 @@ export function PrescriptionHceTreatmentsPanel({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3">
-      <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-800">
-        <input
-          type="checkbox"
-          className="h-4 w-4 rounded border-slate-300"
-          checked={show}
-          onChange={(e) => setShow(e.target.checked)}
-        />
-        Mostrar tratamientos de la HCE
-      </label>
+    <div className={embedded ? "" : "rounded-xl border border-slate-200 bg-slate-50/80 p-3"}>
+      {!embedded ? (
+        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-800">
+          <input
+            type="checkbox"
+            className="h-4 w-4 rounded border-slate-300"
+            checked={show}
+            onChange={(e) => setShow(e.target.checked)}
+          />
+          Mostrar tratamientos de la HCE
+        </label>
+      ) : null}
 
-      {show ? (
+      {visible ? (
         <ul className="mt-3 max-h-48 space-y-2 overflow-y-auto text-sm">
           {recent.map((row) => (
             <li

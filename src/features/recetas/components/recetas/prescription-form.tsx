@@ -1,6 +1,7 @@
 "use client";
 
 import type { PatientEhrTreatmentRow } from "@/features/pacientes/utils/patient-ehr-model";
+import { PrescriptionSinglePageForm } from "@/features/recetas/components/recetas/prescription-single-page-form";
 import { PrescriptionWizard } from "@/features/recetas/components/recetas/prescription-wizard";
 import type { PrescriptionWizardPatient } from "@/features/recetas/hooks/use-prescription-wizard";
 import type { CoverageRuleOverridesMap } from "@/features/recetas/utils/coverage-rules-admin";
@@ -34,10 +35,12 @@ interface Props {
   defaultProfessionalId?: string;
   initialMedications?: PrescriptionMedication[];
   onSuccess?: () => void;
+  onCancel?: () => void;
+  layout?: "single" | "wizard";
   coverageRuleOverrides?: CoverageRuleOverridesMap | null;
 }
 
-/** Wizard de 3 pasos: cobertura → medicamentos → emitir */
+/** Formulario de receta: una pantalla (HC) o wizard de 3 pasos (tab recetas). */
 export function PrescriptionForm({
   patientId,
   patient,
@@ -55,27 +58,33 @@ export function PrescriptionForm({
   defaultProfessionalId,
   initialMedications,
   onSuccess,
+  onCancel,
+  layout = "single",
   coverageRuleOverrides = null,
 }: Props) {
-  return (
-    <PrescriptionWizard
-      patientId={patientId}
-      patient={patient}
-      patientInsurance={patientInsurance}
-      patientAllergies={patientAllergies}
-      patientAddress={patientAddress}
-      patientPhone={patientPhone}
-      clinic={clinic}
-      clinicalRecordId={clinicalRecordId}
-      diagnosisDefault={diagnosisDefault}
-      cie10Default={cie10Default}
-      notesDefault={notesDefault}
-      hceTreatments={hceTreatments}
-      professionals={professionals}
-      defaultProfessionalId={defaultProfessionalId}
-      initialMedications={initialMedications}
-      onSuccess={onSuccess}
-      coverageRuleOverrides={coverageRuleOverrides}
-    />
-  );
+  const shared = {
+    patientId,
+    patient,
+    patientInsurance,
+    patientAllergies,
+    patientAddress,
+    patientPhone,
+    clinic,
+    clinicalRecordId,
+    diagnosisDefault,
+    cie10Default,
+    notesDefault,
+    hceTreatments,
+    professionals,
+    defaultProfessionalId,
+    initialMedications,
+    onSuccess,
+    coverageRuleOverrides,
+  };
+
+  if (layout === "wizard") {
+    return <PrescriptionWizard {...shared} />;
+  }
+
+  return <PrescriptionSinglePageForm {...shared} onCancel={onCancel} />;
 }

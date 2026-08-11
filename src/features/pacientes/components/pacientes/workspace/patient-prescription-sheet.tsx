@@ -47,7 +47,7 @@ export function PatientPrescriptionSheet({
   patient,
   patientInsurance,
   patientAllergies,
-  patientName,
+  patientName: _patientName,
   professionals,
   defaultProfessionalId,
   clinicalRecordId,
@@ -64,14 +64,9 @@ export function PatientPrescriptionSheet({
   coverageRuleOverrides = null,
 }: Props) {
   return (
-    <PatientWorkspaceOverlay
-      open={open}
-      title="Nueva receta"
-      subtitle={patientName}
-      onClose={onClose}
-      wide
-    >
+    <PatientWorkspaceOverlay open={open} title="Receta" onClose={onClose} wide>
       <PrescriptionForm
+        layout="single"
         patientId={patientId}
         patient={patient}
         patientInsurance={patientInsurance}
@@ -88,6 +83,7 @@ export function PatientPrescriptionSheet({
         defaultProfessionalId={defaultProfessionalId}
         initialMedications={initialMedications}
         onSuccess={onSaved}
+        onCancel={onClose}
         coverageRuleOverrides={coverageRuleOverrides}
       />
     </PatientWorkspaceOverlay>
