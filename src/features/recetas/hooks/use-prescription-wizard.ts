@@ -10,6 +10,7 @@ import { emptyPrescriptionMedication } from "@/features/recetas/components/recet
 import {
   buildPrescriptionContext,
   enrichDraftFromPatient,
+  resolveAuthoritativeCoverage,
   validatePrescriptionDraft,
 } from "@/features/recetas/engine/prescription-engine";
 import { resolveCoverageKind } from "@/features/recetas/engine/resolve-coverage-kind";
@@ -168,25 +169,59 @@ export function usePrescriptionWizard({
     [patientInsurance]
   );
 
+  const patientContext = useMemo(
+    () => ({
+      id: patientId,
+      insurance_provider: patient?.insurance_provider ?? null,
+      insurance_number: patient?.insurance_number ?? null,
+      insurance_plan: patient?.insurance_plan ?? null,
+      document_number: patient?.document_number,
+    }),
+    [
+      patientId,
+      patient?.insurance_provider,
+      patient?.insurance_number,
+      patient?.insurance_plan,
+      patient?.document_number,
+    ]
+  );
+
+  const patientInsuranceOnFile = patientContext.insurance_provider?.trim() || null;
+  const insuranceLocked = Boolean(patientInsuranceOnFile);
+  const effectivePatientInsurance = insuranceLocked
+    ? patientInsuranceOnFile ?? ""
+    : patientInsurance;
+
+  const authoritativeCoverage = useMemo(
+    () =>
+      resolveAuthoritativeCoverage(patientContext, {
+        patient_insurance: patientInsurance || null,
+        coverage_kind: coverageKind,
+        insurance_number: insuranceNumber || null,
+        insurance_plan: insurancePlan || null,
+      }),
+    [patientContext, patientInsurance, coverageKind, insuranceNumber, insurancePlan]
+  );
+
   const effectiveCoverageRule = useMemo(
     () =>
       getEffectiveCoverageRule(
-        coverageKind,
-        resolveCoverageRuleOverride(coverageKind, coverageRuleOverrides)
+        authoritativeCoverage.coverageKind,
+        resolveCoverageRuleOverride(authoritativeCoverage.coverageKind, coverageRuleOverrides)
       ),
-    [coverageKind, coverageRuleOverrides]
+    [authoritativeCoverage.coverageKind, coverageRuleOverrides]
   );
 
   const coverageInfoMessages = effectiveCoverageRule.infoMessages ?? [];
 
   const affiliateLabel = useMemo(
-    () => insuranceNumberLabel(patientInsurance || null),
-    [patientInsurance]
+    () => insuranceNumberLabel(effectivePatientInsurance || null),
+    [effectivePatientInsurance]
   );
 
   const planOptions = useMemo(
-    () => insurancePlanOptionsForProvider(patientInsurance, insurancePlan),
-    [patientInsurance, insurancePlan]
+    () => insurancePlanOptionsForProvider(effectivePatientInsurance, insurancePlan),
+    [effectivePatientInsurance, insurancePlan]
   );
 
   const selectedProfessional = useMemo(
@@ -223,10 +258,10 @@ export function usePrescriptionWizard({
         },
         {
           id: patientId,
-          insurance_provider: patient?.insurance_provider ?? patientInsurance,
-          insurance_number: patient?.insurance_number ?? insuranceNumber,
-          insurance_plan: patient?.insurance_plan ?? insurancePlan,
-          document_number: patient?.document_number,
+          insurance_provider: patientContext.insurance_provider,
+          insurance_number: patientContext.insurance_number,
+          insurance_plan: patientContext.insurance_plan,
+          document_number: patientContext.document_number,
         }
       ),
     [
@@ -243,10 +278,7 @@ export function usePrescriptionWizard({
       medications,
       notes,
       validityDays,
-      patient?.insurance_provider,
-      patient?.insurance_number,
-      patient?.insurance_plan,
-      patient?.document_number,
+      patientContext,
     ]
   );
 
@@ -257,24 +289,21 @@ export function usePrescriptionWizard({
       }
 
       const draft = buildDraftInput(mode === "issue");
-      const ruleOverride = resolveCoverageRuleOverride(coverageKind, coverageRuleOverrides);
+      const ruleOverride = resolveCoverageRuleOverride(
+        authoritativeCoverage.coverageKind,
+        coverageRuleOverrides
+      );
       const ctx = buildPrescriptionContext({
         clinicId: "local",
-        patient: {
-          id: patientId,
-          insurance_provider: patientInsurance,
-          insurance_number: insuranceNumber,
-          insurance_plan: insurancePlan,
-          document_number: patient?.document_number,
-        },
+        patient: patientContext,
         professional: {
           id: professionalId,
           license_national: selectedProfessional?.license_national ?? selectedProfessional?.license_number ?? null,
           license_provincial: selectedProfessional?.license_provincial ?? null,
           specialty_name: specialtyName(selectedProfessional?.specialties ?? null),
         },
-        patientInsurance,
-        coverageKind,
+        patientInsurance: authoritativeCoverage.patientInsurance,
+        coverageKind: authoritativeCoverage.coverageKind,
         clinicRuleOverrides: ruleOverride,
       });
 
@@ -303,13 +332,9 @@ export function usePrescriptionWizard({
     [
       professionalId,
       buildDraftInput,
-      patientId,
-      patientInsurance,
-      insuranceNumber,
-      insurancePlan,
-      patient?.document_number,
+      patientContext,
       selectedProfessional,
-      coverageKind,
+      authoritativeCoverage,
       coverageRuleOverrides,
     ]
   );
@@ -524,5 +549,8 @@ export function usePrescriptionWizard({
     coverageInfoMessages,
     effectiveMaxValidityDays: effectiveCoverageRule.maxValidityDays ?? 30,
     effectiveMedicationSearch: effectiveCoverageRule.medicationSearch,
+    insuranceLocked,
+    authoritativeCoverageKind: authoritativeCoverage.coverageKind,
+    effectivePatientInsurance,
   };
 }

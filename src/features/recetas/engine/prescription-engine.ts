@@ -174,11 +174,11 @@ export function getPrescriptionWarnings(
   return strategy.getWarnings(ctx, draft);
 }
 
-export function resolveAuthoritativeCoverageForIssue(
+export function resolveAuthoritativeCoverage(
   patient: PrescriptionPatientContext,
   draft: Pick<
     PrescriptionDraftInput,
-    "insurance_number" | "insurance_plan"
+    "patient_insurance" | "coverage_kind" | "insurance_number" | "insurance_plan"
   >
 ): {
   patientInsurance: string | null;
@@ -186,8 +186,12 @@ export function resolveAuthoritativeCoverageForIssue(
   insuranceNumber: string | null;
   insurancePlan: string | null;
 } {
-  const patientInsurance = patient.insurance_provider?.trim() || null;
-  const coverageKind = resolveCoverageKind(patientInsurance);
+  const patientInsuranceOnFile = patient.insurance_provider?.trim() || null;
+  const patientInsurance =
+    patientInsuranceOnFile ?? draft.patient_insurance?.trim() ?? null;
+  const coverageKind: CoverageKind = patientInsuranceOnFile
+    ? resolveCoverageKind(patientInsuranceOnFile)
+    : draft.coverage_kind ?? resolveCoverageKind(patientInsurance);
 
   return {
     patientInsurance,
@@ -198,20 +202,33 @@ export function resolveAuthoritativeCoverageForIssue(
   };
 }
 
+export function resolveAuthoritativeCoverageForIssue(
+  patient: PrescriptionPatientContext,
+  draft: Pick<
+    PrescriptionDraftInput,
+    "patient_insurance" | "coverage_kind" | "insurance_number" | "insurance_plan"
+  >
+): {
+  patientInsurance: string | null;
+  coverageKind: CoverageKind;
+  insuranceNumber: string | null;
+  insurancePlan: string | null;
+} {
+  return resolveAuthoritativeCoverage(patient, draft);
+}
+
 export function enrichDraftFromPatient(
   draft: PrescriptionDraftInput,
   patient: PrescriptionPatientContext
 ): PrescriptionDraftInput {
-  const insurance = draft.patient_insurance?.trim() || patient.insurance_provider?.trim() || null;
-  const coverageKind = draft.coverage_kind ?? resolveCoverageKind(insurance);
+  const authoritative = resolveAuthoritativeCoverage(patient, draft);
 
   return {
     ...draft,
-    patient_insurance: insurance,
-    coverage_kind: coverageKind,
-    insurance_number:
-      draft.insurance_number?.trim() || patient.insurance_number?.trim() || null,
-    insurance_plan: draft.insurance_plan?.trim() || patient.insurance_plan?.trim() || null,
+    patient_insurance: authoritative.patientInsurance,
+    coverage_kind: authoritative.coverageKind,
+    insurance_number: authoritative.insuranceNumber,
+    insurance_plan: authoritative.insurancePlan,
   };
 }
 

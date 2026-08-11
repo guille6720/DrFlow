@@ -79,6 +79,33 @@ describe("validatePrescriptionDraft", () => {
     expect(enriched.insurance_number).toBe("123456789");
   });
 
+  it("ignores tampered coverage_kind when patient record has insurance on file", () => {
+    const enriched = enrichDraftFromPatient(
+      {
+        ...baseDraft,
+        patient_insurance: "Particular",
+        coverage_kind: "PARTICULAR",
+        insurance_number: null,
+      },
+      patient
+    );
+    expect(enriched.coverage_kind).toBe("PAMI");
+    expect(enriched.patient_insurance).toBe("PAMI");
+  });
+
+  it("allows form coverage when patient has no insurance on file", () => {
+    const enriched = enrichDraftFromPatient(
+      {
+        ...baseDraft,
+        patient_insurance: "IOMA",
+        coverage_kind: "OBRAS_SOCIALES",
+      },
+      { ...patient, insurance_provider: null, insurance_number: null, insurance_plan: null }
+    );
+    expect(enriched.coverage_kind).toBe("OBRAS_SOCIALES");
+    expect(enriched.patient_insurance).toBe("IOMA");
+  });
+
   it("requires PAMI beneficio on issue", () => {
     const ctx = buildPrescriptionContext({
       clinicId: "clinic-1",

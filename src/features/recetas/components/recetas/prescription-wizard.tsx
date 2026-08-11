@@ -95,7 +95,6 @@ export function PrescriptionWizard({
     setProfessionalId,
     prescriptionType,
     setPrescriptionType,
-    patientInsurance: insurance,
     setPatientInsurance,
     insuranceNumber,
     setInsuranceNumber,
@@ -119,7 +118,6 @@ export function PrescriptionWizard({
     confirmIssue,
     setConfirmIssue,
     handleSubmit,
-    coverageKind,
     affiliateLabel,
     planOptions,
     selectedProfessional,
@@ -133,6 +131,9 @@ export function PrescriptionWizard({
     reuseNotice,
     coverageInfoMessages,
     effectiveMedicationSearch,
+    insuranceLocked,
+    authoritativeCoverageKind,
+    effectivePatientInsurance,
   } = wizard;
 
   const handlePathologySelect = useCallback(
@@ -155,7 +156,7 @@ export function PrescriptionWizard({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [step, loading, handleSubmit]);
 
-  const coverageOptions = coverageOptionsForClinic(null, insurance);
+  const coverageOptions = coverageOptionsForClinic(null, effectivePatientInsurance);
   const draftPreview = buildDraftInput(true);
   const patientDisplay = patient
     ? `${patient.last_name}, ${patient.first_name}`
@@ -204,9 +205,9 @@ export function PrescriptionWizard({
               <p className="font-semibold text-slate-900">{patientDisplay}</p>
               <p className="mt-0.5 text-sm text-slate-600">
                 DNI {patient?.document_number ?? "—"}
-                {insurance ? ` · ${insurance}` : ""}
+                {effectivePatientInsurance ? ` · ${effectivePatientInsurance}` : ""}
               </p>
-              {isPamiCoverage(insurance) ? (
+              {isPamiCoverage(effectivePatientInsurance) ? (
                 <p className="mt-1 text-xs font-medium text-teal-800">Cobertura PAMI detectada</p>
               ) : null}
             </div>
@@ -249,15 +250,21 @@ export function PrescriptionWizard({
             />
             <Select
               label="Cobertura"
-              value={insurance}
+              value={effectivePatientInsurance}
               onChange={(e) => setPatientInsurance(e.target.value)}
               options={coverageOptions.map((c) => ({ value: c, label: c }))}
+              disabled={insuranceLocked}
             />
+            {insuranceLocked ? (
+              <p className="sm:col-span-2 text-xs text-slate-600">
+                La cobertura se toma del legajo del paciente y no puede modificarse en la receta.
+              </p>
+            ) : null}
             <Input
               label={affiliateLabel}
               value={insuranceNumber}
               onChange={(e) => setInsuranceNumber(e.target.value)}
-              placeholder={coverageKind === "PAMI" ? "N° beneficio" : "N° afiliado"}
+              placeholder={authoritativeCoverageKind === "PAMI" ? "N° beneficio" : "N° afiliado"}
             />
             {planOptions.length > 0 ? (
               <Select
@@ -325,8 +332,9 @@ export function PrescriptionWizard({
                 {patientDisplay ?? patientId}
               </li>
               <li>
-                <span className="text-slate-500">Cobertura:</span> {insurance || "Particular"} (
-                {coverageKind})
+                <span className="text-slate-500">Cobertura:</span>{" "}
+                {effectivePatientInsurance || "Particular"} (
+                {authoritativeCoverageKind})
               </li>
               {insuranceNumber ? (
                 <li>

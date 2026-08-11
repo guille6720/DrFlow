@@ -4,6 +4,7 @@ import { prescriptionDraftSchema, prescriptionMedicationSchema } from "@/core/va
 
 import {
   buildPrescriptionContext,
+  enrichDraftFromPatient,
   resolveAuthoritativeCoverageForIssue,
   validatePrescriptionDraft,
 } from "@/features/recetas/engine/prescription-engine";
@@ -176,6 +177,8 @@ describe("prescription engine QA matrix", () => {
         insurance_plan: null,
       };
       const authoritative = resolveAuthoritativeCoverageForIssue(patient, {
+        patient_insurance: "Particular",
+        coverage_kind: "PARTICULAR",
         insurance_number: null,
         insurance_plan: null,
       });
@@ -196,6 +199,46 @@ describe("prescription engine QA matrix", () => {
       };
       const result = validatePrescriptionDraft(ctx, tamperedDraft, "issue");
       expect(result.valid).toBe(false);
+    });
+
+    it("normalizes tampered PARTICULAR to PAMI on draft save when patient record is PAMI", () => {
+      const patient = {
+        id: baseDraft.patient_id,
+        insurance_provider: "PAMI",
+        insurance_number: null,
+        insurance_plan: null,
+      };
+      const authoritative = resolveAuthoritativeCoverageForIssue(patient, {
+        patient_insurance: "Particular",
+        coverage_kind: "PARTICULAR",
+        insurance_number: null,
+        insurance_plan: null,
+      });
+      const ctx = buildPrescriptionContext({
+        clinicId: "clinic-1",
+        patient,
+        professional,
+        patientInsurance: authoritative.patientInsurance,
+        coverageKind: authoritative.coverageKind,
+      });
+      const enriched = enrichDraftFromPatient(
+        {
+          ...baseDraft,
+          patient_insurance: "Particular",
+          coverage_kind: "PARTICULAR",
+          insurance_number: null,
+        },
+        patient
+      );
+      expect(enriched.coverage_kind).toBe("PAMI");
+      expect(enriched.patient_insurance).toBe("PAMI");
+
+      const draftResult = validatePrescriptionDraft(ctx, enriched, "draft");
+      expect(draftResult.valid).toBe(true);
+
+      const issueResult = validatePrescriptionDraft(ctx, enriched, "issue");
+      expect(issueResult.valid).toBe(false);
+      expect(issueResult.issues.some((i) => i.field === "insurance_number")).toBe(true);
     });
   });
 

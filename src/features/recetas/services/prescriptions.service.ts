@@ -285,6 +285,8 @@ export async function issuePrescriptionRecord(
   if (!professionalResult.ok) return { ok: false, error: professionalResult.error };
 
   const authoritative = resolveAuthoritativeCoverageForIssue(patientResult.data, {
+    patient_insurance: draft.patient_insurance,
+    coverage_kind: draft.coverage_kind,
     insurance_number: draft.insurance_number,
     insurance_plan: draft.insurance_plan,
   });
