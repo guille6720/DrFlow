@@ -34,7 +34,7 @@
 ## Fase 3 — Compliance
 
 - [ ] Consentimiento informado digital
-- [ ] Exportación completa de datos (Habeas Data)
+- [x] Exportación completa de datos (Habeas Data) — bundle JSON por paciente y por clínica
 - [ ] Retención y políticas de eliminación
 - [ ] Logs de acceso a datos sensibles
 

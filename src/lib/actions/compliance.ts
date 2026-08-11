@@ -1,6 +1,11 @@
 "use server";
 
 import { getActiveClinic, getActiveClinicId, getSession, logAudit } from "@/core/auth/session.server";
+import {
+  buildPatientHabeasDataPayload,
+  fetchClinicHabeasDataPayload,
+  fetchPatientHabeasDataSections,
+} from "@/core/compliance/habeas-data-export";
 import { applyClinicLegalAcceptanceInternal } from "@/core/legal/apply-clinic-legal-acceptance";
 import {
   LEGAL_PRIVACY_VERSION,
@@ -67,51 +72,49 @@ export async function exportPatientArcoBundle(patientId: string) {
 
   if (!patient) return { error: "Paciente no encontrado." };
 
-  const [{ data: records }, { data: appointments }, { data: consents }, { data: attachments }] =
-    await Promise.all([
-      supabase
-        .from("clinical_records")
-        .select("id, created_at, diagnosis, chief_complaint, evolution, indications")
-        .eq("patient_id", patientParsed.data)
-        .eq("clinic_id", clinicId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("appointments")
-        .select("id, start_at, status, notes, booking_source")
-        .eq("patient_id", patientParsed.data)
-        .eq("clinic_id", clinicId)
-        .order("start_at", { ascending: false }),
-      supabase
-        .from("consent_records")
-        .select("consent_type, granted, granted_at, document_version, created_at")
-        .eq("patient_id", patientParsed.data)
-        .eq("clinic_id", clinicId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("patient_attachments")
-        .select("id, file_name, category, created_at, file_size")
-        .eq("patient_id", patientParsed.data)
-        .eq("clinic_id", clinicId),
-    ]);
+  const sections = await fetchPatientHabeasDataSections(supabase, clinicId, patientParsed.data);
+  const exportedAt = new Date().toISOString();
+  const payload = buildPatientHabeasDataPayload(patient, sections, exportedAt);
 
   await logAudit({
     clinicId,
     entityType: "patient",
     entityId: patientParsed.data,
     action: "export",
-    metadata: { reason: "arco_export_bundle" },
+    metadata: {
+      reason: "habeas_data_patient_export",
+      export_type: payload.export_type,
+      export_version: payload.export_version,
+      summary: payload.summary,
+    },
   });
 
-  const payload = {
-    exported_at: new Date().toISOString(),
-    legal_basis:
-      "Exportación a pedido del responsable del tratamiento (consultorio) para ejercicio de derechos ARCO del titular — Ley 25.326.",
-    patient,
-    clinical_records: records ?? [],
-    appointments: appointments ?? [],
-    consent_records: consents ?? [],
-    attachments_metadata: attachments ?? [],
-  };
+  return { json: JSON.stringify(payload, null, 2) };
+}
+
+export async function exportClinicHabeasDataBundle() {
+  const clinicId = await getActiveClinicId();
+  const { role, isSuperadmin } = await getActiveClinic();
+
+  if (!clinicId || !hasPermission(role, "manageSettings", isSuperadmin)) {
+    return { error: "Sin permisos para exportar datos de la clínica." };
+  }
+
+  const supabase = await createClient();
+  const payload = await fetchClinicHabeasDataPayload(supabase, clinicId);
+
+  await logAudit({
+    clinicId,
+    entityType: "clinic",
+    entityId: clinicId,
+    action: "export",
+    metadata: {
+      reason: "habeas_data_clinic_export",
+      export_type: payload.export_type,
+      export_version: payload.export_version,
+      summary: payload.summary,
+    },
+  });
 
   return { json: JSON.stringify(payload, null, 2) };
 }

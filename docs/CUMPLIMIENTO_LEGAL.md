@@ -29,7 +29,7 @@ Este documento resume el marco aplicable, el gap analysis y lo implementado en p
 | Consentimiento turno web | No | Checkbox + RPC `record_patient_data_consent` |
 | Aceptación alta consultorio | No | Checkbox registro/onboarding + columnas `clinics.legal_*` |
 | Registro consentimientos | Tabla vacía | Inserts en `consent_records` |
-| Export ARCO | Parcial (CSV datos) | JSON bundle por paciente + auditoría |
+| Export Habeas Data | Parcial | JSON completo por paciente + export clínica (Configuración) |
 | Panel cumplimiento | No | Configuración → Cumplimiento legal |
 | Receta REFEPS | Disclaimer | Sin cambio (correcto) |
 | Consentimiento informado acto médico | Paper / criterio médico | **Pendiente** flujo digital dedicado |

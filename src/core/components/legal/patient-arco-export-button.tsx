@@ -29,7 +29,7 @@ export function PatientArcoExportButton({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `drflow-arco-${fileLabel.replace(/\s+/g, "-")}.json`;
+    a.download = `drflow-habeas-${fileLabel.replace(/\s+/g, "-")}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -38,7 +38,7 @@ export function PatientArcoExportButton({
     <div>
       <Button type="button" variant="outline" size="sm" loading={loading} onClick={() => void handleExport()}>
         <Download className="h-4 w-4" />
-        Exportar datos (ARCO)
+        Exportar Habeas Data (JSON)
       </Button>
       {error ? <p className="mt-1 text-xs text-red-400">{error}</p> : null}
     </div>
