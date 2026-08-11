@@ -5,16 +5,19 @@ import Link from "next/link";
 import { ClinicHabeasExportButton } from "@/core/components/legal/clinic-habeas-export-button";
 import { CLINICAL_RECORD_RETENTION_YEARS, LEGAL_PRIVACY_VERSION, LEGAL_TERMS_VERSION } from "@/core/legal/documents";
 
+import { RetentionPolicyPanel } from "@/features/configuracion/components/configuracion/retention-policy-panel";
 import { SensitiveAccessLogPanel } from "@/features/configuracion/components/configuracion/sensitive-access-log-panel";
+import { loadClinicRetentionSummary } from "@/features/configuracion/server/load-clinic-retention-summary";
 import { loadClinicSensitiveAccessLogs } from "@/features/configuracion/server/load-clinic-sensitive-access-logs";
 
 import { Card } from "@/components/ui/card";
 import { getClinicComplianceSummary } from "@/lib/actions/compliance";
 
 export async function ComplianceLegalPanel() {
-  const [summary, accessLogs] = await Promise.all([
+  const [summary, accessLogs, retentionSummary] = await Promise.all([
     getClinicComplianceSummary(),
     loadClinicSensitiveAccessLogs(),
+    loadClinicRetentionSummary(),
   ]);
   if ("error" in summary && summary.error) {
     return null;
@@ -92,12 +95,32 @@ export async function ComplianceLegalPanel() {
             exportaciones (ver panel abajo).
           </li>
           <li>
+            Baja de pacientes: lógica (no borra HC). Política de retención configurable abajo.
+          </li>
+          <li>
             Exportación Habeas Data: desde la ficha de cada paciente (JSON completo) o export de
             clínica abajo.
           </li>
         </ul>
 
         <ClinicHabeasExportButton clinicSlug={clinic?.name ?? null} />
+
+        {retentionSummary.data ? (
+          <RetentionPolicyPanel summary={retentionSummary.data} error={retentionSummary.error} />
+        ) : (
+          <RetentionPolicyPanel
+            summary={{
+              retentionYears: CLINICAL_RECORD_RETENTION_YEARS,
+              activePatients: 0,
+              inactivePatients: 0,
+              clinicalRecordCount: 0,
+              recordsWithinRetention: 0,
+              oldestRecordAt: null,
+              newestRecordAt: null,
+            }}
+            error={retentionSummary.error}
+          />
+        )}
 
         <SensitiveAccessLogPanel rows={accessLogs.rows} error={accessLogs.error} />
 

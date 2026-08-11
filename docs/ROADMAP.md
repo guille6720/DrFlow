@@ -35,7 +35,7 @@
 
 - [x] Consentimiento informado digital — registro por consulta + PDF (Ley 26.529)
 - [x] Exportación completa de datos (Habeas Data) — bundle JSON por paciente y por clínica
-- [ ] Retención y políticas de eliminación
+- [x] Retención y políticas de eliminación — política configurable, panel cumplimiento, baja lógica trazable
 - [x] Logs de acceso a datos sensibles — `recordSensitiveAccess` en fichas/HC + panel Configuración
 
 ## Fase 4 — Producto avanzado

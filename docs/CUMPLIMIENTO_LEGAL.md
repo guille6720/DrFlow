@@ -15,7 +15,7 @@ Este documento resume el marco aplicable, el gap analysis y lo implementado en p
 | **Ley 26.529** (Derechos del paciente) | Confidencialidad, acceso a HC, consentimiento informado en actos médicos. |
 | **Ley 25.649** (Prescripción genérica) | Recetas con nombre genérico; módulo recetas locales con disclaimer explícito. |
 | **REFEPS / RENaPDiS** | Receta electrónica nacional — **no implementada**; aviso en UI y PDF. |
-| **Retención HC** | Práctica habitual ≥ 10 años; constante `CLINICAL_RECORD_RETENTION_YEARS`. |
+| **Retención HC** | Práctica habitual ≥ 10 años | Años configurables (5–30) + panel cumplimiento + baja lógica trazable |
 
 ---
 
@@ -31,6 +31,7 @@ Este documento resume el marco aplicable, el gap analysis y lo implementado en p
 | Registro consentimientos | Tabla vacía | Inserts en `consent_records` |
 | Export Habeas Data | Parcial | JSON completo por paciente + export clínica (Configuración) |
 | Logs acceso datos sensibles | No | `recordSensitiveAccess` — view en fichas, HC, docs admin; panel Configuración |
+| Retención / baja paciente | Solo copy 10 años | Política configurable, estadísticas, baja lógica con ack + `deactivated_at` |
 | Panel cumplimiento | No | Configuración → Cumplimiento legal + accesos sensibles |
 | Receta REFEPS | Disclaimer | Sin cambio (correcto) |
 | Consentimiento informado acto médico | Paper / criterio médico | Flujo digital en consulta + PDF + `consent_records` |
@@ -58,6 +59,9 @@ Este documento resume el marco aplicable, el gap analysis y lo implementado en p
 - `src/lib/actions/informed-consent.ts` — registro vinculado a consulta clínica
 - `src/core/components/legal/informed-consent-panel.tsx` — UI en ficha/consulta
 - `src/core/components/legal/export-informed-consent-pdf-button.tsx`
+- `src/core/compliance/data-retention-policy.ts` — matriz de retención/eliminación
+- `src/lib/actions/data-retention.ts` — actualizar años de retención, evaluación de baja
+- `src/features/configuracion/components/configuracion/retention-policy-panel.tsx`
 - `src/core/security/sensitive-access-audit.ts` — registro de lecturas (`view`) con dedupe 15 min
 - `src/features/configuracion/server/load-clinic-sensitive-access-logs.ts`
 - `src/features/configuracion/components/configuracion/sensitive-access-log-panel.tsx`
@@ -112,6 +116,7 @@ Este documento resume el marco aplicable, el gap analysis y lo implementado en p
 - [ ] Abrir ficha paciente (tab clínico) → `audit_logs` view con `access_kind`
 - [ ] Abrir historia clínica → `audit_logs` view `clinical_record_detail`
 - [ ] Abrir consulta en ficha → registrar consentimiento informado → fila en `consent_records`
-- [ ] Descargar PDF del consentimiento informado registrado
+- [ ] Configuración → retención: cambiar años (5–30) y ver estadísticas
+- [ ] Dar de baja paciente con HC → exige checkbox + conserva consultas
 - [ ] Panel Configuración muestra versiones y conteo consentimientos
 - [ ] Links portal → aviso-paciente y privacidad

@@ -521,7 +521,7 @@ export async function createAvailabilityRule(formData: FormData) {
 
 
 
-export async function deactivatePatient(id: string) {
+export async function deactivatePatient(id: string, formData?: FormData) {
 
   const clinicId = await getActiveClinicId();
 
@@ -533,43 +533,56 @@ export async function deactivatePatient(id: string) {
 
   }
 
-
+  const user = await getSession();
+  if (!user) return { error: "Sin sesión" };
 
   const idParsed = parseEntityId(id, "Paciente");
 
   if (!idParsed.ok) return { error: idParsed.error };
 
-
+  const retentionAcknowledged = formData?.get("retention_acknowledged") === "true";
 
   const supabase = await createClient();
 
-
-
-  const { data: patient } = await supabase
-
-    .from("patients")
-
-    .select("id, first_name, last_name, is_active")
-
-    .eq("id", idParsed.data)
-
-    .eq("clinic_id", clinicId)
-
-    .single();
-
-
+  const [{ data: clinic }, { data: patient }, { data: records }] = await Promise.all([
+    supabase
+      .from("clinics")
+      .select("clinical_record_retention_years")
+      .eq("id", clinicId)
+      .single(),
+    supabase
+      .from("patients")
+      .select("id, first_name, last_name, is_active")
+      .eq("id", idParsed.data)
+      .eq("clinic_id", clinicId)
+      .single(),
+    supabase
+      .from("clinical_records")
+      .select("created_at")
+      .eq("clinic_id", clinicId)
+      .eq("patient_id", idParsed.data),
+  ]);
 
   if (!patient) return { error: "Paciente no encontrado" };
 
   if (!patient.is_active) return { error: "El paciente ya fue eliminado" };
 
-
+  const recordCount = records?.length ?? 0;
+  if (recordCount > 0 && !retentionAcknowledged) {
+    return {
+      error: "Debés confirmar que comprendés la política de retención antes de dar de baja al paciente.",
+    };
+  }
 
   const { error } = await supabase
 
     .from("patients")
 
-    .update({ is_active: false })
+    .update({
+      is_active: false,
+      deactivated_at: new Date().toISOString(),
+      deactivated_by: user.id,
+    })
 
     .eq("id", idParsed.data)
 
@@ -577,15 +590,19 @@ export async function deactivatePatient(id: string) {
 
   if (error) return { error: error.message };
 
-
-
   await logAudit({
 
     clinicId,
 
+    module: "compliance",
+
+    what: "Baja lógica de paciente (retención clínica)",
+
     entityType: "patient",
 
     entityId: idParsed.data,
+
+    patientId: idParsed.data,
 
     action: "delete",
 
@@ -594,6 +611,12 @@ export async function deactivatePatient(id: string) {
       name: `${patient.first_name} ${patient.last_name}`,
 
       softDelete: true,
+
+      clinicalRecordCount: recordCount,
+
+      retentionYears: clinic?.clinical_record_retention_years ?? null,
+
+      retentionAcknowledged,
 
     },
 
