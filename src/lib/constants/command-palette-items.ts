@@ -170,6 +170,14 @@ export const COMMAND_PALETTE_NAV: CommandPaletteItemDef[] = [
     permission: "viewReports",
   },
   {
+    id: "nav-reportes-bi",
+    label: "BI especialidad / cobertura",
+    href: "/reportes/bi",
+    group: "navegacion",
+    icon: BarChart3,
+    permission: "viewReports",
+  },
+  {
     id: "nav-config",
     label: "Configuración",
     href: "/configuracion",

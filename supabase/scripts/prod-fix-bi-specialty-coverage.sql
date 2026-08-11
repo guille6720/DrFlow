@@ -1,0 +1,2 @@
+-- Production fix: Fase 4D BI (migration 105). Safe to re-run.
+-- Run full supabase/migrations/105_bi_specialty_coverage.sql in SQL editor.

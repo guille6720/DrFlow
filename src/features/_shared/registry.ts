@@ -177,7 +177,7 @@ export const FEATURE_MODULES: FeatureModuleDef[] = [
   {
     id: "reportes",
     label: "Reportes",
-    routes: ["/reportes"],
+    routes: ["/reportes", "/reportes/bi"],
     status: "ready",
     description: "Informes operativos del consultorio.",
   },

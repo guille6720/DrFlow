@@ -43,7 +43,7 @@
 - [x] **4A Multi-sede avanzada** — CRUD sedes, filtros agenda, reglas por sede, wizard (ver [MULTI-SEDE.md](./MULTI-SEDE.md))
 - [x] **4B Facturación y liquidación obras sociales** — tarifas OS, lotes desde atenciones, CSV, estados (ver [OS-LIQUIDACION.md](./OS-LIQUIDACION.md))
 - [x] **4C API pública** — claves Bearer, `/api/v1` turnos/profesionales/disponibilidad (ver [PUBLIC-API.md](./PUBLIC-API.md))
-- [ ] 4D BI por especialidad / cobertura
+- [x] **4D BI por especialidad / cobertura** — `/reportes/bi`, RPC `summarize_clinic_bi`, CSV (ver [BI-REPORTES.md](./BI-REPORTES.md))
 
 ## Deuda técnica conocida
 

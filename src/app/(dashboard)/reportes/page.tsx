@@ -1,5 +1,6 @@
 import { endOfMonth, format, startOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
@@ -10,6 +11,7 @@ import { createClient } from "@/core/supabase/server";
 import { AsyncReportButton } from "@/features/dashboard/components/reportes/async-report-button";
 import { ExportCsvButton } from "@/features/dashboard/components/reportes/export-csv-button";
 
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { loadMonthlyClinicReport } from "@/lib/server/load-monthly-clinic-report";
@@ -60,7 +62,12 @@ export default async function ReportesPage() {
       />
 
       <div className="space-y-6 p-4 sm:p-6">
-        <div className="flex justify-end">
+        <div className="flex flex-wrap justify-end gap-2">
+          <Link href="/reportes/bi">
+            <Button size="sm" variant="outline">
+              BI especialidad / cobertura
+            </Button>
+          </Link>
           <ExportCsvButton rows={report.csvRows} filename={`reporte-${format(now, "yyyy-MM")}.csv`} />
         </div>
 
