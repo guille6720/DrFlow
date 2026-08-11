@@ -44,8 +44,7 @@ DrFlow usa una estrategia en **tres capas** (actualizado 2026-08-10):
 | Recurso | TTL | Tag | Consumidores actualizados |
 |---------|-----|-----|---------------------------|
 | Professionals (agenda) | 300 s | `clinic-{id}-professionals` | `/agenda` |
-| Professionals (forms) | 300 s | mismo tag | workspace paciente, `/historias/nueva` |
-| Professionals (recetas) | 300 s | mismo tag | `load-recetas-page.ts` |
+| Professionals (forms) | 300 s | mismo tag | workspace paciente, `/historias/nueva`, `/plantillas-recetas` |
 | Professionals (settings) | 300 s | mismo tag | `/configuracion` (incluye inactivos) |
 | Locations | 600 s | `clinic-{id}-locations` | `/agenda` |
 | Specialties | 600 s | `clinic-{id}-specialties` | `/agenda` |
@@ -95,7 +94,6 @@ src/lib/server/cached-reference-data.ts   — pathology_drugs cacheado
 - `src/app/(dashboard)/historias/nueva/page.tsx`
 - `src/app/(dashboard)/historias/[id]/editar/page.tsx`
 - `src/features/pacientes/server/load-patient-workspace-page.ts`
-- `src/features/recetas/server/load-recetas-page.ts`
 - `src/lib/actions/pharmacology.ts`
 - `src/app/api/pharmacology/route.ts`
 - `src/lib/actions/clinic-plugins.ts`

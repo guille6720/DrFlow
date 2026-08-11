@@ -11,7 +11,6 @@ export { PrescriptionForm } from "@/features/recetas/components/recetas/prescrip
 export { PrescriptionTemplatePicker } from "@/features/recetas/components/recetas/prescription-template-picker";
 export { PrescriptionTemplatesManager } from "@/features/recetas/components/recetas/prescription-templates-manager";
 export { PrescriptionWizard } from "@/features/recetas/components/recetas/prescription-wizard";
-export { PrescriptionsOrdersHub } from "@/features/recetas/components/recetas/prescriptions-orders-hub";
 export {
   buildPrescriptionContext,
   enrichDraftFromPatient,

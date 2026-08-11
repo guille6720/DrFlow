@@ -11,6 +11,7 @@ import type { PatientWorkspaceProfessional } from "@/features/pacientes/server/l
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { markPrescriptionDispensed } from "@/features/recetas/actions/prescriptions";
 import { PrescriptionList } from "@/features/recetas/components/recetas/prescription-list";
+import { SharePrescriptionButtons } from "@/features/recetas/components/recetas/share-prescription-buttons";
 import type { CoverageRuleOverridesMap } from "@/features/recetas/utils/coverage-rules-admin";
 import { storePrescriptionReusePrefill } from "@/features/recetas/utils/prescription-reuse-prefill";
 
@@ -28,6 +29,8 @@ type Props = {
     birth_date?: string | null;
     insurance_provider?: string | null;
     insurance_number?: string | null;
+    phone?: string | null;
+    email?: string | null;
   };
   clinic: {
     name: string;
@@ -105,6 +108,11 @@ export function PatientWorkspacePrescriptionsPanel({
         actingId={actingId}
         onMarkDispensed={canIssue ? handleMarkDispensed : undefined}
         onReuseMedications={canIssue ? handleReuseMedications : undefined}
+        shareSlot={(rx) =>
+          rx.status === "issued" ? (
+            <SharePrescriptionButtons prescription={rx} patient={patient} />
+          ) : null
+        }
         coverageRuleOverrides={coverageRuleOverrides}
         refepsEnabled={clinic.refepsEnabled ?? false}
       />

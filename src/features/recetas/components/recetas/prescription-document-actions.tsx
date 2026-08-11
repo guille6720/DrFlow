@@ -2,6 +2,7 @@
 
 import { Eye, Printer } from "lucide-react";
 
+import { ExportPrescriptionPdfButton } from "@/features/recetas/components/recetas/export-prescription-pdf-button";
 import {
   type PrescriptionDocumentData,
   printPrescriptionDocument,
@@ -40,6 +41,7 @@ export function PrescriptionDocumentActions({ data, onPreview, compact = false }
         <Printer className="h-4 w-4" aria-hidden />
         Imprimir
       </button>
+      <ExportPrescriptionPdfButton data={data} compact={compact} />
     </div>
   );
 }

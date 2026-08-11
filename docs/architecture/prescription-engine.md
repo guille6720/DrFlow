@@ -27,7 +27,7 @@ UI → Actions → prescriptions.service → PrescriptionEngine → CoverageStra
 | 0–1 | Engine, migration 096, strategies, idempotency |
 | 2 | Wizard UI 3 pasos |
 | 3 | Plantillas CRUD, reuse flow, historial |
-| 4 | PDF cobertura, QR local, WhatsApp confirm |
+| 4 | PDF cobertura, QR local, WhatsApp confirm, export PDF unificado con print |
 | 5 | Panel config PAMI (`coverage_rules`) |
 | 6 | QA matrix, security hardening, performance review |
 
@@ -61,7 +61,7 @@ Vademécum search retains existing GIN/trigram indexes (migration 088). No addit
 
 ### QA matrix
 
-Automated: `tests/prescription-engine-qa-matrix.test.ts`, `prescription-engine.test.ts`, `prescription-idempotency.test.ts`, `prescription-coverage-rules.test.ts`, `prescription-document.test.ts`.
+Automated: `tests/prescription-engine-qa-matrix.test.ts`, `prescription-engine.test.ts`, `prescription-idempotency.test.ts`, `prescription-coverage-rules.test.ts`, `prescription-document.test.ts`, `export-prescription-pdf.test.ts`.
 
 Manual checklist: `src/core/qa/checklist-data.ts` → section **Recetas y órdenes**.
 
@@ -69,7 +69,7 @@ Module export: `docs/qa-modules/recetas.json`.
 
 ## Out of scope
 
-- REFEPS integration
+- Homologación MSN / contrato oficial REFEPS (adapter implementado en Fase 2E — ver [REFEPS-INTEGRATION.md](../REFEPS-INTEGRATION.md))
 - Normalized `prescription_items` table
 - Pharmacy dispensation workflow UI
 - Merging with `medical_orders`

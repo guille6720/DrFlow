@@ -15,7 +15,7 @@
     "name": "Motor de recetas y órdenes",
     "status": "ready",
     "summary": {
-      "what": "Motor único configurable (PAMI/OS/prepaga/particular), wizard, plantillas, PDF/QR local, idempotencia.",
+      "what": "Motor único configurable (PAMI/OS/prepaga/particular), wizard, plantillas, PDF/QR unificado con print, WhatsApp share, idempotencia.",
       "inputs": "FormData receta, patientId, professionalId, coverage_rules overrides.",
       "outputs": "prescription_drafts issued, documentData, prescription_events audit."
     },

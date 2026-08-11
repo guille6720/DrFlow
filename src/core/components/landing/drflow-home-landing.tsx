@@ -162,7 +162,7 @@ const FAQ = [
   },
   {
     q: "¿Incluye receta electrónica REFEPS?",
-    a: "DrFlow emite recetas locales con disclaimer Ley 25.649. REFEPS nacional es roadmap separado.",
+    a: "DrFlow emite recetas locales Ley 25.649. Incluye adapter REFEPS/RENaPDiS (sandbox o API); la homologación MSN del consultorio sigue siendo requisito legal.",
   },
   {
     q: "¿Dónde obtengo soporte técnico?",
