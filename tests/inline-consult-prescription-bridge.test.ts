@@ -37,7 +37,7 @@ describe("inline-consult-prescription-bridge", () => {
           quantity: 1,
           posology: "",
           vademecum_code: "42415",
-          search_source: "pami",
+          search_source: "catalog",
         },
       ],
       savedAt: "2026-08-11T12:00:00.000Z",

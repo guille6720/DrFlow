@@ -5,16 +5,15 @@ import {
   vademecumToPrescription,
 } from "@/features/recetas/components/recetas/vademecum-to-prescription";
 
-import type { PamiVademecumResult } from "@/types/pharmacology";
-
-const sample: PamiVademecumResult = {
+const sample = {
   id: "1",
-  alfabeta_id: 42415,
+  catalog_source: "alfabeta" as const,
+  product_code: "42415",
   active_ingredient: "Rosuvastatina",
   brand_name: "ROSUVASTATINA VANNIER",
   presentation: "40 mg comp.x 30",
   laboratory: "Vannier",
-  pvp_amount: 1000,
+  reference_price: 1000,
   coverage_pct: 50,
   affiliate_amount: 500,
   price_list_date: "2026-07-01",
@@ -30,7 +29,7 @@ describe("vademecumToPrescription", () => {
     expect(med.quantity).toBe(1);
     expect(med.route).toBe("oral");
     expect(med.vademecum_code).toBe("42415");
-    expect(med.search_source).toBe("pami");
+    expect(med.search_source).toBe("catalog");
   });
 
   it("formats drapp-style label", () => {

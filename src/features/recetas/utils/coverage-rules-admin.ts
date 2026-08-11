@@ -17,7 +17,7 @@ export const COVERAGE_REQUIRED_FIELD_OPTIONS = [
 export const coverageRuleConfigSchema = z.object({
   requiredFields: z.array(z.string()).optional(),
   maxValidityDays: z.coerce.number().int().min(1).max(365).optional(),
-  medicationSearch: z.enum(["pami_vademecum", "pharmacology", "manual"]).optional(),
+  medicationSearch: z.enum(["medication_catalog", "pami_vademecum", "pharmacology", "manual"]).optional(),
   documentQr: z.boolean().optional(),
   infoMessages: z.array(z.string().max(500)).max(10).optional(),
 });

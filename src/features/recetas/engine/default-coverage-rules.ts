@@ -8,27 +8,27 @@ export const DEFAULT_COVERAGE_RULES: Record<CoverageKind, CoverageRuleConfig> = 
   PAMI: {
     requiredFields: ["insurance_number", "diagnosis_cie10", "diagnosis_text"],
     maxValidityDays: 30,
-    medicationSearch: "pami_vademecum",
+    medicationSearch: "medication_catalog",
     documentQr: true,
     infoMessages: [
-      "Paciente PAMI: verificá beneficio y vademécum antes de emitir.",
+      "Paciente PAMI: verificá beneficio y cobertura antes de emitir.",
       "Normativa PAMI adicional puede configurarse en reglas de cobertura de la clínica.",
     ],
   },
   OBRAS_SOCIALES: {
     requiredFields: ["insurance_number"],
     maxValidityDays: 30,
-    medicationSearch: "pharmacology",
+    medicationSearch: "medication_catalog",
   },
   PREPAGAS: {
     requiredFields: ["insurance_number", "insurance_plan"],
     maxValidityDays: 30,
-    medicationSearch: "pharmacology",
+    medicationSearch: "medication_catalog",
   },
   PARTICULAR: {
     requiredFields: [],
     maxValidityDays: 30,
-    medicationSearch: "pharmacology",
+    medicationSearch: "medication_catalog",
   },
 };
 

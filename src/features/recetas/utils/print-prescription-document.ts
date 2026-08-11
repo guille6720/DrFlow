@@ -77,7 +77,7 @@ function buildMedicationsHtml(medications: PrescriptionMedication[]): string {
         <div class="order-doc-med">
           <p class="order-doc-med-title">${index + 1}. ${escapeHtml(med.generic_name)}</p>
           ${med.brand_name ? `<p class="order-doc-med-line">Marca sugerida: ${escapeHtml(med.brand_name)}</p>` : ""}
-          ${med.vademecum_code ? `<p class="order-doc-med-line">Cód. vademécum PAMI: ${escapeHtml(med.vademecum_code)}</p>` : ""}
+          ${med.vademecum_code ? `<p class="order-doc-med-line">Cód. Alfabeta: ${escapeHtml(med.vademecum_code)}</p>` : ""}
           ${detail ? `<p class="order-doc-med-line">${escapeHtml(detail)}</p>` : ""}
           <p class="order-doc-med-line">Posología: ${escapeHtml(med.posology)}</p>
         </div>

@@ -2,16 +2,18 @@
 
 import { AlertTriangle, Check, Loader2, Pill, Plus } from "lucide-react";
 
+import { medicationCatalogSearchLabel } from "@/features/recetas/utils/medication-catalog-utils";
+
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import type { PamiVademecumResult } from "@/types/pharmacology";
+import type { MedicationCatalogResult } from "@/types/pharmacology";
 
 interface VademecumResultListProps {
-  items: PamiVademecumResult[];
+  items: MedicationCatalogResult[];
   loading: boolean;
   error: string | null;
   queryLength: number;
-  onAddToEvolution?: (item: PamiVademecumResult) => void;
+  onAddToEvolution?: (item: MedicationCatalogResult) => void;
   lastAddedKey?: string | null;
 }
 
@@ -36,7 +38,7 @@ export function VademecumResultList({
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white py-16">
         <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-        <p className="mt-3 text-sm text-slate-500">Buscando en vademécum PAMI...</p>
+        <p className="mt-3 text-sm text-slate-500">Buscando en vademécum nacional...</p>
       </div>
     );
   }
@@ -54,8 +56,8 @@ export function VademecumResultList({
     return (
       <EmptyState
         icon={Pill}
-        title="Vademécum PAMI / Alfabeta"
-        description="Buscá por marca comercial, principio activo, laboratorio o código Alfabeta. Se muestran precio PAMI, cobertura e importe afiliado."
+        title={medicationCatalogSearchLabel()}
+        description="Buscá por marca comercial, principio activo, laboratorio o código Alfabeta. Incluye catálogo nacional SIAFAR/COFA y precios PAMI cuando aplican."
         className="bg-white"
       />
     );
@@ -75,8 +77,8 @@ export function VademecumResultList({
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-xs text-emerald-900">
-        <strong>Referencia PAMI:</strong> Precios y coberturas según lista importada. Verificá vigencia,
-        autorizaciones y formularios antes de prescribir.
+        <strong>Referencia nacional:</strong> Catálogo Alfabeta + SIAFAR/COFA. Verificá vigencia, autorizaciones
+        y cobertura de la obra social/prepaga antes de prescribir.
         {onAddToEvolution ? (
           <span className="mt-1 block font-medium">
             Clic en un producto para agregarlo a la evolución de la consulta en curso.
@@ -120,20 +122,22 @@ export function VademecumResultList({
                       )
                     ) : null}
                     <Badge variant="teal" className="font-mono text-xs">
-                      Alfabeta {item.alfabeta_id}
+                      {item.catalog_source === "alfabeta" && item.product_code
+                        ? `Alfabeta ${item.product_code}`
+                        : item.catalog_source.toUpperCase()}
                     </Badge>
                   </div>
                 </div>
                 <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
                   <div>
                     <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
-                      PVP PAMI
+                      Precio ref.
                     </span>
-                    <p className="font-medium text-slate-800">{formatMoney(item.pvp_amount)}</p>
+                    <p className="font-medium text-slate-800">{formatMoney(item.reference_price)}</p>
                   </div>
                   <div>
                     <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
-                      Cobertura
+                      Cobertura PAMI
                     </span>
                     <p className="font-medium text-slate-800">
                       {item.coverage_pct != null ? `${item.coverage_pct}%` : "—"}
@@ -141,7 +145,7 @@ export function VademecumResultList({
                   </div>
                   <div>
                     <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
-                      Importe afiliado
+                      Copago PAMI
                     </span>
                     <p className="font-medium text-slate-800">{formatMoney(item.affiliate_amount)}</p>
                   </div>

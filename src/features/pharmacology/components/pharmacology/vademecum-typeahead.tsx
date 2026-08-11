@@ -5,11 +5,11 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 import { cn } from "@/shared/utils/cn";
 
-import { searchPamiVademecum } from "@/lib/actions/pharmacology";
-import type { PamiVademecumResult } from "@/types/pharmacology";
+import { searchMedicationCatalog } from "@/lib/actions/pharmacology";
+import type { MedicationCatalogResult } from "@/types/pharmacology";
 
 interface VademecumTypeaheadProps {
-  onResults: (items: PamiVademecumResult[]) => void;
+  onResults: (items: MedicationCatalogResult[]) => void;
   onLoading: (loading: boolean) => void;
   onError: (error: string | null) => void;
   onQueryChange?: (query: string) => void;
@@ -27,7 +27,7 @@ export function VademecumTypeahead({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<PamiVademecumResult[]>([]);
+  const [results, setResults] = useState<MedicationCatalogResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -46,7 +46,7 @@ export function VademecumTypeahead({
       onLoading(true);
       setError(null);
       onError(null);
-      const res = await searchPamiVademecum(q);
+      const res = await searchMedicationCatalog(q);
       setLoading(false);
       onLoading(false);
       if (res.error) {
@@ -96,7 +96,7 @@ export function VademecumTypeahead({
   return (
     <div ref={containerRef} className={cn("relative", className)}>
       <label htmlFor={listId} className="mb-1.5 block text-sm font-medium text-slate-700">
-        Buscar producto PAMI (marca, principio activo o laboratorio)
+        Buscar medicamento (marca, principio activo o laboratorio)
       </label>
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -162,7 +162,9 @@ export function VademecumTypeahead({
                   ) : null}
                 </div>
                 <span className="shrink-0 rounded bg-slate-100 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-800">
-                  {item.alfabeta_id}
+                  {item.catalog_source === "alfabeta" && item.product_code
+                    ? item.product_code
+                    : item.catalog_source.toUpperCase()}
                 </span>
               </div>
             </li>

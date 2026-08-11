@@ -3,9 +3,10 @@
 import { PrescriptionMedicationVademecumTypeahead } from "@/features/recetas/components/recetas/prescription-medication-vademecum-typeahead";
 import { vademecumToPrescription } from "@/features/recetas/components/recetas/vademecum-to-prescription";
 import type { MedicationSearchSource } from "@/features/recetas/engine/types";
+import { usesMedicationCatalogSearch } from "@/features/recetas/utils/medication-catalog-utils";
 
 import { Input } from "@/components/ui/input";
-import type { PamiVademecumResult } from "@/types/pharmacology";
+import type { MedicationCatalogResult } from "@/types/pharmacology";
 import type { PrescriptionMedication } from "@/types/prescription";
 
 type Props = {
@@ -13,24 +14,24 @@ type Props = {
   index: number;
   medicationSearch?: MedicationSearchSource;
   updateMed: (index: number, field: keyof PrescriptionMedication, value: string | number | boolean) => void;
-  applyVademecum: (index: number, item: PamiVademecumResult) => void;
+  applyVademecum: (index: number, item: MedicationCatalogResult) => void;
 };
 
 export function PrescriptionMedicationLineFields({
   med,
   index,
-  medicationSearch = "pami_vademecum",
+  medicationSearch = "medication_catalog",
   updateMed,
   applyVademecum,
 }: Props) {
-  const usePamiVademecum = medicationSearch === "pami_vademecum";
-  function handleVademecumSelect(item: PamiVademecumResult) {
+  const useCatalogSearch = usesMedicationCatalogSearch(medicationSearch);
+  function handleVademecumSelect(item: MedicationCatalogResult) {
     applyVademecum(index, item);
   }
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {usePamiVademecum ? (
+      {useCatalogSearch ? (
         <PrescriptionMedicationVademecumTypeahead
           label="Nombre genérico *"
           required
@@ -48,7 +49,7 @@ export function PrescriptionMedicationLineFields({
           placeholder="Ej: ibuprofeno, enalapril…"
         />
       )}
-      {usePamiVademecum ? (
+      {useCatalogSearch ? (
         <PrescriptionMedicationVademecumTypeahead
           label="Marca (opcional)"
           value={med.brand_name ?? ""}
@@ -104,7 +105,7 @@ export function PrescriptionMedicationLineFields({
 
 export function mergeVademecumIntoMedication(
   current: PrescriptionMedication,
-  item: PamiVademecumResult
+  item: MedicationCatalogResult
 ): PrescriptionMedication {
   const mapped = vademecumToPrescription(item);
   return {

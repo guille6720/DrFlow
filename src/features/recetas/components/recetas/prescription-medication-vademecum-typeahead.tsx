@@ -10,14 +10,14 @@ import {
   formatVademecumPrescriptionSubtitle,
 } from "@/features/recetas/components/recetas/vademecum-to-prescription";
 
-import { searchPamiVademecum } from "@/lib/actions/pharmacology";
-import type { PamiVademecumResult } from "@/types/pharmacology";
+import { searchMedicationCatalog } from "@/lib/actions/pharmacology";
+import type { MedicationCatalogResult } from "@/types/pharmacology";
 
 type Props = {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  onSelect: (item: PamiVademecumResult) => void;
+  onSelect: (item: MedicationCatalogResult) => void;
   placeholder?: string;
   required?: boolean;
   className?: string;
@@ -34,7 +34,7 @@ export function PrescriptionMedicationVademecumTypeahead({
 }: Props) {
   const listId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [results, setResults] = useState<PamiVademecumResult[]>([]);
+  const [results, setResults] = useState<MedicationCatalogResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -48,7 +48,7 @@ export function PrescriptionMedicationVademecumTypeahead({
     }
     setLoading(true);
     setError(null);
-    const res = await searchPamiVademecum(q);
+    const res = await searchMedicationCatalog(q);
     setLoading(false);
     if (res.error) {
       setError(res.error);
@@ -75,7 +75,7 @@ export function PrescriptionMedicationVademecumTypeahead({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  function handleSelect(item: PamiVademecumResult) {
+  function handleSelect(item: MedicationCatalogResult) {
     onSelect(item);
     setResults([]);
     setOpen(false);

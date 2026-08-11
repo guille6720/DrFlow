@@ -11,9 +11,13 @@ import {
 import { PrescriptionMedicationSearch } from "@/features/recetas/components/recetas/prescription-medication-search";
 import { PrescriptionPharmacologyPicker } from "@/features/recetas/components/recetas/prescription-pharmacology-picker";
 import type { MedicationSearchSource } from "@/features/recetas/engine/types";
+import {
+  medicationCatalogCodeLabel,
+  usesMedicationCatalogSearch,
+} from "@/features/recetas/utils/medication-catalog-utils";
 
 import { Button } from "@/components/ui/button";
-import type { PamiVademecumResult, PathologySearchResult } from "@/types/pharmacology";
+import type { MedicationCatalogResult, PathologySearchResult } from "@/types/pharmacology";
 import type { PrescriptionMedication } from "@/types/prescription";
 
 interface Props {
@@ -28,7 +32,7 @@ export function PrescriptionMedicationsSection({
   medications,
   setMedications,
   updateMed,
-  medicationSearch = "pami_vademecum",
+  medicationSearch = "medication_catalog",
   onPathologySelect,
 }: Props) {
   const existingGenericNames = medications.map((m) => m.generic_name.trim()).filter(Boolean);
@@ -43,7 +47,7 @@ export function PrescriptionMedicationsSection({
     );
   }
 
-  function applyVademecum(index: number, item: PamiVademecumResult) {
+  function applyVademecum(index: number, item: MedicationCatalogResult) {
     setMedications((prev) =>
       prev.map((med, i) => (i === index ? mergeVademecumIntoMedication(med, item) : med))
     );
@@ -51,7 +55,7 @@ export function PrescriptionMedicationsSection({
 
   return (
     <div className="space-y-4">
-      {medicationSearch === "pami_vademecum" ? (
+      {usesMedicationCatalogSearch(medicationSearch) ? (
         <PrescriptionMedicationSearch
           onAdd={addMedicationFromSearch}
           existingGenericNames={existingGenericNames}
@@ -103,7 +107,9 @@ export function PrescriptionMedicationsSection({
               applyVademecum={applyVademecum}
             />
             {med.vademecum_code ? (
-              <p className="mt-2 text-xs text-slate-500">Cód. vademécum PAMI: {med.vademecum_code}</p>
+              <p className="mt-2 text-xs text-slate-500">
+                {medicationCatalogCodeLabel("alfabeta")}: {med.vademecum_code}
+              </p>
             ) : null}
           </div>
         ))}

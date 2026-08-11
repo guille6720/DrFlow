@@ -20,7 +20,7 @@ export interface PrescriptionMedication {
   duration_days?: number;
   instructions?: string;
   vademecum_code?: string;
-  search_source?: "pami" | "generic" | "manual";
+  search_source?: "catalog" | "pami" | "generic" | "manual";
 }
 
 export interface ElectronicPrescription {

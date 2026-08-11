@@ -3,7 +3,11 @@ import type { PrescriptionMedication, PrescriptionStatus, PrescriptionType } fro
 export const COVERAGE_KINDS = ["PAMI", "OBRAS_SOCIALES", "PREPAGAS", "PARTICULAR"] as const;
 export type CoverageKind = (typeof COVERAGE_KINDS)[number];
 
-export type MedicationSearchSource = "pami_vademecum" | "pharmacology" | "manual";
+export type MedicationSearchSource =
+  | "medication_catalog"
+  | "pami_vademecum"
+  | "pharmacology"
+  | "manual";
 
 export type CoverageRuleConfig = {
   /** Field keys required before issue */

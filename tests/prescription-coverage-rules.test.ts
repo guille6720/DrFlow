@@ -78,7 +78,7 @@ describe("coverage rules admin Etapa 5", () => {
     const parsed = coverageRuleConfigSchema.safeParse({
       requiredFields: ["insurance_number"],
       maxValidityDays: 45,
-      medicationSearch: "pami_vademecum",
+      medicationSearch: "medication_catalog",
       documentQr: true,
       infoMessages: parseInfoMessagesText("Línea 1\n\nLínea 2"),
     });

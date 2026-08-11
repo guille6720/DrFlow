@@ -158,8 +158,9 @@ export function PrescriptionCoverageRulesPanel({
             value={medicationSearch}
             onChange={(e) => setMedicationSearch(e.target.value as typeof medicationSearch)}
             options={[
-              { value: "pami_vademecum", label: "Vademécum PAMI" },
-              { value: "pharmacology", label: "Farmacología general" },
+              { value: "medication_catalog", label: "Vademécum nacional (Alfabeta + SIAFAR)" },
+              { value: "pami_vademecum", label: "Vademécum Alfabeta (legacy PAMI)" },
+              { value: "pharmacology", label: "Guía por patología" },
               { value: "manual", label: "Solo manual" },
             ]}
           />

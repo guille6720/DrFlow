@@ -74,7 +74,7 @@ const saveSchema = z.object({
   coverage_kind: z.enum(COVERAGE_KINDS),
   required_fields: z.array(z.string()).optional(),
   max_validity_days: z.coerce.number().int().min(1).max(365).optional(),
-  medication_search: z.enum(["pami_vademecum", "pharmacology", "manual"]).optional(),
+  medication_search: z.enum(["medication_catalog", "pami_vademecum", "pharmacology", "manual"]).optional(),
   document_qr: z.coerce.boolean().optional(),
   info_messages_text: z.string().max(5000).optional(),
 });

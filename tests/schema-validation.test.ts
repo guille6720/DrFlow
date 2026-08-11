@@ -53,6 +53,7 @@ describe("schema expectations vs migrations", () => {
       "get_public_booking_occupancy",
       "delete_own_account",
       "search_pami_vademecum",
+      "search_medication_catalog",
       "claim_clinic_jobs",
     ];
     for (const rpc of rpcs) {

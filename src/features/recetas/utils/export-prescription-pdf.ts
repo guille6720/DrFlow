@@ -64,7 +64,7 @@ function appendMedications(doc: JsPdfDocument, medications: PrescriptionMedicati
     if (med.vademecum_code) {
       y = appendWrappedText(
         doc,
-        `Cód. vademécum PAMI: ${med.vademecum_code}`,
+        `Cód. Alfabeta: ${med.vademecum_code}`,
         MARGIN_X + 8,
         y,
         CONTENT_WIDTH - 8

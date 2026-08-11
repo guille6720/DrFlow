@@ -130,7 +130,7 @@ export function PrescriptionDocumentView({ data, className }: Props) {
                 ) : null}
                 {med.vademecum_code ? (
                   <p className="drflow-medical-order-doc-text mt-1">
-                    Cód. vademécum PAMI: {med.vademecum_code}
+                    Cód. Alfabeta: {med.vademecum_code}
                   </p>
                 ) : null}
                 <p className="drflow-medical-order-doc-text mt-1">

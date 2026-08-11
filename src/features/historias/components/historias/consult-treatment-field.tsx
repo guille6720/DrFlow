@@ -11,10 +11,11 @@ import {
   vademecumToPrescription,
 } from "@/features/recetas/components/recetas/vademecum-to-prescription";
 import { formatPrescriptionMedicationLabel } from "@/features/recetas/utils/format-prescription-medication-label";
+import { medicationCatalogSearchLabel } from "@/features/recetas/utils/medication-catalog-utils";
 
 import { Textarea } from "@/components/ui/textarea";
-import { searchPamiVademecum } from "@/lib/actions/pharmacology";
-import type { PamiVademecumResult } from "@/types/pharmacology";
+import { searchMedicationCatalog } from "@/lib/actions/pharmacology";
+import type { MedicationCatalogResult } from "@/types/pharmacology";
 import type { PrescriptionMedication } from "@/types/prescription";
 
 const MIN_QUERY_LENGTH = 2;
@@ -42,7 +43,7 @@ export function ConsultTreatmentField({
   const internalSearchRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<PamiVademecumResult[]>([]);
+  const [results, setResults] = useState<MedicationCatalogResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -58,7 +59,7 @@ export function ConsultTreatmentField({
     }
     setLoading(true);
     setError(null);
-    const res = await searchPamiVademecum(q);
+    const res = await searchMedicationCatalog(q);
     setLoading(false);
     if (res.error) {
       setError(res.error);
@@ -90,7 +91,7 @@ export function ConsultTreatmentField({
     if (searchInputRef) searchInputRef.current = node;
   }
 
-  function handleSelect(item: PamiVademecumResult) {
+  function handleSelect(item: MedicationCatalogResult) {
     const med = vademecumToPrescription(item);
     const key = med.generic_name.trim().toLowerCase();
     if (!existing.has(key)) {
@@ -210,7 +211,7 @@ export function ConsultTreatmentField({
         ) : null}
 
         <p className="mt-1 text-[11px] drflow-ehr-muted">
-          Vademécum PAMI (Alfabeta). Escribí 2 letras y elegí una opción real.
+          {medicationCatalogSearchLabel()}. Escribí 2 letras y elegí una opción real.
         </p>
       </div>
 

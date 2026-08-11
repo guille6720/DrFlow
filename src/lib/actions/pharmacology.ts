@@ -6,6 +6,7 @@ import { createClient } from "@/core/supabase/server";
 import { entityIdArraySchema, entityIdSchema, searchQuerySchema } from "@/core/validations/params";
 
 import type {
+  MedicationCatalogResult,
   PamiVademecumResult,
   PathologyBySymptomResult,
   PathologyDrug,
@@ -99,9 +100,9 @@ export async function getPathologiesBySymptoms(
   return { data: (data ?? []) as PathologyBySymptomResult[] };
 }
 
-export async function searchPamiVademecum(
+export async function searchMedicationCatalog(
   query: string
-): Promise<{ data?: PamiVademecumResult[]; error?: string }> {
+): Promise<{ data?: MedicationCatalogResult[]; error?: string }> {
   const access = await assertPharmacologyAccess();
   if (access.error) return access;
 
@@ -111,16 +112,32 @@ export async function searchPamiVademecum(
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("search_pami_vademecum", {
+  const { data, error } = await supabase.rpc("search_medication_catalog", {
     p_query: queryParsed.data,
-    p_limit: 20,
+    p_limit: 24,
   });
 
   if (error) {
-    return { error: "No se pudo buscar el vademécum PAMI. ¿Corriste la migración 042?" };
+    return { error: "No se pudo buscar el vademécum. ¿Corriste la migración 107?" };
   }
 
-  return { data: (data ?? []) as PamiVademecumResult[] };
+  return { data: (data ?? []) as MedicationCatalogResult[] };
+}
+
+export async function searchPamiVademecum(
+  query: string
+): Promise<{ data?: PamiVademecumResult[]; error?: string }> {
+  const result = await searchMedicationCatalog(query);
+  if (result.error) return result;
+  return {
+    data: (result.data ?? []).map((row) => ({
+      ...row,
+      alfabeta_id: row.product_code && /^\d+$/.test(row.product_code)
+        ? Number(row.product_code)
+        : undefined,
+      pvp_amount: row.reference_price,
+    })),
+  };
 }
 
 export async function getDrugsByPathology(

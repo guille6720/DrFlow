@@ -46,18 +46,25 @@ export interface PathologyBySymptomResult extends PathologySearchResult {
   matched_symptoms: string[];
 }
 
-export interface PamiVademecumResult {
+export interface MedicationCatalogResult {
   id: string;
-  alfabeta_id: number;
+  catalog_source: "alfabeta" | "siafar" | "anmat" | "manual";
+  product_code: string | null;
   active_ingredient: string;
   brand_name: string;
   presentation: string;
   laboratory: string | null;
-  pvp_amount: number | null;
+  reference_price: number | null;
   coverage_pct: number | null;
   affiliate_amount: number | null;
   price_list_date: string | null;
 }
+
+/** Alias retrocompatible; preferí MedicationCatalogResult. */
+export type PamiVademecumResult = MedicationCatalogResult & {
+  alfabeta_id?: number;
+  pvp_amount?: number | null;
+};
 
 export type PharmacologySearchMode = "pathology" | "symptoms" | "vademecum";
 
