@@ -132,7 +132,9 @@ export function PrescriptionMedicationSearch({ onAdd, existingGenericNames = [],
       ) : null}
 
       {open && query.length >= 2 && !loading && results.length === 0 && !error ? (
-        <p className="mt-2 text-sm text-slate-500">Sin alternativas para &quot;{query}&quot;</p>
+        <p className="mt-2 text-sm text-slate-500">
+          Sin alternativas para &quot;{query}&quot;. Probá con menos letras o revisá la ortografía.
+        </p>
       ) : null}
 
       {open && results.length > 0 ? (

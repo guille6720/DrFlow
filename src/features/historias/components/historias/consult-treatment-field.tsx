@@ -164,7 +164,10 @@ export function ConsultTreatmentField({
         ) : null}
 
         {open && query.length >= MIN_QUERY_LENGTH && !loading && results.length === 0 && !error ? (
-          <p className="mt-1.5 text-xs drflow-ehr-muted">Sin resultados para &quot;{query}&quot;</p>
+          <p className="mt-1.5 text-xs drflow-ehr-muted">
+            Sin resultados para &quot;{query}&quot;. Probá con menos letras (ej: rosu) o revisá la
+            ortografía (rosuvastatina).
+          </p>
         ) : null}
 
         {open && results.length > 0 ? (
