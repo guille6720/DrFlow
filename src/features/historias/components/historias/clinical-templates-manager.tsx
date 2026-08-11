@@ -95,11 +95,17 @@ export function ClinicalTemplatesManager({ templates, specialties }: Props) {
     setError(null);
   }
 
-  function startNew() {
+  function resetForNewPaste(pasteHintMessage?: string | null) {
     setSelectedId(null);
     setEditor(emptyEditor());
+    setPasteText("");
+    setPasteHint(pasteHintMessage ?? null);
     setMessage(null);
     setError(null);
+  }
+
+  function startNew() {
+    resetForNewPaste();
   }
 
   function applyPastedTemplate(raw: string) {
@@ -149,8 +155,15 @@ export function ClinicalTemplatesManager({ templates, specialties }: Props) {
       return;
     }
 
-    setMessage(editor.id ? "Plantilla actualizada." : "Plantilla creada.");
+    const wasCreate = !editor.id;
     router.refresh();
+
+    if (wasCreate) {
+      resetForNewPaste("Plantilla creada. Podés pegar otra abajo.");
+      return;
+    }
+
+    setMessage("Plantilla actualizada.");
     if ("data" in result && result.data?.id) {
       setSelectedId(result.data.id);
     }
