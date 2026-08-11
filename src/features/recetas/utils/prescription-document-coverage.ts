@@ -68,6 +68,70 @@ export function buildPrescriptionQrPayload(input: {
   return parts.join("|");
 }
 
+/** REFEPS verification payload when prescription was submitted. */
+export function buildRefepsQrPayload(input: {
+  refepsId: string;
+  prescriptionNumber: string | null;
+  digitalSignatureHash?: string | null;
+}): string {
+  const parts = [
+    "REFEPS",
+    input.refepsId.trim(),
+    input.prescriptionNumber?.trim() || "",
+    input.digitalSignatureHash?.slice(0, 16) ?? "",
+  ];
+  return parts.filter(Boolean).join("|");
+}
+
+export function resolvePrescriptionDocumentQr(input: {
+  refepsStatus?: string | null;
+  refepsId?: string | null;
+  digitalSignatureHash?: string | null;
+  prescriptionNumber: string | null;
+  prescriptionId?: string | null;
+  patientDocumentNumber: string;
+  issuedAt: string;
+  coverageKind?: PrescriptionCoverageKind | null;
+  clinicRuleOverride?: Partial<CoverageRuleConfig> | null;
+}): {
+  showQr: boolean;
+  qrPayload: string | null;
+  qrTitle: string;
+  qrHint: string;
+} {
+  if (input.refepsStatus === "submitted" && input.refepsId?.trim()) {
+    return {
+      showQr: true,
+      qrPayload: buildRefepsQrPayload({
+        refepsId: input.refepsId,
+        prescriptionNumber: input.prescriptionNumber,
+        digitalSignatureHash: input.digitalSignatureHash,
+      }),
+      qrTitle: "Verificación REFEPS",
+      qrHint:
+        "Receta registrada en REFEPS/RENaPDiS. Verificá el identificador en farmacia según homologación del consultorio.",
+    };
+  }
+
+  const showLocal = shouldShowPrescriptionDocumentQr(input.coverageKind, input.clinicRuleOverride);
+  if (!showLocal) {
+    return { showQr: false, qrPayload: null, qrTitle: "", qrHint: "" };
+  }
+
+  return {
+    showQr: true,
+    qrPayload: buildPrescriptionQrPayload({
+      prescriptionNumber: input.prescriptionNumber,
+      prescriptionId: input.prescriptionId,
+      patientDocumentNumber: input.patientDocumentNumber,
+      issuedAt: input.issuedAt,
+      coverageKind: input.coverageKind,
+    }),
+    qrTitle: "Verificación local",
+    qrHint: "Placeholder DrFlow — no constituye trazabilidad REFEPS.",
+  };
+}
+
 /** Local QR data URL — generated in-app; no third-party PHI exposure. */
 export function buildPrescriptionQrImageUrl(payload: string, size = 120): string {
   const qr = qrcode(0, "M");

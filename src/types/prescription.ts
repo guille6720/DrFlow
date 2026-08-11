@@ -1,6 +1,6 @@
 export type PrescriptionType = "ambulatoria" | "cronica" | "duplicado";
 export type PrescriptionStatus = "draft" | "issued" | "void";
-export type RefepsStatus = "local" | "pending_refeps" | "submitted";
+export type RefepsStatus = "local" | "pending_refeps" | "submitted" | "failed";
 export type PrescriptionCoverageKind = "PAMI" | "OBRAS_SOCIALES" | "PREPAGAS" | "PARTICULAR";
 
 export interface PrescriptionMedication {
@@ -41,6 +41,10 @@ export interface ElectronicPrescription {
   validity_days: number;
   refeps_status: RefepsStatus;
   refeps_id: string | null;
+  refeps_submitted_at?: string | null;
+  refeps_error?: string | null;
+  refeps_payload?: Record<string, unknown> | null;
+  digital_signature_hash?: string | null;
   patient_insurance: string | null;
   coverage_kind: PrescriptionCoverageKind | null;
   insurance_number: string | null;
@@ -75,6 +79,13 @@ export function resolvePrescriptionDisplayStatus(row: Pick<ElectronicPrescriptio
   if (row.status === "void") return PRESCRIPTION_STATUS_UI_ALIASES.void ?? PRESCRIPTION_STATUS_LABELS.void;
   return PRESCRIPTION_STATUS_LABELS[row.status];
 }
+
+export const REFEPS_STATUS_LABELS: Record<RefepsStatus, string> = {
+  local: "Local (sin REFEPS)",
+  pending_refeps: "Pendiente REFEPS",
+  submitted: "Registrada REFEPS",
+  failed: "Error REFEPS",
+};
 
 export const ARGENTINA_PRESCRIPTION_DISCLAIMER =
   "Receta local / borrador — no es homologación REFEPS. " +

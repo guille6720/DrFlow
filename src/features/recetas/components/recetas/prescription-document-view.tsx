@@ -168,7 +168,7 @@ export function PrescriptionDocumentView({ data, className }: Props) {
       {data.showQr && data.qrPayload ? (
         <section className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
           <h3 className="drflow-medical-order-doc-section-title text-xs font-bold uppercase tracking-wide">
-            Verificación local
+            {data.qrTitle ?? "Verificación local"}
           </h3>
           <div className="mt-3 flex flex-wrap items-start gap-4">
             <PrescriptionQrImage
@@ -177,8 +177,13 @@ export function PrescriptionDocumentView({ data, className }: Props) {
             />
             <div className="min-w-0 flex-1">
               <p className="font-mono text-xs break-all text-slate-700">{data.qrPayload}</p>
+              {data.refepsId ? (
+                <p className="mt-2 text-xs font-medium text-emerald-800">
+                  ID REFEPS: {data.refepsId}
+                </p>
+              ) : null}
               <p className="mt-2 text-xs text-slate-500">
-                Placeholder DrFlow — no constituye trazabilidad REFEPS.
+                {data.qrHint ?? "Placeholder DrFlow — no constituye trazabilidad REFEPS."}
               </p>
             </div>
           </div>

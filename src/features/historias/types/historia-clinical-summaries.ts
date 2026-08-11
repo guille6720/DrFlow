@@ -4,6 +4,7 @@ import type {
   PrescriptionMedication,
   PrescriptionStatus,
   PrescriptionType,
+  RefepsStatus,
 } from "@/types/prescription";
 
 /** Prescription row loaded on historia detail (partial select). */
@@ -25,6 +26,11 @@ export type HistoriaPrescriptionSummary = {
   insurance_plan?: string | null;
   dispensed_at?: string | null;
   notes?: string | null;
+  refeps_status?: RefepsStatus;
+  refeps_id?: string | null;
+  refeps_submitted_at?: string | null;
+  refeps_error?: string | null;
+  digital_signature_hash?: string | null;
 };
 
 /** Medical order row loaded on historia detail (partial select). */

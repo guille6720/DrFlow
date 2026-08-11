@@ -4,9 +4,8 @@ import {
   resolveCoverageRuleOverride,
 } from "@/features/recetas/utils/coverage-rules-admin";
 import {
-  buildPrescriptionQrPayload,
   resolvePrescriptionDocumentCoverage,
-  shouldShowPrescriptionDocumentQr,
+  resolvePrescriptionDocumentQr,
 } from "@/features/recetas/utils/prescription-document-coverage";
 import type { PrescriptionDocumentData } from "@/features/recetas/utils/print-prescription-document";
 
@@ -77,16 +76,17 @@ export function buildPrescriptionDocumentData(
     coverage.kind,
     options?.coverageRuleOverrides
   );
-  const showQr = shouldShowPrescriptionDocumentQr(coverage.kind, ruleOverride);
-  const qrPayload = showQr
-    ? buildPrescriptionQrPayload({
-        prescriptionNumber: prescription.prescription_number,
-        prescriptionId: prescription.id,
-        patientDocumentNumber: patient.document_number,
-        issuedAt,
-        coverageKind: coverage.kind,
-      })
-    : null;
+  const qr = resolvePrescriptionDocumentQr({
+    refepsStatus: prescription.refeps_status,
+    refepsId: prescription.refeps_id,
+    digitalSignatureHash: prescription.digital_signature_hash,
+    prescriptionNumber: prescription.prescription_number,
+    prescriptionId: prescription.id,
+    patientDocumentNumber: patient.document_number,
+    issuedAt,
+    coverageKind: coverage.kind,
+    clinicRuleOverride: ruleOverride,
+  });
 
   return {
     prescriptionId: prescription.id,
@@ -101,8 +101,12 @@ export function buildPrescriptionDocumentData(
     notes: prescription.notes ?? null,
     patientInsurance: prescription.patient_insurance ?? null,
     coverage,
-    showQr,
-    qrPayload,
+    showQr: qr.showQr,
+    qrPayload: qr.qrPayload,
+    qrTitle: qr.qrTitle,
+    qrHint: qr.qrHint,
+    refepsStatus: prescription.refeps_status ?? null,
+    refepsId: prescription.refeps_id ?? null,
     patient: {
       first_name: patient.first_name,
       last_name: patient.last_name,

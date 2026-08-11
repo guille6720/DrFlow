@@ -44,6 +44,7 @@ type Props = {
     name: string;
     address?: string | null;
     phone?: string | null;
+    refepsEnabled?: boolean;
   };
   patient: PatientChartPatient & {
     medical_history: string | null;

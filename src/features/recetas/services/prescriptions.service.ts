@@ -1,5 +1,10 @@
 import type { z } from "zod";
 
+import {
+  loadClinicRefepsRow,
+  mapClinicRefepsSettings,
+  submitIssuedPrescriptionToRefeps,
+} from "@/core/refeps/submission-service";
 import type { DbClient } from "@/core/repositories/types";
 import type { ServiceResult } from "@/core/services/types";
 import { fromRepo, serviceErr, serviceOk } from "@/core/services/types";
@@ -344,7 +349,13 @@ export async function issuePrescriptionRecord(
     idempotency_key: normalizedKey,
   };
 
-  const issued = await issuePrescriptionDraft(db, draftId, clinicId, issuePatch);
+  const clinicRefepsRow = await loadClinicRefepsRow(db, clinicId);
+  const refepsSettings = clinicRefepsRow ? mapClinicRefepsSettings(clinicRefepsRow) : null;
+
+  const issued = await issuePrescriptionDraft(db, draftId, clinicId, {
+    ...issuePatch,
+    refeps_status: refepsSettings?.enabled ? "pending_refeps" : "local",
+  });
   if (!issued.ok) {
     if (normalizedKey && isPrescriptionUniqueViolation(issued.error)) {
       const raced = await findPrescriptionByIdempotencyKey(db, clinicId, normalizedKey);
@@ -364,10 +375,26 @@ export async function issuePrescriptionRecord(
     payload: {
       prescription_number: issued.data.prescription_number,
       coverage_kind: ctx.coverageKind,
+      refeps_status: issued.data.refeps_status,
     },
   });
 
-  return { ok: true, data: issued.data, created: true };
+  let finalPrescription = issued.data;
+
+  if (refepsSettings?.enabled && refepsSettings.autoSubmit) {
+    const submitResult = await submitIssuedPrescriptionToRefeps(db, {
+      clinicId,
+      userId,
+      prescription: issued.data,
+    });
+    if (submitResult.ok) {
+      finalPrescription = submitResult.data;
+    } else if (submitResult.data) {
+      finalPrescription = submitResult.data;
+    }
+  }
+
+  return { ok: true, data: finalPrescription, created: true };
 }
 
 export async function voidPrescriptionRecord(

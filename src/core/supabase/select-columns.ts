@@ -4,7 +4,7 @@ export const PROFILE_COLUMNS =
   "id, email, full_name, phone, document_number, avatar_url, is_superadmin";
 
 export const CLINIC_COLUMNS =
-  "id, name, slug, legal_name, phone, email, address, default_appointment_duration, timezone, is_active, trial_ends_at, default_insurance_provider, practice_profile, legal_terms_version, legal_terms_accepted_at, legal_privacy_version, accepted_coverages, voice_input_enabled, doctors_can_access_cash";
+  "id, name, slug, legal_name, phone, email, address, default_appointment_duration, timezone, is_active, trial_ends_at, default_insurance_provider, practice_profile, legal_terms_version, legal_terms_accepted_at, legal_privacy_version, accepted_coverages, voice_input_enabled, doctors_can_access_cash, refeps_enabled, refeps_establishment_code, refeps_auto_submit";
 
 /** Minimal clinic columns for membership fallback when full select fails (schema drift / PostgREST). */
 export const CLINIC_SHELL_COLUMNS =
@@ -55,7 +55,10 @@ export const MEDICAL_ORDER_LIST_COLUMNS =
 export const MEDICAL_ORDER_IDEMPOTENCY_COLUMNS = `${MEDICAL_ORDER_LIST_COLUMNS}, idempotency_key, created_by`;
 
 export const PRESCRIPTION_RECENT_LIST_COLUMNS =
-  "id, patient_id, professional_id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, notes";
+  "id, patient_id, professional_id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, notes, refeps_status, refeps_id, refeps_submitted_at, refeps_error, digital_signature_hash";
+
+export const PRESCRIPTION_LIST_COLUMNS =
+  "id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, coverage_kind, insurance_number, insurance_plan, dispensed_at, notes, professional_id, refeps_status, refeps_id, refeps_submitted_at, refeps_error, digital_signature_hash";
 
 export const PUBLIC_BOOKING_LINK_COLUMNS = "id, clinic_id, slug, is_active";
 

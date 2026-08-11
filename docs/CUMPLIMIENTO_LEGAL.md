@@ -14,7 +14,7 @@ Este documento resume el marco aplicable, el gap analysis y lo implementado en p
 | **Ley 25.326** (Datos personales) + AAIP | Responsable = consultorio; encargado = DrFlow. Derechos ARCO, seguridad, finalidad, consentimiento cuando corresponda. |
 | **Ley 26.529** (Derechos del paciente) | Confidencialidad, acceso a HC, consentimiento informado en actos médicos. |
 | **Ley 25.649** (Prescripción genérica) | Recetas con nombre genérico; módulo recetas locales con disclaimer explícito. |
-| **REFEPS / RENaPDiS** | Receta electrónica nacional — **no implementada**; aviso en UI y PDF. |
+| **REFEPS / RENaPDiS** | Adapter DrFlow (sandbox/API) + disclaimer; homologación MSN del consultorio sigue siendo requisito legal. |
 | **Retención HC** | Práctica habitual ≥ 10 años | Años configurables (5–30) + panel cumplimiento + baja lógica trazable |
 
 ---
@@ -33,11 +33,11 @@ Este documento resume el marco aplicable, el gap analysis y lo implementado en p
 | Logs acceso datos sensibles | No | `recordSensitiveAccess` — view en fichas, HC, docs admin; panel Configuración |
 | Retención / baja paciente | Solo copy 10 años | Política configurable, estadísticas, baja lógica con ack + `deactivated_at` |
 | Panel cumplimiento | No | Configuración → Cumplimiento legal + accesos sensibles |
-| Receta REFEPS | Disclaimer | Sin cambio (correcto) |
+| Receta REFEPS | Disclaimer local + adapter | Integración adapter (migración 102); homologación MSN pendiente por consultorio |
 | Consentimiento informado acto médico | Paper / criterio médico | Flujo digital en consulta + PDF + `consent_records` |
 | Inscripción bases AAIP encargado | Trámite administrativo | **Pendiente** (consultorio/proveedor) |
 | DPA / contrato encargado | Legal externo | **Pendiente** |
-| REFEPS integración | Roadmap | **Pendiente** |
+| REFEPS integración | Roadmap | **Adapter implementado** — ver [REFEPS-INTEGRATION.md](./REFEPS-INTEGRATION.md) |
 
 ---
 

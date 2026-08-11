@@ -14,6 +14,7 @@ import { DemoDataPanel } from "@/features/configuracion/components/configuracion
 import { PamiPlanillasAdminPanel } from "@/features/configuracion/components/configuracion/pami-planillas-admin-panel";
 import { PamiSetupPanel } from "@/features/configuracion/components/configuracion/pami-setup-panel";
 import { PrescriptionCoverageRulesManager } from "@/features/configuracion/components/configuracion/prescription-coverage-rules-manager";
+import { RefepsSettingsPanel } from "@/features/configuracion/components/configuracion/refeps-settings-panel";
 import type { SettingsPanelProps } from "@/features/configuracion/components/configuracion/settings-panel";
 import type { CoverageRuleRow } from "@/features/recetas/repositories/coverage-rules.repository";
 
@@ -65,6 +66,8 @@ export interface ConfiguracionSectionExtras {
   pamiCoverageRuleError?: string;
   prescriptionCoverageRules?: CoverageRuleRow[];
   prescriptionCoverageRulesError?: string;
+  refepsSettings?: import("@/lib/actions/refeps").RefepsClinicSettingsView;
+  refepsSettingsError?: string;
 }
 
 export function renderConfiguracionSectionContent(
@@ -91,6 +94,13 @@ export function renderConfiguracionSectionContent(
           <PrescriptionCoverageRulesManager
             savedRules={extras.prescriptionCoverageRules ?? []}
           />
+          {extras.refepsSettings ? (
+            <RefepsSettingsPanel settings={extras.refepsSettings} />
+          ) : extras.refepsSettingsError ? (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+              {extras.refepsSettingsError}
+            </div>
+          ) : null}
           {extras.prescriptionCoverageRulesError ? (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
               {extras.prescriptionCoverageRulesError}

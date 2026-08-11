@@ -33,6 +33,7 @@ type Props = {
     name: string;
     address?: string | null;
     phone?: string | null;
+    refepsEnabled?: boolean;
   };
   professionals: PatientWorkspaceProfessional[];
   canIssue: boolean;
@@ -105,6 +106,7 @@ export function PatientWorkspacePrescriptionsPanel({
         onMarkDispensed={canIssue ? handleMarkDispensed : undefined}
         onReuseMedications={canIssue ? handleReuseMedications : undefined}
         coverageRuleOverrides={coverageRuleOverrides}
+        refepsEnabled={clinic.refepsEnabled ?? false}
       />
     </Card>
   );

@@ -29,6 +29,10 @@ export type PrescriptionDocumentData = {
   coverage: PrescriptionDocumentCoverage;
   showQr: boolean;
   qrPayload: string | null;
+  qrTitle?: string;
+  qrHint?: string;
+  refepsStatus?: string | null;
+  refepsId?: string | null;
   patient: {
     first_name: string;
     last_name: string;
@@ -93,17 +97,21 @@ function buildCoverageHtml(coverage: PrescriptionDocumentCoverage): string {
   `;
 }
 
-function buildQrHtml(showQr: boolean, qrPayload: string | null): string {
-  if (!showQr || !qrPayload) return "";
-  const imgUrl = buildPrescriptionQrImageUrl(qrPayload);
+function buildQrHtml(data: PrescriptionDocumentData): string {
+  if (!data.showQr || !data.qrPayload) return "";
+  const imgUrl = buildPrescriptionQrImageUrl(data.qrPayload);
+  const title = data.qrTitle ?? "Verificación local";
+  const hint =
+    data.qrHint ?? "Placeholder DrFlow — no constituye trazabilidad REFEPS.";
   return `
     <section class="order-doc-block order-doc-qr">
-      <h2>Verificación local</h2>
+      <h2>${escapeHtml(title)}</h2>
       <div class="order-doc-qr-row">
-        <img src="${escapeHtml(imgUrl)}" width="100" height="100" alt="Código QR de verificación local" />
+        <img src="${escapeHtml(imgUrl)}" width="100" height="100" alt="Código QR de verificación" />
         <div>
-          <p class="order-doc-qr-code">${escapeHtml(qrPayload)}</p>
-          <p class="order-doc-qr-hint">Placeholder DrFlow — no constituye trazabilidad REFEPS.</p>
+          <p class="order-doc-qr-code">${escapeHtml(data.qrPayload)}</p>
+          ${data.refepsId ? `<p class="order-doc-qr-code"><strong>ID REFEPS:</strong> ${escapeHtml(data.refepsId)}</p>` : ""}
+          <p class="order-doc-qr-hint">${escapeHtml(hint)}</p>
         </div>
       </div>
     </section>
@@ -179,7 +187,7 @@ export function buildPrescriptionDocumentHtml(data: PrescriptionDocumentData): s
         signatureImageUrl: data.professional.signatureImageUrl,
       })}
 
-      ${buildQrHtml(data.showQr, data.qrPayload)}
+      ${buildQrHtml(data)}
 
       <footer class="order-doc-footer">
         <p>${escapeHtml(ARGENTINA_PRESCRIPTION_DISCLAIMER)}</p>

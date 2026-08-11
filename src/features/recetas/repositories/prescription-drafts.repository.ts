@@ -24,8 +24,8 @@ export type PrescriptionDraftInsertRow = {
   created_by: string;
 };
 
-const PRESCRIPTION_ISSUE_COLUMNS =
-  "id, clinic_id, patient_id, clinical_record_id, professional_id, prescription_type, diagnosis_cie10, diagnosis_text, patient_insurance, coverage_kind, insurance_number, insurance_plan, medications, notes, validity_days, disclaimer_accepted, status, prescription_number, issued_at, refeps_status, idempotency_key, version";
+export const PRESCRIPTION_ISSUE_COLUMNS =
+  "id, clinic_id, patient_id, clinical_record_id, professional_id, prescription_type, diagnosis_cie10, diagnosis_text, patient_insurance, coverage_kind, insurance_number, insurance_plan, medications, notes, validity_days, disclaimer_accepted, status, prescription_number, issued_at, refeps_status, refeps_id, refeps_submitted_at, refeps_error, refeps_payload, digital_signature_hash, idempotency_key, version";
 
 export function formatPrescriptionDbError(error: {
   message?: string;
@@ -106,13 +106,14 @@ export async function issuePrescriptionDraft(
     insurance_number?: string | null;
     insurance_plan?: string | null;
     idempotency_key?: string | null;
+    refeps_status?: string;
   }
 ): Promise<RepoResult<ElectronicPrescription>> {
   const { data, error } = await db
     .from("prescription_drafts")
     .update({
       status: "issued",
-      refeps_status: "local",
+      refeps_status: patch?.refeps_status ?? "local",
       ...patch,
     })
     .eq("id", draftId)
@@ -157,6 +158,32 @@ export async function markPrescriptionDispensed(
     .eq("clinic_id", clinicId)
     .eq("status", "issued")
     .is("dispensed_at", null)
+    .select()
+    .single();
+
+  if (error) return repoErr(formatPrescriptionDbError(error));
+  return repoOk(data as ElectronicPrescription);
+}
+
+export async function updatePrescriptionRefepsState(
+  db: DbClient,
+  prescriptionId: string,
+  clinicId: string,
+  patch: {
+    refeps_status: string;
+    refeps_id?: string | null;
+    refeps_submitted_at?: string | null;
+    refeps_error?: string | null;
+    refeps_payload?: Record<string, unknown> | null;
+    digital_signature_hash?: string | null;
+  }
+): Promise<RepoResult<ElectronicPrescription>> {
+  const { data, error } = await db
+    .from("prescription_drafts")
+    .update(patch)
+    .eq("id", prescriptionId)
+    .eq("clinic_id", clinicId)
+    .eq("status", "issued")
     .select()
     .single();
 

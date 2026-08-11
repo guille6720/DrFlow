@@ -29,7 +29,7 @@
 - [x] **2B Email** — Resend/SMTP en recordatorios + invitaciones + notificaciones de turnos
 - [ ] **2C WhatsApp Business API** — envío automático (hoy: abrir chat)
 - [x] **2D Telemedicina** — Jitsi embed, link paciente, email/WhatsApp, Daily.co opcional (migración 101)
-- [ ] **2E REFEPS / RENaPDiS** — homologación + firma digital
+- [x] **2E REFEPS / RENaPDiS** — adapter sandbox/API, firma digital (hash), panel config, envío manual/auto (migración 102) — ver [REFEPS-INTEGRATION.md](./REFEPS-INTEGRATION.md)
 
 ## Fase 3 — Compliance
 

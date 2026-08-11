@@ -66,6 +66,24 @@ describe("prescription document Etapa 4", () => {
     expect(data.qrPayload).toContain("DRFLOW|RX|RX-2026-001");
   });
 
+  it("builds REFEPS QR when submitted", () => {
+    const data = buildPrescriptionDocumentData(
+      {
+        ...basePrescription,
+        refeps_status: "submitted",
+        refeps_id: "REFEPS-SBX-TEST123",
+        digital_signature_hash: "abc",
+      },
+      patient,
+      clinic,
+      professionals
+    );
+
+    expect(data.qrTitle).toBe("Verificación REFEPS");
+    expect(data.qrPayload).toContain("REFEPS-SBX-TEST123");
+    expect(data.refepsId).toBe("REFEPS-SBX-TEST123");
+  });
+
   it("renders coverage and QR in print HTML", () => {
     const data = buildPrescriptionDocumentData(
       basePrescription,

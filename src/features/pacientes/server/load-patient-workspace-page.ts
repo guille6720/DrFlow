@@ -11,6 +11,7 @@ import {
   PATIENT_EHR_RECORD_PAGE_SIZE,
 } from "@/core/supabase/pagination";
 import type { ProfessionalListRow } from "@/core/supabase/query-types";
+import { PRESCRIPTION_LIST_COLUMNS } from "@/core/supabase/select-columns";
 
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
 import type { PatientChartAppointment, PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
@@ -168,9 +169,7 @@ export async function loadPatientWorkspacePageData(
   const rxPromise = plan.prescriptions
     ? supabase
         .from("prescription_drafts")
-        .select(
-          "id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, coverage_kind, insurance_number, insurance_plan, dispensed_at, notes, professional_id"
-        )
+        .select(PRESCRIPTION_LIST_COLUMNS)
         .eq("patient_id", patientId)
         .eq("clinic_id", clinicId)
         .order("created_at", { ascending: false })

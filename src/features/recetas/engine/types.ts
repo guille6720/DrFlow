@@ -86,4 +86,6 @@ export type PrescriptionEventType =
   | "issued"
   | "voided"
   | "dispensed"
-  | "template_applied";
+  | "template_applied"
+  | "refeps_submitted"
+  | "refeps_failed";

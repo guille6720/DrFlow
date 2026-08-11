@@ -9,6 +9,7 @@ import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
 import { getClinicPluginSettings } from "@/lib/actions/clinic-plugins";
 import { getClinicObservabilityDashboard } from "@/lib/actions/observability";
 import { loadPamiPlanillaAdminCatalog } from "@/lib/actions/pami-planilla-admin";
+import { getRefepsClinicSettings } from "@/lib/actions/refeps";
 
 const EMPTY_EXTRAS: Pick<
   ConfiguracionSectionExtras,
@@ -22,6 +23,8 @@ const EMPTY_EXTRAS: Pick<
   | "pamiCoverageRuleError"
   | "prescriptionCoverageRules"
   | "prescriptionCoverageRulesError"
+  | "refepsSettings"
+  | "refepsSettingsError"
 > = {
   pluginSettings: [],
   flagSettings: [],
@@ -33,6 +36,8 @@ const EMPTY_EXTRAS: Pick<
   pamiCoverageRuleError: undefined,
   prescriptionCoverageRules: undefined,
   prescriptionCoverageRulesError: undefined,
+  refepsSettings: undefined,
+  refepsSettingsError: undefined,
 };
 
 /** Loads heavy configuracion panels only for the active section. */
@@ -62,11 +67,16 @@ export async function loadConfiguracionSectionExtras(
     case "coberturas": {
       if (!clinicId) return EMPTY_EXTRAS;
       const supabase = await createClient();
-      const rulesResult = await loadActiveCoverageRulesForClinic(supabase, clinicId);
+      const [rulesResult, refepsResult] = await Promise.all([
+        loadActiveCoverageRulesForClinic(supabase, clinicId),
+        getRefepsClinicSettings(),
+      ]);
       return {
         ...EMPTY_EXTRAS,
         prescriptionCoverageRules: rulesResult.ok ? rulesResult.data : undefined,
         prescriptionCoverageRulesError: rulesResult.ok ? undefined : rulesResult.error,
+        refepsSettings: "data" in refepsResult ? refepsResult.data : undefined,
+        refepsSettingsError: "error" in refepsResult ? refepsResult.error : undefined,
       };
     }
     case "pami": {

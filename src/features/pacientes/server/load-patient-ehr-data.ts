@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { encodeDescCursor, PATIENT_ATTACHMENTS_LIMIT, PATIENT_EHR_RECORD_PAGE_SIZE } from "@/core/supabase/pagination";
-import { MEDICAL_ORDER_LIST_COLUMNS } from "@/core/supabase/select-columns";
+import { MEDICAL_ORDER_LIST_COLUMNS, PRESCRIPTION_LIST_COLUMNS } from "@/core/supabase/select-columns";
 
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
@@ -300,9 +300,7 @@ export async function loadPatientEhrWorkspaceData(
       .limit(PATIENT_ATTACHMENTS_LIMIT),
     supabase
       .from("prescription_drafts")
-      .select(
-        "id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, coverage_kind, insurance_number, insurance_plan, dispensed_at, notes, professional_id"
-      )
+      .select(PRESCRIPTION_LIST_COLUMNS)
       .eq("patient_id", patientId)
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false })

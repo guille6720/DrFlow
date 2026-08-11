@@ -10,6 +10,7 @@ import { cn } from "@/shared/utils/cn";
 import type { HistoriaPrescriptionSummary } from "@/features/historias/types/historia-clinical-summaries";
 import { PrescriptionDocumentActions } from "@/features/recetas/components/recetas/prescription-document-actions";
 import { PrescriptionPreviewSheet } from "@/features/recetas/components/recetas/prescription-preview-sheet";
+import { PrescriptionRefepsActions } from "@/features/recetas/components/recetas/prescription-refeps-actions";
 import { buildPrescriptionDocumentData } from "@/features/recetas/utils/build-prescription-document-data";
 import type { CoverageRuleOverridesMap } from "@/features/recetas/utils/coverage-rules-admin";
 import { printPrescriptionDocument } from "@/features/recetas/utils/print-prescription-document";
@@ -55,6 +56,7 @@ type Props = {
   onReuseMedications?: (prescription: HistoriaPrescriptionSummary) => void;
   shareSlot?: (prescription: HistoriaPrescriptionSummary) => ReactNode;
   coverageRuleOverrides?: CoverageRuleOverridesMap | null;
+  refepsEnabled?: boolean;
 };
 
 function displayStatus(rx: HistoriaPrescriptionSummary): string {
@@ -90,6 +92,7 @@ export function PrescriptionList({
   onReuseMedications,
   shareSlot,
   coverageRuleOverrides = null,
+  refepsEnabled = false,
 }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(
     prescriptions.find((rx) => rx.status === "issued")?.id ?? prescriptions[0]?.id ?? null
@@ -186,6 +189,21 @@ export function PrescriptionList({
                     {medications.length > 0 ? (
                       <Badge variant="default">{medications.length} med.</Badge>
                     ) : null}
+                    {isIssued && rx.refeps_status && rx.refeps_status !== "local" ? (
+                      <Badge
+                        variant={
+                          rx.refeps_status === "submitted"
+                            ? "success"
+                            : rx.refeps_status === "failed"
+                              ? "danger"
+                              : "warning"
+                        }
+                      >
+                        {rx.refeps_status === "submitted" && rx.refeps_id
+                          ? rx.refeps_id
+                          : rx.refeps_status}
+                      </Badge>
+                    ) : null}
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
                     {format(new Date(rx.issued_at ?? rx.created_at), "PPp", { locale: es })}
@@ -219,6 +237,14 @@ export function PrescriptionList({
                         compact
                         data={documentData}
                         onPreview={() => openPreview(rx.id)}
+                      />
+                      <PrescriptionRefepsActions
+                        compact
+                        prescriptionId={rx.id}
+                        refepsStatus={rx.refeps_status}
+                        refepsId={rx.refeps_id}
+                        refepsError={rx.refeps_error}
+                        refepsEnabled={refepsEnabled}
                       />
                       {shareSlot?.(rx)}
                     </>

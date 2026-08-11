@@ -107,6 +107,7 @@ export default async function PacienteDetailPage({
                 name: clinic?.name ?? "Consultorio",
                 address: clinic?.address ?? null,
                 phone: clinic?.phone ?? null,
+                refepsEnabled: clinic?.refeps_enabled ?? false,
               }}
               patient={patientRow}
               patientRecord={patientRow}

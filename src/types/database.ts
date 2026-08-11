@@ -55,6 +55,9 @@ export interface Clinic {
   legal_privacy_version?: string | null;
   accepted_coverages?: string[] | null;
   voice_input_enabled?: boolean;
+  refeps_enabled?: boolean;
+  refeps_establishment_code?: string | null;
+  refeps_auto_submit?: boolean;
 }
 
 export interface ClinicMember {
