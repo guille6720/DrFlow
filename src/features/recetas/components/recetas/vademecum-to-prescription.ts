@@ -16,6 +16,8 @@ export function vademecumToPrescription(item: PamiVademecumResult): Prescription
     quantity: 1,
     posology: "",
     route: "oral",
+    vademecum_code: String(item.alfabeta_id),
+    search_source: "pami",
   };
 }
 

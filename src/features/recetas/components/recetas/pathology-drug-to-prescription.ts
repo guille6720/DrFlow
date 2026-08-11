@@ -16,5 +16,6 @@ export function pathologyDrugToPrescription(pd: PathologyDrug): PrescriptionMedi
     quantity: 1,
     posology: pd.dosage_reference ?? "",
     route: drug.route ?? "oral",
+    search_source: "generic",
   };
 }

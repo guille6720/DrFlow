@@ -2,6 +2,7 @@
 
 import { PrescriptionMedicationVademecumTypeahead } from "@/features/recetas/components/recetas/prescription-medication-vademecum-typeahead";
 import { vademecumToPrescription } from "@/features/recetas/components/recetas/vademecum-to-prescription";
+import type { MedicationSearchSource } from "@/features/recetas/engine/types";
 
 import { Input } from "@/components/ui/input";
 import type { PamiVademecumResult } from "@/types/pharmacology";
@@ -10,32 +11,59 @@ import type { PrescriptionMedication } from "@/types/prescription";
 type Props = {
   med: PrescriptionMedication;
   index: number;
+  medicationSearch?: MedicationSearchSource;
   updateMed: (index: number, field: keyof PrescriptionMedication, value: string | number | boolean) => void;
   applyVademecum: (index: number, item: PamiVademecumResult) => void;
 };
 
-export function PrescriptionMedicationLineFields({ med, index, updateMed, applyVademecum }: Props) {
+export function PrescriptionMedicationLineFields({
+  med,
+  index,
+  medicationSearch = "pami_vademecum",
+  updateMed,
+  applyVademecum,
+}: Props) {
+  const usePamiVademecum = medicationSearch === "pami_vademecum";
   function handleVademecumSelect(item: PamiVademecumResult) {
     applyVademecum(index, item);
   }
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      <PrescriptionMedicationVademecumTypeahead
-        label="Nombre genérico *"
-        required
-        value={med.generic_name}
-        onChange={(value) => updateMed(index, "generic_name", value)}
-        onSelect={handleVademecumSelect}
-        placeholder="Ej: ibuprofeno, enalapril…"
-      />
-      <PrescriptionMedicationVademecumTypeahead
-        label="Marca (opcional)"
-        value={med.brand_name ?? ""}
-        onChange={(value) => updateMed(index, "brand_name", value)}
-        onSelect={handleVademecumSelect}
-        placeholder="Ej: Ibupirac, Lotrial…"
-      />
+      {usePamiVademecum ? (
+        <PrescriptionMedicationVademecumTypeahead
+          label="Nombre genérico *"
+          required
+          value={med.generic_name}
+          onChange={(value) => updateMed(index, "generic_name", value)}
+          onSelect={handleVademecumSelect}
+          placeholder="Ej: ibuprofeno, enalapril…"
+        />
+      ) : (
+        <Input
+          label="Nombre genérico *"
+          required
+          value={med.generic_name}
+          onChange={(e) => updateMed(index, "generic_name", e.target.value)}
+          placeholder="Ej: ibuprofeno, enalapril…"
+        />
+      )}
+      {usePamiVademecum ? (
+        <PrescriptionMedicationVademecumTypeahead
+          label="Marca (opcional)"
+          value={med.brand_name ?? ""}
+          onChange={(value) => updateMed(index, "brand_name", value)}
+          onSelect={handleVademecumSelect}
+          placeholder="Ej: Ibupirac, Lotrial…"
+        />
+      ) : (
+        <Input
+          label="Marca (opcional)"
+          value={med.brand_name ?? ""}
+          onChange={(e) => updateMed(index, "brand_name", e.target.value)}
+          placeholder="Ej: Ibupirac, Lotrial…"
+        />
+      )}
       <Input
         label="Presentación"
         value={med.presentation ?? ""}
@@ -88,5 +116,7 @@ export function mergeVademecumIntoMedication(
     route: mapped.route ?? current.route,
     quantity: current.quantity || mapped.quantity,
     posology: current.posology || mapped.posology,
+    vademecum_code: mapped.vademecum_code,
+    search_source: mapped.search_source,
   };
 }

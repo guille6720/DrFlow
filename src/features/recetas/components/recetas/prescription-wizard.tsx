@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 import { PrescriptionDiagnosisFields } from "@/features/recetas/components/recetas/prescription-diagnosis-fields";
 import { PrescriptionMedicationsSection } from "@/features/recetas/components/recetas/prescription-medications-section";
@@ -18,6 +18,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { coverageOptionsForClinic, isPamiCoverage } from "@/lib/constants/coverages";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
+import type { PathologySearchResult } from "@/types/pharmacology";
 import type { PrescriptionMedication } from "@/types/prescription";
 
 interface Professional {
@@ -131,7 +132,16 @@ export function PrescriptionWizard({
     setSaveTemplateName,
     reuseNotice,
     coverageInfoMessages,
+    effectiveMedicationSearch,
   } = wizard;
+
+  const handlePathologySelect = useCallback(
+    (pathology: PathologySearchResult) => {
+      if (!cie10.trim()) setCie10(pathology.cie10_code);
+      if (!diagnosisText.trim()) setDiagnosisText(pathology.name);
+    },
+    [cie10, diagnosisText, setCie10, setDiagnosisText]
+  );
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -299,6 +309,8 @@ export function PrescriptionWizard({
             medications={medications}
             setMedications={setMedications}
             updateMed={updateMed}
+            medicationSearch={effectiveMedicationSearch}
+            onPathologySelect={handlePathologySelect}
           />
         </div>
       ) : null}

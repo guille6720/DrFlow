@@ -128,6 +128,11 @@ export function PrescriptionDocumentView({ data, className }: Props) {
                     Marca sugerida: {med.brand_name}
                   </p>
                 ) : null}
+                {med.vademecum_code ? (
+                  <p className="drflow-medical-order-doc-text mt-1">
+                    Cód. vademécum PAMI: {med.vademecum_code}
+                  </p>
+                ) : null}
                 <p className="drflow-medical-order-doc-text mt-1">
                   {[med.presentation, med.concentration, med.route, `Cant: ${med.quantity}`]
                     .filter(Boolean)

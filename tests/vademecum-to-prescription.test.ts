@@ -29,6 +29,8 @@ describe("vademecumToPrescription", () => {
     expect(med.concentration).toBe("40 mg");
     expect(med.quantity).toBe(1);
     expect(med.route).toBe("oral");
+    expect(med.vademecum_code).toBe("42415");
+    expect(med.search_source).toBe("pami");
   });
 
   it("formats drapp-style label", () => {

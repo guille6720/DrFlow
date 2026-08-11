@@ -16,6 +16,10 @@ import { emptyPrescriptionMedication } from "@/features/recetas/components/recet
 import { PrescriptionMedicationsSection } from "@/features/recetas/components/recetas/prescription-medications-section";
 import { COVERAGE_KINDS } from "@/features/recetas/engine/types";
 import type { PrescriptionTemplateRow } from "@/features/recetas/repositories/prescription-templates.repository";
+import {
+  getEffectiveCoverageRule,
+  isCoverageKind,
+} from "@/features/recetas/utils/coverage-rules-admin";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -23,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
+import type { PathologySearchResult } from "@/types/pharmacology";
 import type { PrescriptionMedication } from "@/types/prescription";
 
 type Professional = {
@@ -92,6 +97,20 @@ export function PrescriptionTemplatesManager({
     () => [...templates].sort((a, b) => a.name.localeCompare(b.name, "es")),
     [templates]
   );
+
+  const templateMedicationSearch = useMemo(() => {
+    const kind = editor.coverage_kind;
+    if (!isCoverageKind(kind)) return "pharmacology" as const;
+    return getEffectiveCoverageRule(kind, null).medicationSearch;
+  }, [editor.coverage_kind]);
+
+  function handlePathologySelect(pathology: PathologySearchResult) {
+    setEditor((prev) => ({
+      ...prev,
+      diagnosis_cie10: prev.diagnosis_cie10.trim() ? prev.diagnosis_cie10 : pathology.cie10_code,
+      diagnosis_text: prev.diagnosis_text.trim() ? prev.diagnosis_text : pathology.name,
+    }));
+  }
 
   function selectTemplate(template: PrescriptionTemplateRow) {
     setSelectedId(template.id);
@@ -260,6 +279,8 @@ export function PrescriptionTemplatesManager({
               }))
             }
             updateMed={updateMed}
+            medicationSearch={templateMedicationSearch}
+            onPathologySelect={handlePathologySelect}
           />
 
           <Textarea

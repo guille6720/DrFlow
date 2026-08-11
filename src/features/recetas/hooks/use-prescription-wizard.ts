@@ -523,5 +523,6 @@ export function usePrescriptionWizard({
     reuseNotice,
     coverageInfoMessages,
     effectiveMaxValidityDays: effectiveCoverageRule.maxValidityDays ?? 30,
+    effectiveMedicationSearch: effectiveCoverageRule.medicationSearch,
   };
 }
