@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   LEGACY_TAB_ALIASES,
@@ -38,34 +38,37 @@ function searchParamsFromPatientUrl(url: string): URLSearchParams {
 /** Client tab + query state synced to the URL without triggering a full RSC reload. */
 export function usePatientWorkspaceTab(patientId: string, initialTab?: PatientWorkspaceTabId) {
   const nextSearchParams = useSearchParams();
-  const [activeTab, setActiveTabState] = useState<PatientWorkspaceTabId>(() =>
-    resolveTabFromLocation(initialTab, nextSearchParams)
+  const searchParamsKey = nextSearchParams.toString();
+  const [manualOverride, setManualOverride] = useState<URLSearchParams | null>(null);
+
+  const workspaceSearchParams = useMemo(
+    () => manualOverride ?? new URLSearchParams(searchParamsKey),
+    [manualOverride, searchParamsKey]
   );
-  const [workspaceSearchParams, setWorkspaceSearchParams] = useState<URLSearchParams>(() =>
-    typeof window === "undefined"
-      ? new URLSearchParams(nextSearchParams.toString())
-      : readLocationSearchParams()
+
+  const activeTab = useMemo(
+    () => resolveTabFromLocation(initialTab, workspaceSearchParams),
+    [initialTab, workspaceSearchParams]
   );
 
   useEffect(() => {
+    const timer = window.setTimeout(() => setManualOverride(null), 0);
+    return () => window.clearTimeout(timer);
+  }, [searchParamsKey]);
+
+  useEffect(() => {
     const onPopState = () => {
-      const params = readLocationSearchParams();
-      setWorkspaceSearchParams(params);
-      setActiveTabState(resolveTabFromLocation(initialTab, params));
+      setManualOverride(readLocationSearchParams());
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-  }, [initialTab]);
+  }, []);
 
-  const applyWorkspaceUrl = useCallback(
-    (url: string) => {
-      const params = searchParamsFromPatientUrl(url);
-      setWorkspaceSearchParams(params);
-      setActiveTabState(resolveTabFromLocation(initialTab, params));
-      window.history.replaceState(window.history.state, "", url);
-    },
-    [initialTab]
-  );
+  const applyWorkspaceUrl = useCallback((url: string) => {
+    const params = searchParamsFromPatientUrl(url);
+    setManualOverride(params);
+    window.history.replaceState(window.history.state, "", url);
+  }, []);
 
   const navigateWorkspace = useCallback(
     (opts: PatientWorkspaceUrlOptions) => {

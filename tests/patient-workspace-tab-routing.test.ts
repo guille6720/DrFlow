@@ -25,6 +25,10 @@ describe("patient-workspace-tab-routing", () => {
   it("loads workspace sheets only when URL opens a sheet", () => {
     expect(shouldLoadWorkspaceSheets("resumen", params({}))).toBe(false);
     expect(shouldLoadWorkspaceSheets("soap", params({ action: "nueva" }))).toBe(true);
+    expect(shouldLoadWorkspaceSheets("soap", params({ tab: "soap", sheet: "receta" }))).toBe(true);
+    expect(shouldLoadWorkspaceSheets("soap", params({ action: "nueva", sheet: "receta" }))).toBe(
+      true
+    );
     expect(shouldLoadWorkspaceSheets("recetas", params({ action: "nueva" }))).toBe(true);
     expect(shouldLoadWorkspaceSheets("soap", params({ record: "abc" }))).toBe(true);
     expect(shouldLoadWorkspaceSheets("resumen", params({ action: "certificado" }))).toBe(true);
