@@ -101,6 +101,7 @@ export async function issuePrescriptionDraft(
   draftId: string,
   clinicId: string,
   patch?: {
+    patient_insurance?: string | null;
     coverage_kind?: string | null;
     insurance_number?: string | null;
     insurance_plan?: string | null;

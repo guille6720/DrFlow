@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import { describe, expect, it } from "vitest";
 
 import { DEFAULT_COVERAGE_RULES } from "@/features/recetas/engine/default-coverage-rules";
@@ -87,5 +89,21 @@ describe("coverage rules admin Etapa 5", () => {
     const payload = buildCoverageRulePayload(parsed.data);
     expect(payload.maxValidityDays).toBe(45);
     expect(payload.infoMessages).toEqual(["Línea 1", "Línea 2"]);
+  });
+
+  it("prod SQL scripts restrict coverage_rules writes to can_manage_clinic", () => {
+    const prodEngine = readFileSync(
+      resolve(process.cwd(), "supabase/scripts/prod-fix-prescription-engine.sql"),
+      "utf8"
+    );
+    const prodRls = readFileSync(
+      resolve(process.cwd(), "supabase/scripts/prod-fix-coverage-rules-rls.sql"),
+      "utf8"
+    );
+
+    for (const sql of [prodEngine, prodRls]) {
+      expect(sql).toMatch(/coverage_rules_insert[\s\S]*can_manage_clinic/);
+      expect(sql).not.toMatch(/coverage_rules_insert[\s\S]*can_write_clinical/);
+    }
   });
 });

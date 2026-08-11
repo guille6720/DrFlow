@@ -337,6 +337,7 @@ export async function issuePrescriptionRecord(
   });
 
   const issuePatch = {
+    patient_insurance: engineDraft.patient_insurance,
     coverage_kind: ctx.coverageKind,
     insurance_number: engineDraft.insurance_number,
     insurance_plan: engineDraft.insurance_plan,

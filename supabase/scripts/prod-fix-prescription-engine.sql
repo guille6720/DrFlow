@@ -155,12 +155,15 @@ CREATE POLICY coverage_rules_select ON coverage_rules FOR SELECT
 
 DROP POLICY IF EXISTS coverage_rules_insert ON coverage_rules;
 CREATE POLICY coverage_rules_insert ON coverage_rules FOR INSERT
-  WITH CHECK (can_write_clinical(clinic_id));
+  WITH CHECK (can_manage_clinic(clinic_id));
 
 DROP POLICY IF EXISTS coverage_rules_update ON coverage_rules;
 CREATE POLICY coverage_rules_update ON coverage_rules FOR UPDATE
-  USING (can_write_clinical(clinic_id));
+  USING (can_manage_clinic(clinic_id));
 
 DROP POLICY IF EXISTS coverage_rules_delete ON coverage_rules;
 CREATE POLICY coverage_rules_delete ON coverage_rules FOR DELETE
-  USING (can_write_clinical(clinic_id));
+  USING (can_manage_clinic(clinic_id));
+
+COMMENT ON TABLE coverage_rules IS
+  'Reglas configurables por cobertura — escritura solo clinic_admin/secretary (can_manage_clinic)';

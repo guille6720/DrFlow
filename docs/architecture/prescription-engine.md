@@ -1,8 +1,8 @@
 # Prescription Engine — Architecture Decision Record
 
-**Status:** Accepted (Etapas 0–6 complete)  
+**Status:** Accepted (Etapas 0–6 + v1.1–v1.4)  
 **Date:** 2026-08-10  
-**Last hardening:** 2026-08-11 (Etapa 6)
+**Last hardening:** 2026-08-11 (v1.4)
 
 ## Context
 
@@ -31,9 +31,18 @@ UI → Actions → prescriptions.service → PrescriptionEngine → CoverageStra
 | 5 | Panel config PAMI (`coverage_rules`) |
 | 6 | QA matrix, security hardening, performance review |
 
-### Security hardening (Etapa 6)
+### Post-release (v1.1–v1.4)
 
-- **Issue-time coverage:** `resolveAuthoritativeCoverageForIssue()` uses patient DB `insurance_provider` — client cannot downgrade PAMI → PARTICULAR on emit.
+| Version | Scope |
+|---------|-------|
+| v1.1 | Wizard loads DB `coverage_rules`; estado dispensada; config multi-cobertura en `/configuracion?seccion=coberturas` |
+| v1.2 | `medicationSearch` wired (PAMI vademécum vs guía farmacológica); `vademecum_code` (Alfabeta) en líneas PAMI |
+| v1.3 | `resolveAuthoritativeCoverage` en save + wizard; cobertura del legajo bloqueada |
+| v1.4 | Validación de cobertura también en borradores; vademécum en PDF/print; QA checklist extendido |
+
+### Security hardening (Etapa 6 + v1.3)
+
+- **Issue-time coverage:** `resolveAuthoritativeCoverage()` uses patient DB `insurance_provider` when on file — client cannot downgrade PAMI → PARTICULAR on save or emit.
 - **Disclaimer:** `disclaimer_accepted` persisted from form; required on issue.
 - **coverage_rules RLS:** Writes restricted to `can_manage_clinic` (migration 097).
 - **QR:** Generated in-app (`react-qr-code` / `qrcode-generator`) — no PHI to third parties.

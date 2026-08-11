@@ -18,9 +18,12 @@ Cuando la cobertura del paciente es PAMI (`isPamiCoverage()`):
 ## Qué NO está implementado (requiere normativa / integración)
 
 - Validación PMO / autorizaciones PAMI
-- Persistencia de `alfabeta_id` obligatoria en cada línea
 - Trazabilidad REFEPS / RENaPDiS
 - Formato oficial PAMI distinto al PDF local actual
+
+## Vademécum PAMI (v1.2+)
+
+Al elegir un medicamento del vademécum PAMI, la línea guarda `vademecum_code` (ID Alfabeta) y lo muestra en wizard, vista previa, PDF e impresión.
 
 ## Cómo configurar reglas por clínica
 
