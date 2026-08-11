@@ -101,7 +101,12 @@ export function HistoriaDetailContent({
           Historia clínica completa
         </Link>
         {record.appointment_id && <ConsultationTimer storageKey={record.appointment_id} />}
-        <PrintClinicalRecordButton record={record} patient={patient} professional={professional} />
+        <PrintClinicalRecordButton
+          record={record}
+          patient={patient}
+          professional={professional}
+          professionalList={professionalList}
+        />
         <PatientWhatsAppButton
           phone={patient.phone}
           message={buildPatientContactMessage(
@@ -130,7 +135,11 @@ export function HistoriaDetailContent({
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">
-          <HistoriaDetailConsultaCard record={record} professional={professional} />
+          <HistoriaDetailConsultaCard
+            record={record}
+            professional={professional}
+            professionalList={professionalList}
+          />
           <InformedConsentPanel
             patientId={patient.id}
             clinicalRecordId={id}

@@ -9,7 +9,8 @@ import {
 } from "@/features/recetas/utils/prescription-document-coverage";
 import type { PrescriptionDocumentData } from "@/features/recetas/utils/print-prescription-document";
 
-import { buildProfessionalSignature, getProfessionalDisplayName } from "@/lib/utils/professional";
+import { getProfessionalDisplayName } from "@/lib/utils/professional";
+import { resolveProfessionalDocumentSignature } from "@/lib/utils/professional-signature-document";
 import type { PrescriptionMedication } from "@/types/prescription";
 
 type PatientInfo = {
@@ -119,8 +120,7 @@ export function buildPrescriptionDocumentData(
       full_name: pro ? getProfessionalDisplayName(pro) : "Profesional",
       license_number: pro?.license_number ?? null,
       specialty: professionalSpecialtyName(pro?.specialties),
-      signatureText: pro ? buildProfessionalSignature(pro) : null,
-      signatureImageUrl: pro?.signature_image_url ?? null,
+      ...resolveProfessionalDocumentSignature(pro),
     },
     clinic,
   };

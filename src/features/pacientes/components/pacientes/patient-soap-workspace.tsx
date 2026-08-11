@@ -112,6 +112,7 @@ export function PatientSoapWorkspace({
       initialSelectedId={parsed.consulta}
       patientId={patient.id}
       clinicalRecordsPagination={clinicalRecordsPagination}
+      professionals={professionals}
     >
       <PatientEhrShellFrame embedded={embedded}>
         {!embedded ? (

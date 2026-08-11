@@ -1,7 +1,8 @@
 import type { HistoriaMedicalOrderSummary } from "@/features/historias/types/historia-clinical-summaries";
 import type { MedicalOrderDocumentData } from "@/features/recetas/utils/print-medical-order-document";
 
-import { buildProfessionalSignature, getProfessionalDisplayName } from "@/lib/utils/professional";
+import { getProfessionalDisplayName } from "@/lib/utils/professional";
+import { resolveProfessionalDocumentSignature } from "@/lib/utils/professional-signature-document";
 
 type PatientInfo = {
   first_name: string;
@@ -65,8 +66,7 @@ export function buildMedicalOrderDocumentData(
       full_name: fullName,
       license_number: pro?.license_number ?? null,
       specialty: professionalSpecialtyName(pro?.specialties) ?? null,
-      signatureText: pro ? buildProfessionalSignature(pro) : null,
-      signatureImageUrl: pro?.signature_image_url ?? null,
+      ...resolveProfessionalDocumentSignature(pro),
     },
     clinic,
   };

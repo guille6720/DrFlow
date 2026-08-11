@@ -30,6 +30,9 @@ import type {
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
 
+import type { ProfessionalSignatureSource } from "@/lib/utils/professional";
+import { resolveClinicalRecordDocumentSignature } from "@/lib/utils/professional-signature-document";
+
 function buildEvolutionList(sorted: PatientEhrConsultation[]): PatientEhrConsultation[] {
   const withText = sorted.filter(
     (c) =>
@@ -69,8 +72,10 @@ export function usePatientEhrState(
   options?: {
     patientId?: string;
     clinicalRecordsPagination?: PatientEhrClinicalRecordsPagination;
+    professionals?: Array<ProfessionalSignatureSource & { id?: string }>;
   }
 ) {
+  const professionals = options?.professionals ?? [];
   const [extraConsultations, setExtraConsultations] = useState<PatientEhrConsultation[]>([]);
   const [extraDiagnosisRows, setExtraDiagnosisRows] = useState<PatientEhrDiagnosisRow[]>([]);
   const [extraTreatmentRows, setExtraTreatmentRows] = useState<PatientEhrTreatmentRow[]>([]);
@@ -222,6 +227,7 @@ export function usePatientEhrState(
       dayConsultations: dayPrintConsultations,
       diagnosisRows,
       treatmentRows,
+      professionals,
     });
 
     if (!result.ok) {
@@ -231,6 +237,14 @@ export function usePatientEhrState(
 
   function toggleFilter(key: PatientEhrFilterKey) {
     setFilters((f) => ({ ...f, [key]: !f[key] }));
+  }
+
+  function resolveConsultationSignature(consultation: PatientEhrConsultation) {
+    return resolveClinicalRecordDocumentSignature({
+      professionalId: consultation.professional_id,
+      storedSignatureText: consultation.professional_signature,
+      professionals,
+    });
   }
 
   return {
@@ -254,5 +268,6 @@ export function usePatientEhrState(
     clinicalRecordsPagination: recordsPagination,
     loadMoreRecords,
     loadingMoreRecords,
+    resolveConsultationSignature,
   };
 }

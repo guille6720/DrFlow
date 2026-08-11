@@ -75,6 +75,8 @@ export type PatientEhrMappedRecord = {
   diagnosis: string | null;
   evolution: string | null;
   indications: string | null;
+  professional_id?: string | null;
+  professional_signature?: string | null;
   professional_name: string;
   professional_license_national?: string | null;
   professional_license_provincial?: string | null;
@@ -119,6 +121,8 @@ export function mapClinicalRecordsForEhr(
     diagnosis: string | null;
     evolution: string | null;
     indications: string | null;
+    professional_id?: string | null;
+    professional_signature?: string | null;
     professionals: unknown;
   }> | null
 ): PatientEhrMappedRecord[] {
@@ -140,6 +144,8 @@ export function mapClinicalRecordsForEhr(
         diagnosis: r.diagnosis,
         evolution: r.evolution,
         indications: r.indications,
+        professional_id: r.professional_id ?? null,
+        professional_signature: r.professional_signature ?? null,
         professional_name: profile?.full_name ?? "Profesional",
         professional_license_national: professional?.license_national ?? null,
         professional_license_provincial: professional?.license_provincial ?? null,
@@ -284,7 +290,7 @@ export async function loadPatientEhrWorkspaceData(
     supabase
       .from("clinical_records")
       .select(
-        "id, created_at, chief_complaint, diagnosis, evolution, indications, professionals(license_national, license_provincial, profiles(full_name, email))"
+        "id, created_at, chief_complaint, diagnosis, evolution, indications, professional_id, professional_signature, professionals(license_national, license_provincial, profiles(full_name, email))"
       )
       .eq("clinic_id", clinicId)
       .eq("patient_id", patientId)

@@ -8,7 +8,12 @@ export type PatientChartProfessional = {
   id: string;
   display_name?: string | null;
   license_number?: string | null;
+  license_national?: string | null;
+  license_provincial?: string | null;
+  signature_text?: string | null;
+  signature_image_url?: string | null;
   profiles?: { full_name: string } | null;
+  specialties?: { name: string } | { name: string }[] | null;
 };
 
 export type PatientChartPatient = {

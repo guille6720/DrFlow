@@ -5,6 +5,7 @@ import { useMemo } from "react";
 
 import { toast } from "@/core/notifications/toast";
 
+import type { HistoriaDetailProfessional } from "@/features/historias/server/load-historia-detail-page";
 import { printEhrClinicalDocument } from "@/features/historias/utils/print-ehr-clinical-document";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
 import { buildEhrPayloadFromRecords } from "@/features/pacientes/utils/patient-ehr-model";
@@ -14,10 +15,12 @@ import { Button } from "@/components/ui/button";
 type ClinicalRecord = {
   id: string;
   created_at: string;
+  professional_id: string;
   chief_complaint: string | null;
   diagnosis: string | null;
   evolution: string | null;
   indications: string | null;
+  professional_signature?: string | null;
 };
 
 type Patient = {
@@ -43,10 +46,16 @@ interface Props {
   record: ClinicalRecord;
   patient: Patient;
   professional: RecordProfessional;
+  professionalList?: HistoriaDetailProfessional[];
 }
 
 /** Imprime la consulta con layout Equipos en un documento aislado (sin UI de la app). */
-export function PrintClinicalRecordButton({ record, patient, professional }: Props) {
+export function PrintClinicalRecordButton({
+  record,
+  patient,
+  professional,
+  professionalList = [],
+}: Props) {
   const patientInfo = useMemo(
     () => ({
       id: patient.id,
@@ -78,6 +87,8 @@ export function PrintClinicalRecordButton({ record, patient, professional }: Pro
           professional.license_national ?? professional.license_number ?? null,
         professional_license_provincial: professional.license_provincial ?? null,
         professional_email: profile?.email ?? null,
+        professional_id: record.professional_id,
+        professional_signature: record.professional_signature ?? null,
       },
     ]);
   }, [record, professional]);
@@ -90,6 +101,7 @@ export function PrintClinicalRecordButton({ record, patient, professional }: Pro
       dayConsultations: consultations,
       diagnosisRows,
       treatmentRows,
+      professionals: professionalList,
     });
 
     if (!result.ok) {

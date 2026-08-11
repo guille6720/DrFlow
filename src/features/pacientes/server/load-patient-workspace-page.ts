@@ -54,7 +54,12 @@ export type PatientWorkspaceProfessional = {
   id: string;
   display_name: string | null;
   license_number: string | null;
+  license_national?: string | null;
+  license_provincial?: string | null;
+  signature_text?: string | null;
+  signature_image_url?: string | null;
   profiles: { full_name: string } | null;
+  specialties?: { name: string } | { name: string }[] | null;
 };
 
 export type PatientWorkspacePagePayload = {
@@ -114,6 +119,10 @@ function mapProfessionals(rows: ProfessionalListRow[] | null): PatientWorkspaceP
       id: p.id,
       display_name: p.display_name,
       license_number: p.license_number,
+      license_national: p.license_national,
+      license_provincial: p.license_provincial,
+      signature_text: p.signature_text,
+      signature_image_url: p.signature_image_url,
       profiles: unwrapNestedRow(p.profiles),
     })) ?? []
   );
@@ -146,7 +155,7 @@ export async function loadPatientWorkspacePageData(
     ? supabase
         .from("clinical_records")
         .select(
-          "id, created_at, chief_complaint, diagnosis, evolution, indications, professionals(profiles(full_name))",
+          "id, created_at, chief_complaint, diagnosis, evolution, indications, professional_id, professional_signature, professionals(license_national, license_provincial, profiles(full_name, email))",
           { count: "exact" }
         )
         .eq("clinic_id", clinicId)

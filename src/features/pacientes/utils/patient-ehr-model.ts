@@ -1,10 +1,12 @@
 export type PatientEhrConsultation = {
   id: string;
   created_at: string;
+  professional_id?: string | null;
   professional_name: string;
   professional_license_national?: string | null;
   professional_license_provincial?: string | null;
   professional_email?: string | null;
+  professional_signature?: string | null;
   chief_complaint: string;
   diagnosis: string;
   evolution: string;
@@ -174,6 +176,8 @@ export function buildEhrPayloadFromRecords(
     professional_license_national?: string | null;
     professional_license_provincial?: string | null;
     professional_email?: string | null;
+    professional_id?: string | null;
+    professional_signature?: string | null;
   }>
 ): {
   consultations: PatientEhrConsultation[];
@@ -199,6 +203,8 @@ export function buildEhrPayloadFromRecords(
       consultations.push({
         id: r.id,
         created_at: r.created_at,
+        professional_id: r.professional_id ?? null,
+        professional_signature: r.professional_signature ?? null,
         professional_name: r.professional_name,
         professional_license_national: r.professional_license_national,
         professional_license_provincial: r.professional_license_provincial,

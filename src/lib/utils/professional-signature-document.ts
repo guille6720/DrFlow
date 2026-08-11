@@ -1,7 +1,63 @@
+import {
+  buildProfessionalSignature,
+  type ProfessionalSignatureSource,
+} from "@/lib/utils/professional";
+
 export type DocumentSignature = {
   signatureText?: string | null;
   signatureImageUrl?: string | null;
 };
+
+export function resolveProfessionalDocumentSignature(
+  professional: ProfessionalSignatureSource | null | undefined
+): DocumentSignature {
+  if (!professional) {
+    return { signatureText: null, signatureImageUrl: null };
+  }
+
+  const signatureText = buildProfessionalSignature(professional);
+  const signatureImageUrl = professional.signature_image_url?.trim() || null;
+
+  if (!signatureText && !signatureImageUrl) {
+    return { signatureText: null, signatureImageUrl: null };
+  }
+
+  return { signatureText, signatureImageUrl };
+}
+
+export function resolveProfessionalDocumentSignatureById(
+  professionalId: string | null | undefined,
+  professionals: Array<ProfessionalSignatureSource & { id?: string }>
+): DocumentSignature {
+  if (!professionalId) {
+    return { signatureText: null, signatureImageUrl: null };
+  }
+
+  const professional = professionals.find((item) => item.id === professionalId);
+  return resolveProfessionalDocumentSignature(professional);
+}
+
+export function resolveClinicalRecordDocumentSignature(input: {
+  professionalId?: string | null;
+  storedSignatureText?: string | null;
+  professionals?: Array<ProfessionalSignatureSource & { id?: string }>;
+}): DocumentSignature {
+  const configured = resolveProfessionalDocumentSignatureById(
+    input.professionalId,
+    input.professionals ?? []
+  );
+
+  if (configured.signatureText || configured.signatureImageUrl) {
+    return configured;
+  }
+
+  const stored = input.storedSignatureText?.trim();
+  if (!stored) {
+    return { signatureText: null, signatureImageUrl: null };
+  }
+
+  return { signatureText: stored, signatureImageUrl: null };
+}
 
 export function buildDocumentSignatureHtml(signature: DocumentSignature): string {
   const text = signature.signatureText?.trim();

@@ -3,6 +3,7 @@
 import { createContext, type ReactNode, useContext } from "react";
 
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
+import type { PatientChartProfessional } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import { usePatientEhrState } from "@/features/pacientes/hooks/use-patient-ehr-state";
 import type { PatientEhrClinicalRecordsPagination } from "@/features/pacientes/server/load-patient-ehr-data";
 import type {
@@ -25,6 +26,7 @@ type ProviderProps = {
   initialSelectedId?: string | null;
   patientId?: string;
   clinicalRecordsPagination?: PatientEhrClinicalRecordsPagination;
+  professionals?: PatientChartProfessional[];
   children: ReactNode;
 };
 
@@ -37,6 +39,7 @@ export function PatientEhrStateProvider({
   initialSelectedId = null,
   patientId,
   clinicalRecordsPagination,
+  professionals = [],
   children,
 }: ProviderProps) {
   const state = usePatientEhrState(
@@ -48,7 +51,7 @@ export function PatientEhrStateProvider({
       treatmentRows,
     },
     initialSelectedId,
-    { patientId, clinicalRecordsPagination }
+    { patientId, clinicalRecordsPagination, professionals }
   );
   return (
     <PatientEhrStateContext.Provider value={state}>{children}</PatientEhrStateContext.Provider>

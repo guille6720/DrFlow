@@ -71,6 +71,7 @@ export function PatientEhrInteractiveBody({
     clinicalRecordsPagination,
     loadMoreRecords,
     loadingMoreRecords,
+    resolveConsultationSignature,
   } = usePatientEhrStateContext();
 
   function handleSidebarSelect(id: string) {
@@ -149,13 +150,21 @@ export function PatientEhrInteractiveBody({
 
                 <div className="drflow-ehr-print-only drflow-ehr-print-day-content mt-3 space-y-3">
                   {dayPrintConsultations.map((consultation) => (
-                    <PatientEhrPrintEvolutionBlock key={consultation.id} consultation={consultation} />
+                    <PatientEhrPrintEvolutionBlock
+                      key={consultation.id}
+                      consultation={consultation}
+                      signature={resolveConsultationSignature(consultation)}
+                    />
                   ))}
                 </div>
 
                 <div className="drflow-ehr-print-only drflow-ehr-print-all-content mt-3 space-y-3">
                   {evolutionList.map((consultation) => (
-                    <PatientEhrPrintEvolutionBlock key={consultation.id} consultation={consultation} />
+                    <PatientEhrPrintEvolutionBlock
+                      key={consultation.id}
+                      consultation={consultation}
+                      signature={resolveConsultationSignature(consultation)}
+                    />
                   ))}
                 </div>
               </>

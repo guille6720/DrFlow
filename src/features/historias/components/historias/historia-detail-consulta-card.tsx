@@ -2,16 +2,24 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 import type { HistoriaDetailPageData } from "@/features/historias/server/load-historia-detail-page";
+import { DocumentSignatureBlock } from "@/features/recetas/components/recetas/document-signature-block";
 
 import { Card } from "@/components/ui/card";
+import { resolveClinicalRecordDocumentSignature } from "@/lib/utils/professional-signature-document";
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 
 type Props = {
   record: HistoriaDetailPageData["record"];
   professional: HistoriaDetailPageData["professional"];
+  professionalList: HistoriaDetailPageData["professionalList"];
 };
 
-export function HistoriaDetailConsultaCard({ record, professional }: Props) {
+export function HistoriaDetailConsultaCard({ record, professional, professionalList }: Props) {
+  const signature = resolveClinicalRecordDocumentSignature({
+    professionalId: String(record.professional_id),
+    storedSignatureText: record.professional_signature,
+    professionals: professionalList,
+  });
   return (
     <Card title="Consulta">
       <dl className="space-y-4 text-sm">
@@ -47,13 +55,9 @@ export function HistoriaDetailConsultaCard({ record, professional }: Props) {
             {sanitizeClinicalDisplayText(record.indications) || "—"}
           </dd>
         </div>
-        {record.professional_signature && (
-          <div>
-            <dt className="font-medium">Firma</dt>
-            <dd>{record.professional_signature}</dd>
-          </div>
-        )}
       </dl>
+
+      <DocumentSignatureBlock signature={signature} />
     </Card>
   );
 }

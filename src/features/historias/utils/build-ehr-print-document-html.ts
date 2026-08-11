@@ -22,6 +22,13 @@ import type {
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
 
+import type { ProfessionalSignatureSource } from "@/lib/utils/professional";
+import {
+  buildDocumentSignatureHtml,
+  DOCUMENT_SIGNATURE_PRINT_STYLES,
+  resolveClinicalRecordDocumentSignature,
+} from "@/lib/utils/professional-signature-document";
+
 export type EhrPrintDocumentInput = {
   scope: EhrPrintScope;
   patient: PatientEhrPatientInfo;
@@ -29,6 +36,7 @@ export type EhrPrintDocumentInput = {
   dayConsultations: PatientEhrConsultation[];
   diagnosisRows: PatientEhrDiagnosisRow[];
   treatmentRows: PatientEhrTreatmentRow[];
+  professionals?: Array<ProfessionalSignatureSource & { id?: string }>;
 };
 
 function tableDateLabel(dateLabel: string): string {
@@ -65,7 +73,10 @@ function renderDemographics(patient: PatientEhrPatientInfo): string {
     </section>`;
 }
 
-function renderEvolutionBlock(consultation: PatientEhrConsultation): string {
+function renderEvolutionBlock(
+  consultation: PatientEhrConsultation,
+  professionals: Array<ProfessionalSignatureSource & { id?: string }> = []
+): string {
   const diagnoses = parseInlineDiagnoses(consultation);
   const treatments = parseInlineTreatments(consultation);
   const body = escapeHtml(evolutionText(consultation));
@@ -89,6 +100,12 @@ function renderEvolutionBlock(consultation: PatientEhrConsultation): string {
           .join("")}</ul></section>`
       : "";
 
+  const signature = resolveClinicalRecordDocumentSignature({
+    professionalId: consultation.professional_id,
+    storedSignatureText: consultation.professional_signature,
+    professionals,
+  });
+
   return `
     <article class="evolution">
       <h2 class="evolution-title">${escapeHtml(formatPrintHeaderDate(consultation.created_at))} ${escapeHtml(consultation.professional_name)}</h2>
@@ -99,6 +116,7 @@ function renderEvolutionBlock(consultation: PatientEhrConsultation): string {
       </section>
       ${diagnosisHtml}
       ${treatmentHtml}
+      ${buildDocumentSignatureHtml(signature)}
     </article>`;
 }
 
@@ -177,8 +195,9 @@ function renderTreatmentTable(
 }
 
 export function buildEhrPrintDocumentHtml(input: EhrPrintDocumentInput): string {
+  const professionals = input.professionals ?? [];
   const list = input.scope === "day" ? input.dayConsultations : input.consultations;
-  const evolutions = list.map(renderEvolutionBlock).join("");
+  const evolutions = list.map((consultation) => renderEvolutionBlock(consultation, professionals)).join("");
   const tables =
     input.scope === "all"
       ? renderDiagnosisTable(input.diagnosisRows, input.consultations) +
@@ -227,6 +246,7 @@ export function buildEhrPrintDocumentHtml(input: EhrPrintDocumentInput): string 
     .chronic { margin: 0 0 2px; color: #2563eb; font-weight: 600; }
     .pro-meta { margin: 4px 0 0; color: #2563eb; }
     .status { margin: 0; color: #16a34a; font-weight: 600; }
+    ${DOCUMENT_SIGNATURE_PRINT_STYLES}
   </style>
 </head>
 <body>

@@ -5,6 +5,7 @@ import {
 import type { PrescriptionDocumentData } from "@/features/recetas/utils/print-prescription-document";
 
 import { type JsPdfDocument, loadJsPdf } from "@/lib/utils/jspdf-loader";
+import { resolvePdfImageDataUrl } from "@/lib/utils/pdf-image-data-url";
 import type { PrescriptionMedication } from "@/types/prescription";
 import {
   ARGENTINA_PRESCRIPTION_DISCLAIMER,
@@ -96,7 +97,11 @@ function appendCoverage(doc: JsPdfDocument, data: PrescriptionDocumentData, y: n
   return y + 4;
 }
 
-function appendSignature(doc: JsPdfDocument, data: PrescriptionDocumentData, y: number): number {
+async function appendSignatureAsync(
+  doc: JsPdfDocument,
+  data: PrescriptionDocumentData,
+  y: number
+): Promise<number> {
   const text = data.professional.signatureText?.trim();
   const imageUrl = data.professional.signatureImageUrl?.trim();
   if (!text && !imageUrl) return y;
@@ -105,10 +110,11 @@ function appendSignature(doc: JsPdfDocument, data: PrescriptionDocumentData, y: 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
 
-  if (imageUrl?.startsWith("data:image/")) {
+  const pdfImageUrl = await resolvePdfImageDataUrl(imageUrl);
+  if (pdfImageUrl) {
     y = ensureSpace(doc, y, 36);
     try {
-      doc.addImage(imageUrl, "PNG", MARGIN_X, y - 4, 50, 20);
+      doc.addImage(pdfImageUrl, "PNG", MARGIN_X, y - 4, 50, 20);
       y += 24;
     } catch {
       /* ignore invalid image data */
@@ -224,7 +230,7 @@ export async function downloadPrescriptionPdf(data: PrescriptionDocumentData): P
     y += 4;
   }
 
-  y = appendSignature(doc, data, y);
+  y = await appendSignatureAsync(doc, data, y);
   y = appendQr(doc, data, y);
 
   y = ensureSpace(doc, y, 20);
