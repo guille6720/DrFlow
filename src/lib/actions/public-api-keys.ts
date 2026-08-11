@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { getSession } from "@/core/auth/session.server";
 import { generatePublicApiKeyMaterial } from "@/core/public-api/auth";
-import { PUBLIC_API_SCOPES } from "@/core/public-api/types";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
 import { createApiKeySchema, revokeApiKeySchema } from "@/core/validations/public-api-schemas";
@@ -102,5 +101,3 @@ export async function revokeClinicApiKey(formData: FormData) {
   revalidatePath("/configuracion");
   return { success: true };
 }
-
-export { PUBLIC_API_SCOPES };

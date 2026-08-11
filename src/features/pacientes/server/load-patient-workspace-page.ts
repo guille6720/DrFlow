@@ -59,7 +59,6 @@ export type PatientWorkspaceProfessional = {
   signature_text?: string | null;
   signature_image_url?: string | null;
   profiles: { full_name: string } | null;
-  specialties?: { name: string } | { name: string }[] | null;
 };
 
 export type PatientWorkspacePagePayload = {

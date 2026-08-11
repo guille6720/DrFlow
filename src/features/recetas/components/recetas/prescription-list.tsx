@@ -33,6 +33,10 @@ type ProfessionalInfo = {
   id: string;
   display_name?: string | null;
   license_number?: string | null;
+  license_national?: string | null;
+  license_provincial?: string | null;
+  signature_text?: string | null;
+  signature_image_url?: string | null;
   profiles?: { full_name?: string | null } | null;
   specialties?: { name?: string | null } | { name?: string | null }[] | null;
 };

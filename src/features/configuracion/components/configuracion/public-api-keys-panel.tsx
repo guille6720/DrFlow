@@ -4,13 +4,14 @@ import { Key, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { PUBLIC_API_SCOPES } from "@/core/public-api/types";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   type ClinicApiKeyRow,
   createClinicApiKey,
-  PUBLIC_API_SCOPES,
   revokeClinicApiKey,
 } from "@/lib/actions/public-api-keys";
 

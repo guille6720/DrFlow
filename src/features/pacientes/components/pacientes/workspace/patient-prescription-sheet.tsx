@@ -14,7 +14,7 @@ type Professional = {
   license_provincial?: string | null;
   display_name?: string | null;
   profiles?: { full_name: string } | null;
-  specialties?: { name: string } | null;
+  specialties?: { name: string } | { name: string }[] | null;
 };
 
 type Props = {
