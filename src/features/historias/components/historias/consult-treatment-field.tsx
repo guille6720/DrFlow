@@ -131,7 +131,7 @@ export function ConsultTreatmentField({
           Tratamiento
         </label>
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-60" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             ref={assignSearchRef}
             id={listId}
@@ -149,7 +149,7 @@ export function ConsultTreatmentField({
             onFocus={() => setOpen(true)}
             onKeyDown={handleSearchKeyDown}
             className={cn(
-              "w-full rounded-md border border-[var(--border)] bg-[color-mix(in_srgb,var(--ehr-panel)_96%,white_4%)] py-2.5 pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400/60",
+              "drflow-clinical-combobox-input py-2.5 pl-10 pr-10 focus:ring-2 focus:ring-teal-400/60",
               highlighted && "ring-2 ring-teal-400/60"
             )}
           />
@@ -175,7 +175,7 @@ export function ConsultTreatmentField({
           <ul
             id={`${listId}-listbox`}
             role="listbox"
-            className="absolute z-[100] mt-1 max-h-72 w-full overflow-y-auto rounded-md border border-[var(--border)] bg-[var(--ehr-panel)] py-1 shadow-lg"
+            className="drflow-clinical-combobox-list absolute z-[100] mt-1 max-h-72 w-full overflow-y-auto rounded-md py-1 shadow-lg"
           >
             {results.map((item, index) => {
               const genericKey = item.active_ingredient.trim().toLowerCase();
@@ -191,7 +191,7 @@ export function ConsultTreatmentField({
                     className={cn(
                       "w-full px-3 py-2 text-left transition-colors",
                       index === highlight && "bg-teal-500/10",
-                      alreadyAdded && "opacity-70"
+                      alreadyAdded && "drflow-clinical-combobox-option-disabled"
                     )}
                   >
                     <p className="text-sm font-semibold uppercase tracking-wide">
@@ -201,7 +201,7 @@ export function ConsultTreatmentField({
                       {formatVademecumPrescriptionSubtitle(item)}
                     </p>
                     {alreadyAdded ? (
-                      <p className="mt-0.5 text-[10px] font-medium text-amber-600">Ya agregado</p>
+                      <p className="drflow-clinical-combobox-option-added mt-0.5">Ya agregado</p>
                     ) : null}
                   </button>
                 </li>
@@ -210,7 +210,7 @@ export function ConsultTreatmentField({
           </ul>
         ) : null}
 
-        <p className="mt-1 text-[11px] drflow-ehr-muted">
+        <p className="drflow-clinical-combobox-hint mt-1">
           {medicationCatalogSearchLabel()}. Escribí 2 letras y elegí una opción real.
         </p>
       </div>

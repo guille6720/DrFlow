@@ -78,7 +78,7 @@ export function PatientWorkspaceOverlay({
             type="button"
             onClick={handleClose}
             disabled={closeDisabled}
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-50"
+            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 disabled:text-slate-300"
           >
             <X className="h-5 w-5" />
           </button>

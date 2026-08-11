@@ -56,7 +56,7 @@ export function PatientEhrEvolutionPanel({
                   consulta: selected.id,
                   sheet: "receta",
                 })}
-                className="ml-auto inline-flex items-center gap-1 rounded-md bg-teal-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-teal-700"
+                className="ml-auto inline-flex items-center gap-1 rounded-md bg-teal-600 px-2 py-1 text-xs font-semibold text-white hover:bg-teal-700"
               >
                 <Plus className="h-3 w-3" />
                 Nueva receta
@@ -75,7 +75,7 @@ export function PatientEhrEvolutionPanel({
               type="button"
               onClick={() => void onOpenAttachment(documentAttachment.id)}
               disabled={openingAttachmentId === documentAttachment.id}
-              className="drflow-ehr-action-link mt-3 inline-flex items-center gap-2 text-sm font-semibold hover:underline disabled:opacity-60"
+              className="drflow-ehr-action-link mt-3 inline-flex items-center gap-2 text-sm font-semibold hover:underline disabled:text-slate-400"
             >
               {openingAttachmentId === documentAttachment.id ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

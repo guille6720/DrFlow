@@ -758,6 +758,20 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-workspace-o
   outline: none;
 }
 
+/* EHR shell: inputs nativos y combobox con fondo sólido */
+.drflow-ehr-shell input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.drflow-ehr-shell textarea,
+.drflow-ehr-shell select {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.drflow-ehr-shell input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"])::placeholder,
+.drflow-ehr-shell textarea::placeholder {
+  color: #94a3b8;
+}
+
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-card-body .drflow-ui-label,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-card-body label.drflow-ui-label {
   color: #334155;
@@ -1295,6 +1309,9 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh main .drflow-
 /* Islas claras: texto nítido sobre fondo blanco (stats, listas, formularios) */
 .drflow-mesh .drflow-card-light,
 .drflow-mesh .drflow-surface-light,
+.drflow-mesh .drflow-workspace-overlay-panel,
+.drflow-mesh .drflow-patient-workspace-panel,
+.drflow-mesh .drflow-ehr-shell,
 .drflow-card-body .drflow-card-light {
   -webkit-font-smoothing: auto;
   -moz-osx-font-smoothing: auto;
@@ -1321,23 +1338,23 @@ html:not([data-ui-style="2"]) .drflow-mesh main :is(.bg-white, .bg-white\/80, .b
   color: #0f172a !important;
 }
 
-/* Tarjetas oscuras dentro de overlays/islas claras: títulos y labels legibles */
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card .drflow-ui-card-title,
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card .drflow-ui-card-title,
-html:not([data-ui-style="2"]) .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card .drflow-ui-card-title {
-  color: var(--foreground, #f8fafc) !important;
+/* Tarjetas dentro de overlays/islas claras: títulos oscuros sobre fondo claro */
+.drflow-surface-light .drflow-ui-card .drflow-ui-card-title,
+.drflow-workspace-overlay-panel .drflow-ui-card .drflow-ui-card-title,
+.drflow-surface-light .drflow-card-light .drflow-ui-card-title {
+  color: #0f172a !important;
 }
 
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card .drflow-ui-card-desc,
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card .drflow-ui-card-desc,
-html:not([data-ui-style="2"]) .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card .drflow-ui-card-desc {
-  color: var(--muted, #cbd5e1) !important;
+.drflow-surface-light .drflow-ui-card .drflow-ui-card-desc,
+.drflow-workspace-overlay-panel .drflow-ui-card .drflow-ui-card-desc,
+.drflow-surface-light .drflow-card-light .drflow-ui-card-desc {
+  color: #475569 !important;
 }
 
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card label.drflow-ui-label,
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card label.drflow-ui-label,
-html:not([data-ui-style="2"]) .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95) .drflow-ui-card label.drflow-ui-label {
-  color: #e2e8f0 !important;
+.drflow-surface-light .drflow-ui-card label.drflow-ui-label,
+.drflow-workspace-overlay-panel .drflow-ui-card label.drflow-ui-label,
+.drflow-surface-light .drflow-card-light label.drflow-ui-label {
+  color: #334155 !important;
 }
 
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-card-light :is(.text-slate-500, .text-slate-600, .text-slate-400),
@@ -1557,6 +1574,11 @@ html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-ehr-table-pa
   color: var(--ehr-text);
 }
 
+.drflow-ehr-label {
+  color: var(--ehr-label);
+  font-weight: 500;
+}
+
 .drflow-ehr-filter-meta,
 .drflow-ehr-muted {
   color: var(--ehr-muted);
@@ -1575,6 +1597,30 @@ html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-ehr-table-pa
 .drflow-ehr-evolution-box {
   background: var(--ehr-evolution-bg);
   border-color: var(--ehr-evolution-border);
+}
+
+.drflow-ehr-evolution-box .drflow-ehr-muted {
+  color: #64748b;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-evolution-box .drflow-ehr-muted,
+html:not([data-ui-style="2"]) .drflow-ehr-evolution-box .drflow-ehr-muted {
+  color: #cbd5e1;
+}
+
+.drflow-ehr-evolution-box .drflow-clinical-combobox-input,
+.drflow-ehr-evolution-box .drflow-clinical-combobox-list,
+.drflow-ehr-evolution-box textarea,
+.drflow-ehr-evolution-box .drflow-ui-input {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.drflow-ehr-evolution-box .drflow-clinical-combobox-input::placeholder,
+.drflow-ehr-evolution-box textarea::placeholder,
+.drflow-ehr-evolution-box .drflow-ui-input::placeholder {
+  color: #94a3b8;
 }
 
 .drflow-ehr-evolution-text {
@@ -1794,7 +1840,7 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-table .drflow-
 
 .drflow-patient-chart-summary-meta {
   font-size: 0.85rem;
-  opacity: 0.85;
+  color: #cbd5e1;
 }
 
 .drflow-patient-chart-summary-main {
@@ -1811,10 +1857,10 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-table .drflow-
 }
 
 .drflow-patient-chart-label {
-  font-size: 0.65rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  opacity: 0.65;
+  color: #94a3b8;
   margin-bottom: 0.15rem;
 }
 
@@ -1830,7 +1876,7 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-table .drflow-
 
 .drflow-patient-chart-personal summary {
   cursor: pointer;
-  opacity: 0.75;
+  color: #cbd5e1;
 }
 
 .drflow-patient-chart-dl-grid {
@@ -1841,9 +1887,9 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-table .drflow-
 }
 
 .drflow-patient-chart-dl-grid dt {
-  font-size: 0.65rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
-  opacity: 0.6;
+  color: #94a3b8;
 }
 
 .drflow-patient-chart-alerts {
@@ -1908,11 +1954,11 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-table .drflow-
 }
 
 .drflow-patient-chart-section-head h2 {
-  font-size: 0.78rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  opacity: 0.9;
+  color: #e2e8f0;
 }
 
 .drflow-patient-chart-section-body {
@@ -4365,5 +4411,135 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main article.drflow
 .drflow-mesh main .drflow-agenda-view [class*="rounded-full"].text-xs {
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+/* ——— Legibilidad nítida: EHR en overlay claro + comboboxes clínicos ——— */
+
+/* El overlay fuerza color oscuro; restaurar tokens EHR dentro del shell */
+.drflow-surface-light .drflow-ehr-shell,
+.drflow-workspace-overlay-panel .drflow-ehr-shell {
+  color: var(--ehr-text) !important;
+}
+
+.drflow-surface-light .drflow-ehr-shell :is(p, span, li, dt, dd, label, button, th, td),
+.drflow-workspace-overlay-panel .drflow-ehr-shell :is(p, span, li, dt, dd, label, button, th, td) {
+  color: inherit;
+}
+
+.drflow-surface-light .drflow-ehr-shell .drflow-ehr-muted,
+.drflow-surface-light .drflow-ehr-shell .drflow-ehr-filter-meta,
+.drflow-workspace-overlay-panel .drflow-ehr-shell .drflow-ehr-muted,
+.drflow-workspace-overlay-panel .drflow-ehr-shell .drflow-ehr-filter-meta {
+  color: var(--ehr-muted) !important;
+}
+
+.drflow-surface-light .drflow-ehr-shell .drflow-ehr-label,
+.drflow-surface-light .drflow-ehr-shell .drflow-ehr-demo-label,
+.drflow-surface-light .drflow-ehr-shell .drflow-ehr-filter-label,
+.drflow-workspace-overlay-panel .drflow-ehr-shell .drflow-ehr-label,
+.drflow-workspace-overlay-panel .drflow-ehr-shell .drflow-ehr-demo-label,
+.drflow-workspace-overlay-panel .drflow-ehr-shell .drflow-ehr-filter-label {
+  color: var(--ehr-label) !important;
+}
+
+.drflow-surface-light .drflow-ehr-shell .drflow-ehr-demo-value,
+.drflow-surface-light .drflow-ehr-shell .drflow-ehr-evolution-text,
+.drflow-surface-light .drflow-ehr-shell .drflow-ehr-sidebar-item,
+.drflow-workspace-overlay-panel .drflow-ehr-shell .drflow-ehr-demo-value,
+.drflow-workspace-overlay-panel .drflow-ehr-shell .drflow-ehr-evolution-text,
+.drflow-workspace-overlay-panel .drflow-ehr-shell .drflow-ehr-sidebar-item {
+  color: var(--ehr-text) !important;
+}
+
+.drflow-surface-light .drflow-ehr-shell .drflow-ehr-sidebar-active,
+.drflow-workspace-overlay-panel .drflow-ehr-shell .drflow-ehr-sidebar-active {
+  color: var(--ehr-text) !important;
+}
+
+/* Combobox / búsqueda vademécum: fondo sólido y texto nítido */
+.drflow-clinical-combobox-input {
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid var(--border, #cbd5e1);
+  background-color: var(--ehr-panel, #ffffff);
+  color: var(--ehr-text, #0f172a);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+}
+
+.drflow-clinical-combobox-input::placeholder {
+  color: #94a3b8;
+}
+
+.drflow-clinical-combobox-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ehr-accent, #14b8a6) 45%, transparent);
+}
+
+.drflow-clinical-combobox-list {
+  background-color: var(--ehr-panel, #ffffff);
+  border: 1px solid var(--border, #cbd5e1);
+}
+
+.drflow-clinical-combobox-list [role="option"] p:first-child {
+  color: var(--ehr-text, #0f172a);
+  font-weight: 600;
+}
+
+.drflow-clinical-combobox-list [role="option"] p:not(:first-child) {
+  color: var(--ehr-muted, #64748b);
+}
+
+.drflow-clinical-combobox-option-added {
+  color: #b45309;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.drflow-clinical-combobox-option-disabled {
+  color: var(--ehr-muted, #64748b);
+}
+
+.drflow-clinical-combobox-hint {
+  font-size: 0.75rem;
+  color: var(--ehr-muted, #64748b);
+}
+
+.drflow-ehr-shell .drflow-clinical-combobox-input,
+.drflow-ehr-shell .drflow-clinical-combobox-list {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.drflow-ehr-shell .drflow-clinical-combobox-list [role="option"] p:first-child {
+  color: #0f172a;
+}
+
+.drflow-ehr-shell .drflow-clinical-combobox-list [role="option"] p:not(:first-child) {
+  color: #475569;
+}
+
+.drflow-ehr-shell .drflow-clinical-combobox-hint {
+  color: #64748b;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-summary-meta {
+  color: #64748b;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-label,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-dl-grid dt {
+  color: #64748b;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-personal summary {
+  color: #475569;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-section-head h2 {
+  color: #334155;
 }
 

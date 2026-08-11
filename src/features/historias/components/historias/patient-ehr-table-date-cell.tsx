@@ -79,7 +79,7 @@ export function PatientEhrTableDateCell({ recordId, createdAt, dateLabel }: Prop
           Cancelar
         </Button>
       </div>
-      {error ? <p className="text-[10px] text-red-600">{error}</p> : null}
+      {error ? <p className="text-xs text-red-600">{error}</p> : null}
     </div>
   );
 }

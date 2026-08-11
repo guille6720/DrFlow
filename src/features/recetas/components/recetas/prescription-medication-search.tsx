@@ -119,7 +119,7 @@ export function PrescriptionMedicationSearch({ onAdd, existingGenericNames = [],
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
-          className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-10 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+          className="drflow-clinical-combobox-input rounded-lg py-3 pl-10 pr-10 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
         />
         {loading ? (
           <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-teal-600" />
@@ -142,7 +142,7 @@ export function PrescriptionMedicationSearch({ onAdd, existingGenericNames = [],
         <ul
           id={`${listId}-listbox`}
           role="listbox"
-          className="absolute z-[100] mt-1 max-h-80 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl ring-1 ring-black/5"
+          className="drflow-clinical-combobox-list absolute z-[100] mt-1 max-h-80 w-full overflow-y-auto rounded-lg py-1 shadow-xl ring-1 ring-black/5"
         >
           {results.map((item, i) => {
             const genericKey = item.active_ingredient.trim().toLowerCase();
@@ -158,7 +158,7 @@ export function PrescriptionMedicationSearch({ onAdd, existingGenericNames = [],
                   className={cn(
                     "w-full px-4 py-2.5 text-left transition-colors",
                     i === highlight ? "bg-teal-50" : "hover:bg-slate-50",
-                    alreadyAdded && "opacity-70"
+                    alreadyAdded && "drflow-clinical-combobox-option-disabled"
                   )}
                 >
                   <p className="text-sm font-semibold uppercase tracking-wide text-slate-900">
@@ -166,7 +166,7 @@ export function PrescriptionMedicationSearch({ onAdd, existingGenericNames = [],
                   </p>
                   <p className="text-xs text-slate-600">{formatVademecumPrescriptionSubtitle(item)}</p>
                   {alreadyAdded ? (
-                    <p className="mt-0.5 text-[10px] font-medium text-amber-700">Ya en la receta</p>
+                    <p className="drflow-clinical-combobox-option-added mt-0.5">Ya en la receta</p>
                   ) : null}
                 </button>
               </li>
@@ -175,7 +175,7 @@ export function PrescriptionMedicationSearch({ onAdd, existingGenericNames = [],
         </ul>
       ) : null}
 
-      <p className="mt-2 text-xs text-slate-500">
+      <p className="drflow-clinical-combobox-hint mt-2">
         {medicationCatalogSearchLabel()}. Escribí al menos 2 letras y elegí una alternativa.
       </p>
     </div>

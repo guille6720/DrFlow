@@ -335,7 +335,7 @@ export function PrescriptionSinglePageForm({
         </div>
       </header>
 
-      <section className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+      <section className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-1 text-sm">
             <p className="text-base font-semibold lowercase text-slate-900">{patientDisplay}</p>

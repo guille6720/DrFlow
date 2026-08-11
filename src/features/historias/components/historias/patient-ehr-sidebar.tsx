@@ -54,7 +54,7 @@ export function PatientEhrSidebar({
                     {formatPatientEhrSidebarDate(pendingConsultation.createdAt)}
                   </p>
                   <p className="mt-0.5 truncate font-medium">{pendingConsultation.professionalName}</p>
-                  <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide opacity-80">
+                  <p className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-teal-700">
                     Consulta en curso
                   </p>
                 </div>
@@ -69,7 +69,7 @@ export function PatientEhrSidebar({
                     onClick={() => onSelect(c.id)}
                     className={cn(
                       "w-full border-b border-[var(--border)] px-3 py-2.5 text-left text-xs transition",
-                      active ? "drflow-ehr-sidebar-active" : "drflow-ehr-sidebar-item hover:opacity-90"
+                      active ? "drflow-ehr-sidebar-active" : "drflow-ehr-sidebar-item hover:bg-slate-100/10"
                     )}
                   >
                     <p className="font-bold">{formatPatientEhrSidebarDate(c.created_at)}</p>
@@ -86,7 +86,7 @@ export function PatientEhrSidebar({
               type="button"
               onClick={onLoadMoreRecords}
               disabled={loadingMoreRecords}
-              className="w-full rounded-md border border-[var(--border)] px-3 py-2 text-xs font-medium transition hover:opacity-90 disabled:opacity-60"
+              className="w-full rounded-md border border-[var(--border)] px-3 py-2 text-xs font-medium transition hover:bg-slate-100/10 disabled:text-slate-400"
             >
               {loadingMoreRecords
                 ? "Cargando consultas…"
