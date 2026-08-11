@@ -408,7 +408,7 @@ export function TurnosNuevoWizard({
     }
 
     setLoadingSlots(true);
-    const result = await fetchTurnosWizardSlots(nextProfessionalId);
+    const result = await fetchTurnosWizardSlots(nextProfessionalId, locationId || null);
     setLoadingSlots(false);
 
     if (result.error) {
@@ -428,7 +428,7 @@ export function TurnosNuevoWizard({
     setSelectedDay(null);
     setSelectedSlot(null);
     setSelectedExisting(null);
-  }, []);
+  }, [locationId]);
 
   const handlePatientChange = useCallback(
     (id: string, picked?: PatientSearchOption) => {
@@ -492,7 +492,7 @@ export function TurnosNuevoWizard({
 
     void (async () => {
       setLoadingSlots(true);
-      const result = await fetchTurnosWizardSlots(proId);
+      const result = await fetchTurnosWizardSlots(proId, locationId || null);
       if (cancelled) return;
 
       setLoadingSlots(false);
@@ -525,7 +525,7 @@ export function TurnosNuevoWizard({
     return () => {
       cancelled = true;
     };
-  }, [defaultProfessional?.id, initialStartAt, initialWizardSlots]);
+  }, [defaultProfessional?.id, initialStartAt, initialWizardSlots, locationId]);
 
   const handleSelectFreeSlot = useCallback((slot: Slot) => {
     setSelectedSlot(slot);

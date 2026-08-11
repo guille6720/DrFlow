@@ -31,15 +31,20 @@ type Props = {
   rules: TurnosConfigRuleRow[];
   blocks: TurnosConfigBlockRow[];
   professionals: Array<{ id: string; name: string }>;
+  locations: Array<{ id: string; name: string }>;
   defaultDuration: number;
   dayNames: string[];
 };
+
+function locationOptions(locations: Array<{ id: string; name: string }>) {
+  return [{ value: "", label: "Todas las sedes" }, ...locations.map((l) => ({ value: l.id, label: l.name }))];
+}
 
 function formatTimeForInput(value: string): string {
   return value.slice(0, 5);
 }
 
-export function TurnosConfigView({ rules, blocks, professionals, defaultDuration, dayNames }: Props) {
+export function TurnosConfigView({ rules, blocks, professionals, locations, defaultDuration, dayNames }: Props) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
@@ -58,6 +63,7 @@ export function TurnosConfigView({ rules, blocks, professionals, defaultDuration
   }
 
   const professionalOptions = professionals.map((p) => ({ value: p.id, label: p.name }));
+  const sedeOptions = locationOptions(locations);
 
   return (
     <div className="space-y-6">
@@ -88,6 +94,7 @@ export function TurnosConfigView({ rules, blocks, professionals, defaultDuration
                             start_time: String(formData.get("start_time")),
                             end_time: String(formData.get("end_time")),
                             slot_duration: Number(formData.get("slot_duration")),
+                            location_id: String(formData.get("location_id") ?? ""),
                           })
                         );
                         if (ok) setEditingRuleId(null);
@@ -124,6 +131,12 @@ export function TurnosConfigView({ rules, blocks, professionals, defaultDuration
                       max={120}
                       required
                     />
+                    <Select
+                      name="location_id"
+                      label="Sede"
+                      defaultValue={rule.location_id ?? ""}
+                      options={sedeOptions}
+                    />
                     <div className="flex flex-wrap items-end gap-2">
                       <Button type="submit" size="sm" disabled={busyId === rule.id}>
                         Guardar
@@ -148,6 +161,7 @@ export function TurnosConfigView({ rules, blocks, professionals, defaultDuration
                       </p>
                       <p className="text-[var(--muted-foreground)]">
                         Turnos de {rule.slot_duration} min ·{" "}
+                        {rule.location_name ? `Sede: ${rule.location_name} · ` : "Todas las sedes · "}
                         {rule.is_active ? "Activo" : "Inactivo"}
                       </p>
                     </div>
@@ -222,6 +236,7 @@ export function TurnosConfigView({ rules, blocks, professionals, defaultDuration
             min={10}
             max={120}
           />
+          <Select name="location_id" label="Sede (opcional)" options={sedeOptions} />
           <div className="flex items-end">
             <Button type="submit" disabled={busyId === "new-rule"}>
               Agregar horario

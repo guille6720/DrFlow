@@ -19,6 +19,7 @@ import {
 } from "@/features/turnos/utils/turnos-metrics";
 
 import {
+  getCachedClinicLocations,
   getCachedClinicProfessionalsAgenda,
   getCachedClinicSettings,
 } from "@/lib/server/cached-clinic-queries";
@@ -35,6 +36,8 @@ export type TurnosConfigRuleRow = {
   slot_duration: number;
   is_active: boolean;
   professional_name: string;
+  location_id: string | null;
+  location_name: string | null;
 };
 
 export type TurnosConfigBlockRow = {
@@ -50,11 +53,11 @@ export async function loadTurnosConfigPageData(supabase: SupabaseClient, clinicI
   const now = new Date();
   const blocksFrom = startOfClinicDay(now).toISOString();
 
-  const [{ data: rules }, { data: blocks }, professionals, clinic] = await Promise.all([
+  const [{ data: rules }, { data: blocks }, professionals, clinic, locations] = await Promise.all([
       supabase
         .from("availability_rules")
         .select(
-          "id, professional_id, day_of_week, start_time, end_time, slot_duration, is_active, professionals(display_name, profiles(full_name))"
+          "id, professional_id, day_of_week, start_time, end_time, slot_duration, is_active, location_id, professionals(display_name, profiles(full_name)), locations(name)"
         )
         .eq("clinic_id", clinicId)
         .order("day_of_week")
@@ -69,13 +72,21 @@ export async function loadTurnosConfigPageData(supabase: SupabaseClient, clinicI
         .order("start_at"),
       getCachedClinicProfessionalsAgenda(clinicId),
       getCachedClinicSettings(clinicId),
+      getCachedClinicLocations(clinicId),
     ]);
+
+  const locationNameById = new Map(
+    (locations ?? []).map((loc) => [loc.id, loc.name as string])
+  );
 
   const mappedRules: TurnosConfigRuleRow[] = (rules ?? []).map((row) => {
     const professional = row.professionals as {
       display_name?: string | null;
       profiles?: { full_name?: string | null } | { full_name?: string | null }[] | null;
     } | null;
+    const locationJoin = row.locations as { name?: string } | { name?: string }[] | null;
+    const joinedName = Array.isArray(locationJoin) ? locationJoin[0]?.name : locationJoin?.name;
+    const locationId = (row.location_id as string | null) ?? null;
     return {
       id: row.id,
       professional_id: row.professional_id,
@@ -85,6 +96,8 @@ export async function loadTurnosConfigPageData(supabase: SupabaseClient, clinicI
       slot_duration: row.slot_duration,
       is_active: row.is_active,
       professional_name: getProfessionalDisplayName(professional ?? {}),
+      location_id: locationId,
+      location_name: joinedName ?? (locationId ? locationNameById.get(locationId) ?? null : null),
     };
   });
 
@@ -112,6 +125,10 @@ export async function loadTurnosConfigPageData(supabase: SupabaseClient, clinicI
     })),
     defaultDuration: clinic?.default_appointment_duration ?? 30,
     dayNames: DAY_NAMES,
+    locations: (locations ?? []).map((loc) => ({
+      id: loc.id as string,
+      name: loc.name as string,
+    })),
   };
 }
 

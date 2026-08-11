@@ -8,6 +8,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
+import { filterAgendaAppointments } from "@/core/booking/location-filters";
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 type Options = {
@@ -23,16 +24,17 @@ export function useAgendaView({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [filterProfessional, setFilterProfessional] = useState("");
   const [filterSpecialty, setFilterSpecialty] = useState("");
+  const [filterLocation, setFilterLocation] = useState("");
   const [editingAppointment, setEditingAppointment] = useState<AppointmentAgendaRow | null>(null);
 
   const filtered = useMemo(
     () =>
-      appointments.filter((a) => {
-        if (filterProfessional && a.professional_id !== filterProfessional) return false;
-        if (filterSpecialty && a.specialty_id !== filterSpecialty) return false;
-        return true;
+      filterAgendaAppointments(appointments, {
+        professionalId: filterProfessional || undefined,
+        specialtyId: filterSpecialty || undefined,
+        locationId: filterLocation || undefined,
       }),
-    [appointments, filterProfessional, filterSpecialty]
+    [appointments, filterProfessional, filterSpecialty, filterLocation]
   );
 
   const weekDays = useMemo(() => [startOfDay(currentDate)], [currentDate]);
@@ -59,9 +61,10 @@ export function useAgendaView({
         start_at: d.toISOString(),
       });
       if (filterProfessional) params.set("professional", filterProfessional);
+      if (filterLocation) params.set("location", filterLocation);
       router.push(`/turnos/nuevo?${params.toString()}`);
     },
-    [filterProfessional, router]
+    [filterProfessional, filterLocation, router]
   );
 
   return useMemo(
@@ -72,6 +75,8 @@ export function useAgendaView({
       setFilterProfessional,
       filterSpecialty,
       setFilterSpecialty,
+      filterLocation,
+      setFilterLocation,
       editingAppointment,
       setEditingAppointment,
       filtered,
@@ -85,6 +90,7 @@ export function useAgendaView({
       currentDate,
       filterProfessional,
       filterSpecialty,
+      filterLocation,
       editingAppointment,
       filtered,
       weekDays,

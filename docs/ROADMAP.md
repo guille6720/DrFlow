@@ -40,10 +40,10 @@
 
 ## Fase 4 — Producto avanzado
 
-- [ ] Multi-sede avanzada
-- [ ] Facturación y liquidación obras sociales
-- [ ] API pública
-- [ ] BI por especialidad / cobertura
+- [x] **4A Multi-sede avanzada** — CRUD sedes, filtros agenda, reglas por sede, wizard (ver [MULTI-SEDE.md](./MULTI-SEDE.md))
+- [ ] 4B Facturación y liquidación obras sociales
+- [ ] 4C API pública
+- [ ] 4D BI por especialidad / cobertura
 
 ## Deuda técnica conocida
 

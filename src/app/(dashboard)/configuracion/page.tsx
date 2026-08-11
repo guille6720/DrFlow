@@ -26,6 +26,7 @@ import { loadConfiguracionSectionExtras } from "@/features/configuracion/server/
 import { loadTeamPermissionsPanelData } from "@/lib/actions/team-permissions";
 import { getClinicSharedAiConnectionPublic } from "@/lib/ai/clinic-shared-ai.server";
 import { getCachedActiveBookingSlug, getCachedClinicProfessionalsSettings } from "@/lib/server/cached-clinic-queries";
+import { getCachedClinicLocations } from "@/lib/server/cached-clinic-queries";
 import { enrichTeamMembers } from "@/lib/utils/team-member-display";
 
 interface PageProps {
@@ -52,7 +53,7 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
 
   const supabase = await createClient();
 
-  const [professionals, members, invitations, bookingSlug, patientCount, teamAccessBase, sharedAi] =
+  const [professionals, members, invitations, bookingSlug, patientCount, teamAccessBase, sharedAi, locations] =
     clinicId
     ? await Promise.all([
         getCachedClinicProfessionalsSettings(clinicId),
@@ -73,8 +74,9 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
           .eq("is_active", true),
         loadTeamPermissionsPanelData(clinicId),
         getClinicSharedAiConnectionPublic(),
+        activeSection === "clinica" ? getCachedClinicLocations(clinicId) : Promise.resolve([]),
       ])
-    : [[], { data: [] }, { data: [] }, null, { count: 0 }, { members: [], permissionOverrides: {} }, null];
+    : [[], { data: [] }, { data: [] }, null, { count: 0 }, { members: [], permissionOverrides: {} }, null, []];
 
   const settingsProps: SettingsPanelData = {
     clinic,
@@ -82,6 +84,7 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
     members: enrichTeamMembers(members.data ?? [], invitations.data ?? []),
     invitations: invitations.data ?? [],
     bookingSlug,
+    locations: locations ?? [],
     teamAccess: clinicId
       ? {
           ...teamAccessBase,

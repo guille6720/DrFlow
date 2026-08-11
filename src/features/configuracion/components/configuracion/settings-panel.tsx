@@ -7,6 +7,10 @@ import { useState } from "react";
 import type { ManageablePermissionKey } from "@/core/permissions/member-permissions";
 import type { NestedRow } from "@/core/supabase/query-types";
 
+import {
+  type ClinicLocationRow,
+  LocationsSettingsPanel,
+} from "@/features/configuracion/components/configuracion/locations-settings-panel";
 import { SettingsAgendaSection } from "@/features/configuracion/components/configuracion/settings-agenda-section";
 import { SettingsAppsSection } from "@/features/configuracion/components/configuracion/settings-apps-section";
 import { SettingsClinicSection } from "@/features/configuracion/components/configuracion/settings-clinic-section";
@@ -42,6 +46,7 @@ export interface SettingsPanelProps {
     created_at: string;
   }[];
   bookingSlug: string | null;
+  locations?: ClinicLocationRow[];
   teamAccess?: {
     members: TeamPermissionMember[];
     permissionOverrides: Record<string, Partial<Record<ManageablePermissionKey, boolean>>>;
@@ -56,6 +61,7 @@ export function SettingsPanel({
   members,
   invitations,
   bookingSlug,
+  locations = [],
   teamAccess,
 }: SettingsPanelProps) {
   const router = useRouter();
@@ -86,7 +92,12 @@ export function SettingsPanel({
         <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{err}</div>
       ) : null}
 
-      {show("clinica") ? <SettingsClinicSection clinic={clinic} onResult={run} /> : null}
+      {show("clinica") ? (
+        <>
+          <SettingsClinicSection clinic={clinic} onResult={run} />
+          <LocationsSettingsPanel locations={locations} />
+        </>
+      ) : null}
 
       {show("apps") ? (
         <SettingsAppsSection clinic={clinic} bookingSlug={bookingSlug} onMessage={setMsg} />

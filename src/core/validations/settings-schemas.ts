@@ -22,7 +22,10 @@ export const namedEntitySchema = z.string().min(1, "Nombre requerido").max(80);
 export const createLocationSchema = z.object({
   name: z.string().min(1, "Nombre requerido").max(80),
   address: z.string().max(300).optional(),
+  phone: z.string().max(40).optional(),
 });
+
+export const updateLocationSchema = createLocationSchema;
 
 export const createProfessionalSchema = z.object({
   display_name: z.string().min(1, "Nombre del profesional requerido").max(120),
@@ -85,6 +88,10 @@ export const createAvailabilityRuleSchema = z.object({
   start_time: z.string(),
   end_time: z.string(),
   slot_duration: z.coerce.number().min(10).max(120).default(30),
+  location_id: z.preprocess(
+    (val) => (typeof val === "string" && val.trim() !== "" ? val.trim() : null),
+    optionalEntityIdSchema
+  ),
 });
 
 export function parseScheduleBlockForm(formData: FormData) {

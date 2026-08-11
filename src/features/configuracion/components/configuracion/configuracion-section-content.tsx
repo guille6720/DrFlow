@@ -22,7 +22,7 @@ import type { PamiPlanillaAdminCatalog } from "@/lib/actions/pami-planilla-admin
 
 export type SettingsPanelData = Pick<
   SettingsPanelProps,
-  "clinic" | "professionals" | "members" | "invitations" | "bookingSlug" | "teamAccess"
+  "clinic" | "professionals" | "members" | "invitations" | "bookingSlug" | "teamAccess" | "locations"
 >;
 
 export interface ConfiguracionSectionExtras {

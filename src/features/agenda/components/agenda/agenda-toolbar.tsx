@@ -21,14 +21,17 @@ type Props = {
     | "setFilterProfessional"
     | "filterSpecialty"
     | "setFilterSpecialty"
+    | "filterLocation"
+    | "setFilterLocation"
     | "shiftCalendar"
     | "setCurrentDate"
   >;
   professionals: ProfessionalAgendaRow[];
   specialties: { id: string; name: string }[];
+  locations: { id: string; name: string }[];
 };
 
-export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
+export function AgendaToolbar({ agenda, professionals, specialties, locations }: Props) {
   const {
     currentDate,
     weekDays,
@@ -36,6 +39,8 @@ export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
     setFilterProfessional,
     filterSpecialty,
     setFilterSpecialty,
+    filterLocation,
+    setFilterLocation,
     shiftCalendar,
     setCurrentDate,
   } = agenda;
@@ -105,6 +110,18 @@ export function AgendaToolbar({ agenda, professionals, specialties }: Props) {
           onChange={(e) => setFilterSpecialty(e.target.value)}
           className="w-full sm:w-52"
         />
+
+        {locations.length > 0 ? (
+          <Select
+            options={[
+              { value: "", label: "Todas las sedes" },
+              ...locations.map((l) => ({ value: l.id, label: l.name })),
+            ]}
+            value={filterLocation}
+            onChange={(e) => setFilterLocation(e.target.value)}
+            className="w-full sm:w-52"
+          />
+        ) : null}
 
         <Link
           href="/turnos/nuevo"

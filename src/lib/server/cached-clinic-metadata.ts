@@ -201,7 +201,7 @@ export async function loadClinicLocationsCached(clinicId: string) {
     async (supabase) => {
       const { data } = await supabase
         .from("locations")
-        .select("id, name, address")
+        .select("id, name, address, phone, is_active")
         .eq("clinic_id", clinicId)
         .order("name");
       return data ?? [];

@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { requireSettingsAccess } from "@/core/actions/clinic-guard";
 import { createClient } from "@/core/supabase/server";
-import { firstZodIssue, parseEntityId } from "@/core/validations/params";
+import { firstZodIssue, optionalEntityIdSchema, parseEntityId } from "@/core/validations/params";
 import { createAvailabilityRuleSchema } from "@/core/validations/settings-schemas";
 
 const TURNO_CONFIG_PATHS = ["/turnos/configuracion", "/turnos/agenda", "/turnos/nuevo", "/configuracion", "/agenda"];
@@ -20,6 +20,10 @@ const updateRuleSchema = z.object({
   end_time: z.string(),
   slot_duration: z.coerce.number().min(10).max(120),
   is_active: z.coerce.boolean().optional(),
+  location_id: z.preprocess(
+    (val) => (typeof val === "string" && val.trim() !== "" ? val.trim() : null),
+    optionalEntityIdSchema
+  ),
 });
 
 export async function deleteAvailabilityRule(id: string) {
@@ -80,6 +84,7 @@ export async function updateAvailabilityRule(id: string, input: unknown) {
       start_time: parsed.data.start_time,
       end_time: parsed.data.end_time,
       slot_duration: parsed.data.slot_duration,
+      location_id: parsed.data.location_id ?? null,
       ...(parsed.data.is_active !== undefined ? { is_active: parsed.data.is_active } : {}),
     })
     .eq("id", idParsed.data)

@@ -31,6 +31,7 @@ import {
   parseClinicSettingsForm,
   parseCreateProfessionalForm,
   parseScheduleBlockForm,
+  updateLocationSchema,
 } from "@/core/validations/settings-schemas";
 
 export async function updateClinicSettings(formData: FormData) {
@@ -186,7 +187,7 @@ export async function deleteSpecialty(id: string) {
 
 
 
-export async function createLocation(name: string, address?: string) {
+export async function createLocation(name: string, address?: string, phone?: string) {
 
   const { clinicId, error: permErr } = await requireSettingsAccess();
 
@@ -194,7 +195,11 @@ export async function createLocation(name: string, address?: string) {
 
 
 
-  const parsed = createLocationSchema.safeParse({ name: name.trim(), address: address?.trim() });
+  const parsed = createLocationSchema.safeParse({
+    name: name.trim(),
+    address: address?.trim(),
+    phone: phone?.trim(),
+  });
 
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
@@ -210,12 +215,108 @@ export async function createLocation(name: string, address?: string) {
 
     address: parsed.data.address || null,
 
+    phone: parsed.data.phone || null,
+
   });
 
   if (error) return { error: error.message };
 
   revalidateClinicLocationsCache(clinicId);
   revalidatePath("/configuracion");
+
+  return { success: true };
+
+}
+
+
+
+export async function updateLocation(id: string, input: { name: string; address?: string; phone?: string }) {
+
+  const { clinicId, error: permErr } = await requireSettingsAccess();
+
+  if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
+
+
+
+  const idParsed = parseEntityId(id, "Sede");
+
+  if (!idParsed.ok) return { error: idParsed.error };
+
+
+
+  const parsed = updateLocationSchema.safeParse(input);
+
+  if (!parsed.success) return { error: firstZodIssue(parsed.error) };
+
+
+
+  const supabase = await createClient();
+
+  const { error } = await supabase
+
+    .from("locations")
+
+    .update({
+
+      name: parsed.data.name,
+
+      address: parsed.data.address || null,
+
+      phone: parsed.data.phone || null,
+
+    })
+
+    .eq("id", idParsed.data)
+
+    .eq("clinic_id", clinicId);
+
+  if (error) return { error: error.message };
+
+  revalidateClinicLocationsCache(clinicId);
+
+  revalidatePath("/configuracion");
+
+  revalidatePath("/turnos/agenda");
+
+  return { success: true };
+
+}
+
+
+
+export async function setLocationActive(id: string, isActive: boolean) {
+
+  const { clinicId, error: permErr } = await requireSettingsAccess();
+
+  if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
+
+
+
+  const idParsed = parseEntityId(id, "Sede");
+
+  if (!idParsed.ok) return { error: idParsed.error };
+
+
+
+  const supabase = await createClient();
+
+  const { error } = await supabase
+
+    .from("locations")
+
+    .update({ is_active: isActive })
+
+    .eq("id", idParsed.data)
+
+    .eq("clinic_id", clinicId);
+
+  if (error) return { error: error.message };
+
+  revalidateClinicLocationsCache(clinicId);
+
+  revalidatePath("/configuracion");
+
+  revalidatePath("/turnos/agenda");
 
   return { success: true };
 
