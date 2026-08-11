@@ -1,26 +1,11 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
-import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
-
-import { getPublicSiteUrl } from "@/core/supabase/env";
-
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
 
 import { ToastProvider } from "@/core/components/notifications/toast-provider";
 import { SentryInit } from "@/core/components/observability/sentry-init";
 import { UiThemeBootstrapScript } from "@/core/components/theme/ui-theme-bootstrap-script";
+import { getPublicSiteUrl } from "@/core/supabase/env";
 
 import { PWA_APPLE_ICON } from "@/features/pacientes/utils/patient-portal-ready";
 
@@ -85,7 +70,7 @@ export default function RootLayout({
     <html
       lang="es"
       data-ui-style="1"
-      className={`${jakarta.variable} ${geistMono.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       <body className="min-h-full">
         <UiThemeBootstrapScript />

@@ -1,6 +1,10 @@
 @import "tailwindcss";
+@import "@fontsource-variable/plus-jakarta-sans/wght.css";
+@import "@fontsource/geist-mono/latin.css";
 
 :root {
+  --font-jakarta: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-geist-mono: "Geist Mono", ui-monospace, monospace;
   --background: #3d5266;
   --foreground: #f8fafc;
   --primary: #2dd4bf;
