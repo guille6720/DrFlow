@@ -21,11 +21,24 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, label, error, id, voiceInput = false, grow = false, onVoiceAppend, ...props }, ref) => {
+  (
+    {
+      className,
+      label,
+      error,
+      id,
+      voiceInput = false,
+      grow = false,
+      onVoiceAppend,
+      onKeyDown,
+      ...props
+    },
+    ref
+  ) => {
     const textareaId = id ?? label?.toLowerCase().replace(/\s/g, "-");
     const innerRef = useRef<HTMLTextAreaElement | null>(null);
     const voice = useVoiceInputOptional();
-    const { listening, error: speechError, toggle, supported } = useSpeechToText();
+    const { listening, error: speechError, toggle, stop, supported } = useSpeechToText();
 
     const showVoice =
       voiceInput &&
@@ -49,6 +62,17 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       });
     }
 
+    function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+      if (listening && event.key === "Enter") {
+        stop();
+        if (!event.ctrlKey && !event.metaKey) {
+          event.preventDefault();
+          return;
+        }
+      }
+      onKeyDown?.(event);
+    }
+
     return (
       <div className={cn("space-y-1", grow && "flex min-h-0 flex-1 flex-col")}>
         {(label || showVoice) && (
@@ -66,7 +90,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                 onClick={handleVoiceToggle}
                 title={
                   listening
-                    ? "Detener dictado"
+                    ? "Presioná Enter para guardar el dictado"
                     : "Dictar por voz (español). Revisá el texto antes de guardar."
                 }
                 aria-label={listening ? "Detener dictado por voz" : "Iniciar dictado por voz"}
@@ -97,6 +121,19 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             ) : null}
           </div>
         )}
+        {showVoice && listening ? (
+          <p
+            className="flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-xs font-medium text-teal-800"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-teal-500" />
+            </span>
+            Presioná Enter para guardar el dictado
+          </p>
+        ) : null}
         <textarea
           ref={setRefs}
           id={textareaId}
@@ -107,6 +144,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             className
           )}
           {...props}
+          onKeyDown={handleKeyDown}
         />
         {speechError && showVoice ? (
           <p className="text-xs text-amber-700">{speechError}</p>

@@ -5,13 +5,11 @@ import { useMemo, useState } from "react";
 
 import type { PatientEhrTreatmentRow } from "@/features/pacientes/utils/patient-ehr-model";
 import { PrescriptionAllergyBanner } from "@/features/recetas/components/recetas/prescription-allergy-banner";
-import { PrescriptionClinicalAssistPanel } from "@/features/recetas/components/recetas/prescription-clinical-assist-panel";
 import { PrescriptionDiagnosisFields } from "@/features/recetas/components/recetas/prescription-diagnosis-fields";
 import {
   appendPrescriptionMedication,
   emptyPrescriptionMedication,
 } from "@/features/recetas/components/recetas/prescription-form-utils";
-import { PrescriptionHceTreatmentsPanel } from "@/features/recetas/components/recetas/prescription-hce-treatments-panel";
 import {
   mergeVademecumIntoMedication,
   PrescriptionMedicationLineFields,
@@ -158,7 +156,7 @@ export function PrescriptionSinglePageForm({
   diagnosisDefault = "",
   cie10Default = "",
   notesDefault = "",
-  hceTreatments = [],
+  hceTreatments: _hceTreatments = [],
   professionals,
   defaultProfessionalId,
   initialMedications,
@@ -217,7 +215,6 @@ export function PrescriptionSinglePageForm({
   const [prescriptionDate, setPrescriptionDate] = useState(() => toInputDateValue(new Date()));
   const [indications, setIndications] = useState(notesDefault);
   const [comments, setComments] = useState("");
-  const [showHceTreatments, setShowHceTreatments] = useState(false);
   const [editPatient, setEditPatient] = useState(false);
   const [handwrittenSignature, setHandwrittenSignature] = useState(true);
   const [digitalSignature, setDigitalSignature] = useState(false);
@@ -404,40 +401,19 @@ export function PrescriptionSinglePageForm({
         </p>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <PrescriptionMedicationSearch
-              onAdd={addMedication}
-              existingGenericNames={existingGenericNames}
-              className="w-full"
-            />
-          </div>
-          {hceTreatments.length > 0 ? (
-            <label className="mb-2 flex shrink-0 cursor-pointer items-center gap-2 text-sm text-slate-700">
-              <input
-                type="checkbox"
-                className="h-4 w-4 rounded border-slate-300"
-                checked={showHceTreatments}
-                onChange={(e) => setShowHceTreatments(e.target.checked)}
-              />
-              Mostrar los tratamientos de HCE
-            </label>
-          ) : null}
-        </div>
+      <PrescriptionDiagnosisFields
+        diagnosisText={diagnosisText}
+        cie10={cie10}
+        onDiagnosisTextChange={setDiagnosisText}
+        onCie10Change={setCie10}
+      />
 
-        {showHceTreatments && hceTreatments.length > 0 ? (
-          <PrescriptionHceTreatmentsPanel
-            embedded
-            treatments={hceTreatments}
-            onApplyMedications={(meds) =>
-              setMedications((prev) =>
-                meds.reduce((acc, med) => appendPrescriptionMedication(acc, med), prev)
-              )
-            }
-            existingGenericNames={existingGenericNames}
-          />
-        ) : null}
+      <div className="space-y-2">
+        <PrescriptionMedicationSearch
+          onAdd={addMedication}
+          existingGenericNames={existingGenericNames}
+          className="w-full"
+        />
       </div>
 
       {filledMedications.length > 0 ? (
@@ -476,31 +452,6 @@ export function PrescriptionSinglePageForm({
             ) : null
           )}
         </div>
-      ) : null}
-
-      <PrescriptionDiagnosisFields
-        diagnosisText={diagnosisText}
-        cie10={cie10}
-        onDiagnosisTextChange={setDiagnosisText}
-        onCie10Change={setCie10}
-      />
-
-      {diagnosisText.trim().length >= 3 ? (
-        <PrescriptionClinicalAssistPanel
-          patient={patient}
-          allergiesText={patientAllergies}
-          diagnosisText={diagnosisText}
-          evolutionIndications={notesDefault}
-          notes={indications}
-          onNotesChange={setIndications}
-          medications={medications}
-          onAddMedications={(meds) =>
-            setMedications((prev) =>
-              meds.reduce((acc, med) => appendPrescriptionMedication(acc, med), prev)
-            )
-          }
-          hceTreatments={[]}
-        />
       ) : null}
 
       <Textarea

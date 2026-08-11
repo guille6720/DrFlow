@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { CloseEncounterWizardSheet } from "@/features/ia/components/clinical-workflow/close-encounter-wizard-sheet";
 import type { PatientWorkspaceViewProps } from "@/features/pacientes/components/pacientes/patient-workspace-types";
@@ -13,7 +13,10 @@ import { PatientRecordSheet } from "@/features/pacientes/components/pacientes/wo
 import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
 import { usePatientWorkspaceActions } from "@/features/pacientes/hooks/use-patient-workspace-actions";
 import type { PatientWorkspaceUrlOptions } from "@/features/pacientes/utils/patient-workspace-actions";
-import { readInlineConsultPrescriptionSnapshot } from "@/features/recetas/utils/inline-consult-prescription-bridge";
+import {
+  clearInlineConsultPrescriptionSnapshot,
+  readInlineConsultPrescriptionSnapshot,
+} from "@/features/recetas/utils/inline-consult-prescription-bridge";
 
 import type { Patient } from "@/types/database";
 
@@ -62,6 +65,11 @@ export function PatientWorkspaceSheets({
   canEditClinical,
 }: Props) {
   const actions = usePatientWorkspaceActions(patientId, activeTab, workspaceNavigation);
+  const [prescriptionFormKey, setPrescriptionFormKey] = useState(0);
+  const [rxPrefillGate, setRxPrefillGate] = useState<{ anchor: string; skip: boolean }>({
+    anchor: "",
+    skip: false,
+  });
   const patientName = `${patient.last_name}, ${patient.first_name}`;
   const lastConsult = ehr.consultations[0];
   const assistBase = {
@@ -95,25 +103,26 @@ export function PatientWorkspaceSheets({
     [actions.appointment, actions.prescriptionSheetOpen, patientId]
   );
 
-  const fromHcEvolution =
-    actions.prescriptionSheetOpen &&
-    (actions.inlineConsultOpen || Boolean(actions.consulta));
+  const prescriptionPrefillAnchor = actions.inlineConsultOpen
+    ? `${actions.appointment ?? "inline"}:${actions.professional ?? ""}`
+    : (actions.consulta ?? "historical");
 
-  const prefillDiagnosis =
-    inlineSnapshot?.diagnosis?.trim() ||
-    selectedConsult?.diagnosis?.trim() ||
-    assistBase.lastDiagnosis ||
-    "";
+  const skipPrescriptionPrefill =
+    rxPrefillGate.anchor === prescriptionPrefillAnchor && rxPrefillGate.skip;
 
-  const prefillIndications =
-    inlineSnapshot?.indications?.trim() || selectedConsult?.indications?.trim() || "";
+  const prefillDiagnosis = skipPrescriptionPrefill
+    ? ""
+    : inlineSnapshot?.diagnosis?.trim() ||
+      selectedConsult?.diagnosis?.trim() ||
+      assistBase.lastDiagnosis ||
+      "";
 
-  const prefillMedications =
-    inlineSnapshot?.medications && inlineSnapshot.medications.length > 0
-      ? inlineSnapshot.medications
-      : fromHcEvolution
-        ? undefined
-        : lastMedications ?? undefined;
+  const handlePrescriptionSaved = useCallback(() => {
+    clearInlineConsultPrescriptionSnapshot(patientId, actions.appointment ?? undefined);
+    setRxPrefillGate({ anchor: prescriptionPrefillAnchor, skip: true });
+    setPrescriptionFormKey((key) => key + 1);
+    actions.onRxOrOrderSaved();
+  }, [actions, patientId, prescriptionPrefillAnchor]);
 
   return (
     <>
@@ -132,6 +141,7 @@ export function PatientWorkspaceSheets({
       />
 
       <PatientPrescriptionSheet
+        key={prescriptionFormKey}
         open={actions.prescriptionSheetOpen && canIssue}
         patientId={patientId}
         patient={{
@@ -150,14 +160,11 @@ export function PatientWorkspaceSheets({
         defaultProfessionalId={actions.professional ?? defaultProfessionalId ?? undefined}
         clinicalRecordId={actions.consulta ?? undefined}
         prefillDiagnosis={prefillDiagnosis}
-        prefillIndications={prefillIndications}
-        hceTreatments={ehr.treatmentRows}
         patientAddress={patient.address}
         patientPhone={patient.phone}
         clinic={clinic}
-        initialMedications={prefillMedications}
         onClose={actions.closeSheet}
-        onSaved={actions.onRxOrOrderSaved}
+        onSaved={handlePrescriptionSaved}
         coverageRuleOverrides={coverageRuleOverrides}
       />
 
