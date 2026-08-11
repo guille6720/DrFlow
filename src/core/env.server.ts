@@ -75,6 +75,10 @@ export function validateProductionEnv(options?: { throwOnError?: boolean }): Pro
     warnings.push("DATABASE_URL unset — backups/migrations require manual setup");
   }
 
+  if (!process.env.SENTRY_DSN?.trim()) {
+    warnings.push("SENTRY_DSN unset — external error tracking disabled (internal observability still active)");
+  }
+
   const result: ProductionEnvCheck = {
     ok: missing.length === 0,
     environment: "production",

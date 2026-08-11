@@ -97,6 +97,23 @@ npm run test:e2e
 
 Sin credenciales E2E, el spec de recetas se **omite** y CI sigue pasando solo con smoke.
 
+### Auth (autenticado, opcional)
+
+`e2e/auth.spec.ts` — login UI → `/dashboard`.
+
+Requiere `E2E_EMAIL` y `E2E_PASSWORD` (mismas credenciales que recetas).
+
+### Reserva pública (opcional)
+
+`e2e/public-booking.spec.ts` — carga `/solicitar-turno/{slug}`, elige profesional y verifica la sección de horarios.
+
+```powershell
+$env:E2E_BOOKING_SLUG="consultorio-dr-castro"
+npm run test:e2e
+```
+
+Sin slug activo, el spec se **omite**.
+
 Playwright levanta `next start` automáticamente (salvo `PLAYWRIGHT_SKIP_WEBSERVER=1`).
 
 ---

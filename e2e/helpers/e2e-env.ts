@@ -6,12 +6,26 @@ export type E2ECredentials = {
   issuePrescription: boolean;
 };
 
+export function hasE2EAuthCredentials(): boolean {
+  return Boolean(process.env.E2E_EMAIL?.trim() && process.env.E2E_PASSWORD?.trim());
+}
+
 export function hasE2ECredentials(): boolean {
   return Boolean(
-    process.env.E2E_EMAIL?.trim() &&
-      process.env.E2E_PASSWORD?.trim() &&
-      process.env.E2E_PATIENT_ID?.trim()
+    hasE2EAuthCredentials() && process.env.E2E_PATIENT_ID?.trim()
   );
+}
+
+export function hasE2EBookingSlug(): boolean {
+  return Boolean(process.env.E2E_BOOKING_SLUG?.trim());
+}
+
+export function readE2EBookingSlug(): string {
+  const slug = process.env.E2E_BOOKING_SLUG?.trim();
+  if (!slug) {
+    throw new Error("Missing E2E_BOOKING_SLUG.");
+  }
+  return slug;
 }
 
 export function readE2ECredentials(): E2ECredentials {

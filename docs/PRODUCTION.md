@@ -30,6 +30,10 @@ Copiá `.env.example` → `.env.local`.
 | `SUPABASE_SERVICE_ROLE_KEY` | Prod (jobs/cron) | Worker, observabilidad, imports |
 | `CRON_SECRET` | Prod (cron) | Protege `/api/jobs/process`, purge |
 | `DATABASE_URL` | Backup/migrate | Connection string Postgres (Supabase Dashboard) |
+| `SENTRY_DSN` | Recomendada | Errores server → Sentry (prod) |
+| `NEXT_PUBLIC_SENTRY_DSN` | Recomendada | Errores client → Sentry (prod) |
+
+Errores también se registran en `clinic_observability_events` vía `logServerError` / `logClientError`. Sentry es complementario cuando el DSN está configurado.
 
 ---
 

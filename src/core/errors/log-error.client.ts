@@ -1,5 +1,6 @@
 import { toErrorMessage } from "@/core/errors/error-utils";
 import { reportClientObservabilityEvent } from "@/core/observability/client-reporter";
+import { captureClientException } from "@/core/observability/sentry.client";
 
 /** Client-side diagnostic logging (console.error allowed by eslint). */
 export function logClientError(
@@ -24,5 +25,11 @@ export function logClientError(
       ...metadata,
       stack: error instanceof Error ? error.stack : undefined,
     },
+  });
+
+  void captureClientException(error, {
+    scope,
+    path: typeof window !== "undefined" ? window.location.pathname : undefined,
+    metadata,
   });
 }

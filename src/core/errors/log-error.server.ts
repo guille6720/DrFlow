@@ -2,6 +2,7 @@ import "server-only";
 
 import { toErrorMessage } from "@/core/errors/error-utils";
 import { recordObservabilityEvent } from "@/core/observability/record";
+import { captureServerException } from "@/core/observability/sentry.server";
 import type { ObservabilityCategory } from "@/core/observability/types";
 
 export type LogServerErrorOptions = {
@@ -41,6 +42,14 @@ export function logServerError(
     path: options?.path,
     traceId: options?.traceId,
     errorMessage: message,
+    metadata,
+  });
+
+  captureServerException(error, {
+    scope,
+    clinicId: options?.clinicId,
+    path: options?.path,
+    traceId: options?.traceId,
     metadata,
   });
 }

@@ -13,6 +13,7 @@ import {
   deleteAvailabilityRule,
   deleteScheduleBlock,
   setAvailabilityRuleActive,
+  updateAvailabilityRule,
 } from "@/features/turnos/actions/turnos-config";
 import type {
   TurnosConfigBlockRow,
@@ -34,9 +35,14 @@ type Props = {
   dayNames: string[];
 };
 
+function formatTimeForInput(value: string): string {
+  return value.slice(0, 5);
+}
+
 export function TurnosConfigView({ rules, blocks, professionals, defaultDuration, dayNames }: Props) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
 
   async function runAction(id: string, action: () => Promise<{ error?: string; success?: boolean }>) {
     setBusyId(id);
@@ -44,10 +50,11 @@ export function TurnosConfigView({ rules, blocks, professionals, defaultDuration
     setBusyId(null);
     if (result.error) {
       toast.error(result.error);
-      return;
+      return false;
     }
     toast.success("Actualizado");
     router.refresh();
+    return true;
   }
 
   const professionalOptions = professionals.map((p) => ({ value: p.id, label: p.name }));
@@ -68,47 +75,124 @@ export function TurnosConfigView({ rules, blocks, professionals, defaultDuration
           <ul className="divide-y divide-[var(--border)] text-sm">
             {rules.map((rule) => (
               <li key={rule.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="font-medium">
-                    {rule.professional_name} · {dayNames[rule.day_of_week]} · {rule.start_time}–
-                    {rule.end_time}
-                  </p>
-                  <p className="text-[var(--muted-foreground)]">
-                    Turnos de {rule.slot_duration} min ·{" "}
-                    {rule.is_active ? "Activo" : "Inactivo"}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={busyId === rule.id}
-                    onClick={() =>
-                      void runAction(rule.id, () =>
-                        setAvailabilityRuleActive(rule.id, !rule.is_active)
-                      )
-                    }
+                {editingRuleId === rule.id ? (
+                  <form
+                    className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-5"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.currentTarget);
+                      void (async () => {
+                        const ok = await runAction(rule.id, () =>
+                          updateAvailabilityRule(rule.id, {
+                            day_of_week: Number(formData.get("day_of_week")),
+                            start_time: String(formData.get("start_time")),
+                            end_time: String(formData.get("end_time")),
+                            slot_duration: Number(formData.get("slot_duration")),
+                          })
+                        );
+                        if (ok) setEditingRuleId(null);
+                      })();
+                    }}
                   >
-                    {rule.is_active ? "Desactivar" : "Activar"}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="danger"
-                    disabled={busyId === rule.id}
-                    onClick={() =>
-                      void runAction(rule.id, () => deleteAvailabilityRule(rule.id))
-                    }
-                  >
-                    {busyId === rule.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                    Eliminar
-                  </Button>
-                </div>
+                    <Select
+                      name="day_of_week"
+                      label="Día"
+                      required
+                      defaultValue={String(rule.day_of_week)}
+                      options={dayNames.map((label, index) => ({ value: String(index), label }))}
+                    />
+                    <Input
+                      name="start_time"
+                      label="Desde"
+                      type="time"
+                      defaultValue={formatTimeForInput(rule.start_time)}
+                      required
+                    />
+                    <Input
+                      name="end_time"
+                      label="Hasta"
+                      type="time"
+                      defaultValue={formatTimeForInput(rule.end_time)}
+                      required
+                    />
+                    <Input
+                      name="slot_duration"
+                      label="Duración (min)"
+                      type="number"
+                      defaultValue={String(rule.slot_duration)}
+                      min={10}
+                      max={120}
+                      required
+                    />
+                    <div className="flex flex-wrap items-end gap-2">
+                      <Button type="submit" size="sm" disabled={busyId === rule.id}>
+                        Guardar
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={busyId === rule.id}
+                        onClick={() => setEditingRuleId(null)}
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div>
+                      <p className="font-medium">
+                        {rule.professional_name} · {dayNames[rule.day_of_week]} · {rule.start_time}–
+                        {rule.end_time}
+                      </p>
+                      <p className="text-[var(--muted-foreground)]">
+                        Turnos de {rule.slot_duration} min ·{" "}
+                        {rule.is_active ? "Activo" : "Inactivo"}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={busyId === rule.id}
+                        onClick={() => setEditingRuleId(rule.id)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={busyId === rule.id}
+                        onClick={() =>
+                          void runAction(rule.id, () =>
+                            setAvailabilityRuleActive(rule.id, !rule.is_active)
+                          )
+                        }
+                      >
+                        {rule.is_active ? "Desactivar" : "Activar"}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="danger"
+                        disabled={busyId === rule.id}
+                        onClick={() =>
+                          void runAction(rule.id, () => deleteAvailabilityRule(rule.id))
+                        }
+                      >
+                        {busyId === rule.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                        Eliminar
+                      </Button>
+                    </div>
+                  </>
+                )}
               </li>
             ))}
           </ul>

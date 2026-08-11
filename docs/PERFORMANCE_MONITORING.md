@@ -36,7 +36,19 @@ Servidor
   └─ recordObservabilityEvent → clinic_observability_events (fire-and-forget)
          ↓
 Configuración → Observabilidad (panel 24 h)
+         ↓
+Sentry (opcional, prod)
+  └─ SENTRY_DSN / NEXT_PUBLIC_SENTRY_DSN → captureException desde logServerError / logClientError
 ```
+
+## Sentry (opcional)
+
+Cuando `SENTRY_DSN` y `NEXT_PUBLIC_SENTRY_DSN` están configurados en producción:
+
+- **Server:** `instrumentation.ts` + `logServerError()` → `@sentry/node`
+- **Client:** `SentryInit` en root layout + `logClientError()` → `@sentry/browser`
+
+Sin DSN, la observabilidad interna sigue activa; no hay impacto en desarrollo local.
 
 ## Impacto en producción (mínimo)
 
