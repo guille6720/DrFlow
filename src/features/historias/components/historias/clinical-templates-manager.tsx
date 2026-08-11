@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, ScrollText } from "lucide-react";
+import { ClipboardPaste, Plus, ScrollText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -16,6 +16,12 @@ import {
   setClinicalTemplateActive,
   updateClinicalTemplate,
 } from "@/lib/actions/clinical-templates";
+import {
+  CLINICAL_TEMPLATE_PASTE_EXAMPLES,
+  CLINICAL_TEMPLATE_PASTE_FORMAT,
+  parseClinicalTemplatePaste,
+  resolveSpecialtyIdFromPaste,
+} from "@/lib/utils/parse-clinical-template-paste";
 
 export type ClinicalTemplateRow = {
   id: string;
@@ -74,6 +80,8 @@ export function ClinicalTemplatesManager({ templates, specialties }: Props) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pasteText, setPasteText] = useState("");
+  const [pasteHint, setPasteHint] = useState<string | null>(null);
 
   const sortedTemplates = useMemo(
     () => [...templates].sort((a, b) => a.name.localeCompare(b.name, "es")),
@@ -92,6 +100,35 @@ export function ClinicalTemplatesManager({ templates, specialties }: Props) {
     setEditor(emptyEditor());
     setMessage(null);
     setError(null);
+  }
+
+  function applyPastedTemplate(raw: string) {
+    const trimmed = raw.trim();
+    if (!trimmed) {
+      setPasteHint("Pegá una plantilla con secciones como Nombre, Motivo, Evolución…");
+      return;
+    }
+
+    const parsed = parseClinicalTemplatePaste(trimmed);
+    const specialtyId = resolveSpecialtyIdFromPaste(parsed.specialty, specialties);
+
+    setSelectedId(null);
+    setEditor({
+      id: null,
+      name: parsed.name,
+      specialty_id: specialtyId,
+      chief_complaint_template: parsed.chief_complaint_template,
+      diagnosis_template: parsed.diagnosis_template,
+      evolution_template: parsed.evolution_template,
+      indications_template: parsed.indications_template,
+    });
+    setMessage(null);
+    setError(null);
+    setPasteHint(
+      parsed.specialty && !specialtyId
+        ? `Campos completados. Especialidad "${parsed.specialty}" no encontrada; elegila manualmente.`
+        : "Campos completados desde la plantilla pegada. Revisá y guardá."
+    );
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -151,11 +188,12 @@ export function ClinicalTemplatesManager({ templates, specialties }: Props) {
         </div>
 
         {sortedTemplates.length === 0 ? (
-          <p className="px-2 py-4 text-sm text-slate-700">
-            Todavía no hay plantillas. Creá la primera para usarla al escribir evoluciones.
+          <p className="px-2 pb-3 text-sm text-slate-700">
+            Todavía no hay plantillas guardadas. Podés pegar una predefinida abajo o crear la
+            primera desde el formulario.
           </p>
         ) : (
-          <ul className="space-y-1">
+          <ul className="mb-3 space-y-1">
             {sortedTemplates.map((template) => {
               const active = selectedId === template.id;
               return (
@@ -195,6 +233,69 @@ export function ClinicalTemplatesManager({ templates, specialties }: Props) {
             })}
           </ul>
         )}
+
+        <div className="space-y-2 border-t border-slate-200 pt-3">
+          <div className="flex items-center gap-2 px-1">
+            <ClipboardPaste className="h-4 w-4 shrink-0 text-teal-700" aria-hidden />
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-800">
+              Pegar plantilla
+            </p>
+          </div>
+          <p className="px-1 text-xs leading-relaxed text-slate-600">
+            Usá secciones como{" "}
+            <span className="font-medium text-slate-800">Nombre</span>,{" "}
+            <span className="font-medium text-slate-800">Motivo de consulta</span>,{" "}
+            <span className="font-medium text-slate-800">Evolución</span>, etc. También podés pegar
+            JSON.
+          </p>
+          <Textarea
+            rows={8}
+            value={pasteText}
+            onChange={(e) => {
+              setPasteText(e.target.value);
+              if (pasteHint) setPasteHint(null);
+            }}
+            onPaste={(e) => {
+              const pasted = e.clipboardData.getData("text");
+              if (!pasted.trim()) return;
+              window.setTimeout(() => {
+                setPasteText(pasted);
+                applyPastedTemplate(pasted);
+              }, 0);
+            }}
+            placeholder={CLINICAL_TEMPLATE_PASTE_FORMAT}
+            className="text-xs leading-relaxed"
+          />
+          <div className="flex flex-wrap gap-1.5 px-1">
+            {CLINICAL_TEMPLATE_PASTE_EXAMPLES.map((example) => (
+              <button
+                key={example.label}
+                type="button"
+                onClick={() => {
+                  setPasteText(example.text);
+                  applyPastedTemplate(example.text);
+                }}
+                className="rounded-lg border border-teal-200 bg-teal-50 px-2 py-1 text-xs font-medium text-teal-900 hover:bg-teal-100"
+              >
+                {example.label}
+              </button>
+            ))}
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="w-full"
+            onClick={() => applyPastedTemplate(pasteText)}
+          >
+            Aplicar al formulario
+          </Button>
+          {pasteHint ? (
+            <p className="rounded-lg border border-sky-200 bg-sky-50 px-2 py-1.5 text-xs text-sky-900">
+              {pasteHint}
+            </p>
+          ) : null}
+        </div>
       </aside>
 
       <Card
