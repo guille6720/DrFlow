@@ -14,6 +14,8 @@ export type CoverageRuleConfig = {
   medicationSearch: MedicationSearchSource;
   /** Non-blocking messages shown at review */
   infoMessages?: string[];
+  /** Show local verification QR block on PDF/preview (configurable per coverage) */
+  documentQr?: boolean;
 };
 
 export type PrescriptionDraftInput = {

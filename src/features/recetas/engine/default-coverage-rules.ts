@@ -9,6 +9,7 @@ export const DEFAULT_COVERAGE_RULES: Record<CoverageKind, CoverageRuleConfig> = 
     requiredFields: ["insurance_number", "diagnosis_cie10", "diagnosis_text"],
     maxValidityDays: 30,
     medicationSearch: "pami_vademecum",
+    documentQr: true,
     infoMessages: [
       "Paciente PAMI: verificá beneficio y vademécum antes de emitir.",
       "Normativa PAMI adicional puede configurarse en reglas de cobertura de la clínica.",

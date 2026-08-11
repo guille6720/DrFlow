@@ -2,22 +2,24 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 import { DocumentSignatureBlock } from "@/features/recetas/components/recetas/document-signature-block";
+import { PrescriptionQrImage } from "@/features/recetas/components/recetas/prescription-qr-image";
+import { formatPrescriptionCoverageLines } from "@/features/recetas/utils/prescription-document-coverage";
 import type { PrescriptionDocumentData } from "@/features/recetas/utils/print-prescription-document";
 
 import { PRESCRIPTION_TYPE_LABELS } from "@/types/prescription";
-
 type Props = {
   data: PrescriptionDocumentData;
   className?: string;
 };
 
 export function PrescriptionDocumentView({ data, className }: Props) {
-  const insurance =
-    data.patientInsurance ||
-    [data.patient.insurance_provider, data.patient.insurance_number].filter(Boolean).join(" — ");
+  const coverageLines = formatPrescriptionCoverageLines(data.coverage);
+  const legacyInsurance =
+    coverageLines.length === 0 &&
+    (data.patientInsurance ||
+      [data.patient.insurance_provider, data.patient.insurance_number].filter(Boolean).join(" — "));
 
-  return (
-    <article
+  return (    <article
       className={className ? `drflow-medical-order-doc ${className}` : "drflow-medical-order-doc"}
       aria-label="Receta electrónica"
     >
@@ -61,11 +63,25 @@ export function PrescriptionDocumentView({ data, className }: Props) {
             F. nac.: {format(new Date(data.patient.birth_date), "PP", { locale: es })}
           </p>
         ) : null}
-        {insurance ? <p className="drflow-medical-order-doc-text">Cobertura: {insurance}</p> : null}
+        {legacyInsurance ? (
+          <p className="drflow-medical-order-doc-text">Cobertura: {String(legacyInsurance)}</p>
+        ) : null}
       </section>
 
-      <section className="mt-4 space-y-1 text-sm">
-        <h3 className="drflow-medical-order-doc-section-title text-xs font-bold uppercase tracking-wide">
+      {coverageLines.length > 0 ? (
+        <section className="mt-4 space-y-1 text-sm">
+          <h3 className="drflow-medical-order-doc-section-title text-xs font-bold uppercase tracking-wide">
+            Cobertura
+          </h3>
+          {coverageLines.map((line) => (
+            <p key={line} className="drflow-medical-order-doc-text">
+              {line}
+            </p>
+          ))}
+        </section>
+      ) : null}
+
+      <section className="mt-4 space-y-1 text-sm">        <h3 className="drflow-medical-order-doc-section-title text-xs font-bold uppercase tracking-wide">
           Prescriptor
         </h3>
         <p className="drflow-medical-order-doc-strong">Dr/a. {data.professional.full_name}</p>
@@ -144,8 +160,27 @@ export function PrescriptionDocumentView({ data, className }: Props) {
         }}
       />
 
-      <footer className="drflow-medical-order-doc-footer mt-6 border-t pt-3 text-[10px]">
-        Receta generada electrónicamente en DrFlow. Verifique datos del paciente antes de presentar
+      {data.showQr && data.qrPayload ? (
+        <section className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+          <h3 className="drflow-medical-order-doc-section-title text-xs font-bold uppercase tracking-wide">
+            Verificación local
+          </h3>
+          <div className="mt-3 flex flex-wrap items-start gap-4">
+            <PrescriptionQrImage
+              payload={data.qrPayload}
+              className="rounded border border-slate-200 bg-white"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="font-mono text-xs break-all text-slate-700">{data.qrPayload}</p>
+              <p className="mt-2 text-xs text-slate-500">
+                Placeholder DrFlow — no constituye trazabilidad REFEPS.
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <footer className="drflow-medical-order-doc-footer mt-6 border-t pt-3 text-[10px]">        Receta generada electrónicamente en DrFlow. Verifique datos del paciente antes de presentar
         en farmacia.
       </footer>
     </article>

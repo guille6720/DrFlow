@@ -1,3 +1,9 @@
+import type { PrescriptionDocumentCoverage } from "@/features/recetas/utils/prescription-document-coverage";
+import {
+  buildPrescriptionQrImageUrl,
+  formatPrescriptionCoverageLines,
+} from "@/features/recetas/utils/prescription-document-coverage";
+
 import {
   buildDocumentSignatureHtml,
   DOCUMENT_SIGNATURE_PRINT_STYLES,
@@ -9,6 +15,7 @@ import {
 } from "@/types/prescription";
 
 export type PrescriptionDocumentData = {
+  prescriptionId?: string;
   prescriptionNumber: string | null;
   prescriptionType: PrescriptionType;
   validityDays: number;
@@ -19,6 +26,9 @@ export type PrescriptionDocumentData = {
   medications: PrescriptionMedication[];
   notes: string | null;
   patientInsurance: string | null;
+  coverage: PrescriptionDocumentCoverage;
+  showQr: boolean;
+  qrPayload: string | null;
   patient: {
     first_name: string;
     last_name: string;
@@ -71,15 +81,44 @@ function buildMedicationsHtml(medications: PrescriptionMedication[]): string {
     .join("");
 }
 
+function buildCoverageHtml(coverage: PrescriptionDocumentCoverage): string {
+  const lines = formatPrescriptionCoverageLines(coverage);
+  if (lines.length === 0) return "";
+  return `
+    <section class="order-doc-block">
+      <h2>Cobertura</h2>
+      ${lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
+    </section>
+  `;
+}
+
+function buildQrHtml(showQr: boolean, qrPayload: string | null): string {
+  if (!showQr || !qrPayload) return "";
+  const imgUrl = buildPrescriptionQrImageUrl(qrPayload);
+  return `
+    <section class="order-doc-block order-doc-qr">
+      <h2>Verificación local</h2>
+      <div class="order-doc-qr-row">
+        <img src="${escapeHtml(imgUrl)}" width="100" height="100" alt="Código QR de verificación local" />
+        <div>
+          <p class="order-doc-qr-code">${escapeHtml(qrPayload)}</p>
+          <p class="order-doc-qr-hint">Placeholder DrFlow — no constituye trazabilidad REFEPS.</p>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 export function buildPrescriptionDocumentHtml(data: PrescriptionDocumentData): string {
   const issued = new Date(data.issuedAt).toLocaleString("es-AR");
   const birth =
     data.patient.birth_date != null
       ? new Date(data.patient.birth_date).toLocaleDateString("es-AR")
       : null;
-  const insurance =
-    data.patientInsurance ||
-    [data.patient.insurance_provider, data.patient.insurance_number].filter(Boolean).join(" — ");
+  const legacyInsurance =
+    !formatPrescriptionCoverageLines(data.coverage).length &&
+    (data.patientInsurance ||
+      [data.patient.insurance_provider, data.patient.insurance_number].filter(Boolean).join(" — "));
 
   return `
     <article class="order-doc">
@@ -105,8 +144,10 @@ export function buildPrescriptionDocumentHtml(data: PrescriptionDocumentData): s
         <p><strong>${escapeHtml(data.patient.last_name)}, ${escapeHtml(data.patient.first_name)}</strong></p>
         <p>DNI: ${escapeHtml(data.patient.document_number)}</p>
         ${birth ? `<p>F. nac.: ${escapeHtml(birth)}</p>` : ""}
-        ${insurance ? `<p>Cobertura: ${escapeHtml(insurance)}</p>` : ""}
+        ${legacyInsurance ? `<p>Cobertura: ${escapeHtml(String(legacyInsurance))}</p>` : ""}
       </section>
+
+      ${buildCoverageHtml(data.coverage)}
 
       <section class="order-doc-block">
         <h2>Prescriptor</h2>
@@ -136,6 +177,8 @@ export function buildPrescriptionDocumentHtml(data: PrescriptionDocumentData): s
         signatureText: data.professional.signatureText,
         signatureImageUrl: data.professional.signatureImageUrl,
       })}
+
+      ${buildQrHtml(data.showQr, data.qrPayload)}
 
       <footer class="order-doc-footer">
         <p>${escapeHtml(ARGENTINA_PRESCRIPTION_DISCLAIMER)}</p>
@@ -186,6 +229,9 @@ const PRINT_STYLES = `
   .order-doc-med-title { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
   .order-doc-med-line { margin: 0 0 3px; font-size: 14px; color: #334155; }
   .order-doc-empty { margin: 0; font-size: 14px; color: #64748b; }
+  .order-doc-qr-row { display: flex; gap: 16px; align-items: flex-start; }
+  .order-doc-qr-code { margin: 0 0 4px; font-family: ui-monospace, monospace; font-size: 11px; word-break: break-all; }
+  .order-doc-qr-hint { margin: 0; font-size: 10px; color: #64748b; }
   .order-doc-footer {
     margin-top: 28px;
     padding-top: 12px;

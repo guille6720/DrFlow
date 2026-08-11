@@ -1,4 +1,9 @@
 import type { HistoriaPrescriptionSummary } from "@/features/historias/types/historia-clinical-summaries";
+import {
+  buildPrescriptionQrPayload,
+  resolvePrescriptionDocumentCoverage,
+  shouldShowPrescriptionDocumentQr,
+} from "@/features/recetas/utils/prescription-document-coverage";
 import type { PrescriptionDocumentData } from "@/features/recetas/utils/print-prescription-document";
 
 import { buildProfessionalSignature, getProfessionalDisplayName } from "@/lib/utils/professional";
@@ -53,17 +58,42 @@ export function buildPrescriptionDocumentData(
     professionals.find((p) => p.id && p.id === prescription.professional_id) ??
     professionals[0];
 
+  const coverage = resolvePrescriptionDocumentCoverage({
+    coverage_kind: prescription.coverage_kind,
+    patient_insurance: prescription.patient_insurance,
+    insurance_number: prescription.insurance_number,
+    insurance_plan: prescription.insurance_plan,
+    patientInsuranceFallback: patient.insurance_provider,
+    patientNumberFallback: patient.insurance_number,
+  });
+
+  const issuedAt = prescription.issued_at ?? prescription.created_at;
+  const showQr = shouldShowPrescriptionDocumentQr(coverage.kind);
+  const qrPayload = showQr
+    ? buildPrescriptionQrPayload({
+        prescriptionNumber: prescription.prescription_number,
+        prescriptionId: prescription.id,
+        patientDocumentNumber: patient.document_number,
+        issuedAt,
+        coverageKind: coverage.kind,
+      })
+    : null;
+
   return {
+    prescriptionId: prescription.id,
     prescriptionNumber: prescription.prescription_number,
     prescriptionType: prescription.prescription_type ?? "ambulatoria",
     validityDays: prescription.validity_days ?? 30,
     status: prescription.status,
-    issuedAt: prescription.issued_at ?? prescription.created_at,
+    issuedAt,
     diagnosisCie10: prescription.diagnosis_cie10 ?? null,
     diagnosisText: prescription.diagnosis_text,
     medications: medications(prescription.medications),
     notes: prescription.notes ?? null,
     patientInsurance: prescription.patient_insurance ?? null,
+    coverage,
+    showQr,
+    qrPayload,
     patient: {
       first_name: patient.first_name,
       last_name: patient.last_name,
