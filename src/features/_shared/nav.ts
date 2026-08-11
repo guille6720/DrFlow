@@ -112,6 +112,12 @@ export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
       },
       { featureId: "integraciones", href: "/datos", label: "Importar / Exportar", permission: null },
       { featureId: "caja", href: "/caja", label: "Caja", permission: "manageCashRegister" },
+      {
+        featureId: "facturacion",
+        href: "/facturacion/liquidacion",
+        label: "Liquidación OS",
+        permission: "manageCashRegister",
+      },
     ],
   },
   { featureId: "pacientes", href: "/pacientes", label: "Pacientes", permission: "managePatients" },

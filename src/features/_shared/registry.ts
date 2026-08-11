@@ -93,9 +93,9 @@ export const FEATURE_MODULES: FeatureModuleDef[] = [
   {
     id: "facturacion",
     label: "Facturación",
-    routes: ["/pagos"],
-    status: "lab",
-    description: "Pagos en línea (laboratorio / mock).",
+    routes: ["/pagos", "/facturacion/liquidacion", "/facturacion/tarifas"],
+    status: "ready",
+    description: "Liquidación obras sociales y pagos en línea (lab).",
   },
   {
     id: "caja",

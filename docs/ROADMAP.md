@@ -41,7 +41,7 @@
 ## Fase 4 — Producto avanzado
 
 - [x] **4A Multi-sede avanzada** — CRUD sedes, filtros agenda, reglas por sede, wizard (ver [MULTI-SEDE.md](./MULTI-SEDE.md))
-- [ ] 4B Facturación y liquidación obras sociales
+- [x] **4B Facturación y liquidación obras sociales** — tarifas OS, lotes desde atenciones, CSV, estados (ver [OS-LIQUIDACION.md](./OS-LIQUIDACION.md))
 - [ ] 4C API pública
 - [ ] 4D BI por especialidad / cobertura
 

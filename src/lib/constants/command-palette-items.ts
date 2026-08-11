@@ -154,6 +154,14 @@ export const COMMAND_PALETTE_NAV: CommandPaletteItemDef[] = [
   },
   { id: "nav-caja", label: "Caja", href: "/caja", group: "navegacion", icon: Banknote, permission: "manageCashRegister" },
   {
+    id: "nav-liquidacion-os",
+    label: "Liquidación OS",
+    href: "/facturacion/liquidacion",
+    group: "navegacion",
+    icon: Banknote,
+    permission: "manageCashRegister",
+  },
+  {
     id: "nav-reportes",
     label: "Reportes",
     href: "/reportes",

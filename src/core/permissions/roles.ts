@@ -102,6 +102,8 @@ export function canAccessRoute(
     "/recetas": "issuePrescriptions",
     "/herramientas": "viewPharmacology",
     "/caja": "manageCashRegister",
+    "/facturacion/liquidacion": "manageCashRegister",
+    "/facturacion/tarifas": "manageCashRegister",
     "/turnos/nuevo": "manageAppointments",
     "/turnos/configuracion": "manageSettings",
     "/turnos/reportes": "viewReports",
