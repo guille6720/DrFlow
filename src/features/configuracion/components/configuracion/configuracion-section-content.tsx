@@ -5,6 +5,7 @@ import { ClinicAccessibilityPanel } from "@/features/configuracion/components/co
 import { ClinicFeatureFlagsPanel } from "@/features/configuracion/components/configuracion/clinic-feature-flags-panel";
 import { ClinicJobsPanel } from "@/features/configuracion/components/configuracion/clinic-jobs-panel";
 import { ClinicObservabilityPanel } from "@/features/configuracion/components/configuracion/clinic-observability-panel";
+import { ClinicPlanPanelLoader } from "@/features/configuracion/components/configuracion/clinic-plan-panel-loader";
 import { ClinicPluginsPanel } from "@/features/configuracion/components/configuracion/clinic-plugins-panel";
 import { ComplianceLegalPanel } from "@/features/configuracion/components/configuracion/compliance-legal-panel";
 import type { ConfiguracionSectionId } from "@/features/configuracion/components/configuracion/configuracion-sections";
@@ -28,6 +29,7 @@ export interface ConfiguracionSectionExtras {
   practiceProfile: string | null;
   defaultInsurance: string | null;
   acceptedCoverages: string[] | null;
+  paymentNotice?: "ok" | "error" | "pending" | null;
   pluginSettings: Array<{
     id: import("@/plugins/registry").PluginId;
     label: string;
@@ -71,6 +73,8 @@ export function renderConfiguracionSectionContent(
   extras: ConfiguracionSectionExtras
 ) {
   switch (sectionId) {
+    case "plan":
+      return <ClinicPlanPanelLoader paymentNotice={extras.paymentNotice} />;
     case "legal":
       return <ComplianceLegalPanel />;
     case "apariencia":

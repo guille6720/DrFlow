@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { getSession } from "@/core/auth/session.server";
+import { isMercadoPagoConfigured } from "@/core/billing/mercadopago";
 import {
   formatWhatsAppDisplay,
   getSalesContactEmail,
@@ -27,9 +29,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PlanesPage() {
+export default async function PlanesPage() {
   const salesEmail = getSalesContactEmail();
   const phone = getSalesWhatsAppPhone();
+  const session = await getSession();
+  const mercadoPagoEnabled = isMercadoPagoConfigured();
   const salesWhatsAppHref =
     phone && buildWhatsAppUrl(phone, "Hola, quiero consultar planes DrFlow.")
       ? buildWhatsAppUrl(phone, "Hola, quiero consultar planes DrFlow.")
@@ -47,7 +51,10 @@ export default function PlanesPage() {
             Escribinos
           </ButtonLink>
         </div>
-        <PlansPricingSection />
+        <PlansPricingSection
+          mercadoPagoEnabled={mercadoPagoEnabled}
+          isAuthenticated={Boolean(session)}
+        />
         <p className="mt-10 text-center text-xs text-slate-500">
           Consultas comerciales:{" "}
           <a href={`mailto:${salesEmail}`} className="text-teal-700 hover:underline">

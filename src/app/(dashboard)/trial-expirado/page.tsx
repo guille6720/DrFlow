@@ -6,6 +6,8 @@ import { getDashboardShell } from "@/core/auth/session.server";
 import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
 import { isClinicTrialExpired, TRIAL_PROMO_DAYS } from "@/core/trial/clinic-trial";
 
+import { ClinicPlanPanelLoader } from "@/features/configuracion/components/configuracion/clinic-plan-panel-loader";
+
 import { Button } from "@/components/ui/button";
 
 export default async function TrialExpiradoPage() {
@@ -35,14 +37,15 @@ export default async function TrialExpiradoPage() {
             clínicas y recetas, contactanos para activar tu plan.
           </p>
           <div className="mt-6 flex flex-col gap-2">
-            <Link href="/planes">
-              <Button type="button" className="w-full">
-                Ver planes y activar
+            <ClinicPlanPanelLoader />
+            <Link href="/configuracion?grupo=consultorio&seccion=plan">
+              <Button type="button" variant="outline" className="w-full">
+                Ver detalle del plan
               </Button>
             </Link>
-            <Link href="/configuracion">
-              <Button type="button" variant="outline" className="w-full">
-                Ir a configuración
+            <Link href="/planes">
+              <Button type="button" variant="ghost" className="w-full text-slate-600">
+                Comparar planes
               </Button>
             </Link>
             <Link href="/ayuda">

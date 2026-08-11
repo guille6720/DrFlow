@@ -1,5 +1,7 @@
 export type BillingPlanId = "solo" | "consultorio" | "clinica";
 
+export type BillingCycle = "monthly" | "annual";
+
 export type BillingPlan = {
   id: BillingPlanId;
   name: string;
@@ -75,6 +77,29 @@ export function formatPlanPriceArs(amount: number): string {
 
 export function isPlanAvailableForPurchase(plan: BillingPlan): boolean {
   return plan.status !== "development" && plan.priceArsMonthly != null;
+}
+
+export function getBillingPlan(planId: BillingPlanId): BillingPlan | undefined {
+  return DRFLOW_BILLING_PLANS.find((p) => p.id === planId);
+}
+
+export function getPlanPriceArs(planId: BillingPlanId, cycle: BillingCycle): number | null {
+  const plan = getBillingPlan(planId);
+  if (!plan || !isPlanAvailableForPurchase(plan)) return null;
+  if (cycle === "annual") return plan.priceArsAnnual ?? null;
+  return plan.priceArsMonthly ?? null;
+}
+
+export function getPlanMercadoPagoSku(planId: BillingPlanId, cycle: BillingCycle): string {
+  const base = getBillingPlan(planId)?.mercadoPagoPreferenceSku ?? `drflow-${planId}-mensual`;
+  if (cycle === "annual") {
+    return base.replace(/-mensual$/, "-anual");
+  }
+  return base;
+}
+
+export function billingCycleLabel(cycle: BillingCycle): string {
+  return cycle === "annual" ? "Anual" : "Mensual";
 }
 
 export function buildPlanSalesMessage(planId: BillingPlanId, clinicName?: string): string {

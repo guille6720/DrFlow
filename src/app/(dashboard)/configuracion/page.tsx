@@ -29,7 +29,7 @@ import { getCachedActiveBookingSlug, getCachedClinicProfessionalsSettings } from
 import { enrichTeamMembers } from "@/lib/utils/team-member-display";
 
 interface PageProps {
-  searchParams: Promise<{ seccion?: string; grupo?: string }>;
+  searchParams: Promise<{ seccion?: string; grupo?: string; pago?: string }>;
 }
 
 export default async function ConfiguracionPage({ searchParams }: PageProps) {
@@ -37,7 +37,7 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
   const { clinic, role, isSuperadmin } = await getActiveClinic();
-  const { seccion, grupo } = await searchParams;
+  const { seccion, grupo, pago } = await searchParams;
 
   if (seccion === "catalogo") {
     redirect("/ingreso-profesionales");
@@ -94,12 +94,16 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
     ? await loadConfiguracionSectionExtras(activeSection, clinicId)
     : await loadConfiguracionSectionExtras(undefined, clinicId);
 
+  const paymentNotice =
+    pago === "ok" || pago === "error" || pago === "pending" ? pago : null;
+
   const sectionContent = activeSection
     ? renderConfiguracionSectionContent(activeSection, settingsProps, {
         patientCount: patientCount.count ?? 0,
         practiceProfile: clinic?.practice_profile ?? null,
         defaultInsurance: clinic?.default_insurance_provider ?? null,
         acceptedCoverages: clinic?.accepted_coverages ?? null,
+        paymentNotice,
         ...sectionExtras,
       })
     : undefined;

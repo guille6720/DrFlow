@@ -35,6 +35,8 @@ export const EXPECTED_TABLES = [
   "clinic_plugins",
   "clinic_feature_flags",
   "clinic_jobs",
+  "clinic_subscriptions",
+  "clinic_subscription_payments",
   "clinic_observability_events",
   "pathologies",
   "drugs",

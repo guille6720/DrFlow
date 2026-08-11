@@ -8,6 +8,7 @@ import {
   Building2,
   CalendarClock,
   ClipboardList,
+  CreditCard,
   Database,
   HeartPulse,
   ListTodo,
@@ -27,6 +28,7 @@ import { pamiNavMessages } from "@/locales/es-AR/pami/nav";
 export type ConfiguracionSectionId =
   | "clinica"
   | "equipo"
+  | "plan"
   | "agenda"
   | "apps"
   | "coberturas"
@@ -75,6 +77,12 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
     title: "Equipo e invitaciones",
     description: "Invitar médicos, secretaría o administradores.",
     icon: Users,
+  },
+  {
+    id: "plan",
+    title: "Tu plan",
+    description: "Suscripción DrFlow, trial y pagos con Mercado Pago.",
+    icon: CreditCard,
   },
   {
     id: "agenda",
@@ -183,7 +191,7 @@ export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
     title: "Consultorio y equipo",
     description: "Datos del consultorio y usuarios del staff.",
     icon: BriefcaseMedical,
-    sections: ["clinica", "equipo"],
+    sections: ["clinica", "equipo", "plan"],
   },
   {
     id: "agenda",

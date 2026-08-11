@@ -199,7 +199,7 @@ Texto sugerido para términos de venta (resumen):
 
 ### Fase 2 MP automático
 
-- [ ] Migración 074 subscriptions
+- [x] Migración 100 subscriptions
 - [ ] Webhook en prod + MP dashboard apuntando a `/api/billing/webhooks/mercadopago`
 - [ ] Test pago sandbox → desbloqueo
 - [ ] Test trial expirado → checkout → acceso

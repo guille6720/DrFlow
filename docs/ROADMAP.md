@@ -25,7 +25,7 @@
 
 ## Fase 2 — Integraciones reales
 
-- [ ] **2A Mercado Pago** — Checkout Pro, webhooks (ver `docs/MONETIZACION-PLAN.md`)
+- [x] **2A Mercado Pago** — Checkout Pro, webhooks, suscripciones (migración 100)
 - [x] **2B Email** — Resend/SMTP en recordatorios + invitaciones + notificaciones de turnos
 - [ ] **2C WhatsApp Business API** — envío automático (hoy: abrir chat)
 - [ ] **2D Telemedicina** — embed propio o Daily.co (hoy: Jitsi lab)

@@ -9,6 +9,7 @@ import {
   isPlanAvailableForPurchase,
   TRIAL_DAYS_INCLUDED,
 } from "@/core/billing/plans";
+import { MercadoPagoCheckoutButton } from "@/core/components/billing/mercadopago-checkout-button";
 
 import { buildWhatsAppShareUrl, buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 
@@ -26,11 +27,15 @@ function planWhatsAppHref(planId: BillingPlanId): string {
 type PlansPricingSectionProps = {
   showHeading?: boolean;
   className?: string;
+  mercadoPagoEnabled?: boolean;
+  isAuthenticated?: boolean;
 };
 
 export function PlansPricingSection({
   showHeading = true,
   className,
+  mercadoPagoEnabled = false,
+  isAuthenticated = false,
 }: PlansPricingSectionProps) {
   return (
     <section id="planes" className={className}>
@@ -102,6 +107,13 @@ export function PlansPricingSection({
                 ))}
               </ul>
               <div className="mt-6 flex flex-col gap-2">
+                {available && mercadoPagoEnabled ? (
+                  <MercadoPagoCheckoutButton
+                    planId={plan.id}
+                    cycle="monthly"
+                    requiresLogin={!isAuthenticated}
+                  />
+                ) : null}
                 <a
                   href={planWhatsAppHref(plan.id)}
                   target="_blank"

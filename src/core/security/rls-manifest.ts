@@ -34,6 +34,8 @@ export const TABLES_REQUIRING_RLS = [
   "clinic_plugins",
   "clinic_feature_flags",
   "clinic_jobs",
+  "clinic_subscriptions",
+  "clinic_subscription_payments",
   "clinic_observability_events",
   "pathologies",
   "drugs",
