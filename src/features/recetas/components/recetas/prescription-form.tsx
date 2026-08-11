@@ -22,6 +22,9 @@ interface Props {
   patient?: PrescriptionWizardPatient | null;
   patientInsurance?: string | null;
   patientAllergies?: string | null;
+  patientAddress?: string | null;
+  patientPhone?: string | null;
+  clinic?: { name: string; address?: string | null; phone?: string | null };
   clinicalRecordId?: string;
   diagnosisDefault?: string;
   cie10Default?: string;
@@ -40,6 +43,9 @@ export function PrescriptionForm({
   patient,
   patientInsurance,
   patientAllergies,
+  patientAddress,
+  patientPhone,
+  clinic,
   clinicalRecordId,
   diagnosisDefault = "",
   cie10Default = "",
@@ -57,6 +63,9 @@ export function PrescriptionForm({
       patient={patient}
       patientInsurance={patientInsurance}
       patientAllergies={patientAllergies}
+      patientAddress={patientAddress}
+      patientPhone={patientPhone}
+      clinic={clinic}
       clinicalRecordId={clinicalRecordId}
       diagnosisDefault={diagnosisDefault}
       cie10Default={cie10Default}

@@ -32,6 +32,9 @@ type Props = {
   prefillCie10?: string;
   prefillIndications?: string;
   hceTreatments?: PatientEhrTreatmentRow[];
+  patientAddress?: string | null;
+  patientPhone?: string | null;
+  clinic?: { name: string; address?: string | null; phone?: string | null };
   initialMedications?: PrescriptionMedication[];
   onClose: () => void;
   onSaved: () => void;
@@ -52,6 +55,9 @@ export function PatientPrescriptionSheet({
   prefillCie10,
   prefillIndications,
   hceTreatments = [],
+  patientAddress,
+  patientPhone,
+  clinic,
   initialMedications,
   onClose,
   onSaved,
@@ -70,6 +76,9 @@ export function PatientPrescriptionSheet({
         patient={patient}
         patientInsurance={patientInsurance}
         patientAllergies={patientAllergies}
+        patientAddress={patientAddress}
+        patientPhone={patientPhone}
+        clinic={clinic}
         clinicalRecordId={clinicalRecordId}
         diagnosisDefault={prefillDiagnosis ?? ""}
         cie10Default={prefillCie10 ?? ""}

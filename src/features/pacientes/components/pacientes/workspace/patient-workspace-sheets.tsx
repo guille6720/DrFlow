@@ -145,6 +145,9 @@ export function PatientWorkspaceSheets({
         prefillDiagnosis={prefillDiagnosis}
         prefillIndications={prefillIndications}
         hceTreatments={ehr.treatmentRows}
+        patientAddress={patient.address}
+        patientPhone={patient.phone}
+        clinic={clinic}
         initialMedications={fromHcEvolution ? undefined : (lastMedications ?? undefined)}
         onClose={actions.closeSheet}
         onSaved={actions.onRxOrOrderSaved}

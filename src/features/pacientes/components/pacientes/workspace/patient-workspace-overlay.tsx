@@ -52,7 +52,7 @@ export function PatientWorkspaceOverlay({
       ) : null}
       <div
         className={cn(
-          "relative z-10 flex w-full flex-col bg-white shadow-xl",
+          "drflow-workspace-overlay-panel drflow-surface-light relative z-10 flex w-full flex-col bg-white text-slate-900 shadow-xl",
           fullscreen
             ? "h-[100dvh] max-h-[100dvh] rounded-none"
             : cn(

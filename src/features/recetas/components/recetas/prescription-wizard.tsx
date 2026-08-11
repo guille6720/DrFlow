@@ -6,6 +6,10 @@ import { useCallback, useEffect } from "react";
 import type { PatientEhrTreatmentRow } from "@/features/pacientes/utils/patient-ehr-model";
 import { PrescriptionClinicalAssistPanel } from "@/features/recetas/components/recetas/prescription-clinical-assist-panel";
 import { PrescriptionDiagnosisFields } from "@/features/recetas/components/recetas/prescription-diagnosis-fields";
+import {
+  PrescriptionFormSection,
+  PrescriptionReadonlyField,
+} from "@/features/recetas/components/recetas/prescription-form-section";
 import { PrescriptionMedicationsSection } from "@/features/recetas/components/recetas/prescription-medications-section";
 import { PrescriptionTemplatePicker } from "@/features/recetas/components/recetas/prescription-template-picker";
 import {
@@ -38,6 +42,9 @@ interface Props {
   patient?: PrescriptionWizardPatient | null;
   patientInsurance?: string | null;
   patientAllergies?: string | null;
+  patientAddress?: string | null;
+  patientPhone?: string | null;
+  clinic?: { name: string; address?: string | null; phone?: string | null };
   clinicalRecordId?: string;
   diagnosisDefault?: string;
   cie10Default?: string;
@@ -50,7 +57,16 @@ interface Props {
   coverageRuleOverrides?: CoverageRuleOverridesMap | null;
 }
 
-const STEP_LABELS = ["Paciente y cobertura", "Medicamentos", "Revisar y emitir"] as const;
+const STEP_LABELS = ["Datos", "Tratamiento", "Emitir"] as const;
+
+function professionalLicense(professional: Professional): string {
+  return (
+    professional.license_number?.trim() ||
+    professional.license_national?.trim() ||
+    professional.license_provincial?.trim() ||
+    ""
+  );
+}
 
 function specialtyLabel(
   specialties: Professional["specialties"]
@@ -65,6 +81,9 @@ export function PrescriptionWizard({
   patient,
   patientInsurance,
   patientAllergies,
+  patientAddress,
+  patientPhone,
+  clinic,
   clinicalRecordId,
   diagnosisDefault = "",
   cie10Default = "",
@@ -170,9 +189,10 @@ export function PrescriptionWizard({
   const patientDisplay = patient
     ? `${patient.last_name}, ${patient.first_name}`
     : null;
+  const todayLabel = new Date().toLocaleDateString("es-AR");
 
   return (
-    <div className="space-y-5">
+    <div className="drflow-prescription-wizard space-y-5 text-slate-900">
       <nav aria-label="Pasos de la receta" className="flex flex-wrap gap-2">
         {STEP_LABELS.map((label, index) => {
           const n = (index + 1) as 1 | 2 | 3;
@@ -209,28 +229,7 @@ export function PrescriptionWizard({
 
       {step === 1 ? (
         <div className="space-y-4">
-          {patientDisplay ? (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <p className="font-semibold text-slate-900">{patientDisplay}</p>
-              <p className="mt-0.5 text-sm text-slate-600">
-                DNI {patient?.document_number ?? "—"}
-                {effectivePatientInsurance ? ` · ${effectivePatientInsurance}` : ""}
-              </p>
-              {isPamiCoverage(effectivePatientInsurance) ? (
-                <p className="mt-1 text-xs font-medium text-teal-800">Cobertura PAMI detectada</p>
-              ) : null}
-            </div>
-          ) : null}
-
-          {coverageInfoMessages.length > 0 ? (
-            <ul className="space-y-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
-              {coverageInfoMessages.map((message) => (
-                <li key={message}>{message}</li>
-              ))}
-            </ul>
-          ) : null}
-
-          <div className="grid gap-4 sm:grid-cols-2">
+          <PrescriptionFormSection title="Profesional">
             <Select
               label="Profesional prescriptor"
               required
@@ -239,78 +238,120 @@ export function PrescriptionWizard({
               options={professionals.map((p) => ({
                 value: p.id,
                 label: `${getProfessionalDisplayName(p)}${
-                  p.license_number || p.license_national
-                    ? ` — Mat. ${p.license_number ?? p.license_national}`
-                    : ""
+                  professionalLicense(p) ? ` — Mat. ${professionalLicense(p)}` : ""
                 }`,
               }))}
               placeholder="Seleccionar"
             />
-            <Select
-              label="Tipo de receta"
-              required
-              value={prescriptionType}
-              onChange={(e) => setPrescriptionType(e.target.value as typeof prescriptionType)}
-              options={[
-                { value: "ambulatoria", label: "Ambulatoria" },
-                { value: "cronica", label: "Crónica / prolongada" },
-                { value: "duplicado", label: "Duplicado (psicotrópicos)" },
-              ]}
-            />
-            <Select
-              label="Cobertura"
-              value={effectivePatientInsurance}
-              onChange={(e) => setPatientInsurance(e.target.value)}
-              options={coverageOptions.map((c) => ({ value: c, label: c }))}
-              disabled={insuranceLocked}
-            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <PrescriptionReadonlyField
+                label="Nombre"
+                value={
+                  selectedProfessional ? getProfessionalDisplayName(selectedProfessional) : null
+                }
+              />
+              <PrescriptionReadonlyField
+                label="Especialidad"
+                value={
+                  selectedProfessional
+                    ? specialtyLabel(selectedProfessional.specialties)
+                    : null
+                }
+              />
+              <PrescriptionReadonlyField
+                label="Matrícula"
+                value={selectedProfessional ? professionalLicense(selectedProfessional) : null}
+              />
+              <PrescriptionReadonlyField label="Institución" value={clinic?.name} />
+            </div>
+            {clinic?.address || clinic?.phone ? (
+              <p className="text-xs text-slate-600">
+                {[clinic.address, clinic.phone].filter(Boolean).join(" · ")}
+              </p>
+            ) : null}
+          </PrescriptionFormSection>
+
+          <PrescriptionFormSection title="Paciente">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <PrescriptionReadonlyField label="Nombre y apellido" value={patientDisplay} />
+              <PrescriptionReadonlyField label="DNI" value={patient?.document_number} />
+              <PrescriptionReadonlyField
+                label="Cobertura"
+                value={effectivePatientInsurance || "Particular"}
+              />
+              <PrescriptionReadonlyField label={affiliateLabel} value={insuranceNumber} />
+              <PrescriptionReadonlyField label="Plan" value={insurancePlan} />
+              <PrescriptionReadonlyField label="Dirección" value={patientAddress} />
+              <PrescriptionReadonlyField label="Teléfono" value={patientPhone} />
+            </div>
+            {isPamiCoverage(effectivePatientInsurance) ? (
+              <p className="text-xs font-medium text-teal-800">Cobertura PAMI detectada</p>
+            ) : null}
+          </PrescriptionFormSection>
+
+          <PrescriptionFormSection title="Receta — cobertura">
+            {coverageInfoMessages.length > 0 ? (
+              <ul className="space-y-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+                {coverageInfoMessages.map((message) => (
+                  <li key={message}>{message}</li>
+                ))}
+              </ul>
+            ) : null}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <PrescriptionReadonlyField label="Fecha" value={todayLabel} />
+              <Select
+                label="Tipo de receta"
+                required
+                value={prescriptionType}
+                onChange={(e) => setPrescriptionType(e.target.value as typeof prescriptionType)}
+                options={[
+                  { value: "ambulatoria", label: "Ambulatoria" },
+                  { value: "cronica", label: "Crónica / prolongada" },
+                  { value: "duplicado", label: "Duplicado (psicotrópicos)" },
+                ]}
+              />
+              <Select
+                label="Cobertura"
+                value={effectivePatientInsurance}
+                onChange={(e) => setPatientInsurance(e.target.value)}
+                options={coverageOptions.map((c) => ({ value: c, label: c }))}
+                disabled={insuranceLocked}
+              />
+              <Input
+                label={affiliateLabel}
+                value={insuranceNumber}
+                onChange={(e) => setInsuranceNumber(e.target.value)}
+                placeholder={authoritativeCoverageKind === "PAMI" ? "N° beneficio" : "N° afiliado"}
+              />
+              {planOptions.length > 0 ? (
+                <Select
+                  label="Plan"
+                  value={insurancePlan}
+                  onChange={(e) => setInsurancePlan(e.target.value)}
+                  options={planOptions.map((p) => ({ value: p, label: p }))}
+                />
+              ) : (
+                <Input
+                  label="Plan"
+                  value={insurancePlan}
+                  onChange={(e) => setInsurancePlan(e.target.value)}
+                />
+              )}
+              <Input
+                label="Vigencia (días)"
+                type="number"
+                min={1}
+                max={365}
+                value={validityDays}
+                onChange={(e) => setValidityDays(Number(e.target.value) || 30)}
+              />
+            </div>
             {insuranceLocked ? (
-              <p className="sm:col-span-2 text-xs text-slate-600">
+              <p className="text-xs text-slate-600">
                 La cobertura se toma del legajo del paciente y no puede modificarse en la receta.
               </p>
             ) : null}
-            <Input
-              label={affiliateLabel}
-              value={insuranceNumber}
-              onChange={(e) => setInsuranceNumber(e.target.value)}
-              placeholder={authoritativeCoverageKind === "PAMI" ? "N° beneficio" : "N° afiliado"}
-            />
-            {planOptions.length > 0 ? (
-              <Select
-                label="Plan"
-                value={insurancePlan}
-                onChange={(e) => setInsurancePlan(e.target.value)}
-                options={planOptions.map((p) => ({ value: p, label: p }))}
-              />
-            ) : (
-              <Input
-                label="Plan"
-                value={insurancePlan}
-                onChange={(e) => setInsurancePlan(e.target.value)}
-              />
-            )}
-            <Input
-              label="Vigencia (días)"
-              type="number"
-              min={1}
-              max={365}
-              value={validityDays}
-              onChange={(e) => setValidityDays(Number(e.target.value) || 30)}
-            />
-          </div>
-
-          <PrescriptionDiagnosisFields
-            diagnosisText={diagnosisText}
-            cie10={cie10}
-            onDiagnosisTextChange={setDiagnosisText}
-            onCie10Change={setCie10}
-          />
-
-          {selectedProfessional ? (
-            <p className="text-xs text-slate-600">
-              Especialidad: {specialtyLabel(selectedProfessional.specialties) ?? "—"}
-            </p>
-          ) : null}
+          </PrescriptionFormSection>
         </div>
       ) : null}
 
@@ -341,18 +382,41 @@ export function PrescriptionWizard({
             }
             hceTreatments={hceTreatments}
           />
-          <PrescriptionTemplatePicker
-            key={professionalId}
-            professionalId={professionalId}
-            onApply={applyTemplate}
-          />
-          <PrescriptionMedicationsSection
-            medications={medications}
-            setMedications={setMedications}
-            updateMed={updateMed}
-            medicationSearch={effectiveMedicationSearch}
-            onPathologySelect={handlePathologySelect}
-          />
+
+          <PrescriptionFormSection title="Receta">
+            <PrescriptionReadonlyField label="Fecha" value={todayLabel} />
+            <PrescriptionTemplatePicker
+              key={professionalId}
+              professionalId={professionalId}
+              onApply={applyTemplate}
+            />
+            <PrescriptionMedicationsSection
+              medications={medications}
+              setMedications={setMedications}
+              updateMed={updateMed}
+              medicationSearch={effectiveMedicationSearch}
+              onPathologySelect={handlePathologySelect}
+            />
+          </PrescriptionFormSection>
+
+          <PrescriptionFormSection title="Diagnóstico">
+            <PrescriptionDiagnosisFields
+              diagnosisText={diagnosisText}
+              cie10={cie10}
+              onDiagnosisTextChange={setDiagnosisText}
+              onCie10Change={setCie10}
+            />
+          </PrescriptionFormSection>
+
+          <PrescriptionFormSection title="Indicaciones">
+            <Textarea
+              label="Indicaciones"
+              rows={4}
+              placeholder="Indicaciones para el paciente o farmacia"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </PrescriptionFormSection>
         </div>
       ) : null}
 
@@ -389,6 +453,11 @@ export function PrescriptionWizard({
                 <span className="text-slate-500">Medicamentos:</span>{" "}
                 {medications.filter((m) => m.generic_name.trim()).length}
               </li>
+              {notes.trim() ? (
+                <li>
+                  <span className="text-slate-500">Indicaciones:</span> {notes}
+                </li>
+              ) : null}
             </ul>
             <ol className="mt-3 list-decimal space-y-2 pl-5">
               {medications
@@ -402,14 +471,6 @@ export function PrescriptionWizard({
                 ))}
             </ol>
           </div>
-
-          <Textarea
-            label="Observaciones"
-            rows={2}
-            placeholder="Indicaciones adicionales para farmacia"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
 
           <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-sm text-amber-950">
             <input
