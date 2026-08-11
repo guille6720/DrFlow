@@ -1,5 +1,8 @@
-import { DEFAULT_COVERAGE_RULES } from "@/features/recetas/engine/default-coverage-rules";
-import type { CoverageKind } from "@/features/recetas/engine/types";
+import type { CoverageRuleConfig } from "@/features/recetas/engine/types";
+import {
+  getEffectiveCoverageRule,
+  isCoverageKind,
+} from "@/features/recetas/utils/coverage-rules-admin";
 
 import { insuranceNumberLabel } from "@/lib/constants/coverages";
 import type { PrescriptionCoverageKind } from "@/types/prescription";
@@ -37,10 +40,11 @@ export function resolvePrescriptionDocumentCoverage(input: {
 }
 
 export function shouldShowPrescriptionDocumentQr(
-  coverageKind: PrescriptionCoverageKind | null | undefined
+  coverageKind: PrescriptionCoverageKind | null | undefined,
+  clinicRuleOverride?: Partial<CoverageRuleConfig> | null
 ): boolean {
-  if (!coverageKind) return false;
-  return DEFAULT_COVERAGE_RULES[coverageKind as CoverageKind].documentQr ?? false;
+  if (!coverageKind || !isCoverageKind(coverageKind)) return false;
+  return getEffectiveCoverageRule(coverageKind, clinicRuleOverride).documentQr ?? false;
 }
 
 /** Local verification payload — not REFEPS; scannable placeholder for pharmacy staff. */

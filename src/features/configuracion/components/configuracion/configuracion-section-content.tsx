@@ -12,7 +12,9 @@ import { CoveragesPanel } from "@/features/configuracion/components/configuracio
 import { DemoDataPanel } from "@/features/configuracion/components/configuracion/demo-data-panel";
 import { PamiPlanillasAdminPanel } from "@/features/configuracion/components/configuracion/pami-planillas-admin-panel";
 import { PamiSetupPanel } from "@/features/configuracion/components/configuracion/pami-setup-panel";
+import { PrescriptionCoverageRulesPanel } from "@/features/configuracion/components/configuracion/prescription-coverage-rules-panel";
 import type { SettingsPanelProps } from "@/features/configuracion/components/configuracion/settings-panel";
+import type { CoverageRuleRow } from "@/features/recetas/repositories/coverage-rules.repository";
 
 import type { PamiPlanillaAdminCatalog } from "@/lib/actions/pami-planilla-admin";
 
@@ -57,6 +59,8 @@ export interface ConfiguracionSectionExtras {
   };
   pamiPlanillaAdminCatalog?: PamiPlanillaAdminCatalog;
   pamiPlanillaAdminError?: string;
+  pamiCoverageRule?: CoverageRuleRow | null;
+  pamiCoverageRuleError?: string;
 }
 
 export function renderConfiguracionSectionContent(
@@ -85,6 +89,15 @@ export function renderConfiguracionSectionContent(
             practiceProfile={extras.practiceProfile}
             defaultInsurance={extras.defaultInsurance}
           />
+          <PrescriptionCoverageRulesPanel
+            coverageKind="PAMI"
+            savedRule={extras.pamiCoverageRule ?? null}
+          />
+          {extras.pamiCoverageRuleError ? (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+              {extras.pamiCoverageRuleError}
+            </div>
+          ) : null}
           {extras.pamiPlanillaAdminCatalog ? (
             <PamiPlanillasAdminPanel initialCatalog={extras.pamiPlanillaAdminCatalog} />
           ) : extras.pamiPlanillaAdminError ? (

@@ -29,6 +29,11 @@ import { getWorkspaceFetchPlan } from "@/features/pacientes/server/patient-works
 import { buildPatientChartPayload } from "@/features/pacientes/utils/patient-chart-model";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 import { HCE_SUMMARY_ATTACHMENT_NAME, loadPatientHceSummaryRows } from "@/features/pacientes/utils/patient-ehr-from-hce";
+import { loadActiveCoverageRulesForClinic } from "@/features/recetas/repositories/coverage-rules.repository";
+import {
+  buildCoverageRuleOverridesMap,
+  type CoverageRuleOverridesMap,
+} from "@/features/recetas/utils/coverage-rules-admin";
 
 import {
   getCachedClinicalTemplates,
@@ -64,6 +69,7 @@ export type PatientWorkspacePagePayload = {
   } | null;
   portalSlug: string | null;
   doctorInfo: DoctorShareInfo | null;
+  coverageRuleOverrides: CoverageRuleOverridesMap;
 };
 
 type PatientRow = PatientChartPatient &
@@ -189,6 +195,10 @@ export async function loadPatientWorkspacePageData(
         .limit(PATIENT_TIMELINE_APPOINTMENT_LIMIT)
     : Promise.resolve({ data: [] });
 
+  const coverageRulesPromise = plan.prescriptions
+    ? loadActiveCoverageRulesForClinic(supabase, clinicId)
+    : Promise.resolve({ ok: true as const, data: [] });
+
   const [
     portalContext,
     { data: records, count: totalRecords },
@@ -199,6 +209,7 @@ export async function loadPatientWorkspacePageData(
     professionals,
     clinicalProfileResult,
     templates,
+    coverageRulesResult,
   ] = await Promise.all([
     portalContextPromise,
     recordsPromise,
@@ -209,6 +220,7 @@ export async function loadPatientWorkspacePageData(
     professionalsPromise,
     clinicalProfilePromise,
     templatesPromise,
+    coverageRulesPromise,
   ]);
 
   const { portalSlug, doctorInfo } = portalContext;
@@ -310,6 +322,11 @@ export async function loadPatientWorkspacePageData(
     mappedProfessionals
   );
 
+  const coverageRuleOverrides =
+    coverageRulesResult.ok && coverageRulesResult.data.length > 0
+      ? buildCoverageRuleOverridesMap(coverageRulesResult.data)
+      : {};
+
   return {
     patient: patientWithClinical,
     ehr,
@@ -329,5 +346,6 @@ export async function loadPatientWorkspacePageData(
       : null,
     portalSlug,
     doctorInfo,
+    coverageRuleOverrides,
   };
 }

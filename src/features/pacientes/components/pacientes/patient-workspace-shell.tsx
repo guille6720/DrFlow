@@ -198,6 +198,7 @@ export function PatientWorkspaceShell({
             clinic={clinic}
             professionals={current.professionals}
             canIssue={canIssue}
+            coverageRuleOverrides={current.coverageRuleOverrides}
           />
         );
       case "ordenes":

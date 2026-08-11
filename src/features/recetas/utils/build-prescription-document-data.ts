@@ -1,5 +1,9 @@
 import type { HistoriaPrescriptionSummary } from "@/features/historias/types/historia-clinical-summaries";
 import {
+  type CoverageRuleOverridesMap,
+  resolveCoverageRuleOverride,
+} from "@/features/recetas/utils/coverage-rules-admin";
+import {
   buildPrescriptionQrPayload,
   resolvePrescriptionDocumentCoverage,
   shouldShowPrescriptionDocumentQr,
@@ -52,7 +56,8 @@ export function buildPrescriptionDocumentData(
   prescription: HistoriaPrescriptionSummary,
   patient: PatientInfo,
   clinic: ClinicInfo,
-  professionals: ProfessionalInfo[]
+  professionals: ProfessionalInfo[],
+  options?: { coverageRuleOverrides?: CoverageRuleOverridesMap | null }
 ): PrescriptionDocumentData {
   const pro =
     professionals.find((p) => p.id && p.id === prescription.professional_id) ??
@@ -68,7 +73,11 @@ export function buildPrescriptionDocumentData(
   });
 
   const issuedAt = prescription.issued_at ?? prescription.created_at;
-  const showQr = shouldShowPrescriptionDocumentQr(coverage.kind);
+  const ruleOverride = resolveCoverageRuleOverride(
+    coverage.kind,
+    options?.coverageRuleOverrides
+  );
+  const showQr = shouldShowPrescriptionDocumentQr(coverage.kind, ruleOverride);
   const qrPayload = showQr
     ? buildPrescriptionQrPayload({
         prescriptionNumber: prescription.prescription_number,

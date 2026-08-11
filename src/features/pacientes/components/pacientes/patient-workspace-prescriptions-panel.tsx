@@ -9,6 +9,7 @@ import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-p
 import type { PatientWorkspaceProfessional } from "@/features/pacientes/server/load-patient-workspace-page";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { PrescriptionList } from "@/features/recetas/components/recetas/prescription-list";
+import type { CoverageRuleOverridesMap } from "@/features/recetas/utils/coverage-rules-admin";
 import { storePrescriptionReusePrefill } from "@/features/recetas/utils/prescription-reuse-prefill";
 
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ type Props = {
   };
   professionals: PatientWorkspaceProfessional[];
   canIssue: boolean;
+  coverageRuleOverrides?: CoverageRuleOverridesMap | null;
 };
 
 export function PatientWorkspacePrescriptionsPanel({
@@ -42,6 +44,7 @@ export function PatientWorkspacePrescriptionsPanel({
   clinic,
   professionals,
   canIssue,
+  coverageRuleOverrides = null,
 }: Props) {
   const router = useRouter();
   const prescriptions = ehr.prescriptionRecords as HistoriaPrescriptionSummary[];
@@ -89,6 +92,7 @@ export function PatientWorkspacePrescriptionsPanel({
         professionals={professionals}
         canIssue={canIssue}
         onReuseMedications={canIssue ? handleReuseMedications : undefined}
+        coverageRuleOverrides={coverageRuleOverrides}
       />
     </Card>
   );

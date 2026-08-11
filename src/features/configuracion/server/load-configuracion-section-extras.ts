@@ -1,5 +1,8 @@
+import { createClient } from "@/core/supabase/server";
+
 import type { ConfiguracionSectionExtras } from "@/features/configuracion/components/configuracion/configuracion-section-content";
 import type { ConfiguracionSectionId } from "@/features/configuracion/components/configuracion/configuracion-sections";
+import { loadCoverageRuleForKind } from "@/features/recetas/repositories/coverage-rules.repository";
 
 import { getClinicFeatureFlagSettings } from "@/lib/actions/clinic-feature-flags";
 import { getClinicJobsList } from "@/lib/actions/clinic-jobs";
@@ -9,7 +12,14 @@ import { loadPamiPlanillaAdminCatalog } from "@/lib/actions/pami-planilla-admin"
 
 const EMPTY_EXTRAS: Pick<
   ConfiguracionSectionExtras,
-  "pluginSettings" | "flagSettings" | "jobSettings" | "observability" | "pamiPlanillaAdminCatalog" | "pamiPlanillaAdminError"
+  | "pluginSettings"
+  | "flagSettings"
+  | "jobSettings"
+  | "observability"
+  | "pamiPlanillaAdminCatalog"
+  | "pamiPlanillaAdminError"
+  | "pamiCoverageRule"
+  | "pamiCoverageRuleError"
 > = {
   pluginSettings: [],
   flagSettings: [],
@@ -17,6 +27,8 @@ const EMPTY_EXTRAS: Pick<
   observability: undefined,
   pamiPlanillaAdminCatalog: undefined,
   pamiPlanillaAdminError: undefined,
+  pamiCoverageRule: undefined,
+  pamiCoverageRuleError: undefined,
 };
 
 /** Loads heavy configuracion panels only for the active section. */
@@ -45,11 +57,19 @@ export async function loadConfiguracionSectionExtras(
     }
     case "pami": {
       if (!clinicId) return EMPTY_EXTRAS;
-      const result = await loadPamiPlanillaAdminCatalog();
+      const [planillaResult, supabase] = await Promise.all([
+        loadPamiPlanillaAdminCatalog(),
+        createClient(),
+      ]);
+      const coverageRuleResult = await loadCoverageRuleForKind(supabase, clinicId, "PAMI");
       return {
         ...EMPTY_EXTRAS,
-        pamiPlanillaAdminCatalog: result && "catalog" in result ? result.catalog : undefined,
-        pamiPlanillaAdminError: result && "error" in result ? result.error : undefined,
+        pamiPlanillaAdminCatalog:
+          planillaResult && "catalog" in planillaResult ? planillaResult.catalog : undefined,
+        pamiPlanillaAdminError:
+          planillaResult && "error" in planillaResult ? planillaResult.error : undefined,
+        pamiCoverageRule: coverageRuleResult.ok ? coverageRuleResult.data : undefined,
+        pamiCoverageRuleError: coverageRuleResult.ok ? undefined : coverageRuleResult.error,
       };
     }
     default:

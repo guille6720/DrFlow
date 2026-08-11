@@ -11,6 +11,7 @@ import type { HistoriaPrescriptionSummary } from "@/features/historias/types/his
 import { PrescriptionDocumentActions } from "@/features/recetas/components/recetas/prescription-document-actions";
 import { PrescriptionPreviewSheet } from "@/features/recetas/components/recetas/prescription-preview-sheet";
 import { buildPrescriptionDocumentData } from "@/features/recetas/utils/build-prescription-document-data";
+import type { CoverageRuleOverridesMap } from "@/features/recetas/utils/coverage-rules-admin";
 import { printPrescriptionDocument } from "@/features/recetas/utils/print-prescription-document";
 
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +53,7 @@ type Props = {
   onVoid?: (id: string) => void;
   onReuseMedications?: (prescription: HistoriaPrescriptionSummary) => void;
   shareSlot?: (prescription: HistoriaPrescriptionSummary) => ReactNode;
+  coverageRuleOverrides?: CoverageRuleOverridesMap | null;
 };
 
 function displayStatus(rx: HistoriaPrescriptionSummary): string {
@@ -85,6 +87,7 @@ export function PrescriptionList({
   onVoid,
   onReuseMedications,
   shareSlot,
+  coverageRuleOverrides = null,
 }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(
     prescriptions.find((rx) => rx.status === "issued")?.id ?? prescriptions[0]?.id ?? null
@@ -94,10 +97,15 @@ export function PrescriptionList({
   const documentsById = useMemo(() => {
     const map = new Map<string, ReturnType<typeof buildPrescriptionDocumentData>>();
     for (const rx of prescriptions) {
-      map.set(rx.id, buildPrescriptionDocumentData(rx, patient, clinic, professionals));
+      map.set(
+        rx.id,
+        buildPrescriptionDocumentData(rx, patient, clinic, professionals, {
+          coverageRuleOverrides,
+        })
+      );
     }
     return map;
-  }, [clinic, patient, prescriptions, professionals]);
+  }, [clinic, coverageRuleOverrides, patient, prescriptions, professionals]);
 
   const selectedDocument = selectedId ? documentsById.get(selectedId) ?? null : null;
 
