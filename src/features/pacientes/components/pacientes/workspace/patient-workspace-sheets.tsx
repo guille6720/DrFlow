@@ -29,6 +29,12 @@ type Props = Pick<
 > & {
   activeTab: PatientWorkspaceTabId;
   patientRecord: Patient;
+  clinic: {
+    name: string;
+    address?: string | null;
+    phone?: string | null;
+  };
+  canEditClinical: boolean;
   workspaceNavigation: {
     workspaceSearchParams: URLSearchParams;
     navigateWorkspace: (opts: PatientWorkspaceUrlOptions) => void;
@@ -49,6 +55,8 @@ export function PatientWorkspaceSheets({
   chart,
   coverageRuleOverrides = {},
   workspaceNavigation,
+  clinic,
+  canEditClinical,
 }: Props) {
   const actions = usePatientWorkspaceActions(patientId, activeTab, workspaceNavigation);
   const patientName = `${patient.last_name}, ${patient.first_name}`;
@@ -134,6 +142,14 @@ export function PatientWorkspaceSheets({
         record={selectedRecord}
         mode={actions.mode}
         onClose={actions.closeSheet}
+        canEditClinical={canEditClinical}
+        clinic={clinic}
+        patient={{
+          first_name: patient.first_name,
+          last_name: patient.last_name,
+          document_number: patient.document_number,
+          birth_date: patient.birth_date,
+        }}
       />
 
       <PatientDocumentAssistSheet

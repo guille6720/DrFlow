@@ -4,6 +4,8 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import Link from "next/link";
 
+import { InformedConsentPanel } from "@/core/components/legal/informed-consent-panel";
+
 import { PatientWorkspaceOverlay } from "@/features/pacientes/components/pacientes/workspace/patient-workspace-overlay";
 import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
@@ -17,6 +19,18 @@ type Props = {
   record: PatientEhrConsultation | null;
   mode: "edit" | "view" | null;
   onClose: () => void;
+  canEditClinical: boolean;
+  clinic: {
+    name: string;
+    address?: string | null;
+    phone?: string | null;
+  };
+  patient: {
+    first_name: string;
+    last_name: string;
+    document_number: string;
+    birth_date?: string | null;
+  };
 };
 
 function soapSection(label: string, value: string | null | undefined) {
@@ -30,7 +44,16 @@ function soapSection(label: string, value: string | null | undefined) {
   );
 }
 
-export function PatientRecordSheet({ open, patientId, record, mode, onClose }: Props) {
+export function PatientRecordSheet({
+  open,
+  patientId,
+  record,
+  mode,
+  onClose,
+  canEditClinical,
+  clinic,
+  patient,
+}: Props) {
   if (!record) return null;
 
   const subjective = record.chief_complaint;
@@ -58,6 +81,21 @@ export function PatientRecordSheet({ open, patientId, record, mode, onClose }: P
             <p className="text-sm text-slate-500">Sin contenido clínico registrado.</p>
           ) : null}
         </div>
+
+        <InformedConsentPanel
+          key={record.id}
+          patientId={patientId}
+          clinicalRecordId={record.id}
+          chiefComplaint={record.chief_complaint}
+          patient={patient}
+          professional={{
+            full_name: record.professional_name || "Profesional",
+            license_number:
+              record.professional_license_national ?? record.professional_license_provincial ?? null,
+          }}
+          clinic={clinic}
+          canEdit={canEditClinical}
+        />
 
         {mode === "edit" ? (
           <Link href={`/historias/${record.id}/editar?from=historia&patient=${patientId}`}>

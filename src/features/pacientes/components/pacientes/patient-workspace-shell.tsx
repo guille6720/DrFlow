@@ -277,6 +277,7 @@ export function PatientWorkspaceShell({
       navigateWorkspace={navigateWorkspace}
       workspaceSearchParams={workspaceSearchParams}
       activePanel={activePanel}
+      clinic={clinic}
       ehr={current.ehr}
       patient={current.patient}
       patientId={patientId}

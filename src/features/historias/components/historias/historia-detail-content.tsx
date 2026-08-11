@@ -1,6 +1,8 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+import { InformedConsentPanel } from "@/core/components/legal/informed-consent-panel";
+
 import {
   backHrefFromClinicalSubpage,
   patientClinicalHistoryPath,
@@ -53,6 +55,7 @@ export function HistoriaDetailContent({
   medicalOrders,
   patientShare,
   clinicalDocuments,
+  informedConsent,
   professional,
   canIssue,
   canEditClinical,
@@ -126,7 +129,31 @@ export function HistoriaDetailContent({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <HistoriaDetailConsultaCard record={record} professional={professional} />
+        <div className="space-y-6">
+          <HistoriaDetailConsultaCard record={record} professional={professional} />
+          <InformedConsentPanel
+            patientId={patient.id}
+            clinicalRecordId={id}
+            appointmentId={record.appointment_id}
+            chiefComplaint={record.chief_complaint}
+            patient={patient}
+            professional={{
+              full_name: professional?.profiles?.full_name ?? "Profesional",
+              license_number:
+                professional?.license_national ??
+                professional?.license_number ??
+                professional?.license_provincial ??
+                null,
+            }}
+            clinic={{
+              name: clinic?.name ?? "Consultorio",
+              address: clinic?.address,
+              phone: clinic?.phone,
+            }}
+            canEdit={canEditClinical}
+            initialConsent={informedConsent}
+          />
+        </div>
 
         <div className="space-y-6">
           {canViewClinical && (

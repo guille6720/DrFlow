@@ -79,6 +79,7 @@ export const SECURITY_DEFINER_RPC_CHECKS: { name: string; migrationHint: string 
   { name: "accept_clinic_invitations_for_user", migrationHint: "018" },
   { name: "cancel_patient_appointment", migrationHint: "026" },
   { name: "record_patient_data_consent", migrationHint: "033" },
+  { name: "record_informed_consent", migrationHint: "098" },
   { name: "remove_clinic_member_user", migrationHint: "035" },
   { name: "delete_own_account", migrationHint: "039" },
   { name: "update_my_doctor_profile", migrationHint: "025" },

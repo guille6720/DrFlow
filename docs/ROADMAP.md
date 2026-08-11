@@ -33,7 +33,7 @@
 
 ## Fase 3 — Compliance
 
-- [ ] Consentimiento informado digital
+- [x] Consentimiento informado digital — registro por consulta + PDF (Ley 26.529)
 - [x] Exportación completa de datos (Habeas Data) — bundle JSON por paciente y por clínica
 - [ ] Retención y políticas de eliminación
 - [x] Logs de acceso a datos sensibles — `recordSensitiveAccess` en fichas/HC + panel Configuración

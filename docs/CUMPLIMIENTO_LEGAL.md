@@ -33,7 +33,7 @@ Este documento resume el marco aplicable, el gap analysis y lo implementado en p
 | Logs acceso datos sensibles | No | `recordSensitiveAccess` — view en fichas, HC, docs admin; panel Configuración |
 | Panel cumplimiento | No | Configuración → Cumplimiento legal + accesos sensibles |
 | Receta REFEPS | Disclaimer | Sin cambio (correcto) |
-| Consentimiento informado acto médico | Paper / criterio médico | **Pendiente** flujo digital dedicado |
+| Consentimiento informado acto médico | Paper / criterio médico | Flujo digital en consulta + PDF + `consent_records` |
 | Inscripción bases AAIP encargado | Trámite administrativo | **Pendiente** (consultorio/proveedor) |
 | DPA / contrato encargado | Legal externo | **Pendiente** |
 | REFEPS integración | Roadmap | **Pendiente** |
@@ -54,6 +54,10 @@ Este documento resume el marco aplicable, el gap analysis y lo implementado en p
 - `src/app/aviso-paciente/page.tsx` — información al paciente
 - `src/components/legal/legal-consent-fields.tsx` — checkboxes
 - `src/components/legal/patient-arco-export-button.tsx`
+- `src/core/legal/informed-consent.ts` — texto y versión del consentimiento informado
+- `src/lib/actions/informed-consent.ts` — registro vinculado a consulta clínica
+- `src/core/components/legal/informed-consent-panel.tsx` — UI en ficha/consulta
+- `src/core/components/legal/export-informed-consent-pdf-button.tsx`
 - `src/core/security/sensitive-access-audit.ts` — registro de lecturas (`view`) con dedupe 15 min
 - `src/features/configuracion/server/load-clinic-sensitive-access-logs.ts`
 - `src/features/configuracion/components/configuracion/sensitive-access-log-panel.tsx`
@@ -107,6 +111,7 @@ Este documento resume el marco aplicable, el gap analysis y lo implementado en p
 - [ ] Export ARCO en ficha → JSON descargado + `audit_logs` export
 - [ ] Abrir ficha paciente (tab clínico) → `audit_logs` view con `access_kind`
 - [ ] Abrir historia clínica → `audit_logs` view `clinical_record_detail`
-- [ ] Panel Configuración → lista de accesos sensibles recientes
+- [ ] Abrir consulta en ficha → registrar consentimiento informado → fila en `consent_records`
+- [ ] Descargar PDF del consentimiento informado registrado
 - [ ] Panel Configuración muestra versiones y conteo consentimientos
 - [ ] Links portal → aviso-paciente y privacidad

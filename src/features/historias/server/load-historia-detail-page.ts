@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { type InformedConsentRecord, mapInformedConsentRow } from "@/core/compliance/informed-consent-types";
+import { CONSENT_TYPES } from "@/core/legal/documents";
 import { voidRecordSensitiveAccess } from "@/core/security/sensitive-access-audit";
 
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
@@ -76,6 +78,7 @@ export type HistoriaDetailPageData = {
     channel: string;
   } | null;
   clinicalDocuments: ClinicalDocumentItem[];
+  informedConsent: InformedConsentRecord | null;
   professional: {
     license_national?: string | null;
     license_provincial?: string | null;
@@ -110,6 +113,7 @@ export async function loadHistoriaDetailPageData(
     { data: medicalOrders },
     { data: appShare },
     { data: clinicalDocuments },
+    { data: informedConsentRow },
   ] = await Promise.all([
     supabase
       .from("clinical_record_audit")
@@ -144,6 +148,18 @@ export async function loadHistoriaDetailPageData(
       .eq("patient_id", patient.id)
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("consent_records")
+      .select(
+        "id, clinical_record_id, patient_id, appointment_id, granted, granted_at, document_version, procedure_description, signature_name, notes, created_at, profiles:recorded_by(full_name)"
+      )
+      .eq("clinic_id", clinicId)
+      .eq("clinical_record_id", id)
+      .eq("consent_type", CONSENT_TYPES.informedConsentClinicalAct)
+      .eq("granted", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const shareProfile = appShare?.profiles as { full_name?: string } | null;
@@ -177,6 +193,7 @@ export async function loadHistoriaDetailPageData(
     medicalOrders: (medicalOrders ?? []) as HistoriaMedicalOrderSummary[],
     patientShare,
     clinicalDocuments: (clinicalDocuments ?? []) as ClinicalDocumentItem[],
+    informedConsent: informedConsentRow ? mapInformedConsentRow(informedConsentRow) : null,
     professional,
   };
 }

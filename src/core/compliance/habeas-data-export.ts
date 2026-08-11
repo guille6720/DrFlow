@@ -176,7 +176,9 @@ export async function fetchPatientHabeasDataSections(
       () =>
         supabase
           .from("consent_records")
-          .select("consent_type, granted, granted_at, document_version, created_at, ip_address")
+          .select(
+            "consent_type, granted, granted_at, document_version, created_at, ip_address, clinical_record_id, procedure_description, signature_name, notes"
+          )
           .eq("patient_id", patientId)
           .eq("clinic_id", clinicId)
           .order("created_at", { ascending: false }),
@@ -416,7 +418,9 @@ export async function fetchClinicHabeasDataPayload(
     queryOrEmpty("consent_records", () =>
       supabase
         .from("consent_records")
-        .select("patient_id, consent_type, granted, granted_at, document_version, created_at")
+        .select(
+          "patient_id, consent_type, granted, granted_at, document_version, created_at, clinical_record_id, procedure_description, signature_name, notes"
+        )
         .eq("clinic_id", clinicId)
         .order("created_at", { ascending: false })
         .limit(CLINIC_RECORDS_LIMIT)

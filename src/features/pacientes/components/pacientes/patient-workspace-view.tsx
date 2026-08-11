@@ -54,6 +54,11 @@ type Props = PatientWorkspaceViewProps & {
   workspaceSearchParams: URLSearchParams;
   activePanel: ReactNode;
   canManageAdminDocuments?: boolean;
+  clinic: {
+    name: string;
+    address?: string | null;
+    phone?: string | null;
+  };
 };
 
 export function PatientWorkspaceView(props: Props) {
@@ -143,6 +148,8 @@ export function PatientWorkspaceView(props: Props) {
           canIssue={chartProps.canIssue}
           chart={chartProps.chart}
           coverageRuleOverrides={coverageRuleOverrides}
+          clinic={props.clinic}
+          canEditClinical={chartProps.canEditClinical}
         />
       ) : null}
     </div>

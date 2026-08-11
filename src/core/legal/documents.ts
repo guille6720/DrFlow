@@ -9,6 +9,7 @@ export const CONSENT_TYPES = {
   patientDataProcessingBooking: "patient_data_processing_booking",
   clinicTermsSignup: "clinic_terms_signup",
   prescriptionLocalDisclaimer: "prescription_local_disclaimer",
+  informedConsentClinicalAct: "informed_consent_clinical_act",
 } as const;
 
 export type ConsentType = (typeof CONSENT_TYPES)[keyof typeof CONSENT_TYPES];
