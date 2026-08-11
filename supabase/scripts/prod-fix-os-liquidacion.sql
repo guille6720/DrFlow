@@ -1,73 +1,47 @@
--- Production fix: Fase 4B liquidación obras sociales (migration 103). Safe to re-run.
--- Apply full migration 103 if tables are missing; this script mirrors idempotent DDL.
+-- Production fix: Fase 4B — run BEFORE or AFTER partial 103 apply. Safe to re-run.
+-- Fixes: function can_manage_cash(uuid) does not exist (migration 034 caja not applied).
 
-DO $$ BEGIN
-  CREATE TYPE os_billable_status AS ENUM (
-    'pending', 'in_batch', 'submitted', 'paid', 'rejected'
-  );
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+ALTER TABLE clinics
+  ADD COLUMN IF NOT EXISTS doctors_can_access_cash BOOLEAN NOT NULL DEFAULT true;
 
-DO $$ BEGIN
-  CREATE TYPE os_liquidation_status AS ENUM (
-    'draft', 'submitted', 'paid', 'cancelled'
-  );
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+CREATE OR REPLACE FUNCTION can_manage_cash(p_clinic_id UUID)
+RETURNS BOOLEAN AS $$
+  SELECT
+    is_superadmin()
+    OR user_role_in_clinic(p_clinic_id) IN ('clinic_admin', 'secretary')
+    OR (
+      user_role_in_clinic(p_clinic_id) = 'doctor'
+      AND EXISTS (
+        SELECT 1 FROM clinics c
+        WHERE c.id = p_clinic_id AND COALESCE(c.doctors_can_access_cash, true)
+      )
+    );
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
 
-CREATE TABLE IF NOT EXISTS os_fee_schedules (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  clinic_id UUID NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
-  insurance_provider TEXT NOT NULL,
-  practice_code TEXT NOT NULL DEFAULT '420101',
-  practice_label TEXT NOT NULL DEFAULT 'Consulta médica',
-  amount DECIMAL(12, 2) NOT NULL CHECK (amount >= 0),
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (clinic_id, insurance_provider, practice_code)
-);
+-- Re-apply RLS policies (only if os_* tables exist from migration 103)
+DO $$
+BEGIN
+  IF to_regclass('public.os_fee_schedules') IS NULL THEN
+    RAISE NOTICE 'os_fee_schedules missing — apply supabase/migrations/103_os_liquidacion.sql first';
+    RETURN;
+  END IF;
 
-CREATE TABLE IF NOT EXISTS os_liquidation_batches (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  clinic_id UUID NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
-  insurance_provider TEXT NOT NULL,
-  period_from TIMESTAMPTZ NOT NULL,
-  period_to TIMESTAMPTZ NOT NULL,
-  status os_liquidation_status NOT NULL DEFAULT 'draft',
-  total_amount DECIMAL(12, 2) NOT NULL DEFAULT 0 CHECK (total_amount >= 0),
-  item_count INT NOT NULL DEFAULT 0,
-  submitted_at TIMESTAMPTZ,
-  paid_at TIMESTAMPTZ,
-  notes TEXT,
-  created_by UUID REFERENCES profiles(id),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CHECK (period_to > period_from)
-);
+  ALTER TABLE os_fee_schedules ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE os_billable_items ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE os_liquidation_batches ENABLE ROW LEVEL SECURITY;
 
-CREATE TABLE IF NOT EXISTS os_billable_items (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  clinic_id UUID NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
-  appointment_id UUID REFERENCES appointments(id) ON DELETE SET NULL,
-  patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE RESTRICT,
-  professional_id UUID REFERENCES professionals(id) ON DELETE SET NULL,
-  liquidation_batch_id UUID REFERENCES os_liquidation_batches(id) ON DELETE SET NULL,
-  insurance_provider TEXT NOT NULL,
-  insurance_number TEXT,
-  insurance_plan TEXT,
-  practice_code TEXT NOT NULL DEFAULT '420101',
-  practice_label TEXT NOT NULL DEFAULT 'Consulta médica',
-  amount DECIMAL(12, 2) NOT NULL CHECK (amount >= 0),
-  copago_collected DECIMAL(12, 2) NOT NULL DEFAULT 0 CHECK (copago_collected >= 0),
-  status os_billable_status NOT NULL DEFAULT 'pending',
-  attended_at TIMESTAMPTZ NOT NULL,
-  rejection_reason TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+  DROP POLICY IF EXISTS os_fee_schedules_all ON os_fee_schedules;
+  CREATE POLICY os_fee_schedules_all ON os_fee_schedules FOR ALL
+    USING (can_manage_cash(clinic_id))
+    WITH CHECK (can_manage_cash(clinic_id));
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_os_billable_items_appointment
-  ON os_billable_items (clinic_id, appointment_id)
-  WHERE appointment_id IS NOT NULL;
+  DROP POLICY IF EXISTS os_billable_items_all ON os_billable_items;
+  CREATE POLICY os_billable_items_all ON os_billable_items FOR ALL
+    USING (can_manage_cash(clinic_id))
+    WITH CHECK (can_manage_cash(clinic_id));
 
--- Re-run functions from migration 103 (copy via \i in psql or paste functions block in prod)
--- For brevity: run supabase/migrations/103_os_liquidacion.sql helpers section in prod SQL editor.
+  DROP POLICY IF EXISTS os_liquidation_batches_all ON os_liquidation_batches;
+  CREATE POLICY os_liquidation_batches_all ON os_liquidation_batches FOR ALL
+    USING (can_manage_cash(clinic_id))
+    WITH CHECK (can_manage_cash(clinic_id));
+END $$;

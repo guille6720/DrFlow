@@ -92,6 +92,26 @@ ALTER TABLE os_billable_items
   FOREIGN KEY (liquidation_batch_id) REFERENCES os_liquidation_batches(id) ON DELETE SET NULL;
 
 -- ---------------------------------------------------------------------------
+-- Dependency: can_manage_cash (migration 034 caja; prod may not have it yet)
+-- ---------------------------------------------------------------------------
+ALTER TABLE clinics
+  ADD COLUMN IF NOT EXISTS doctors_can_access_cash BOOLEAN NOT NULL DEFAULT true;
+
+CREATE OR REPLACE FUNCTION can_manage_cash(p_clinic_id UUID)
+RETURNS BOOLEAN AS $$
+  SELECT
+    is_superadmin()
+    OR user_role_in_clinic(p_clinic_id) IN ('clinic_admin', 'secretary')
+    OR (
+      user_role_in_clinic(p_clinic_id) = 'doctor'
+      AND EXISTS (
+        SELECT 1 FROM clinics c
+        WHERE c.id = p_clinic_id AND COALESCE(c.doctors_can_access_cash, true)
+      )
+    );
+$$ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public;
+
+-- ---------------------------------------------------------------------------
 -- Helpers
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION resolve_os_fee_amount(

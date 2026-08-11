@@ -46,7 +46,9 @@ Export CSV incluye columnas: fecha, OS, afiliado, plan, práctica, importe, copa
 ## Migración
 
 - Desarrollo: `supabase/migrations/103_os_liquidacion.sql`
-- Producción: `supabase/scripts/prod-fix-os-liquidacion.sql` (+ funciones RPC del migration)
+- Producción: si falla `can_manage_cash(uuid) does not exist`, correr primero `supabase/scripts/prod-fix-os-liquidacion.sql` (bootstrap de permisos caja desde migración 034) y luego el bloque RLS o la migración 103 completa.
+
+**Nota:** `create_os_liquidation_batch` usa `cash_charges` para copagos; requiere migración **034** (caja) aplicada en prod.
 
 ## QA manual sugerido
 
