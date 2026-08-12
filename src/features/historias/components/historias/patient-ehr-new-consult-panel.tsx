@@ -7,6 +7,7 @@ import { SignatureImage } from "@/core/components/ui/signature-image";
 
 import { cn } from "@/shared/utils/cn";
 
+import { ClinicalTemplateVariablesPanel } from "@/features/historias/components/historias/clinical-template-variables-panel";
 import { ConsultTreatmentField } from "@/features/historias/components/historias/consult-treatment-field";
 import type { NuevaConsultaFormState } from "@/features/historias/hooks/use-nueva-consulta-form";
 import type { PatientWorkspaceFocus } from "@/features/pacientes/utils/patient-workspace-actions";
@@ -72,6 +73,9 @@ export function PatientEhrNewConsultPanel({
     handleFormKeyDown,
     formRef,
     applyTemplate,
+    templateVariableKeys,
+    templateVariableValues,
+    updateTemplateVariable,
   } = form;
 
   const evolutionRef = useRef<HTMLTextAreaElement>(null);
@@ -117,12 +121,17 @@ export function PatientEhrNewConsultPanel({
       </div>
 
       {templates.length > 0 ? (
-        <div className="mb-3">
+        <div className="mb-3 space-y-3">
           <Select
             label="Plantilla"
             options={templates.map((t) => ({ value: t.id, label: t.name }))}
             placeholder="Aplicar plantilla..."
             onChange={(e) => applyTemplate(e.target.value)}
+          />
+          <ClinicalTemplateVariablesPanel
+            keys={templateVariableKeys}
+            values={templateVariableValues}
+            onChange={updateTemplateVariable}
           />
         </div>
       ) : null}

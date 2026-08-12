@@ -249,11 +249,11 @@ Diagnóstico:
 Hipertensión arterial esencial (I10)
 
 Evolución:
-Paciente en buen estado general. PA: ___/___ mmHg.
+Paciente en buen estado general. PA: [___/___ mmHg].
 Examen cardiovascular sin hallazgos relevantes.
 
 Indicaciones:
-Dieta hiposódica. Control en 30 días.`;
+Dieta hiposódica. Control en [30] días.`;
 
 export const CLINICAL_TEMPLATE_PASTE_EXAMPLES = [
   {

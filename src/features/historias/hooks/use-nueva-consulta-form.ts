@@ -14,6 +14,11 @@ import { buildConsultIndicationsText } from "@/features/recetas/utils/build-cons
 import { saveInlineConsultPrescriptionSnapshot } from "@/features/recetas/utils/inline-consult-prescription-bridge";
 
 import { startConsultationFromAppointment } from "@/lib/actions/appointments";
+import type { ClinicalTemplateFieldSet } from "@/lib/utils/clinical-template-variables";
+import {
+  extractTemplateVariableKeys,
+  resolveClinicalTemplateFields,
+} from "@/lib/utils/clinical-template-variables";
 import {
   buildPharmacologyHrefFromConsultation,
   buildRecetasHrefFromConsultation,
@@ -123,6 +128,8 @@ export function useNuevaConsultaForm({
   const [treatmentMedications, setTreatmentMedications] = useState<PrescriptionMedication[]>([]);
   const [vitals, setVitals] = useState("");
   const [consultationAt, setConsultationAt] = useState(() => toDatetimeLocalValue(new Date()));
+  const [templateBases, setTemplateBases] = useState<ClinicalTemplateFieldSet | null>(null);
+  const [templateVariableValues, setTemplateVariableValues] = useState<Record<string, string>>({});
   const savingRef = useRef(false);
   const formRef = useRef<HTMLFormElement | null>(null);
   const formDraftRef = useRef<ConsultFormDraft>({
@@ -154,6 +161,58 @@ export function useNuevaConsultaForm({
     }
     return patients.find((p) => p.id === patientId);
   }, [pickedPatient, patients, patientId]);
+
+  const templateVariableKeys = useMemo(
+    () =>
+      templateBases
+        ? extractTemplateVariableKeys(
+            templateBases.chief_complaint,
+            templateBases.diagnosis,
+            templateBases.evolution,
+            templateBases.indications
+          )
+        : [],
+    [templateBases]
+  );
+
+  function clearTemplateVariables() {
+    setTemplateBases(null);
+    setTemplateVariableValues({});
+  }
+
+  function applyResolvedTemplateFields(fields: ClinicalTemplateFieldSet) {
+    setChiefComplaint(fields.chief_complaint);
+    setDiagnosis(fields.diagnosis);
+    setEvolution(fields.evolution);
+    setIndications(fields.indications);
+  }
+
+  function updateTemplateVariable(key: string, value: string) {
+    if (!templateBases) return;
+    const nextValues = { ...templateVariableValues, [key]: value };
+    setTemplateVariableValues(nextValues);
+    applyResolvedTemplateFields(resolveClinicalTemplateFields(templateBases, nextValues));
+  }
+
+  function handleEvolutionChange(value: string) {
+    clearTemplateVariables();
+    setEvolution(value);
+  }
+
+  function handleChiefComplaintChange(value: string) {
+    clearTemplateVariables();
+    setChiefComplaint(value);
+  }
+
+  function handleDiagnosisChange(value: string) {
+    clearTemplateVariables();
+    setDiagnosis(value);
+  }
+
+  function handleIndicationsChange(value: string) {
+    clearTemplateVariables();
+    setIndications(value);
+  }
 
   function handlePatientChange(id: string, patient?: PatientSearchOption) {
     setPatientId(id);
@@ -402,10 +461,17 @@ export function useNuevaConsultaForm({
   function applyTemplate(templateId: string) {
     const t = templates.find((x) => x.id === templateId);
     if (!t) return;
-    setChiefComplaint(templateText(t.chief_complaint_template));
-    setDiagnosis(templateText(t.diagnosis_template));
-    setEvolution(templateText(t.evolution_template));
-    setIndications(templateText(t.indications_template));
+
+    const bases: ClinicalTemplateFieldSet = {
+      chief_complaint: templateText(t.chief_complaint_template),
+      diagnosis: templateText(t.diagnosis_template),
+      evolution: templateText(t.evolution_template),
+      indications: templateText(t.indications_template),
+    };
+
+    setTemplateBases(bases);
+    setTemplateVariableValues({});
+    applyResolvedTemplateFields(bases);
     setTreatmentMedications([]);
   }
 
@@ -425,13 +491,13 @@ export function useNuevaConsultaForm({
     professionalId,
     setProfessionalId,
     evolution,
-    setEvolution,
+    setEvolution: handleEvolutionChange,
     chiefComplaint,
-    setChiefComplaint,
+    setChiefComplaint: handleChiefComplaintChange,
     diagnosis,
-    setDiagnosis,
+    setDiagnosis: handleDiagnosisChange,
     indications,
-    setIndications,
+    setIndications: handleIndicationsChange,
     treatmentMedications,
     setTreatmentMedications,
     vitals,
@@ -451,6 +517,9 @@ export function useNuevaConsultaForm({
     recetaHref,
     handleSubmit,
     applyTemplate,
+    templateVariableKeys,
+    templateVariableValues,
+    updateTemplateVariable,
   };
 }
 

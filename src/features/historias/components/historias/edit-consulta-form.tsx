@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { Header } from "@/core/components/layout/header";
 
+import { ClinicalTemplateVariablesPanel } from "@/features/historias/components/historias/clinical-template-variables-panel";
 import { ConsultationFlowBar } from "@/features/historias/components/historias/consultation-flow-bar";
 import { EditConsultaFormBody } from "@/features/historias/components/historias/edit-consulta-form-body";
 import { useEditConsultaForm } from "@/features/historias/hooks/use-edit-consulta-form";
@@ -90,12 +91,19 @@ export function EditConsultaForm({
         {patient && <PamiPatientBanner patient={patient} />}
 
         {templates.length > 0 && (
-          <Select
-            label="Plantilla por especialidad"
-            options={templates.map((t) => ({ value: t.id, label: t.name }))}
-            placeholder="Aplicar plantilla..."
-            onChange={(e) => form.applyTemplate(e.target.value)}
-          />
+          <div className="space-y-3">
+            <Select
+              label="Plantilla por especialidad"
+              options={templates.map((t) => ({ value: t.id, label: t.name }))}
+              placeholder="Aplicar plantilla..."
+              onChange={(e) => form.applyTemplate(e.target.value)}
+            />
+            <ClinicalTemplateVariablesPanel
+              keys={form.templateVariableKeys}
+              values={form.templateVariableValues}
+              onChange={form.updateTemplateVariable}
+            />
+          </div>
         )}
 
         <EditConsultaFormBody

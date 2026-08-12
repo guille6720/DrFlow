@@ -9,6 +9,7 @@ import type { ConsultPatientPickerRow } from "@/core/supabase/query-types";
 
 import { cn } from "@/shared/utils/cn";
 
+import { ClinicalTemplateVariablesPanel } from "@/features/historias/components/historias/clinical-template-variables-panel";
 import type { NuevaConsultaFormState } from "@/features/historias/hooks/use-nueva-consulta-form";
 import { ConsultationPhysicianAssist } from "@/features/ia/components/clinical-workflow/consultation-physician-assist";
 import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
@@ -71,6 +72,9 @@ export function NuevaConsultaFormBody({
     recetaHref,
     handleSubmit,
     applyTemplate,
+    templateVariableKeys,
+    templateVariableValues,
+    updateTemplateVariable,
   } = form;
 
   const [voiceDraftPending, setVoiceDraftPending] = useState(false);
@@ -78,12 +82,19 @@ export function NuevaConsultaFormBody({
   return (
     <div className={cn("space-y-4", fillViewport && "flex min-h-0 flex-1 flex-col gap-4 overflow-hidden")}>
       {templates.length > 0 && (
-        <Select
-          label="Plantilla por especialidad"
-          options={templates.map((t) => ({ value: t.id, label: t.name }))}
-          placeholder="Aplicar plantilla..."
-          onChange={(e) => applyTemplate(e.target.value)}
-        />
+        <div className="space-y-3">
+          <Select
+            label="Plantilla por especialidad"
+            options={templates.map((t) => ({ value: t.id, label: t.name }))}
+            placeholder="Aplicar plantilla..."
+            onChange={(e) => applyTemplate(e.target.value)}
+          />
+          <ClinicalTemplateVariablesPanel
+            keys={templateVariableKeys}
+            values={templateVariableValues}
+            onChange={updateTemplateVariable}
+          />
+        </div>
       )}
 
       <Card

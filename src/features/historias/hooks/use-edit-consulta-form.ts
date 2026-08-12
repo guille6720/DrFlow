@@ -6,6 +6,10 @@ import { useEffect, useMemo, useState } from "react";
 import { updateClinicalRecord } from "@/features/historias/actions/clinical-records";
 
 import {
+  applyTemplateVariableValues,
+  extractTemplateVariableKeys,
+} from "@/lib/utils/clinical-template-variables";
+import {
   buildPharmacologyHrefFromConsultation,
   buildRecetasHrefFromConsultation,
   clearConsultationEvolution,
@@ -59,6 +63,13 @@ export function useEditConsultaForm({ record, templates = [] }: Options) {
     [record]
   );
   const [evolution, setEvolution] = useState(initialEvolution);
+  const [templateBaseEvolution, setTemplateBaseEvolution] = useState<string | null>(null);
+  const [templateVariableValues, setTemplateVariableValues] = useState<Record<string, string>>({});
+
+  const templateVariableKeys = useMemo(
+    () => (templateBaseEvolution ? extractTemplateVariableKeys(templateBaseEvolution) : []),
+    [templateBaseEvolution]
+  );
 
   const consultationContext = useMemo(
     () => ({
@@ -104,6 +115,23 @@ export function useEditConsultaForm({ record, templates = [] }: Options) {
     saveConsultationEvolution(draftKey, evolution);
   }
 
+  function clearTemplateVariables() {
+    setTemplateBaseEvolution(null);
+    setTemplateVariableValues({});
+  }
+
+  function handleEvolutionChange(value: string) {
+    clearTemplateVariables();
+    setEvolution(value);
+  }
+
+  function updateTemplateVariable(key: string, value: string) {
+    if (!templateBaseEvolution) return;
+    const nextValues = { ...templateVariableValues, [key]: value };
+    setTemplateVariableValues(nextValues);
+    setEvolution(applyTemplateVariableValues(templateBaseEvolution, nextValues));
+  }
+
   function applyTemplate(templateId: string) {
     const t = templates.find((x) => x.id === templateId);
     if (!t) return;
@@ -115,6 +143,8 @@ export function useEditConsultaForm({ record, templates = [] }: Options) {
     ]
       .filter(Boolean)
       .join("\n\n");
+    setTemplateBaseEvolution(unified);
+    setTemplateVariableValues({});
     setEvolution(unified);
   }
 
@@ -144,11 +174,14 @@ export function useEditConsultaForm({ record, templates = [] }: Options) {
     professionalSignature,
     setProfessionalSignature,
     evolution,
-    setEvolution,
+    setEvolution: handleEvolutionChange,
     pharmacologyHref,
     recetaHref,
     flushEvolutionDraft,
     applyTemplate,
+    templateVariableKeys,
+    templateVariableValues,
+    updateTemplateVariable,
     handleSubmit,
   };
 }
