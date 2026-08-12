@@ -32,8 +32,11 @@ function toChatHistory(turns: CopilotChatTurn[]) {
 }
 
 /** Conversational copilot — API when LLM available, local rule-based fallback. */
-export function useClinicalCopilotChat(context: ClinicalCopilotContext) {
-  const [turns, setTurns] = useState<CopilotChatTurn[]>([]);
+export function useClinicalCopilotChat(
+  context: ClinicalCopilotContext,
+  options?: { initialTurns?: CopilotChatTurn[] }
+) {
+  const [turns, setTurns] = useState<CopilotChatTurn[]>(() => options?.initialTurns ?? []);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [meta, setMeta] = useState<ClinicalAiMeta>({ llmConfigured: false, userConnection: null });
@@ -63,9 +66,9 @@ export function useClinicalCopilotChat(context: ClinicalCopilotContext) {
   );
 
   const submit = useCallback(
-    async (message: string) => {
+    async (message: string): Promise<OrchestratedCopilotResponse | null> => {
       const trimmed = message.trim();
-      if (!trimmed || loading) return;
+      if (!trimmed || loading) return null;
 
       const history = toChatHistory(turns);
       setTurns((prev) => [
@@ -117,6 +120,7 @@ export function useClinicalCopilotChat(context: ClinicalCopilotContext) {
           }
           return next;
         });
+        return response;
       } catch {
         const fallback = runClinicalCopilotQuery(trimmed, context);
         setTurns((prev) => {
@@ -132,6 +136,7 @@ export function useClinicalCopilotChat(context: ClinicalCopilotContext) {
           }
           return next;
         });
+        return fallback;
       } finally {
         setLoading(false);
       }

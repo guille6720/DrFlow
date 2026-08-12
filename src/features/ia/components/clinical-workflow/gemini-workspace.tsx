@@ -1,11 +1,18 @@
 "use client";
 
-import { Bot, Loader2, Send, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Bot, Clock3, Loader2, Send, Sparkles, Trash2, Users } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { SafeInternalLink } from "@/core/components/safe-link";
 
 import { useClinicalCopilotChat } from "@/features/ia/hooks/use-clinical-copilot-chat";
+import {
+  clearGeminiWorkspaceSnapshot,
+  type GeminiSearchHistoryEntry,
+  loadGeminiWorkspaceSnapshot,
+  saveGeminiWorkspaceSnapshot,
+  upsertGeminiSearchHistory,
+} from "@/features/ia/lib/gemini-workspace-persistence";
 import { PHYSICIAN_ASSIST_DISCLAIMER } from "@/features/ia/types/physician-assist-types";
 import {
   PatientSearchCombobox,
@@ -16,6 +23,7 @@ import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-fea
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import type { GeminiStatsPatient } from "@/lib/ai/gemini-structured-response";
 import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
 
 const SUGGESTED_PROMPTS = [
@@ -44,9 +52,73 @@ function engineLabel(
   return "Sin modelo";
 }
 
+function formatHistoryTime(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function PatientResultsList({
+  patients,
+  title,
+}: {
+  patients: GeminiStatsPatient[];
+  title?: string;
+}) {
+  if (patients.length === 0) return null;
+  return (
+    <div>
+      <p className="text-xs font-semibold text-slate-700">
+        {title ?? `Pacientes (${patients.length})`}
+      </p>
+      <ul className="mt-1 space-y-1">
+        {patients.map((item) => (
+          <li key={item.id}>
+            <SafeInternalLink
+              href={buildPatientWorkspaceUrl(item.id)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-teal-800 underline-offset-2 hover:underline"
+            >
+              {item.name}
+            </SafeInternalLink>
+            <span className="text-xs text-slate-600">
+              {item.date ? ` · ${item.date}` : ""}
+              {item.diagnosis ? ` — ${item.diagnosis}` : ""}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-1 text-[10px] text-slate-500">
+        Se abre en otra pestaña: al volver a Gemini seguís viendo el listado.
+      </p>
+    </div>
+  );
+}
+
 export function GeminiWorkspace() {
   const enabled = useFeatureFlag("consultation_assistant");
   const [patient, setPatient] = useState<PatientSearchOption | null>(null);
+  const snapshot = useMemo(() => loadGeminiWorkspaceSnapshot(), []);
+  const [searchHistory, setSearchHistory] = useState<GeminiSearchHistoryEntry[]>(
+    () => snapshot.searchHistory
+  );
+  const [activeHistoryId, setActiveHistoryId] = useState<string | null>(
+    () => snapshot.activeHistoryId
+  );
+  const hydratedQueryIds = useRef(
+    new Set(
+      snapshot.searchHistory.map(
+        (entry) => `${entry.query}::${entry.patients.map((p) => p.id).join(",")}`
+      )
+    )
+  );
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   const context = useMemo((): ClinicalCopilotContext => {
     if (!patient) return {};
@@ -56,11 +128,24 @@ export function GeminiWorkspace() {
     };
   }, [patient]);
 
-  const { turns, input, setInput, submit, loading, meta, hasLlm, reset } = useClinicalCopilotChat(context);
+  const { turns, input, setInput, submit, loading, meta, hasLlm, reset } = useClinicalCopilotChat(
+    context,
+    { initialTurns: snapshot.turns }
+  );
+
+  const activeHistory = searchHistory.find((item) => item.id === activeHistoryId) ?? null;
 
   useEffect(() => {
-    reset();
-  }, [patient?.id, reset]);
+    saveGeminiWorkspaceSnapshot({
+      turns,
+      searchHistory,
+      activeHistoryId,
+    });
+  }, [turns, searchHistory, activeHistoryId]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [turns.length, loading]);
 
   if (!enabled) {
     return (
@@ -70,24 +155,147 @@ export function GeminiWorkspace() {
     );
   }
 
+  function rememberSearch(query: string, response: Awaited<ReturnType<typeof submit>>) {
+    const patients = response?.structured?.patients ?? [];
+    if (patients.length === 0) return;
+    const key = `${query}::${patients.map((p) => p.id).join(",")}`;
+    if (hydratedQueryIds.current.has(key)) return;
+    hydratedQueryIds.current.add(key);
+    setSearchHistory((prev) => {
+      const next = upsertGeminiSearchHistory(prev, {
+        query,
+        patientCount: patients.length,
+        patients,
+        summary: response?.structured?.summary,
+      });
+      setActiveHistoryId(next[0]?.id ?? null);
+      return next;
+    });
+  }
+
+  async function runQuery(message: string) {
+    const trimmed = message.trim();
+    if (!trimmed) return;
+    const response = await submit(trimmed);
+    rememberSearch(trimmed, response);
+  }
+
+  function clearAll() {
+    reset();
+    setSearchHistory([]);
+    setActiveHistoryId(null);
+    clearGeminiWorkspaceSnapshot();
+    hydratedQueryIds.current.clear();
+  }
+
+  function rerunHistory(entry: GeminiSearchHistoryEntry) {
+    setActiveHistoryId(entry.id);
+    void runQuery(entry.query);
+  }
+
   return (
     <div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
-      <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-800">
-          Paciente
-        </p>
-        <PatientSearchCombobox
-          patients={patient ? [patient] : []}
-          label="Historia clínica"
-          searchMode="remote"
-          defaultPatientId={patient?.id}
-          onPatientChange={(_id, picked) => setPatient(picked ?? null)}
-          placeholder="Buscar paciente…"
-        />
-        <p className="mt-3 text-xs leading-relaxed text-slate-600">
-          Para estadísticas del consultorio no hace falta elegir paciente. Para un resumen de HC,
-          buscalo acá. El backend cuenta atenciones reales; Gemini no inventa listados.
-        </p>
+      <aside className="space-y-4">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-800">
+              Historial de búsqueda
+            </p>
+            {searchHistory.length > 0 ? (
+              <button
+                type="button"
+                onClick={clearAll}
+                className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 hover:text-slate-800"
+                title="Limpiar historial y chat"
+              >
+                <Trash2 className="h-3 w-3" />
+                Limpiar
+              </button>
+            ) : null}
+          </div>
+
+          {searchHistory.length === 0 ? (
+            <p className="text-xs leading-relaxed text-slate-600">
+              Acá van a aparecer tus búsquedas con listados (ej. bronquiectasias). Tocá una para
+              volver a ver los pacientes sin perder el hilo.
+            </p>
+          ) : (
+            <ul className="max-h-56 space-y-1.5 overflow-y-auto">
+              {searchHistory.map((entry) => {
+                const active = entry.id === activeHistoryId;
+                return (
+                  <li key={entry.id}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveHistoryId(entry.id)}
+                      className={
+                        active
+                          ? "w-full rounded-xl border border-teal-200 bg-teal-50 px-2.5 py-2 text-left"
+                          : "w-full rounded-xl border border-transparent px-2.5 py-2 text-left hover:bg-slate-50"
+                      }
+                    >
+                      <p className="line-clamp-2 text-xs font-medium text-slate-800">{entry.query}</p>
+                      <p className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
+                        <span className="inline-flex items-center gap-0.5">
+                          <Users className="h-3 w-3" />
+                          {entry.patientCount}
+                        </span>
+                        <span className="inline-flex items-center gap-0.5">
+                          <Clock3 className="h-3 w-3" />
+                          {formatHistoryTime(entry.at)}
+                        </span>
+                      </p>
+                    </button>
+                    {active ? (
+                      <div className="mt-1 flex gap-1 px-1">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-7 flex-1 text-[10px]"
+                          disabled={loading}
+                          onClick={() => rerunHistory(entry)}
+                        >
+                          Buscar de nuevo
+                        </Button>
+                      </div>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {activeHistory && activeHistory.patients.length > 0 ? (
+          <div className="rounded-2xl border border-teal-100 bg-teal-50/40 p-4 shadow-sm">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-teal-900">
+              Resultados guardados
+            </p>
+            <p className="mb-2 line-clamp-2 text-[11px] text-teal-900/80">{activeHistory.query}</p>
+            <div className="max-h-64 overflow-y-auto pr-1">
+              <PatientResultsList patients={activeHistory.patients} />
+            </div>
+          </div>
+        ) : null}
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-800">
+            Paciente (HC)
+          </p>
+          <PatientSearchCombobox
+            patients={patient ? [patient] : []}
+            label="Historia clínica"
+            searchMode="remote"
+            defaultPatientId={patient?.id}
+            onPatientChange={(_id, picked) => setPatient(picked ?? null)}
+            placeholder="Buscar paciente…"
+          />
+          <p className="mt-3 text-xs leading-relaxed text-slate-600">
+            Opcional: elegí un paciente solo si querés preguntar sobre su HC. Las búsquedas del
+            consultorio no lo necesitan.
+          </p>
+        </div>
       </aside>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -121,9 +329,8 @@ export function GeminiWorkspace() {
           {turns.length === 0 ? (
             <div className="space-y-3">
               <p className="text-sm text-slate-600">
-                {patient
-                  ? "Preguntá sobre la historia clínica o sobre estadísticas del consultorio."
-                  : "Preguntá estadísticas del mes o elegí un paciente para usar su HC."}
+                Preguntá estadísticas o candidatos a protocolos. Los resultados quedan guardados
+                acá y en el historial de la izquierda.
               </p>
               <div className="flex flex-wrap gap-2">
                 {SUGGESTED_PROMPTS.map((prompt) => (
@@ -131,7 +338,7 @@ export function GeminiWorkspace() {
                     key={prompt}
                     type="button"
                     disabled={loading}
-                    onClick={() => void submit(prompt)}
+                    onClick={() => void runQuery(prompt)}
                     className="rounded-full border border-violet-200 bg-white px-3 py-1 text-xs font-medium text-violet-800 hover:bg-violet-50 disabled:opacity-50"
                   >
                     {prompt}
@@ -192,27 +399,7 @@ export function GeminiWorkspace() {
                   ) : null}
                   {turn.response.structured.patients &&
                   turn.response.structured.patients.length > 0 ? (
-                    <div>
-                      <p className="text-xs font-semibold text-slate-700">
-                        Pacientes ({turn.response.structured.patients.length})
-                      </p>
-                      <ul className="mt-1 space-y-1">
-                        {turn.response.structured.patients.map((item) => (
-                          <li key={item.id}>
-                            <SafeInternalLink
-                              href={buildPatientWorkspaceUrl(item.id)}
-                              className="text-sm font-medium text-teal-800 underline-offset-2 hover:underline"
-                            >
-                              {item.name}
-                            </SafeInternalLink>
-                            <span className="text-xs text-slate-600">
-                              {item.date ? ` · ${item.date}` : ""}
-                              {item.diagnosis ? ` — ${item.diagnosis}` : ""}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                    <PatientResultsList patients={turn.response.structured.patients} />
                   ) : null}
                 </div>
               ) : turn.role === "assistant" && turn.response ? (
@@ -222,24 +409,21 @@ export function GeminiWorkspace() {
               )}
             </div>
           ))}
+          <div ref={chatEndRef} />
         </div>
 
         <form
           className="flex gap-2"
           onSubmit={(e) => {
             e.preventDefault();
-            void submit(input);
+            void runQuery(input);
           }}
         >
           <Textarea
             rows={2}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={
-              patient
-                ? "Ej: Resumen de las últimas evoluciones y alertas"
-                : "Ej: ¿Cuántos pacientes con hipertensión se atendieron este mes?"
-            }
+            placeholder="Ej: cuantos pacientes hay con Bronquiectasias"
             className="flex-1"
             voiceInput
             disabled={loading}

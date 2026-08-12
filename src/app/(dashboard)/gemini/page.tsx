@@ -9,7 +9,7 @@ import {
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 
-import { GeminiWorkspace } from "@/features/ia/components/clinical-workflow/gemini-workspace";
+import { GeminiWorkspaceClient } from "@/features/ia/components/clinical-workflow/gemini-workspace-client";
 
 export default async function GeminiPage() {
   const profile = await getProfile();
@@ -37,10 +37,10 @@ export default async function GeminiPage() {
       />
       <div className="p-4 sm:p-6">
         <p className="mb-4 text-sm text-slate-700">
-          Preguntá sobre un paciente. DrFlow valida tu rol, lee la historia clínica en el
-          servidor y envía a Gemini un contexto anonimizado.
+          Preguntá estadísticas o candidatos a protocolos. Los resultados quedan en el historial
+          para que puedas abrir un paciente y volver sin buscar de nuevo.
         </p>
-        <GeminiWorkspace />
+        <GeminiWorkspaceClient />
       </div>
     </>
   );
