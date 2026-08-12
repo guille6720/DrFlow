@@ -11,6 +11,7 @@ import {
   PatientSearchCombobox,
   type PatientSearchOption,
 } from "@/features/pacientes/components/pacientes/patient-search-combobox";
+import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
 import { Button } from "@/components/ui/button";
@@ -18,9 +19,10 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
 
 const SUGGESTED_PROMPTS = [
+  "¿Cuántos pacientes con hipertensión se atendieron este mes?",
+  "¿Cuántos pacientes se atendieron este mes?",
+  "Diagnósticos más frecuentes este mes",
   "Resumen de las últimas evoluciones",
-  "¿Hay alertas o pendientes?",
-  "Redactá un motivo de consulta breve",
 ];
 
 function engineLabel(
@@ -82,8 +84,8 @@ export function GeminiWorkspace() {
           placeholder="Buscar paciente…"
         />
         <p className="mt-3 text-xs leading-relaxed text-slate-600">
-          El backend valida tu sesión, extrae la HC del consultorio y envía un contexto
-          anonimizado a Gemini. No se manda nombre, DNI ni contacto.
+          Para estadísticas del consultorio no hace falta elegir paciente. Para un resumen de HC,
+          buscalo acá. El backend cuenta atenciones reales; Gemini no inventa listados.
         </p>
       </aside>
 
@@ -119,8 +121,8 @@ export function GeminiWorkspace() {
             <div className="space-y-3">
               <p className="text-sm text-slate-600">
                 {patient
-                  ? "Preguntá sobre la historia clínica, un resumen o la última evolución."
-                  : "Elegí un paciente a la izquierda y después tocá una pregunta, o escribí la tuya."}
+                  ? "Preguntá sobre la historia clínica o sobre estadísticas del consultorio."
+                  : "Preguntá estadísticas del mes o elegí un paciente para usar su HC."}
               </p>
               <div className="flex flex-wrap gap-2">
                 {SUGGESTED_PROMPTS.map((prompt) => (
@@ -187,6 +189,30 @@ export function GeminiWorkspace() {
                       </ul>
                     </div>
                   ) : null}
+                  {turn.response.structured.patients &&
+                  turn.response.structured.patients.length > 0 ? (
+                    <div>
+                      <p className="text-xs font-semibold text-slate-700">
+                        Pacientes ({turn.response.structured.patients.length})
+                      </p>
+                      <ul className="mt-1 space-y-1">
+                        {turn.response.structured.patients.map((item) => (
+                          <li key={item.id}>
+                            <SafeInternalLink
+                              href={buildPatientWorkspaceUrl(item.id)}
+                              className="text-sm font-medium text-teal-800 underline-offset-2 hover:underline"
+                            >
+                              {item.name}
+                            </SafeInternalLink>
+                            <span className="text-xs text-slate-600">
+                              {item.date ? ` · ${item.date}` : ""}
+                              {item.diagnosis ? ` — ${item.diagnosis}` : ""}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
                 </div>
               ) : turn.role === "assistant" && turn.response ? (
                 <pre className="whitespace-pre-wrap font-sans">{turn.response.body}</pre>
@@ -211,7 +237,7 @@ export function GeminiWorkspace() {
             placeholder={
               patient
                 ? "Ej: Resumen de las últimas evoluciones y alertas"
-                : "Podés preguntar sin paciente, o elegir uno para usar la HC"
+                : "Ej: ¿Cuántos pacientes con hipertensión se atendieron este mes?"
             }
             className="flex-1"
             voiceInput

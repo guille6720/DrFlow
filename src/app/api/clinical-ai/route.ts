@@ -81,7 +81,7 @@ export const POST = withObservabilityApiRoute("clinical_ai", async (request, ctx
     (Boolean(credentials) || geminiReady) &&
     (payload.enhanceWithLlm || payload.useUserProvider || payload.task === "copilot_query");
 
-  if (payload.task === "copilot_query" && payload.message?.trim() && geminiReady) {
+  if (payload.task === "copilot_query" && payload.message?.trim()) {
     const geminiResult = await runGeminiClinicalChat({
       clinicId,
       patientId: payload.patientId,

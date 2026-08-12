@@ -77,58 +77,46 @@ export function useClinicalCopilotChat(context: ClinicalCopilotContext) {
       setLoading(true);
 
       try {
-        if (hasLlm) {
-          const res = await fetch("/api/clinical-ai", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              task: "copilot_query",
-              message: trimmed,
-              chatHistory: history,
-              useUserProvider: true,
-              patientId: context.patientId,
-              patientName: context.patientName,
-              lastConsultAt: context.lastConsultAt,
-              copilotContext: context,
-              chart: context.chart,
-              assistContext: context.assistContext,
-            }),
-          });
+        const res = await fetch("/api/clinical-ai", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            task: "copilot_query",
+            message: trimmed,
+            chatHistory: history,
+            useUserProvider: true,
+            patientId: context.patientId,
+            patientName: context.patientName,
+            lastConsultAt: context.lastConsultAt,
+            copilotContext: context,
+            chart: context.chart,
+            assistContext: context.assistContext,
+          }),
+        });
 
-          if (!res.ok) {
-            throw new Error("No se pudo contactar al asistente");
-          }
-
-          const json = (await res.json()) as { result: OrchestratedCopilotResponse };
-          const response: OrchestratedCopilotResponse = {
-            intent: json.result.intent ?? "help",
-            title: json.result.title,
-            body: json.result.body,
-            actions: json.result.actions ?? [],
-            agentId: json.result.agentId,
-            engine: json.result.engine,
-            structured: json.result.structured,
-          };
-
-          setTurns((prev) => {
-            const next = [...prev];
-            const idx = next.findIndex((t) => t.pending);
-            if (idx >= 0) {
-              next[idx] = { role: "assistant", text: response.body, response };
-            }
-            return next;
-          });
-        } else {
-          const response = runClinicalCopilotQuery(trimmed, context);
-          setTurns((prev) => {
-            const next = [...prev];
-            const idx = next.findIndex((t) => t.pending);
-            if (idx >= 0) {
-              next[idx] = { role: "assistant", text: response.body, response };
-            }
-            return next;
-          });
+        if (!res.ok) {
+          throw new Error("No se pudo contactar al asistente");
         }
+
+        const json = (await res.json()) as { result: OrchestratedCopilotResponse };
+        const response: OrchestratedCopilotResponse = {
+          intent: json.result.intent ?? "help",
+          title: json.result.title,
+          body: json.result.body,
+          actions: json.result.actions ?? [],
+          agentId: json.result.agentId,
+          engine: json.result.engine,
+          structured: json.result.structured,
+        };
+
+        setTurns((prev) => {
+          const next = [...prev];
+          const idx = next.findIndex((t) => t.pending);
+          if (idx >= 0) {
+            next[idx] = { role: "assistant", text: response.body, response };
+          }
+          return next;
+        });
       } catch {
         const fallback = runClinicalCopilotQuery(trimmed, context);
         setTurns((prev) => {
@@ -148,7 +136,7 @@ export function useClinicalCopilotChat(context: ClinicalCopilotContext) {
         setLoading(false);
       }
     },
-    [context, hasLlm, loading, turns]
+    [context, loading, turns]
   );
 
   const reset = useCallback(() => setTurns([]), []);

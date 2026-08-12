@@ -13,6 +13,7 @@ describe("environment secrets audit", () => {
       "src/lib/ai/vertex-gemini.server.ts",
       "src/lib/ai/run-gemini-clinical.server.ts",
       "src/lib/ai/load-gemini-clinical-context.server.ts",
+      "src/lib/ai/load-gemini-clinic-stats.server.ts",
     ];
 
     for (const rel of modules) {

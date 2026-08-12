@@ -1,12 +1,18 @@
 import "server-only";
 
+import {
+  formatGeminiClinicStatsContext,
+  parseGeminiClinicStatsQuery,
+} from "@/lib/ai/gemini-clinic-stats";
 import { formatGeminiClinicalContext } from "@/lib/ai/gemini-clinical-context";
 import { GEMINI_CLINICAL_SYSTEM_PROMPT } from "@/lib/ai/gemini-clinical-system-prompt";
+import { geminiStatsToStructured } from "@/lib/ai/gemini-stats-response";
 import {
   formatGeminiStructuredBody,
   type GeminiStructuredResponse,
   parseGeminiStructuredResponse,
 } from "@/lib/ai/gemini-structured-response";
+import { loadGeminiClinicStats } from "@/lib/ai/load-gemini-clinic-stats.server";
 import { loadGeminiClinicalContext } from "@/lib/ai/load-gemini-clinical-context.server";
 import type { AiChatMessage } from "@/lib/ai/user-ai-provider-types";
 import { callGeminiApi, callVertexGemini } from "@/lib/ai/vertex-gemini.server";
@@ -19,9 +25,23 @@ export type GeminiClinicalChatResult = {
   engine: ClinicalAiEngine;
 };
 
-function buildUserPrompt(message: string, clinicalContext: string | null): string {
-  if (!clinicalContext) return message;
-  return `Contexto clínico anonimizado (no incluye identidad):\n${clinicalContext}\n\nConsulta del médico:\n${message}`;
+function buildUserPrompt(
+  message: string,
+  clinicalContext: string | null,
+  statsContext: string | null
+): string {
+  const parts = [];
+  if (statsContext) {
+    parts.push(
+      "Datos del consultorio (fuente: base DrFlow, no inventar ni agregar pacientes):\n" +
+        statsContext
+    );
+  }
+  if (clinicalContext) {
+    parts.push(`Contexto clínico anonimizado (no incluye identidad):\n${clinicalContext}`);
+  }
+  parts.push(`Consulta del médico:\n${message}`);
+  return parts.join("\n\n");
 }
 
 export async function runGeminiClinicalChat(input: {
@@ -34,17 +54,38 @@ export async function runGeminiClinicalChat(input: {
 }): Promise<GeminiClinicalChatResult | null> {
   const vertexReady = isVertexGeminiConfigured();
   const apiKey = input.geminiApiKey?.trim() || getGeminiApiKey();
-  if (!vertexReady && !apiKey) return null;
+
+  const statsQuery = parseGeminiClinicStatsQuery(input.message);
+  const statsResult = statsQuery
+    ? await loadGeminiClinicStats(input.clinicId, statsQuery)
+    : null;
+  const statsStructured = statsResult ? geminiStatsToStructured(statsResult) : null;
 
   let clinicalContext: string | null = null;
-  if (input.patientId) {
+  if (!statsQuery && input.patientId) {
     const loaded = await loadGeminiClinicalContext(input.clinicId, input.patientId);
     if (loaded) clinicalContext = formatGeminiClinicalContext(loaded);
   }
 
+  if (!vertexReady && !apiKey) {
+    if (!statsStructured) return null;
+    return {
+      structured: statsStructured,
+      body: formatGeminiStructuredBody(statsStructured),
+      engine: "rule_based",
+    };
+  }
+
   const messages: AiChatMessage[] = [
     ...(input.chatHistory ?? []).slice(-16),
-    { role: "user", content: buildUserPrompt(input.message, clinicalContext) },
+    {
+      role: "user",
+      content: buildUserPrompt(
+        input.message,
+        clinicalContext,
+        statsResult ? formatGeminiClinicStatsContext(statsResult) : null
+      ),
+    },
   ];
 
   let raw: string | null = null;
@@ -68,9 +109,26 @@ export async function runGeminiClinicalChat(input: {
     if (raw) engine = "gemini_api";
   }
 
-  if (!raw) return null;
+  if (!raw) {
+    if (!statsStructured) return null;
+    return {
+      structured: statsStructured,
+      body: formatGeminiStructuredBody(statsStructured),
+      engine: "rule_based",
+    };
+  }
 
-  const structured = parseGeminiStructuredResponse(raw);
+  const parsed = parseGeminiStructuredResponse(raw);
+  const structured: GeminiStructuredResponse = statsStructured
+    ? {
+        ...parsed,
+        summary: parsed.summary || statsStructured.summary,
+        findings: statsStructured.findings,
+        warnings: [...statsStructured.warnings, ...parsed.warnings],
+        patients: statsStructured.patients,
+      }
+    : parsed;
+
   return {
     structured,
     body: formatGeminiStructuredBody(structured),
