@@ -1,4 +1,4 @@
-import { ArrowLeftRight, FileText, Users } from "lucide-react";
+import { ArrowLeftRight } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -14,6 +14,7 @@ import { createClient } from "@/core/supabase/server";
 import { DataImportExportSidebar } from "@/features/integraciones";
 import { MigrationHealthPanel } from "@/features/integraciones";
 import { ClearClinicalHistoryPanel } from "@/features/integraciones";
+import { DatosBulkDownloadCards } from "@/features/integraciones/components/datos/datos-bulk-download-cards";
 import { DatosNavigationHelp } from "@/features/integraciones/components/datos/datos-navigation-help";
 
 import { Button } from "@/components/ui/button";
@@ -171,24 +172,12 @@ export default async function DatosPage() {
             <ClearClinicalHistoryPanel clinicName={clinic.name} />
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Link
-              href="/pacientes"
-              className="rounded-xl border border-blue-100 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"
-            >
-              <Users className="mb-2 h-8 w-8 text-blue-700" />
-              <p className="font-semibold text-slate-900">Pacientes</p>
-              <p className="mt-1 text-sm text-slate-600">Buscar fichas, alta manual y acceso a historias.</p>
-            </Link>
-            <Link
-              href="/historias"
-              className="rounded-xl border border-blue-100 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"
-            >
-              <FileText className="mb-2 h-8 w-8 text-blue-700" />
-              <p className="font-semibold text-slate-900">Historia clínica</p>
-              <p className="mt-1 text-sm text-slate-600">Consultas, evoluciones y búsqueda por paciente.</p>
-            </Link>
-          </div>
+          <DatosBulkDownloadCards
+            patients={exportPatients}
+            records={exportRecords}
+            patientsLimit={EXPORT_PATIENT_LIMIT}
+            recordsLimit={EXPORT_RECORDS_LIMIT}
+          />
 
           {!canImportPatients && !canImportClinical && (
             <p className="mt-6 text-sm text-amber-800">

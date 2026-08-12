@@ -27,8 +27,8 @@ const IMPORT_OPTIONS = [
 
 const EXPORT_OPTIONS = [
   { value: "", label: "Elegí formato…" },
-  { value: "records-csv", label: "Consultas visibles (CSV)" },
-  { value: "records-pdf", label: "Consultas visibles (PDF)" },
+  { value: "records-csv", label: "Todas las historias / consultas (CSV)" },
+  { value: "records-pdf", label: "Todas las historias / consultas (PDF)" },
   { value: "history-pdf", label: "Historia completa del paciente (PDF)" },
 ];
 

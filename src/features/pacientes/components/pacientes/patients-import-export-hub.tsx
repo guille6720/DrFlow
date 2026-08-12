@@ -20,8 +20,8 @@ const IMPORT_OPTIONS = [
 
 const EXPORT_OPTIONS = [
   { value: "", label: "Elegí formato…" },
-  { value: "patients-csv", label: "Pacientes (CSV)" },
-  { value: "patients-pdf", label: "Pacientes (PDF)" },
+  { value: "patients-csv", label: "Todos los pacientes (CSV)" },
+  { value: "patients-pdf", label: "Todos los pacientes (PDF)" },
 ];
 
 interface Props {
