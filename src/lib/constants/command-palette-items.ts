@@ -16,6 +16,7 @@ import {
   Pill,
   ScrollText,
   Settings,
+  Sparkles,
   Stethoscope,
   Users,
 } from "lucide-react";
@@ -188,6 +189,15 @@ export const COMMAND_PALETTE_NAV: CommandPaletteItemDef[] = [
   { id: "nav-datos", label: "Importar / Exportar", href: "/datos", group: "navegacion", icon: ArrowDownUp },
   { id: "nav-recordatorios", label: "Recordatorios", href: "/recordatorios", group: "navegacion", icon: Bell },
   { id: "nav-ayuda", label: "Ayuda / Manual", href: "/ayuda", group: "navegacion", icon: BookOpen },
+  {
+    id: "nav-gemini",
+    label: "Gemini",
+    href: "/gemini",
+    group: "navegacion",
+    icon: Sparkles,
+    permission: "viewClinicalRecords",
+    keywords: ["gemini", "ia", "copilot", "asistente", "vertex"],
+  },
   {
     id: "nav-plantillas",
     label: "Plantillas clínicas",

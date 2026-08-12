@@ -1,7 +1,11 @@
 "use client";
 
-import { Bot, ExternalLink, KeyRound, Trash2 } from "lucide-react";
+import { Bot, ExternalLink, KeyRound, Sparkles, Trash2 } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
+
+import { SafeInternalLink } from "@/core/components/safe-link";
+
+import { GEMINI_IN_APP_HREF } from "@/features/ia/constants/gemini-web-app";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -112,6 +116,16 @@ export function AiProviderPanel() {
             {USER_AI_PROVIDER_OPTIONS.find((p) => p.id === connection.provider)?.label} ·{" "}
             {connection.model} · clave {connection.keyHint}
           </p>
+          <p className="mt-2 text-xs text-emerald-800">
+            La clave ya está guardada. El chat no se abre acá: entrá a{" "}
+            <strong>Gemini</strong> en el menú izquierdo.
+          </p>
+          <SafeInternalLink href={GEMINI_IN_APP_HREF} className="mt-3 inline-flex">
+            <Button type="button" size="sm">
+              <Sparkles className="h-4 w-4" />
+              Abrir Gemini
+            </Button>
+          </SafeInternalLink>
         </div>
       ) : null}
 
@@ -163,7 +177,7 @@ export function AiProviderPanel() {
                 <li>Abrí Google AI Studio con el botón de abajo e iniciá sesión con tu cuenta Google.</li>
                 <li>Creá una API key (plan gratuito disponible).</li>
                 <li>Copiá la clave y pegala en el campo «API key».</li>
-                <li>Guardá con «Conectar» y usá «Asistente IA» en Historia clínica o Pacientes.</li>
+                <li>Guardá con «Conectar» y abrí <strong>Gemini</strong> en el menú izquierdo.</li>
               </ol>
               <a
                 href={providerMeta.apiKeyHelpUrl}

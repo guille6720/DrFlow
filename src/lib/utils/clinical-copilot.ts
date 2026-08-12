@@ -7,6 +7,7 @@ export {
   type CopilotResponse,
   matchCopilotIntent,
 } from "@/lib/utils/clinical-copilot-responses";
+import type { GeminiStructuredResponse } from "@/lib/ai/gemini-structured-response";
 import {
   type ClinicalAiAgentId,
   type ClinicalAiEngine,
@@ -20,6 +21,7 @@ export type { ClinicalAiAgentId, ClinicalAiEngine };
 export type OrchestratedCopilotResponse = CopilotResponse & {
   agentId?: ClinicalAiAgentId;
   engine?: ClinicalAiEngine;
+  structured?: GeminiStructuredResponse;
 };
 
 /** Run copilot query through the unified clinical AI orchestrator (Phase F). */

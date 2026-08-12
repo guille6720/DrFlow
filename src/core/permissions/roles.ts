@@ -114,6 +114,7 @@ export function canAccessRoute(
     "/plantillas-recetas": "issuePrescriptions",
     "/firmas": "editClinicalRecords",
     "/telemedicina": "viewClinicalRecords",
+    "/gemini": "viewClinicalRecords",
   };
 
   for (const [prefix, permission] of Object.entries(routePermissions)) {

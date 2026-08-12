@@ -6,6 +6,7 @@ import {
 } from "@/features/ia/types/physician-assist-types";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 
+import type { GeminiStructuredResponse } from "@/lib/ai/gemini-structured-response";
 import { buildPhysicianAssistItems } from "@/lib/utils/clinical-assistant";
 import {
   buildCopilotResponse,
@@ -45,7 +46,7 @@ export type ClinicalAiTask =
   | "clinical_summary"
   | "soap_draft";
 
-export type ClinicalAiEngine = "rule_based" | "llm_enhanced";
+export type ClinicalAiEngine = "rule_based" | "llm_enhanced" | "vertex_gemini" | "gemini_api";
 
 export type ClinicalAiOrchestratorInput = {
   task: ClinicalAiTask;
@@ -70,6 +71,7 @@ export type ClinicalAiOrchestratorResult = {
   intent?: CopilotIntentId;
   engine: ClinicalAiEngine;
   disclaimer: string;
+  structured?: GeminiStructuredResponse;
 };
 
 export const CLINICAL_AI_AGENT_LABELS: Record<ClinicalAiAgentId, string> = {

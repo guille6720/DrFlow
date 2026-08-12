@@ -10,6 +10,9 @@ describe("environment secrets audit", () => {
       "src/core/supabase/admin.ts",
       "src/core/env.server.ts",
       "src/lib/utils/clinical-ai-llm-provider.server.ts",
+      "src/lib/ai/vertex-gemini.server.ts",
+      "src/lib/ai/run-gemini-clinical.server.ts",
+      "src/lib/ai/load-gemini-clinical-context.server.ts",
     ];
 
     for (const rel of modules) {

@@ -107,7 +107,7 @@ export const FEATURE_MODULES: FeatureModuleDef[] = [
   {
     id: "ia",
     label: "IA clínica",
-    routes: [],
+    routes: ["/gemini"],
     status: "ready",
     description: "Asistente integrado en paciente y consultas.",
   },

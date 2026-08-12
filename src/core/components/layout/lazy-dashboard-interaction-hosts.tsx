@@ -17,6 +17,12 @@ const ClinicalWorkflowShortcuts = safeClientDynamic(() =>
   }))
 );
 
+const FloatingActions = safeClientDynamic(() =>
+  import("@/core/components/layout/floating-actions").then((mod) => ({
+    default: mod.FloatingActions,
+  }))
+);
+
 /** Non-critical dashboard interactions — deferred to reduce first-load JS. */
 export function LazyDashboardInteractionHosts({
   role,
@@ -30,6 +36,7 @@ export function LazyDashboardInteractionHosts({
       <RoutePrefetcher role={role} isSuperadmin={isSuperadmin} />
       <ClinicalContextMenuHost />
       <ClinicalWorkflowShortcuts />
+      <FloatingActions />
     </>
   );
 }

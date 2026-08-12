@@ -32,7 +32,11 @@ Cuando recibas un borrador rule-based, podés mejorarlo sin cambiar los hechos.`
 /** Whether a platform-level LLM API key is configured (env). */
 export function isClinicalLlmConfigured(): boolean {
   return Boolean(
-    process.env.CLINICAL_AI_LLM_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim()
+    process.env.CLINICAL_AI_LLM_API_KEY?.trim() ||
+      process.env.OPENAI_API_KEY?.trim() ||
+      process.env.GEMINI_API_KEY?.trim() ||
+      process.env.VERTEX_AI_PROJECT?.trim() ||
+      process.env.GOOGLE_CLOUD_PROJECT?.trim()
   );
 }
 

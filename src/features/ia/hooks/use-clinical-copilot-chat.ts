@@ -17,6 +17,8 @@ export type CopilotChatTurn = {
 
 type ClinicalAiMeta = {
   llmConfigured: boolean;
+  vertexConfigured?: boolean;
+  geminiConfigured?: boolean;
   userConnection: UserAiConnectionPublic | null;
 };
 
@@ -44,6 +46,8 @@ export function useClinicalCopilotChat(context: ClinicalCopilotContext) {
         if (!cancelled && data) {
           setMeta({
             llmConfigured: Boolean(data.llmConfigured),
+            vertexConfigured: Boolean(data.vertexConfigured),
+            geminiConfigured: Boolean(data.geminiConfigured),
             userConnection: data.userConnection ?? null,
           });
         }
@@ -54,7 +58,9 @@ export function useClinicalCopilotChat(context: ClinicalCopilotContext) {
     };
   }, []);
 
-  const hasLlm = Boolean(meta.userConnection || meta.llmConfigured);
+  const hasLlm = Boolean(
+    meta.userConnection || meta.llmConfigured || meta.vertexConfigured || meta.geminiConfigured
+  );
 
   const submit = useCallback(
     async (message: string) => {
@@ -101,6 +107,7 @@ export function useClinicalCopilotChat(context: ClinicalCopilotContext) {
             actions: json.result.actions ?? [],
             agentId: json.result.agentId,
             engine: json.result.engine,
+            structured: json.result.structured,
           };
 
           setTurns((prev) => {
@@ -144,6 +151,8 @@ export function useClinicalCopilotChat(context: ClinicalCopilotContext) {
     [context, hasLlm, loading, turns]
   );
 
+  const reset = useCallback(() => setTurns([]), []);
+
   return {
     turns,
     input,
@@ -152,6 +161,6 @@ export function useClinicalCopilotChat(context: ClinicalCopilotContext) {
     loading,
     meta,
     hasLlm,
-    reset: () => setTurns([]),
+    reset,
   };
 }

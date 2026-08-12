@@ -6,11 +6,13 @@ import { hasPermission } from "@/core/permissions/roles";
 import { requireSameOriginMutation } from "@/core/security/csrf";
 import { clinicalAiRequestSchema } from "@/core/validations/clinical-ai-api";
 
+import { runGeminiClinicalChat } from "@/lib/ai/run-gemini-clinical.server";
 import {
   getUserAiConnectionPublic,
   getUserAiCredentialsForSession,
 } from "@/lib/ai/user-ai-credentials.server";
 import type { AiChatMessage } from "@/lib/ai/user-ai-provider-types";
+import { isClinicGeminiConfigured, isVertexGeminiConfigured } from "@/lib/ai/vertex-gemini-config";
 import {
   enhanceClinicalAiBodyIfConfigured,
   isClinicalLlmConfigured,
@@ -73,9 +75,28 @@ export const POST = withObservabilityApiRoute("clinical_ai", async (request, ctx
     ? await getUserAiCredentialsForSession()
     : null;
   const credentials = resolveAiCredentialsForRequest(userCredentials);
+  const geminiReady =
+    isClinicGeminiConfigured() || credentials?.provider === "gemini";
   const wantsLlm =
-    Boolean(credentials) &&
+    (Boolean(credentials) || geminiReady) &&
     (payload.enhanceWithLlm || payload.useUserProvider || payload.task === "copilot_query");
+
+  if (payload.task === "copilot_query" && payload.message?.trim() && geminiReady) {
+    const geminiResult = await runGeminiClinicalChat({
+      clinicId,
+      patientId: payload.patientId,
+      message: payload.message.trim(),
+      chatHistory: payload.chatHistory,
+      geminiApiKey: credentials?.provider === "gemini" ? credentials.apiKey : null,
+      geminiModel: credentials?.provider === "gemini" ? credentials.model : undefined,
+    });
+    if (geminiResult) {
+      result.body = geminiResult.body;
+      result.engine = geminiResult.engine;
+      result.structured = geminiResult.structured;
+      return NextResponse.json({ result });
+    }
+  }
 
   if (wantsLlm && credentials) {
     const copilotCtx = orchestratorInput.copilotContext ?? {};
@@ -121,7 +142,9 @@ export const GET = withObservabilityApiRoute("clinical_ai_meta", async (_request
 
   return NextResponse.json({
     agents: listClinicalAiAgents(),
-    llmConfigured: isClinicalLlmConfigured(),
+    llmConfigured: isClinicalLlmConfigured() || isClinicGeminiConfigured(),
+    vertexConfigured: isVertexGeminiConfigured(),
+    geminiConfigured: isClinicGeminiConfigured(),
     userConnection,
     disclaimer:
       "Sugerencia asistida — requiere confirmación del médico. No reemplaza criterio clínico.",

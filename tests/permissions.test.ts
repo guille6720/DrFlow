@@ -36,6 +36,11 @@ describe("Role permissions", () => {
     expect(canAccessRoute("doctor", "/telemedicina")).toBe(true);
   });
 
+  it("allows doctors to access Gemini and blocks secretaría", () => {
+    expect(canAccessRoute("doctor", "/gemini")).toBe(true);
+    expect(canAccessRoute("secretary", "/gemini")).toBe(false);
+  });
+
   it("blocks lab routes for non-superadmin roles", () => {
     expect(canAccessRoute("clinic_admin", "/pagos")).toBe(false);
     expect(canAccessRoute("doctor", "/qa")).toBe(false);

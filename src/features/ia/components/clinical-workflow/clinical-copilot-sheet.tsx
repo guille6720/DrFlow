@@ -138,7 +138,13 @@ export function ClinicalCopilotSheet({ open, onClose, context }: Props) {
                     {turn.response.agentId ? (
                       <p className="mb-1 text-[10px] text-violet-600">
                         Agente: {CLINICAL_AI_AGENT_LABELS[turn.response.agentId]}
-                        {turn.response.engine === "llm_enhanced" ? " · LLM" : " · rule-based"}
+                        {turn.response.engine === "vertex_gemini"
+                          ? " · Vertex Gemini"
+                          : turn.response.engine === "gemini_api"
+                            ? " · Gemini"
+                            : turn.response.engine === "llm_enhanced"
+                              ? " · LLM"
+                              : " · rule-based"}
                       </p>
                     ) : null}
                     {turn.error ? (
