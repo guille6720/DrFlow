@@ -19,10 +19,11 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
 
 const SUGGESTED_PROMPTS = [
-  "¿Cuántos pacientes con hipertensión se atendieron este mes?",
-  "¿Cuántos pacientes se atendieron este mes?",
+  "¿Cuántos pacientes con hipertensión hay en DrFlow?",
+  "Candidatos para MARITIME-CV",
+  "Criterios del estudio PRESTO (EPOC)",
+  "Pacientes con asma o EPOC",
   "Diagnósticos más frecuentes este mes",
-  "Resumen de las últimas evoluciones",
 ];
 
 function engineLabel(

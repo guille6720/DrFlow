@@ -9,6 +9,7 @@ import { createClient } from "@/core/supabase/server";
 import { DEFAULT_CLINIC_TIMEZONE } from "@/shared/utils/clinic-timezone";
 
 import {
+  formatProtocolCatalogForPrompt,
   type GeminiClinicStatsQuery,
   type GeminiClinicStatsResult,
   type GeminiStatsPatientRow,
@@ -17,7 +18,7 @@ import {
 } from "@/lib/ai/gemini-clinic-stats";
 import { getAttendancePeriodBounds } from "@/lib/utils/attendance-stats";
 
-const RECORD_LIMIT = 1500;
+const RECORD_LIMIT = 2500;
 const PATIENT_LIST_LIMIT = 200;
 
 type RecordRow = {
@@ -43,6 +44,13 @@ type RecordRow = {
 };
 
 function resolvePeriodBounds(period: GeminiStatsPeriodId, now: Date, timeZone: string) {
+  if (period === "all") {
+    return {
+      start: addMonths(now, -60),
+      end: now,
+      label: "histórico en DrFlow (últimos 5 años)",
+    };
+  }
   if (period === "last_month") {
     return getAttendancePeriodBounds("monthly", addMonths(now, -1), timeZone);
   }
@@ -57,6 +65,28 @@ function resolvePeriodBounds(period: GeminiStatsPeriodId, now: Date, timeZone: s
     };
   }
   return getAttendancePeriodBounds(period, now, timeZone);
+}
+
+function emptyStatsResult(
+  query: GeminiClinicStatsQuery,
+  label: string
+): GeminiClinicStatsResult {
+  return {
+    periodLabel: label,
+    conditionLabel: query.condition?.label ?? null,
+    coverageLabel: query.coverageNeedle,
+    visitCount: 0,
+    patientCount: 0,
+    truncated: false,
+    patients: [],
+    topDiagnoses: [],
+    protocolLabel: query.protocol?.label ?? null,
+    protocolContext: query.protocol
+      ? formatProtocolCatalogForPrompt(query.protocol)
+      : query.wantProtocolCriteria
+        ? formatProtocolCatalogForPrompt()
+        : null,
+  };
 }
 
 function asPatient(value: RecordRow["patients"]) {
@@ -91,16 +121,7 @@ export async function loadGeminiClinicStats(
     .limit(RECORD_LIMIT);
 
   if (error) {
-    return {
-      periodLabel: label,
-      conditionLabel: query.condition?.label ?? null,
-      coverageLabel: query.coverageNeedle,
-      visitCount: 0,
-      patientCount: 0,
-      truncated: false,
-      patients: [],
-      topDiagnoses: [],
-    };
+    return emptyStatsResult(query, label);
   }
 
   const rows = (data ?? []) as RecordRow[];
@@ -153,5 +174,11 @@ export async function loadGeminiClinicStats(
     truncated,
     patients: query.wantTopDiagnoses && !query.condition ? [] : [...byPatient.values()],
     topDiagnoses,
+    protocolLabel: query.protocol?.label ?? null,
+    protocolContext: query.protocol
+      ? formatProtocolCatalogForPrompt(query.protocol)
+      : query.wantProtocolCriteria
+        ? formatProtocolCatalogForPrompt()
+        : null,
   };
 }

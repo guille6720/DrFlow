@@ -7,23 +7,33 @@ import {
 export function geminiStatsToStructured(
   result: GeminiClinicStatsResult
 ): GeminiStructuredResponse {
-  const filterBits = [result.conditionLabel, result.coverageLabel].filter(Boolean);
-  const filterText = filterBits.length ? ` con ${filterBits.join(" / ")}` : "";
+  const filterBits = [result.protocolLabel, result.conditionLabel, result.coverageLabel].filter(
+    Boolean
+  );
+  const filterText = filterBits.length ? ` · ${filterBits.join(" / ")}` : "";
   const summary =
     result.patientCount === 0
-      ? `No hay pacientes${filterText} atendidos en ${result.periodLabel}.`
-      : `${result.patientCount} paciente${result.patientCount === 1 ? "" : "s"}${filterText} en ${result.periodLabel} (${result.visitCount} consulta${result.visitCount === 1 ? "" : "s"}).`;
+      ? `No hay pacientes en DrFlow que coincidan${filterText} en ${result.periodLabel}.`
+      : `${result.patientCount} paciente${result.patientCount === 1 ? "" : "s"} en DrFlow${filterText} · ${result.periodLabel} (${result.visitCount} consulta${result.visitCount === 1 ? "" : "s"}).`;
 
   const findings = [
+    result.protocolLabel ? `Protocolo: ${result.protocolLabel}` : null,
     `Período: ${result.periodLabel}`,
     `Pacientes únicos: ${result.patientCount}`,
     `Consultas: ${result.visitCount}`,
     ...result.topDiagnoses.slice(0, 5).map((row) => `${row.label}: ${row.count}`),
-  ];
+  ].filter((item): item is string => Boolean(item));
 
-  const warnings = result.truncated
-    ? ["El período tiene muchas consultas; el listado puede estar incompleto."]
-    : [];
+  const warnings = [
+    ...(result.truncated
+      ? ["Hay muchas consultas; el listado puede estar incompleto."]
+      : []),
+    ...(result.protocolLabel
+      ? [
+          "Coincidencia por texto de HC en DrFlow (diagnóstico/motivo/evolución). No reemplaza elegibilidad completa del protocolo.",
+        ]
+      : []),
+  ];
 
   return {
     ...emptyGeminiStructuredResponse(summary),
