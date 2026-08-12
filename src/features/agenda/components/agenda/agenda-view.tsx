@@ -1,5 +1,6 @@
 "use client";
 
+import { isAfter, startOfDay } from "date-fns";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,6 +16,7 @@ import { AgendaToolbar } from "@/features/agenda/components/agenda/agenda-toolba
 import { MonthOverviewGrid } from "@/features/agenda/components/agenda/month-overview-grid";
 import { useAgendaView } from "@/features/agenda/hooks/use-agenda-view";
 
+import { getAppointmentHorizonEnd } from "@/lib/utils/appointment-booking-horizon";
 import type { Patient, UserRole } from "@/types/database";
 
 const EditAppointmentDialog = dynamic(
@@ -90,6 +92,9 @@ export function AgendaView({
     editingAppointment,
     setEditingAppointment,
     openNewAppointmentForm,
+    shiftMonth,
+    canPrevMonth,
+    canNextMonth,
   } = agenda;
 
   const canManage = hasPermission(role, "manageAppointments", isSuperadmin, permissionOverrides);
@@ -114,6 +119,7 @@ export function AgendaView({
 
   const handleDayClick = useCallback(
     (day: Date) => {
+      if (isAfter(startOfDay(day), startOfDay(getAppointmentHorizonEnd()))) return;
       setCurrentDate(day);
     },
     [setCurrentDate]
@@ -142,8 +148,13 @@ export function AgendaView({
         <aside aria-label="Calendario mensual">
           <MonthOverviewGrid
             monthDate={currentDate}
+            selectedDay={selectedDay}
             appointments={filtered}
             onDayClick={handleDayClick}
+            onPrevMonth={() => shiftMonth(true)}
+            onNextMonth={() => shiftMonth(false)}
+            canPrevMonth={canPrevMonth}
+            canNextMonth={canNextMonth}
           />
         </aside>
       </div>

@@ -7,13 +7,15 @@ import { generateAvailableSlots } from "@/core/booking/slots";
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 import { APPOINTMENT_AGENDA_COLUMNS } from "@/core/supabase/select-columns";
 
+import { getAppointmentHorizonDaysAhead } from "@/lib/utils/appointment-booking-horizon";
+
 export async function loadTurnosWizardSlots(
   supabase: SupabaseClient,
   clinicId: string,
   professionalId: string,
   options?: { daysAhead?: number; fromDate?: Date; locationId?: string | null }
 ) {
-  const daysAhead = options?.daysAhead ?? 21;
+  const daysAhead = options?.daysAhead ?? getAppointmentHorizonDaysAhead(options?.fromDate);
   const fromDate = options?.fromDate ?? new Date();
   const rangeStart = fromDate.toISOString();
   const rangeEnd = new Date(fromDate.getTime() + daysAhead * 86_400_000).toISOString();
@@ -64,6 +66,7 @@ export async function loadTurnosWizardSlots(
     blocks: blockRows,
     daysAhead,
     fromDate,
+    maxSlots: 0,
   });
 
   return { slots, appointments: appointmentRows, scheduleBlocks: blockRows, rules: rules ?? [] };

@@ -12,6 +12,7 @@ import {
 } from "date-fns";
 import { useMemo, useState } from "react";
 
+import { isDateWithinAppointmentHorizon } from "@/lib/utils/appointment-booking-horizon";
 import {
   APPOINTMENT_SLOT_MINUTES,
   parseLocalDatetimeValue,
@@ -58,6 +59,7 @@ export function useAppointmentDatetimePicker({
 
   function selectDate(day: Date) {
     if (isBefore(day, startOfDay(new Date()))) return;
+    if (!isDateWithinAppointmentHorizon(day)) return;
     setPickerDate(day);
     setMonth(startOfMonth(day));
     if (selectedTime) {

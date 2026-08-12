@@ -1,6 +1,6 @@
 "use client";
 
-import { addMonths, format, isBefore, isSameDay, isSameMonth, startOfDay, subMonths } from "date-fns";
+import { addMonths, format, isAfter, isBefore, isSameDay, isSameMonth, startOfDay, subMonths } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
 
@@ -8,6 +8,11 @@ import { cn } from "@/shared/utils/cn";
 
 import { useAppointmentDatetimePicker } from "@/features/agenda/hooks/use-appointment-datetime-picker";
 
+import {
+  getAppointmentHorizonEnd,
+  isDateWithinAppointmentHorizon,
+  isMonthWithinAppointmentHorizon,
+} from "@/lib/utils/appointment-booking-horizon";
 import { APPOINTMENT_TIME_SLOTS } from "@/lib/utils/appointment-datetime";
 
 interface OccupiedSlot {
@@ -59,6 +64,9 @@ export function AppointmentDatetimePicker({
     scheduleBlocks,
     professionalId,
   });
+  const canPrevMonth = isMonthWithinAppointmentHorizon(subMonths(month, 1));
+  const canNextMonth = isMonthWithinAppointmentHorizon(addMonths(month, 1));
+  const horizonEnd = getAppointmentHorizonEnd();
 
   return (
     <div className="space-y-1 sm:col-span-2">
@@ -74,7 +82,8 @@ export function AppointmentDatetimePicker({
           <button
             type="button"
             onClick={() => setMonth(subMonths(month, 1))}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-700"
+            disabled={!canPrevMonth}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Mes anterior"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -85,7 +94,8 @@ export function AppointmentDatetimePicker({
           <button
             type="button"
             onClick={() => setMonth(addMonths(month, 1))}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-700"
+            disabled={!canNextMonth}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Mes siguiente"
           >
             <ChevronRight className="h-4 w-4" />
@@ -104,18 +114,20 @@ export function AppointmentDatetimePicker({
           {calendarDays.map((day) => {
             const inMonth = isSameMonth(day, month);
             const isPast = isBefore(day, startOfDay(new Date()));
+            const isAfterHorizon = isAfter(startOfDay(day), startOfDay(horizonEnd));
+            const disabled = isPast || isAfterHorizon || !isDateWithinAppointmentHorizon(day);
             const isSelected = isSameDay(day, selectedDate);
             return (
               <button
                 key={day.toISOString()}
                 type="button"
-                disabled={isPast}
+                disabled={disabled}
                 onClick={() => selectDate(day)}
                 className={cn(
                   "aspect-square rounded-lg text-sm font-medium transition-colors",
                   !inMonth && "text-slate-600",
-                  inMonth && !isPast && "text-slate-200 hover:bg-slate-700",
-                  isPast && "cursor-not-allowed text-slate-600",
+                  inMonth && !disabled && "text-slate-200 hover:bg-slate-700",
+                  disabled && "cursor-not-allowed text-slate-600",
                   isSelected && "bg-teal-500 text-slate-900 hover:bg-teal-400"
                 )}
               >

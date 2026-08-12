@@ -12,6 +12,7 @@ import {
   startOfWeek,
 } from "date-fns";
 import { es } from "date-fns/locale";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { memo, useMemo } from "react";
 
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
@@ -21,7 +22,12 @@ import { cn } from "@/shared/utils/cn";
 interface MonthOverviewGridProps {
   monthDate: Date;
   appointments: AppointmentAgendaRow[];
+  selectedDay?: Date;
   onDayClick?: (day: Date) => void;
+  onPrevMonth?: () => void;
+  onNextMonth?: () => void;
+  canPrevMonth?: boolean;
+  canNextMonth?: boolean;
 }
 
 const WEEK_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"] as const;
@@ -39,11 +45,13 @@ const MonthDayCell = memo(function MonthDayCell({
   day,
   monthDate,
   count,
+  selected,
   onDayClick,
 }: {
   day: Date;
   monthDate: Date;
   count: number;
+  selected: boolean;
   onDayClick?: (day: Date) => void;
 }) {
   const inMonth = isSameMonth(day, monthDate);
@@ -60,6 +68,7 @@ const MonthDayCell = memo(function MonthDayCell({
       className={cn(
         "flex min-h-[5rem] flex-col border-b border-r border-slate-200 p-2.5 text-left transition-colors",
         inMonth ? "bg-white" : "bg-slate-50/80",
+        selected && inMonth && "bg-cyan-50/80",
         onDayClick && inMonth && "cursor-pointer hover:bg-cyan-50/60"
       )}
     >
@@ -67,7 +76,8 @@ const MonthDayCell = memo(function MonthDayCell({
         className={cn(
           "inline-flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold",
           today && "bg-cyan-600 text-white shadow-sm",
-          !today && inMonth && "text-slate-900",
+          selected && !today && "bg-cyan-100 text-cyan-900 ring-1 ring-cyan-400",
+          !today && !selected && inMonth && "text-slate-900",
           !inMonth && "text-slate-400"
         )}
       >
@@ -85,7 +95,12 @@ const MonthDayCell = memo(function MonthDayCell({
 export function MonthOverviewGrid({
   monthDate,
   appointments,
+  selectedDay,
   onDayClick,
+  onPrevMonth,
+  onNextMonth,
+  canPrevMonth = false,
+  canNextMonth = false,
 }: MonthOverviewGridProps) {
   const days = useMemo(() => {
     const monthStart = startOfMonth(monthDate);
@@ -100,10 +115,32 @@ export function MonthOverviewGrid({
   return (
     <div className="drflow-card-light overflow-hidden rounded-2xl bg-white text-slate-900 ring-1 ring-slate-200">
       <div className="border-b border-slate-200 bg-slate-50 px-4 py-3">
-        <h2 className="text-base font-bold capitalize text-slate-900">
-          {format(monthDate, "MMMM yyyy", { locale: es })}
-        </h2>
-        <p className="text-sm font-semibold text-slate-700">Vista mensual</p>
+        <div className="flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={onPrevMonth}
+            disabled={!canPrevMonth}
+            className="rounded-lg p-1.5 text-slate-600 hover:bg-white disabled:cursor-not-allowed disabled:text-slate-300"
+            aria-label="Mes anterior"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <div className="min-w-0 text-center">
+            <h2 className="text-base font-bold capitalize text-slate-900">
+              {format(monthDate, "MMMM yyyy", { locale: es })}
+            </h2>
+            <p className="text-sm font-semibold text-slate-700">Vista mensual</p>
+          </div>
+          <button
+            type="button"
+            onClick={onNextMonth}
+            disabled={!canNextMonth}
+            className="rounded-lg p-1.5 text-slate-600 hover:bg-white disabled:cursor-not-allowed disabled:text-slate-300"
+            aria-label="Mes siguiente"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
       <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-100/80">
         {WEEK_LABELS.map((label) => (
@@ -124,6 +161,7 @@ export function MonthOverviewGrid({
               day={day}
               monthDate={monthDate}
               count={dayCounts.get(key) ?? 0}
+              selected={selectedDay ? isSameDay(day, selectedDay) : false}
               onDayClick={onDayClick}
             />
           );

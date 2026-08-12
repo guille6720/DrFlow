@@ -2,7 +2,12 @@
 
 import {
   addDays,
+  addMonths,
+  isAfter,
+  isBefore,
+  isSameMonth,
   startOfDay,
+  startOfMonth,
   subDays,
 } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -10,6 +15,12 @@ import { useCallback, useMemo, useState } from "react";
 
 import { filterAgendaAppointments } from "@/core/booking/location-filters";
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
+
+import {
+  getAppointmentHorizonEnd,
+  getAppointmentHorizonMonthStart,
+  isMonthWithinAppointmentHorizon,
+} from "@/lib/utils/appointment-booking-horizon";
 
 type Options = {
   appointments: AppointmentAgendaRow[];
@@ -45,11 +56,33 @@ export function useAgendaView({
 
   const handleCreate = useCallback(async () => undefined, []);
 
+  const horizonEnd = useMemo(() => getAppointmentHorizonEnd(), []);
+  const horizonMonthStart = useMemo(() => getAppointmentHorizonMonthStart(), []);
+  const canPrevMonth = isMonthWithinAppointmentHorizon(addMonths(currentDate, -1));
+  const canNextMonth = isMonthWithinAppointmentHorizon(addMonths(currentDate, 1));
+
   const shiftCalendar = useCallback(
     (back: boolean) => {
-      setCurrentDate(back ? subDays(currentDate, 1) : addDays(currentDate, 1));
+      const next = back ? subDays(currentDate, 1) : addDays(currentDate, 1);
+      if (!back && isAfter(startOfDay(next), startOfDay(horizonEnd))) return;
+      setCurrentDate(next);
     },
-    [currentDate]
+    [currentDate, horizonEnd]
+  );
+
+  const shiftMonth = useCallback(
+    (back: boolean) => {
+      const target = addMonths(currentDate, back ? -1 : 1);
+      if (!isMonthWithinAppointmentHorizon(target)) return;
+      const today = startOfDay(new Date());
+      if (isSameMonth(target, today)) {
+        setCurrentDate(today);
+        return;
+      }
+      const monthStart = startOfMonth(target);
+      setCurrentDate(isBefore(monthStart, horizonMonthStart) ? horizonMonthStart : monthStart);
+    },
+    [currentDate, horizonMonthStart]
   );
 
   const handleSlotClick = useCallback(
@@ -83,6 +116,9 @@ export function useAgendaView({
       weekDays,
       openNewAppointmentForm,
       shiftCalendar,
+      shiftMonth,
+      canPrevMonth,
+      canNextMonth,
       handleSlotClick,
       handleCreate,
     }),
@@ -96,6 +132,9 @@ export function useAgendaView({
       weekDays,
       openNewAppointmentForm,
       shiftCalendar,
+      shiftMonth,
+      canPrevMonth,
+      canNextMonth,
       handleSlotClick,
       handleCreate,
     ]

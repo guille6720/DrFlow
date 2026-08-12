@@ -58,4 +58,24 @@ describe("generateAvailableSlots", () => {
     expect(slots.some((s) => s.start_at === "2026-06-19T12:00:00.000Z")).toBe(false);
     expect(slots.length).toBeGreaterThan(0);
   });
+
+  it("does not cap slots when maxSlots is 0", () => {
+    const slots = generateAvailableSlots({
+      rules: [
+        { day_of_week: 1, start_time: "09:00", end_time: "12:00", slot_duration: 15 },
+        { day_of_week: 2, start_time: "09:00", end_time: "12:00", slot_duration: 15 },
+        { day_of_week: 3, start_time: "09:00", end_time: "12:00", slot_duration: 15 },
+        { day_of_week: 4, start_time: "09:00", end_time: "12:00", slot_duration: 15 },
+        { day_of_week: 5, start_time: "09:00", end_time: "12:00", slot_duration: 15 },
+      ],
+      appointments: [],
+      blocks: [],
+      fromDate: friday,
+      daysAhead: 21,
+      maxSlots: 0,
+      timeZone: DEFAULT_CLINIC_TIMEZONE,
+    });
+
+    expect(slots.length).toBeGreaterThan(80);
+  });
 });

@@ -46,6 +46,7 @@ import {
   insurancePlanOptionsForProvider,
   insuranceProviderOptions,
 } from "@/lib/constants/coverages";
+import { listAppointmentHorizonMonths } from "@/lib/utils/appointment-booking-horizon";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { Patient } from "@/types/database";
 
@@ -331,6 +332,10 @@ export function TurnosNuevoWizard({
     () => resolveInitialSlotSelection(initialStartAt, initialWizardSlots),
     [initialStartAt, initialWizardSlots]
   );
+  const horizonMonths = useMemo(() => listAppointmentHorizonMonths(), []);
+  const [selectedMonth, setSelectedMonth] = useState(
+    () => initialSlotSelection.day?.slice(0, 7) ?? format(new Date(), "yyyy-MM")
+  );
   const [selectedDay, setSelectedDay] = useState<string | null>(
     () => initialSlotSelection.day
   );
@@ -395,6 +400,11 @@ export function TurnosNuevoWizard({
     const keys = new Set([...slotsByDay.keys(), ...appointmentsByDay.keys()]);
     return [...keys].sort();
   }, [slotsByDay, appointmentsByDay]);
+
+  const visibleDayKeys = useMemo(
+    () => dayKeys.filter((key) => key.startsWith(selectedMonth)),
+    [dayKeys, selectedMonth]
+  );
 
   const loadProfessionalData = useCallback(async (nextProfessionalId: string) => {
     if (!nextProfessionalId) {
@@ -763,12 +773,43 @@ export function TurnosNuevoWizard({
               </p>
             ) : dayKeys.length === 0 ? (
               <p className={MUTED_CLASS}>
-                No hay horarios ni turnos agendados para este profesional en las próximas semanas.
+                No hay horarios ni turnos agendados para este profesional en el mes en curso ni en
+                los dos meses siguientes.
               </p>
             ) : (
               <>
                 <div className="flex flex-wrap gap-2">
-                  {dayKeys.map((dayKey) => {
+                  {horizonMonths.map((monthDate) => {
+                    const monthKey = format(monthDate, "yyyy-MM");
+                    return (
+                      <button
+                        key={monthKey}
+                        type="button"
+                        onClick={() => {
+                          setSelectedMonth(monthKey);
+                          setSelectedDay(null);
+                          setSelectedSlot(null);
+                          setSelectedExisting(null);
+                        }}
+                        className={`rounded-md border px-3 py-2 text-sm capitalize transition-colors ${
+                          selectedMonth === monthKey
+                            ? "border-[var(--primary)] bg-[var(--primary)]/10 font-semibold text-slate-950"
+                            : "border-slate-400 text-slate-800 hover:border-[var(--primary)]"
+                        }`}
+                      >
+                        {format(monthDate, "MMMM yyyy", { locale: es })}
+                      </button>
+                    );
+                  })}
+                </div>
+                {visibleDayKeys.length === 0 ? (
+                  <p className={MUTED_CLASS}>
+                    No hay horarios ni turnos en {format(parseISO(`${selectedMonth}-01T12:00:00`), "MMMM", { locale: es })}.
+                    Elegí otro mes.
+                  </p>
+                ) : null}
+                <div className="flex flex-wrap gap-2">
+                  {visibleDayKeys.map((dayKey) => {
                     const date = parseISO(`${dayKey}T12:00:00`);
                     const freeCount = slotsByDay.get(dayKey)?.length ?? 0;
                     const bookedCount = appointmentsByDay.get(dayKey)?.length ?? 0;

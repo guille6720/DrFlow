@@ -1,4 +1,4 @@
-import { addDays, subDays } from "date-fns";
+import { subDays } from "date-fns";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
@@ -16,6 +16,7 @@ import {
   getCachedClinicSpecialties,
 } from "@/lib/server/cached-clinic-queries";
 import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
+import { getAppointmentHorizonEnd } from "@/lib/utils/appointment-booking-horizon";
 
 export default async function TurnosAgendaPage() {
   const { profile, clinics, clinicId, clinic, role, isSuperadmin, permissionOverrides } =
@@ -24,7 +25,7 @@ export default async function TurnosAgendaPage() {
 
   const now = new Date();
   const rangeStart = subDays(now, 30).toISOString();
-  const rangeEnd = addDays(now, 60).toISOString();
+  const rangeEnd = getAppointmentHorizonEnd(now).toISOString();
 
   const [appointments, professionals, locations, specialties, blocks, bookingSlug] = clinicId
     ? await Promise.all([

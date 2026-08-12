@@ -36,6 +36,8 @@ export function generateAvailableSlots(params: {
   daysAhead?: number;
   fromDate?: Date;
   timeZone?: string;
+  /** Cap returned slots. `0` means no cap. Public booking keeps the default. */
+  maxSlots?: number;
 }): Array<{ start_at: string; end_at: string; label: string }> {
   const {
     rules,
@@ -44,6 +46,7 @@ export function generateAvailableSlots(params: {
     daysAhead = 14,
     fromDate = new Date(),
     timeZone = DEFAULT_CLINIC_TIMEZONE,
+    maxSlots = 80,
   } = params;
 
   const slots: Array<{ start_at: string; end_at: string; label: string }> = [];
@@ -89,5 +92,5 @@ export function generateAvailableSlots(params: {
     }
   }
 
-  return slots.slice(0, 80);
+  return maxSlots > 0 ? slots.slice(0, maxSlots) : slots;
 }
