@@ -70,9 +70,8 @@ export function useAgendaView({
     [currentDate, horizonEnd]
   );
 
-  const shiftMonth = useCallback(
-    (back: boolean) => {
-      const target = addMonths(currentDate, back ? -1 : 1);
+  const goToMonth = useCallback(
+    (target: Date) => {
       if (!isMonthWithinAppointmentHorizon(target)) return;
       const today = startOfDay(new Date());
       if (isSameMonth(target, today)) {
@@ -82,7 +81,14 @@ export function useAgendaView({
       const monthStart = startOfMonth(target);
       setCurrentDate(isBefore(monthStart, horizonMonthStart) ? horizonMonthStart : monthStart);
     },
-    [currentDate, horizonMonthStart]
+    [horizonMonthStart]
+  );
+
+  const shiftMonth = useCallback(
+    (back: boolean) => {
+      goToMonth(addMonths(currentDate, back ? -1 : 1));
+    },
+    [currentDate, goToMonth]
   );
 
   const handleSlotClick = useCallback(
@@ -117,6 +123,7 @@ export function useAgendaView({
       openNewAppointmentForm,
       shiftCalendar,
       shiftMonth,
+      goToMonth,
       canPrevMonth,
       canNextMonth,
       handleSlotClick,
@@ -133,6 +140,7 @@ export function useAgendaView({
       openNewAppointmentForm,
       shiftCalendar,
       shiftMonth,
+      goToMonth,
       canPrevMonth,
       canNextMonth,
       handleSlotClick,

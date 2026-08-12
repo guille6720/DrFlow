@@ -51,7 +51,8 @@ export function ProfessionalScheduleEditor({ rules, onChange, readOnly }: Props)
   return (
     <div className="space-y-4">
       <p className="text-sm text-slate-600">
-        Definí los días y rangos horarios de atención. Estos horarios alimentan la agenda interna y
+        Definí los días y rangos horarios de atención. Valen para todos los meses del año: con esto
+        podés armar la agenda de diciembre (u otro mes) desde Agenda o Nuevo turno. También alimentan
         los turnos online del consultorio.
       </p>
 

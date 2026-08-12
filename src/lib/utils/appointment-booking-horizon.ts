@@ -1,7 +1,10 @@
 import { addMonths, differenceInCalendarDays, endOfMonth, isAfter, isBefore, startOfDay, startOfMonth } from "date-fns";
 
+/** Calendar months staff can view and book, including the current month. */
+export const APPOINTMENT_HORIZON_MONTHS = 12;
+
 /** Extra calendar months after the current month that staff can view and book. */
-export const APPOINTMENT_HORIZON_EXTRA_MONTHS = 2;
+export const APPOINTMENT_HORIZON_EXTRA_MONTHS = APPOINTMENT_HORIZON_MONTHS - 1;
 
 export function getAppointmentHorizonMonthStart(from: Date = new Date()): Date {
   return startOfMonth(from);
@@ -29,7 +32,5 @@ export function isDateWithinAppointmentHorizon(date: Date, from: Date = new Date
 
 export function listAppointmentHorizonMonths(from: Date = new Date()): Date[] {
   const start = getAppointmentHorizonMonthStart(from);
-  return Array.from({ length: APPOINTMENT_HORIZON_EXTRA_MONTHS + 1 }, (_, index) =>
-    addMonths(start, index)
-  );
+  return Array.from({ length: APPOINTMENT_HORIZON_MONTHS }, (_, index) => addMonths(start, index));
 }

@@ -47,17 +47,17 @@ export function Header({
   return (
     <header
       className={cn(
-        "drflow-ui-header border-b px-4 py-4 backdrop-blur-sm sm:px-6",
+        "drflow-ui-header border-b px-4 py-2.5 backdrop-blur-sm sm:px-6",
         shellDark ? "drflow-ui-header-dark" : "drflow-ui-header-light",
         sidebarHidden ? "lg:pl-6" : "lg:pl-72"
       )}
     >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="pl-12 lg:pl-0">
           <h1
             id={titleId}
             className={cn(
-              "text-xl font-bold tracking-tight sm:text-2xl",
+              "text-lg font-bold tracking-tight sm:text-xl",
               shellDark ? "text-slate-50" : "text-slate-900"
             )}
           >

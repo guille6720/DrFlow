@@ -134,7 +134,7 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
         isSuperadmin={isSuperadmin}
       />
 
-      <div className="p-4 sm:p-6">
+      <div className="p-3 sm:p-4">
         <Suspense fallback={<div className="text-sm text-slate-500">Cargando…</div>}>
           <ConfiguracionNavigator
             activeGroup={activeGroup}

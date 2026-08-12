@@ -15,7 +15,7 @@ export function Card({ children, className, bodyClassName, title, description, a
   return (
     <div className={cn("drflow-ui-card min-w-0 overflow-visible", className)}>
       {(title || action) && (
-        <div className="drflow-ui-card-header flex min-w-0 items-start justify-between gap-3 px-5 py-4">
+    <div className="drflow-ui-card-header flex min-w-0 items-start justify-between gap-3 px-3 py-2">
           <div className="min-w-0 flex-1">
             {title && <h3 className="drflow-ui-card-title break-words font-semibold">{title}</h3>}
             {description && (
@@ -25,7 +25,7 @@ export function Card({ children, className, bodyClassName, title, description, a
           {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
-      <div className={cn("drflow-card-body drflow-ui-card-body min-w-0 p-5", bodyClassName)}>{children}</div>
+      <div className={cn("drflow-card-body drflow-ui-card-body min-w-0 p-3", bodyClassName)}>{children}</div>
     </div>
   );
 }

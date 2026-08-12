@@ -143,7 +143,7 @@ export default async function DatosPage() {
         userName={profile?.full_name}
       />
 
-      <div className="flex flex-col gap-6 p-4 lg:flex-row lg:items-start lg:p-6">
+      <div className="flex flex-col gap-4 p-3 lg:flex-row lg:items-start lg:p-4">
         <aside className="w-full shrink-0 lg:sticky lg:top-4 lg:w-[min(100%,22rem)] lg:max-w-sm">
           <DataImportExportSidebar
             canImportPatients={canImportPatients}

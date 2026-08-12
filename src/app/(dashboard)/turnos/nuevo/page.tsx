@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { getSession } from "@/core/auth/session.server";
 import { Header } from "@/core/components/layout/header";
@@ -94,12 +92,7 @@ export default async function TurnosNuevoPage({
         userName={profile?.full_name}
         isSuperadmin={isSuperadmin}
       />
-      <div className="p-4 lg:p-6">
-        <p className="mb-4 text-sm">
-          <Link href="/turnos/agenda" className="text-[var(--primary)] hover:underline">
-            ← Volver a la agenda
-          </Link>
-        </p>
+      <div className="flex h-full min-h-0 flex-col p-3 lg:p-3">
         <TurnosNuevoWizard
           patients={initialPatient ? [initialPatient] : []}
           initialPatient={initialPatient}

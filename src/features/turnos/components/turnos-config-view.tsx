@@ -70,7 +70,7 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
       <div>
         <h1 className="text-xl font-bold">Configuración de agenda</h1>
         <p className="text-sm text-[var(--muted-foreground)]">
-          Horarios semanales, bloqueos y duración de turnos por profesional.
+          Horarios semanales (valen todo el año), bloqueos y duración de turnos por profesional.
         </p>
       </div>
 

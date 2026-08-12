@@ -35,7 +35,7 @@ export default async function GeminiPage() {
         role={role}
         userName={profile?.full_name}
       />
-      <div className="p-4 sm:p-6">
+      <div className="p-3 sm:p-4">
         <p className="mb-4 text-sm text-slate-700">
           Preguntá estadísticas o candidatos a protocolos. Los resultados quedan en el historial
           para que puedas abrir un paciente y volver sin buscar de nuevo.

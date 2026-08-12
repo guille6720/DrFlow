@@ -19,6 +19,8 @@ import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { cn } from "@/shared/utils/cn";
 
+import { listAppointmentHorizonMonths } from "@/lib/utils/appointment-booking-horizon";
+
 interface MonthOverviewGridProps {
   monthDate: Date;
   appointments: AppointmentAgendaRow[];
@@ -26,6 +28,7 @@ interface MonthOverviewGridProps {
   onDayClick?: (day: Date) => void;
   onPrevMonth?: () => void;
   onNextMonth?: () => void;
+  onSelectMonth?: (month: Date) => void;
   canPrevMonth?: boolean;
   canNextMonth?: boolean;
 }
@@ -66,7 +69,7 @@ const MonthDayCell = memo(function MonthDayCell({
       type="button"
       onClick={handleClick}
       className={cn(
-        "flex min-h-[5rem] flex-col border-b border-r border-slate-200 p-2.5 text-left transition-colors",
+        "flex min-h-[3.25rem] flex-col border-b border-r border-slate-200 p-1.5 text-left transition-colors",
         inMonth ? "bg-white" : "bg-slate-50/80",
         selected && inMonth && "bg-cyan-50/80",
         onDayClick && inMonth && "cursor-pointer hover:bg-cyan-50/60"
@@ -99,9 +102,11 @@ export function MonthOverviewGrid({
   onDayClick,
   onPrevMonth,
   onNextMonth,
+  onSelectMonth,
   canPrevMonth = false,
   canNextMonth = false,
 }: MonthOverviewGridProps) {
+  const horizonMonths = useMemo(() => listAppointmentHorizonMonths(), []);
   const days = useMemo(() => {
     const monthStart = startOfMonth(monthDate);
     return eachDayOfInterval({
@@ -126,10 +131,33 @@ export function MonthOverviewGrid({
             <ChevronLeft className="h-4 w-4" />
           </button>
           <div className="min-w-0 text-center">
-            <h2 className="text-base font-bold capitalize text-slate-900">
-              {format(monthDate, "MMMM yyyy", { locale: es })}
-            </h2>
-            <p className="text-sm font-semibold text-slate-700">Vista mensual</p>
+            {onSelectMonth ? (
+              <label className="sr-only" htmlFor="agenda-month-jump">
+                Ir a un mes
+              </label>
+            ) : null}
+            {onSelectMonth ? (
+              <select
+                id="agenda-month-jump"
+                className="w-full max-w-[14rem] rounded-lg border border-slate-300 bg-white px-2 py-1 text-center text-sm font-bold capitalize text-slate-900"
+                value={format(monthDate, "yyyy-MM")}
+                onChange={(event) => {
+                  const next = horizonMonths.find((month) => format(month, "yyyy-MM") === event.target.value);
+                  if (next) onSelectMonth(next);
+                }}
+              >
+                {horizonMonths.map((month) => (
+                  <option key={format(month, "yyyy-MM")} value={format(month, "yyyy-MM")}>
+                    {format(month, "MMMM yyyy", { locale: es })}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <h2 className="text-base font-bold capitalize text-slate-900">
+                {format(monthDate, "MMMM yyyy", { locale: es })}
+              </h2>
+            )}
+            <p className="text-sm font-semibold text-slate-700">Vista mensual · 12 meses</p>
           </div>
           <button
             type="button"
@@ -152,7 +180,7 @@ export function MonthOverviewGrid({
           </div>
         ))}
       </div>
-      <div className="grid auto-rows-[minmax(5rem,1fr)] grid-cols-7">
+      <div className="grid auto-rows-[minmax(3.25rem,1fr)] grid-cols-7">
         {days.map((day) => {
           const key = format(day, "yyyy-MM-dd");
           return (

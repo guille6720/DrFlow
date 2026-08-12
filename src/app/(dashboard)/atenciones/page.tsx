@@ -51,7 +51,7 @@ export default async function AtencionesPage({
         userName={profile?.full_name}
       />
 
-      <div className="p-4 sm:p-6">
+      <div className="p-3 sm:p-4">
         <PatientAttendanceRegister
           period={data.period}
           periodLabel={data.periodLabel}

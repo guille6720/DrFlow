@@ -38,7 +38,7 @@ export function PacientesPageContent({
   const showHistorias = seccion === "historias" && canViewClinical;
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
+    <div className="space-y-4 p-3 sm:p-4">
       <SectorHero
         icon={Users}
         title="Pacientes"

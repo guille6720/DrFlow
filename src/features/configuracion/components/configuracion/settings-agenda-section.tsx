@@ -86,9 +86,8 @@ export function SettingsAgendaSection({
 
       <Card title="Disponibilidad semanal">
         <p className="mb-3 text-sm text-slate-600">
-          Estos horarios alimentan los turnos online del portal y de{" "}
-          <code className="rounded bg-slate-100 px-1 text-xs">/solicitar-turno</code>. Si no cargás
-          reglas, el paciente no va a ver horarios disponibles.
+          Estos horarios semanales valen para todos los meses del año (agenda interna, nuevo turno y
+          portal). Si no cargás reglas, no van a aparecer horarios disponibles.
         </p>
         <form
           onSubmit={(e) => {

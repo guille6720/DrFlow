@@ -9,6 +9,7 @@ import {
   Loader2,
   RotateCcw,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -672,16 +673,18 @@ export function TurnosNuevoWizard({
   const daySlots = selectedDay ? (slotsByDay.get(selectedDay) ?? []) : [];
 
   return (
-    <div className="turnos-nuevo-wizard mx-auto max-w-[1600px] space-y-4 text-slate-950">
-      <div>
-        <h1 className="text-xl font-bold text-slate-950">Nuevo turno</h1>
-        <p className={MUTED_CLASS}>
-          Elegí profesional, paciente y horario. Gestioná turnos existentes desde el panel de acciones.
-        </p>
-      </div>
+    <div className="turnos-nuevo-wizard mx-auto flex h-full min-h-0 max-w-[1600px] flex-col gap-2 text-slate-950">
+      <p className="shrink-0 text-sm">
+        <Link href="/turnos/agenda" className="text-[var(--primary)] hover:underline">
+          ← Volver a la agenda
+        </Link>
+        <span className={`ml-3 ${MUTED_CLASS}`}>
+          Elegí profesional, paciente y horario. Los 12 meses están en el selector de Horarios.
+        </span>
+      </p>
 
-      <div className="grid gap-4 lg:grid-cols-12 lg:items-start">
-        <div className="flex flex-col gap-4 lg:col-span-3">
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-12 lg:items-stretch">
+        <div className="flex min-h-0 flex-col gap-3 overflow-y-auto lg:col-span-3">
           <Card title="1 · Profesional" className={TURNOS_CARD_CLASS}>
             <div className="space-y-3">
               <Select
@@ -721,7 +724,7 @@ export function TurnosNuevoWizard({
             </div>
           </Card>
 
-          <Card title="2 · Paciente" className={cn(TURNOS_CARD_CLASS, "min-h-[280px]")}>
+          <Card title="2 · Paciente" className={TURNOS_CARD_CLASS}>
             <PatientSearchCombobox
               patients={patientOptions}
               searchMode="remote"
@@ -733,7 +736,7 @@ export function TurnosNuevoWizard({
               createPatientHref={(q) => buildCreatePatientHref(q, "/turnos/nuevo")}
             />
             {displayedPatient ? (
-              <dl className="mt-4 space-y-2 rounded-lg border border-slate-300 bg-slate-100/80 p-3 text-sm">
+              <dl className="mt-3 space-y-1 rounded-lg border border-slate-300 bg-slate-100/80 p-2 text-sm">
                 <div className="flex justify-between gap-2">
                   <dt className="font-semibold text-slate-700">Nombre</dt>
                   <dd className="font-bold text-slate-950">
@@ -763,8 +766,8 @@ export function TurnosNuevoWizard({
           </Card>
         </div>
 
-        <Card title="3 · Horarios" className={cn(TURNOS_CARD_CLASS, "lg:col-span-6 lg:min-h-[560px]")}>
-          <div className="space-y-4">
+        <Card title="3 · Horarios" className={cn(TURNOS_CARD_CLASS, "lg:col-span-6")}>
+          <div className="space-y-3">
             {!professionalId ? (
               <p className={MUTED_CLASS}>Seleccioná un profesional para ver la disponibilidad.</p>
             ) : loadingSlots ? (
@@ -773,42 +776,31 @@ export function TurnosNuevoWizard({
               </p>
             ) : dayKeys.length === 0 ? (
               <p className={MUTED_CLASS}>
-                No hay horarios ni turnos agendados para este profesional en el mes en curso ni en
-                los dos meses siguientes.
+                No hay horarios ni turnos agendados para este profesional en los próximos 12 meses.
               </p>
             ) : (
               <>
-                <div className="flex flex-wrap gap-2">
-                  {horizonMonths.map((monthDate) => {
-                    const monthKey = format(monthDate, "yyyy-MM");
-                    return (
-                      <button
-                        key={monthKey}
-                        type="button"
-                        onClick={() => {
-                          setSelectedMonth(monthKey);
-                          setSelectedDay(null);
-                          setSelectedSlot(null);
-                          setSelectedExisting(null);
-                        }}
-                        className={`rounded-md border px-3 py-2 text-sm capitalize transition-colors ${
-                          selectedMonth === monthKey
-                            ? "border-[var(--primary)] bg-[var(--primary)]/10 font-semibold text-slate-950"
-                            : "border-slate-400 text-slate-800 hover:border-[var(--primary)]"
-                        }`}
-                      >
-                        {format(monthDate, "MMMM yyyy", { locale: es })}
-                      </button>
-                    );
-                  })}
-                </div>
+                <Select
+                  label="Mes de la agenda"
+                  value={selectedMonth}
+                  onChange={(e) => {
+                    setSelectedMonth(e.target.value);
+                    setSelectedDay(null);
+                    setSelectedSlot(null);
+                    setSelectedExisting(null);
+                  }}
+                  options={horizonMonths.map((monthDate) => ({
+                    value: format(monthDate, "yyyy-MM"),
+                    label: format(monthDate, "MMMM yyyy", { locale: es }),
+                  }))}
+                />
                 {visibleDayKeys.length === 0 ? (
                   <p className={MUTED_CLASS}>
                     No hay horarios ni turnos en {format(parseISO(`${selectedMonth}-01T12:00:00`), "MMMM", { locale: es })}.
                     Elegí otro mes.
                   </p>
                 ) : null}
-                <div className="flex flex-wrap gap-2">
+                <div className="flex max-h-28 flex-wrap gap-1.5 overflow-y-auto">
                   {visibleDayKeys.map((dayKey) => {
                     const date = parseISO(`${dayKey}T12:00:00`);
                     const freeCount = slotsByDay.get(dayKey)?.length ?? 0;
@@ -822,7 +814,7 @@ export function TurnosNuevoWizard({
                           setSelectedSlot(null);
                           setSelectedExisting(null);
                         }}
-                        className={`rounded-md border px-3 py-2 text-sm text-slate-950 transition-colors ${
+                        className={`rounded-md border px-2 py-1.5 text-sm text-slate-950 transition-colors ${
                           selectedDay === dayKey
                             ? "border-[var(--primary)] bg-[var(--primary)]/10 font-semibold"
                             : "border-slate-400 hover:border-[var(--primary)]"
@@ -838,7 +830,7 @@ export function TurnosNuevoWizard({
                 </div>
 
                 {selectedDay ? (
-                  <div className="max-h-[460px] space-y-4 overflow-y-auto">
+                  <div className="max-h-[220px] space-y-3 overflow-y-auto">
                     {dayAppointments.length > 0 ? (
                       <div>
                         <p className={SECTION_HEADING}>Agendados</p>
@@ -920,7 +912,7 @@ export function TurnosNuevoWizard({
             )}
 
             {professionalId && !loadingSlots ? (
-              <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-300 pt-4">
+              <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-300 pt-2">
                 <span className="mr-auto flex items-center gap-1.5 text-sm font-semibold text-slate-800">
                   <Clock3 className="h-4 w-4" />
                   Duración de atención
@@ -947,10 +939,10 @@ export function TurnosNuevoWizard({
           </div>
         </Card>
 
-        <div className="flex flex-col gap-4 lg:col-span-3">
+        <div className="flex min-h-0 flex-col gap-3 overflow-y-auto lg:col-span-3">
           <Card
             title={isExistingMode ? "4 · Turno existente" : "4 · Confirmación"}
-            className={cn(TURNOS_CARD_CLASS, "lg:sticky lg:top-4")}
+            className={TURNOS_CARD_CLASS}
           >
             {isExistingMode && selectedExisting ? (
               <ExistingAppointmentSummary

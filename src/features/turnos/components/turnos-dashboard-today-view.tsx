@@ -13,7 +13,7 @@ type Props = {
 
 export function TurnosDashboardTodayView({ metrics, canViewReports = false }: Props) {
   return (
-    <div className="drflow-card-light space-y-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+    <div className="drflow-card-light space-y-4 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-slate-900">Operaciones del día</h2>

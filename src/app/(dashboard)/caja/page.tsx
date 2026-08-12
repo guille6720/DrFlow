@@ -77,7 +77,7 @@ export default async function CajaPage() {
         role={role}
         userName={profile?.full_name}
       />
-      <div className="p-4 sm:p-6">
+      <div className="p-3 sm:p-4">
         <AdminOpsAnalyticsBridge
           analytics={analytics}
           page="caja"

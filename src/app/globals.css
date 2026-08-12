@@ -1390,7 +1390,10 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body :is(.bg-white,
 
 /* ——— App shell: viewport fill + scroll en contenido de página ——— */
 .drflow-app-shell {
+  height: 100dvh;
+  max-height: 100dvh;
   min-height: 100dvh;
+  overflow: hidden;
 }
 
 .drflow-app-main {
@@ -1431,6 +1434,57 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body :is(.bg-white,
   max-height: calc(100dvh - 8rem);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 1024px) {
+  .drflow-app-main .drflow-ui-header {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .drflow-app-main .drflow-ui-card-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .drflow-app-main .drflow-card-body.drflow-ui-card-body {
+    padding: 0.75rem;
+  }
+
+  .drflow-app-main > :not(.drflow-ui-header):not(.drflow-ui-topnav):last-child.p-4,
+  .drflow-app-main > :not(.drflow-ui-header):not(.drflow-ui-topnav):last-child.p-6,
+  .drflow-app-main > :not(.drflow-ui-header):not(.drflow-ui-topnav):last-child.sm\:p-6,
+  .drflow-app-main > :not(.drflow-ui-header):not(.drflow-ui-topnav):last-child.lg\:p-6 {
+    padding: 0.75rem;
+  }
+}
+
+.turnos-nuevo-wizard {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.turnos-nuevo-wizard > .grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.turnos-nuevo-wizard .turnos-nuevo-card.drflow-ui-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-card-header {
+  flex-shrink: 0;
+}
+
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-card-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 @media (min-width: 1024px) {
@@ -4237,12 +4291,12 @@ html:not([data-ui-style="2"]) .drflow-medical-order-doc {
    bg-*-50/100, gradientes, drflow-card-light, documentos imprimibles). Las reglas de
    islas claras existentes usan !important, por lo que siguen teniendo prioridad. */
 @media screen {
-  html:not([data-ui-style="2"]) .drflow-mesh main :is(.text-slate-800, .text-slate-900):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-clinical-workspace, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *),
+  html:not([data-ui-style="2"]) .drflow-mesh main :is(.text-slate-800, .text-slate-900):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-clinical-workspace, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, .turnos-nuevo-card, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *),
   html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"]) .drflow-mesh main :is(.text-slate-800, .text-slate-900):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-clinical-workspace, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *) {
     color: #f1f5f9;
   }
 
-  html:not([data-ui-style="2"]) .drflow-mesh main :is(.text-slate-500, .text-slate-600, .text-slate-700):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-clinical-workspace, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *),
+  html:not([data-ui-style="2"]) .drflow-mesh main :is(.text-slate-500, .text-slate-600, .text-slate-700):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-clinical-workspace, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, .turnos-nuevo-card, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *),
   html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"]) .drflow-mesh main :is(.text-slate-500, .text-slate-600, .text-slate-700):not([class*="bg-"]):not([class*="from-"]):not(:is(.drflow-card-light, .drflow-surface-light, .drflow-clinical-workspace, .drflow-marketing, .drflow-marketing-site, .drflow-medical-order-doc, [class*="bg-white"], [class*="bg-gradient"], [class*="bg-slate-50"], [class*="bg-slate-100"], [class*="bg-teal-50"], [class*="bg-teal-100"], [class*="bg-emerald-50"], [class*="bg-emerald-100"], [class*="bg-red-50"], [class*="bg-red-100"], [class*="bg-amber-50"], [class*="bg-amber-100"], [class*="bg-blue-50"], [class*="bg-blue-100"], [class*="bg-violet-50"], [class*="bg-violet-100"], [class*="bg-indigo-50"], [class*="bg-indigo-100"], [class*="bg-cyan-100"], [class*="bg-sky-50"], [class*="bg-sky-100"]) *) {
     color: #cbd5e1;
   }
@@ -4252,6 +4306,7 @@ html:not([data-ui-style="2"]) .drflow-medical-order-doc {
 .turnos-nuevo-wizard .turnos-nuevo-card.drflow-ui-card {
   background: linear-gradient(135deg, #ecfdf5 0%, #bbf7d0 52%, #86efac 100%) !important;
   border-color: #34d399 !important;
+  color: #0f172a !important;
   box-shadow:
     0 1px 3px 0 rgb(6 78 59 / 0.08),
     0 6px 18px rgb(16 185 129 / 0.16) !important;
@@ -4265,6 +4320,38 @@ html:not([data-ui-style="2"]) .drflow-medical-order-doc {
 .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body,
 .turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-card-body {
   background: transparent !important;
+  color: #0f172a !important;
+}
+
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-card-title,
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-card-desc,
+.turnos-nuevo-wizard .turnos-nuevo-card label,
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-label,
+.turnos-nuevo-wizard .turnos-nuevo-card dt,
+.turnos-nuevo-wizard .turnos-nuevo-card dd,
+.turnos-nuevo-wizard .turnos-nuevo-card p,
+.turnos-nuevo-wizard .turnos-nuevo-card h2,
+.turnos-nuevo-wizard .turnos-nuevo-card h3,
+.turnos-nuevo-wizard .turnos-nuevo-card :is(.text-slate-700, .text-slate-800, .text-slate-900, .text-slate-950, .font-semibold, .font-bold) {
+  color: #0f172a !important;
+}
+
+.turnos-nuevo-wizard .turnos-nuevo-card :is(.text-slate-500, .text-slate-600) {
+  color: #334155 !important;
+}
+
+.turnos-nuevo-wizard .turnos-nuevo-card button:not(.drflow-ui-button):not([class*="text-white"]) {
+  color: #0f172a !important;
+}
+
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-button.text-slate-700,
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-button.text-slate-800 {
+  color: #0f172a !important;
+}
+
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-button[class*="from-cyan"],
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-button.text-white {
+  color: #ffffff !important;
 }
 
 .turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-input,
@@ -4273,11 +4360,20 @@ html:not([data-ui-style="2"]) .drflow-medical-order-doc {
 .turnos-nuevo-wizard .turnos-nuevo-card textarea {
   background-color: #ffffff !important;
   background-image: none !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+.turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-input::placeholder,
+.turnos-nuevo-wizard .turnos-nuevo-card input::placeholder,
+.turnos-nuevo-wizard .turnos-nuevo-card textarea::placeholder {
+  color: #64748b !important;
 }
 
 .turnos-nuevo-wizard .turnos-nuevo-card :is(.bg-slate-100, [class*="bg-slate-100"]) {
   background-color: rgb(255 255 255 / 0.82) !important;
   border-color: #6ee7b7 !important;
+  color: #0f172a !important;
 }
 
 html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card.drflow-ui-card {

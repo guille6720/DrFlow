@@ -42,7 +42,7 @@ export function ClinicalTopNav() {
               key={tab.href}
               href={tab.href}
               className={cn(
-                "flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors",
+                "flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors",
                 active
                   ? dark
                     ? "border-teal-400 text-teal-300"
