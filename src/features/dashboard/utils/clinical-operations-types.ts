@@ -7,6 +7,7 @@ export type LiveAppointment = {
   patient_id?: string | null;
   professional_id?: string | null;
   waiting_room_status?: string | null;
+  waiting_room_entered_at?: string | null;
   patients?: {
     first_name: string;
     last_name: string;

@@ -23,6 +23,7 @@ export type WaitingRoomStatus =
 export function resolveAppointmentLifecycleLabel(input: {
   status: AppointmentStatus;
   waitingRoomStatus?: WaitingRoomStatus | null;
+  waitingRoomEnteredAt?: string | null;
   isOverbooking?: boolean;
   rescheduledAt?: string | null;
 }): AppointmentLifecycleLabel {
@@ -35,8 +36,10 @@ export function resolveAppointmentLifecycleLabel(input: {
     return "Reprogramado";
   }
 
+  const arrived = hasArrivedToClinic(input.waitingRoomEnteredAt);
+
   if (input.waitingRoomStatus === "in_consultation") return "En atención";
-  if (input.waitingRoomStatus === "waiting") return "En espera";
+  if (input.waitingRoomStatus === "waiting" && arrived) return "En espera";
   if (input.waitingRoomStatus === "confirmed") return "Presente";
   if (input.waitingRoomStatus === "absent") return "Ausente";
 
@@ -133,12 +136,20 @@ export const AGENDA_ATTENDANCE_OPTIONS = [
 
 export type AgendaAttendanceValue = (typeof AGENDA_ATTENDANCE_OPTIONS)[number]["value"];
 
+/** True after reception marks Presente or En espera (not when the turno is first booked). */
+export function hasArrivedToClinic(waitingRoomEnteredAt?: string | null): boolean {
+  return Boolean(waitingRoomEnteredAt);
+}
+
 export function resolveAgendaAttendanceValue(input: {
   status: AppointmentStatus;
   waitingRoomStatus?: WaitingRoomStatus | null;
+  waitingRoomEnteredAt?: string | null;
 }): AgendaAttendanceValue | null {
   if (input.waitingRoomStatus === "confirmed") return "confirmed";
-  if (input.waitingRoomStatus === "waiting") return "waiting";
+  if (input.waitingRoomStatus === "waiting" && hasArrivedToClinic(input.waitingRoomEnteredAt)) {
+    return "waiting";
+  }
   if (input.waitingRoomStatus === "absent" || input.status === "no_show") return "absent";
   return null;
 }

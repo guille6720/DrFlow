@@ -12,6 +12,7 @@ import type { AppointmentStatus } from "@/types/database";
 type Props = {
   status: AppointmentStatus;
   waitingRoomStatus?: WaitingRoomStatus | null;
+  waitingRoomEnteredAt?: string | null;
   isOverbooking?: boolean;
   rescheduledAt?: string | null;
 };
@@ -19,12 +20,14 @@ type Props = {
 export function AppointmentLifecycleBadge({
   status,
   waitingRoomStatus,
+  waitingRoomEnteredAt,
   isOverbooking,
   rescheduledAt,
 }: Props) {
   const label = resolveAppointmentLifecycleLabel({
     status,
     waitingRoomStatus,
+    waitingRoomEnteredAt,
     isOverbooking,
     rescheduledAt,
   });

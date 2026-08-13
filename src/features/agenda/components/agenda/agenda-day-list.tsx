@@ -86,7 +86,8 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
           </p>
           <AppointmentLifecycleBadge
             status={appointment.status}
-            waitingRoomStatus={appointment.waiting_room_status}
+            waitingRoomStatus={waitingStatus}
+            waitingRoomEnteredAt={enteredAt}
             isOverbooking={appointment.is_overbooking ?? false}
             rescheduledAt={appointment.rescheduled_at}
           />
@@ -107,10 +108,11 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
       waitingRoomEnteredAt={enteredAt}
       onAttendanceSaved={(value) => {
         const previous = localWaiting ?? appointment.waiting_room_status;
-        const wasInQueue = previous === "waiting" || previous === "confirmed";
+        const wasInQueue =
+          Boolean(enteredAt) && (previous === "waiting" || previous === "confirmed");
         setLocalWaiting(value);
         if (value === "waiting" || value === "confirmed") {
-          if (!wasInQueue || !enteredAt) {
+          if (!wasInQueue) {
             setLocalEnteredAt(new Date().toISOString());
           }
         }

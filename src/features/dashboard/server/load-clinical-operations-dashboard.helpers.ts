@@ -8,7 +8,7 @@ import { summarizeMedications } from "@/features/dashboard/utils/clinical-ops-me
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 export const APPOINTMENT_SELECT =
-  "id, start_at, status, booking_source, notes, patient_id, professional_id, waiting_room_status, patients(first_name, last_name, phone, document_number, birth_date), professionals(profiles(full_name))";
+  "id, start_at, status, booking_source, notes, patient_id, professional_id, waiting_room_status, waiting_room_entered_at, patients(first_name, last_name, phone, document_number, birth_date), professionals(profiles(full_name))";
 
 /** Fallback when optional columns or nested joins fail in production (schema drift). */
 export const APPOINTMENT_SELECT_MINIMAL =
@@ -39,11 +39,12 @@ export function isUnattendedAppointment(status: string): boolean {
 }
 
 export function isWaitingRoomCandidate(appt: LiveAppointment): boolean {
+  if (!isUnattendedAppointment(appt.status)) return false;
+  if (!appt.waiting_room_entered_at) return false;
   return (
-    isUnattendedAppointment(appt.status) &&
-    (appt.waiting_room_status === "waiting" ||
-      appt.waiting_room_status === "called" ||
-      !appt.waiting_room_status)
+    appt.waiting_room_status === "waiting" ||
+    appt.waiting_room_status === "confirmed" ||
+    appt.waiting_room_status === "called"
   );
 }
 

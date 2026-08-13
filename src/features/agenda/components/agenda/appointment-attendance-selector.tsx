@@ -42,7 +42,11 @@ export function AppointmentAttendanceSelector({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [override, setOverride] = useState<AgendaAttendanceValue | null>(null);
-  const serverSelected = resolveAgendaAttendanceValue({ status, waitingRoomStatus });
+  const serverSelected = resolveAgendaAttendanceValue({
+    status,
+    waitingRoomStatus,
+    waitingRoomEnteredAt,
+  });
   const selected = override && override !== serverSelected ? override : serverSelected;
 
   if (!canSetAgendaAttendance({ status, waitingRoomStatus })) {

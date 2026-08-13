@@ -108,6 +108,7 @@ function CalendarAppointmentDialogContent({
             <AppointmentLifecycleBadge
               status={appointment.status}
               waitingRoomStatus={appointment.waiting_room_status}
+              waitingRoomEnteredAt={appointment.waiting_room_entered_at}
               isOverbooking={appointment.is_overbooking ?? false}
               rescheduledAt={appointment.rescheduled_at}
             />

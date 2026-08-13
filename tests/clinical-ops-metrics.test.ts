@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { isWaitingRoomCandidate } from "@/features/dashboard/server/load-clinical-operations-dashboard.helpers";
 import type { LiveAppointment } from "@/features/dashboard/utils/clinical-operations-types";
 import {
   buildActionableAlerts,
@@ -141,5 +142,39 @@ describe("clinical-ops-metrics", () => {
     });
     expect(alerts.length).toBeGreaterThanOrEqual(2);
     expect(alerts[0].severity).toBe("critical");
+  });
+});
+
+describe("isWaitingRoomCandidate", () => {
+  it("ignores a booked turno until check-in", () => {
+    expect(
+      isWaitingRoomCandidate({
+        id: "a1",
+        start_at: "2026-07-30T15:00:00.000Z",
+        status: "confirmed",
+        waiting_room_status: "waiting",
+      })
+    ).toBe(false);
+  });
+
+  it("includes Presente and En espera after check-in", () => {
+    expect(
+      isWaitingRoomCandidate({
+        id: "a1",
+        start_at: "2026-07-30T15:00:00.000Z",
+        status: "confirmed",
+        waiting_room_status: "waiting",
+        waiting_room_entered_at: "2026-07-30T14:50:00.000Z",
+      })
+    ).toBe(true);
+    expect(
+      isWaitingRoomCandidate({
+        id: "a2",
+        start_at: "2026-07-30T15:00:00.000Z",
+        status: "confirmed",
+        waiting_room_status: "confirmed",
+        waiting_room_entered_at: "2026-07-30T14:50:00.000Z",
+      })
+    ).toBe(true);
   });
 });

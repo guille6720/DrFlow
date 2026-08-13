@@ -11,11 +11,21 @@ import { turnoWizardSchema } from "@/features/turnos/utils/turno-wizard-schema";
 import { computeTurnosDashboardMetrics } from "@/features/turnos/utils/turnos-metrics";
 
 describe("resolveAppointmentLifecycleLabel", () => {
-  it("maps waiting room waiting to En espera", () => {
+  it("keeps a booked turno on agenda until check-in", () => {
     expect(
       resolveAppointmentLifecycleLabel({
         status: "confirmed",
         waitingRoomStatus: "waiting",
+      })
+    ).toBe("Confirmado");
+  });
+
+  it("maps waiting room waiting to En espera after check-in", () => {
+    expect(
+      resolveAppointmentLifecycleLabel({
+        status: "confirmed",
+        waitingRoomStatus: "waiting",
+        waitingRoomEnteredAt: "2026-08-13T18:00:00Z",
       })
     ).toBe("En espera");
   });
@@ -49,11 +59,21 @@ describe("resolveAppointmentLifecycleLabel", () => {
 });
 
 describe("agenda attendance", () => {
-  it("maps default waiting room to En espera", () => {
+  it("leaves attendance unset until Presente or En espera", () => {
     expect(
       resolveAgendaAttendanceValue({
         status: "confirmed",
         waitingRoomStatus: "waiting",
+      })
+    ).toBeNull();
+  });
+
+  it("maps waiting room to En espera after check-in", () => {
+    expect(
+      resolveAgendaAttendanceValue({
+        status: "confirmed",
+        waitingRoomStatus: "waiting",
+        waitingRoomEnteredAt: "2026-08-13T18:00:00Z",
       })
     ).toBe("waiting");
   });

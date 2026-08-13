@@ -33,12 +33,13 @@ export default async function SalaEsperaPage() {
   const { data: appointments } = await supabase
     .from("appointments")
     .select(
-      "id, start_at, waiting_room_status, patients(first_name, last_name, document_number), professionals(display_name, profiles(full_name))"
+      "id, start_at, waiting_room_status, waiting_room_entered_at, patients(first_name, last_name, document_number), professionals(display_name, profiles(full_name))"
     )
     .eq("clinic_id", clinicId)
     .gte("start_at", dayStart)
     .lte("start_at", dayEnd)
     .neq("status", "cancelled")
+    .not("waiting_room_entered_at", "is", null)
     .order("start_at");
 
   return (
@@ -67,6 +68,7 @@ export default async function SalaEsperaPage() {
               id: a.id,
               start_at: a.start_at,
               waiting_room_status: a.waiting_room_status,
+              waiting_room_entered_at: a.waiting_room_entered_at,
               patients: Array.isArray(a.patients) ? a.patients[0] ?? null : a.patients,
               professionals: pro
                 ? { display_name: pro.display_name, profiles: profile ?? null }

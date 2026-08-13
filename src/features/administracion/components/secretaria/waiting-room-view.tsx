@@ -20,6 +20,7 @@ export type WaitingRoomRow = {
   id: string;
   start_at: string;
   waiting_room_status: string;
+  waiting_room_entered_at?: string | null;
   patients: { first_name: string; last_name: string; document_number: string } | null;
   professionals: { display_name: string | null; profiles: { full_name: string } | null } | null;
 };
@@ -36,6 +37,7 @@ function groupWaitingRoomRows(rows: WaitingRoomRow[]) {
 
   const issues: WaitingRoomRow[] = [];
   for (const row of rows) {
+    if (!row.waiting_room_entered_at) continue;
     if (["cancelled", "absent"].includes(row.waiting_room_status)) {
       issues.push(row);
       continue;
