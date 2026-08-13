@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import Link from "next/link";
 import { type KeyboardEvent, useId, useMemo, useRef, useState } from "react";
 
+import { FloatingAnchorPanel } from "@/core/components/ui/floating-anchor-panel";
 import { useAsyncPatientSearch } from "@/core/hooks/use-async-patient-search";
 import { PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
 
@@ -97,6 +98,7 @@ export function PatientSearchCombobox({
   const listboxId = useId();
   const statusId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
   const initial = patients.find((p) => p.id === defaultPatientId);
   const [query, setQuery] = useState(initial ? formatSelectedLabel(initial) : "");
   const [selectedId, setSelectedId] = useState(defaultPatientId ?? "");
@@ -243,6 +245,14 @@ export function PatientSearchCombobox({
     filtered.length === 0 &&
     !selectedId;
   const createHref = showCreatePatient ? createPatientHref?.(trimmedQuery) : undefined;
+  const showLoading =
+    loading && isRemote && shouldExecutePatientSearch(trimmedQuery, effectiveMinLength);
+  const showError = Boolean(error && isRemote && !loading);
+  const showResults = !loading && filtered.length > 0;
+  const showEmptyHint =
+    !loading && !error && Boolean(trimmedQuery) && filtered.length === 0 && !showCreatePatient;
+  const panelOpen =
+    open && (showLoading || showError || showResults || Boolean(showCreatePatient && createHref) || showEmptyHint);
 
   return (
     <div className="relative space-y-1">
@@ -251,7 +261,7 @@ export function PatientSearchCombobox({
         {required ? <span className="text-red-400" aria-hidden="true"> *</span> : null}
       </label>
       <input type="hidden" name={name} value={selectedId} required={required} />
-      <div className="relative">
+      <div ref={anchorRef} className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-teal-500/80" aria-hidden />
         <input
           ref={inputRef}
@@ -293,91 +303,97 @@ export function PatientSearchCombobox({
                 ? `${filtered.length} resultados disponibles.`
                 : ""}
       </p>
-      {open && loading && isRemote && shouldExecutePatientSearch(trimmedQuery, effectiveMinLength) && (
-        <p className="drflow-ui-dropdown absolute mt-1 w-full rounded-xl px-3 py-2 text-xs text-slate-600" aria-hidden>
-          Buscando…
-        </p>
-      )}
-      {open && error && isRemote && !loading && (
-        <p className="absolute mt-1 w-full rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700" role="alert">
-          {error}
-        </p>
-      )}
-      {open && !loading && filtered.length > 0 && (
-        <ul
-          id={listboxId}
-          role="listbox"
-          aria-label={`Resultados de ${label}`}
-          className={cn(
-            "drflow-ui-dropdown drflow-patient-picker-dropdown absolute mt-1 max-h-72 w-full overflow-y-auto rounded-xl py-1",
-            displayMode === "detailed" && "space-y-2 p-2"
-          )}
-          onMouseDown={(e) => e.preventDefault()}
-        >
-          {filtered.map((p, index) => (
-            <li
-              key={p.id}
-              id={optionId(listboxId, p.id)}
-              role="option"
-              aria-selected={selectedId === p.id}
-            >
-              <button
-                type="button"
-                className={cn(
-                  "w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-inset",
-                  displayMode === "detailed"
-                    ? cn(
-                        "drflow-card-light rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-900 shadow-sm hover:border-teal-300",
-                        index === activeIndex && "border-teal-400 ring-2 ring-teal-400/30",
-                        selectedId === p.id && "border-teal-500 bg-teal-50"
-                      )
-                    : cn(
-                        "drflow-ui-dropdown-item px-3 py-2 text-sm",
-                        index === activeIndex && "bg-teal-900/40",
-                        selectedId === p.id && "bg-teal-950/60 text-teal-200"
-                      )
-                )}
-                onMouseEnter={() => setActiveIndex(index)}
-                onClick={() => pick(p)}
-              >
-                {displayMode === "detailed" ? (
-                  <>
-                    <p className="font-semibold text-slate-900">
-                      {p.last_name}, {p.first_name}
-                    </p>
-                    <p className="mt-0.5 text-xs text-slate-700">{buildPatientOptionMeta(p)}</p>
-                    {isPamiPatient(p.insurance_provider) ? (
-                      <p className="mt-1.5">
-                        <Badge variant="teal">PAMI</Badge>
-                      </p>
-                    ) : null}
-                  </>
-                ) : (
-                  <>
-                    <span className="font-medium">
-                      {p.last_name}, {p.first_name}
-                    </span>
-                    <span className="ml-2 text-xs opacity-80">DNI {p.document_number}</span>
-                  </>
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {open && !loading && showCreatePatient && createHref ? (
-        <div
-          className="drflow-ui-dropdown absolute mt-1 w-full overflow-hidden rounded-xl py-1"
-          onMouseDown={(e) => e.preventDefault()}
-        >
-          <Link
-            href={createHref}
-            className="drflow-ui-dropdown-item block px-3 py-2.5 text-sm font-medium text-teal-700 hover:bg-teal-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-inset"
+      <FloatingAnchorPanel
+        anchorRef={anchorRef}
+        open={panelOpen}
+        preferredMaxHeight={480}
+        className="drflow-ui-dropdown drflow-patient-picker-dropdown rounded-xl shadow-xl"
+      >
+        {showLoading ? (
+          <p className="px-3 py-2 text-xs text-slate-600">Buscando…</p>
+        ) : null}
+        {showError ? (
+          <p className="px-3 py-2 text-xs text-red-700" role="alert">
+            {error}
+          </p>
+        ) : null}
+        {showResults ? (
+          <ul
+            id={listboxId}
+            role="listbox"
+            aria-label={`Resultados de ${label}`}
+            className={cn("py-1", displayMode === "detailed" && "space-y-2 p-2")}
+            onMouseDown={(e) => e.preventDefault()}
           >
-            Paciente inexistente, crear paciente
-          </Link>
-        </div>
-      ) : null}
+            {filtered.map((p, index) => (
+              <li
+                key={p.id}
+                id={optionId(listboxId, p.id)}
+                role="option"
+                aria-selected={selectedId === p.id}
+              >
+                <button
+                  type="button"
+                  className={cn(
+                    "w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-inset",
+                    displayMode === "detailed"
+                      ? cn(
+                          "drflow-card-light rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-900 shadow-sm hover:border-teal-300",
+                          index === activeIndex && "border-teal-400 ring-2 ring-teal-400/30",
+                          selectedId === p.id && "border-teal-500 bg-teal-50"
+                        )
+                      : cn(
+                          "drflow-ui-dropdown-item px-3 py-2 text-sm",
+                          index === activeIndex && "bg-teal-900/40",
+                          selectedId === p.id && "bg-teal-950/60 text-teal-200"
+                        )
+                  )}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  onClick={() => pick(p)}
+                >
+                  {displayMode === "detailed" ? (
+                    <>
+                      <p className="font-semibold text-slate-900">
+                        {p.last_name}, {p.first_name}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-700">{buildPatientOptionMeta(p)}</p>
+                      {isPamiPatient(p.insurance_provider) ? (
+                        <p className="mt-1.5">
+                          <Badge variant="teal">PAMI</Badge>
+                        </p>
+                      ) : null}
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-medium">
+                        {p.last_name}, {p.first_name}
+                      </span>
+                      <span className="ml-2 text-xs opacity-80">DNI {p.document_number}</span>
+                    </>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {!loading && showCreatePatient && createHref ? (
+          <div className="py-1" onMouseDown={(e) => e.preventDefault()}>
+            <Link
+              href={createHref}
+              className="drflow-ui-dropdown-item block px-3 py-2.5 text-sm font-medium text-teal-700 hover:bg-teal-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-inset"
+            >
+              Paciente inexistente, crear paciente
+            </Link>
+          </div>
+        ) : null}
+        {showEmptyHint ? (
+          <p className="px-3 py-2 text-xs text-slate-600">
+            {isRemote && !shouldExecutePatientSearch(trimmedQuery, effectiveMinLength)
+              ? `Escribí al menos ${effectiveMinLength} caracteres para buscar.`
+              : "Sin coincidencias. Probá otro nombre o DNI."}
+          </p>
+        ) : null}
+      </FloatingAnchorPanel>
       {showCreatePatient && createHref ? (
         <div className="drflow-card-light mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
           <p className="text-sm text-amber-950">
@@ -387,13 +403,6 @@ export function PatientSearchCombobox({
             </Link>
           </p>
         </div>
-      ) : null}
-      {open && !loading && !error && trimmedQuery && filtered.length === 0 && !showCreatePatient ? (
-        <p className="drflow-ui-dropdown absolute mt-1 w-full rounded-xl px-3 py-2 text-xs text-slate-600" aria-hidden>
-          {isRemote && !shouldExecutePatientSearch(trimmedQuery, effectiveMinLength)
-            ? `Escribí al menos ${effectiveMinLength} caracteres para buscar.`
-            : "Sin coincidencias. Probá otro nombre o DNI."}
-        </p>
       ) : null}
     </div>
   );
