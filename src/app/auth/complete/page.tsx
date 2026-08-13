@@ -2,10 +2,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/core/supabase/server";
 
-import {
-  enforceDeviceSessionOrSignOut,
-  syncUserClinicMembership,
-} from "@/lib/auth/post-login-bootstrap";
+import { syncUserClinicMembership } from "@/lib/auth/post-login-bootstrap";
 
 /**
  * Destino post-OAuth (Google): si ya tiene clínica → dashboard; si no → onboarding.
@@ -21,7 +18,6 @@ export default async function AuthCompletePage() {
   }
 
   await syncUserClinicMembership(supabase, user);
-  await enforceDeviceSessionOrSignOut(supabase);
 
   const { data: membership } = await supabase
     .from("clinic_members")

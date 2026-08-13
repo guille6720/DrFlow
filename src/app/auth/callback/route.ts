@@ -7,6 +7,12 @@ import {
   parseSafeRedirectPath,
 } from "@/core/validations/auth-redirect";
 
+import {
+  claimDeviceSession,
+  DEVICE_SESSION_COOKIE,
+  setDeviceSessionCookieOnResponse,
+} from "@/lib/auth/device-sessions";
+
 /**
  * Callback OAuth / PKCE / recovery.
  */
@@ -62,7 +68,7 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
     const loginUrl = new URL("/login", origin);
@@ -71,6 +77,14 @@ export async function GET(request: NextRequest) {
       "El link expiró o ya fue usado. Pedí un nuevo restablecimiento o volvé a entrar con Google."
     );
     return NextResponse.redirect(loginUrl, 303);
+  }
+
+  if (data.session) {
+    const existingDeviceId = request.cookies.get(DEVICE_SESSION_COOKIE)?.value ?? null;
+    const claim = await claimDeviceSession(supabase, existingDeviceId);
+    if (claim?.sessionId) {
+      setDeviceSessionCookieOnResponse(response, claim.sessionId);
+    }
   }
 
   return response;

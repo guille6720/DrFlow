@@ -6,11 +6,9 @@ import { logServerError } from "@/core/errors/log-error.server";
 import { isUndefinedFunction } from "@/core/errors/postgres-error";
 
 import {
-  claimDeviceSession,
   clearDeviceSessionCookie,
   DEVICE_SESSION_REVOKED_MESSAGE,
   readDeviceSessionIdFromCookieHeader,
-  setDeviceSessionCookie,
   touchDeviceSession,
 } from "@/lib/auth/device-sessions";
 
@@ -121,23 +119,39 @@ export async function runPostLoginBootstrap(
   await ensureActiveClinicCookie(supabase, user.id);
 }
 
-/** Keep or claim a device slot; sign out when this device was kicked by the 3-device limit. */
+/** Keep an existing device slot valid; sign out only when this device was kicked. */
 export async function enforceDeviceSessionOrSignOut(supabase: SupabaseClient): Promise<void> {
-  const cookieStore = await cookies();
-  const existingId = readDeviceSessionIdFromCookieHeader(cookieStore);
+  try {
+    const cookieStore = await cookies();
+    const existingId = readDeviceSessionIdFromCookieHeader(cookieStore);
 
-  if (existingId) {
+    // Claiming/setting cookies must happen in Route Handlers (login/bootstrap/OAuth).
+    // Doing cookies().set during RSC render crashes the dashboard in production.
+    if (!existingId) return;
+
     const touch = await touchDeviceSession(supabase, existingId);
     if (touch.active) return;
 
-    await clearDeviceSessionCookie();
-    await supabase.auth.signOut();
-    redirect(`/login?error=${encodeURIComponent(DEVICE_SESSION_REVOKED_MESSAGE)}`);
-  }
+    try {
+      await clearDeviceSessionCookie();
+    } catch {
+      // Cookie writes can fail outside Route Handlers / Server Actions.
+    }
 
-  const claim = await claimDeviceSession(supabase, null);
-  if (claim?.sessionId) {
-    await setDeviceSessionCookie(claim.sessionId);
+    if (touch.reason === "revoked") {
+      await supabase.auth.signOut();
+      redirect(`/login?error=${encodeURIComponent(DEVICE_SESSION_REVOKED_MESSAGE)}`);
+    }
+  } catch (err) {
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "digest" in err &&
+      String((err as { digest: string }).digest).startsWith("NEXT_REDIRECT")
+    ) {
+      throw err;
+    }
+    logServerError("post-login-bootstrap.enforce-device-session", err);
   }
 }
 
