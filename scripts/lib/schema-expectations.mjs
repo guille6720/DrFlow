@@ -64,7 +64,7 @@ export const EXPECTED_COLUMNS = {
   clinical_record_audit: ["module", "what", "patient_id"],
   patient_clinical_profiles: ["medical_history", "allergies", "regular_medication", "notes"],
   clinic_feature_flags: ["flag_id", "enabled"],
-  appointments: ["consultation_modality", "waiting_room_status", "booking_source"],
+  appointments: ["consultation_modality", "waiting_room_status", "waiting_room_entered_at", "booking_source"],
   prescription_drafts: [
     "prescription_number",
     "refeps_status",

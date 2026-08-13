@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   canSetAgendaAttendance,
   formatCancellationReason,
+  formatWaitingRoomElapsed,
   resolveAgendaAttendanceValue,
   resolveAppointmentLifecycleLabel,
 } from "@/features/turnos/utils/appointment-lifecycle";
@@ -73,6 +74,16 @@ describe("agenda attendance", () => {
         waitingRoomStatus: "in_consultation",
       })
     ).toBe(false);
+  });
+});
+
+describe("waiting room elapsed time", () => {
+  it("formats minutes and seconds", () => {
+    expect(formatWaitingRoomElapsed(125)).toBe("02:05");
+  });
+
+  it("includes hours after 60 minutes", () => {
+    expect(formatWaitingRoomElapsed(3661)).toBe("1:01:01");
   });
 });
 

@@ -158,6 +158,24 @@ export function canSetAgendaAttendance(input: {
   return true;
 }
 
+export function isWaitingRoomQueueStatus(
+  status?: WaitingRoomStatus | null
+): boolean {
+  return status === "waiting" || status === "confirmed";
+}
+
+/** Compact `MM:SS` or `H:MM:SS` wait-time label. */
+export function formatWaitingRoomElapsed(totalSeconds: number): string {
+  const safe = Math.max(0, Math.floor(totalSeconds));
+  const hours = Math.floor(safe / 3600);
+  const minutes = Math.floor((safe % 3600) / 60);
+  const seconds = safe % 60;
+  const mm = String(minutes).padStart(2, "0");
+  const ss = String(seconds).padStart(2, "0");
+  if (hours > 0) return `${hours}:${mm}:${ss}`;
+  return `${mm}:${ss}`;
+}
+
 export const BLOCK_REASON_OPTIONS = [
   { value: "vacation", label: "Vacaciones" },
   { value: "leave", label: "Licencia" },

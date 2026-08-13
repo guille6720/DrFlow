@@ -4,7 +4,7 @@ import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Clock3, Globe, Plus } from "lucide-react";
 import Link from "next/link";
-import { memo } from "react";
+import { memo, useState } from "react";
 
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
@@ -17,7 +17,9 @@ import {
 
 import { AppointmentAttendanceSelector } from "@/features/agenda/components/agenda/appointment-attendance-selector";
 import { filterAppointmentsForDay } from "@/features/agenda/components/agenda/appointment-row";
+import { WaitingRoomWaitTimer } from "@/features/agenda/components/agenda/waiting-room-wait-timer";
 import { AppointmentLifecycleBadge } from "@/features/turnos/components/appointment-lifecycle-badge";
+import type { WaitingRoomStatus } from "@/features/turnos/utils/appointment-lifecycle";
 
 import { isOnlineBooking } from "@/lib/utils/appointment";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
@@ -47,6 +49,8 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
   canManage?: boolean;
   onAppointmentClick?: (appointment: AppointmentAgendaRow) => void;
 }) {
+  const [localEnteredAt, setLocalEnteredAt] = useState<string | null>(null);
+  const [localWaiting, setLocalWaiting] = useState<WaitingRoomStatus | null>(null);
   const patient = resolveAppointmentPatient(appointment.patients);
   const fullName = formatPatientName(appointment.patients);
   const dni = formatPatientDocument(patient?.document_number);
@@ -54,6 +58,8 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
   const professionalName = professionalLabel(appointment);
   const timeLabel = format(parseISO(appointment.start_at), "HH:mm");
   const isCancelled = appointment.status === "cancelled";
+  const waitingStatus = localWaiting ?? appointment.waiting_room_status;
+  const enteredAt = localEnteredAt ?? appointment.waiting_room_entered_at ?? null;
 
   const metaParts = [
     dni ? `DNI ${dni}` : "Sin DNI",
@@ -63,6 +69,10 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
 
   const content = (
     <>
+      <WaitingRoomWaitTimer
+        waitingRoomStatus={waitingStatus}
+        enteredAt={enteredAt}
+      />
       <div className="flex w-24 shrink-0 items-center gap-2 sm:w-28">
         <Clock3 className="h-4 w-4 shrink-0 text-cyan-600" />
         <p className="text-base font-bold tabular-nums text-slate-900">{timeLabel} hs</p>
@@ -94,6 +104,17 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
       appointmentId={appointment.id}
       status={appointment.status}
       waitingRoomStatus={appointment.waiting_room_status}
+      waitingRoomEnteredAt={enteredAt}
+      onAttendanceSaved={(value) => {
+        const previous = localWaiting ?? appointment.waiting_room_status;
+        const wasInQueue = previous === "waiting" || previous === "confirmed";
+        setLocalWaiting(value);
+        if (value === "waiting" || value === "confirmed") {
+          if (!wasInQueue || !enteredAt) {
+            setLocalEnteredAt(new Date().toISOString());
+          }
+        }
+      }}
     />
   ) : null;
 

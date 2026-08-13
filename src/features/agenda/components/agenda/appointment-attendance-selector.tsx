@@ -28,12 +28,16 @@ type Props = {
   appointmentId: string;
   status: AppointmentStatus;
   waitingRoomStatus?: WaitingRoomStatus | null;
+  waitingRoomEnteredAt?: string | null;
+  onAttendanceSaved?: (value: AgendaAttendanceValue) => void;
 };
 
 export function AppointmentAttendanceSelector({
   appointmentId,
   status,
   waitingRoomStatus,
+  waitingRoomEnteredAt,
+  onAttendanceSaved,
 }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -46,7 +50,9 @@ export function AppointmentAttendanceSelector({
   }
 
   function handleSelect(value: AgendaAttendanceValue) {
-    if (pending || value === selected) return;
+    const enteringQueue = value === "waiting" || value === "confirmed";
+    if (pending) return;
+    if (value === selected && (waitingRoomEnteredAt || !enteringQueue)) return;
     setOverride(value);
     startTransition(async () => {
       const result = await updateWaitingRoomStatus(appointmentId, value);
@@ -55,6 +61,7 @@ export function AppointmentAttendanceSelector({
         toast.error(result.error);
         return;
       }
+      onAttendanceSaved?.(value);
       router.refresh();
     });
   }

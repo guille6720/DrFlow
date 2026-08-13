@@ -78,6 +78,7 @@ export type AppointmentAgendaRow = {
     | "cancelled"
     | "absent"
     | null;
+  waiting_room_entered_at?: string | null;
   is_overbooking?: boolean | null;
   rescheduled_at?: string | null;
   patients?: NestedRow<{ first_name: string; last_name: string; document_number?: string; insurance_provider?: string | null; insurance_plan?: string | null }>;
