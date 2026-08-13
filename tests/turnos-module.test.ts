@@ -1,18 +1,29 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  canSetAgendaAttendance,
   formatCancellationReason,
+  resolveAgendaAttendanceValue,
   resolveAppointmentLifecycleLabel,
 } from "@/features/turnos/utils/appointment-lifecycle";
 import { turnoWizardSchema } from "@/features/turnos/utils/turno-wizard-schema";
 import { computeTurnosDashboardMetrics } from "@/features/turnos/utils/turnos-metrics";
 
 describe("resolveAppointmentLifecycleLabel", () => {
-  it("maps waiting room to Presente", () => {
+  it("maps waiting room waiting to En espera", () => {
     expect(
       resolveAppointmentLifecycleLabel({
         status: "confirmed",
         waitingRoomStatus: "waiting",
+      })
+    ).toBe("En espera");
+  });
+
+  it("maps waiting room confirmed to Presente", () => {
+    expect(
+      resolveAppointmentLifecycleLabel({
+        status: "confirmed",
+        waitingRoomStatus: "confirmed",
       })
     ).toBe("Presente");
   });
@@ -33,6 +44,35 @@ describe("resolveAppointmentLifecycleLabel", () => {
         rescheduledAt: "2026-08-10T12:00:00Z",
       })
     ).toBe("Reprogramado");
+  });
+});
+
+describe("agenda attendance", () => {
+  it("maps default waiting room to En espera", () => {
+    expect(
+      resolveAgendaAttendanceValue({
+        status: "confirmed",
+        waitingRoomStatus: "waiting",
+      })
+    ).toBe("waiting");
+  });
+
+  it("maps no_show to Ausente", () => {
+    expect(
+      resolveAgendaAttendanceValue({
+        status: "no_show",
+        waitingRoomStatus: null,
+      })
+    ).toBe("absent");
+  });
+
+  it("hides the selector after the consult starts", () => {
+    expect(
+      canSetAgendaAttendance({
+        status: "confirmed",
+        waitingRoomStatus: "in_consultation",
+      })
+    ).toBe(false);
   });
 });
 

@@ -15,6 +15,7 @@ import {
   resolveAppointmentPatient,
 } from "@/shared/utils/patient-display";
 
+import { AppointmentAttendanceSelector } from "@/features/agenda/components/agenda/appointment-attendance-selector";
 import { filterAppointmentsForDay } from "@/features/agenda/components/agenda/appointment-row";
 import { AppointmentLifecycleBadge } from "@/features/turnos/components/appointment-lifecycle-badge";
 
@@ -88,18 +89,38 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
     </>
   );
 
+  const attendance = canManage ? (
+    <AppointmentAttendanceSelector
+      appointmentId={appointment.id}
+      status={appointment.status}
+      waitingRoomStatus={appointment.waiting_room_status}
+    />
+  ) : null;
+
   const rowClassName =
     "flex w-full items-center gap-5 border-b border-slate-200 px-5 py-4 text-left transition-colors last:border-b-0 hover:bg-slate-50/80";
 
   if (canManage && onAppointmentClick) {
     return (
-      <button type="button" className={rowClassName} onClick={() => onAppointmentClick(appointment)}>
-        {content}
-      </button>
+      <div className={rowClassName}>
+        <button
+          type="button"
+          className="flex min-w-0 flex-1 items-center gap-5 text-left"
+          onClick={() => onAppointmentClick(appointment)}
+        >
+          {content}
+        </button>
+        {attendance}
+      </div>
     );
   }
 
-  return <div className={rowClassName}>{content}</div>;
+  return (
+    <div className={rowClassName}>
+      {content}
+      {attendance}
+    </div>
+  );
 });
 
 export const AgendaDayList = memo(function AgendaDayList({

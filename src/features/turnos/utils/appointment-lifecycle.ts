@@ -4,6 +4,7 @@ export type AppointmentLifecycleLabel =
   | "Pendiente"
   | "Confirmado"
   | "Presente"
+  | "En espera"
   | "En atención"
   | "Atendido"
   | "Cancelado"
@@ -35,9 +36,9 @@ export function resolveAppointmentLifecycleLabel(input: {
   }
 
   if (input.waitingRoomStatus === "in_consultation") return "En atención";
-  if (input.waitingRoomStatus === "waiting" || input.waitingRoomStatus === "confirmed") {
-    return "Presente";
-  }
+  if (input.waitingRoomStatus === "waiting") return "En espera";
+  if (input.waitingRoomStatus === "confirmed") return "Presente";
+  if (input.waitingRoomStatus === "absent") return "Ausente";
 
   switch (input.status) {
     case "pending":
@@ -59,6 +60,7 @@ export const APPOINTMENT_STATUS_BADGE_CLASS: Record<AppointmentLifecycleLabel, s
   Pendiente: "bg-amber-100 text-amber-900",
   Confirmado: "bg-sky-100 text-sky-900",
   Presente: "bg-violet-100 text-violet-900",
+  "En espera": "bg-amber-100 text-amber-900",
   "En atención": "bg-indigo-100 text-indigo-900",
   Atendido: "bg-emerald-100 text-emerald-900",
   Cancelado: "bg-neutral-200 text-neutral-700",
@@ -107,6 +109,7 @@ export function lifecycleLabelToBadgeVariant(
     case "Atendido":
       return "success";
     case "Pendiente":
+    case "En espera":
       return "warning";
     case "Cancelado":
     case "Ausente":
@@ -120,6 +123,39 @@ export function lifecycleLabelToBadgeVariant(
     default:
       return "default";
   }
+}
+
+export const AGENDA_ATTENDANCE_OPTIONS = [
+  { value: "confirmed", label: "Presente" },
+  { value: "absent", label: "Ausente" },
+  { value: "waiting", label: "En espera" },
+] as const;
+
+export type AgendaAttendanceValue = (typeof AGENDA_ATTENDANCE_OPTIONS)[number]["value"];
+
+export function resolveAgendaAttendanceValue(input: {
+  status: AppointmentStatus;
+  waitingRoomStatus?: WaitingRoomStatus | null;
+}): AgendaAttendanceValue | null {
+  if (input.waitingRoomStatus === "confirmed") return "confirmed";
+  if (input.waitingRoomStatus === "waiting") return "waiting";
+  if (input.waitingRoomStatus === "absent" || input.status === "no_show") return "absent";
+  return null;
+}
+
+export function canSetAgendaAttendance(input: {
+  status: AppointmentStatus;
+  waitingRoomStatus?: WaitingRoomStatus | null;
+}): boolean {
+  if (input.status === "cancelled" || input.status === "attended") return false;
+  if (
+    input.waitingRoomStatus === "in_consultation" ||
+    input.waitingRoomStatus === "finished" ||
+    input.waitingRoomStatus === "cancelled"
+  ) {
+    return false;
+  }
+  return true;
 }
 
 export const BLOCK_REASON_OPTIONS = [

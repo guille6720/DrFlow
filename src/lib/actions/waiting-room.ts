@@ -46,6 +46,7 @@ export async function updateWaitingRoomStatus(
 
   revalidatePath("/sala-espera");
   revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
   return { data };
 }
 
