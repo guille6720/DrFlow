@@ -16,13 +16,13 @@ import { PatientWorkspaceContent } from "@/features/pacientes";
 import { PatientWorkspaceSkeleton } from "@/features/pacientes";
 import { DeletePatientButton } from "@/features/pacientes/components/pacientes/delete-patient-button";
 import { PatientAdminDetailView } from "@/features/pacientes/components/pacientes/patient-admin-detail-view";
+import { PatientHeaderIdentity } from "@/features/pacientes/components/pacientes/patient-header-identity";
 import { PatientWorkspaceBackLink } from "@/features/pacientes/components/pacientes/patient-workspace-back-link";
 import {
   DEFAULT_HC_WORKSPACE_TAB,
   LEGACY_TAB_ALIASES,
   parsePatientWorkspaceTab,
 } from "@/features/pacientes/constants/patient-workspace-tabs";
-import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
 
 import type { Patient } from "@/types/database";
 
@@ -73,7 +73,14 @@ export default async function PacienteDetailPage({
     <>
       <Header
         title={`${patientRow.last_name}, ${patientRow.first_name}`}
-        subtitle={`DNI ${patientRow.document_number}${formatAgeLabel(patientRow.birth_date) ? ` · ${formatAgeLabel(patientRow.birth_date)}` : ""}`}
+        subtitle={`DNI ${patientRow.document_number}`}
+        meta={
+          <PatientHeaderIdentity
+            birthDate={patientRow.birth_date}
+            insuranceNumber={patientRow.insurance_number}
+            insuranceProvider={patientRow.insurance_provider}
+          />
+        }
         clinics={clinics}
         activeClinicId={clinicId}
         role={role}

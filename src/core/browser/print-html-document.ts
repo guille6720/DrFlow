@@ -1,3 +1,6 @@
+import { runBrowserPrintWithFilename } from "@/core/browser/print-suggested-filename";
+import { escapeHtml } from "@/core/security/xss";
+
 export type PrintHtmlDocumentFailureReason =
   | "empty"
   | "popup_blocked"
@@ -31,6 +34,17 @@ function fail(
   message: string
 ): PrintHtmlDocumentResult {
   return { ok: false, reason, message };
+}
+
+function applyHtmlDocumentTitle(html: string, title: string): string {
+  const tag = `<title>${escapeHtml(title)}</title>`;
+  if (/<title>[\s\S]*?<\/title>/i.test(html)) {
+    return html.replace(/<title>[\s\S]*?<\/title>/i, tag);
+  }
+  if (/<head[^>]*>/i.test(html)) {
+    return html.replace(/<head[^>]*>/i, (match) => `${match}${tag}`);
+  }
+  return html;
 }
 
 function writeHtmlDocument(targetDoc: Document, html: string): boolean {
@@ -148,7 +162,8 @@ function tryPrintViaIframe(html: string): PrintHtmlDocumentResult {
  * Uses a hidden iframe on the current page — never opens a new browser tab.
  */
 export function printHtmlDocument(options: PrintHtmlDocumentOptions): PrintHtmlDocumentResult {
-  const html = options.html;
+  const printTitle = options.title?.replace(/\.pdf$/i, "").trim();
+  const html = printTitle ? applyHtmlDocumentTitle(options.html, printTitle) : options.html;
   if (!html.trim()) {
     return fail("empty", "No hay contenido para imprimir.");
   }
@@ -158,7 +173,15 @@ export function printHtmlDocument(options: PrintHtmlDocumentOptions): PrintHtmlD
   }
 
   try {
-    return tryPrintViaIframe(html);
+    const run = () => tryPrintViaIframe(html);
+    if (printTitle) {
+      let result: PrintHtmlDocumentResult = fail("unknown", UNKNOWN_MESSAGE);
+      runBrowserPrintWithFilename(printTitle, () => {
+        result = run();
+      });
+      return result;
+    }
+    return run();
   } catch {
     return fail("unknown", UNKNOWN_MESSAGE);
   }

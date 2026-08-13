@@ -1,3 +1,4 @@
+import { format, isValid, parseISO } from "date-fns";
 import {
   CalendarPlus,
   ClipboardList,
@@ -11,15 +12,16 @@ import Link from "next/link";
 import { PrintPageButton } from "@/core/components/ui/print-page-button";
 
 import { patientInitials } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-shared";
-import type { PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type {
   PatientChartAppointment,
+  PatientChartPatient,
   PatientChartProfessional,
 } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 import { Button } from "@/components/ui/button";
+import { insuranceNumberLabel } from "@/lib/constants/coverages";
 
 type Props = {
   patient: PatientChartPatient;
@@ -41,6 +43,13 @@ function primaryPhysicianName(
   }
   const pro = professionals[0];
   return pro?.display_name ?? pro?.profiles?.full_name ?? "—";
+}
+
+function formatBirthDate(birthDate: string | null): string {
+  if (!birthDate) return "—";
+  const date = parseISO(birthDate);
+  if (!isValid(date)) return "—";
+  return format(date, "dd/MM/yyyy");
 }
 
 export function ClinicalWorkspaceHeader({
@@ -67,16 +76,24 @@ export function ClinicalWorkspaceHeader({
           </h2>
           <dl className="drflow-clinical-workspace-meta">
             <div>
+              <dt>DNI</dt>
+              <dd>{patient.document_number}</dd>
+            </div>
+            <div>
+              <dt>Nacimiento</dt>
+              <dd>{formatBirthDate(patient.birth_date)}</dd>
+            </div>
+            <div>
               <dt>Edad</dt>
               <dd>{chart.ageLabel ?? "—"}</dd>
             </div>
             <div>
-              <dt>Sexo</dt>
-              <dd>{chart.sex}</dd>
+              <dt>{insuranceNumberLabel(patient.insurance_provider)}</dt>
+              <dd>{patient.insurance_number?.trim() || "—"}</dd>
             </div>
             <div>
-              <dt>DNI</dt>
-              <dd>{patient.document_number}</dd>
+              <dt>Sexo</dt>
+              <dd>{chart.sex}</dd>
             </div>
             <div>
               <dt>Cobertura</dt>
@@ -145,7 +162,13 @@ export function ClinicalWorkspaceHeader({
             </Button>
           </Link>
         ) : null}
-        <PrintPageButton />
+        <PrintPageButton
+          printFilenamePatient={{
+            last_name: patient.last_name,
+            first_name: patient.first_name,
+            document_number: patient.document_number,
+          }}
+        />
         {canIssue ? (
           <Link href={buildPatientWorkspaceUrl(patientId, { action: "certificado" })}>
             <Button size="sm" variant="ghost" type="button">

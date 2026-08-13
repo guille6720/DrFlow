@@ -2,7 +2,7 @@
 
 import { Palette, Settings } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { CommandPaletteTrigger } from "@/core/components/command-palette/command-palette-trigger";
 import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-context";
@@ -19,6 +19,8 @@ import { UserAccountModal } from "./user-account-modal";
 interface HeaderProps {
   title: string;
   subtitle?: string;
+  /** Extra identity facts shown to the right of the title (e.g. patient DOB). */
+  meta?: ReactNode;
   /** Links page main landmark to the visible page title (WCAG 2.4.6). */
   titleId?: string;
   clinics: { clinic_id: string; clinic?: Clinic }[];
@@ -31,6 +33,7 @@ interface HeaderProps {
 export function Header({
   title,
   subtitle,
+  meta,
   titleId,
   clinics,
   activeClinicId,
@@ -69,6 +72,7 @@ export function Header({
             </p>
           )}
         </div>
+        {meta ? <div className="min-w-0 flex-1 pl-12 sm:pl-4 lg:pl-0">{meta}</div> : null}
         <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
           {showAppearance && (
             <button
