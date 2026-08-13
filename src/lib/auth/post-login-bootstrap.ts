@@ -1,8 +1,18 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 import { logServerError } from "@/core/errors/log-error.server";
 import { isUndefinedFunction } from "@/core/errors/postgres-error";
+
+import {
+  claimDeviceSession,
+  clearDeviceSessionCookie,
+  DEVICE_SESSION_REVOKED_MESSAGE,
+  readDeviceSessionIdFromCookieHeader,
+  setDeviceSessionCookie,
+  touchDeviceSession,
+} from "@/lib/auth/device-sessions";
 
 const CLINIC_COOKIE = "drflow_clinic_id";
 
@@ -99,6 +109,7 @@ export async function prepareDashboardSession(
 ) {
   await syncUserClinicMembership(supabase, user);
   await ensureActiveClinicCookie(supabase, user.id);
+  await enforceDeviceSessionOrSignOut(supabase);
 }
 
 /** Profile row + pending clinic invitations after a successful sign-in. */
@@ -109,3 +120,24 @@ export async function runPostLoginBootstrap(
   await syncUserClinicMembership(supabase, user);
   await ensureActiveClinicCookie(supabase, user.id);
 }
+
+/** Keep or claim a device slot; sign out when this device was kicked by the 3-device limit. */
+export async function enforceDeviceSessionOrSignOut(supabase: SupabaseClient): Promise<void> {
+  const cookieStore = await cookies();
+  const existingId = readDeviceSessionIdFromCookieHeader(cookieStore);
+
+  if (existingId) {
+    const touch = await touchDeviceSession(supabase, existingId);
+    if (touch.active) return;
+
+    await clearDeviceSessionCookie();
+    await supabase.auth.signOut();
+    redirect(`/login?error=${encodeURIComponent(DEVICE_SESSION_REVOKED_MESSAGE)}`);
+  }
+
+  const claim = await claimDeviceSession(supabase, null);
+  if (claim?.sessionId) {
+    await setDeviceSessionCookie(claim.sessionId);
+  }
+}
+

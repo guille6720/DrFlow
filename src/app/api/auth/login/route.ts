@@ -6,6 +6,11 @@ import { getSupabaseAnonKey, getSupabaseUrl } from "@/core/supabase/env";
 import { firstZodIssue } from "@/core/validations/params";
 import { loginSchema } from "@/core/validations/schemas";
 
+import {
+  claimDeviceSession,
+  DEVICE_SESSION_COOKIE,
+  setDeviceSessionCookieOnResponse,
+} from "@/lib/auth/device-sessions";
 import { runPostLoginBootstrap } from "@/lib/auth/post-login-bootstrap";
 
 function mapAuthError(message: string): string {
@@ -80,6 +85,12 @@ export async function POST(request: NextRequest) {
   }
 
   await runPostLoginBootstrap(supabase, data.user);
+
+  const existingDeviceId = request.cookies.get(DEVICE_SESSION_COOKIE)?.value ?? null;
+  const claim = await claimDeviceSession(supabase, existingDeviceId);
+  if (claim?.sessionId) {
+    setDeviceSessionCookieOnResponse(response, claim.sessionId);
+  }
 
   return response;
 }

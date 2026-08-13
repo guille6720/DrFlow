@@ -63,6 +63,7 @@ export const TABLES_REQUIRING_RLS = [
   "pami_planilla_clinic_template_settings",
   "appointment_status_history",
   "waiting_list",
+  "user_device_sessions",
   "appointment_notification_queue",
 ] as const;
 
@@ -91,4 +92,7 @@ export const SECURITY_DEFINER_RPC_CHECKS: { name: string; migrationHint: string 
   { name: "search_pathologies", migrationHint: "005" },
   { name: "search_symptoms", migrationHint: "011" },
   { name: "search_pathologies_by_symptoms", migrationHint: "011" },
+  { name: "claim_user_device_session", migrationHint: "109" },
+  { name: "touch_user_device_session", migrationHint: "109" },
+  { name: "revoke_user_device_session", migrationHint: "109" },
 ];

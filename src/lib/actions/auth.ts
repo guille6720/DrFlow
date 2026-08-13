@@ -24,6 +24,8 @@ import {
 import { zodFieldErrors } from "@/core/validations/form-errors";
 import { loginSchema, registerClinicSchema, setupClinicSchema } from "@/core/validations/schemas";
 
+import { revokeCurrentDeviceSession } from "@/lib/auth/device-sessions";
+
 export type AuthActionResult = {
   success?: boolean;
   redirectTo?: string;
@@ -403,6 +405,7 @@ export async function setupClinic(formData: FormData): Promise<AuthActionResult>
 
 export async function signOut() {
   const supabase = await createClient();
+  await revokeCurrentDeviceSession(supabase);
   await supabase.auth.signOut();
   redirect("/login");
 }
