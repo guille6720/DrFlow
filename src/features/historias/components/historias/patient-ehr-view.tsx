@@ -43,7 +43,7 @@ export function PatientEhrView({
           prescriptions={prescriptions}
           totalConsultations={totalConsultations}
           usesHceExport={usesHceExport}
-          actionLinks={<PatientEhrActionLinks patientId={patient.id} />}
+          actionLinks={<PatientEhrActionLinks patientId={patient.id} historyOnly />}
         />
       </PatientEhrShellFrame>
     </PatientEhrStateProvider>

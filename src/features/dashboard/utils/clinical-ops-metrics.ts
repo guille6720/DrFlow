@@ -215,7 +215,9 @@ export function buildActionableAlerts(input: {
       title: "Turno demorado",
       detail: name,
       patientId: appt.patient_id,
-      href: appt.patient_id ? `/pacientes/${appt.patient_id}?tab=soap&action=nueva&appointment=${appt.id}` : "/agenda?view=day",
+      href: appt.patient_id
+        ? `/consultas?appointment=${appt.id}&patient=${appt.patient_id}&action=nueva`
+        : "/agenda?view=day",
       severity: "high",
     });
   }
@@ -244,7 +246,7 @@ export function buildActionableAlerts(input: {
       detail: name,
       patientId: row.patient_id,
       href: row.patient_id
-        ? `/pacientes/${row.patient_id}?tab=soap&action=nueva&appointment=${row.id}`
+        ? `/consultas?appointment=${row.id}&patient=${row.patient_id}&action=nueva`
         : "/sala-espera",
       severity: "high",
     });

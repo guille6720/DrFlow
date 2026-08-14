@@ -10,7 +10,7 @@ export const CHART_FOCUS_BY_TAB: Partial<Record<PatientWorkspaceTabId, PatientCh
   vacunas: "vacunas",
 };
 
-export const CLINICAL_CONTEXT_TABS = new Set<PatientWorkspaceTabId>(["resumen", "soap"]);
+export const CLINICAL_CONTEXT_TABS = new Set<PatientWorkspaceTabId>(["resumen"]);
 
 export function chartFocusForTab(tab: PatientWorkspaceTabId): PatientChartFocus | undefined {
   return CHART_FOCUS_BY_TAB[tab];

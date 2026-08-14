@@ -86,11 +86,13 @@ export function PatientWorkspaceView(props: Props) {
 
   return (
     <div className="drflow-patient-workspace">
-      <PatientWorkflowActionBarHost
-        patientId={chartProps.patientId}
-        canEditClinical={chartProps.canEditClinical}
-        canIssue={chartProps.canIssue}
-      />
+      {activeTab !== "soap" ? (
+        <PatientWorkflowActionBarHost
+          patientId={chartProps.patientId}
+          canEditClinical={chartProps.canEditClinical}
+          canIssue={chartProps.canIssue}
+        />
+      ) : null}
       {showClinicalContext ? (
         <PreVisitBriefPanel
           patientName={patientName}

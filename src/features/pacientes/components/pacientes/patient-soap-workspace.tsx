@@ -248,12 +248,13 @@ export function PatientSoapWorkspace({
             <PatientEhrActionLinks
               patientId={patient.id}
               consultOpen={parsed.inlineConsultOpen}
+              historyOnly={!consultasSession && !parsed.inlineConsultOpen}
               saveLoading={form.loading}
               activeSheet={parsed.sheet}
               activeFocus={parsed.focus}
               canIssue={canIssue}
               selectedConsultaId={parsed.consulta}
-              buildHref={buildConsultHref}
+              buildHref={consultasSession ? buildConsultHref : undefined}
               onBeforeRecetaOpen={parsed.inlineConsultOpen ? form.flushEvolutionDraft : undefined}
             />
           }

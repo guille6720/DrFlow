@@ -1,9 +1,9 @@
 /** Query param: el usuario llegó desde /historias/paciente/[id] */
 export const FROM_CLINICAL_HISTORY = "historia";
 
-/** Ruta canónica de HC del paciente (workspace con tabs). */
+/** Ruta canónica de HC del paciente (historial clínico ordenado, sin consulta en curso). */
 export function patientClinicalHistoryPath(patientId: string): string {
-  return `/pacientes/${patientId}?tab=soap&action=nueva`;
+  return `/pacientes/${patientId}?tab=soap`;
 }
 
 /** Datos del paciente: alta/edición de ficha administrativa y perfil clínico. */
