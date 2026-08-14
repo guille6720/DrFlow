@@ -7,12 +7,8 @@ import { useCallback, useMemo, useState, useTransition } from "react";
 
 import { toast } from "@/core/notifications/toast";
 
-import { ConsultationFlowBar } from "@/features/historias/components/historias/consultation-flow-bar";
 import { clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
-import type { PatientEhrViewProps } from "@/features/historias/components/historias/patient-ehr-types";
-import type { PatientChartProfessional } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
-import { PatientSoapWorkspace } from "@/features/pacientes/components/pacientes/patient-soap-workspace";
-import type { PatientEhrClinicalRecordsPagination } from "@/features/pacientes/server/load-patient-ehr-data";
+import { DrappConsultaWorkspace } from "@/features/historias/components/consultas/drapp-consulta-workspace";
 import type { PatientWorkspacePagePayload } from "@/features/pacientes/server/load-patient-workspace-page";
 import {
   buildConsultaSessionUrl,
@@ -88,31 +84,6 @@ export function DoctorConsultaSession({
     [navigateWorkspace, searchParams]
   );
 
-  const soapProps: PatientEhrViewProps & {
-    patientRecord: Patient;
-    professionals: PatientChartProfessional[];
-    templates: PatientWorkspacePagePayload["templates"];
-    defaultProfessionalId?: string | null;
-    clinicalRecordsPagination?: PatientEhrClinicalRecordsPagination;
-    canIssue?: boolean;
-  } = {
-    patient: ehr.patientInfo,
-    consultations: ehr.consultations,
-    diagnosisRows: ehr.diagnosisRows,
-    treatmentRows: ehr.treatmentRows,
-    attachments: ehr.attachments,
-    prescriptions: ehr.prescriptions,
-    totalConsultations: ehr.totalConsultations,
-    usesHceExport: ehr.usesHceExport,
-    embedded: true,
-    patientRecord,
-    professionals: workspace.professionals,
-    templates: workspace.templates,
-    defaultProfessionalId: professionalId || workspace.defaultProfessionalId,
-    clinicalRecordsPagination: ehr.clinicalRecordsPagination,
-    canIssue,
-  };
-
   async function handleFinalize() {
     if (!appointmentId) {
       router.push("/consultas");
@@ -151,37 +122,36 @@ export function DoctorConsultaSession({
             Sala de espera
           </Button>
         </Link>
-        {appointmentId ? (
-          <Button
-            type="button"
-            size="sm"
-            loading={finalizing}
-            onClick={() => void handleFinalize()}
-            className="ml-auto"
-          >
-            Finalizar consulta
-          </Button>
-        ) : null}
       </div>
 
-      {appointmentId ? (
-        <ConsultationFlowBar
-          appointmentId={appointmentId}
-          patient={{
-            first_name: patientRecord.first_name,
-            last_name: patientRecord.last_name,
-          }}
-          showSteps={false}
-          hideRecetaLink
-          hideFinalize
-        />
-      ) : null}
-
-      <PatientSoapWorkspace
-        {...soapProps}
-        consultasSession={{
-          appointmentId: appointmentId ?? "",
-          professionalId,
+      <DrappConsultaWorkspace
+        patient={ehr.patientInfo}
+        consultations={ehr.consultations}
+        diagnosisRows={ehr.diagnosisRows}
+        treatmentRows={ehr.treatmentRows}
+        attachments={ehr.attachments}
+        prescriptions={ehr.prescriptions}
+        totalConsultations={ehr.totalConsultations}
+        usesHceExport={ehr.usesHceExport}
+        patientRecord={patientRecord}
+        professionals={workspace.professionals}
+        templates={workspace.templates}
+        defaultProfessionalId={professionalId || workspace.defaultProfessionalId}
+        clinicalRecordsPagination={ehr.clinicalRecordsPagination}
+        canIssue={canIssue}
+        appointmentId={appointmentId}
+        professionalId={professionalId}
+        finalizing={finalizing}
+        onFinalize={appointmentId ? () => void handleFinalize() : undefined}
+        onOpenSheet={(sheet) => {
+          navigateWorkspace({
+            tab: "soap",
+            action: "nueva",
+            appointment: appointmentId ?? undefined,
+            professional: professionalId,
+            sheet,
+            focus: sheet === "archivo" ? "evolucion" : undefined,
+          });
         }}
       />
 

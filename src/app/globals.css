@@ -1677,6 +1677,54 @@ html:not([data-ui-style="2"]) .drflow-ehr-evolution-box .drflow-ehr-muted {
   color: #94a3b8;
 }
 
+/* Consultas — layout tipo DrApp */
+.drapp-consulta-shell {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.drapp-consulta-shell .drflow-ehr-demographics,
+.drapp-consulta-shell .drflow-ehr-filters {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.drapp-consulta-shell .drflow-ehr-demo-label,
+.drapp-consulta-shell .drflow-ehr-filter-label,
+.drapp-consulta-shell .drflow-ehr-filter-meta {
+  color: #475569;
+}
+
+.drapp-consulta-shell .drflow-ehr-demo-value {
+  color: #0f172a;
+}
+
+.drapp-consulta-evolution {
+  background: #fff8dc;
+}
+
+.drapp-consulta-evolution-input,
+.drapp-consulta-shell .drapp-consulta-evolution textarea {
+  background: #fff8dc !important;
+  color: #0f172a !important;
+  border-color: #f0e0a0 !important;
+}
+
+.drapp-consulta-main .drflow-ehr-table-panel {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.drapp-consulta-main .drflow-ehr-table-title {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.drapp-consulta-main .drflow-ehr-table th,
+.drapp-consulta-main .drflow-ehr-table td {
+  color: #334155;
+}
+
 .drflow-ehr-evolution-text {
   color: var(--ehr-text);
 }
