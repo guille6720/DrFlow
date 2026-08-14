@@ -6,8 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { cn } from "@/shared/utils/cn";
 
-import { ConsultDiagnosisField } from "@/features/historias/components/historias/consult-diagnosis-field";
-import { ConsultTreatmentField } from "@/features/historias/components/historias/consult-treatment-field";
+import { ConsultEvolutionStructuredFields } from "@/features/historias/components/historias/consult-evolution-structured-fields";
 import { PatientEhrClinicalTables } from "@/features/historias/components/historias/patient-ehr-clinical-tables";
 import { PatientEhrDemographics } from "@/features/historias/components/historias/patient-ehr-demographics";
 import { PatientEhrFiltersBar } from "@/features/historias/components/historias/patient-ehr-filters-bar";
@@ -60,7 +59,7 @@ type Props = PatientEhrViewProps & {
   finalizing?: boolean;
 };
 
-type FocusSection = "evolucion" | "diagnostico" | "tratamiento" | "vitales" | "archivo";
+type FocusSection = "evolucion" | "diagnostico" | "tratamiento" | "medicacion" | "vitales" | "archivo";
 
 function truncate(text: string, max = 140): string {
   const clean = text.replace(/\s+/g, " ").trim();
@@ -192,7 +191,9 @@ function DrappConsultaWorkspaceInner({
 
   const evolutionRef = useRef<HTMLTextAreaElement>(null);
   const diagnosisAnchorRef = useRef<HTMLDivElement>(null);
+  const diagnosisSearchRef = useRef<HTMLInputElement>(null);
   const treatmentSearchRef = useRef<HTMLInputElement>(null);
+  const medicationSearchRef = useRef<HTMLInputElement>(null);
   const vitalsRef = useRef<HTMLTextAreaElement>(null);
   const archivoRef = useRef<HTMLInputElement>(null);
 
@@ -200,7 +201,30 @@ function DrappConsultaWorkspaceInner({
     router.refresh();
   }, [router]);
 
-  const form = useNuevaConsultaForm({
+  const {
+    formRef,
+    handleSubmit,
+    handleFormKeyDown,
+    loading: formLoading,
+    error: formError,
+    professionalId: formProfessionalId,
+    consultationAt,
+    chiefComplaint,
+    setChiefComplaint,
+    evolution,
+    setEvolution,
+    diagnoses,
+    setDiagnoses,
+    clinicalTreatments,
+    setClinicalTreatments,
+    treatmentMedications,
+    setTreatmentMedications,
+    indications,
+    setIndications,
+    vitals,
+    setVitals,
+    flushEvolutionDraft,
+  } = useNuevaConsultaForm({
     patients: [patientRecord],
     professionals,
     templates,
@@ -221,8 +245,9 @@ function DrappConsultaWorkspaceInner({
     queueMicrotask(() => {
       const map: Record<FocusSection, HTMLElement | null | undefined> = {
         evolucion: evolutionRef.current,
-        diagnostico: diagnosisAnchorRef.current,
+        diagnostico: diagnosisSearchRef.current ?? diagnosisAnchorRef.current,
         tratamiento: treatmentSearchRef.current,
+        medicacion: medicationSearchRef.current,
         vitales: vitalsRef.current,
         archivo: archivoRef.current,
       };
@@ -233,13 +258,13 @@ function DrappConsultaWorkspaceInner({
   }, []);
 
   useEffect(() => {
-    focusSection("evolucion");
+    queueMicrotask(() => focusSection("evolucion"));
   }, [focusSection]);
 
   const pendingLabel = useMemo(() => {
-    const pro = professionals.find((p) => p.id === (form.professionalId || professionalId || defaultProfessionalId));
+    const pro = professionals.find((p) => p.id === (formProfessionalId || professionalId || defaultProfessionalId));
     return pro ? getProfessionalDisplayName(pro) : "Consulta en curso";
-  }, [defaultProfessionalId, form.professionalId, professionalId, professionals]);
+  }, [defaultProfessionalId, formProfessionalId, professionalId, professionals]);
 
   const pillClass = (active: boolean) =>
     cn(
@@ -282,6 +307,9 @@ function DrappConsultaWorkspaceInner({
             <button type="button" className={pillClass(activeFocus === "tratamiento")} onClick={() => focusSection("tratamiento")}>
               <Plus className="h-3.5 w-3.5" /> Tratamiento
             </button>
+            <button type="button" className={pillClass(activeFocus === "medicacion")} onClick={() => focusSection("medicacion")}>
+              <Plus className="h-3.5 w-3.5" /> Medicación
+            </button>
             <button type="button" className={pillClass(activeFocus === "vitales")} onClick={() => focusSection("vitales")}>
               Signos vitales
             </button>
@@ -290,7 +318,7 @@ function DrappConsultaWorkspaceInner({
                 type="button"
                 className={pillClass(false)}
                 onClick={() => {
-                  form.flushEvolutionDraft();
+                  flushEvolutionDraft();
                   onOpenSheet?.("receta");
                 }}
               >
@@ -304,8 +332,8 @@ function DrappConsultaWorkspaceInner({
             ) : null}
 
             <div className="ml-auto flex flex-wrap items-center gap-2">
-              <Button type="submit" form={EHR_NEW_CONSULT_FORM_ID} size="sm" loading={form.loading}>
-                Guardar consulta
+              <Button type="submit" form={EHR_NEW_CONSULT_FORM_ID} size="sm" loading={formLoading}>
+                Guardar evolución
               </Button>
               {onFinalize ? (
                 <Button type="button" size="sm" variant="outline" loading={finalizing} onClick={onFinalize}>
@@ -318,20 +346,20 @@ function DrappConsultaWorkspaceInner({
 
           <form
             id={EHR_NEW_CONSULT_FORM_ID}
-            ref={form.formRef}
-            onSubmit={form.handleSubmit}
-            onKeyDown={form.handleFormKeyDown}
+            ref={formRef}
+            onSubmit={handleSubmit}
+            onKeyDown={handleFormKeyDown}
             className="space-y-4"
           >
             <input type="hidden" name="patient_id" value={patient.id} />
-            <input type="hidden" name="professional_id" value={form.professionalId} />
+            <input type="hidden" name="professional_id" value={formProfessionalId} />
 
             <section id="ehr-consult-evolucion" className="drapp-consulta-evolution rounded-md border border-amber-200 p-3">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <p className="text-xs font-semibold text-amber-900">Evolución</p>
                 <p className="text-[11px] text-amber-800/80">
-                  {form.consultationAt
-                    ? new Date(form.consultationAt).toLocaleString("es-AR", {
+                  {consultationAt
+                    ? new Date(consultationAt).toLocaleString("es-AR", {
                         day: "2-digit",
                         month: "2-digit",
                         year: "numeric",
@@ -341,37 +369,49 @@ function DrappConsultaWorkspaceInner({
                     : null}
                 </p>
               </div>
-              <Textarea
-                ref={evolutionRef}
-                name="evolution"
-                required
-                rows={8}
-                voiceInput
-                value={form.evolution}
-                onChange={(e) => form.setEvolution(e.target.value)}
-                placeholder="Escribí aquí la evolución."
-                className="drapp-consulta-evolution-input min-h-[180px] border-amber-200 bg-[#fff8dc] text-slate-900"
-              />
+              <div className="space-y-3">
+                <Textarea
+                  name="chief_complaint"
+                  label="Motivo de consulta"
+                  rows={2}
+                  voiceInput
+                  value={chiefComplaint}
+                  onChange={(e) => setChiefComplaint(e.target.value)}
+                  placeholder="Motivo de la consulta…"
+                  className="border-amber-200 bg-[#fffdf3] text-slate-900"
+                />
+                <Textarea
+                  ref={evolutionRef}
+                  name="evolution"
+                  label="Examen / evolución"
+                  required
+                  rows={6}
+                  voiceInput
+                  value={evolution}
+                  onChange={(e) => setEvolution(e.target.value)}
+                  placeholder="Escribí aquí el examen y la evolución."
+                  className="drapp-consulta-evolution-input min-h-[160px] border-amber-200 bg-[#fff8dc] text-slate-900"
+                />
+              </div>
             </section>
 
-            <section id="ehr-consult-diagnostico" ref={diagnosisAnchorRef} className="space-y-2">
-              <ConsultDiagnosisField
-                diagnoses={form.diagnoses}
-                onDiagnosesChange={form.setDiagnoses}
-                highlighted={activeFocus === "diagnostico"}
-              />
-            </section>
-
-            <section id="ehr-consult-tratamiento">
-              <ConsultTreatmentField
-                medications={form.treatmentMedications}
-                onMedicationsChange={form.setTreatmentMedications}
-                indications={form.indications}
-                onIndicationsChange={form.setIndications}
-                searchInputRef={treatmentSearchRef}
-                highlighted={activeFocus === "tratamiento"}
-              />
-            </section>
+            <ConsultEvolutionStructuredFields
+              diagnoses={diagnoses}
+              onDiagnosesChange={setDiagnoses}
+              clinicalTreatments={clinicalTreatments}
+              onClinicalTreatmentsChange={setClinicalTreatments}
+              medications={treatmentMedications}
+              onMedicationsChange={setTreatmentMedications}
+              indications={indications}
+              onIndicationsChange={setIndications}
+              diagnosisHighlighted={activeFocus === "diagnostico"}
+              treatmentHighlighted={activeFocus === "tratamiento"}
+              medicationHighlighted={activeFocus === "medicacion"}
+              diagnosisSearchRef={diagnosisSearchRef}
+              treatmentSearchRef={treatmentSearchRef}
+              medicationSearchRef={medicationSearchRef}
+              diagnosisAnchorRef={diagnosisAnchorRef}
+            />
 
             {showVitals ? (
               <section id="ehr-consult-vitales">
@@ -380,8 +420,8 @@ function DrappConsultaWorkspaceInner({
                   label="Signos vitales"
                   rows={2}
                   voiceInput
-                  value={form.vitals}
-                  onChange={(e) => form.setVitals(e.target.value)}
+                  value={vitals}
+                  onChange={(e) => setVitals(e.target.value)}
                   placeholder="TA, FC, FR, T°, Sat O₂, peso..."
                 />
               </section>
@@ -401,7 +441,7 @@ function DrappConsultaWorkspaceInner({
               </section>
             ) : null}
 
-            {form.error ? <p className="text-sm text-red-600">{form.error}</p> : null}
+            {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
           </form>
 
           <div className="mt-4">

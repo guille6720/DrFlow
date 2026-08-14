@@ -6,11 +6,12 @@ import type { ServiceResult } from "@/core/services/types";
 import { serviceErr, serviceOk } from "@/core/services/types";
 import { clinicalRecordSchema, sanitizeText } from "@/core/validations/schemas";
 
-import { parseConsultationModality } from "@/lib/constants/consultation-modality";
 import {
   parseDiagnosesJson,
   parseTreatmentsJson,
 } from "@/features/historias/utils/clinical-structured-entries";
+
+import { parseConsultationModality } from "@/lib/constants/consultation-modality";
 
 type ClinicalRecordInput = z.infer<typeof clinicalRecordSchema>;
 

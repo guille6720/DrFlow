@@ -41,6 +41,11 @@ export const TABLES_REQUIRING_RLS = [
   "pathologies",
   "drugs",
   "pathology_drugs",
+  "clinical_diagnoses",
+  "clinical_treatments",
+  "clinical_record_diagnoses",
+  "clinical_record_treatments",
+  "patient_problem_list",
   "symptoms",
   "pathology_symptoms",
   "medical_orders",
@@ -65,6 +70,8 @@ export const TABLES_REQUIRING_RLS = [
   "waiting_list",
   "user_device_sessions",
   "appointment_notification_queue",
+  "clinical_favorites",
+  "clinical_recent_usage",
 ] as const;
 
 /** RPC SECURITY DEFINER que deben acotar tenant (nombre → migración de referencia). */
@@ -90,6 +97,8 @@ export const SECURITY_DEFINER_RPC_CHECKS: { name: string; migrationHint: string 
   { name: "search_pami_vademecum", migrationHint: "042" },
   { name: "search_medication_catalog", migrationHint: "107" },
   { name: "search_pathologies", migrationHint: "005" },
+  { name: "search_clinical_diagnoses", migrationHint: "112" },
+  { name: "search_clinical_treatments", migrationHint: "113" },
   { name: "search_symptoms", migrationHint: "011" },
   { name: "search_pathologies_by_symptoms", migrationHint: "011" },
   { name: "claim_user_device_session", migrationHint: "109" },

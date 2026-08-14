@@ -6,6 +6,7 @@ import {
   Stethoscope,
 } from "lucide-react";
 
+import type { PatientProblemListItem } from "@/features/pacientes/server/load-clinical-structure";
 import type {
   PatientEhrAttachment,
   PatientEhrConsultation,
@@ -13,7 +14,6 @@ import type {
   PatientEhrPrescription,
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
-import type { PatientProblemListItem } from "@/features/pacientes/server/load-clinical-structure";
 
 export type PatientEhrFilterKey =
   | "evolutions"

@@ -8,8 +8,7 @@ import { SignatureImage } from "@/core/components/ui/signature-image";
 import { cn } from "@/shared/utils/cn";
 
 import { ClinicalTemplateVariablesPanel } from "@/features/historias/components/historias/clinical-template-variables-panel";
-import { ConsultDiagnosisField } from "@/features/historias/components/historias/consult-diagnosis-field";
-import { ConsultTreatmentField } from "@/features/historias/components/historias/consult-treatment-field";
+import { ConsultEvolutionStructuredFields } from "@/features/historias/components/historias/consult-evolution-structured-fields";
 import type { NuevaConsultaFormState } from "@/features/historias/hooks/use-nueva-consulta-form";
 import type { PatientWorkspaceFocus } from "@/features/pacientes/utils/patient-workspace-actions";
 
@@ -58,6 +57,8 @@ export function PatientEhrNewConsultPanel({
     setDiagnoses,
     indications,
     setIndications,
+    clinicalTreatments,
+    setClinicalTreatments,
     treatmentMedications,
     setTreatmentMedications,
     vitals,
@@ -70,6 +71,7 @@ export function PatientEhrNewConsultPanel({
     setProfessionalSignature,
     professionalSignatureImageUrl,
     error,
+    loading,
     handleSubmit,
     handleFormKeyDown,
     formRef,
@@ -81,7 +83,9 @@ export function PatientEhrNewConsultPanel({
 
   const evolutionRef = useRef<HTMLTextAreaElement>(null);
   const diagnosisAnchorRef = useRef<HTMLDivElement>(null);
+  const diagnosisSearchRef = useRef<HTMLInputElement>(null);
   const treatmentSearchRef = useRef<HTMLInputElement>(null);
+  const medicationSearchRef = useRef<HTMLInputElement>(null);
   const vitalsRef = useRef<HTMLTextAreaElement>(null);
   const {
     fileInputRef,
@@ -95,7 +99,7 @@ export function PatientEhrNewConsultPanel({
   useEffect(() => {
     const target =
       focus === "diagnostico"
-        ? diagnosisAnchorRef
+        ? diagnosisSearchRef
         : focus === "tratamiento"
           ? treatmentSearchRef
           : focus === "vitales"
@@ -162,48 +166,47 @@ export function PatientEhrNewConsultPanel({
           />
         ) : null}
 
-        <div id={sectionId("evolucion")}>
+        <section id={sectionId("evolucion")} className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide drflow-ehr-label">Evolución</p>
+          <Textarea
+            name="chief_complaint"
+            label="Motivo de consulta"
+            rows={2}
+            voiceInput
+            value={chiefComplaint}
+            onChange={(e) => setChiefComplaint(e.target.value)}
+            placeholder="Motivo de la consulta…"
+          />
           <Textarea
             ref={evolutionRef}
             name="evolution"
-            label="Evolución"
+            label="Examen / evolución"
             required
             rows={6}
             voiceInput
             value={evolution}
             onChange={(e) => setEvolution(e.target.value)}
+            placeholder="Escribí aquí el examen y la evolución."
             className={cn(focus === "evolucion" && "ring-2 ring-teal-400/60")}
           />
-        </div>
+        </section>
 
-        <Textarea
-          name="chief_complaint"
-          label="Motivo de consulta"
-          rows={2}
-          voiceInput
-          value={chiefComplaint}
-          onChange={(e) => setChiefComplaint(e.target.value)}
-          placeholder="Motivo de la consulta (opcional)"
+        <ConsultEvolutionStructuredFields
+          diagnoses={diagnoses}
+          onDiagnosesChange={setDiagnoses}
+          clinicalTreatments={clinicalTreatments}
+          onClinicalTreatmentsChange={setClinicalTreatments}
+          medications={treatmentMedications}
+          onMedicationsChange={setTreatmentMedications}
+          indications={indications}
+          onIndicationsChange={setIndications}
+          diagnosisHighlighted={focus === "diagnostico"}
+          treatmentHighlighted={focus === "tratamiento"}
+          diagnosisSearchRef={diagnosisSearchRef}
+          treatmentSearchRef={treatmentSearchRef}
+          medicationSearchRef={medicationSearchRef}
+          diagnosisAnchorRef={diagnosisAnchorRef}
         />
-
-        <div id={sectionId("diagnostico")} ref={diagnosisAnchorRef}>
-          <ConsultDiagnosisField
-            diagnoses={diagnoses}
-            onDiagnosesChange={setDiagnoses}
-            highlighted={focus === "diagnostico"}
-          />
-        </div>
-
-        <div id={sectionId("tratamiento")}>
-          <ConsultTreatmentField
-            medications={treatmentMedications}
-            onMedicationsChange={setTreatmentMedications}
-            indications={indications}
-            onIndicationsChange={setIndications}
-            searchInputRef={treatmentSearchRef}
-            highlighted={focus === "tratamiento"}
-          />
-        </div>
 
         <div id={sectionId("vitales")}>
           <Textarea
@@ -265,9 +268,12 @@ export function PatientEhrNewConsultPanel({
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
-        <p className="text-xs drflow-ehr-muted">
-          Enter o Ctrl+Enter guarda la consulta.
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <p className="text-xs drflow-ehr-muted">Enter o Ctrl+Enter guarda la evolución.</p>
+          <Button type="submit" size="sm" loading={loading}>
+            Guardar evolución
+          </Button>
+        </div>
       </form>
     </div>
   );

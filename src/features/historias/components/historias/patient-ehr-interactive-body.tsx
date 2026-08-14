@@ -11,11 +11,11 @@ import { PatientEhrPrintEvolutionBlock } from "@/features/historias/components/h
 import { PatientEhrSidebar } from "@/features/historias/components/historias/patient-ehr-sidebar";
 import { usePatientEhrStateContext } from "@/features/historias/components/historias/patient-ehr-state-context";
 import { PatientEhrSupplementalSections } from "@/features/historias/components/historias/patient-ehr-supplemental-sections";
-import { PatientProblemListPanel } from "@/features/historias/components/historias/patient-problem-list-panel";
 import {
   filterClinicalRowsByConsultationDay,
   filterConsultationsByConsultationDay,
 } from "@/features/historias/components/historias/patient-ehr-utils";
+import { PatientProblemListPanel } from "@/features/historias/components/historias/patient-problem-list-panel";
 import type { PatientProblemListItem } from "@/features/pacientes/server/load-clinical-structure";
 import type {
   PatientEhrDiagnosisRow,

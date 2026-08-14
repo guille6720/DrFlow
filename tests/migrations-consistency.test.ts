@@ -9,21 +9,21 @@ describe("migrations consistency", () => {
     .filter((f) => f.endsWith(".sql"))
     .sort();
 
-  it("has migration files in lexicographic order through latest performance audit", () => {
-    expect(files.length).toBeGreaterThanOrEqual(92);
+  it("has migration files in lexicographic order through latest clinical recent usage", () => {
+    expect(files.length).toBeGreaterThanOrEqual(115);
     expect(files[0]).toBe("001_schema.sql");
-    expect(files[files.length - 1]).toBe("092_performance_audit_group2.sql");
+    expect(files[files.length - 1]).toBe("115_clinical_recent_usage.sql");
   });
 
-  it("uses numeric prefix pattern without gaps through 092 (except b-suffix repairs)", () => {
+  it("uses numeric prefix pattern without gaps through 115 (except b-suffix repairs)", () => {
     const numeric = files
       .map((f) => f.match(/^(\d+)/)?.[1])
       .filter(Boolean)
       .map(Number);
     const unique = [...new Set(numeric)].sort((a, b) => a - b);
     expect(unique[0]).toBe(1);
-    expect(unique[unique.length - 1]).toBe(92);
-    for (let i = 1; i <= 92; i++) {
+    expect(unique[unique.length - 1]).toBe(115);
+    for (let i = 1; i <= 115; i++) {
       expect(unique).toContain(i);
     }
   });

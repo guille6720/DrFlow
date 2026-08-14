@@ -19,6 +19,9 @@ type RawDiagnosisChild = {
   clinical_record_id: string;
   name: string;
   cie10_code: string | null;
+  cie11_code?: string | null;
+  snomed_code?: string | null;
+  clinical_diagnosis_id?: string | null;
   pathology_id: string | null;
   is_chronic: boolean;
   sort_order: number;
@@ -36,6 +39,9 @@ type RawTreatmentChild = {
   vademecum_code: string | null;
   catalog_source: string | null;
   active_ingredient: string | null;
+  clinical_treatment_id?: string | null;
+  treatment_kind?: string | null;
+  category?: string | null;
   sort_order: number;
 };
 
@@ -59,7 +65,7 @@ export async function loadClinicalRecordChildrenForPatient(
       supabase
         .from("clinical_record_diagnoses")
         .select(
-          "id, clinical_record_id, name, cie10_code, pathology_id, is_chronic, sort_order"
+          "id, clinical_record_id, name, cie10_code, cie11_code, snomed_code, clinical_diagnosis_id, pathology_id, is_chronic, sort_order"
         )
         .eq("clinic_id", clinicId)
         .eq("patient_id", patientId)
@@ -68,7 +74,7 @@ export async function loadClinicalRecordChildrenForPatient(
       supabase
         .from("clinical_record_treatments")
         .select(
-          "id, clinical_record_id, product, dose, frequency, notes, status, quantity, vademecum_code, catalog_source, active_ingredient, sort_order"
+          "id, clinical_record_id, product, dose, frequency, notes, status, quantity, vademecum_code, catalog_source, active_ingredient, clinical_treatment_id, treatment_kind, category, sort_order"
         )
         .eq("clinic_id", clinicId)
         .eq("patient_id", patientId)
@@ -82,6 +88,9 @@ export async function loadClinicalRecordChildrenForPatient(
       list.push({
         name: row.name,
         cie10_code: row.cie10_code,
+        cie11_code: row.cie11_code ?? null,
+        snomed_code: row.snomed_code ?? null,
+        clinical_diagnosis_id: row.clinical_diagnosis_id ?? null,
         pathology_id: row.pathology_id,
         is_chronic: row.is_chronic,
       });
@@ -102,6 +111,9 @@ export async function loadClinicalRecordChildrenForPatient(
         vademecum_code: row.vademecum_code,
         catalog_source: row.catalog_source,
         active_ingredient: row.active_ingredient,
+        clinical_treatment_id: row.clinical_treatment_id ?? null,
+        kind: (row.treatment_kind as ClinicalTreatmentEntry["kind"]) ?? null,
+        category: row.category ?? null,
       });
       treatmentsByRecord.set(row.clinical_record_id, list);
     }

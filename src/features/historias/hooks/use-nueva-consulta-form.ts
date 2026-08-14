@@ -10,8 +10,9 @@ import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation"
 import { createClinicalRecord } from "@/features/historias/actions/clinical-records";
 import {
   buildDiagnosisText,
-  medicationsToTreatmentEntries,
   type ClinicalDiagnosisEntry,
+  type ClinicalTreatmentEntry,
+  mergeTreatmentsForPersist,
 } from "@/features/historias/utils/clinical-structured-entries";
 import type { PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
@@ -95,6 +96,7 @@ type ConsultFormDraft = {
   diagnosis: string;
   diagnoses: ClinicalDiagnosisEntry[];
   indications: string;
+  clinicalTreatments: ClinicalTreatmentEntry[];
   treatmentMedications: PrescriptionMedication[];
   vitals: string;
   isDirty: boolean;
@@ -132,6 +134,7 @@ export function useNuevaConsultaForm({
   const [diagnosis, setDiagnosis] = useState("");
   const [diagnoses, setDiagnoses] = useState<ClinicalDiagnosisEntry[]>([]);
   const [indications, setIndications] = useState("");
+  const [clinicalTreatments, setClinicalTreatments] = useState<ClinicalTreatmentEntry[]>([]);
   const [treatmentMedications, setTreatmentMedications] = useState<PrescriptionMedication[]>([]);
   const [vitals, setVitals] = useState("");
   const [consultationAt, setConsultationAt] = useState(() => toDatetimeLocalValue(new Date()));
@@ -145,6 +148,7 @@ export function useNuevaConsultaForm({
     diagnosis: "",
     diagnoses: [],
     indications: "",
+    clinicalTreatments: [],
     treatmentMedications: [],
     vitals: "",
     isDirty: false,
@@ -223,6 +227,11 @@ export function useNuevaConsultaForm({
     setDiagnosis(buildDiagnosisText(next, ""));
   }
 
+  function handleClinicalTreatmentsChange(next: ClinicalTreatmentEntry[]) {
+    clearTemplateVariables();
+    setClinicalTreatments(next);
+  }
+
   function handleIndicationsChange(value: string) {
     clearTemplateVariables();
     setIndications(value);
@@ -240,6 +249,7 @@ export function useNuevaConsultaForm({
     diagnosis.trim().length > 0 ||
     diagnoses.length > 0 ||
     indications.trim().length > 0 ||
+    clinicalTreatments.length > 0 ||
     treatmentMedications.length > 0 ||
     vitals.trim().length > 0;
 
@@ -250,11 +260,22 @@ export function useNuevaConsultaForm({
       diagnosis,
       diagnoses,
       indications,
+      clinicalTreatments,
       treatmentMedications,
       vitals,
       isDirty,
     };
-  }, [evolution, chiefComplaint, diagnosis, diagnoses, indications, treatmentMedications, vitals, isDirty]);
+  }, [
+    evolution,
+    chiefComplaint,
+    diagnosis,
+    diagnoses,
+    indications,
+    clinicalTreatments,
+    treatmentMedications,
+    vitals,
+    isDirty,
+  ]);
 
   function signatureForProfessionalId(id: string): string {
     const pro = professionals.find((p) => p.id === id);
@@ -344,11 +365,15 @@ export function useNuevaConsultaForm({
       formData.set("diagnosis", diagnosisText);
       formData.set("diagnosis_cie10", primaryCie10);
       formData.set("diagnoses_json", JSON.stringify(draft.diagnoses));
-      formData.set(
-        "treatments_json",
-        JSON.stringify(medicationsToTreatmentEntries(draft.treatmentMedications))
+      const mergedTreatments = mergeTreatmentsForPersist(
+        draft.clinicalTreatments,
+        draft.treatmentMedications
       );
-      formData.set("indications", buildConsultIndicationsText(draft.treatmentMedications, draft.indications));
+      formData.set("treatments_json", JSON.stringify(mergedTreatments));
+      formData.set(
+        "indications",
+        buildConsultIndicationsText(draft.treatmentMedications, draft.indications, draft.clinicalTreatments)
+      );
       formData.set("evolution", buildEvolutionWithVitals(draft.evolution, draft.vitals));
       formData.set("professional_signature", professionalSignature);
       formData.set("consultation_at", new Date(consultationAt).toISOString());
@@ -370,6 +395,7 @@ export function useNuevaConsultaForm({
           setDiagnosis("");
           setDiagnoses([]);
           setIndications("");
+          setClinicalTreatments([]);
           setTreatmentMedications([]);
           setVitals("");
         }
@@ -498,6 +524,7 @@ export function useNuevaConsultaForm({
     setTemplateVariableValues({});
     applyResolvedTemplateFields(bases);
     setTreatmentMedications([]);
+    setClinicalTreatments([]);
   }
 
   return {
@@ -525,6 +552,8 @@ export function useNuevaConsultaForm({
     setDiagnoses: handleDiagnosesChange,
     indications,
     setIndications: handleIndicationsChange,
+    clinicalTreatments,
+    setClinicalTreatments: handleClinicalTreatmentsChange,
     treatmentMedications,
     setTreatmentMedications,
     vitals,
