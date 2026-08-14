@@ -81,7 +81,14 @@ export type AppointmentAgendaRow = {
   waiting_room_entered_at?: string | null;
   is_overbooking?: boolean | null;
   rescheduled_at?: string | null;
-  patients?: NestedRow<{ first_name: string; last_name: string; document_number?: string; insurance_provider?: string | null; insurance_plan?: string | null }>;
+  patients?: NestedRow<{
+    first_name: string;
+    last_name: string;
+    document_number?: string;
+    phone?: string | null;
+    insurance_provider?: string | null;
+    insurance_plan?: string | null;
+  }>;
   professionals?: NestedRow<{ profiles?: NestedRow<{ full_name?: string }> }>;
   locations?: NestedRow<{ name: string }>;
   specialties?: NestedRow<{ name: string }>;

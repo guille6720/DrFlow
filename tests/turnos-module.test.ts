@@ -5,6 +5,7 @@ import {
   formatCancellationReason,
   formatWaitingRoomElapsed,
   resolveAgendaAttendanceValue,
+  resolveAgendaDayFilterBucket,
   resolveAppointmentLifecycleLabel,
 } from "@/features/turnos/utils/appointment-lifecycle";
 import { turnoWizardSchema } from "@/features/turnos/utils/turno-wizard-schema";
@@ -55,6 +56,45 @@ describe("resolveAppointmentLifecycleLabel", () => {
         rescheduledAt: "2026-08-10T12:00:00Z",
       })
     ).toBe("Reprogramado");
+  });
+});
+
+describe("resolveAgendaDayFilterBucket", () => {
+  it("keeps booked turnos in Reservados until check-in", () => {
+    expect(
+      resolveAgendaDayFilterBucket({
+        status: "confirmed",
+        waitingRoomStatus: "waiting",
+      })
+    ).toBe("reserved");
+  });
+
+  it("maps Presente / En espera after check-in", () => {
+    expect(
+      resolveAgendaDayFilterBucket({
+        status: "confirmed",
+        waitingRoomStatus: "confirmed",
+      })
+    ).toBe("waiting");
+    expect(
+      resolveAgendaDayFilterBucket({
+        status: "confirmed",
+        waitingRoomStatus: "waiting",
+        waitingRoomEnteredAt: "2026-08-13T18:00:00Z",
+      })
+    ).toBe("waiting");
+  });
+
+  it("maps consultation, attended, absent and cancelled", () => {
+    expect(
+      resolveAgendaDayFilterBucket({
+        status: "confirmed",
+        waitingRoomStatus: "in_consultation",
+      })
+    ).toBe("in_consultation");
+    expect(resolveAgendaDayFilterBucket({ status: "attended" })).toBe("attended");
+    expect(resolveAgendaDayFilterBucket({ status: "no_show" })).toBe("absent");
+    expect(resolveAgendaDayFilterBucket({ status: "cancelled" })).toBe("cancelled");
   });
 });
 

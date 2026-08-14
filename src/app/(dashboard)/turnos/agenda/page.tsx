@@ -32,7 +32,7 @@ export default async function TurnosAgendaPage() {
         supabase
           .from("appointments")
           .select(
-            `${APPOINTMENT_AGENDA_COLUMNS}, patients(first_name, last_name, document_number), professionals(profiles(full_name)), locations(name), specialties(name)`
+            `${APPOINTMENT_AGENDA_COLUMNS}, patients(first_name, last_name, document_number, phone, insurance_provider, insurance_plan), professionals(profiles(full_name)), locations(name), specialties(name)`
           )
           .eq("clinic_id", clinicId)
           .gte("start_at", rangeStart)
