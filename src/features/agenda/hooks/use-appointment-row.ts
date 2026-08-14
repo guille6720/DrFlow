@@ -13,10 +13,7 @@ import { buildAppointmentConsultationUrl } from "@/features/pacientes/utils/pati
 import { formatCancellationReason } from "@/features/turnos/utils/appointment-lifecycle";
 
 import { updateAppointmentStatus } from "@/lib/actions/appointments";
-import {
-  buildAppointmentCancellationByClinicMessage,
-  buildAppointmentConfirmationMessage,
-} from "@/lib/utils/appointment-messages";
+import { buildAppointmentConfirmationMessage } from "@/lib/utils/appointment-messages";
 
 export function useAppointmentRow(appointment: AppointmentAgendaRow) {
   const router = useRouter();
@@ -89,11 +86,22 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
 
         if (result.whatsapp?.phone) {
           try {
-            const reason = formatCancellationReason(input.category);
-            const message = buildAppointmentCancellationByClinicMessage(
-              result.whatsapp.startAt,
-              reason
-            );
+            const when = new Date(result.whatsapp.startAt);
+            const dateLabel = Number.isNaN(when.getTime())
+              ? result.whatsapp.startAt
+              : when.toLocaleString("es-AR", {
+                  weekday: "long",
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+            const message = [
+              `Le informamos que su turno del ${dateLabel} fue cancelado por el consultorio.`,
+              `Motivo: ${result.whatsapp.reason}`,
+              "Podés solicitar un nuevo turno desde la App.",
+            ].join(" ");
             const url = buildWhatsAppUrl(result.whatsapp.phone, message);
             if (url) window.open(url, "_blank", "noopener,noreferrer");
           } catch {

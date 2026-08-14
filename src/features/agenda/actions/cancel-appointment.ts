@@ -2,33 +2,35 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { getSession } from "@/core/auth/session.server";
+import { getActiveClinicId, getPermissionContext, getSession } from "@/core/auth/session.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
+import { hasPermission } from "@/core/permissions/roles";
 import { recordAudit } from "@/core/security/audit-service";
 import { createClient } from "@/core/supabase/server";
 import { parseEntityId } from "@/core/validations/params";
-import { sanitizeText } from "@/core/validations/schemas";
 
 import { recordAppointmentStatusHistory } from "@/features/turnos/server/record-appointment-status-history";
-import {
-  CANCELLATION_REASON_OPTIONS,
-  type CancellationCategory,
-  formatCancellationReason,
-} from "@/features/turnos/utils/appointment-lifecycle";
 
-const CATEGORY_VALUES = new Set(
-  CANCELLATION_REASON_OPTIONS.map((option) => option.value)
-);
+const CATEGORY_LABELS: Record<string, string> = {
+  patient: "Paciente",
+  professional: "Profesional",
+  clinic: "Clínica",
+  data_error: "Error de carga",
+  other: "Otro",
+};
 
-function isCancellationCategory(value: string): value is CancellationCategory {
-  return CATEGORY_VALUES.has(value as CancellationCategory);
+function reasonFromCategory(category: string): string {
+  return CATEGORY_LABELS[category] ?? "Otro";
+}
+
+function cleanText(input: string): string {
+  return input.replace(/\0/g, "").trim().slice(0, 500);
 }
 
 export type CancelAppointmentResult =
   | {
       success: true;
-      whatsapp: { phone: string; startAt: string } | null;
+      whatsapp: { phone: string; startAt: string; reason: string } | null;
     }
   | { error: string };
 
@@ -38,18 +40,21 @@ export async function cancelAppointment(input: {
   category: string;
 }): Promise<CancelAppointmentResult> {
   try {
-    const access = await requireClinicPermission("manageAppointments");
-    if (!access.ok) return { error: access.error };
+    const clinicId = await getActiveClinicId();
+    const { role, isSuperadmin, permissionOverrides } = await getPermissionContext();
+
+    if (!clinicId || !hasPermission(role, "manageAppointments", isSuperadmin, permissionOverrides)) {
+      return { error: "Sin permisos" };
+    }
 
     const idParsed = parseEntityId(input.appointmentId, "Turno");
     if (!idParsed.ok) return { error: idParsed.error };
 
-    if (!isCancellationCategory(input.category)) {
+    if (!(input.category in CATEGORY_LABELS)) {
       return { error: "Motivo de cancelación inválido" };
     }
 
-    const reason = sanitizeText(formatCancellationReason(input.category).slice(0, 500));
-    const { clinicId } = access;
+    const reason = cleanText(reasonFromCategory(input.category));
     const user = await getSession();
     const supabase = await createClient();
 
@@ -91,7 +96,6 @@ export async function cancelAppointment(input: {
       .eq("id", idParsed.data)
       .eq("clinic_id", clinicId);
 
-    // Schema drift fallbacks for older environments.
     if (error && /cancellation_category|waiting_room_status/i.test(error.message ?? "")) {
       const { cancellation_category: _c, waiting_room_status: _w, ...fallback } = updatePayload;
       ({ error } = await supabase
@@ -107,30 +111,36 @@ export async function cancelAppointment(input: {
       };
     }
 
-    void recordAppointmentStatusHistory(supabase, {
-      clinicId,
-      appointmentId: idParsed.data,
-      fromStatus: before.status,
-      toStatus: "cancelled",
-      fromWaitingRoomStatus: before.waiting_room_status ?? null,
-      toWaitingRoomStatus: "cancelled",
-      changedBy: user?.id ?? null,
-      reason,
-    }).catch(() => {
-      // Non-blocking
-    });
+    try {
+      await recordAppointmentStatusHistory(supabase, {
+        clinicId,
+        appointmentId: idParsed.data,
+        fromStatus: before.status,
+        toStatus: "cancelled",
+        fromWaitingRoomStatus: before.waiting_room_status ?? null,
+        toWaitingRoomStatus: "cancelled",
+        changedBy: user?.id ?? null,
+        reason,
+      });
+    } catch {
+      // Non-blocking — cancellation already persisted.
+    }
 
-    void recordAudit({
-      clinicId,
-      entityType: "appointment",
-      entityId: idParsed.data,
-      action: "update",
-      metadata: {
-        status: "cancelled",
-        cancellationReason: reason,
-        cancelledBy: "clinic",
-      },
-    });
+    try {
+      await recordAudit({
+        clinicId,
+        entityType: "appointment",
+        entityId: idParsed.data,
+        action: "update",
+        metadata: {
+          status: "cancelled",
+          cancellationReason: reason,
+          cancelledBy: "clinic",
+        },
+      });
+    } catch {
+      // Non-blocking
+    }
 
     revalidatePath("/agenda");
     revalidatePath("/turnos/agenda");
@@ -148,7 +158,11 @@ export async function cancelAppointment(input: {
     return {
       success: true,
       whatsapp: patientRow?.phone
-        ? { phone: patientRow.phone, startAt: before.start_at as string }
+        ? {
+            phone: patientRow.phone,
+            startAt: String(before.start_at),
+            reason,
+          }
         : null,
     };
   } catch (err) {
