@@ -55,7 +55,7 @@ type Props = PatientEhrViewProps & {
   appointmentId?: string | null;
   professionalId?: string | null;
   onOpenSheet?: (sheet: "receta" | "orden" | "archivo") => void;
-  onFinalize?: () => void;
+  onFinalize?: () => void | Promise<void>;
   finalizing?: boolean;
 };
 
@@ -224,6 +224,7 @@ function DrappConsultaWorkspaceInner({
     vitals,
     setVitals,
     flushEvolutionDraft,
+    saveIfDirty,
   } = useNuevaConsultaForm({
     patients: [patientRecord],
     professionals,
@@ -238,6 +239,12 @@ function DrappConsultaWorkspaceInner({
     },
   });
 
+  const handleFinalizeClick = useCallback(async () => {
+    if (!onFinalize) return;
+    const saved = await saveIfDirty({ silent: true });
+    if (!saved) return;
+    await onFinalize();
+  }, [onFinalize, saveIfDirty]);
   const focusSection = useCallback((section: FocusSection) => {
     setActiveFocus(section);
     if (section === "vitales") setShowVitals(true);
@@ -336,7 +343,13 @@ function DrappConsultaWorkspaceInner({
                 Guardar evolución
               </Button>
               {onFinalize ? (
-                <Button type="button" size="sm" variant="outline" loading={finalizing} onClick={onFinalize}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  loading={finalizing || formLoading}
+                  onClick={() => void handleFinalizeClick()}
+                >
                   <CheckCircle2 className="h-4 w-4" />
                   Finalizar consulta
                 </Button>
@@ -489,6 +502,7 @@ export function DrappConsultaWorkspace(props: Props) {
       <PatientEhrShellFrame>
         <div className="drapp-consulta-shell overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           <DrappConsultaWorkspaceInner
+            key={`${patient.id}:${rest.appointmentId ?? ""}`}
             {...rest}
             patient={patient}
             professionals={professionals}

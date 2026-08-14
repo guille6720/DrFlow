@@ -7,8 +7,8 @@ import { useCallback, useMemo, useState, useTransition } from "react";
 
 import { toast } from "@/core/notifications/toast";
 
-import { clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
 import { DrappConsultaWorkspace } from "@/features/historias/components/consultas/drapp-consulta-workspace";
+import { clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
 import type { PatientWorkspacePagePayload } from "@/features/pacientes/server/load-patient-workspace-page";
 import {
   buildConsultaSessionUrl,
@@ -102,7 +102,7 @@ export function DoctorConsultaSession({
       // non-blocking
     }
     clearConsultationTimer(appointmentId);
-    toast.success("Consulta finalizada");
+    toast.success("Consulta guardada y turno finalizado");
     startTransition(() => {
       router.push("/consultas");
       router.refresh();
@@ -125,6 +125,7 @@ export function DoctorConsultaSession({
       </div>
 
       <DrappConsultaWorkspace
+        key={`${patientId}:${appointmentId ?? ""}`}
         patient={ehr.patientInfo}
         consultations={ehr.consultations}
         diagnosisRows={ehr.diagnosisRows}

@@ -294,7 +294,7 @@ export function ClinicalTreatmentAutocomplete({
           </Button>
         </div>
 
-        {favorites ? (
+        {favorites && open ? (
           <>
             <ClinicalFavoritesQuickList
               title="Mis tratamientos frecuentes"

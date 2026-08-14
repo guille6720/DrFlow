@@ -357,7 +357,7 @@ export function MedicationAutocomplete({
           </Button>
         </div>
 
-        {favorites ? (
+        {favorites && open ? (
           <div className="mt-2 space-y-2">
             <ClinicalFavoritesQuickList
               title="Mis medicamentos frecuentes"

@@ -276,7 +276,7 @@ export function DiagnosisAutocomplete({
         </div>
       ) : null}
 
-      {favorites ? (
+      {favorites && open ? (
         <>
           <ClinicalFavoritesQuickList
             title="Mis diagnósticos frecuentes"

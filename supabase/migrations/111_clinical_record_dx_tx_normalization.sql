@@ -1,6 +1,13 @@
 -- Fase 2: normalización de diagnósticos/tratamientos en tablas hijas + problem list.
 -- Aditiva: conserva diagnosis/indications TEXT y diagnoses_json/treatments_json (dual-write).
 -- Staging: gprmsufvhabntbrytwyi
+--
+-- Requiere columnas de 110. Guard idempotente por si se pega 111 sin 110 en el SQL Editor.
+
+ALTER TABLE clinical_records
+  ADD COLUMN IF NOT EXISTS diagnosis_cie10 TEXT,
+  ADD COLUMN IF NOT EXISTS diagnoses_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS treatments_json JSONB NOT NULL DEFAULT '[]'::jsonb;
 
 -- ---------------------------------------------------------------------------
 -- Child tables

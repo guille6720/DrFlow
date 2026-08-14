@@ -91,6 +91,9 @@ export function usePatientConsultSheet({
     workspace: workspaceConfig,
   });
 
+  const saveIfDirty = form.saveIfDirty;
+  const formAppointmentId = form.appointmentId;
+
   const activeProfessionalId = professionalId ?? form.defaultProfessional;
   const patientName = `${patient.last_name}, ${patient.first_name}`;
 
@@ -130,9 +133,14 @@ export function usePatientConsultSheet({
   );
 
   const onFinalizeConsult = useCallback(async () => {
-    const id = appointmentId ?? form.appointmentId;
+    const id = appointmentId ?? formAppointmentId;
     if (!id) return;
     setFinalizing(true);
+    const saved = await saveIfDirty({ silent: true });
+    if (!saved) {
+      setFinalizing(false);
+      return;
+    }
     const result = await finalizeConsultation(id, "presencial");
     setFinalizing(false);
     if (!result.error) {
@@ -141,7 +149,7 @@ export function usePatientConsultSheet({
       router.refresh();
       onClose();
     }
-  }, [appointmentId, form.appointmentId, onClose, patient.id, router]);
+  }, [appointmentId, formAppointmentId, onClose, patient.id, router, saveIfDirty]);
 
   const overlayTitle = journey.enabled
     ? `Consulta — ${journey.steps.find((s) => s.id === journey.currentStep)?.label ?? "En curso"}`

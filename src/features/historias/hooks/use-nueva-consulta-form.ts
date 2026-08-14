@@ -192,6 +192,31 @@ export function useNuevaConsultaForm({
     setTemplateVariableValues({});
   }
 
+  function resetConsultFields() {
+    clearTemplateVariables();
+    setError(null);
+    setEvolution("");
+    setChiefComplaint("");
+    setDiagnosis("");
+    setDiagnoses([]);
+    setIndications("");
+    setClinicalTreatments([]);
+    setTreatmentMedications([]);
+    setVitals("");
+    setConsultationAt(toDatetimeLocalValue(new Date()));
+    formDraftRef.current = {
+      evolution: "",
+      chiefComplaint: "",
+      diagnosis: "",
+      diagnoses: [],
+      indications: "",
+      clinicalTreatments: [],
+      treatmentMedications: [],
+      vitals: "",
+      isDirty: false,
+    };
+  }
+
   function applyResolvedTemplateFields(fields: ClinicalTemplateFieldSet) {
     setChiefComplaint(fields.chief_complaint);
     setDiagnosis(fields.diagnosis);
@@ -238,9 +263,47 @@ export function useNuevaConsultaForm({
   }
 
   function handlePatientChange(id: string, patient?: PatientSearchOption) {
+    if (id !== patientId) {
+      resetConsultFields();
+    }
     setPatientId(id);
     setPickedPatient(patient ?? null);
   }
+
+  // Soft-nav entre pacientes/turnos: el hook puede reutilizarse; vaciar evolución.
+  const workspaceIdentity = `${workspace?.patientId ?? ""}:${workspace?.appointmentId ?? ""}`;
+  const prevWorkspaceIdentityRef = useRef(workspaceIdentity);
+  useEffect(() => {
+    if (!workspace) return;
+    if (prevWorkspaceIdentityRef.current === workspaceIdentity) return;
+    prevWorkspaceIdentityRef.current = workspaceIdentity;
+    setPatientId(workspace.patientId);
+    setPickedPatient(null);
+    setTemplateBases(null);
+    setTemplateVariableValues({});
+    setError(null);
+    setEvolution("");
+    setChiefComplaint("");
+    setDiagnosis("");
+    setDiagnoses([]);
+    setIndications("");
+    setClinicalTreatments([]);
+    setTreatmentMedications([]);
+    setVitals("");
+    setConsultationAt(toDatetimeLocalValue(new Date()));
+    formDraftRef.current = {
+      evolution: "",
+      chiefComplaint: "",
+      diagnosis: "",
+      diagnoses: [],
+      indications: "",
+      clinicalTreatments: [],
+      treatmentMedications: [],
+      vitals: "",
+      isDirty: false,
+    };
+  }, [workspace, workspaceIdentity]);
+
   const activeProfessionalId = fromAppointment ? defaultProfessional : professionalId;
   const activeProfessional = professionals.find((p) => p.id === activeProfessionalId);
   const isDirty =
