@@ -4,8 +4,6 @@ import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
-
 import { cancelAppointmentRequest } from "@/features/agenda/utils/cancel-appointment-request";
 
 import { Button } from "@/components/ui/button";
@@ -52,32 +50,6 @@ export function CancelAppointmentDialog({
       if ("error" in data) {
         setError(data.error);
         return;
-      }
-
-      const whatsapp = data.whatsapp;
-      if (whatsapp?.phone) {
-        try {
-          const when = new Date(whatsapp.startAt);
-          const dateLabel = Number.isNaN(when.getTime())
-            ? whatsapp.startAt
-            : when.toLocaleString("es-AR", {
-                weekday: "long",
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              });
-          const message = [
-            `Le informamos que su turno del ${dateLabel} fue cancelado por el consultorio.`,
-            `Motivo: ${whatsapp.reason}`,
-            "Podés solicitar un nuevo turno desde la App.",
-          ].join(" ");
-          const url = buildWhatsAppUrl(whatsapp.phone, message);
-          if (url) window.open(url, "_blank", "noopener,noreferrer");
-        } catch {
-          // Non-blocking
-        }
       }
 
       setCategory("clinic");
@@ -154,8 +126,7 @@ export function CancelAppointmentDialog({
             error={error ?? undefined}
           />
           <p className="text-xs text-slate-500">
-            Quedará registrado en la agenda, historial y app del paciente. Si el paciente tiene
-            teléfono, podés avisarle por WhatsApp al confirmar.
+            Quedará registrado en la agenda, historial y app del paciente.
           </p>
           {error ? (
             <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

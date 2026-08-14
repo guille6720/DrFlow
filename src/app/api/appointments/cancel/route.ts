@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
 
     const { data: before, error: loadError } = await supabase
       .from("appointments")
-      .select("id, status, patient_id, start_at, patients(phone)")
+      .select("id, status, patient_id")
       .eq("id", appointmentId)
       .eq("clinic_id", clinicId)
       .maybeSingle();
@@ -193,22 +193,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const patient = before.patients as
-      | { phone?: string | null }
-      | { phone?: string | null }[]
-      | null;
-    const patientRow = Array.isArray(patient) ? patient[0] : patient;
-
     return NextResponse.json({
       success: true as const,
       v: "cancel-v4",
-      whatsapp: patientRow?.phone
-        ? {
-            phone: patientRow.phone,
-            startAt: String(before.start_at),
-            reason,
-          }
-        : null,
+      whatsapp: null,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "No se pudo cancelar el turno";
