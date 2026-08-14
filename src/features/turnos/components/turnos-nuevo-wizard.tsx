@@ -186,7 +186,6 @@ function ExistingAppointmentCancelPanel({
 }) {
   const row = useAppointmentRow(appointment);
   const [category, setCategory] = useState<CancellationCategory>("clinic");
-  const [detail, setDetail] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const canCancel = appointment.status === "pending" || appointment.status === "confirmed";
@@ -194,20 +193,14 @@ function ExistingAppointmentCancelPanel({
   if (!canCancel) return null;
 
   async function handleCancel() {
-    const trimmed = detail.trim();
-    if (trimmed.length < 3) {
-      setError("Indicá el motivo (mín. 3 caracteres)");
-      return;
-    }
     setError(null);
-    const result = await row.handleCancelConfirm({ category, detail: trimmed });
+    const result = await row.handleCancelConfirm({ category });
     if (result?.error) {
       setError(result.error);
       toast.error(result.error);
       return;
     }
     toast.success("Turno cancelado");
-    setDetail("");
     setCategory("clinic");
     onCancelled();
   }
@@ -221,27 +214,20 @@ function ExistingAppointmentCancelPanel({
       </p>
       <div className="mt-3 space-y-3">
         <Select
-          label="Motivo"
+          label="Motivo de cancelación"
           required
           value={category}
-          onChange={(e) => setCategory(e.target.value as CancellationCategory)}
+          onChange={(e) => {
+            setCategory(e.target.value as CancellationCategory);
+            setError(null);
+          }}
           options={CANCELLATION_REASON_OPTIONS.map((option) => ({
             value: option.value,
             label: option.label,
           }))}
-        />
-        <Textarea
-          label="Motivo de cancelación"
-          required
-          value={detail}
-          onChange={(e) => {
-            setDetail(e.target.value);
-            setError(null);
-          }}
-          placeholder="Ej: El paciente avisó que no puede asistir"
-          rows={3}
           error={error ?? undefined}
         />
+        {error ? <p className="text-sm text-red-700">{error}</p> : null}
         <Button
           type="button"
           variant="danger"
@@ -684,7 +670,7 @@ export function TurnosNuevoWizard({
       </p>
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-12 lg:items-stretch">
-        <div className="flex min-h-0 flex-col gap-3 overflow-y-auto lg:col-span-3">
+        <div className="turnos-nuevo-card-stack flex min-h-0 flex-col gap-3 overflow-y-auto lg:col-span-3">
           <Card title="1 · Profesional" className={TURNOS_CARD_CLASS}>
             <div className="space-y-3">
               <Select
@@ -939,7 +925,7 @@ export function TurnosNuevoWizard({
           </div>
         </Card>
 
-        <div className="flex min-h-0 flex-col gap-3 overflow-y-auto lg:col-span-3">
+        <div className="turnos-nuevo-card-stack flex min-h-0 flex-col gap-3 overflow-y-auto lg:col-span-3">
           <Card
             title={isExistingMode ? "4 · Turno existente" : "4 · Confirmación"}
             className={TURNOS_CARD_CLASS}
@@ -961,12 +947,12 @@ export function TurnosNuevoWizard({
                   <SummaryRow label="Paciente">
                     {displayedPatient
                       ? `${displayedPatient.last_name}, ${displayedPatient.first_name}`
-                      : "—"}
+                      : "Sin seleccionar"}
                   </SummaryRow>
                   <SummaryRow label="Horario">
                     {selectedSlot
                       ? `${format(parseISO(selectedSlot.start_at), "EEE d MMM · HH:mm 'hs'", { locale: es })} (${appointmentDuration} min)`
-                      : "—"}
+                      : "Sin seleccionar"}
                   </SummaryRow>
                   <SummaryRow label="Especialidad / Consultorio">
                     {specialty?.name ?? "—"}

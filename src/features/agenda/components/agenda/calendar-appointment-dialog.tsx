@@ -61,7 +61,6 @@ function CalendarAppointmentDialogContent({
       return { error: result.error };
     }
     toast.success("Turno cancelado");
-    row.closeCancelDialog();
     onClose();
     return { success: true as const };
   }

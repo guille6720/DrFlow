@@ -108,6 +108,10 @@ describe("waiting room elapsed time", () => {
 });
 
 describe("formatCancellationReason", () => {
+  it("uses category label alone when there is no detail", () => {
+    expect(formatCancellationReason("clinic")).toBe("Clínica");
+  });
+
   it("combines category label and detail", () => {
     expect(formatCancellationReason("patient", "No puede asistir")).toBe(
       "Paciente: No puede asistir"

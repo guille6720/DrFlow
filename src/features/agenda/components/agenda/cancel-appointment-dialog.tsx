@@ -10,11 +10,9 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 
 export type CancelAppointmentInput = {
   category: CancellationCategory;
-  detail: string;
 };
 
 interface CancelAppointmentDialogProps {
@@ -35,28 +33,22 @@ export function CancelAppointmentDialog({
   loading = false,
 }: CancelAppointmentDialogProps) {
   const [category, setCategory] = useState<CancellationCategory>("clinic");
-  const [detail, setDetail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   if (!open) return null;
 
   async function handleConfirm() {
-    const trimmed = detail.trim();
-    if (trimmed.length < 3) {
-      const message = "Indicá el motivo (mín. 3 caracteres)";
-      setError(message);
-      return;
-    }
-
     setError(null);
     setSubmitting(true);
     try {
-      const result = await onConfirm({ category, detail: trimmed });
+      const result = await onConfirm({ category });
       if (result?.error) {
         setError(result.error);
         return;
       }
+      setCategory("clinic");
+      onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo cancelar el turno");
     } finally {
@@ -66,7 +58,6 @@ export function CancelAppointmentDialog({
 
   function handleClose() {
     if (submitting || loading) return;
-    setDetail("");
     setCategory("clinic");
     setError(null);
     onClose();
@@ -115,21 +106,14 @@ export function CancelAppointmentDialog({
           <Select
             label="Motivo de cancelación"
             value={category}
-            onChange={(e) => setCategory(e.target.value as CancellationCategory)}
+            onChange={(e) => {
+              setCategory(e.target.value as CancellationCategory);
+              setError(null);
+            }}
             options={CANCELLATION_REASON_OPTIONS.map((option) => ({
               value: option.value,
               label: option.label,
             }))}
-          />
-          <Textarea
-            label="Detalle"
-            value={detail}
-            onChange={(e) => {
-              setDetail(e.target.value);
-              setError(null);
-            }}
-            placeholder="Ej: El paciente avisó que no puede asistir"
-            rows={3}
             error={error ?? undefined}
           />
           <p className="text-xs text-slate-500">

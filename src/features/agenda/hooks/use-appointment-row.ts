@@ -80,7 +80,7 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
 
   const handleCancelConfirm = useCallback(
     async (input: CancelAppointmentInput) => {
-      const formatted = formatCancellationReason(input.category, input.detail);
+      const formatted = formatCancellationReason(input.category);
       try {
         const result = await setStatus("cancelled", formatted, input.category);
         if (result?.error) {
