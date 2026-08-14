@@ -92,7 +92,7 @@ const CANCELLATION_CATEGORY_LABEL: Record<CancellationCategory, string> = {
 
 export function formatCancellationReason(
   category: CancellationCategory | string | null | undefined,
-  detail: string | null | undefined
+  detail?: string | null
 ): string {
   const label =
     category && category in CANCELLATION_CATEGORY_LABEL
