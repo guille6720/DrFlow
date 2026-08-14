@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, FileText, Plus, Search } from "lucide-react";
+import { CalendarDays, CheckCircle2, Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -61,10 +61,21 @@ type Props = PatientEhrViewProps & {
 
 type FocusSection = "evolucion" | "diagnostico" | "tratamiento" | "medicacion" | "vitales" | "archivo";
 
-function truncate(text: string, max = 140): string {
+function truncate(text: string, max = 180): string {
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length <= max) return clean;
   return `${clean.slice(0, max - 1)}…`;
+}
+
+function formatConsultationDateLabel(value: string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }
 
 function DrappHistorySidebar({
@@ -92,8 +103,8 @@ function DrappHistorySidebar({
   }, [search, sidebarList]);
 
   return (
-    <aside className="drapp-consulta-sidebar flex w-full shrink-0 flex-col border-b border-slate-200 bg-white lg:w-[280px] lg:border-b-0 lg:border-r">
-      <div className="border-b border-slate-200 p-2">
+    <aside className="drapp-consulta-sidebar flex w-full shrink-0 flex-col border-b border-slate-200 bg-white lg:w-[300px] lg:border-b-0 lg:border-r">
+      <div className="border-b border-slate-200 p-2.5">
         <label className="relative block">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
           <input
@@ -101,16 +112,16 @@ function DrappHistorySidebar({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscador de evoluciones..."
-            className="w-full rounded-md border border-slate-200 bg-slate-50 py-2 pl-8 pr-2 text-xs text-slate-800 outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-300"
+            className="drapp-consulta-search w-full rounded border border-slate-200 bg-white py-2 pl-8 pr-2 text-xs text-slate-800 outline-none focus:border-[#5ba4e6] focus:ring-1 focus:ring-[#5ba4e6]/40"
           />
         </label>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="border-b border-sky-100 bg-sky-50 px-3 py-2.5">
-          <p className="text-xs font-bold text-sky-800">{pendingLabel}</p>
-          <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-sky-600">
-            Consulta en curso
+        <div className="border-b border-slate-100 px-3 py-2.5">
+          <p className="text-[13px] font-semibold text-[#2f7fbf]">
+            {formatPatientEhrSidebarDate(new Date().toISOString())} {pendingLabel}
           </p>
+          <p className="mt-0.5 text-[11px] font-medium text-slate-500">Consulta en curso</p>
         </div>
         {filtered.length === 0 ? (
           <p className="p-4 text-center text-xs text-slate-500">Sin evoluciones previas</p>
@@ -119,16 +130,29 @@ function DrappHistorySidebar({
             {filtered.map((c) => {
               const dayDx = diagnosisRows
                 .filter((d) => isSameCalendarDay(d.recordCreatedAt, c.created_at))
-                .slice(0, 3);
+                .slice(0, 6);
               const dayTx = treatmentRows
                 .filter((t) => isSameCalendarDay(t.recordCreatedAt, c.created_at))
-                .slice(0, 4);
+                .slice(0, 8);
+              const body = truncate(patientEhrEvolutionBody(c), 220);
+              const timeLabel = new Date(c.created_at).toLocaleTimeString("es-AR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
               return (
-                <li key={c.id} className="border-b border-slate-100 px-3 py-3 text-xs text-slate-700">
-                  <p className="font-bold text-sky-700">{formatPatientEhrSidebarDate(c.created_at)}</p>
-                  <p className="mt-1 leading-relaxed text-slate-600">
-                    {truncate(patientEhrEvolutionBody(c), 160)}
+                <li key={c.id} className="border-b border-slate-100 px-3 py-3 text-[12px] leading-snug text-slate-700">
+                  <p className="font-semibold text-[#2f7fbf]">
+                    {formatPatientEhrSidebarDate(c.created_at)}{" "}
+                    <span className="font-medium text-[#2f7fbf]/90">{c.professional_name}</span>
                   </p>
+                  {body ? (
+                    <div className="mt-2">
+                      <p className="font-semibold text-slate-800">Evoluciones</p>
+                      <p className="mt-0.5 text-slate-600">
+                        <span className="text-slate-400">{timeLabel}</span> {body}
+                      </p>
+                    </div>
+                  ) : null}
                   {dayDx.length > 0 ? (
                     <div className="mt-2">
                       <p className="font-semibold text-slate-800">Diagnósticos</p>
@@ -146,7 +170,7 @@ function DrappHistorySidebar({
                         {dayTx.map((t) => (
                           <li key={t.id}>
                             {t.product}
-                            {t.dose ? ` · ${t.dose}` : ""}
+                            {t.dose ? ` ${t.dose}` : ""}
                           </li>
                         ))}
                       </ul>
@@ -162,6 +186,34 @@ function DrappHistorySidebar({
   );
 }
 
+function DrappActionLink({
+  active,
+  onClick,
+  children,
+  showPlus = true,
+}: {
+  active?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  showPlus?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "drapp-consulta-action inline-flex items-center gap-0.5 px-2 py-1 text-[13px] font-medium transition",
+        active
+          ? "rounded bg-[#4f9fe0] text-white shadow-sm"
+          : "rounded text-[#2f7fbf] hover:bg-[#e8f4fc]"
+      )}
+    >
+      {showPlus ? <Plus className="h-3.5 w-3.5" strokeWidth={2.25} /> : null}
+      {children}
+    </button>
+  );
+}
+
 function DrappConsultaWorkspaceInner({
   patient,
   patientRecord,
@@ -174,15 +226,21 @@ function DrappConsultaWorkspaceInner({
   onOpenSheet,
   onFinalize,
   finalizing = false,
-}: Omit<Props, "consultations" | "diagnosisRows" | "treatmentRows" | "attachments" | "prescriptions" | "totalConsultations" | "usesHceExport" | "clinicalRecordsPagination" | "embedded">) {
+}: Omit<
+  Props,
+  | "consultations"
+  | "diagnosisRows"
+  | "treatmentRows"
+  | "attachments"
+  | "prescriptions"
+  | "totalConsultations"
+  | "usesHceExport"
+  | "clinicalRecordsPagination"
+  | "embedded"
+>) {
   const router = useRouter();
-  const {
-    filters,
-    toggleFilter,
-    sidebarList,
-    diagnosisRows,
-    treatmentRows,
-  } = usePatientEhrStateContext();
+  const { filters, toggleFilter, sidebarList, diagnosisRows, treatmentRows } =
+    usePatientEhrStateContext();
 
   const [sidebarSearch, setSidebarSearch] = useState("");
   const [activeFocus, setActiveFocus] = useState<FocusSection>("evolucion");
@@ -196,6 +254,7 @@ function DrappConsultaWorkspaceInner({
   const medicationSearchRef = useRef<HTMLInputElement>(null);
   const vitalsRef = useRef<HTMLTextAreaElement>(null);
   const archivoRef = useRef<HTMLInputElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
 
   const onConsultSaved = useCallback(() => {
     router.refresh();
@@ -209,6 +268,7 @@ function DrappConsultaWorkspaceInner({
     error: formError,
     professionalId: formProfessionalId,
     consultationAt,
+    setConsultationAt,
     chiefComplaint,
     setChiefComplaint,
     evolution,
@@ -245,6 +305,7 @@ function DrappConsultaWorkspaceInner({
     if (!saved) return;
     await onFinalize();
   }, [onFinalize, saveIfDirty]);
+
   const focusSection = useCallback((section: FocusSection) => {
     setActiveFocus(section);
     if (section === "vitales") setShowVitals(true);
@@ -269,17 +330,11 @@ function DrappConsultaWorkspaceInner({
   }, [focusSection]);
 
   const pendingLabel = useMemo(() => {
-    const pro = professionals.find((p) => p.id === (formProfessionalId || professionalId || defaultProfessionalId));
+    const pro = professionals.find(
+      (p) => p.id === (formProfessionalId || professionalId || defaultProfessionalId)
+    );
     return pro ? getProfessionalDisplayName(pro) : "Consulta en curso";
   }, [defaultProfessionalId, formProfessionalId, professionalId, professionals]);
-
-  const pillClass = (active: boolean) =>
-    cn(
-      "inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-semibold transition",
-      active
-        ? "border-sky-500 bg-sky-600 text-white shadow-sm"
-        : "border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100"
-    );
 
   return (
     <>
@@ -301,88 +356,92 @@ function DrappConsultaWorkspaceInner({
         />
 
         <main className="drapp-consulta-main min-w-0 flex-1 bg-white p-3 sm:p-4">
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <button type="button" className={pillClass(activeFocus === "evolucion")} onClick={() => focusSection("evolucion")}>
-              <Plus className="h-3.5 w-3.5" /> Evolución
-            </button>
-            <button type="button" className={pillClass(activeFocus === "archivo")} onClick={() => focusSection("archivo")}>
-              <Plus className="h-3.5 w-3.5" /> Archivo
-            </button>
-            <button type="button" className={pillClass(activeFocus === "diagnostico")} onClick={() => focusSection("diagnostico")}>
-              <Plus className="h-3.5 w-3.5" /> Diagnóstico
-            </button>
-            <button type="button" className={pillClass(activeFocus === "tratamiento")} onClick={() => focusSection("tratamiento")}>
-              <Plus className="h-3.5 w-3.5" /> Tratamiento
-            </button>
-            <button type="button" className={pillClass(activeFocus === "medicacion")} onClick={() => focusSection("medicacion")}>
-              <Plus className="h-3.5 w-3.5" /> Medicación
-            </button>
-            <button type="button" className={pillClass(activeFocus === "vitales")} onClick={() => focusSection("vitales")}>
-              Signos vitales
-            </button>
-            {canIssue ? (
-              <button
-                type="button"
-                className={pillClass(false)}
-                onClick={() => {
-                  flushEvolutionDraft();
-                  onOpenSheet?.("receta");
-                }}
-              >
-                <Plus className="h-3.5 w-3.5" /> Receta
-              </button>
-            ) : null}
-            {canIssue ? (
-              <button type="button" className={pillClass(false)} onClick={() => onOpenSheet?.("orden")}>
-                <FileText className="h-3.5 w-3.5" /> Orden
-              </button>
-            ) : null}
-
-            <div className="ml-auto flex flex-wrap items-center gap-2">
-              <Button type="submit" form={EHR_NEW_CONSULT_FORM_ID} size="sm" loading={formLoading}>
-                Guardar evolución
-              </Button>
-              {onFinalize ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  loading={finalizing || formLoading}
-                  onClick={() => void handleFinalizeClick()}
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  Finalizar consulta
-                </Button>
-              ) : null}
-            </div>
-          </div>
-
           <form
             id={EHR_NEW_CONSULT_FORM_ID}
             ref={formRef}
             onSubmit={handleSubmit}
             onKeyDown={handleFormKeyDown}
-            className="space-y-4"
+            className="space-y-3"
           >
             <input type="hidden" name="patient_id" value={patient.id} />
             <input type="hidden" name="professional_id" value={formProfessionalId} />
 
-            <section id="ehr-consult-evolucion" className="drapp-consulta-evolution rounded-md border border-amber-200 p-3">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <p className="text-xs font-semibold text-amber-900">Evolución</p>
-                <p className="text-[11px] text-amber-800/80">
-                  {consultationAt
-                    ? new Date(consultationAt).toLocaleString("es-AR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : null}
-                </p>
+            <section className="drapp-consulta-composer overflow-hidden rounded-sm border border-[#e8e0b8]">
+              <div className="drapp-consulta-actions flex flex-wrap items-center gap-1 border-b border-[#efe6b8] px-2 py-1.5">
+                <DrappActionLink
+                  active={activeFocus === "evolucion"}
+                  onClick={() => focusSection("evolucion")}
+                >
+                  Evolución
+                </DrappActionLink>
+                <DrappActionLink
+                  active={activeFocus === "archivo"}
+                  onClick={() => focusSection("archivo")}
+                >
+                  Archivo
+                </DrappActionLink>
+                <DrappActionLink
+                  active={activeFocus === "diagnostico"}
+                  onClick={() => focusSection("diagnostico")}
+                >
+                  Diagnóstico
+                </DrappActionLink>
+                <DrappActionLink
+                  active={activeFocus === "tratamiento"}
+                  onClick={() => focusSection("tratamiento")}
+                >
+                  Tratamiento
+                </DrappActionLink>
+                <DrappActionLink
+                  active={activeFocus === "medicacion"}
+                  onClick={() => focusSection("medicacion")}
+                >
+                  Medicación
+                </DrappActionLink>
+                <DrappActionLink
+                  active={activeFocus === "vitales"}
+                  onClick={() => focusSection("vitales")}
+                  showPlus={false}
+                >
+                  Signos vitales
+                </DrappActionLink>
+                {canIssue ? (
+                  <DrappActionLink
+                    onClick={() => {
+                      flushEvolutionDraft();
+                      onOpenSheet?.("receta");
+                    }}
+                  >
+                    Receta
+                  </DrappActionLink>
+                ) : null}
+                {canIssue ? (
+                  <DrappActionLink onClick={() => onOpenSheet?.("orden")}>Orden</DrappActionLink>
+                ) : null}
+
+                <div className="ml-auto flex flex-wrap items-center gap-2 px-1">
+                  <button
+                    type="submit"
+                    disabled={formLoading}
+                    className="text-[13px] font-semibold text-[#2f7fbf] hover:underline disabled:opacity-60"
+                  >
+                    {formLoading ? "Guardando…" : "Guardar"}
+                  </button>
+                  {onFinalize ? (
+                    <button
+                      type="button"
+                      disabled={finalizing || formLoading}
+                      onClick={() => void handleFinalizeClick()}
+                      className="inline-flex items-center gap-1 text-[13px] font-semibold text-[#2f7fbf] hover:underline disabled:opacity-60"
+                    >
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      {finalizing ? "Finalizando…" : "Finalizar"}
+                    </button>
+                  ) : null}
+                </div>
               </div>
-              <div className="space-y-3">
+
+              <div className="drapp-consulta-evolution space-y-2 p-3">
                 <Textarea
                   name="chief_complaint"
                   label="Motivo de consulta"
@@ -391,43 +450,69 @@ function DrappConsultaWorkspaceInner({
                   value={chiefComplaint}
                   onChange={(e) => setChiefComplaint(e.target.value)}
                   placeholder="Motivo de la consulta…"
-                  className="border-amber-200 bg-[#fffdf3] text-slate-900"
+                  className="drapp-consulta-evolution-input border-[#e8d98a] bg-transparent text-slate-900"
                 />
                 <Textarea
                   ref={evolutionRef}
                   name="evolution"
-                  label="Examen / evolución"
+                  label="Evolución"
                   required
-                  rows={6}
+                  rows={8}
                   voiceInput
                   value={evolution}
                   onChange={(e) => setEvolution(e.target.value)}
-                  placeholder="Escribí aquí el examen y la evolución."
-                  className="drapp-consulta-evolution-input min-h-[160px] border-amber-200 bg-[#fff8dc] text-slate-900"
+                  placeholder="Escribe aquí la evolución"
+                  className="drapp-consulta-evolution-input min-h-[180px] border-[#e8d98a] bg-transparent text-[14px] leading-relaxed text-slate-900"
                 />
+
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                  <label className="inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-slate-700">
+                    <CalendarDays className="h-4 w-4 text-[#2f7fbf]" aria-hidden />
+                    <span className="font-medium text-[#2f7fbf]">
+                      {formatConsultationDateLabel(consultationAt)}
+                    </span>
+                    <input
+                      ref={dateInputRef}
+                      type="datetime-local"
+                      value={consultationAt}
+                      onChange={(e) => setConsultationAt(e.target.value)}
+                      className="sr-only"
+                      tabIndex={-1}
+                    />
+                    <button
+                      type="button"
+                      className="text-[12px] text-slate-500 underline-offset-2 hover:underline"
+                      onClick={() => dateInputRef.current?.showPicker?.() ?? dateInputRef.current?.click()}
+                    >
+                      Cambiar
+                    </button>
+                  </label>
+                </div>
               </div>
             </section>
 
-            <ConsultEvolutionStructuredFields
-              diagnoses={diagnoses}
-              onDiagnosesChange={setDiagnoses}
-              clinicalTreatments={clinicalTreatments}
-              onClinicalTreatmentsChange={setClinicalTreatments}
-              medications={treatmentMedications}
-              onMedicationsChange={setTreatmentMedications}
-              indications={indications}
-              onIndicationsChange={setIndications}
-              diagnosisHighlighted={activeFocus === "diagnostico"}
-              treatmentHighlighted={activeFocus === "tratamiento"}
-              medicationHighlighted={activeFocus === "medicacion"}
-              diagnosisSearchRef={diagnosisSearchRef}
-              treatmentSearchRef={treatmentSearchRef}
-              medicationSearchRef={medicationSearchRef}
-              diagnosisAnchorRef={diagnosisAnchorRef}
-            />
+            <div className="drapp-consulta-structured rounded-sm border border-slate-200 bg-white p-3">
+              <ConsultEvolutionStructuredFields
+                diagnoses={diagnoses}
+                onDiagnosesChange={setDiagnoses}
+                clinicalTreatments={clinicalTreatments}
+                onClinicalTreatmentsChange={setClinicalTreatments}
+                medications={treatmentMedications}
+                onMedicationsChange={setTreatmentMedications}
+                indications={indications}
+                onIndicationsChange={setIndications}
+                diagnosisHighlighted={activeFocus === "diagnostico"}
+                treatmentHighlighted={activeFocus === "tratamiento"}
+                medicationHighlighted={activeFocus === "medicacion"}
+                diagnosisSearchRef={diagnosisSearchRef}
+                treatmentSearchRef={treatmentSearchRef}
+                medicationSearchRef={medicationSearchRef}
+                diagnosisAnchorRef={diagnosisAnchorRef}
+              />
+            </div>
 
             {showVitals ? (
-              <section id="ehr-consult-vitales">
+              <section id="ehr-consult-vitales" className="rounded-sm border border-slate-200 p-3">
                 <Textarea
                   ref={vitalsRef}
                   label="Signos vitales"
@@ -443,7 +528,7 @@ function DrappConsultaWorkspaceInner({
             {showArchivo ? (
               <section
                 id="ehr-consult-archivo"
-                className="rounded-md border border-dashed border-slate-300 bg-slate-50 p-3"
+                className="rounded-sm border border-dashed border-slate-300 bg-slate-50 p-3"
               >
                 <p className="mb-2 text-xs font-semibold text-slate-600">Archivo adjunto</p>
                 <Button type="button" variant="outline" size="sm" onClick={() => onOpenSheet?.("archivo")}>
@@ -457,17 +542,14 @@ function DrappConsultaWorkspaceInner({
             {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
           </form>
 
-          <div className="mt-4">
+          <div className="drapp-consulta-tables mt-4">
             <PatientEhrClinicalTables
               patientId={patient.id}
-              diagnosisRows={
-                filters.diagnostics
-                  ? diagnosisRows
-                  : []
-              }
+              diagnosisRows={filters.diagnostics ? diagnosisRows : []}
               treatmentRows={filters.treatments ? treatmentRows : []}
               showDiagnostics={filters.diagnostics}
               showTreatments={filters.treatments}
+              stacked
             />
           </div>
         </main>

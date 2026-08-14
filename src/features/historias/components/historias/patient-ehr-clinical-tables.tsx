@@ -14,6 +14,7 @@ type Props = {
   treatmentRows: PatientEhrTreatmentRow[];
   showDiagnostics: boolean;
   showTreatments: boolean;
+  stacked?: boolean;
 };
 
 export function PatientEhrClinicalTables({
@@ -22,11 +23,12 @@ export function PatientEhrClinicalTables({
   treatmentRows,
   showDiagnostics,
   showTreatments,
+  stacked = false,
 }: Props) {
   if (!showDiagnostics && !showTreatments) return null;
 
   return (
-    <div className="mt-4 grid gap-4 xl:grid-cols-2">
+    <div className={stacked ? "mt-4 grid gap-4" : "mt-4 grid gap-4 xl:grid-cols-2"}>
       {showDiagnostics ? (
         <section className="drflow-ehr-table-panel overflow-hidden rounded-sm border border-[var(--border)]">
           <h3 className="drflow-ehr-table-title border-b border-[var(--border)] px-3 py-2 text-sm font-bold">
@@ -124,7 +126,13 @@ export function PatientEhrClinicalTables({
                         {row.notes ? <p className="mt-0.5 drflow-ehr-muted">{row.notes}</p> : null}
                       </td>
                       <td className="px-3 py-2">{row.dose}</td>
-                      <td className="px-3 py-2">{row.status}</td>
+                      <td className="px-3 py-2">
+                        {row.status?.toLowerCase() === "actual" ? (
+                          <span className="font-medium text-emerald-600">{row.status}</span>
+                        ) : (
+                          row.status
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}
