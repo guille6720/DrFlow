@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { buildConsultIndicationsText } from "@/features/recetas/utils/build-consult-indications-text";
 import { formatPrescriptionMedicationLabel } from "@/features/recetas/utils/format-prescription-medication-label";
+import { buildIndicationsSnapshot } from "@/features/historias/utils/clinical-structured-entries";
 
 import type { PrescriptionMedication } from "@/types/prescription";
 
@@ -11,6 +12,8 @@ const sampleMed: PrescriptionMedication = {
   presentation: "10 MG comp. x 30",
   quantity: 1,
   posology: "",
+  dose: "10 mg",
+  frequency: "1/día",
 };
 
 describe("formatPrescriptionMedicationLabel", () => {
@@ -26,13 +29,25 @@ describe("formatPrescriptionMedicationLabel", () => {
 });
 
 describe("buildConsultIndicationsText", () => {
-  it("merges medications and free text", () => {
+  it("builds a printable snapshot with treatment and notes sections", () => {
     expect(buildConsultIndicationsText([sampleMed], "Control en 30 días")).toBe(
-      "ROSUVAST 10 MG comp. x 30\n\nControl en 30 días"
+      "Tratamiento:\n- ROSUVAST 10 MG comp. x 30 · 10 mg · 1/día\n\nIndicaciones:\nControl en 30 días"
     );
   });
 
   it("returns only free text when no medications", () => {
     expect(buildConsultIndicationsText([], "Reposo")).toBe("Reposo");
+  });
+});
+
+describe("buildIndicationsSnapshot", () => {
+  it("does not invent parseable pipe rows", () => {
+    const snapshot = buildIndicationsSnapshot(
+      [{ product: "Enalapril", dose: "10mg", frequency: "1/día" }],
+      "Control"
+    );
+    expect(snapshot).toContain("Tratamiento:");
+    expect(snapshot).toContain("- Enalapril · 10mg · 1/día");
+    expect(snapshot).toContain("Indicaciones:\nControl");
   });
 });

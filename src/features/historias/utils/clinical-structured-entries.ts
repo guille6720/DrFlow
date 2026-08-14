@@ -32,6 +32,33 @@ export function buildDiagnosisText(entries: ClinicalDiagnosisEntry[], fallback =
     .join("\n");
 }
 
+/** Snapshot imprimible de tratamientos. No está pensado para re-parsearse a filas. */
+export function buildIndicationsSnapshot(
+  treatments: ClinicalTreatmentEntry[],
+  freeText = ""
+): string {
+  const lines = treatments
+    .map((t) => {
+      const product = t.product.trim();
+      if (!product) return "";
+      const parts = [product, t.dose?.trim(), t.frequency?.trim()].filter(Boolean);
+      const base = `- ${parts.join(" · ")}`;
+      const notes = t.notes?.trim();
+      return notes ? `${base} (${notes})` : base;
+    })
+    .filter(Boolean);
+
+  const notes = freeText.trim();
+  const blocks: string[] = [];
+  if (lines.length > 0) {
+    blocks.push(`Tratamiento:\n${lines.join("\n")}`);
+  }
+  if (notes) {
+    blocks.push(lines.length > 0 ? `Indicaciones:\n${notes}` : notes);
+  }
+  return blocks.join("\n\n");
+}
+
 export function medicationsToTreatmentEntries(
   medications: PrescriptionMedication[]
 ): ClinicalTreatmentEntry[] {

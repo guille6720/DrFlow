@@ -8,8 +8,8 @@ import {
   formatPrintHeaderDate,
   formatPrintTime,
   formatPrintTreatmentMetaDate,
+  getIndicationsSnapshot,
   parseInlineDiagnoses,
-  parseInlineTreatments,
   professionalMetaLine,
   splitTreatmentProductLab,
 } from "@/features/historias/components/historias/patient-ehr-print-utils";
@@ -78,7 +78,7 @@ function renderEvolutionBlock(
   professionals: Array<ProfessionalSignatureSource & { id?: string }> = []
 ): string {
   const diagnoses = parseInlineDiagnoses(consultation);
-  const treatments = parseInlineTreatments(consultation);
+  const indicationsSnapshot = getIndicationsSnapshot(consultation);
   const body = escapeHtml(evolutionText(consultation));
 
   const diagnosisHtml =
@@ -91,14 +91,11 @@ function renderEvolutionBlock(
           .join("")}</ul></section>`
       : "";
 
-  const treatmentHtml =
-    treatments.length > 0
-      ? `<section class="section"><h3 class="section-title">Tratamientos</h3><ul class="treat-list">${treatments
-          .map((item) => {
-            return `<li><p class="treat-line"><strong>${escapeHtml(item.product)}</strong>${item.lab ? `<span class="treat-lab">${escapeHtml(item.lab)}</span>` : ""}</p>${item.dose ? `<p class="treat-dose">${escapeHtml(item.dose)}</p>` : ""}</li>`;
-          })
-          .join("")}</ul></section>`
-      : "";
+  const indicationsHtml = indicationsSnapshot
+    ? `<section class="section"><h3 class="section-title">Indicaciones</h3><div class="evolution-body">${escapeHtml(
+        indicationsSnapshot
+      )}</div></section>`
+    : "";
 
   const signature = resolveClinicalRecordDocumentSignature({
     professionalId: consultation.professional_id,
@@ -115,7 +112,7 @@ function renderEvolutionBlock(
         <div class="evolution-body">${body}</div>
       </section>
       ${diagnosisHtml}
-      ${treatmentHtml}
+      ${indicationsHtml}
       ${buildDocumentSignatureHtml(signature)}
     </article>`;
 }
