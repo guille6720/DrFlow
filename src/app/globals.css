@@ -4639,3 +4639,66 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-sect
   color: #334155;
 }
 
+/* Nuevo turno — contraste nítido (vence .drflow-card-body dt cian del tema oscuro) */
+html .turnos-nuevo-wizard .turnos-nuevo-card.drflow-ui-card,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card.drflow-ui-card,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card.drflow-ui-card,
+html[data-ui-palette="azure"] .turnos-nuevo-wizard .turnos-nuevo-card.drflow-ui-card {
+  background: linear-gradient(135deg, #ecfdf5 0%, #bbf7d0 52%, #86efac 100%) !important;
+  border-color: #34d399 !important;
+  color: #0f172a !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body,
+html .turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-card-body,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-card-body {
+  background: transparent !important;
+  color: #0f172a !important;
+}
+
+html .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body dt,
+html .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body .turnos-summary-label,
+html .turnos-nuevo-wizard .turnos-nuevo-card .turnos-summary-label,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body dt,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body .turnos-summary-label,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body dt,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card .turnos-summary-label,
+html[data-ui-palette="azure"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body dt {
+  color: #0f172a !important;
+  opacity: 1 !important;
+}
+
+html .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body dd,
+html .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body .turnos-summary-value,
+html .turnos-nuevo-wizard .turnos-nuevo-card .turnos-summary-value,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body dd,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body .turnos-summary-value,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-card-body dd,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card .turnos-summary-value {
+  color: #020617 !important;
+  opacity: 1 !important;
+}
+
+html .turnos-nuevo-wizard .turnos-nuevo-card .turnos-summary-muted,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card .turnos-summary-muted,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card .turnos-summary-muted {
+  color: #1e293b !important;
+  opacity: 1 !important;
+}
+
+html .turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-card-title,
+html .turnos-nuevo-wizard .turnos-nuevo-card label,
+html .turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-label,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-card-title,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card label,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-label,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-ui-card-title,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card label {
+  color: #0f172a !important;
+  opacity: 1 !important;
+}
+

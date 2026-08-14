@@ -73,10 +73,10 @@ type Props = {
   };
 };
 
-const LABEL_CLASS = "text-xs font-bold uppercase tracking-wide text-slate-800";
-const VALUE_CLASS = "font-semibold text-slate-950";
-const MUTED_CLASS = "text-sm font-medium text-slate-700";
-const SECTION_HEADING = "mb-2 text-xs font-bold uppercase tracking-wide text-slate-800";
+const LABEL_CLASS = "turnos-summary-label text-xs font-bold uppercase tracking-wide";
+const VALUE_CLASS = "turnos-summary-value mt-0.5 font-semibold";
+const MUTED_CLASS = "turnos-summary-muted text-sm font-medium";
+const SECTION_HEADING = "turnos-summary-label mb-2 text-xs font-bold uppercase tracking-wide";
 const TURNOS_CARD_CLASS = "turnos-nuevo-card";
 
 function mergePatientSelection(
@@ -105,7 +105,7 @@ function SummaryRow({ label, children }: { label: string; children: ReactNode })
   return (
     <div>
       <dt className={LABEL_CLASS}>{label}</dt>
-      <dd className={`mt-0.5 ${VALUE_CLASS}`}>{children}</dd>
+      <dd className={VALUE_CLASS}>{children}</dd>
     </div>
   );
 }
