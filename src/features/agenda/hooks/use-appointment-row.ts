@@ -94,20 +94,21 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
           return { error: `No se pudo cancelar el turno (HTTP ${response.status})` };
         }
 
-        if (!response.ok || ("error" in data && data.error)) {
+        if ("error" in data) {
           return {
-            error:
-              "error" in data && data.error
-                ? data.error
-                : `No se pudo cancelar el turno (HTTP ${response.status})`,
+            error: data.error || `No se pudo cancelar el turno (HTTP ${response.status})`,
           };
         }
+        if (!response.ok) {
+          return { error: `No se pudo cancelar el turno (HTTP ${response.status})` };
+        }
 
-        if (data.whatsapp?.phone) {
+        const whatsapp = data.whatsapp;
+        if (whatsapp?.phone) {
           try {
-            const when = new Date(data.whatsapp.startAt);
+            const when = new Date(whatsapp.startAt);
             const dateLabel = Number.isNaN(when.getTime())
-              ? data.whatsapp.startAt
+              ? whatsapp.startAt
               : when.toLocaleString("es-AR", {
                   weekday: "long",
                   day: "2-digit",
@@ -118,10 +119,10 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
                 });
             const message = [
               `Le informamos que su turno del ${dateLabel} fue cancelado por el consultorio.`,
-              `Motivo: ${data.whatsapp.reason}`,
+              `Motivo: ${whatsapp.reason}`,
               "Podés solicitar un nuevo turno desde la App.",
             ].join(" ");
-            const url = buildWhatsAppUrl(data.whatsapp.phone, message);
+            const url = buildWhatsAppUrl(whatsapp.phone, message);
             if (url) window.open(url, "_blank", "noopener,noreferrer");
           } catch {
             // Non-blocking — cancellation already persisted.
