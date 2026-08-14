@@ -108,6 +108,7 @@ export function canAccessRoute(
     "/turnos/configuracion": "manageSettings",
     "/turnos/reportes": "viewReports",
     "/sala-espera": "manageWaitingRoom",
+    "/consultas": "editClinicalRecords",
     "/secretaria": "manageAdminDocuments",
     "/ingreso-profesionales": "manageStaff",
     "/plantillas": "editClinicalRecords",

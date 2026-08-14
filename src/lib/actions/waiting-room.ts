@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { logAudit } from "@/core/auth/session.server";
+import { logAudit } from "@/core/auth/session.actions";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { createClient } from "@/core/supabase/server";
 import { waitingRoomStatusSchema } from "@/core/validations/cash-schemas";
@@ -45,6 +45,7 @@ export async function updateWaitingRoomStatus(
   });
 
   revalidatePath("/sala-espera");
+  revalidatePath("/consultas");
   revalidatePath("/agenda");
   revalidatePath("/turnos/agenda");
   return { data };

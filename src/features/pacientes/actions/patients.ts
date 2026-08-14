@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { logAudit } from "@/core/auth/session.server";
+import { logAudit } from "@/core/auth/session.actions";
 import { createClient } from "@/core/supabase/server";
 import { patientAdminSchema } from "@/core/validations/cash-schemas";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";

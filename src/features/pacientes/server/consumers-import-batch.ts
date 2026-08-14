@@ -5,7 +5,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
-import { logAudit } from "@/core/auth/session.server";
+import { logAudit } from "@/core/auth/session.actions";
 import { sanitizeText } from "@/core/validations/schemas";
 
 import {

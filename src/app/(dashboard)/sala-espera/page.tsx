@@ -60,6 +60,7 @@ export default async function SalaEsperaPage() {
         </Link>
         <WaitingRoomView
           clinicId={clinicId}
+          redirectDoctorOnConfirm={role === "doctor"}
           initialRows={(appointments ?? []).map((a) => {
             const pro = Array.isArray(a.professionals) ? a.professionals[0] : a.professionals;
             const profProfile = pro?.profiles;

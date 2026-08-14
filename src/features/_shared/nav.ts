@@ -61,6 +61,12 @@ export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
     featureId: "profesionales",
     children: [
       {
+        featureId: "historias",
+        href: "/consultas",
+        label: "Consultas",
+        permission: "editClinicalRecords",
+      },
+      {
         featureId: "profesionales",
         href: "/ingreso-profesionales",
         label: "Equipo",

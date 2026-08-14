@@ -426,5 +426,7 @@ export async function finalizeConsultation(
   revalidatePath("/turnos/agenda");
   revalidatePath("/dashboard");
   revalidatePath("/atenciones");
+  revalidatePath("/consultas");
+  revalidatePath("/sala-espera");
   return { success: true };
 }

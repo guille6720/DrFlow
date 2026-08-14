@@ -56,11 +56,15 @@ const WaitingRoomCard = memo(function WaitingRoomCard({
   columnValue,
   pending,
   onMove,
+  redirectDoctorOnConfirm,
+  onGoToConsultas,
 }: {
   row: WaitingRoomRow;
   columnValue: string;
   pending: boolean;
   onMove: (id: string, status: WaitingRoomStatus) => void;
+  redirectDoctorOnConfirm?: boolean;
+  onGoToConsultas?: (id: string) => void;
 }) {
   const patient = row.patients;
   const professional =
@@ -84,7 +88,7 @@ const WaitingRoomCard = memo(function WaitingRoomCard({
               disabled={pending}
               onClick={() => onMove(row.id, "confirmed")}
             >
-              Confirmar
+              {redirectDoctorOnConfirm ? "Confirmar → Consultas" : "Confirmar"}
             </Button>
             <Button
               size="sm"
@@ -98,14 +102,27 @@ const WaitingRoomCard = memo(function WaitingRoomCard({
           </>
         ) : null}
         {columnValue === "confirmed" ? (
-          <Button
-            size="sm"
-            type="button"
-            disabled={pending}
-            onClick={() => onMove(row.id, "in_consultation")}
-          >
-            A consultorio
-          </Button>
+          <>
+            <Button
+              size="sm"
+              type="button"
+              disabled={pending}
+              onClick={() => onMove(row.id, "in_consultation")}
+            >
+              A consultorio
+            </Button>
+            {redirectDoctorOnConfirm && onGoToConsultas ? (
+              <Button
+                size="sm"
+                variant="outline"
+                type="button"
+                disabled={pending}
+                onClick={() => onGoToConsultas(row.id)}
+              >
+                Ir a Consultas
+              </Button>
+            ) : null}
+          </>
         ) : null}
         {columnValue === "in_consultation" ? (
           <Button
@@ -125,9 +142,12 @@ const WaitingRoomCard = memo(function WaitingRoomCard({
 export function WaitingRoomView({
   clinicId,
   initialRows,
+  redirectDoctorOnConfirm = false,
 }: {
   clinicId: string;
   initialRows: WaitingRoomRow[];
+  /** When true (doctor), Confirmado navigates to Médicos → Consultas. */
+  redirectDoctorOnConfirm?: boolean;
 }) {
   const router = useRouter();
   const [rows, setRows] = useState(initialRows);
@@ -174,11 +194,19 @@ export function WaitingRoomView({
   const move = useCallback(
     (id: string, status: WaitingRoomStatus) => {
       startTransition(async () => {
-        await updateWaitingRoomStatus(id, status);
+        const result = await updateWaitingRoomStatus(id, status);
+        if (result?.error) {
+          return;
+        }
+        if (redirectDoctorOnConfirm && status === "confirmed") {
+          router.push(`/consultas?appointment=${id}`);
+          router.refresh();
+          return;
+        }
         router.refresh();
       });
     },
-    [router]
+    [redirectDoctorOnConfirm, router]
   );
 
   const { byStatus, issues } = useMemo(() => groupWaitingRoomRows(rows), [rows]);
@@ -198,6 +226,10 @@ export function WaitingRoomView({
                     columnValue={col.value}
                     pending={pending}
                     onMove={move}
+                    redirectDoctorOnConfirm={redirectDoctorOnConfirm}
+                    onGoToConsultas={(id) => {
+                      router.push(`/consultas?appointment=${id}`);
+                    }}
                   />
                 ))}
                 {columnRows.length === 0 ? (

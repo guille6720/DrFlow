@@ -22,6 +22,9 @@ function routesForRole(role: UserRole | null, isSuperadmin: boolean): readonly s
   if (role === "secretary") {
     return [...CORE_DASHBOARD_ROUTES, "/turnos/lista-espera", "/sala-espera"];
   }
+  if (role === "doctor") {
+    return [...CORE_DASHBOARD_ROUTES, "/consultas", "/sala-espera"];
+  }
   return CORE_DASHBOARD_ROUTES;
 }
 
