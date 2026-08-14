@@ -154,7 +154,7 @@ export async function loadPatientWorkspacePageData(
     ? supabase
         .from("clinical_records")
         .select(
-          "id, created_at, chief_complaint, diagnosis, evolution, indications, professional_id, professional_signature, professionals(license_national, license_provincial, profiles(full_name, email))",
+          "id, created_at, chief_complaint, diagnosis, evolution, indications, diagnosis_cie10, diagnoses_json, treatments_json, professional_id, professional_signature, professionals(license_national, license_provincial, profiles(full_name, email))",
           { count: "exact" }
         )
         .eq("clinic_id", clinicId)

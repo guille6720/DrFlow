@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { cn } from "@/shared/utils/cn";
 
+import { ConsultDiagnosisField } from "@/features/historias/components/historias/consult-diagnosis-field";
 import { ConsultTreatmentField } from "@/features/historias/components/historias/consult-treatment-field";
 import { PatientEhrClinicalTables } from "@/features/historias/components/historias/patient-ehr-clinical-tables";
 import { PatientEhrDemographics } from "@/features/historias/components/historias/patient-ehr-demographics";
@@ -190,7 +191,7 @@ function DrappConsultaWorkspaceInner({
   const [showArchivo, setShowArchivo] = useState(false);
 
   const evolutionRef = useRef<HTMLTextAreaElement>(null);
-  const diagnosisRef = useRef<HTMLTextAreaElement>(null);
+  const diagnosisAnchorRef = useRef<HTMLDivElement>(null);
   const treatmentSearchRef = useRef<HTMLInputElement>(null);
   const vitalsRef = useRef<HTMLTextAreaElement>(null);
   const archivoRef = useRef<HTMLInputElement>(null);
@@ -220,7 +221,7 @@ function DrappConsultaWorkspaceInner({
     queueMicrotask(() => {
       const map: Record<FocusSection, HTMLElement | null | undefined> = {
         evolucion: evolutionRef.current,
-        diagnostico: diagnosisRef.current,
+        diagnostico: diagnosisAnchorRef.current,
         tratamiento: treatmentSearchRef.current,
         vitales: vitalsRef.current,
         archivo: archivoRef.current,
@@ -353,17 +354,11 @@ function DrappConsultaWorkspaceInner({
               />
             </section>
 
-            <section id="ehr-consult-diagnostico" className="space-y-2">
-              <Textarea
-                ref={diagnosisRef}
-                name="diagnosis"
-                label="Diagnóstico"
-                rows={3}
-                voiceInput
-                value={form.diagnosis}
-                onChange={(e) => form.setDiagnosis(e.target.value)}
-                placeholder="Diagnóstico principal o presuntivo (ej. CIE-10 / texto clínico)"
-                className={cn(activeFocus === "diagnostico" && "ring-2 ring-sky-400/50")}
+            <section id="ehr-consult-diagnostico" ref={diagnosisAnchorRef} className="space-y-2">
+              <ConsultDiagnosisField
+                diagnoses={form.diagnoses}
+                onDiagnosesChange={form.setDiagnoses}
+                highlighted={activeFocus === "diagnostico"}
               />
             </section>
 

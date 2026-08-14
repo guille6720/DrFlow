@@ -8,6 +8,11 @@ import type { ConsultPatientPickerRow } from "@/core/supabase/query-types";
 import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation";
 
 import { createClinicalRecord } from "@/features/historias/actions/clinical-records";
+import {
+  buildDiagnosisText,
+  medicationsToTreatmentEntries,
+  type ClinicalDiagnosisEntry,
+} from "@/features/historias/utils/clinical-structured-entries";
 import type { PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { buildConsultIndicationsText } from "@/features/recetas/utils/build-consult-indications-text";
@@ -88,6 +93,7 @@ type ConsultFormDraft = {
   evolution: string;
   chiefComplaint: string;
   diagnosis: string;
+  diagnoses: ClinicalDiagnosisEntry[];
   indications: string;
   treatmentMedications: PrescriptionMedication[];
   vitals: string;
@@ -124,6 +130,7 @@ export function useNuevaConsultaForm({
   const [evolution, setEvolution] = useState("");
   const [chiefComplaint, setChiefComplaint] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
+  const [diagnoses, setDiagnoses] = useState<ClinicalDiagnosisEntry[]>([]);
   const [indications, setIndications] = useState("");
   const [treatmentMedications, setTreatmentMedications] = useState<PrescriptionMedication[]>([]);
   const [vitals, setVitals] = useState("");
@@ -136,6 +143,7 @@ export function useNuevaConsultaForm({
     evolution: "",
     chiefComplaint: "",
     diagnosis: "",
+    diagnoses: [],
     indications: "",
     treatmentMedications: [],
     vitals: "",
@@ -209,6 +217,12 @@ export function useNuevaConsultaForm({
     setDiagnosis(value);
   }
 
+  function handleDiagnosesChange(next: ClinicalDiagnosisEntry[]) {
+    clearTemplateVariables();
+    setDiagnoses(next);
+    setDiagnosis(buildDiagnosisText(next, ""));
+  }
+
   function handleIndicationsChange(value: string) {
     clearTemplateVariables();
     setIndications(value);
@@ -224,6 +238,7 @@ export function useNuevaConsultaForm({
     evolution.trim().length > 0 ||
     chiefComplaint.trim().length > 0 ||
     diagnosis.trim().length > 0 ||
+    diagnoses.length > 0 ||
     indications.trim().length > 0 ||
     treatmentMedications.length > 0 ||
     vitals.trim().length > 0;
@@ -233,12 +248,13 @@ export function useNuevaConsultaForm({
       evolution,
       chiefComplaint,
       diagnosis,
+      diagnoses,
       indications,
       treatmentMedications,
       vitals,
       isDirty,
     };
-  }, [evolution, chiefComplaint, diagnosis, indications, treatmentMedications, vitals, isDirty]);
+  }, [evolution, chiefComplaint, diagnosis, diagnoses, indications, treatmentMedications, vitals, isDirty]);
 
   function signatureForProfessionalId(id: string): string {
     const pro = professionals.find((p) => p.id === id);
@@ -322,8 +338,16 @@ export function useNuevaConsultaForm({
 
       const formData = new FormData(form);
       if (appointmentId) formData.set("appointment_id", appointmentId);
+      const diagnosisText = buildDiagnosisText(draft.diagnoses, draft.diagnosis);
+      const primaryCie10 = draft.diagnoses.find((d) => d.cie10_code?.trim())?.cie10_code ?? "";
       formData.set("chief_complaint", draft.chiefComplaint);
-      formData.set("diagnosis", draft.diagnosis);
+      formData.set("diagnosis", diagnosisText);
+      formData.set("diagnosis_cie10", primaryCie10);
+      formData.set("diagnoses_json", JSON.stringify(draft.diagnoses));
+      formData.set(
+        "treatments_json",
+        JSON.stringify(medicationsToTreatmentEntries(draft.treatmentMedications))
+      );
       formData.set("indications", buildConsultIndicationsText(draft.treatmentMedications, draft.indications));
       formData.set("evolution", buildEvolutionWithVitals(draft.evolution, draft.vitals));
       formData.set("professional_signature", professionalSignature);
@@ -344,6 +368,7 @@ export function useNuevaConsultaForm({
           setEvolution("");
           setChiefComplaint("");
           setDiagnosis("");
+          setDiagnoses([]);
           setIndications("");
           setTreatmentMedications([]);
           setVitals("");
@@ -496,6 +521,8 @@ export function useNuevaConsultaForm({
     setChiefComplaint: handleChiefComplaintChange,
     diagnosis,
     setDiagnosis: handleDiagnosisChange,
+    diagnoses,
+    setDiagnoses: handleDiagnosesChange,
     indications,
     setIndications: handleIndicationsChange,
     treatmentMedications,

@@ -69,6 +69,7 @@ export async function createClinicalRecord(formData: FormData) {
   });
 
   revalidatePath("/historias");
+  revalidatePath("/consultas");
   revalidatePath("/pacientes");
   revalidatePath(`/pacientes/${parsed.data.patient_id}`, "page");
   return { data: result.data };

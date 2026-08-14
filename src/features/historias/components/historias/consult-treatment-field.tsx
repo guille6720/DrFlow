@@ -216,21 +216,58 @@ export function ConsultTreatmentField({
       </div>
 
       {medications.length > 0 ? (
-        <ul className="flex flex-wrap gap-2">
+        <ul className="space-y-2">
           {medications.map((med, index) => (
             <li
               key={`${med.vademecum_code ?? med.generic_name}-${index}`}
-              className="inline-flex max-w-full items-center gap-1 rounded-full border border-teal-500/30 bg-teal-500/10 px-2.5 py-1 text-xs font-medium"
+              className="rounded-md border border-teal-500/30 bg-teal-500/5 p-2.5"
             >
-              <span className="truncate">{formatPrescriptionMedicationLabel(med)}</span>
-              <button
-                type="button"
-                aria-label={`Quitar ${formatPrescriptionMedicationLabel(med)}`}
-                onClick={() => handleRemove(index)}
-                className="rounded-full p-0.5 hover:bg-teal-500/20"
-              >
-                <X className="h-3 w-3" />
-              </button>
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-semibold text-slate-800">
+                  {formatPrescriptionMedicationLabel({
+                    ...med,
+                    dose: undefined,
+                    frequency: undefined,
+                    posology: "",
+                  })}
+                </p>
+                <button
+                  type="button"
+                  aria-label={`Quitar ${formatPrescriptionMedicationLabel(med)}`}
+                  onClick={() => handleRemove(index)}
+                  className="rounded-full p-0.5 hover:bg-teal-500/20"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                <input
+                  type="text"
+                  value={med.dose ?? med.concentration ?? ""}
+                  placeholder="Dosis (ej: 50 mg)"
+                  onChange={(e) => {
+                    const next = [...medications];
+                    next[index] = { ...med, dose: e.target.value };
+                    onMedicationsChange(next);
+                  }}
+                  className="drflow-clinical-combobox-input rounded-md px-2 py-1.5 text-xs"
+                />
+                <input
+                  type="text"
+                  value={med.frequency ?? med.posology ?? ""}
+                  placeholder="Frecuencia (ej: 1-0-1)"
+                  onChange={(e) => {
+                    const next = [...medications];
+                    next[index] = {
+                      ...med,
+                      frequency: e.target.value,
+                      posology: e.target.value,
+                    };
+                    onMedicationsChange(next);
+                  }}
+                  className="drflow-clinical-combobox-input rounded-md px-2 py-1.5 text-xs"
+                />
+              </div>
             </li>
           ))}
         </ul>

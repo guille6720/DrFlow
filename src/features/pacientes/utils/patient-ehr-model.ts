@@ -56,6 +56,10 @@ import {
 } from "@/lib/utils/ehr-clinical-category";
 import { isHceStructuralChiefComplaint } from "@/lib/utils/hce-export-parse";
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
+import {
+  parseDiagnosesJson,
+  parseTreatmentsJson,
+} from "@/features/historias/utils/clinical-structured-entries";
 
 function formatShortDate(iso: string): string {
   const d = new Date(iso);
@@ -172,6 +176,9 @@ export function buildEhrPayloadFromRecords(
     diagnosis: string | null;
     evolution: string | null;
     indications: string | null;
+    diagnosis_cie10?: string | null;
+    diagnoses_json?: unknown;
+    treatments_json?: unknown;
     professional_name: string;
     professional_license_national?: string | null;
     professional_license_provincial?: string | null;
@@ -196,6 +203,8 @@ export function buildEhrPayloadFromRecords(
     const category = classifyCategory(chief, diagnosis, evolution);
     const dateLabel = formatShortDate(r.created_at);
     const recordCreatedAt = r.created_at;
+    const structuredDiagnoses = parseDiagnosesJson(r.diagnoses_json);
+    const structuredTreatments = parseTreatmentsJson(r.treatments_json);
 
     const skipSidebar = isHceStructuralChiefComplaint(r.chief_complaint);
 
@@ -217,53 +226,91 @@ export function buildEhrPayloadFromRecords(
       });
     }
 
-    const diagText = diagnosis;
-    if (diagText && category !== "vitals" && category !== "document" && !looksLikeClinicalFileName(diagText)) {
-      const key = diagText.toLowerCase().slice(0, 120);
-
-      if (looksLikeMedication(diagText) || category === "treatment") {
-        if (!treatmentRows.some((t) => t.product.toLowerCase().slice(0, 120) === key)) {
-          treatmentRows.push({
-            id: `t-${r.id}-diag`,
-            dateLabel,
-            recordCreatedAt,
-            product: diagText.slice(0, 120),
-            dose: extractMedicationDose(diagText),
-            frequency: "—",
-            notes: (r.indications ?? r.evolution ?? "").trim() || diagText,
-            status: "Actual",
-            recordId: r.id,
-          });
-        }
-      } else if (!seenDiagnosis.has(key)) {
+    if (structuredDiagnoses.length > 0) {
+      for (const [i, d] of structuredDiagnoses.entries()) {
+        const name = d.cie10_code ? `${d.name} (CIE-10: ${d.cie10_code})` : d.name;
+        const key = name.toLowerCase().slice(0, 120);
+        if (seenDiagnosis.has(key)) continue;
         seenDiagnosis.add(key);
         diagnosisRows.push({
-          id: `d-${r.id}`,
+          id: `d-json-${r.id}-${i}`,
           dateLabel,
           recordCreatedAt,
-          name: diagText,
-          chronic: category === "diagnostic" || chief.toLowerCase().includes("crónic"),
+          name,
+          chronic: Boolean(d.is_chronic),
           recordId: r.id,
         });
       }
+    } else {
+      const diagText = diagnosis;
+      if (
+        diagText &&
+        category !== "vitals" &&
+        category !== "document" &&
+        !looksLikeClinicalFileName(diagText)
+      ) {
+        const key = diagText.toLowerCase().slice(0, 120);
+
+        if (looksLikeMedication(diagText) || category === "treatment") {
+          if (!treatmentRows.some((t) => t.product.toLowerCase().slice(0, 120) === key)) {
+            treatmentRows.push({
+              id: `t-${r.id}-diag`,
+              dateLabel,
+              recordCreatedAt,
+              product: diagText.slice(0, 120),
+              dose: extractMedicationDose(diagText),
+              frequency: "—",
+              notes: (r.indications ?? r.evolution ?? "").trim() || diagText,
+              status: "Actual",
+              recordId: r.id,
+            });
+          }
+        } else if (!seenDiagnosis.has(key)) {
+          seenDiagnosis.add(key);
+          diagnosisRows.push({
+            id: `d-${r.id}`,
+            dateLabel,
+            recordCreatedAt,
+            name: diagText,
+            chronic: category === "diagnostic" || chief.toLowerCase().includes("crónic"),
+            recordId: r.id,
+          });
+        }
+      }
     }
 
-    if (r.indications?.trim()) {
+    if (structuredTreatments.length > 0) {
+      for (const [i, t] of structuredTreatments.entries()) {
+        treatmentRows.push({
+          id: `t-json-${r.id}-${i}`,
+          dateLabel,
+          recordCreatedAt,
+          product: t.product.slice(0, 120),
+          dose: t.dose?.slice(0, 40) ?? "—",
+          frequency: t.frequency?.slice(0, 40) ?? "—",
+          notes: t.notes ?? t.product,
+          status: t.status ?? "Actual",
+          recordId: r.id,
+        });
+      }
+    } else if (r.indications?.trim()) {
       const parsed = parseTreatmentLines(r.indications, r.id, dateLabel, recordCreatedAt);
       if (parsed.length > 0) {
         treatmentRows.push(...parsed);
       }
     }
+
     if (
       category === "treatment" &&
-      diagText &&
+      diagnosis &&
+      structuredTreatments.length === 0 &&
       !treatmentRows.some((t) => t.recordId === r.id)
     ) {
       treatmentRows.push({
         id: `t-${r.id}`,
         dateLabel,
         recordCreatedAt,
-        product: diagText.slice(0, 80),
+        product: diagnosis.slice(0, 80),
         dose: (r.indications ?? "").trim() || "—",
         frequency: "—",
         notes: (r.evolution ?? "").trim() || "—",

@@ -8,6 +8,7 @@ import { SignatureImage } from "@/core/components/ui/signature-image";
 import { cn } from "@/shared/utils/cn";
 
 import { ClinicalTemplateVariablesPanel } from "@/features/historias/components/historias/clinical-template-variables-panel";
+import { ConsultDiagnosisField } from "@/features/historias/components/historias/consult-diagnosis-field";
 import { ConsultTreatmentField } from "@/features/historias/components/historias/consult-treatment-field";
 import type { NuevaConsultaFormState } from "@/features/historias/hooks/use-nueva-consulta-form";
 import type { PatientWorkspaceFocus } from "@/features/pacientes/utils/patient-workspace-actions";
@@ -53,8 +54,8 @@ export function PatientEhrNewConsultPanel({
     setEvolution,
     chiefComplaint,
     setChiefComplaint,
-    diagnosis,
-    setDiagnosis,
+    diagnoses,
+    setDiagnoses,
     indications,
     setIndications,
     treatmentMedications,
@@ -79,7 +80,7 @@ export function PatientEhrNewConsultPanel({
   } = form;
 
   const evolutionRef = useRef<HTMLTextAreaElement>(null);
-  const diagnosisRef = useRef<HTMLTextAreaElement>(null);
+  const diagnosisAnchorRef = useRef<HTMLDivElement>(null);
   const treatmentSearchRef = useRef<HTMLInputElement>(null);
   const vitalsRef = useRef<HTMLTextAreaElement>(null);
   const {
@@ -94,7 +95,7 @@ export function PatientEhrNewConsultPanel({
   useEffect(() => {
     const target =
       focus === "diagnostico"
-        ? diagnosisRef
+        ? diagnosisAnchorRef
         : focus === "tratamiento"
           ? treatmentSearchRef
           : focus === "vitales"
@@ -185,17 +186,11 @@ export function PatientEhrNewConsultPanel({
           placeholder="Motivo de la consulta (opcional)"
         />
 
-        <div id={sectionId("diagnostico")}>
-          <Textarea
-            ref={diagnosisRef}
-            name="diagnosis"
-            label="Diagnóstico"
-            rows={2}
-            voiceInput
-            value={diagnosis}
-            onChange={(e) => setDiagnosis(e.target.value)}
-            placeholder="Diagnóstico principal o presuntivo"
-            className={cn(focus === "diagnostico" && "ring-2 ring-teal-400/60")}
+        <div id={sectionId("diagnostico")} ref={diagnosisAnchorRef}>
+          <ConsultDiagnosisField
+            diagnoses={diagnoses}
+            onDiagnosesChange={setDiagnoses}
+            highlighted={focus === "diagnostico"}
           />
         </div>
 
