@@ -19,7 +19,7 @@ import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabas
 import { cn } from "@/shared/utils/cn";
 
 import { RescheduleAppointmentDialog } from "@/features/agenda/components/agenda/reschedule-appointment-dialog";
-import { useAppointmentRow } from "@/features/agenda/hooks/use-appointment-row";
+import { cancelAppointmentRequest } from "@/features/agenda/utils/cancel-appointment-request";
 import { PatientSearchCombobox, type PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { buildCreatePatientHref } from "@/features/pacientes/utils/create-patient-from-search";
 import { createTurnoWizard } from "@/features/turnos/actions/create-turno-wizard";
@@ -184,9 +184,9 @@ function ExistingAppointmentCancelPanel({
   appointment: AppointmentAgendaRow;
   onCancelled: () => void;
 }) {
-  const row = useAppointmentRow(appointment);
   const [category, setCategory] = useState<CancellationCategory>("clinic");
   const [error, setError] = useState<string | null>(null);
+  const [acting, setActing] = useState(false);
 
   const canCancel = appointment.status === "pending" || appointment.status === "confirmed";
 
@@ -194,15 +194,20 @@ function ExistingAppointmentCancelPanel({
 
   async function handleCancel() {
     setError(null);
-    const result = await row.handleCancelConfirm({ category });
-    if (result?.error) {
-      setError(result.error);
-      toast.error(result.error);
-      return;
+    setActing(true);
+    try {
+      const result = await cancelAppointmentRequest(appointment.id, category);
+      if ("error" in result) {
+        setError(result.error);
+        return;
+      }
+      setCategory("clinic");
+      onCancelled();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo cancelar el turno");
+    } finally {
+      setActing(false);
     }
-    toast.success("Turno cancelado");
-    setCategory("clinic");
-    onCancelled();
   }
 
   return (
@@ -232,7 +237,7 @@ function ExistingAppointmentCancelPanel({
           type="button"
           variant="danger"
           className="w-full"
-          loading={row.acting}
+          loading={acting}
           onClick={() => void handleCancel()}
         >
           Confirmar cancelación

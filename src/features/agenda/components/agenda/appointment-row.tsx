@@ -106,18 +106,11 @@ export const AppointmentRow = memo(function AppointmentRow({
         <CancelAppointmentDialog
           key={`cancel-${appointment.id}`}
           open
+          appointmentId={appointment.id}
           onClose={row.closeCancelDialog}
-          onConfirm={async (input) => {
-            const result = await row.handleCancelConfirm(input);
-            if (result?.error) {
-              return { error: result.error };
-            }
-            return { success: true as const };
-          }}
           patientName={
             row.patient ? `${row.patient.last_name}, ${row.patient.first_name}` : undefined
           }
-          loading={row.acting}
         />
       ) : null}
     </>

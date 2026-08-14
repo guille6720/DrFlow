@@ -1,7 +1,12 @@
 "use client";
 
 import { X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
+
+import { cancelAppointmentRequest } from "@/features/agenda/utils/cancel-appointment-request";
 
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
@@ -16,27 +21,23 @@ const CANCEL_REASON_OPTIONS = [
 
 export type CancellationCategory = (typeof CANCEL_REASON_OPTIONS)[number]["value"];
 
-export type CancelAppointmentInput = {
-  category: CancellationCategory;
-};
-
 interface CancelAppointmentDialogProps {
   open: boolean;
+  appointmentId: string;
   onClose: () => void;
-  onConfirm: (
-    input: CancelAppointmentInput
-  ) => Promise<void | { error?: string; success?: boolean }>;
+  /** Called after a successful cancel (e.g. close parent dialog). */
+  onCancelled?: () => void;
   patientName?: string;
-  loading?: boolean;
 }
 
 export function CancelAppointmentDialog({
   open,
+  appointmentId,
   onClose,
-  onConfirm,
+  onCancelled,
   patientName,
-  loading = false,
 }: CancelAppointmentDialogProps) {
+  const router = useRouter();
   const [category, setCategory] = useState<CancellationCategory>("clinic");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -47,13 +48,46 @@ export function CancelAppointmentDialog({
     setError(null);
     setSubmitting(true);
     try {
-      const result = await onConfirm({ category });
-      if (result?.error) {
-        setError(result.error);
+      const data = await cancelAppointmentRequest(appointmentId, category);
+      if ("error" in data) {
+        setError(data.error);
         return;
       }
+
+      const whatsapp = data.whatsapp;
+      if (whatsapp?.phone) {
+        try {
+          const when = new Date(whatsapp.startAt);
+          const dateLabel = Number.isNaN(when.getTime())
+            ? whatsapp.startAt
+            : when.toLocaleString("es-AR", {
+                weekday: "long",
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+          const message = [
+            `Le informamos que su turno del ${dateLabel} fue cancelado por el consultorio.`,
+            `Motivo: ${whatsapp.reason}`,
+            "Podés solicitar un nuevo turno desde la App.",
+          ].join(" ");
+          const url = buildWhatsAppUrl(whatsapp.phone, message);
+          if (url) window.open(url, "_blank", "noopener,noreferrer");
+        } catch {
+          // Non-blocking
+        }
+      }
+
       setCategory("clinic");
-      if (typeof onClose === "function") onClose();
+      onClose();
+      onCancelled?.();
+      try {
+        router.refresh();
+      } catch {
+        // Non-blocking
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo cancelar el turno");
     } finally {
@@ -62,13 +96,11 @@ export function CancelAppointmentDialog({
   }
 
   function handleClose() {
-    if (submitting || loading) return;
+    if (submitting) return;
     setCategory("clinic");
     setError(null);
-    if (typeof onClose === "function") onClose();
+    onClose();
   }
-
-  const busy = submitting || loading;
 
   return (
     <div className="fixed inset-0 z-[300] flex items-end justify-center p-4 sm:items-center">
@@ -95,7 +127,7 @@ export function CancelAppointmentDialog({
             type="button"
             onClick={handleClose}
             className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
-            disabled={busy}
+            disabled={submitting}
           >
             <X className="h-5 w-5" />
           </button>
@@ -131,10 +163,10 @@ export function CancelAppointmentDialog({
             </p>
           ) : null}
           <div className="flex gap-2">
-            <Button type="submit" variant="danger" loading={busy}>
+            <Button type="submit" variant="danger" loading={submitting}>
               Confirmar cancelación
             </Button>
-            <Button type="button" variant="outline" onClick={handleClose} disabled={busy}>
+            <Button type="button" variant="outline" onClick={handleClose} disabled={submitting}>
               Volver
             </Button>
           </div>

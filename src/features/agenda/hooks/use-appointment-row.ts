@@ -7,19 +7,12 @@ import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 
-import type { CancelAppointmentInput } from "@/features/agenda/components/agenda/cancel-appointment-dialog";
+import { cancelAppointmentRequest } from "@/features/agenda/utils/cancel-appointment-request";
 import { buildAppointmentConsultationUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { formatCancellationReason } from "@/features/turnos/utils/appointment-lifecycle";
 
 import { updateAppointmentStatus } from "@/lib/actions/appointments";
 import { buildAppointmentConfirmationMessage } from "@/lib/utils/appointment-messages";
-
-type CancelApiResponse =
-  | {
-      success: true;
-      whatsapp: { phone: string; startAt: string; reason: string } | null;
-    }
-  | { error: string };
 
 export function useAppointmentRow(appointment: AppointmentAgendaRow) {
   const router = useRouter();
@@ -73,62 +66,15 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
     [appointment.id, router]
   );
 
+  /** Used by turnos wizard cancel panel (same API as the dialog). */
   const handleCancelConfirm = useCallback(
-    async (input: CancelAppointmentInput) => {
+    async (input: { category: string }) => {
       setActing(true);
       try {
-        const response = await fetch("/api/appointments/cancel", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify({
-            appointmentId: appointment.id,
-            category: input.category,
-          }),
-        });
-
-        let data: CancelApiResponse;
-        try {
-          data = (await response.json()) as CancelApiResponse;
-        } catch {
-          return { error: `No se pudo cancelar el turno (HTTP ${response.status})` };
-        }
-
+        const data = await cancelAppointmentRequest(appointment.id, input.category);
         if ("error" in data) {
-          return {
-            error: data.error || `No se pudo cancelar el turno (HTTP ${response.status})`,
-          };
+          return { error: data.error };
         }
-        if (!response.ok) {
-          return { error: `No se pudo cancelar el turno (HTTP ${response.status})` };
-        }
-
-        const whatsapp = data.whatsapp;
-        if (whatsapp?.phone) {
-          try {
-            const when = new Date(whatsapp.startAt);
-            const dateLabel = Number.isNaN(when.getTime())
-              ? whatsapp.startAt
-              : when.toLocaleString("es-AR", {
-                  weekday: "long",
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
-            const message = [
-              `Le informamos que su turno del ${dateLabel} fue cancelado por el consultorio.`,
-              `Motivo: ${whatsapp.reason}`,
-              "Podés solicitar un nuevo turno desde la App.",
-            ].join(" ");
-            const url = buildWhatsAppUrl(whatsapp.phone, message);
-            if (url) window.open(url, "_blank", "noopener,noreferrer");
-          } catch {
-            // Non-blocking — cancellation already persisted.
-          }
-        }
-
         return { success: true as const };
       } catch (err) {
         return {

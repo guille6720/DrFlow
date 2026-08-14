@@ -53,15 +53,6 @@ function CalendarAppointmentDialogContent({
     appointment.status !== "cancelled" &&
     appointment.status !== "attended";
 
-  async function handleCancelConfirm(input: Parameters<typeof row.handleCancelConfirm>[0]) {
-    const result = await row.handleCancelConfirm(input);
-    if (result?.error) {
-      return { error: result.error };
-    }
-    if (typeof onClose === "function") onClose();
-    return { success: true as const };
-  }
-
   function handleReschedule() {
     onReschedule?.(appointment);
     onClose();
@@ -167,10 +158,10 @@ function CalendarAppointmentDialogContent({
         <CancelAppointmentDialog
           key={`cancel-${appointment.id}`}
           open
+          appointmentId={appointment.id}
           onClose={row.closeCancelDialog}
-          onConfirm={handleCancelConfirm}
+          onCancelled={onClose}
           patientName={patientName}
-          loading={row.acting}
         />
       ) : null}
     </>
