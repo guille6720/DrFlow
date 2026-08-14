@@ -3,7 +3,6 @@
 import { CalendarClock, Play, Trash2, X } from "lucide-react";
 import Link from "next/link";
 
-import { toast } from "@/core/notifications/toast";
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
@@ -57,17 +56,7 @@ function CalendarAppointmentDialogContent({
   async function handleCancelConfirm(input: Parameters<typeof row.handleCancelConfirm>[0]) {
     const result = await row.handleCancelConfirm(input);
     if (result?.error) {
-      try {
-        toast.error(result.error);
-      } catch {
-        // Non-blocking
-      }
       return { error: result.error };
-    }
-    try {
-      toast.success("Turno cancelado");
-    } catch {
-      // Non-blocking
     }
     if (typeof onClose === "function") onClose();
     return { success: true as const };

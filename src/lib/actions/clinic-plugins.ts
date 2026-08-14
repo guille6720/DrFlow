@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { getActiveClinicId, getSession, logAudit } from "@/core/auth/session.server";
+import { logAudit } from "@/core/auth/session.actions";
+import { getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { revalidateClinicPluginsCache } from "@/core/cache/revalidate-clinic-cache";
 import { createClient } from "@/core/supabase/server";
 

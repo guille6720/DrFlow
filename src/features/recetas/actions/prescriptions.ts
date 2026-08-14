@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { logAudit } from "@/core/auth/session.server";
+import { logAudit } from "@/core/auth/session.actions";
 import { recordAudit } from "@/core/security/audit-service";
 import { verifyPrescriptionForeignKeys } from "@/core/security/ownership-guard";
 import { requireClinicalIssueAccess } from "@/core/services/clinical-access.service";

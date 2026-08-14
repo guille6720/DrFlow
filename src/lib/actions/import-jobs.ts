@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { resolveImportAccess } from "@/core/actions/action-response";
-import { logAudit } from "@/core/auth/session.server";
+import { logAudit } from "@/core/auth/session.actions";
 import { scheduleAfterTask } from "@/core/errors/background.server";
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
 import { processPendingClinicJobs } from "@/core/jobs/process";

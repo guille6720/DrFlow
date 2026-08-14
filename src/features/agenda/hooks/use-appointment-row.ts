@@ -91,15 +91,15 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
         try {
           data = (await response.json()) as CancelApiResponse;
         } catch {
-          return { error: "No se pudo cancelar el turno" };
+          return { error: `No se pudo cancelar el turno (HTTP ${response.status})` };
         }
 
-        if (!response.ok || "error" in data) {
+        if (!response.ok || ("error" in data && data.error)) {
           return {
             error:
               "error" in data && data.error
                 ? data.error
-                : "No se pudo cancelar el turno",
+                : `No se pudo cancelar el turno (HTTP ${response.status})`,
           };
         }
 
@@ -128,12 +128,6 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
           }
         }
 
-        try {
-          router.refresh();
-        } catch {
-          // Non-blocking
-        }
-
         return { success: true as const };
       } catch (err) {
         return {
@@ -141,6 +135,11 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
         };
       } finally {
         setActing(false);
+        try {
+          router.refresh();
+        } catch {
+          // Non-blocking
+        }
       }
     },
     [appointment.id, router]

@@ -1,5 +1,5 @@
 /* Service worker para instalación PWA (consultorio azul + portal pacientes verde). */
-const CACHE = "drflow-pwa-v11";
+const CACHE = "drflow-pwa-v12";
 const PRECACHE = [
   "/icon-192.png",
   "/icon-512.png",
