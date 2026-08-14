@@ -79,7 +79,10 @@ export function PatientWorkspaceSheets({
     medicalHistory: patientRecord.medical_history,
     lastEvolution: lastConsult?.evolution ?? null,
     lastDiagnosis: lastConsult?.diagnosis ?? ehr.diagnosisRows[0]?.name ?? null,
-    activeProblems: ehr.diagnosisRows.map((d) => d.name).slice(0, 6),
+    activeProblems:
+      ehr.problemList.length > 0
+        ? ehr.problemList.map((p) => p.name).slice(0, 6)
+        : ehr.diagnosisRows.map((d) => d.name).slice(0, 6),
     insurance: patient.insurance_provider ?? undefined,
     insurancePlan: patientRecord.insurance_plan,
     chiefComplaint: lastConsult?.chief_complaint ?? null,
@@ -115,6 +118,12 @@ export function PatientWorkspaceSheets({
     : inlineSnapshot?.diagnosis?.trim() ||
       selectedConsult?.diagnosis?.trim() ||
       assistBase.lastDiagnosis ||
+      "";
+
+  const prefillCie10 = skipPrescriptionPrefill
+    ? ""
+    : ehr.problemList.find((p) => p.cie10_code?.trim())?.cie10_code?.trim() ||
+      (prefillDiagnosis.match(/CIE-10:\s*([A-Z0-9.]+)/i)?.[1] ?? "") ||
       "";
 
   const handlePrescriptionSaved = useCallback(() => {
@@ -160,6 +169,7 @@ export function PatientWorkspaceSheets({
         defaultProfessionalId={actions.professional ?? defaultProfessionalId ?? undefined}
         clinicalRecordId={actions.consulta ?? undefined}
         prefillDiagnosis={prefillDiagnosis}
+        prefillCie10={prefillCie10}
         patientAddress={patient.address}
         patientPhone={patient.phone}
         clinic={clinic}

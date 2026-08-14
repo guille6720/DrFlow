@@ -14,6 +14,10 @@ import {
   mapClinicalRecordsForEhr,
   type PatientEhrMappedRecord,
 } from "@/features/pacientes/server/load-patient-ehr-data";
+import {
+  attachStructuredChildrenToRecords,
+  loadClinicalRecordChildrenForPatient,
+} from "@/features/pacientes/server/load-clinical-structure";
 import { buildEhrPayloadFromRecords } from "@/features/pacientes/utils/patient-ehr-model";
 
 export type LoadMorePatientClinicalRecordsResult = {
@@ -80,7 +84,18 @@ export async function loadMorePatientClinicalRecords(
   >;
   const hasMore = rows.length > PATIENT_EHR_RECORD_PAGE_SIZE;
   const pageRows = hasMore ? rows.slice(0, PATIENT_EHR_RECORD_PAGE_SIZE) : rows;
-  const mappedRecords = mapClinicalRecordsForEhr(pageRows);
+  const mappedBase = mapClinicalRecordsForEhr(pageRows);
+  const { diagnosesByRecord, treatmentsByRecord } = await loadClinicalRecordChildrenForPatient(
+    supabase,
+    clinicId,
+    idParsed.data,
+    mappedBase.map((r) => r.id)
+  );
+  const mappedRecords = attachStructuredChildrenToRecords(
+    mappedBase,
+    diagnosesByRecord,
+    treatmentsByRecord
+  );
   const payload = buildEhrPayloadFromRecords(mappedRecords);
   const last = pageRows.at(-1);
 

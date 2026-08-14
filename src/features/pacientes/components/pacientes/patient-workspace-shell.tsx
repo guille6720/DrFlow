@@ -177,6 +177,7 @@ export function PatientWorkspaceShell({
             consultations={current.ehr.consultations}
             diagnosisRows={current.ehr.diagnosisRows}
             treatmentRows={current.ehr.treatmentRows}
+            problemList={current.ehr.problemList}
             attachments={current.ehr.attachments}
             prescriptions={current.ehr.prescriptions}
             totalConsultations={current.ehr.totalConsultations}

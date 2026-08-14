@@ -11,6 +11,12 @@ import {
   loadPatientHceSummaryRows,
   mergeEhrPayload,
 } from "@/features/pacientes/utils/patient-ehr-from-hce";
+import {
+  attachStructuredChildrenToRecords,
+  loadClinicalRecordChildrenForPatient,
+  loadPatientProblemList,
+  type PatientProblemListItem,
+} from "@/features/pacientes/server/load-clinical-structure";
 import type {
   PatientEhrAttachment,
   PatientEhrConsultation,
@@ -19,6 +25,10 @@ import type {
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
 import { buildEhrPayloadFromRecords } from "@/features/pacientes/utils/patient-ehr-model";
+import type {
+  ClinicalDiagnosisEntry,
+  ClinicalTreatmentEntry,
+} from "@/features/historias/utils/clinical-structured-entries";
 
 import type { PatientEhrAppointment } from "@/lib/utils/build-clinical-timeline";
 import type { HceExportRow } from "@/lib/utils/hce-export-parse";
@@ -46,6 +56,7 @@ export type PatientEhrWorkspaceData = {
   consultations: PatientEhrConsultation[];
   diagnosisRows: PatientEhrDiagnosisRow[];
   treatmentRows: PatientEhrTreatmentRow[];
+  problemList: PatientProblemListItem[];
   attachments: PatientEhrAttachment[];
   prescriptions: PatientEhrWorkspacePrescription[];
   prescriptionRecords: RawPrescriptionRow[];
@@ -78,6 +89,8 @@ export type PatientEhrMappedRecord = {
   diagnosis_cie10?: string | null;
   diagnoses_json?: unknown;
   treatments_json?: unknown;
+  diagnoses_rows?: ClinicalDiagnosisEntry[];
+  treatments_rows?: ClinicalTreatmentEntry[];
   professional_id?: string | null;
   professional_signature?: string | null;
   professional_name: string;
@@ -214,6 +227,7 @@ export function buildPatientEhrWorkspaceData(input: {
   timelineAppointments: PatientEhrAppointment[];
   hceRows: HceExportRow[] | null;
   clinicalRecordsPagination?: PatientEhrClinicalRecordsPagination;
+  problemList?: PatientProblemListItem[];
 }): PatientEhrWorkspaceData {
   const { patient, mappedRecords, attachments, rxList, orders, timelineAppointments, hceRows } =
     input;
@@ -252,6 +266,7 @@ export function buildPatientEhrWorkspaceData(input: {
     consultations,
     diagnosisRows,
     treatmentRows,
+    problemList: input.problemList ?? [],
     attachments:
       attachments?.map((a) => ({
         id: a.id,
@@ -338,7 +353,21 @@ export async function loadPatientEhrWorkspaceData(
     loadPatientHceSummaryRows(supabase, clinicId, patientId),
   ]);
 
-  const mappedRecords = mapClinicalRecordsForEhr(records);
+  const mappedBase = mapClinicalRecordsForEhr(records);
+  const [{ diagnosesByRecord, treatmentsByRecord }, problemList] = await Promise.all([
+    loadClinicalRecordChildrenForPatient(
+      supabase,
+      clinicId,
+      patientId,
+      mappedBase.map((r) => r.id)
+    ),
+    loadPatientProblemList(supabase, clinicId, patientId),
+  ]);
+  const mappedRecords = attachStructuredChildrenToRecords(
+    mappedBase,
+    diagnosesByRecord,
+    treatmentsByRecord
+  );
   const loadedRecords = mappedRecords.length;
   const totalRecordCount = totalRecords ?? loadedRecords;
   const oldestLoaded = records?.at(-1);
@@ -352,6 +381,7 @@ export async function loadPatientEhrWorkspaceData(
     orders: (orders ?? []) as (MedicalOrder & { order_type?: string })[],
     timelineAppointments: mapTimelineAppointments(appointments),
     hceRows,
+    problemList,
     clinicalRecordsPagination: {
       total: totalRecordCount,
       hasMore: loadedRecords < totalRecordCount,

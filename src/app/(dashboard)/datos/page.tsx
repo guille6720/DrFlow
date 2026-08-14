@@ -16,6 +16,8 @@ import { MigrationHealthPanel } from "@/features/integraciones";
 import { ClearClinicalHistoryPanel } from "@/features/integraciones";
 import { DatosBulkDownloadCards } from "@/features/integraciones/components/datos/datos-bulk-download-cards";
 import { DatosNavigationHelp } from "@/features/integraciones/components/datos/datos-navigation-help";
+import { ClinicalStructureStatsPanel } from "@/features/historias/components/historias/clinical-structure-stats-panel";
+import { loadClinicStructuredClinicalStats } from "@/features/historias/server/load-clinic-structured-clinical-stats";
 
 import { Button } from "@/components/ui/button";
 import { SectorHero } from "@/components/ui/sector-hero";
@@ -40,10 +42,15 @@ export default async function DatosPage() {
     hasPermission(role, "editClinicalRecords", isSuperadmin) ||
     hasPermission(role, "managePatients", isSuperadmin);
   const canResetClinicalHistory = hasPermission(role, "manageClinic", isSuperadmin);
+  const canViewClinicalStats = hasPermission(role, "viewClinicalRecords", isSuperadmin);
 
   let exportPatients: PatientExportRow[] = [];
   let exportRecords: ClinicalRecordExportRow[] = [];
   let migrationReport: MigrationHealthReport | null = null;
+  let clinicalStats: Awaited<ReturnType<typeof loadClinicStructuredClinicalStats>> = {
+    cie10: [],
+    treatments: [],
+  };
 
   if (clinicId) {
     const [
@@ -130,6 +137,10 @@ export default async function DatosPage() {
       records: migrationRecords ?? [],
       recordsTruncated: (migrationRecordCount ?? 0) > MIGRATION_RECORDS_LIMIT,
     });
+
+    if (canViewClinicalStats) {
+      clinicalStats = await loadClinicStructuredClinicalStats(supabase, clinicId);
+    }
   }
 
   return (
@@ -167,6 +178,15 @@ export default async function DatosPage() {
               <MigrationHealthPanel report={migrationReport} />
             </div>
           )}
+
+          {canViewClinicalStats ? (
+            <div className="mb-8">
+              <ClinicalStructureStatsPanel
+                cie10={clinicalStats.cie10}
+                treatments={clinicalStats.treatments}
+              />
+            </div>
+          ) : null}
 
           {canResetClinicalHistory && clinic && (
             <ClearClinicalHistoryPanel clinicName={clinic.name} />

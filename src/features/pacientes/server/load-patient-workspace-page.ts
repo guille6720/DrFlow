@@ -27,6 +27,11 @@ import {
   type PatientEhrWorkspaceData,
 } from "@/features/pacientes/server/load-patient-ehr-data";
 import {
+  attachStructuredChildrenToRecords,
+  loadClinicalRecordChildrenForPatient,
+  loadPatientProblemList,
+} from "@/features/pacientes/server/load-clinical-structure";
+import {
   mergePatientClinicalFields,
   type PatientClinicalProfileFields,
 } from "@/features/pacientes/server/patient-clinical-profile";
@@ -258,7 +263,21 @@ export async function loadPatientWorkspacePageData(
 
   const patientWithClinical = mergePatientClinicalFields(patient, clinicalProfileResult.data);
 
-  const mappedRecords = mapClinicalRecordsForEhr(records);
+  const mappedBase = mapClinicalRecordsForEhr(records);
+  const [{ diagnosesByRecord, treatmentsByRecord }, problemList] = await Promise.all([
+    loadClinicalRecordChildrenForPatient(
+      supabase,
+      clinicId,
+      patientId,
+      mappedBase.map((r) => r.id)
+    ),
+    loadPatientProblemList(supabase, clinicId, patientId),
+  ]);
+  const mappedRecords = attachStructuredChildrenToRecords(
+    mappedBase,
+    diagnosesByRecord,
+    treatmentsByRecord
+  );
   const loadedRecords = mappedRecords.length;
   const totalRecordCount = typeof totalRecords === "number" ? totalRecords : loadedRecords;
   const hasMoreRecords = loadedRecords < totalRecordCount;
@@ -287,6 +306,7 @@ export async function loadPatientWorkspacePageData(
     orders: (orders ?? []) as (MedicalOrder & { order_type?: string })[],
     timelineAppointments: mapTimelineAppointments(timelineAppointments),
     hceRows,
+    problemList,
     clinicalRecordsPagination,
   });
 

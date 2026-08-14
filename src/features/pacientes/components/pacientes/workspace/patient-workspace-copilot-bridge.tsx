@@ -54,7 +54,10 @@ export function PatientWorkspaceCopilotBridge({
       medicalHistory: patientRecord.medical_history,
       lastEvolution: lastConsult?.evolution ?? null,
       lastDiagnosis: lastConsult?.diagnosis ?? ehr.diagnosisRows[0]?.name ?? null,
-      activeProblems: ehr.diagnosisRows.map((d) => d.name).slice(0, 6),
+      activeProblems:
+        ehr.problemList.length > 0
+          ? ehr.problemList.map((p) => p.name).slice(0, 6)
+          : ehr.diagnosisRows.map((d) => d.name).slice(0, 6),
       insurance: patient.insurance_provider ?? undefined,
       insurancePlan: patientRecord.insurance_plan,
       chiefComplaint: lastConsult?.chief_complaint ?? null,
@@ -62,7 +65,15 @@ export function PatientWorkspaceCopilotBridge({
       evolutionText: lastConsult?.evolution ?? undefined,
       proposedMedications: lastMedications?.map((m) => m.generic_name || m.brand_name || "").filter(Boolean),
     }),
-    [patientName, patientRecord, lastConsult, ehr.diagnosisRows, patient.insurance_provider, lastMedications]
+    [
+      patientName,
+      patientRecord,
+      lastConsult,
+      ehr.diagnosisRows,
+      ehr.problemList,
+      patient.insurance_provider,
+      lastMedications,
+    ]
   );
 
   const recentConsultations = useMemo(

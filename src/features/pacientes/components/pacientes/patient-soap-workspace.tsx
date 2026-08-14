@@ -55,6 +55,7 @@ export function PatientSoapWorkspace({
   consultations,
   diagnosisRows,
   treatmentRows,
+  problemList = [],
   attachments,
   prescriptions,
   totalConsultations,
@@ -225,6 +226,7 @@ export function PatientSoapWorkspace({
           patientId={patient.id}
           diagnosisRows={diagnosisRows}
           treatmentRows={treatmentRows}
+          problemList={problemList}
           prescriptions={prescriptions}
           totalConsultations={totalConsultations}
           usesHceExport={usesHceExport}

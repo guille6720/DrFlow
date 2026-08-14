@@ -11,10 +11,12 @@ import { PatientEhrPrintEvolutionBlock } from "@/features/historias/components/h
 import { PatientEhrSidebar } from "@/features/historias/components/historias/patient-ehr-sidebar";
 import { usePatientEhrStateContext } from "@/features/historias/components/historias/patient-ehr-state-context";
 import { PatientEhrSupplementalSections } from "@/features/historias/components/historias/patient-ehr-supplemental-sections";
+import { PatientProblemListPanel } from "@/features/historias/components/historias/patient-problem-list-panel";
 import {
   filterClinicalRowsByConsultationDay,
   filterConsultationsByConsultationDay,
 } from "@/features/historias/components/historias/patient-ehr-utils";
+import type { PatientProblemListItem } from "@/features/pacientes/server/load-clinical-structure";
 import type {
   PatientEhrDiagnosisRow,
   PatientEhrPrescription,
@@ -30,6 +32,7 @@ type Props = {
   patientId: string;
   diagnosisRows: PatientEhrDiagnosisRow[];
   treatmentRows: PatientEhrTreatmentRow[];
+  problemList?: PatientProblemListItem[];
   prescriptions: PatientEhrPrescription[];
   totalConsultations: number;
   usesHceExport?: boolean;
@@ -52,6 +55,7 @@ export function PatientEhrInteractiveBody({
   patientId,
   diagnosisRows: _diagnosisRows,
   treatmentRows: _treatmentRows,
+  problemList = [],
   prescriptions,
   totalConsultations,
   usesHceExport = false,
@@ -189,6 +193,9 @@ export function PatientEhrInteractiveBody({
 
             <div className="drflow-ehr-print-supplemental">
               <div className="drflow-ehr-screen-only">
+                {filters.diagnostics ? (
+                  <PatientProblemListPanel patientId={patientId} problems={problemList} />
+                ) : null}
                 <PatientEhrClinicalTables
                   patientId={patientId}
                   diagnosisRows={screenDiagnosisRows}

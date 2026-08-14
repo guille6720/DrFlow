@@ -97,3 +97,29 @@ export function parseTreatmentsJson(raw: unknown): ClinicalTreatmentEntry[] {
     })
     .filter((x): x is ClinicalTreatmentEntry => Boolean(x));
 }
+
+/** Prefer normalized child rows, then Phase 1 JSON, else empty. */
+export function resolveDiagnosesForRecord(input: {
+  diagnoses_rows?: ClinicalDiagnosisEntry[] | null;
+  diagnoses_json?: unknown;
+}): ClinicalDiagnosisEntry[] {
+  if (input.diagnoses_rows && input.diagnoses_rows.length > 0) return input.diagnoses_rows;
+  return parseDiagnosesJson(input.diagnoses_json);
+}
+
+export function resolveTreatmentsForRecord(input: {
+  treatments_rows?: ClinicalTreatmentEntry[] | null;
+  treatments_json?: unknown;
+}): ClinicalTreatmentEntry[] {
+  if (input.treatments_rows && input.treatments_rows.length > 0) return input.treatments_rows;
+  return parseTreatmentsJson(input.treatments_json);
+}
+
+export function primaryDiagnosisCie10(entries: ClinicalDiagnosisEntry[]): string | null {
+  return entries.find((d) => d.cie10_code?.trim())?.cie10_code?.trim() || null;
+}
+
+export function primaryDiagnosisText(entries: ClinicalDiagnosisEntry[]): string | null {
+  const first = entries.find((d) => d.name.trim());
+  return first?.name.trim() || null;
+}

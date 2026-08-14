@@ -57,8 +57,10 @@ import {
 import { isHceStructuralChiefComplaint } from "@/lib/utils/hce-export-parse";
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 import {
-  parseDiagnosesJson,
-  parseTreatmentsJson,
+  resolveDiagnosesForRecord,
+  resolveTreatmentsForRecord,
+  type ClinicalDiagnosisEntry,
+  type ClinicalTreatmentEntry,
 } from "@/features/historias/utils/clinical-structured-entries";
 
 function formatShortDate(iso: string): string {
@@ -179,6 +181,8 @@ export function buildEhrPayloadFromRecords(
     diagnosis_cie10?: string | null;
     diagnoses_json?: unknown;
     treatments_json?: unknown;
+    diagnoses_rows?: ClinicalDiagnosisEntry[] | null;
+    treatments_rows?: ClinicalTreatmentEntry[] | null;
     professional_name: string;
     professional_license_national?: string | null;
     professional_license_provincial?: string | null;
@@ -203,8 +207,8 @@ export function buildEhrPayloadFromRecords(
     const category = classifyCategory(chief, diagnosis, evolution);
     const dateLabel = formatShortDate(r.created_at);
     const recordCreatedAt = r.created_at;
-    const structuredDiagnoses = parseDiagnosesJson(r.diagnoses_json);
-    const structuredTreatments = parseTreatmentsJson(r.treatments_json);
+    const structuredDiagnoses = resolveDiagnosesForRecord(r);
+    const structuredTreatments = resolveTreatmentsForRecord(r);
 
     const skipSidebar = isHceStructuralChiefComplaint(r.chief_complaint);
 

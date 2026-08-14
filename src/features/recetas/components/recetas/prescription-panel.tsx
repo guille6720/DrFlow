@@ -36,6 +36,7 @@ interface Props {
   };
   clinicalRecordId: string;
   diagnosis?: string | null;
+  diagnosisCie10?: string | null;
   professionals: Professional[];
   clinic: { name: string; address?: string | null; phone?: string | null };
   canIssue: boolean;
@@ -46,6 +47,7 @@ export function PrescriptionPanel({
   patient,
   clinicalRecordId,
   diagnosis,
+  diagnosisCie10,
   professionals,
   clinic,
   canIssue,
@@ -96,6 +98,7 @@ export function PrescriptionPanel({
             patientInsurance={patient.insurance_provider}
             clinicalRecordId={clinicalRecordId}
             diagnosisDefault={diagnosis ?? ""}
+            cie10Default={diagnosisCie10 ?? ""}
             professionals={professionals}
             defaultProfessionalId={defaultPro?.id}
             onSuccess={() => setShowForm(false)}
@@ -121,4 +124,4 @@ export function PrescriptionPanel({
     </Card>
   );
 }
-
+
