@@ -3,13 +3,18 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
-import {
-  CANCELLATION_REASON_OPTIONS,
-  type CancellationCategory,
-} from "@/features/turnos/utils/appointment-lifecycle";
-
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+
+const CANCEL_REASON_OPTIONS = [
+  { value: "patient", label: "Paciente" },
+  { value: "professional", label: "Profesional" },
+  { value: "clinic", label: "Clínica" },
+  { value: "data_error", label: "Error de carga" },
+  { value: "other", label: "Otro" },
+] as const;
+
+export type CancellationCategory = (typeof CANCEL_REASON_OPTIONS)[number]["value"];
 
 export type CancelAppointmentInput = {
   category: CancellationCategory;
@@ -48,7 +53,7 @@ export function CancelAppointmentDialog({
         return;
       }
       setCategory("clinic");
-      onClose();
+      if (typeof onClose === "function") onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo cancelar el turno");
     } finally {
@@ -60,7 +65,7 @@ export function CancelAppointmentDialog({
     if (submitting || loading) return;
     setCategory("clinic");
     setError(null);
-    onClose();
+    if (typeof onClose === "function") onClose();
   }
 
   const busy = submitting || loading;
@@ -110,7 +115,7 @@ export function CancelAppointmentDialog({
               setCategory(e.target.value as CancellationCategory);
               setError(null);
             }}
-            options={CANCELLATION_REASON_OPTIONS.map((option) => ({
+            options={CANCEL_REASON_OPTIONS.map((option) => ({
               value: option.value,
               label: option.label,
             }))}

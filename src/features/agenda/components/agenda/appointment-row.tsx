@@ -111,10 +111,18 @@ export const AppointmentRow = memo(function AppointmentRow({
           onConfirm={async (input) => {
             const result = await row.handleCancelConfirm(input);
             if (result?.error) {
-              toast.error(result.error);
+              try {
+                toast.error(result.error);
+              } catch {
+                // Non-blocking
+              }
               return { error: result.error };
             }
-            toast.success("Turno cancelado");
+            try {
+              toast.success("Turno cancelado");
+            } catch {
+              // Non-blocking
+            }
             return { success: true as const };
           }}
           patientName={

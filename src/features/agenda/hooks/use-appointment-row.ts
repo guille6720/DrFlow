@@ -7,13 +7,19 @@ import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 
-import { cancelAppointment } from "@/features/agenda/actions/cancel-appointment";
 import type { CancelAppointmentInput } from "@/features/agenda/components/agenda/cancel-appointment-dialog";
 import { buildAppointmentConsultationUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { formatCancellationReason } from "@/features/turnos/utils/appointment-lifecycle";
 
 import { updateAppointmentStatus } from "@/lib/actions/appointments";
 import { buildAppointmentConfirmationMessage } from "@/lib/utils/appointment-messages";
+
+type CancelApiResponse =
+  | {
+      success: true;
+      whatsapp: { phone: string; startAt: string; reason: string } | null;
+    }
+  | { error: string };
 
 export function useAppointmentRow(appointment: AppointmentAgendaRow) {
   const router = useRouter();
@@ -71,24 +77,37 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
     async (input: CancelAppointmentInput) => {
       setActing(true);
       try {
-        if (typeof cancelAppointment !== "function") {
-          return { error: "No se pudo iniciar la cancelación. Recargá la página." };
-        }
-
-        const result = await cancelAppointment({
-          appointmentId: appointment.id,
-          category: input.category,
+        const response = await fetch("/api/appointments/cancel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            appointmentId: appointment.id,
+            category: input.category,
+          }),
         });
 
-        if ("error" in result) {
-          return { error: result.error };
+        let data: CancelApiResponse;
+        try {
+          data = (await response.json()) as CancelApiResponse;
+        } catch {
+          return { error: "No se pudo cancelar el turno" };
         }
 
-        if (result.whatsapp?.phone) {
+        if (!response.ok || "error" in data) {
+          return {
+            error:
+              "error" in data && data.error
+                ? data.error
+                : "No se pudo cancelar el turno",
+          };
+        }
+
+        if (data.whatsapp?.phone) {
           try {
-            const when = new Date(result.whatsapp.startAt);
+            const when = new Date(data.whatsapp.startAt);
             const dateLabel = Number.isNaN(when.getTime())
-              ? result.whatsapp.startAt
+              ? data.whatsapp.startAt
               : when.toLocaleString("es-AR", {
                   weekday: "long",
                   day: "2-digit",
@@ -99,17 +118,22 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
                 });
             const message = [
               `Le informamos que su turno del ${dateLabel} fue cancelado por el consultorio.`,
-              `Motivo: ${result.whatsapp.reason}`,
+              `Motivo: ${data.whatsapp.reason}`,
               "Podés solicitar un nuevo turno desde la App.",
             ].join(" ");
-            const url = buildWhatsAppUrl(result.whatsapp.phone, message);
+            const url = buildWhatsAppUrl(data.whatsapp.phone, message);
             if (url) window.open(url, "_blank", "noopener,noreferrer");
           } catch {
             // Non-blocking — cancellation already persisted.
           }
         }
 
-        router.refresh();
+        try {
+          router.refresh();
+        } catch {
+          // Non-blocking
+        }
+
         return { success: true as const };
       } catch (err) {
         return {
