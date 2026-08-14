@@ -18,7 +18,10 @@ import type {
   PatientChartProfessional,
 } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import {
+  buildConsultaSessionUrl,
+  buildPatientWorkspaceUrl,
+} from "@/features/pacientes/utils/patient-workspace-actions";
 
 import { Button } from "@/components/ui/button";
 import { insuranceNumberLabel } from "@/lib/constants/coverages";
@@ -124,7 +127,7 @@ export function ClinicalWorkspaceHeader({
         aria-label="Acciones clínicas"
       >
         {canEditClinical ? (
-          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })}>
+          <Link href={buildConsultaSessionUrl({ patient: patientId })}>
             <Button size="sm" type="button">
               <Stethoscope className="h-4 w-4" aria-hidden />
               Iniciar consulta
@@ -132,7 +135,7 @@ export function ClinicalWorkspaceHeader({
           </Link>
         ) : null}
         {canEditClinical ? (
-          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })}>
+          <Link href={buildConsultaSessionUrl({ patient: patientId })}>
             <Button size="sm" variant="outline" type="button">
               Nueva SOAP
             </Button>

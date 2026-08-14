@@ -45,7 +45,7 @@ const globalActions: FabAction[] = [
     color: "bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600",
   },
   {
-    href: "/historias/nueva",
+    href: "/consultas",
     label: "Nueva consulta",
     icon: Stethoscope,
     color: "bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700",

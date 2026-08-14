@@ -59,7 +59,7 @@ export function ConsultationFlowBar({
                 ? `${patient.last_name}, ${patient.first_name}`
                 : "Consulta en curso"}
             </p>
-            <p className="text-xs text-slate-500">Historia clínica · turno vinculado</p>
+            <p className="text-xs text-slate-500">Consultas · turno vinculado</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">

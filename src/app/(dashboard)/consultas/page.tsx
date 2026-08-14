@@ -1,6 +1,7 @@
 import { endOfDay, startOfDay } from "date-fns";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import {
   getActiveClinic,
@@ -11,18 +12,29 @@ import {
 } from "@/core/auth/session.server";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
+import { DoctorConsultaSession } from "@/features/historias/components/consultas/doctor-consulta-session";
 import {
   DoctorConsultasView,
   type DoctorConsultaRow,
 } from "@/features/historias/components/consultas/doctor-consultas-view";
+import { loadPatientWorkspacePageData } from "@/features/pacientes/server/load-patient-workspace-page";
 
 import { Button } from "@/components/ui/button";
 import { resolveSessionProfessionalId } from "@/lib/server/resolve-default-professional";
+import type { Patient } from "@/types/database";
 
 type PageProps = {
-  searchParams?: Promise<{ appointment?: string }>;
+  searchParams?: Promise<{
+    appointment?: string;
+    patient?: string;
+    professional?: string;
+    action?: string;
+    sheet?: string;
+    focus?: string;
+  }>;
 };
 
 export default async function ConsultasPage({ searchParams }: PageProps) {
@@ -30,7 +42,7 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
   const session = await getSession();
   const clinics = await getUserClinics();
   const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { role, isSuperadmin, clinic } = await getActiveClinic();
   const params = (await searchParams) ?? {};
 
   if (!clinicId || !session) {
@@ -41,10 +53,108 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
     redirect("/dashboard");
   }
 
+  const canIssue = hasPermission(role, "issuePrescriptions", isSuperadmin);
   const supabase = await createClient();
-  const professionalId = await resolveSessionProfessionalId(supabase, clinicId, session.id);
+  const sessionProfessionalId = await resolveSessionProfessionalId(
+    supabase,
+    clinicId,
+    session.id
+  );
   const dayStart = startOfDay(new Date()).toISOString();
   const dayEnd = endOfDay(new Date()).toISOString();
+
+  // Sesión de evolución (turno o paciente desde HC → Consultas).
+  const sessionPatientId = params.appointment
+    ? null
+    : params.patient && params.action === "nueva"
+      ? params.patient
+      : null;
+
+  if (params.appointment || sessionPatientId) {
+    let appointment: {
+      id: string;
+      patient_id: string;
+      professional_id: string;
+    } | null = null;
+
+    if (params.appointment) {
+      const { data } = await supabase
+        .from("appointments")
+        .select("id, patient_id, professional_id, status, waiting_room_status")
+        .eq("id", params.appointment)
+        .eq("clinic_id", clinicId)
+        .maybeSingle();
+      appointment = data;
+      if (!appointment) {
+        redirect("/consultas");
+      }
+      if (
+        role === "doctor" &&
+        sessionProfessionalId &&
+        appointment.professional_id !== sessionProfessionalId
+      ) {
+        redirect("/consultas");
+      }
+    }
+
+    const patientId = appointment?.patient_id ?? sessionPatientId!;
+    const { data: patient } = await supabase
+      .from("patients")
+      .select(PATIENT_DETAIL_COLUMNS)
+      .eq("id", patientId)
+      .eq("clinic_id", clinicId)
+      .single();
+
+    if (!patient) {
+      redirect("/consultas");
+    }
+
+    const patientRow = patient as Patient;
+    const workspace = await loadPatientWorkspacePageData(
+      supabase,
+      clinicId,
+      patientRow,
+      "soap"
+    );
+
+    const patientName = `${patientRow.last_name}, ${patientRow.first_name}`;
+
+    return (
+      <>
+        <Header
+          title={patientName}
+          subtitle="CONSULTA EN CURSO"
+          clinics={clinics}
+          activeClinicId={clinicId}
+          role={role}
+          userName={profile?.full_name}
+        />
+        <div className="space-y-4 p-3 sm:p-4">
+          <Suspense fallback={<p className="text-sm text-slate-500">Cargando consulta…</p>}>
+            <DoctorConsultaSession
+              appointmentId={appointment?.id ?? null}
+              professionalId={
+                params.professional ||
+                appointment?.professional_id ||
+                sessionProfessionalId ||
+                workspace.defaultProfessionalId ||
+                ""
+              }
+              patientRecord={patientRow}
+              workspace={workspace}
+              canIssue={canIssue}
+              canEditClinical
+              clinic={{
+                name: clinic?.name ?? "Consultorio",
+                address: clinic?.address ?? null,
+                phone: clinic?.phone ?? null,
+              }}
+            />
+          </Suspense>
+        </div>
+      </>
+    );
+  }
 
   let query = supabase
     .from("appointments")
@@ -59,9 +169,8 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
     .in("waiting_room_status", ["confirmed", "in_consultation"])
     .order("start_at");
 
-  // Doctors only see their own queue; admins see all.
-  if (role === "doctor" && professionalId) {
-    query = query.eq("professional_id", professionalId);
+  if (role === "doctor" && sessionProfessionalId) {
+    query = query.eq("professional_id", sessionProfessionalId);
   }
 
   const { data: appointments } = await query;
@@ -88,7 +197,7 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
     <>
       <Header
         title="Consultas"
-        subtitle="Pacientes confirmados y en atención"
+        subtitle="Evoluciones del día · confirmados y en atención"
         clinics={clinics}
         activeClinicId={clinicId}
         role={role}
@@ -107,10 +216,7 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
             </Button>
           </Link>
         </div>
-        <DoctorConsultasView
-          rows={rows}
-          highlightAppointmentId={params.appointment ?? null}
-        />
+        <DoctorConsultasView rows={rows} />
       </div>
     </>
   );

@@ -9,8 +9,6 @@ import { useMemo, useState, useTransition } from "react";
 
 import { toast } from "@/core/notifications/toast";
 
-import { cn } from "@/shared/utils/cn";
-
 import { clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
 import { buildAppointmentConsultationUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
@@ -41,7 +39,6 @@ export type DoctorConsultaRow = {
 
 type Props = {
   rows: DoctorConsultaRow[];
-  highlightAppointmentId?: string | null;
 };
 
 function statusLabel(status: string | null): string {
@@ -50,7 +47,7 @@ function statusLabel(status: string | null): string {
   return status ?? "—";
 }
 
-export function DoctorConsultasView({ rows, highlightAppointmentId }: Props) {
+export function DoctorConsultasView({ rows }: Props) {
   const router = useRouter();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [modalityById, setModalityById] = useState<Record<string, ConsultationModality>>({});
@@ -58,13 +55,9 @@ export function DoctorConsultasView({ rows, highlightAppointmentId }: Props) {
 
   const ordered = useMemo(() => {
     const list = [...rows];
-    list.sort((a, b) => {
-      if (a.id === highlightAppointmentId) return -1;
-      if (b.id === highlightAppointmentId) return 1;
-      return parseISO(a.start_at).getTime() - parseISO(b.start_at).getTime();
-    });
+    list.sort((a, b) => parseISO(a.start_at).getTime() - parseISO(b.start_at).getTime());
     return list;
-  }, [rows, highlightAppointmentId]);
+  }, [rows]);
 
   async function handleFinalize(appointmentId: string) {
     setPendingId(appointmentId);
@@ -82,6 +75,7 @@ export function DoctorConsultasView({ rows, highlightAppointmentId }: Props) {
     }
     clearConsultationTimer(appointmentId);
     setPendingId(null);
+    toast.success("Consulta finalizada");
     startTransition(() => {
       router.refresh();
     });
@@ -92,7 +86,7 @@ export function DoctorConsultasView({ rows, highlightAppointmentId }: Props) {
       <Card title="Consultas del día">
         <p className="text-sm text-slate-600">
           No hay pacientes confirmados ni en consulta ahora. Cuando marques{" "}
-          <strong>Confirmar</strong> en Sala de espera, vas a llegar acá.
+          <strong>Confirmar</strong> en Sala de espera, vas a evolucionar acá.
         </p>
         <Link href="/sala-espera" className="mt-3 inline-block">
           <Button type="button" variant="outline" size="sm">
@@ -118,26 +112,23 @@ export function DoctorConsultasView({ rows, highlightAppointmentId }: Props) {
           appointmentId: row.id,
           professionalId: row.professional_id,
         });
-        const highlighted = row.id === highlightAppointmentId;
         const busy = isPending || pendingId === row.id;
 
         return (
           <Card
             key={row.id}
-            className={cn(highlighted && "ring-2 ring-teal-500")}
             title={name}
             description={`${format(parseISO(row.start_at), "HH:mm 'hs'", { locale: es })} · ${statusLabel(row.waiting_room_status)} · ${professional}`}
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div className="space-y-1 text-sm text-slate-700">
                 {patient?.document_number ? <p>DNI {patient.document_number}</p> : null}
-                <p className="text-xs text-slate-500">Turno {row.id.slice(0, 8)}…</p>
               </div>
               <div className="flex flex-wrap items-end gap-2">
                 <Link href={consultHref}>
-                  <Button type="button" variant="outline" disabled={busy}>
+                  <Button type="button" disabled={busy}>
                     <Stethoscope className="h-4 w-4" />
-                    Abrir historia
+                    Evolucionar
                   </Button>
                 </Link>
                 <Select
@@ -157,6 +148,7 @@ export function DoctorConsultasView({ rows, highlightAppointmentId }: Props) {
                 />
                 <Button
                   type="button"
+                  variant="outline"
                   loading={busy}
                   onClick={() => void handleFinalize(row.id)}
                 >

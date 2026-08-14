@@ -1,0 +1,207 @@
+"use client";
+
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useMemo, useState, useTransition } from "react";
+
+import { toast } from "@/core/notifications/toast";
+
+import { ConsultationFlowBar } from "@/features/historias/components/historias/consultation-flow-bar";
+import { clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
+import type { PatientEhrViewProps } from "@/features/historias/components/historias/patient-ehr-types";
+import type { PatientChartProfessional } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
+import { PatientSoapWorkspace } from "@/features/pacientes/components/pacientes/patient-soap-workspace";
+import type { PatientEhrClinicalRecordsPagination } from "@/features/pacientes/server/load-patient-ehr-data";
+import type { PatientWorkspacePagePayload } from "@/features/pacientes/server/load-patient-workspace-page";
+import {
+  buildConsultaSessionUrl,
+  type PatientWorkspaceUrlOptions,
+} from "@/features/pacientes/utils/patient-workspace-actions";
+
+import { Button } from "@/components/ui/button";
+import { finalizeConsultation } from "@/lib/actions/appointments";
+import { updateWaitingRoomStatus } from "@/lib/actions/waiting-room";
+import type { Patient } from "@/types/database";
+
+const PatientWorkspaceSheets = dynamic(
+  () =>
+    import("@/features/pacientes/components/pacientes/workspace/patient-workspace-sheets").then(
+      (m) => ({ default: m.PatientWorkspaceSheets })
+    ),
+  { loading: () => null }
+);
+
+type Props = {
+  appointmentId?: string | null;
+  professionalId: string;
+  patientRecord: Patient;
+  workspace: PatientWorkspacePagePayload;
+  canIssue: boolean;
+  canEditClinical: boolean;
+  clinic: {
+    name: string;
+    address?: string | null;
+    phone?: string | null;
+  };
+};
+
+export function DoctorConsultaSession({
+  appointmentId = null,
+  professionalId,
+  patientRecord,
+  workspace,
+  canIssue,
+  canEditClinical,
+  clinic,
+}: Props) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [finalizing, setFinalizing] = useState(false);
+  const [, startTransition] = useTransition();
+
+  const patientId = patientRecord.id;
+  const ehr = workspace.ehr;
+
+  const navigateWorkspace = useCallback(
+    (opts: PatientWorkspaceUrlOptions) => {
+      router.push(
+        buildConsultaSessionUrl({
+          appointment: appointmentId ?? undefined,
+          patient: patientId,
+          professional: opts.professional ?? professionalId,
+          sheet: opts.sheet,
+          focus: opts.focus,
+          consulta: opts.consulta,
+        }),
+        { scroll: false }
+      );
+    },
+    [appointmentId, patientId, professionalId, router]
+  );
+
+  const workspaceNavigation = useMemo(
+    () => ({
+      workspaceSearchParams: searchParams,
+      navigateWorkspace,
+    }),
+    [navigateWorkspace, searchParams]
+  );
+
+  const soapProps: PatientEhrViewProps & {
+    patientRecord: Patient;
+    professionals: PatientChartProfessional[];
+    templates: PatientWorkspacePagePayload["templates"];
+    defaultProfessionalId?: string | null;
+    clinicalRecordsPagination?: PatientEhrClinicalRecordsPagination;
+    canIssue?: boolean;
+  } = {
+    patient: ehr.patientInfo,
+    consultations: ehr.consultations,
+    diagnosisRows: ehr.diagnosisRows,
+    treatmentRows: ehr.treatmentRows,
+    attachments: ehr.attachments,
+    prescriptions: ehr.prescriptions,
+    totalConsultations: ehr.totalConsultations,
+    usesHceExport: ehr.usesHceExport,
+    embedded: true,
+    patientRecord,
+    professionals: workspace.professionals,
+    templates: workspace.templates,
+    defaultProfessionalId: professionalId || workspace.defaultProfessionalId,
+    clinicalRecordsPagination: ehr.clinicalRecordsPagination,
+    canIssue,
+  };
+
+  async function handleFinalize() {
+    if (!appointmentId) {
+      router.push("/consultas");
+      return;
+    }
+    setFinalizing(true);
+    const result = await finalizeConsultation(appointmentId, "presencial");
+    if (result.error) {
+      toast.error(result.error);
+      setFinalizing(false);
+      return;
+    }
+    try {
+      await updateWaitingRoomStatus(appointmentId, "finished");
+    } catch {
+      // non-blocking
+    }
+    clearConsultationTimer(appointmentId);
+    toast.success("Consulta finalizada");
+    startTransition(() => {
+      router.push("/consultas");
+      router.refresh();
+    });
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Link href="/consultas">
+          <Button type="button" variant="outline" size="sm">
+            ← Lista de consultas
+          </Button>
+        </Link>
+        <Link href="/sala-espera">
+          <Button type="button" variant="outline" size="sm">
+            Sala de espera
+          </Button>
+        </Link>
+        {appointmentId ? (
+          <Button
+            type="button"
+            size="sm"
+            loading={finalizing}
+            onClick={() => void handleFinalize()}
+            className="ml-auto"
+          >
+            Finalizar consulta
+          </Button>
+        ) : null}
+      </div>
+
+      {appointmentId ? (
+        <ConsultationFlowBar
+          appointmentId={appointmentId}
+          patient={{
+            first_name: patientRecord.first_name,
+            last_name: patientRecord.last_name,
+          }}
+          showSteps={false}
+          hideRecetaLink
+          hideFinalize
+        />
+      ) : null}
+
+      <PatientSoapWorkspace
+        {...soapProps}
+        consultasSession={{
+          appointmentId: appointmentId ?? "",
+          professionalId,
+        }}
+      />
+
+      <PatientWorkspaceSheets
+        activeTab="soap"
+        workspaceNavigation={workspaceNavigation}
+        patient={workspace.patient}
+        patientId={patientId}
+        patientRecord={patientRecord}
+        ehr={ehr}
+        professionals={workspace.professionals}
+        defaultProfessionalId={professionalId || workspace.defaultProfessionalId}
+        lastMedications={workspace.lastMedications}
+        templates={workspace.templates}
+        canIssue={canIssue}
+        chart={workspace.chart}
+        coverageRuleOverrides={workspace.coverageRuleOverrides}
+        clinic={clinic}
+        canEditClinical={canEditClinical}
+      />
+    </div>
+  );
+}

@@ -8,10 +8,16 @@ import type {
   PatientWorkspaceFocus,
   PatientWorkspaceSheet,
 } from "@/features/pacientes/utils/patient-workspace-actions";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { buildConsultaSessionUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 import { Button } from "@/components/ui/button";
 import { EHR_NEW_CONSULT_FORM_ID } from "@/lib/utils/clinical-history-filename";
+
+type ConsultHrefOpts = {
+  sheet?: PatientWorkspaceSheet;
+  focus?: PatientWorkspaceFocus;
+  consulta?: string;
+};
 
 type Props = {
   patientId: string;
@@ -22,27 +28,9 @@ type Props = {
   canIssue?: boolean;
   selectedConsultaId?: string | null;
   onBeforeRecetaOpen?: () => void;
+  /** Por defecto abre evolución en Médicos → Consultas. */
+  buildHref?: (opts?: ConsultHrefOpts) => string;
 };
-
-function consultUrl(
-  patientId: string,
-  opts?: { sheet?: PatientWorkspaceSheet; focus?: PatientWorkspaceFocus; consulta?: string }
-) {
-  if (opts?.sheet === "receta" && opts.consulta && !opts.focus) {
-    return buildPatientWorkspaceUrl(patientId, {
-      tab: "soap",
-      consulta: opts.consulta,
-      sheet: "receta",
-    });
-  }
-  return buildPatientWorkspaceUrl(patientId, {
-    tab: "soap",
-    action: "nueva",
-    sheet: opts?.sheet,
-    focus: opts?.focus,
-    consulta: opts?.consulta,
-  });
-}
 
 export function PatientEhrActionLinks({
   patientId,
@@ -53,7 +41,17 @@ export function PatientEhrActionLinks({
   canIssue = false,
   selectedConsultaId = null,
   onBeforeRecetaOpen,
+  buildHref,
 }: Props) {
+  const consultUrl = (opts?: ConsultHrefOpts) =>
+    buildHref?.(opts) ??
+    buildConsultaSessionUrl({
+      patient: patientId,
+      sheet: opts?.sheet,
+      focus: opts?.focus,
+      consulta: opts?.consulta,
+    });
+
   const linkClass = (active: boolean) =>
     cn(
       "drflow-ehr-action-link inline-flex items-center gap-1 rounded-md px-1 py-0.5 transition",
@@ -61,15 +59,15 @@ export function PatientEhrActionLinks({
     );
 
   const recetaHref = consultOpen
-    ? consultUrl(patientId, { sheet: "receta" })
+    ? consultUrl({ sheet: "receta" })
     : selectedConsultaId
-      ? consultUrl(patientId, { sheet: "receta", consulta: selectedConsultaId })
-      : consultUrl(patientId, { sheet: "receta" });
+      ? consultUrl({ sheet: "receta", consulta: selectedConsultaId })
+      : consultUrl({ sheet: "receta" });
 
   return (
     <div className="drflow-ehr-actions mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[var(--border)] pb-3 text-sm font-semibold">
       {!consultOpen ? (
-        <Link href={consultUrl(patientId)} className="drflow-ehr-primary-btn">
+        <Link href={consultUrl()} className="drflow-ehr-primary-btn">
           <Plus className="h-4 w-4" /> Nueva consulta
         </Link>
       ) : null}
@@ -91,26 +89,26 @@ export function PatientEhrActionLinks({
       ) : null}
 
       <Link
-        href={consultUrl(patientId, { sheet: "archivo", focus: "evolucion" })}
+        href={consultUrl({ sheet: "archivo", focus: "evolucion" })}
         className={linkClass(activeSheet === "archivo")}
       >
         <Plus className="h-3.5 w-3.5" /> Archivo
       </Link>
       <Link
-        href={consultUrl(patientId, { focus: "diagnostico" })}
+        href={consultUrl({ focus: "diagnostico" })}
         className={linkClass(activeFocus === "diagnostico")}
       >
         <Plus className="h-3.5 w-3.5" /> Diagnóstico
       </Link>
       <Link
-        href={consultUrl(patientId, { focus: "vitales" })}
+        href={consultUrl({ focus: "vitales" })}
         className={linkClass(activeFocus === "vitales")}
       >
         Signos vitales
       </Link>
       {canIssue ? (
         <Link
-          href={consultUrl(patientId, { sheet: "orden" })}
+          href={consultUrl({ sheet: "orden" })}
           className={linkClass(activeSheet === "orden")}
         >
           <FileText className="h-3.5 w-3.5" /> Orden

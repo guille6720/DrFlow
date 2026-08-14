@@ -6,7 +6,7 @@ import {
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { buildConsultaSessionUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 import {
   getCachedClinicalTemplates,
@@ -27,11 +27,10 @@ export default async function NuevaConsultaPage({
 }) {
   const { patient, appointment, professional } = await searchParams;
 
-  if (patient) {
+  if (patient || appointment) {
     redirect(
-      buildPatientWorkspaceUrl(patient, {
-        tab: "soap",
-        action: "nueva",
+      buildConsultaSessionUrl({
+        patient,
         appointment,
         professional,
       })

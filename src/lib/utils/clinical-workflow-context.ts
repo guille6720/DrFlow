@@ -1,4 +1,7 @@
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import {
+  buildConsultaSessionUrl,
+  buildPatientWorkspaceUrl,
+} from "@/features/pacientes/utils/patient-workspace-actions";
 
 const PATIENT_PATH = /^\/pacientes\/([^/]+)/;
 
@@ -15,7 +18,7 @@ export type PatientWorkflowAction = "soap" | "prescription" | "order" | "chart";
 export function patientWorkflowHref(patientId: string, action: PatientWorkflowAction): string {
   switch (action) {
     case "soap":
-      return buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" });
+      return buildConsultaSessionUrl({ patient: patientId });
     case "prescription":
       return buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" });
     case "order":

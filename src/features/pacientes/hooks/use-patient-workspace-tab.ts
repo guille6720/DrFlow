@@ -9,6 +9,7 @@ import {
   type PatientWorkspaceTabId,
 } from "@/features/pacientes/constants/patient-workspace-tabs";
 import {
+  buildConsultaSessionUrl,
   buildPatientWorkspaceUrl,
   type PatientWorkspaceUrlOptions,
 } from "@/features/pacientes/utils/patient-workspace-actions";
@@ -86,8 +87,8 @@ export function usePatientWorkspaceTab(patientId: string, initialTab?: PatientWo
   );
 
   const openHcWorkspace = useCallback(() => {
-    navigateWorkspace({ tab: "soap", action: "nueva" });
-  }, [navigateWorkspace]);
+    window.location.assign(buildConsultaSessionUrl({ patient: patientId }));
+  }, [patientId]);
 
   return { activeTab, setTab, openHcWorkspace, navigateWorkspace, workspaceSearchParams };
 }

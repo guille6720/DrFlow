@@ -20,6 +20,10 @@ import type {
   PatientEhrPrescription,
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
+import type {
+  PatientWorkspaceFocus,
+  PatientWorkspaceSheet,
+} from "@/features/pacientes/utils/patient-workspace-actions";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 type Props = {
@@ -37,6 +41,11 @@ type Props = {
     professionalName: string;
   } | null;
   consultPanel?: ReactNode;
+  buildConsultHref?: (opts?: {
+    sheet?: PatientWorkspaceSheet;
+    focus?: PatientWorkspaceFocus;
+    consulta?: string;
+  }) => string;
 };
 
 export function PatientEhrInteractiveBody({
@@ -51,6 +60,7 @@ export function PatientEhrInteractiveBody({
   canIssue = false,
   pendingSidebarConsultation = null,
   consultPanel,
+  buildConsultHref,
 }: Props) {
   const router = useRouter();
   const {
@@ -78,6 +88,10 @@ export function PatientEhrInteractiveBody({
 
   function handleSidebarSelect(id: string) {
     setSelectedId(id);
+    if (inlineConsultOpen && buildConsultHref) {
+      // Stay in the in-progress consult form; don't jump to a past evolution URL.
+      return;
+    }
     const url = buildPatientWorkspaceUrl(patientId, { tab: "soap", consulta: id });
     if (inlineConsultOpen) {
       router.push(url, { scroll: false });
