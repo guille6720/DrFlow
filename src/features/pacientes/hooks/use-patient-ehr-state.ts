@@ -211,6 +211,29 @@ export function usePatientEhrState(
     });
   }, [loadingMoreRecords, options, recordsPagination.hasMore, recordsPagination.nextCursor]);
 
+  const appendClinicalHistory = useCallback(
+    (payload: {
+      consultations?: PatientEhrConsultation[];
+      diagnosisRows?: PatientEhrDiagnosisRow[];
+      treatmentRows?: PatientEhrTreatmentRow[];
+    }) => {
+      if (payload.consultations?.length) {
+        setExtraConsultations((current) => mergeById(payload.consultations!, current));
+      }
+      if (payload.diagnosisRows?.length) {
+        setExtraDiagnosisRows((current) => mergeById(payload.diagnosisRows!, current));
+      }
+      if (payload.treatmentRows?.length) {
+        setExtraTreatmentRows((current) => mergeById(payload.treatmentRows!, current));
+      }
+      setRecordsPagination((current) => ({
+        ...current,
+        total: current.total + (payload.consultations?.length ?? 0),
+      }));
+    },
+    []
+  );
+
   async function triggerPrint(scope: PatientEhrPrintScope) {
     if (scope === "day" && dayPrintConsultations.length === 0) return;
     if (printingFullHistory) return;
@@ -311,6 +334,7 @@ export function usePatientEhrState(
     clinicalRecordsPagination: recordsPagination,
     loadMoreRecords,
     loadingMoreRecords,
+    appendClinicalHistory,
     resolveConsultationSignature,
   };
 }

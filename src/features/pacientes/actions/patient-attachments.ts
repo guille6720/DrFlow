@@ -10,6 +10,7 @@ import { logAudit } from "@/core/auth/session.actions";
 import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
 import {
   buildPatientFilePath,
+  validateAdminDocumentUpload,
   validatePdfUpload,
 } from "@/core/security/file-upload";
 import { requireClinicalRecordAccess } from "@/core/services/clinical-access.service";
@@ -45,11 +46,19 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
     : "otro";
   const file = formData.get("file");
   if (!(file instanceof File)) {
-    return { error: "Seleccioná un archivo PDF" };
+    return { error: "Seleccioná un archivo PDF, JPG o PNG" };
+  }
+
+  const clinicalRecordRaw = String(formData.get("clinical_record_id") ?? "").trim();
+  const clinicalRecordParsed = clinicalRecordRaw
+    ? parseEntityId(clinicalRecordRaw, "Consulta")
+    : null;
+  if (clinicalRecordParsed && !clinicalRecordParsed.ok) {
+    return { error: clinicalRecordParsed.error };
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const validated = validatePdfUpload(file, buffer, CLINICAL_DOCUMENT_MAX_BYTES);
+  const validated = validateAdminDocumentUpload(file, buffer, CLINICAL_DOCUMENT_MAX_BYTES);
   if (!validated.ok) return { error: validated.error };
 
   const supabase = await createClient();
@@ -63,8 +72,23 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
 
   if (!patient) return { error: "Paciente no encontrado" };
 
+  let clinicalRecordId: string | null = null;
+  if (clinicalRecordParsed?.ok) {
+    const { data: record } = await supabase
+      .from("clinical_records")
+      .select("id")
+      .eq("id", clinicalRecordParsed.data)
+      .eq("clinic_id", auth.clinicId)
+      .eq("patient_id", patientParsed.data)
+      .maybeSingle();
+    if (!record) return { error: "Consulta no encontrada para este paciente" };
+    clinicalRecordId = record.id;
+  }
+
   const fileName = validated.sanitizedName;
-  const filePath = buildPatientFilePath(auth.clinicId, patientParsed.data, fileName);
+  const filePath = buildPatientFilePath(auth.clinicId, patientParsed.data, fileName, "clinical", {
+    clinicalRecordId,
+  });
 
   const { error: uploadError } = await supabase.storage
     .from(BUCKET)
@@ -83,22 +107,55 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
     return { error: uploadError.message };
   }
 
+  const insertPayload: Record<string, unknown> = {
+    patient_id: patientParsed.data,
+    clinic_id: auth.clinicId,
+    file_name: fileName,
+    file_path: filePath,
+    file_type: validated.contentType,
+    file_size: file.size,
+    category,
+    uploaded_by: auth.userId,
+  };
+  if (clinicalRecordId) insertPayload.clinical_record_id = clinicalRecordId;
+
   const { data: attachment, error: insertError } = await supabase
     .from("patient_attachments")
-    .insert({
-      patient_id: patientParsed.data,
-      clinic_id: auth.clinicId,
-      file_name: fileName,
-      file_path: filePath,
-      file_type: "application/pdf",
-      file_size: file.size,
-      category,
-      uploaded_by: auth.userId,
-    })
+    .insert(insertPayload)
     .select("id")
     .single();
 
   if (insertError) {
+    // Retry without clinical_record_id if column missing (pre-migration).
+    if (clinicalRecordId && /clinical_record_id/i.test(insertError.message)) {
+      delete insertPayload.clinical_record_id;
+      const retry = await supabase
+        .from("patient_attachments")
+        .insert(insertPayload)
+        .select("id")
+        .single();
+      if (retry.error) {
+        await supabase.storage.from(BUCKET).remove([filePath]);
+        return { error: retry.error.message };
+      }
+      await logAudit({
+        clinicId: auth.clinicId,
+        entityType: "patient",
+        entityId: patientParsed.data,
+        action: "create",
+        metadata: {
+          attachmentId: retry.data.id,
+          fileName,
+          category,
+          type: "clinical_document",
+          clinicalRecordId,
+        },
+      });
+      revalidatePath("/historias");
+      revalidatePath(`/pacientes/${patientParsed.data}`);
+      revalidatePath("/consultas");
+      return { success: true, id: retry.data.id };
+    }
     await supabase.storage.from(BUCKET).remove([filePath]);
     return { error: insertError.message };
   }
@@ -113,11 +170,13 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
       fileName,
       category,
       type: "clinical_document",
+      clinicalRecordId,
     },
   });
 
   revalidatePath("/historias");
   revalidatePath(`/pacientes/${patientParsed.data}`);
+  revalidatePath("/consultas");
   return { success: true, id: attachment.id };
 }
 

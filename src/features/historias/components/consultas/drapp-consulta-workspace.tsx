@@ -1,12 +1,18 @@
 "use client";
 
-import { CalendarDays, CheckCircle2, Plus, Search } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { CalendarDays, CheckCircle2, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { toast } from "@/core/notifications/toast";
 
 import { cn } from "@/shared/utils/cn";
 
-import { ConsultEvolutionStructuredFields } from "@/features/historias/components/historias/consult-evolution-structured-fields";
+import { DrappConsultaFullModal } from "@/features/historias/components/consultas/drapp-consulta-full-modal";
+import { DrappDiagnosisQuickForm } from "@/features/historias/components/consultas/drapp-diagnosis-quick-form";
+import { DrappTreatmentQuickForm } from "@/features/historias/components/consultas/drapp-treatment-quick-form";
+import { DrappVitalsHistory } from "@/features/historias/components/consultas/drapp-vitals-history";
+import { DrappVitalsQuickForm } from "@/features/historias/components/consultas/drapp-vitals-quick-form";
+import { useDrappQuickPanel } from "@/features/historias/components/consultas/use-drapp-quick-panel";
 import { PatientEhrClinicalTables } from "@/features/historias/components/historias/patient-ehr-clinical-tables";
 import { PatientEhrDemographics } from "@/features/historias/components/historias/patient-ehr-demographics";
 import { PatientEhrFiltersBar } from "@/features/historias/components/historias/patient-ehr-filters-bar";
@@ -22,6 +28,20 @@ import {
   patientEhrEvolutionBody,
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import { useNuevaConsultaForm } from "@/features/historias/hooks/use-nueva-consulta-form";
+import type { ClinicalDiagnosisEntry } from "@/features/historias/utils/clinical-structured-entries";
+import type { ClinicalTreatmentEntry } from "@/features/historias/utils/clinical-structured-entries";
+import {
+  type QuickClinicalSaveContext,
+  saveFullConsultation,
+  saveQuickDiagnosis,
+  saveQuickTreatment,
+  saveQuickVitals,
+} from "@/features/historias/utils/create-quick-clinical-entry";
+import {
+  formatVitalsForEvolution,
+  type VitalsFormValues,
+} from "@/features/historias/utils/vitals-form";
+import { uploadPatientClinicalDocument } from "@/features/pacientes/actions/patient-attachments";
 import type { PatientChartProfessional } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { PatientEhrClinicalRecordsPagination } from "@/features/pacientes/server/load-patient-ehr-data";
 import type {
@@ -30,11 +50,11 @@ import type {
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
 
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { EHR_NEW_CONSULT_FORM_ID } from "@/lib/utils/clinical-history-filename";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { Patient } from "@/types/database";
+import type { PrescriptionMedication } from "@/types/prescription";
 
 type Template = {
   id: string;
@@ -58,8 +78,6 @@ type Props = PatientEhrViewProps & {
   onFinalize?: () => void | Promise<void>;
   finalizing?: boolean;
 };
-
-type FocusSection = "evolucion" | "diagnostico" | "tratamiento" | "medicacion" | "vitales" | "archivo";
 
 function truncate(text: string, max = 180): string {
   const clean = text.replace(/\s+/g, " ").trim();
@@ -106,22 +124,21 @@ function DrappHistorySidebar({
     <aside className="drapp-consulta-sidebar flex w-full shrink-0 flex-col border-b border-slate-200 bg-white lg:w-[300px] lg:border-b-0 lg:border-r">
       <div className="border-b border-slate-200 p-2.5">
         <label className="relative block">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
           <input
             type="search"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscador de evoluciones..."
-            className="drapp-consulta-search w-full rounded border border-slate-200 bg-white py-2 pl-8 pr-2 text-xs text-slate-800 outline-none focus:border-[#5ba4e6] focus:ring-1 focus:ring-[#5ba4e6]/40"
+            className="drapp-consulta-search w-full rounded border border-slate-200 bg-white py-2 pl-3 pr-2 text-xs text-slate-800 outline-none focus:border-[#5ba4e6] focus:ring-1 focus:ring-[#5ba4e6]/40"
           />
         </label>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="border-b border-slate-100 px-3 py-2.5">
+        <div className="border-b border-slate-100 bg-[#fff8dc]/70 px-3 py-2.5">
           <p className="text-[13px] font-semibold text-[#2f7fbf]">
             {formatPatientEhrSidebarDate(new Date().toISOString())} {pendingLabel}
           </p>
-          <p className="mt-0.5 text-[11px] font-medium text-slate-500">Consulta en curso</p>
+          <p className="mt-0.5 text-[11px] font-medium text-amber-800/80">Consulta en curso</p>
         </div>
         {filtered.length === 0 ? (
           <p className="p-4 text-center text-xs text-slate-500">Sin evoluciones previas</p>
@@ -191,18 +208,21 @@ function DrappActionLink({
   onClick,
   children,
   showPlus = true,
+  disabled = false,
 }: {
   active?: boolean;
   onClick: () => void;
   children: React.ReactNode;
   showPlus?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={onClick}
       className={cn(
-        "drapp-consulta-action inline-flex items-center gap-0.5 px-2 py-1 text-[13px] font-medium transition",
+        "drapp-consulta-action inline-flex items-center gap-0.5 px-2 py-1 text-[13px] font-medium transition disabled:opacity-50",
         active
           ? "rounded bg-[#4f9fe0] text-white shadow-sm"
           : "rounded text-[#2f7fbf] hover:bg-[#e8f4fc]"
@@ -238,27 +258,36 @@ function DrappConsultaWorkspaceInner({
   | "clinicalRecordsPagination"
   | "embedded"
 >) {
-  const router = useRouter();
-  const { filters, toggleFilter, sidebarList, diagnosisRows, treatmentRows } =
-    usePatientEhrStateContext();
+  const {
+    filters,
+    toggleFilter,
+    sidebarList,
+    diagnosisRows,
+    treatmentRows,
+    appendClinicalHistory,
+  } = usePatientEhrStateContext();
 
   const [sidebarSearch, setSidebarSearch] = useState("");
-  const [activeFocus, setActiveFocus] = useState<FocusSection>("evolucion");
-  const [showVitals, setShowVitals] = useState(false);
-  const [showArchivo, setShowArchivo] = useState(false);
-
+  const [quickSaving, setQuickSaving] = useState(false);
+  const [fullModalOpen, setFullModalOpen] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [lastSavedRecordId, setLastSavedRecordId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const evolutionRef = useRef<HTMLTextAreaElement>(null);
-  const diagnosisAnchorRef = useRef<HTMLDivElement>(null);
-  const diagnosisSearchRef = useRef<HTMLInputElement>(null);
-  const treatmentSearchRef = useRef<HTMLInputElement>(null);
-  const medicationSearchRef = useRef<HTMLInputElement>(null);
-  const vitalsRef = useRef<HTMLTextAreaElement>(null);
-  const archivoRef = useRef<HTMLInputElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const quickSaveLock = useRef(false);
 
-  const onConsultSaved = useCallback(() => {
-    router.refresh();
-  }, [router]);
+  const { openPanel, setDirty, requestOpen, closePanel, markCleanAndClose } =
+    useDrappQuickPanel("evolucion");
+
+  const historySnapshotRef = useRef({
+    professionalId: professionalId ?? defaultProfessionalId ?? "",
+    professionalName: "Consulta en curso",
+    professionalSignature: "",
+    chiefComplaint: "",
+    evolution: "",
+    indications: "",
+  });
 
   const {
     formRef,
@@ -274,17 +303,13 @@ function DrappConsultaWorkspaceInner({
     evolution,
     setEvolution,
     diagnoses,
-    setDiagnoses,
     clinicalTreatments,
-    setClinicalTreatments,
     treatmentMedications,
-    setTreatmentMedications,
     indications,
-    setIndications,
     vitals,
-    setVitals,
     flushEvolutionDraft,
     saveIfDirty,
+    professionalSignature,
   } = useNuevaConsultaForm({
     patients: [patientRecord],
     professionals,
@@ -294,10 +319,110 @@ function DrappConsultaWorkspaceInner({
       patientId: patient.id,
       appointmentId: appointmentId ?? undefined,
       professionalId: professionalId ?? defaultProfessionalId ?? undefined,
-      onSaved: onConsultSaved,
+      onSaved: (recordId) => {
+        const snap = historySnapshotRef.current;
+        appendClinicalHistory({
+          consultations: [
+            {
+              id: recordId,
+              created_at: new Date().toISOString(),
+              professional_id: snap.professionalId || null,
+              professional_signature: snap.professionalSignature || null,
+              professional_name: snap.professionalName,
+              chief_complaint: snap.chiefComplaint,
+              diagnosis: "",
+              evolution: snap.evolution,
+              indications: snap.indications,
+              category: "evolution",
+            },
+          ],
+        });
+        setLastSavedRecordId(recordId);
+        toast.success("Evolución guardada");
+      },
       onClose: () => {},
     },
   });
+
+  const activeProfessionalId =
+    formProfessionalId || professionalId || defaultProfessionalId || "";
+
+  const pendingLabel = useMemo(() => {
+    const pro = professionals.find((p) => p.id === activeProfessionalId);
+    return pro ? getProfessionalDisplayName(pro) : "Consulta en curso";
+  }, [activeProfessionalId, professionals]);
+
+  useEffect(() => {
+    historySnapshotRef.current = {
+      professionalId: activeProfessionalId,
+      professionalName: pendingLabel,
+      professionalSignature: professionalSignature ?? "",
+      chiefComplaint,
+      evolution,
+      indications,
+    };
+  }, [
+    activeProfessionalId,
+    chiefComplaint,
+    evolution,
+    indications,
+    pendingLabel,
+    professionalSignature,
+  ]);
+
+  const quickCtx = useMemo((): QuickClinicalSaveContext | null => {
+    if (!activeProfessionalId) return null;
+    return {
+      patientId: patient.id,
+      professionalId: activeProfessionalId,
+      appointmentId,
+      professionalName: pendingLabel,
+      professionalSignature,
+      consultationAtIso: new Date(consultationAt).toISOString(),
+    };
+  }, [
+    activeProfessionalId,
+    appointmentId,
+    consultationAt,
+    patient.id,
+    pendingLabel,
+    professionalSignature,
+  ]);
+
+  const applyQuickResult = useCallback(
+    (result: Awaited<ReturnType<typeof saveQuickDiagnosis>>) => {
+      if (!result.ok) {
+        toast.error(result.error);
+        return false;
+      }
+      appendClinicalHistory({
+        consultations: result.consultations,
+        diagnosisRows: result.diagnosisRows,
+        treatmentRows: result.treatmentRows,
+      });
+      setLastSavedRecordId(result.recordId);
+      toast.success("Guardado");
+      markCleanAndClose();
+      return true;
+    },
+    [appendClinicalHistory, markCleanAndClose]
+  );
+
+  const runQuickSave = useCallback(
+    async (fn: () => Promise<Awaited<ReturnType<typeof saveQuickDiagnosis>>>) => {
+      if (quickSaveLock.current || !quickCtx) return;
+      quickSaveLock.current = true;
+      setQuickSaving(true);
+      try {
+        const result = await fn();
+        applyQuickResult(result);
+      } finally {
+        quickSaveLock.current = false;
+        setQuickSaving(false);
+      }
+    },
+    [applyQuickResult, quickCtx]
+  );
 
   const handleFinalizeClick = useCallback(async () => {
     if (!onFinalize) return;
@@ -306,39 +431,96 @@ function DrappConsultaWorkspaceInner({
     await onFinalize();
   }, [onFinalize, saveIfDirty]);
 
-  const focusSection = useCallback((section: FocusSection) => {
-    setActiveFocus(section);
-    if (section === "vitales") setShowVitals(true);
-    if (section === "archivo") setShowArchivo(true);
-    queueMicrotask(() => {
-      const map: Record<FocusSection, HTMLElement | null | undefined> = {
-        evolucion: evolutionRef.current,
-        diagnostico: diagnosisSearchRef.current ?? diagnosisAnchorRef.current,
-        tratamiento: treatmentSearchRef.current,
-        medicacion: medicationSearchRef.current,
-        vitales: vitalsRef.current,
-        archivo: archivoRef.current,
-      };
-      const el = map[section];
-      el?.focus();
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  const vitalsHistory = useMemo(() => {
+    return sidebarList
+      .filter((c) => c.category === "vitals" || /signos vitales/i.test(c.chief_complaint + c.evolution))
+      .map((c) => ({
+        id: c.id,
+        created_at: c.created_at,
+        text: patientEhrEvolutionBody(c) || c.evolution,
+      }));
+  }, [sidebarList]);
+
+  async function handleSaveDiagnosis(entry: ClinicalDiagnosisEntry, notes: string) {
+    if (!quickCtx) {
+      toast.error("Seleccioná un profesional");
+      return;
+    }
+    await runQuickSave(() => saveQuickDiagnosis(quickCtx, entry, notes));
+  }
+
+  async function handleSaveTreatment(
+    treatment: ClinicalTreatmentEntry,
+    medications: PrescriptionMedication[]
+  ) {
+    if (!quickCtx) {
+      toast.error("Seleccioná un profesional");
+      return;
+    }
+    await runQuickSave(() => saveQuickTreatment(quickCtx, treatment, medications));
+  }
+
+  async function handleSaveVitals(values: VitalsFormValues) {
+    if (!quickCtx) {
+      toast.error("Seleccioná un profesional");
+      return;
+    }
+    const text = formatVitalsForEvolution(values);
+    await runQuickSave(() => saveQuickVitals(quickCtx, text));
+  }
+
+  async function handleSaveFullConsulta(values: {
+    chiefComplaint: string;
+    evolution: string;
+    physicalExam: string;
+    indications: string;
+    observations: string;
+    plan: string;
+    diagnoses: ClinicalDiagnosisEntry[];
+    clinicalTreatments: ClinicalTreatmentEntry[];
+    medications: PrescriptionMedication[];
+  }) {
+    if (!quickCtx) {
+      toast.error("Seleccioná un profesional");
+      return;
+    }
+    await runQuickSave(async () => {
+      const result = await saveFullConsultation(quickCtx, {
+        ...values,
+        vitals,
+      });
+      if (result.ok) setFullModalOpen(false);
+      return result;
     });
-  }, []);
+  }
 
-  useEffect(() => {
-    queueMicrotask(() => focusSection("evolucion"));
-  }, [focusSection]);
-
-  const pendingLabel = useMemo(() => {
-    const pro = professionals.find(
-      (p) => p.id === (formProfessionalId || professionalId || defaultProfessionalId)
-    );
-    return pro ? getProfessionalDisplayName(pro) : "Consulta en curso";
-  }, [defaultProfessionalId, formProfessionalId, professionalId, professionals]);
+  async function handleFileSelected(fileList: FileList | null) {
+    const file = fileList?.[0];
+    if (!file) return;
+    setUploadingFile(true);
+    try {
+      const formData = new FormData();
+      formData.set("patient_id", patient.id);
+      formData.set("file", file);
+      formData.set("category", "estudio");
+      if (lastSavedRecordId) formData.set("clinical_record_id", lastSavedRecordId);
+      const result = await uploadPatientClinicalDocument(formData);
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Archivo adjunto");
+    } finally {
+      setUploadingFile(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
 
   return (
     <>
-      <PatientEhrDemographics patient={patient} />
+      <div className="sticky top-0 z-20 bg-white">
+        <PatientEhrDemographics patient={patient} totalConsultations={sidebarList.length} />
+      </div>
       <PatientEhrFiltersBar
         filters={filters}
         onToggleFilter={toggleFilter}
@@ -369,41 +551,51 @@ function DrappConsultaWorkspaceInner({
             <section className="drapp-consulta-composer overflow-hidden rounded-sm border border-[#e8e0b8]">
               <div className="drapp-consulta-actions flex flex-wrap items-center gap-1 border-b border-[#efe6b8] px-2 py-1.5">
                 <DrappActionLink
-                  active={activeFocus === "evolucion"}
-                  onClick={() => focusSection("evolucion")}
+                  active={openPanel === "evolucion"}
+                  onClick={() => {
+                    requestOpen("evolucion");
+                    queueMicrotask(() => evolutionRef.current?.focus());
+                  }}
                 >
                   Evolución
                 </DrappActionLink>
                 <DrappActionLink
-                  active={activeFocus === "archivo"}
-                  onClick={() => focusSection("archivo")}
-                >
-                  Archivo
-                </DrappActionLink>
-                <DrappActionLink
-                  active={activeFocus === "diagnostico"}
-                  onClick={() => focusSection("diagnostico")}
+                  active={openPanel === "diagnostico"}
+                  onClick={() => requestOpen("diagnostico")}
                 >
                   Diagnóstico
                 </DrappActionLink>
                 <DrappActionLink
-                  active={activeFocus === "tratamiento"}
-                  onClick={() => focusSection("tratamiento")}
+                  active={openPanel === "tratamiento"}
+                  onClick={() => requestOpen("tratamiento")}
                 >
                   Tratamiento
                 </DrappActionLink>
                 <DrappActionLink
-                  active={activeFocus === "medicacion"}
-                  onClick={() => focusSection("medicacion")}
-                >
-                  Medicación
-                </DrappActionLink>
-                <DrappActionLink
-                  active={activeFocus === "vitales"}
-                  onClick={() => focusSection("vitales")}
+                  active={openPanel === "vitales"}
+                  onClick={() => requestOpen("vitales")}
                   showPlus={false}
                 >
                   Signos vitales
+                </DrappActionLink>
+                <DrappActionLink
+                  active={fullModalOpen}
+                  onClick={() => {
+                    if (openPanel && openPanel !== "evolucion") {
+                      if (!closePanel()) return;
+                    }
+                    setFullModalOpen(true);
+                  }}
+                  showPlus={false}
+                >
+                  Notas/Consulta
+                </DrappActionLink>
+                <DrappActionLink
+                  disabled={uploadingFile}
+                  onClick={() => fileInputRef.current?.click()}
+                  showPlus={false}
+                >
+                  {uploadingFile ? "Subiendo…" : "Adjuntar"}
                 </DrappActionLink>
                 {canIssue ? (
                   <DrappActionLink
@@ -422,7 +614,7 @@ function DrappConsultaWorkspaceInner({
                 <div className="ml-auto flex flex-wrap items-center gap-2 px-1">
                   <button
                     type="submit"
-                    disabled={formLoading}
+                    disabled={formLoading || quickSaving}
                     className="text-[13px] font-semibold text-[#2f7fbf] hover:underline disabled:opacity-60"
                   >
                     {formLoading ? "Guardando…" : "Guardar"}
@@ -430,7 +622,7 @@ function DrappConsultaWorkspaceInner({
                   {onFinalize ? (
                     <button
                       type="button"
-                      disabled={finalizing || formLoading}
+                      disabled={finalizing || formLoading || quickSaving}
                       onClick={() => void handleFinalizeClick()}
                       className="inline-flex items-center gap-1 text-[13px] font-semibold text-[#2f7fbf] hover:underline disabled:opacity-60"
                     >
@@ -441,108 +633,112 @@ function DrappConsultaWorkspaceInner({
                 </div>
               </div>
 
-              <div className="drapp-consulta-evolution space-y-2 p-3">
-                <Textarea
-                  name="chief_complaint"
-                  label="Motivo de consulta"
-                  rows={2}
-                  voiceInput
-                  value={chiefComplaint}
-                  onChange={(e) => setChiefComplaint(e.target.value)}
-                  placeholder="Motivo de la consulta…"
-                  className="drapp-consulta-evolution-input border-[#e8d98a] bg-transparent text-slate-900"
+              {openPanel === "diagnostico" ? (
+                <DrappDiagnosisQuickForm
+                  saving={quickSaving}
+                  onDirtyChange={setDirty}
+                  onCancel={() => {
+                    void closePanel();
+                  }}
+                  onSave={handleSaveDiagnosis}
                 />
-                <Textarea
-                  ref={evolutionRef}
-                  name="evolution"
-                  label="Evolución"
-                  required
-                  rows={8}
-                  voiceInput
-                  value={evolution}
-                  onChange={(e) => setEvolution(e.target.value)}
-                  placeholder="Escribe aquí la evolución"
-                  className="drapp-consulta-evolution-input min-h-[180px] border-[#e8d98a] bg-transparent text-[14px] leading-relaxed text-slate-900"
-                />
+              ) : null}
 
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                  <label className="inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-slate-700">
-                    <CalendarDays className="h-4 w-4 text-[#2f7fbf]" aria-hidden />
-                    <span className="font-medium text-[#2f7fbf]">
-                      {formatConsultationDateLabel(consultationAt)}
-                    </span>
-                    <input
-                      ref={dateInputRef}
-                      type="datetime-local"
-                      value={consultationAt}
-                      onChange={(e) => setConsultationAt(e.target.value)}
-                      className="sr-only"
-                      tabIndex={-1}
-                    />
-                    <button
-                      type="button"
-                      className="text-[12px] text-slate-500 underline-offset-2 hover:underline"
-                      onClick={() => dateInputRef.current?.showPicker?.() ?? dateInputRef.current?.click()}
-                    >
-                      Cambiar
-                    </button>
-                  </label>
+              {openPanel === "tratamiento" ? (
+                <DrappTreatmentQuickForm
+                  saving={quickSaving}
+                  onDirtyChange={setDirty}
+                  onCancel={() => {
+                    void closePanel();
+                  }}
+                  onSave={handleSaveTreatment}
+                />
+              ) : null}
+
+              {openPanel === "vitales" ? (
+                <DrappVitalsQuickForm
+                  saving={quickSaving}
+                  onDirtyChange={setDirty}
+                  onCancel={() => {
+                    void closePanel();
+                  }}
+                  onSave={handleSaveVitals}
+                />
+              ) : null}
+
+              {openPanel === "evolucion" || openPanel === null ? (
+                <div className="drapp-consulta-evolution space-y-2 p-3">
+                  <Textarea
+                    name="chief_complaint"
+                    label="Motivo de consulta"
+                    rows={2}
+                    voiceInput
+                    value={chiefComplaint}
+                    onChange={(e) => setChiefComplaint(e.target.value)}
+                    placeholder="Motivo de la consulta…"
+                    className="drapp-consulta-evolution-input border-[#e8d98a] bg-transparent text-slate-900"
+                  />
+                  <Textarea
+                    ref={evolutionRef}
+                    name="evolution"
+                    label="Evolución"
+                    required
+                    rows={8}
+                    voiceInput
+                    value={evolution}
+                    onChange={(e) => setEvolution(e.target.value)}
+                    placeholder="Escribe aquí la evolución"
+                    className="drapp-consulta-evolution-input min-h-[180px] border-[#e8d98a] bg-transparent text-[14px] leading-relaxed text-slate-900"
+                  />
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                    <label className="inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-slate-700">
+                      <CalendarDays className="h-4 w-4 text-[#2f7fbf]" aria-hidden />
+                      <span className="font-medium text-[#2f7fbf]">
+                        {formatConsultationDateLabel(consultationAt)}
+                      </span>
+                      <input
+                        ref={dateInputRef}
+                        type="datetime-local"
+                        value={consultationAt}
+                        onChange={(e) => setConsultationAt(e.target.value)}
+                        className="sr-only"
+                        tabIndex={-1}
+                      />
+                      <button
+                        type="button"
+                        className="text-[12px] text-slate-500 underline-offset-2 hover:underline"
+                        onClick={() =>
+                          dateInputRef.current?.showPicker?.() ?? dateInputRef.current?.click()
+                        }
+                      >
+                        Cambiar
+                      </button>
+                    </label>
+                  </div>
                 </div>
-              </div>
+              ) : null}
             </section>
 
-            <div className="drapp-consulta-structured rounded-sm border border-slate-200 bg-white p-3">
-              <ConsultEvolutionStructuredFields
-                diagnoses={diagnoses}
-                onDiagnosesChange={setDiagnoses}
-                clinicalTreatments={clinicalTreatments}
-                onClinicalTreatmentsChange={setClinicalTreatments}
-                medications={treatmentMedications}
-                onMedicationsChange={setTreatmentMedications}
-                indications={indications}
-                onIndicationsChange={setIndications}
-                diagnosisHighlighted={activeFocus === "diagnostico"}
-                treatmentHighlighted={activeFocus === "tratamiento"}
-                medicationHighlighted={activeFocus === "medicacion"}
-                diagnosisSearchRef={diagnosisSearchRef}
-                treatmentSearchRef={treatmentSearchRef}
-                medicationSearchRef={medicationSearchRef}
-                diagnosisAnchorRef={diagnosisAnchorRef}
-              />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf,.pdf,image/jpeg,.jpg,.jpeg,image/png,.png"
+              className="hidden"
+              onChange={(e) => void handleFileSelected(e.target.files)}
+            />
+
+            {/* Keep structured fields in form state for draft "Guardar" without showing heavy UI */}
+            <div className="hidden" aria-hidden>
+              <input type="hidden" name="diagnosis" value="" />
+              <textarea name="indications" value={indications} readOnly tabIndex={-1} />
+              <textarea name="vitals" value={vitals} readOnly tabIndex={-1} />
             </div>
-
-            {showVitals ? (
-              <section id="ehr-consult-vitales" className="rounded-sm border border-slate-200 p-3">
-                <Textarea
-                  ref={vitalsRef}
-                  label="Signos vitales"
-                  rows={2}
-                  voiceInput
-                  value={vitals}
-                  onChange={(e) => setVitals(e.target.value)}
-                  placeholder="TA, FC, FR, T°, Sat O₂, peso..."
-                />
-              </section>
-            ) : null}
-
-            {showArchivo ? (
-              <section
-                id="ehr-consult-archivo"
-                className="rounded-sm border border-dashed border-slate-300 bg-slate-50 p-3"
-              >
-                <p className="mb-2 text-xs font-semibold text-slate-600">Archivo adjunto</p>
-                <Button type="button" variant="outline" size="sm" onClick={() => onOpenSheet?.("archivo")}>
-                  <Plus className="h-4 w-4" />
-                  Subir archivo
-                </Button>
-                <input ref={archivoRef} type="text" className="sr-only" readOnly tabIndex={-1} />
-              </section>
-            ) : null}
 
             {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
           </form>
 
-          <div className="drapp-consulta-tables mt-4">
+          <div className="drapp-consulta-tables mt-4 space-y-3">
             <PatientEhrClinicalTables
               patientId={patient.id}
               diagnosisRows={filters.diagnostics ? diagnosisRows : []}
@@ -551,9 +747,26 @@ function DrappConsultaWorkspaceInner({
               showTreatments={filters.treatments}
               stacked
             />
+            {filters.vitals ? <DrappVitalsHistory items={vitalsHistory} /> : null}
           </div>
         </main>
       </div>
+
+      <DrappConsultaFullModal
+        open={fullModalOpen}
+        patient={patient}
+        saving={quickSaving}
+        initial={{
+          chiefComplaint,
+          evolution,
+          diagnoses,
+          clinicalTreatments,
+          medications: treatmentMedications,
+          indications,
+        }}
+        onClose={() => setFullModalOpen(false)}
+        onSave={handleSaveFullConsulta}
+      />
     </>
   );
 }

@@ -28,11 +28,16 @@ export function buildPatientFilePath(
   clinicId: string,
   patientId: string,
   fileName: string,
-  zone: "clinical" | "admin" = "clinical"
+  zone: "clinical" | "admin" = "clinical",
+  options?: { clinicalRecordId?: string | null }
 ): string {
   const safe = sanitizeStorageFileName(fileName);
   if (zone === "admin") {
     return `${clinicId}/${patientId}/admin/${randomUUID()}-${safe}`;
+  }
+  const consultationId = options?.clinicalRecordId?.trim();
+  if (consultationId) {
+    return `${clinicId}/patients/${patientId}/consultations/${consultationId}/${randomUUID()}-${safe}`;
   }
   return `${clinicId}/patients/${patientId}/${randomUUID()}-${safe}`;
 }
