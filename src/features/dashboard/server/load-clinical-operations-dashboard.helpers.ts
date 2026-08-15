@@ -17,6 +17,8 @@ export const APPOINTMENT_SELECT_MINIMAL =
 export const UPCOMING_APPOINTMENT_STATUSES = ["pending", "confirmed"] as const;
 
 export const LIST_LIMIT = 8;
+/** Cap busy-clinic day payload for clinical ops dashboard. */
+export const TODAY_APPOINTMENTS_LIMIT = 200;
 
 type PatientNameRef = { first_name: string; last_name: string } | null;
 
@@ -106,7 +108,8 @@ export async function fetchDashboardCoreQueries(
       .gte("start_at", todayStart)
       .lte("start_at", todayEnd)
       .not("status", "eq", "cancelled")
-      .order("start_at"),
+      .order("start_at")
+      .limit(TODAY_APPOINTMENTS_LIMIT),
     supabase
       .from("appointments")
       .select(APPOINTMENT_SELECT)

@@ -17,8 +17,8 @@ import { createClient } from "@/core/supabase/server";
 
 import { DoctorConsultaSession } from "@/features/historias/components/consultas/doctor-consulta-session";
 import {
-  DoctorConsultasView,
   type DoctorConsultaRow,
+  DoctorConsultasView,
 } from "@/features/historias/components/consultas/doctor-consultas-view";
 import { loadPatientWorkspacePageData } from "@/features/pacientes/server/load-patient-workspace-page";
 
@@ -167,7 +167,8 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
     .neq("status", "cancelled")
     .neq("status", "attended")
     .in("waiting_room_status", ["confirmed", "in_consultation"])
-    .order("start_at");
+    .order("start_at")
+    .limit(100);
 
   if (role === "doctor" && sessionProfessionalId) {
     query = query.eq("professional_id", sessionProfessionalId);

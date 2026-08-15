@@ -77,7 +77,7 @@ export async function listClinicalFavorites(
     query = query.eq("kind", parsedKind.data);
   }
 
-  const { data, error } = await query;
+  const { data, error } = await query.limit(100);
   if (error) {
     return { error: "No se pudieron cargar los favoritos." };
   }

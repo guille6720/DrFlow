@@ -38,7 +38,7 @@ import {
 import { getWorkspaceFetchPlan } from "@/features/pacientes/server/patient-workspace-fetch-plan";
 import { buildPatientChartPayload } from "@/features/pacientes/utils/patient-chart-model";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
-import { HCE_SUMMARY_ATTACHMENT_NAME, loadPatientHceSummaryRows } from "@/features/pacientes/utils/patient-ehr-from-hce";
+import { loadPatientHceSummaryRows } from "@/features/pacientes/utils/patient-ehr-from-hce";
 import { loadActiveCoverageRulesForClinic } from "@/features/recetas/repositories/coverage-rules.repository";
 import {
   buildCoverageRuleOverridesMap,
@@ -205,6 +205,20 @@ export async function loadPatientWorkspacePageData(
     : Promise.resolve({ data: [] });
 
   const coverageRulesPromise = loadActiveCoverageRulesForClinic(supabase, clinicId);
+  const hcePromise = plan.hceSummary
+    ? loadPatientHceSummaryRows(supabase, clinicId, patientId)
+    : Promise.resolve(null);
+  const appSharePromise = portalContextPromise.then(async (ctx) => {
+    if (!ctx.portalSlug) return { data: null as null };
+    return supabase
+      .from("patient_app_share_log")
+      .select("shared_at, channel, profiles(full_name)")
+      .eq("patient_id", patientId)
+      .maybeSingle();
+  });
+  const defaultProfessionalPromise = professionalsPromise.then((pros) =>
+    resolveDefaultProfessionalId(supabase, clinicId, mapProfessionals(pros))
+  );
 
   const [
     portalContext,
@@ -217,6 +231,9 @@ export async function loadPatientWorkspacePageData(
     clinicalProfileResult,
     templates,
     coverageRulesResult,
+    hceRows,
+    appShareResult,
+    defaultProfessionalId,
   ] = await Promise.all([
     portalContextPromise,
     recordsPromise,
@@ -228,31 +245,15 @@ export async function loadPatientWorkspacePageData(
     clinicalProfilePromise,
     templatesPromise,
     coverageRulesPromise,
+    hcePromise,
+    appSharePromise,
+    defaultProfessionalPromise,
   ]);
 
   const records = recordsResult.data ?? [];
   const totalRecords = recordsResult.count;
 
   const { portalSlug, doctorInfo } = portalContext;
-
-  const hceAttachment = attachments?.find((a) => a.file_name === HCE_SUMMARY_ATTACHMENT_NAME);
-  // Pass undefined (not null) when attachment was not preloaded so the loader can look it up.
-  const hceRows = plan.hceSummary
-    ? await loadPatientHceSummaryRows(
-        supabase,
-        clinicId,
-        patientId,
-        hceAttachment ? hceAttachment.file_path : undefined
-      )
-    : null;
-
-  const appShareResult = portalSlug
-    ? await supabase
-        .from("patient_app_share_log")
-        .select("shared_at, channel, profiles(full_name)")
-        .eq("patient_id", patientId)
-        .maybeSingle()
-    : { data: null };
 
   const timelineAppointments = (allAppointments ?? []).filter((a) =>
     ["attended", "no_show"].includes(a.status as string)
@@ -342,11 +343,6 @@ export async function loadPatientWorkspacePageData(
   const appShare = appShareResult.data;
   const shareProfile = appShare?.profiles as { full_name?: string } | null;
   const mappedProfessionals = mapProfessionals(professionals);
-  const defaultProfessionalId = await resolveDefaultProfessionalId(
-    supabase,
-    clinicId,
-    mappedProfessionals
-  );
 
   const coverageRuleOverrides =
     coverageRulesResult.ok && coverageRulesResult.data.length > 0

@@ -1,6 +1,6 @@
 /** Shared pagination helpers for Supabase list queries. */
 
-export const PACIENTES_PAGE_SIZE = 20;
+export const PACIENTES_PAGE_SIZE = 25;
 export const HISTORIAS_PAGE_SIZE = 25;
 export const ATENCIONES_PAGE_SIZE = 50;
 export const PAMI_PATIENTS_PAGE_SIZE = 50;

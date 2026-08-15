@@ -15,6 +15,7 @@ import {
   LIST_LIMIT,
   mapCriticalPatients,
   sanitizeIsoTimestamp,
+  TODAY_APPOINTMENTS_LIMIT,
   UPCOMING_APPOINTMENT_STATUSES,
 } from "@/features/dashboard/server/load-clinical-operations-dashboard.helpers";
 import type { ClinicalOperationsDashboardCorePayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
@@ -52,7 +53,8 @@ async function fetchTodayAppointments(
       .gte("start_at", todayStart)
       .lte("start_at", todayEnd)
       .not("status", "eq", "cancelled")
-      .order("start_at");
+      .order("start_at")
+      .limit(TODAY_APPOINTMENTS_LIMIT);
 
     if (!error) {
       return ((data ?? []) as unknown as LiveAppointment[]).map((row) => ({

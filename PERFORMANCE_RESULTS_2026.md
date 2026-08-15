@@ -81,6 +81,19 @@ Ninguna migración nueva. Índices existentes (046/054/061/087) cubren hot paths
 
 ---
 
+## Follow-up (bloque 2 — post `9ecab58`)
+
+| Área | Cambio |
+| ---- | ------ |
+| Workspace HC | HCE + app-share + default-pro en el mismo `Promise.all` (menos waterfall) |
+| Favoritos clínicos | `.limit(100)` |
+| Clinical ops / dashboard core | today appointments ≤ 200 |
+| `/consultas` día | appointments ≤ 100 |
+| `/pacientes` page size | 20 → **25** |
+| Recetas UX | `useTransition` alrededor de `router.refresh` tras issue/void/save |
+
+---
+
 ## Archivos tocados (implementación)
 
 - `src/lib/utils/batch-patient-record-counts.ts`
