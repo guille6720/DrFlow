@@ -22,7 +22,7 @@
 
 ---
 
-## Tabla rutas (cualitativa — medir en Preview)
+## Tabla rutas (cualitativa)
 
 | Ruta | Antes (audit) | Después | Mejora |
 | ---- | ------------- | ------- | -----: |
@@ -32,12 +32,48 @@
 | Guardar/emitir receta | waterfall + bust listas | parallel + surfaces | alto |
 | `/turnos/agenda` | 3000 + blocks ∞ | 1200 + 400 | medio-alto |
 
-Métricas runtime (TTFB / Lighthouse) pendientes de corrida en Preview:
+---
 
-```bash
-npm run performance:audit
-npm run lighthouse:audit
-```
+## Métricas medidas (2026-08-15, local prod `next start` :3001)
+
+**Build:** `npm run build` OK (Next.js 16.2.9 webpack).  
+**Gate:** `npm run performance:gate` OK — 70 tests.  
+**Bundle first-load KB:** no disponible — `.next/diagnostics/route-bundle-stats.json` no se genera en este build (script legado).
+
+### Lighthouse (rutas públicas)
+
+| Ruta | Perf | A11y | Best practices | SEO |
+| ---- | ---: | ---: | -------------: | --: |
+| `/` | 80 | 96 | 93 | 100 |
+| `/login` | 93 | 76 | 86 | 82 |
+| `/privacidad` | 98 | 100 | 93 | 100 |
+| `/terminos` | 97 | 100 | 93 | 100 |
+| `/demo` | 94 | 100 | 93 | 100 |
+
+Fuente: `coverage/lighthouse/summary.json`
+
+### TTFB cold (HEAD/GET local, sin sesión)
+
+| Ruta | Antes* | Después | Mejora |
+| ---- | -----: | ------: | -----: |
+| `/` | n/d | **85 ms** | — |
+| `/login` | n/d | **17 ms** | — |
+| `/demo` | n/d | **23 ms** | — |
+| `/pacientes` (redirect auth) | n/d | **10 ms** | — |
+| `/dashboard` (redirect auth) | n/d | **8 ms** | — |
+| `/turnos/agenda` (redirect) | n/d | **8 ms** | — |
+| `/consultas` (redirect) | n/d | **8 ms** | — |
+
+\*Sin baseline Lighthouse/TTFB previo en este ciclo; comparación cualitativa vs audit estático P0.  
+Rutas clínicas autenticadas requieren sesión Preview para TTFB con datos reales.
+
+### Objetivos de referencia
+
+| Métrica | Objetivo | Estado local |
+| ------- | -------- | ------------ |
+| TTFB páginas públicas | &lt;800 ms | ✅ &lt;100 ms |
+| Lighthouse Perf públicas | alto | ✅ 80–98 |
+| Gate tests | pass | ✅ |
 
 ---
 
