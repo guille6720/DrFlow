@@ -21,14 +21,14 @@ const STYLE_ICONS: Record<UiStyleId, typeof LayoutGrid> = {
 
 const STYLE_ACTIVE_RING: Record<UiStyleId, string> = {
   "1": "border-teal-400 bg-teal-500/10 ring-teal-400/40",
-  "2": "border-teal-400 bg-teal-500/10 ring-teal-400/40",
+  "2": "border-green-500 bg-green-500/10 ring-green-500/40",
   "3": "border-sky-400 bg-sky-500/10 ring-sky-400/40",
   "4": "border-blue-400 bg-blue-500/10 ring-blue-400/40",
 };
 
 const STYLE_ICON_COLOR: Record<UiStyleId, string> = {
   "1": "text-teal-300",
-  "2": "text-teal-300",
+  "2": "text-green-600",
   "3": "text-sky-300",
   "4": "text-blue-300",
 };
@@ -94,9 +94,13 @@ function AppearanceStyleControls() {
                   ? clinicalDark
                     ? "Azul profundo nocturno; tarjetas claras con texto oscuro nítido."
                     : "Fondo azul cobalto saturado; tarjetas blancas de alto contraste."
-                  : clinicalDark
-                    ? "Fondo oscuro clínico, bordes planos y alto contraste para turnos nocturnos."
-                    : "Modo claro plano: fondo gris muy suave, tarjetas blancas y rejilla Bento."}
+                  : style === "2"
+                    ? clinicalDark
+                      ? "Verde Salud oscuro: fondos verdes neutros, texto claro y acentos verdes suaves."
+                      : "Verde Salud: fondos neutros, marca verde en acciones y selección, máxima legibilidad clínica."
+                    : clinicalDark
+                      ? "Fondo oscuro clínico, bordes planos y alto contraste para turnos nocturnos."
+                      : "Modo claro plano: fondo gris muy suave, tarjetas blancas y rejilla Bento."}
               </p>
             </div>
             <Button
