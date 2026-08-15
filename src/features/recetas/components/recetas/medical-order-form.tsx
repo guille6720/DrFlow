@@ -15,7 +15,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { PAMI_REFERRAL_TEMPLATES, PAMI_STUDY_TEMPLATES } from "@/lib/constants/pami-cabecera";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
-import type { MedicalOrderEditFields } from "@/types/medical-order";
+import type { MedicalOrder, MedicalOrderEditFields } from "@/types/medical-order";
 
 interface Professional {
   id: string;
@@ -30,7 +30,8 @@ interface Props {
   professionals: Professional[];
   defaultProfessionalId?: string;
   existingOrder?: MedicalOrderEditFields;
-  onSuccess?: () => void;
+  /** Called after a successful create/update. Create passes the saved order for preview/print. */
+  onSuccess?: (order?: MedicalOrder) => void;
   onCancel?: () => void;
   assistContext?: PhysicianAssistContext;
 }
@@ -82,7 +83,11 @@ export function MedicalOrderForm({
       setError(result.error);
       return;
     }
-    onSuccess?.();
+    onSuccess?.(isEditing ? undefined : result.data);
+    if (!isEditing) {
+      // Keep the sheet open for preview/print; caller decides refresh timing.
+      return;
+    }
     router.refresh();
   }
 

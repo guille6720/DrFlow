@@ -29,18 +29,29 @@ export function MedicalOrderPreviewSheet({ open, data, onClose }: Props) {
       onClose={onClose}
       wide
       headerActions={
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => printMedicalOrderDocument(data)}
-        >
-          <Printer className="h-4 w-4" />
-          Imprimir
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => printMedicalOrderDocument(data)}
+          >
+            <Printer className="h-4 w-4" />
+            Imprimir / Guardar PDF
+          </Button>
+          <Button type="button" size="sm" onClick={onClose}>
+            Listo
+          </Button>
+        </div>
       }
     >
-      <MedicalOrderDocumentView data={data} />
+      <div className="space-y-3">
+        <p className="text-sm text-slate-600">
+          La orden ya está guardada. Revisá la vista previa e imprimí o guardá como PDF desde el
+          diálogo de impresión.
+        </p>
+        <MedicalOrderDocumentView data={data} />
+      </div>
     </PatientWorkspaceOverlay>
   );
 }

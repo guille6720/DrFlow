@@ -125,7 +125,13 @@ export function MedicalOrderPanel({
             clinicalRecordId={clinicalRecordId}
             professionals={professionals}
             defaultProfessionalId={defaultProfessionalId}
-            onSuccess={() => setShowForm(false)}
+            onSuccess={(order) => {
+              setShowForm(false);
+              if (order) {
+                openPreview(order);
+              }
+              router.refresh();
+            }}
           />
         </div>
       )}

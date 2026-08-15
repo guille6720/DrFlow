@@ -181,6 +181,14 @@ export function PatientWorkspaceSheets({
       <PatientOrderSheet
         open={actions.orderSheetOpen && canIssue}
         patientId={patientId}
+        patient={{
+          first_name: patient.first_name,
+          last_name: patient.last_name,
+          document_number: patient.document_number,
+          birth_date: patient.birth_date,
+          insurance_provider: patient.insurance_provider,
+          insurance_number: patient.insurance_number,
+        }}
         patientName={patientName}
         patientInsurance={patient.insurance_provider}
         patientInsurancePlan={patientRecord.insurance_plan}
@@ -191,6 +199,7 @@ export function PatientWorkspaceSheets({
         professionals={professionals}
         defaultProfessionalId={actions.professional ?? defaultProfessionalId ?? undefined}
         clinicalRecordId={actions.consulta ?? undefined}
+        clinic={clinic}
         onClose={actions.closeSheet}
         onSaved={actions.onRxOrOrderSaved}
       />
