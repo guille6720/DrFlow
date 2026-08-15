@@ -1,11 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
@@ -23,10 +18,7 @@ export default async function HistoriaDetailPage({
 }) {
   const { id } = await params;
   const { from, patient: returnPatientId, embed } = await searchParams;
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin, clinic } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, isSuperadmin, clinic } = await getDashboardPageContext();
   const supabase = await createClient();
 
   if (!clinicId) notFound();

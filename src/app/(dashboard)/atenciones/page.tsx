@@ -1,9 +1,4 @@
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { parsePageParam } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
@@ -31,10 +26,7 @@ export default async function AtencionesPage({
     : "daily";
   const page = parsePageParam(pageParam);
 
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, clinic } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, clinic } = await getDashboardPageContext();
   const supabase = await createClient();
 
   const timeZone = clinic?.timezone ?? DEFAULT_CLINIC_TIMEZONE;

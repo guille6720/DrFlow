@@ -1,11 +1,6 @@
 import { redirect } from "next/navigation";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { unwrapNestedRow } from "@/core/supabase/nested-row";
@@ -18,10 +13,7 @@ import { getCachedClinicProfessionalsList } from "@/lib/server/cached-clinic-que
 import { buildProfessionalSignature } from "@/lib/utils/professional";
 
 export default async function FirmasPage() {
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
 
   if (!clinicId) {
     redirect("/login");

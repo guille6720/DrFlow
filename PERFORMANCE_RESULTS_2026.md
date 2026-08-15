@@ -102,6 +102,13 @@ Ninguna migración nueva. Índices existentes (046/054/061/087) cubren hot paths
 | Sidebar | prefetch de hijos al abrir grupo; `prefetch` estable |
 | Clinical top nav | `Link prefetch` |
 
+### Bloque 4
+
+| Área | Cambio |
+| ---- | ------ |
+| 23 páginas dashboard restantes | `getDashboardPageContext` (caja, config, atenciones, facturación, plantillas, etc.) |
+| Auth serial en `page.tsx` del dashboard | Eliminado (`await getProfile()` = 0 en dashboard) |
+
 ---
 
 ## Archivos tocados (implementación)

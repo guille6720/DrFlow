@@ -1,12 +1,7 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
@@ -26,10 +21,7 @@ export default async function IngresoProfesionalesPage({
 }) {
   const params = await searchParams;
   const { id: selectedId, nuevo, miembro: selectedMemberId } = params;
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
 
   if (!hasPermission(role, "manageStaff", isSuperadmin)) {
     redirect("/dashboard");

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { getActiveClinicId } from "@/core/auth/session";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { createClient } from "@/core/supabase/server";
 
 import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
@@ -12,7 +12,7 @@ export default async function PatientClinicalHistoryRedirectPage({
   params: Promise<{ id: string }>;
 }) {
   const { id: patientId } = await params;
-  const clinicId = await getActiveClinicId();
+  const { clinicId } = await getDashboardPageContext();
   const supabase = await createClient();
 
   if (clinicId) {

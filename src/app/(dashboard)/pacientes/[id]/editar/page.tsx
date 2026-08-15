@@ -1,12 +1,7 @@
 import { notFound } from "next/navigation";
 import { redirect } from "next/navigation";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { hasPermission } from "@/core/permissions/roles";
 import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
@@ -21,10 +16,7 @@ export default async function EditarPacientePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin, clinic } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, isSuperadmin, clinic } = await getDashboardPageContext();
 
   if (!hasPermission(role, "managePatients", isSuperadmin)) {
     redirect("/pacientes");

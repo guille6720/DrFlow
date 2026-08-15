@@ -1,9 +1,4 @@
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 
 import { parsePatientSearchQueryForPrefill } from "@/features/pacientes/utils/create-patient-from-search";
 
@@ -15,10 +10,7 @@ export default async function NuevoPacientePage({
   searchParams: Promise<{ q?: string; return?: string }>;
 }) {
   const params = await searchParams;
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, clinic } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, clinic } = await getDashboardPageContext();
   const prefill = params.q ? parsePatientSearchQueryForPrefill(params.q) : undefined;
   const returnPath =
     params.return && params.return.startsWith("/") && !params.return.startsWith("//")

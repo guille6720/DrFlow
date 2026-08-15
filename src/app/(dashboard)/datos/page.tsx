@@ -1,23 +1,18 @@
 import { ArrowLeftRight } from "lucide-react";
 import Link from "next/link";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
+import { ClinicalStructureStatsPanel } from "@/features/historias/components/historias/clinical-structure-stats-panel";
+import { loadClinicStructuredClinicalStats } from "@/features/historias/server/load-clinic-structured-clinical-stats";
 import { DataImportExportSidebar } from "@/features/integraciones";
 import { MigrationHealthPanel } from "@/features/integraciones";
 import { ClearClinicalHistoryPanel } from "@/features/integraciones";
 import { DatosBulkDownloadCards } from "@/features/integraciones/components/datos/datos-bulk-download-cards";
 import { DatosNavigationHelp } from "@/features/integraciones/components/datos/datos-navigation-help";
-import { ClinicalStructureStatsPanel } from "@/features/historias/components/historias/clinical-structure-stats-panel";
-import { loadClinicStructuredClinicalStats } from "@/features/historias/server/load-clinic-structured-clinical-stats";
 
 import { Button } from "@/components/ui/button";
 import { SectorHero } from "@/components/ui/sector-hero";
@@ -31,10 +26,7 @@ const EXPORT_RECORDS_LIMIT = 2000;
 const MIGRATION_RECORDS_LIMIT = 25_000;
 
 export default async function DatosPage() {
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { clinic, role, isSuperadmin } = await getActiveClinic();
+  const { profile, clinics, clinicId, clinic, role, isSuperadmin } = await getDashboardPageContext();
   const supabase = await createClient();
 
   const canImportPatients = hasPermission(role, "managePatients", isSuperadmin);

@@ -1,21 +1,13 @@
 import { redirect } from "next/navigation";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 
 import { GeminiWorkspaceClient } from "@/features/ia/components/clinical-workflow/gemini-workspace-client";
 
 export default async function GeminiPage() {
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
 
   if (!clinicId) {
     redirect("/login");
