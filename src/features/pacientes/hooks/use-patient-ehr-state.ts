@@ -20,6 +20,7 @@ import {
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import { printEhrClinicalDocument } from "@/features/historias/utils/print-ehr-clinical-document";
 import { getPatientClinicalDocumentUrl } from "@/features/pacientes/actions/patient-attachments";
+import type { PatientProblemListItem } from "@/features/pacientes/server/load-clinical-structure";
 import { loadMorePatientClinicalRecords } from "@/features/pacientes/server/load-more-patient-clinical-records";
 import type { PatientEhrClinicalRecordsPagination } from "@/features/pacientes/server/load-patient-ehr-data";
 import { HCE_SUMMARY_ATTACHMENT_NAME } from "@/features/pacientes/utils/patient-ehr-from-hce";
@@ -53,6 +54,14 @@ type PrintBundle = {
   treatmentRows: PatientEhrTreatmentRow[];
 };
 
+export type PatientEhrPrintClinicalContext = {
+  allergies?: string | null;
+  medicalHistory?: string | null;
+  regularMedication?: string | null;
+  sexLabel?: string | null;
+  problemList?: PatientProblemListItem[];
+};
+
 function mergeById<T extends { id: string }>(base: T[], extra: T[]): T[] {
   const seen = new Set(base.map((row) => row.id));
   const merged = [...base];
@@ -73,9 +82,11 @@ export function usePatientEhrState(
     patientId?: string;
     clinicalRecordsPagination?: PatientEhrClinicalRecordsPagination;
     professionals?: Array<ProfessionalSignatureSource & { id?: string }>;
+    clinicalContext?: PatientEhrPrintClinicalContext;
   }
 ) {
   const professionals = options?.professionals ?? [];
+  const clinicalContext = options?.clinicalContext;
   const [extraConsultations, setExtraConsultations] = useState<PatientEhrConsultation[]>([]);
   const [extraDiagnosisRows, setExtraDiagnosisRows] = useState<PatientEhrDiagnosisRow[]>([]);
   const [extraTreatmentRows, setExtraTreatmentRows] = useState<PatientEhrTreatmentRow[]>([]);
@@ -228,6 +239,7 @@ export function usePatientEhrState(
       diagnosisRows,
       treatmentRows,
       professionals,
+      clinicalContext,
     });
 
     if (!result.ok) {

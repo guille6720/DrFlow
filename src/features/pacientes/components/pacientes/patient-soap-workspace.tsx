@@ -190,6 +190,16 @@ export function PatientSoapWorkspace({
       }
     : null;
 
+  const printClinicalContext = useMemo(
+    () => ({
+      allergies: patientRecord.allergies,
+      medicalHistory: patientRecord.medical_history,
+      regularMedication: patientRecord.regular_medication,
+      problemList,
+    }),
+    [patientRecord.allergies, patientRecord.medical_history, patientRecord.regular_medication, problemList]
+  );
+
   // Mientras redirige desde HC, no montar el formulario ahí.
   if (!consultasSession && parsedBase.inlineConsultOpen) {
     return (
@@ -210,6 +220,7 @@ export function PatientSoapWorkspace({
       patientId={patient.id}
       clinicalRecordsPagination={clinicalRecordsPagination}
       professionals={professionals}
+      clinicalContext={printClinicalContext}
     >
       <PatientEhrShellFrame embedded={embedded}>
         {!embedded ? (

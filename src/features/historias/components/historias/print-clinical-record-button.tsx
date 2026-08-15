@@ -112,7 +112,7 @@ export function PrintClinicalRecordButton({
   return (
     <Button type="button" variant="outline" size="sm" onClick={handlePrint}>
       <Printer className="h-4 w-4" aria-hidden />
-      Imprimir
+      Imprimir historia clínica
     </Button>
   );
 }
