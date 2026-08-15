@@ -92,6 +92,16 @@ Ninguna migración nueva. Índices existentes (046/054/061/087) cubren hot paths
 | `/pacientes` page size | 20 → **25** |
 | Recetas UX | `useTransition` alrededor de `router.refresh` tras issue/void/save |
 
+### Bloque 3
+
+| Área | Cambio |
+| ---- | ------ |
+| `/pami/planillas`, `/guia-pami` | `getDashboardPageContext` (1 shell cached) |
+| `/consultas`, `/pacientes/[id]` | idem |
+| PAMI loader | default-pro en paralelo con catalog |
+| Sidebar | prefetch de hijos al abrir grupo; `prefetch` estable |
+| Clinical top nav | `Link prefetch` |
+
 ---
 
 ## Archivos tocados (implementación)

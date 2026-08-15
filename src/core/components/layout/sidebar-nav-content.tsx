@@ -86,6 +86,13 @@ function SidebarNavGroupItem({
     if (childActive) setOpen(true);
   }
 
+  useEffect(() => {
+    if (!open) return;
+    for (const child of group.children) {
+      onPrefetch(child.href);
+    }
+  }, [open, group.children, onPrefetch]);
+
   return (
     <div className="space-y-1">
       <button

@@ -2,7 +2,7 @@
 
 import { Menu, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-context";
 import {
@@ -112,6 +112,13 @@ export function Sidebar({
 
   const isInvitedMember = isInvitedClinicMember(role, isSuperadmin);
 
+  const prefetchHref = useCallback(
+    (href: string) => {
+      router.prefetch(href);
+    },
+    [router]
+  );
+
   function handleToggleSidebarHidden() {
     toggleHidden();
     setMobileOpen(false);
@@ -154,7 +161,7 @@ export function Sidebar({
           visibleItems={visibleItems}
           pathname={pathname}
           onNavigate={() => setMobileOpen(false)}
-          onPrefetch={(href) => router.prefetch(href)}
+          onPrefetch={prefetchHref}
           sidebarHidden={desktopHidden}
           onToggleSidebarHidden={handleToggleSidebarHidden}
           isInvitedMember={isInvitedMember}

@@ -1,11 +1,6 @@
 import { redirect } from "next/navigation";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { parsePageParam } from "@/core/supabase/pagination";
@@ -29,10 +24,7 @@ export default async function PamiPlanillasPage({
   const q = sanitizePatientSearchTerm(qRaw);
   const page = parsePageParam(pageParam);
 
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
   const supabase = await createClient();
 
   if (!hasPermission(role, "issuePrescriptions", isSuperadmin)) {

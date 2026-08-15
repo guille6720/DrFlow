@@ -3,13 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getSession,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
+import { getSession } from "@/core/auth/session.server";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
@@ -38,11 +33,8 @@ type PageProps = {
 };
 
 export default async function ConsultasPage({ searchParams }: PageProps) {
-  const profile = await getProfile();
+  const { profile, clinics, clinicId, role, isSuperadmin, clinic } = await getDashboardPageContext();
   const session = await getSession();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin, clinic } = await getActiveClinic();
   const params = (await searchParams) ?? {};
 
   if (!clinicId || !session) {
