@@ -122,11 +122,73 @@ describe("buildEhrPrintDocumentHtml", () => {
     expect(html).toContain("Tratamientos y medicación");
     expect(html).toContain("Matrícula:");
     expect(html).toContain('class="sig-img"');
+    expect(html).toContain('class="doc-sign"');
+    expect(html).not.toContain('class="evo-sign"');
     expect(html).not.toContain("Firma del profesional");
     expect(html).not.toContain("drflow-ui-header");
     expect(html).not.toContain("Resumen pre-consulta");
     expect(html).toContain("@page");
     expect(html).toContain("size: A4");
+  });
+
+  it("places a single signature at the end of multi-evolution histories", () => {
+    const html = buildEhrPrintDocumentHtml({
+      scope: "all",
+      generatedAt: new Date("2026-08-15T17:00:00.000Z"),
+      patient: {
+        id: "p1",
+        first_name: "Ana",
+        last_name: "García",
+        document_number: "12345678",
+        birth_date: "1980-01-01",
+        age_label: "46 años",
+        insurance_provider: null,
+        insurance_number: null,
+        phone: null,
+        email: null,
+      },
+      consultations: [
+        {
+          id: "c2",
+          created_at: "2024-02-01T12:00:00.000Z",
+          professional_id: "pro1",
+          professional_name: "Leonardi, Oscar Angel",
+          professional_license_national: "455344",
+          chief_complaint: "Control",
+          diagnosis: "HTA",
+          evolution: "Estable en segundo control.",
+          indications: "",
+          category: "evolution",
+        },
+        {
+          id: "c1",
+          created_at: "2023-01-01T12:00:00.000Z",
+          professional_id: "pro1",
+          professional_name: "Leonardi, Oscar Angel",
+          professional_license_national: "455344",
+          chief_complaint: "Consulta",
+          diagnosis: "HTA",
+          evolution: "Primera evolución clínica.",
+          indications: "",
+          category: "evolution",
+        },
+      ],
+      dayConsultations: [],
+      diagnosisRows: [],
+      treatmentRows: [],
+      professionals: [
+        {
+          id: "pro1",
+          display_name: "Leonardi, Oscar Angel",
+          license_national: "455344",
+          signature_image_url: "https://example.com/firma.png",
+        },
+      ],
+    });
+
+    expect(html.match(/class="doc-sign"/g)).toHaveLength(1);
+    expect(html.indexOf("Estable en segundo control.")).toBeLessThan(html.indexOf('class="doc-sign"'));
+    expect(html.indexOf("Primera evolución clínica.")).toBeLessThan(html.indexOf('class="doc-sign"'));
   });
 });
 

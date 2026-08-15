@@ -27,6 +27,7 @@ import type {
   PatientWorkspaceSheet,
 } from "@/features/pacientes/utils/patient-workspace-actions";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { DocumentSignatureBlock } from "@/features/recetas/components/recetas/document-signature-block";
 
 type Props = {
   patientId: string;
@@ -171,22 +172,26 @@ export function PatientEhrInteractiveBody({
 
                 <div className="drflow-ehr-print-only drflow-ehr-print-day-content mt-3 space-y-3">
                   {dayPrintConsultations.map((consultation) => (
-                    <PatientEhrPrintEvolutionBlock
-                      key={consultation.id}
-                      consultation={consultation}
-                      signature={resolveConsultationSignature(consultation)}
-                    />
+                    <PatientEhrPrintEvolutionBlock key={consultation.id} consultation={consultation} />
                   ))}
+                  {dayPrintConsultations[0] ? (
+                    <DocumentSignatureBlock
+                      signature={resolveConsultationSignature(dayPrintConsultations[0])}
+                      className="drflow-ehr-print-signature mt-4"
+                    />
+                  ) : null}
                 </div>
 
                 <div className="drflow-ehr-print-only drflow-ehr-print-all-content mt-3 space-y-3">
                   {evolutionList.map((consultation) => (
-                    <PatientEhrPrintEvolutionBlock
-                      key={consultation.id}
-                      consultation={consultation}
-                      signature={resolveConsultationSignature(consultation)}
-                    />
+                    <PatientEhrPrintEvolutionBlock key={consultation.id} consultation={consultation} />
                   ))}
+                  {evolutionList[0] ? (
+                    <DocumentSignatureBlock
+                      signature={resolveConsultationSignature(evolutionList[0])}
+                      className="drflow-ehr-print-signature mt-4"
+                    />
+                  ) : null}
                 </div>
               </>
             ) : null}

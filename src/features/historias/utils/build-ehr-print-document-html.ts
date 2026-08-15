@@ -72,7 +72,7 @@ function evolutionText(consultation: PatientEhrConsultation): string {
   return patientEhrEvolutionBody(consultation);
 }
 
-function buildCompactSignatureHtml(
+function buildDocumentSignatureHtml(
   consultation: PatientEhrConsultation,
   signature: DocumentSignature
 ): string {
@@ -85,11 +85,25 @@ function buildCompactSignatureHtml(
     : "";
 
   return `
-    <footer class="evo-sign">
+    <footer class="doc-sign">
       ${imageHtml}
       <p class="sig-name">${escapeHtml(titled)}</p>
       ${matricula ? `<p class="sig-mat">${escapeHtml(matricula)}</p>` : ""}
     </footer>`;
+}
+
+function resolveDocumentEndSignature(
+  consultations: PatientEhrConsultation[],
+  professionals: Array<ProfessionalSignatureSource & { id?: string }>
+): string {
+  const latest = consultations[0];
+  if (!latest) return "";
+  const signature = resolveClinicalRecordDocumentSignature({
+    professionalId: latest.professional_id,
+    storedSignatureText: latest.professional_signature,
+    professionals,
+  });
+  return buildDocumentSignatureHtml(latest, signature);
 }
 
 function renderVitalsTable(vitals: Record<string, string>): string {
@@ -232,8 +246,7 @@ function renderClinicalSummary(
 function renderEvolutionBlock(
   consultation: PatientEhrConsultation,
   diagnosisRows: PatientEhrDiagnosisRow[],
-  treatmentRows: PatientEhrTreatmentRow[],
-  professionals: Array<ProfessionalSignatureSource & { id?: string }>
+  treatmentRows: PatientEhrTreatmentRow[]
 ): string {
   const { date, time } = formatPrintDateTime(consultation.created_at);
   const rawBody = evolutionText(consultation);
@@ -302,12 +315,6 @@ function renderEvolutionBlock(
     ? `<section class="block keep-with"><h3 class="block-title">Estudios complementarios</h3><div class="prose">${escapeHtml(studiesText)}</div></section>`
     : "";
 
-  const signature = resolveClinicalRecordDocumentSignature({
-    professionalId: consultation.professional_id,
-    storedSignatureText: consultation.professional_signature,
-    professionals,
-  });
-
   const showBody = body.trim().length > 0 && consultation.category !== "vitals";
 
   return `
@@ -326,7 +333,6 @@ function renderEvolutionBlock(
       ${renderVitalsTable(vitals)}
       ${labHtml}
       ${studiesHtml}
-      ${buildCompactSignatureHtml(consultation, signature)}
     </article>`;
 }
 
@@ -516,12 +522,19 @@ function printStyles(patientLabel: string, generatedAt: string): string {
       font-size: 8pt;
       color: #334155;
     }
-    .evo-sign {
+    .evo-sign,
+    .doc-sign {
       margin-top: 8px;
       padding-top: 6px;
       max-width: 220px;
       break-inside: avoid;
       page-break-inside: avoid;
+    }
+    .doc-sign {
+      margin-top: 18px;
+      margin-left: auto;
+      padding-top: 10px;
+      border-top: 1px solid #94a3b8;
     }
     .sig-img {
       display: block;
@@ -562,7 +575,7 @@ export function buildEhrPrintDocumentHtml(input: EhrPrintDocumentInput): string 
 
   const evolutions = sorted
     .map((consultation) =>
-      renderEvolutionBlock(consultation, input.diagnosisRows, input.treatmentRows, professionals)
+      renderEvolutionBlock(consultation, input.diagnosisRows, input.treatmentRows)
     )
     .join("");
 
@@ -571,6 +584,8 @@ export function buildEhrPrintDocumentHtml(input: EhrPrintDocumentInput): string 
       ? renderHistoricalDiagnoses(input.diagnosisRows) +
         renderHistoricalTreatments(input.treatmentRows)
       : "";
+
+  const documentSignature = resolveDocumentEndSignature(sorted, professionals);
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -587,6 +602,7 @@ export function buildEhrPrintDocumentHtml(input: EhrPrintDocumentInput): string 
     ${evolutions || `<p class="prose">Sin evoluciones para el alcance seleccionado.</p>`}
   </section>
   ${appendix}
+  ${documentSignature}
 </body>
 </html>`;
 }

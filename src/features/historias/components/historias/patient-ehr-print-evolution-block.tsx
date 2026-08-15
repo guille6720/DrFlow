@@ -7,16 +7,12 @@ import {
 } from "@/features/historias/components/historias/patient-ehr-print-utils";
 import { patientEhrEvolutionBody } from "@/features/historias/components/historias/patient-ehr-utils";
 import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
-import { DocumentSignatureBlock } from "@/features/recetas/components/recetas/document-signature-block";
-
-import type { DocumentSignature } from "@/lib/utils/professional-signature-document";
 
 type Props = {
   consultation: PatientEhrConsultation;
-  signature?: DocumentSignature | null;
 };
 
-export function PatientEhrPrintEvolutionBlock({ consultation, signature = null }: Props) {
+export function PatientEhrPrintEvolutionBlock({ consultation }: Props) {
   const diagnoses = parseInlineDiagnoses(consultation);
   const indicationsSnapshot = getIndicationsSnapshot(consultation);
   const evolutionText =
@@ -60,10 +56,6 @@ export function PatientEhrPrintEvolutionBlock({ consultation, signature = null }
           <h3 className="drflow-ehr-print-section-title">Indicaciones</h3>
           <div className="drflow-ehr-print-evolution-body whitespace-pre-wrap">{indicationsSnapshot}</div>
         </section>
-      ) : null}
-
-      {signature ? (
-        <DocumentSignatureBlock signature={signature} className="drflow-ehr-print-signature mt-4" />
       ) : null}
     </article>
   );
