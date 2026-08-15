@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Printer } from "lucide-react";
+import { ChevronDown, Loader2, Printer } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/shared/utils/cn";
@@ -8,7 +8,8 @@ import { cn } from "@/shared/utils/cn";
 import { usePatientEhrStateContext } from "@/features/historias/components/historias/patient-ehr-state-context";
 
 export function PatientEhrPrintMenu() {
-  const { selected, dayPrintConsultations, triggerPrint } = usePatientEhrStateContext();
+  const { selected, dayPrintConsultations, triggerPrint, printingFullHistory } =
+    usePatientEhrStateContext();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -23,11 +24,11 @@ export function PatientEhrPrintMenu() {
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [open]);
 
-  function handlePrint(scope: "all" | "day", event: React.MouseEvent<HTMLButtonElement>) {
+  async function handlePrint(scope: "all" | "day", event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     event.stopPropagation();
-    triggerPrint(scope);
     setOpen(false);
+    await triggerPrint(scope);
   }
 
   return (
@@ -37,10 +38,15 @@ export function PatientEhrPrintMenu() {
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="drflow-ehr-action-muted inline-flex items-center gap-1"
+        disabled={printingFullHistory}
+        className="drflow-ehr-action-muted inline-flex items-center gap-1 disabled:opacity-60"
       >
-        <Printer className="h-3.5 w-3.5" aria-hidden />
-        Imprimir
+        {printingFullHistory ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+        ) : (
+          <Printer className="h-3.5 w-3.5" aria-hidden />
+        )}
+        {printingFullHistory ? "Preparando…" : "Imprimir"}
         <ChevronDown className={cn("h-3.5 w-3.5 transition", open && "rotate-180")} aria-hidden />
       </button>
 
@@ -53,8 +59,8 @@ export function PatientEhrPrintMenu() {
           <button
             type="button"
             role="menuitem"
-            disabled={!selected || dayPrintConsultations.length === 0}
-            onClick={(event) => handlePrint("day", event)}
+            disabled={!selected || dayPrintConsultations.length === 0 || printingFullHistory}
+            onClick={(event) => void handlePrint("day", event)}
             className="block w-full px-3 py-2 text-left text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Imprimir historia del día
@@ -62,8 +68,9 @@ export function PatientEhrPrintMenu() {
           <button
             type="button"
             role="menuitem"
-            onClick={(event) => handlePrint("all", event)}
-            className="block w-full px-3 py-2 text-left text-slate-800 hover:bg-slate-50"
+            disabled={printingFullHistory}
+            onClick={(event) => void handlePrint("all", event)}
+            className="block w-full px-3 py-2 text-left text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Imprimir historia clínica
           </button>

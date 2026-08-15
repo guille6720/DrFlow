@@ -22,6 +22,7 @@ import { printEhrClinicalDocument } from "@/features/historias/utils/print-ehr-c
 import { getPatientClinicalDocumentUrl } from "@/features/pacientes/actions/patient-attachments";
 import type { PatientProblemListItem } from "@/features/pacientes/server/load-clinical-structure";
 import { loadMorePatientClinicalRecords } from "@/features/pacientes/server/load-more-patient-clinical-records";
+import { loadPatientClinicalRecordsForPrint } from "@/features/pacientes/server/load-patient-clinical-records-for-print";
 import type { PatientEhrClinicalRecordsPagination } from "@/features/pacientes/server/load-patient-ehr-data";
 import { HCE_SUMMARY_ATTACHMENT_NAME } from "@/features/pacientes/utils/patient-ehr-from-hce";
 import type {
@@ -89,6 +90,7 @@ export function usePatientEhrState(
     }
   );
   const [loadingMoreRecords, startLoadMoreRecords] = useTransition();
+  const [printingFullHistory, setPrintingFullHistory] = useState(false);
 
   const mergedConsultations = useMemo(
     () => mergeById(consultations, extraConsultations),
@@ -209,23 +211,60 @@ export function usePatientEhrState(
     });
   }, [loadingMoreRecords, options, recordsPagination.hasMore, recordsPagination.nextCursor]);
 
-  function triggerPrint(scope: PatientEhrPrintScope) {
+  async function triggerPrint(scope: PatientEhrPrintScope) {
     if (scope === "day" && dayPrintConsultations.length === 0) return;
+    if (printingFullHistory) return;
+
+    let printConsultations = evolutionList;
+    let printDiagnosisRows = mergedDiagnosisRows;
+    let printTreatmentRows = mergedTreatmentRows;
+
+    if (scope === "all" && recordsPagination.hasMore && options?.patientId) {
+      setPrintingFullHistory(true);
+      try {
+        const result = await loadPatientClinicalRecordsForPrint(options.patientId);
+        if (result.error) {
+          toast.error(result.error);
+          return;
+        }
+
+        printConsultations = result.consultations ?? [];
+        printDiagnosisRows = result.diagnosisRows ?? [];
+        printTreatmentRows = result.treatmentRows ?? [];
+
+        setExtraConsultations((current) => mergeById(current, printConsultations));
+        setExtraDiagnosisRows((current) => mergeById(current, printDiagnosisRows));
+        setExtraTreatmentRows((current) => mergeById(current, printTreatmentRows));
+        setRecordsPagination((current) => ({
+          total: Math.max(current.total, printConsultations.length),
+          hasMore: result.truncated === true,
+          nextCursor: result.truncated === true ? current.nextCursor : null,
+        }));
+
+        if (result.truncated) {
+          toast.info(
+            `La impresión incluye las últimas ${printConsultations.length} evoluciones (límite de seguridad).`
+          );
+        }
+      } finally {
+        setPrintingFullHistory(false);
+      }
+    }
 
     const dayCreatedAt = selected?.created_at ?? dayPrintConsultations[0]?.created_at ?? null;
     const diagnosisRows =
       scope === "day"
-        ? filterClinicalRowsByConsultationDay(mergedDiagnosisRows, dayCreatedAt)
-        : mergedDiagnosisRows;
+        ? filterClinicalRowsByConsultationDay(printDiagnosisRows, dayCreatedAt)
+        : printDiagnosisRows;
     const treatmentRows =
       scope === "day"
-        ? filterClinicalRowsByConsultationDay(mergedTreatmentRows, dayCreatedAt)
-        : mergedTreatmentRows;
+        ? filterClinicalRowsByConsultationDay(printTreatmentRows, dayCreatedAt)
+        : printTreatmentRows;
 
     const result = printEhrClinicalDocument({
       scope,
       patient: printBundle.patient,
-      consultations: evolutionList,
+      consultations: printConsultations,
       dayConsultations: dayPrintConsultations,
       diagnosisRows,
       treatmentRows,
@@ -266,6 +305,7 @@ export function usePatientEhrState(
     vitalsRows,
     dayPrintConsultations,
     triggerPrint,
+    printingFullHistory,
     diagnosisRows: mergedDiagnosisRows,
     treatmentRows: mergedTreatmentRows,
     clinicalRecordsPagination: recordsPagination,

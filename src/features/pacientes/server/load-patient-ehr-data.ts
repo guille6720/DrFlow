@@ -37,6 +37,8 @@ import type { MedicalOrder } from "@/types/medical-order";
 export const PATIENT_EHR_RECORD_LIMIT = PATIENT_EHR_RECORD_PAGE_SIZE;
 /** First paint for soap/consulta — rest via load-more. */
 export const PATIENT_EHR_INITIAL_LIMIT = 20;
+/** Cap for full HC print (UI stays paginated; print fetches on demand). */
+export const PATIENT_EHR_PRINT_MAX_RECORDS = 2000;
 export const PATIENT_TIMELINE_APPOINTMENT_LIMIT = 80;
 export const PATIENT_CHART_APPOINTMENT_LIMIT = 10;
 export const PATIENT_RX_FETCH_LIMIT = 100;

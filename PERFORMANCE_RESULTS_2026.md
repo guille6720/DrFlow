@@ -100,7 +100,7 @@ Ninguna migración nueva. Índices existentes (046/054/061/087) cubren hot paths
 | Riesgo | Mitigación |
 | ------ | ---------- |
 | Badge “N consultas” en lista puede diferir del sidebar HC (días dedupe / HCE) | Aceptado: lista = # registros; HC = lógica completa al abrir |
-| Print “HC completa” solo ve lo cargado (+ load-more) | Usuario debe “Cargar más” o ampliar fetch en print (P2) |
+| Print “HC completa” solo ve lo cargado (+ load-more) | **Mitigado:** `loadPatientClinicalRecordsForPrint` (hasta 2000) al imprimir HC completa |
 | Agenda >1200 turnos en ventana | Revisar ventana de fechas o paginar por día (P2) |
 | Optimistic UI no aplicado en emisión clínica | Intencional (seguridad) |
 
@@ -144,6 +144,13 @@ Ninguna migración nueva. Índices existentes (046/054/061/087) cubren hot paths
 | ---- | ------ |
 | 23 páginas dashboard restantes | `getDashboardPageContext` (caja, config, atenciones, facturación, plantillas, etc.) |
 | Auth serial en `page.tsx` del dashboard | Eliminado (`await getProfile()` = 0 en dashboard) |
+
+### Bloque 5 — print HC completa
+
+| Área | Cambio |
+| ---- | ------ |
+| Imprimir historia clínica | Fetch on-demand hasta `PATIENT_EHR_PRINT_MAX_RECORDS` (2000) si hay más páginas |
+| First paint soap | Sin cambio (sigue en 20 + load-more) |
 
 ---
 
