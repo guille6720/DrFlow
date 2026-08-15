@@ -168,7 +168,7 @@ export function mergeEhrPayload(
   const evoIds = new Set(primary.consultations.map((c) => c.id));
   const consultations = [
     ...primary.consultations,
-    ...supplemental.consultations.filter((c) => !evoIds.has(c.id) && c.category === "evolution"),
+    ...supplemental.consultations.filter((c) => !evoIds.has(c.id)),
   ];
   const diagKeys = new Set(primary.diagnosisRows.map((d) => d.name.toLowerCase()));
   const diagnosisRows = [
@@ -205,9 +205,9 @@ export async function loadPatientHceSummaryRows(
   patientId: string,
   preloadedFilePath?: string | null
 ): Promise<HceExportRow[] | null> {
-  let filePath = preloadedFilePath;
+  let filePath = preloadedFilePath ?? null;
 
-  if (filePath === undefined) {
+  if (!filePath) {
     const { data: att } = await supabase
       .from("patient_attachments")
       .select("file_path")

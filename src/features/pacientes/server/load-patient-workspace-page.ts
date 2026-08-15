@@ -18,7 +18,13 @@ import type { PatientChartAppointment, PatientChartPatient } from "@/features/pa
 import type { ClinicalTemplateRow } from "@/features/pacientes/components/pacientes/patient-workspace-types";
 import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
 import {
+  attachStructuredChildrenToRecords,
+  loadClinicalRecordChildrenForPatient,
+  loadPatientProblemList,
+} from "@/features/pacientes/server/load-clinical-structure";
+import {
   buildPatientEhrWorkspaceData,
+  fetchPatientClinicalRecordsForEhr,
   mapClinicalRecordsForEhr,
   mapTimelineAppointments,
   PATIENT_EHR_RECORD_LIMIT,
@@ -26,11 +32,6 @@ import {
   PATIENT_TIMELINE_APPOINTMENT_LIMIT,
   type PatientEhrWorkspaceData,
 } from "@/features/pacientes/server/load-patient-ehr-data";
-import {
-  attachStructuredChildrenToRecords,
-  loadClinicalRecordChildrenForPatient,
-  loadPatientProblemList,
-} from "@/features/pacientes/server/load-clinical-structure";
 import {
   mergePatientClinicalFields,
   type PatientClinicalProfileFields,
@@ -156,18 +157,11 @@ export async function loadPatientWorkspacePageData(
     : Promise.resolve([] as ClinicalTemplateRow[]);
 
   const recordsPromise = plan.clinicalRecords
-    ? supabase
-        .from("clinical_records")
-        .select(
-          "id, created_at, chief_complaint, diagnosis, evolution, indications, diagnosis_cie10, diagnoses_json, treatments_json, professional_id, professional_signature, professionals(license_national, license_provincial, profiles(full_name, email))",
-          { count: "exact" }
-        )
-        .eq("clinic_id", clinicId)
-        .eq("patient_id", patientId)
-        .order("created_at", { ascending: false })
-        .order("id", { ascending: false })
-        .limit(recordLimit)
-    : Promise.resolve({ data: [], count: 0 });
+    ? fetchPatientClinicalRecordsForEhr(supabase, clinicId, patientId, {
+        limit: recordLimit,
+        withCount: true,
+      })
+    : Promise.resolve({ data: [], count: 0, error: null });
 
   const attachmentsPromise = plan.attachments
     ? supabase
@@ -240,14 +234,15 @@ export async function loadPatientWorkspacePageData(
   const { portalSlug, doctorInfo } = portalContext;
 
   const hceAttachment = attachments?.find((a) => a.file_name === HCE_SUMMARY_ATTACHMENT_NAME);
+  // Pass undefined (not null) when attachment was not preloaded so the loader can look it up.
   const hceRows = plan.hceSummary
     ? await loadPatientHceSummaryRows(
         supabase,
         clinicId,
         patientId,
-        hceAttachment?.file_path ?? null
+        hceAttachment ? hceAttachment.file_path : undefined
       )
-    : [];
+    : null;
 
   const appShareResult = portalSlug
     ? await supabase

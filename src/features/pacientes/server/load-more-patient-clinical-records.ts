@@ -11,13 +11,13 @@ import { createClient } from "@/core/supabase/server";
 import { parseEntityId } from "@/core/validations/params";
 
 import {
-  mapClinicalRecordsForEhr,
-  type PatientEhrMappedRecord,
-} from "@/features/pacientes/server/load-patient-ehr-data";
-import {
   attachStructuredChildrenToRecords,
   loadClinicalRecordChildrenForPatient,
 } from "@/features/pacientes/server/load-clinical-structure";
+import {
+  mapClinicalRecordsForEhr,
+  type PatientEhrMappedRecord,
+} from "@/features/pacientes/server/load-patient-ehr-data";
 import { buildEhrPayloadFromRecords } from "@/features/pacientes/utils/patient-ehr-model";
 
 export type LoadMorePatientClinicalRecordsResult = {
@@ -74,7 +74,25 @@ export async function loadMorePatientClinicalRecords(
     query = query.lt("created_at", parsedCursor.sortValue);
   }
 
-  const { data: records, error } = await query;
+  let { data: records, error } = await query;
+  if (error && /diagnoses_json|treatments_json|diagnosis_cie10/i.test(error.message)) {
+    let basicQuery = supabase
+      .from("clinical_records")
+      .select(
+        "id, created_at, chief_complaint, diagnosis, evolution, indications, professional_id, professional_signature, professionals(license_national, license_provincial, profiles(full_name, email))"
+      )
+      .eq("clinic_id", clinicId)
+      .eq("patient_id", idParsed.data)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(PATIENT_EHR_RECORD_PAGE_SIZE + 1);
+    if (parsedCursor) {
+      basicQuery = basicQuery.lt("created_at", parsedCursor.sortValue);
+    }
+    const basic = await basicQuery;
+    records = basic.data as typeof records;
+    error = basic.error;
+  }
   if (error) return { error: "No se pudieron cargar más consultas" };
 
   const rows = (records ?? []) as Array<

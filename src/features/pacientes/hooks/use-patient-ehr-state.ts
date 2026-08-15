@@ -45,7 +45,10 @@ function buildEvolutionList(sorted: PatientEhrConsultation[]): PatientEhrConsult
         c.category !== "diagnostic" &&
         (c.chief_complaint?.trim().length ?? 0) > 20)
   );
-  return withText.length > 0 ? withText : sorted.filter((c) => c.category === "evolution");
+  if (withText.length > 0) return withText;
+  const evolutions = sorted.filter((c) => c.category === "evolution");
+  // Never blank the HC when records exist but are classified differently.
+  return evolutions.length > 0 ? evolutions : sorted;
 }
 
 type PrintBundle = {

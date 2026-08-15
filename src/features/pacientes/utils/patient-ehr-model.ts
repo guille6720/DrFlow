@@ -49,6 +49,13 @@ export type PatientEhrTreatmentRow = {
 };
 
 import {
+  type ClinicalDiagnosisEntry,
+  type ClinicalTreatmentEntry,
+  resolveDiagnosesForRecord,
+  resolveTreatmentsForRecord,
+} from "@/features/historias/utils/clinical-structured-entries";
+
+import {
   extractMedicationDose,
   looksLikeClinicalFileName,
   looksLikeMedication,
@@ -56,12 +63,6 @@ import {
 } from "@/lib/utils/ehr-clinical-category";
 import { isHceStructuralChiefComplaint } from "@/lib/utils/hce-export-parse";
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
-import {
-  resolveDiagnosesForRecord,
-  resolveTreatmentsForRecord,
-  type ClinicalDiagnosisEntry,
-  type ClinicalTreatmentEntry,
-} from "@/features/historias/utils/clinical-structured-entries";
 
 function formatShortDate(iso: string): string {
   const d = new Date(iso);
@@ -158,7 +159,8 @@ export function buildEhrPayloadFromRecords(
     professional_email?: string | null;
     professional_id?: string | null;
     professional_signature?: string | null;
-  }>
+  }>,
+  options?: { includeHceStructural?: boolean }
 ): {
   consultations: PatientEhrConsultation[];
   diagnosisRows: PatientEhrDiagnosisRow[];
@@ -168,6 +170,7 @@ export function buildEhrPayloadFromRecords(
   const diagnosisRows: PatientEhrDiagnosisRow[] = [];
   const treatmentRows: PatientEhrTreatmentRow[] = [];
   const seenDiagnosis = new Set<string>();
+  const includeHceStructural = options?.includeHceStructural === true;
 
   for (const r of records) {
     const chief = stripHceMarker(r.chief_complaint ?? "");
@@ -179,7 +182,8 @@ export function buildEhrPayloadFromRecords(
     const structuredDiagnoses = resolveDiagnosesForRecord(r);
     const structuredTreatments = resolveTreatmentsForRecord(r);
 
-    const skipSidebar = isHceStructuralChiefComplaint(r.chief_complaint);
+    const skipSidebar =
+      !includeHceStructural && isHceStructuralChiefComplaint(r.chief_complaint);
 
     if (!skipSidebar) {
       consultations.push({
