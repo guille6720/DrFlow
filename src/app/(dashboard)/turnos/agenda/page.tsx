@@ -2,7 +2,7 @@ import { subDays } from "date-fns";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
-import { APPOINTMENTS_AGENDA_MAX } from "@/core/supabase/pagination";
+import { APPOINTMENTS_AGENDA_MAX, SCHEDULE_BLOCKS_AGENDA_MAX } from "@/core/supabase/pagination";
 import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
 import { APPOINTMENT_AGENDA_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
@@ -27,35 +27,41 @@ export default async function TurnosAgendaPage() {
   const rangeStart = subDays(now, 30).toISOString();
   const rangeEnd = getAppointmentHorizonEnd(now).toISOString();
 
-  const [appointments, professionals, locations, specialties, blocks, bookingSlug] = clinicId
-    ? await Promise.all([
-        supabase
-          .from("appointments")
-          .select(
-            `${APPOINTMENT_AGENDA_COLUMNS}, patients(first_name, last_name, document_number, phone, insurance_provider, insurance_plan), professionals(profiles(full_name)), locations(name), specialties(name)`
-          )
-          .eq("clinic_id", clinicId)
-          .gte("start_at", rangeStart)
-          .lte("start_at", rangeEnd)
-          .order("start_at")
-          .limit(APPOINTMENTS_AGENDA_MAX),
-        getCachedClinicProfessionalsAgenda(clinicId),
-        getCachedClinicLocations(clinicId),
-        getCachedClinicSpecialties(clinicId),
-        supabase
-          .from("schedule_blocks")
-          .select("start_at, end_at, reason")
-          .eq("clinic_id", clinicId)
-          .gte("start_at", rangeStart)
-          .lte("start_at", rangeEnd),
-        getCachedActiveBookingSlug(clinicId),
-      ])
-    : [{ data: [] }, [], [], [], { data: [] }, null];
+  const professionalsPromise = clinicId
+    ? getCachedClinicProfessionalsAgenda(clinicId)
+    : Promise.resolve([] as ProfessionalAgendaRow[]);
+
+  const [appointments, professionals, locations, specialties, blocks, bookingSlug, defaultProfessionalId] =
+    clinicId
+      ? await Promise.all([
+          supabase
+            .from("appointments")
+            .select(
+              `${APPOINTMENT_AGENDA_COLUMNS}, patients(first_name, last_name, document_number, phone, insurance_provider, insurance_plan), professionals(profiles(full_name)), locations(name), specialties(name)`
+            )
+            .eq("clinic_id", clinicId)
+            .gte("start_at", rangeStart)
+            .lte("start_at", rangeEnd)
+            .order("start_at")
+            .limit(APPOINTMENTS_AGENDA_MAX),
+          professionalsPromise,
+          getCachedClinicLocations(clinicId),
+          getCachedClinicSpecialties(clinicId),
+          supabase
+            .from("schedule_blocks")
+            .select("start_at, end_at, reason")
+            .eq("clinic_id", clinicId)
+            .gte("start_at", rangeStart)
+            .lte("start_at", rangeEnd)
+            .limit(SCHEDULE_BLOCKS_AGENDA_MAX),
+          getCachedActiveBookingSlug(clinicId),
+          professionalsPromise.then((pros) =>
+            resolveDefaultProfessionalId(supabase, clinicId, pros as ProfessionalAgendaRow[])
+          ),
+        ])
+      : [{ data: [] }, [], [], [], { data: [] }, null, undefined];
 
   const professionalRows: ProfessionalAgendaRow[] = professionals as ProfessionalAgendaRow[];
-  const defaultProfessionalId = clinicId
-    ? await resolveDefaultProfessionalId(supabase, clinicId, professionalRows)
-    : undefined;
 
   const appointmentRows: AppointmentAgendaRow[] = appointments.data ?? [];
 

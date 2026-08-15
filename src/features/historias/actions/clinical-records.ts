@@ -68,9 +68,7 @@ export async function createClinicalRecord(formData: FormData) {
     newValues: result.data,
   });
 
-  revalidatePath("/historias");
   revalidatePath("/consultas");
-  revalidatePath("/pacientes");
   revalidatePath(`/pacientes/${parsed.data.patient_id}`, "page");
   return { data: result.data };
 }
@@ -166,8 +164,8 @@ export async function updateClinicalRecord(id: string, formData: FormData) {
     newValues: result.data.data,
   });
 
-  revalidatePath("/historias");
-  revalidatePath(`/historias/${idParsed.data}`);
+  revalidatePath(`/historias/${idParsed.data}`, "page");
   revalidatePath(`/pacientes/${String(result.data.data.patient_id)}`, "page");
+  revalidatePath("/consultas");
   return { success: true };
 }

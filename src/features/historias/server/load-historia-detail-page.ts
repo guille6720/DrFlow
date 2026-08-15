@@ -95,7 +95,7 @@ export async function loadHistoriaDetailPageData(
   const { data: record } = await supabase
     .from("clinical_records")
     .select(
-      "*, patients(id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, email, allergies, regular_medication, emergency_contact_name, emergency_contact_phone), professionals(license_national, license_provincial, license_number, profiles(full_name, email))"
+      "id, created_at, updated_at, chief_complaint, diagnosis, evolution, indications, diagnosis_cie10, diagnoses_json, treatments_json, professional_id, professional_signature, appointment_id, patient_id, clinic_id, consultation_modality, patients(id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, email, allergies, regular_medication, emergency_contact_name, emergency_contact_phone), professionals(license_national, license_provincial, license_number, profiles(full_name, email))"
     )
     .eq("id", id)
     .eq("clinic_id", clinicId)
@@ -119,13 +119,15 @@ export async function loadHistoriaDetailPageData(
       .from("clinical_record_audit")
       .select("id, action, changed_at, profiles:changed_by(full_name)")
       .eq("clinical_record_id", id)
-      .order("changed_at", { ascending: false }),
+      .order("changed_at", { ascending: false })
+      .limit(40),
     supabase
       .from("prescription_drafts")
       .select("id, created_at, medications, status, diagnosis_text, issued_at, prescription_number")
       .eq("clinical_record_id", id)
       .eq("clinic_id", clinicId)
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .limit(50),
     getCachedClinicProfessionalsFull(clinicId),
     supabase
       .from("medical_orders")
@@ -134,7 +136,8 @@ export async function loadHistoriaDetailPageData(
       )
       .eq("clinical_record_id", id)
       .eq("clinic_id", clinicId)
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .limit(50),
     portalSlug
       ? supabase
           .from("patient_app_share_log")
@@ -147,7 +150,8 @@ export async function loadHistoriaDetailPageData(
       .select("id, file_name, file_size, category, created_at, profiles:uploaded_by(full_name)")
       .eq("patient_id", patient.id)
       .eq("clinic_id", clinicId)
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .limit(100),
     supabase
       .from("consent_records")
       .select(
@@ -183,7 +187,7 @@ export async function loadHistoriaDetailPageData(
   });
 
   return {
-    record: record as HistoriaDetailPageData["record"],
+    record: record as unknown as HistoriaDetailPageData["record"],
     patient,
     portalSlug,
     doctorInfo,
