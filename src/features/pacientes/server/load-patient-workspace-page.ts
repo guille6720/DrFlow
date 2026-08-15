@@ -27,7 +27,6 @@ import {
   fetchPatientClinicalRecordsForEhr,
   mapClinicalRecordsForEhr,
   mapTimelineAppointments,
-  PATIENT_EHR_RECORD_LIMIT,
   PATIENT_RX_FETCH_LIMIT,
   PATIENT_TIMELINE_APPOINTMENT_LIMIT,
   type PatientEhrWorkspaceData,
@@ -142,7 +141,7 @@ export async function loadPatientWorkspacePageData(
 ): Promise<PatientWorkspacePagePayload> {
   const patientId = patient.id;
   const plan = getWorkspaceFetchPlan(activeTab ?? "resumen");
-  const recordLimit = Math.min(plan.recordLimit ?? PATIENT_EHR_RECORD_PAGE_SIZE, PATIENT_EHR_RECORD_LIMIT);
+  const recordLimit = plan.recordLimit ?? PATIENT_EHR_RECORD_PAGE_SIZE;
 
   const portalContextPromise = getCachedPortalContext(clinicId);
   const professionalsPromise = getCachedClinicProfessionalsList(clinicId);
@@ -209,7 +208,7 @@ export async function loadPatientWorkspacePageData(
 
   const [
     portalContext,
-    { data: records, count: totalRecords },
+    recordsResult,
     { data: attachments },
     { data: rxList },
     { data: orders },
@@ -230,6 +229,9 @@ export async function loadPatientWorkspacePageData(
     templatesPromise,
     coverageRulesPromise,
   ]);
+
+  const records = recordsResult.data ?? [];
+  const totalRecords = recordsResult.count;
 
   const { portalSlug, doctorInfo } = portalContext;
 

@@ -114,7 +114,7 @@ export async function loadMorePatientClinicalRecords(
     diagnosesByRecord,
     treatmentsByRecord
   );
-  const payload = buildEhrPayloadFromRecords(mappedRecords);
+  const payload = buildEhrPayloadFromRecords(mappedRecords, { includeHceStructural: true });
   const last = pageRows.at(-1);
 
   return {

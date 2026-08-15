@@ -35,20 +35,8 @@ import type { ProfessionalSignatureSource } from "@/lib/utils/professional";
 import { resolveClinicalRecordDocumentSignature } from "@/lib/utils/professional-signature-document";
 
 function buildEvolutionList(sorted: PatientEhrConsultation[]): PatientEhrConsultation[] {
-  const withText = sorted.filter(
-    (c) =>
-      c.category === "evolution" ||
-      c.category === "document" ||
-      (c.evolution?.trim().length ?? 0) > 15 ||
-      (c.category !== "vitals" &&
-        c.category !== "treatment" &&
-        c.category !== "diagnostic" &&
-        (c.chief_complaint?.trim().length ?? 0) > 20)
-  );
-  if (withText.length > 0) return withText;
-  const evolutions = sorted.filter((c) => c.category === "evolution");
-  // Never blank the HC when records exist but are classified differently.
-  return evolutions.length > 0 ? evolutions : sorted;
+  // Mostrar toda la historia clínica: no ocultar diagnósticos/tratamientos/vitals.
+  return sorted;
 }
 
 type PrintBundle = {

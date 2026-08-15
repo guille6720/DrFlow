@@ -58,7 +58,7 @@ function consultation(
 }
 
 describe("buildConsultationSidebarList", () => {
-  it("deduplicates same-day records and keeps only evolution consultations", () => {
+  it("deduplicates same-day records across all categories", () => {
     const sorted = [
       consultation({ id: "1", created_at: "2022-11-10T12:00:00Z", category: "evolution" }),
       consultation({ id: "2", created_at: "2022-11-10T15:00:00Z", category: "diagnostic" }),
@@ -69,6 +69,17 @@ describe("buildConsultationSidebarList", () => {
     const sidebar = buildConsultationSidebarList(sorted, sorted);
 
     expect(sidebar.map((c) => c.id)).toEqual(["1", "4"]);
+  });
+
+  it("keeps diagnostic-only days so HC is not blank", () => {
+    const sorted = [
+      consultation({ id: "d1", created_at: "2022-11-10T12:00:00Z", category: "diagnostic" }),
+      consultation({ id: "t1", created_at: "2022-11-09T10:00:00Z", category: "treatment" }),
+    ];
+
+    const sidebar = buildConsultationSidebarList(sorted, []);
+
+    expect(sidebar.map((c) => c.id)).toEqual(["d1", "t1"]);
   });
 });
 

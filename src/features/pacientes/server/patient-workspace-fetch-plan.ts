@@ -1,6 +1,7 @@
 import { PATIENT_EHR_RECORD_PAGE_SIZE } from "@/core/supabase/pagination";
 
 import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
+import { PATIENT_EHR_RECORD_LIMIT } from "@/features/pacientes/server/load-patient-ehr-data";
 
 export type WorkspaceFetchPlan = {
   clinicalRecords: boolean;
@@ -76,7 +77,7 @@ export function getWorkspaceFetchPlan(tab: PatientWorkspaceTabId): WorkspaceFetc
         appointments: false,
         hceSummary: true,
         templates: true,
-        recordLimit: 120,
+        recordLimit: PATIENT_EHR_RECORD_LIMIT,
       };
 
     case "timeline":
