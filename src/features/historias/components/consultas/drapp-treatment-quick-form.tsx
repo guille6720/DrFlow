@@ -119,7 +119,7 @@ export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, savin
 
   return (
     <ClinicalFavoritesProvider>
-      <div className="drapp-consulta-quick-panel space-y-3 border-t border-[#efe6b8] bg-white p-3">
+      <div className="drapp-consulta-quick-panel relative z-20 space-y-3 border-t border-[#efe6b8] bg-white p-3 overflow-visible">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           + Tratamiento
         </p>
@@ -127,7 +127,7 @@ export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, savin
           medications={medications}
           onMedicationsChange={handleMedicationsChange}
           label="Buscar medicamento"
-          placeholder="Ej. AMOX…"
+          placeholder="Ej. AMOX, enalapril, amlodipina…"
         />
         <div className="grid gap-2 sm:grid-cols-2">
           <Input

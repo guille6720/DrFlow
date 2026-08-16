@@ -3,6 +3,8 @@
 import { Clock, Loader2, Search, Star, X } from "lucide-react";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
+import { FloatingAnchorPanel } from "@/core/components/ui/floating-anchor-panel";
+
 import { cn } from "@/shared/utils/cn";
 
 import { useClinicalFavoritesOptional } from "@/features/historias/components/historias/clinical-favorites-provider";
@@ -143,6 +145,8 @@ export function MedicationAutocomplete({
   const listId = useId();
   const internalSearchRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const listPanelRef = useRef<HTMLDivElement>(null);
   const favorites = useClinicalFavoritesOptional();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MedicationCatalogResult[]>([]);
@@ -150,6 +154,7 @@ export function MedicationAutocomplete({
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
+  const panelOpen = open && query.trim().length >= MIN_QUERY_LENGTH;
 
   const existingKeys = new Set(medications.map(medicationIdentityKey));
   const allMedicationFavorites = favorites?.byKind("medication") ?? [];
@@ -225,9 +230,10 @@ export function MedicationAutocomplete({
 
   useEffect(() => {
     function handleClick(event: MouseEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
+      const target = event.target as Node;
+      if (containerRef.current?.contains(target)) return;
+      if (listPanelRef.current?.contains(target)) return;
+      setOpen(false);
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -317,14 +323,14 @@ export function MedicationAutocomplete({
         <label htmlFor={listId} className="mb-1.5 block text-sm font-medium drflow-ehr-label">
           {label}
         </label>
-        <div className="relative">
+        <div ref={anchorRef} className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             ref={assignSearchRef}
             id={listId}
             type="text"
             role="combobox"
-            aria-expanded={open}
+            aria-expanded={panelOpen}
             aria-autocomplete="list"
             aria-controls={`${listId}-listbox`}
             placeholder={placeholder}
@@ -344,6 +350,158 @@ export function MedicationAutocomplete({
             <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-teal-600" />
           ) : null}
         </div>
+
+        <FloatingAnchorPanel
+          anchorRef={anchorRef}
+          open={panelOpen}
+          preferredMaxHeight={320}
+          className="rounded-md border border-slate-200 bg-white shadow-xl"
+        >
+          <div
+            ref={listPanelRef}
+            onMouseDown={(e) => e.preventDefault()}
+            className="drflow-clinical-combobox-list"
+          >
+            {loading ? (
+              <p className="px-3 py-2 text-xs text-slate-600">Buscando medicamentos…</p>
+            ) : null}
+            {error ? (
+              <p className="px-3 py-2 text-xs font-medium text-red-700" role="alert">
+                {error}
+              </p>
+            ) : null}
+            {!loading && !error && listItems.length === 0 ? (
+              <p className="px-3 py-2 text-xs font-medium text-slate-700">
+                Sin resultados para &quot;{query}&quot;. Probá con más letras (ej: amoxi) o usá &quot;+
+                Agregar medicamento&quot; para carga manual.
+              </p>
+            ) : null}
+            {!loading && listItems.length > 0 ? (
+              <ul id={`${listId}-listbox`} role="listbox" className="py-1">
+                {listItems.map((entry, index) => {
+                  if (entry.source === "separator") {
+                    return (
+                      <li
+                        key={entry.key}
+                        role="separator"
+                        className="my-1 border-t border-slate-200"
+                        aria-hidden
+                      />
+                    );
+                  }
+
+                  if (entry.source === "favorite" || entry.source === "recent") {
+                    const payload = entry.payload;
+                    const draft = favoriteToMedication(payload);
+                    const alreadyAdded = existingKeys.has(medicationIdentityKey(draft));
+                    const isFavoriteRow = entry.source === "favorite";
+                    return (
+                      <li key={entry.key} role="presentation">
+                        <div
+                          className={cn(
+                            "flex w-full items-start gap-2 px-3 py-2",
+                            index === highlight && "bg-amber-500/10",
+                            alreadyAdded && "opacity-50"
+                          )}
+                          onMouseEnter={() => setHighlight(index)}
+                        >
+                          <button
+                            type="button"
+                            role="option"
+                            aria-selected={index === highlight}
+                            disabled={alreadyAdded}
+                            onClick={() => handleSelectFavorite(payload)}
+                            className="min-w-0 flex-1 text-left"
+                          >
+                            <p className="inline-flex items-center gap-1 text-sm font-semibold uppercase tracking-wide text-slate-900">
+                              {isFavoriteRow ? (
+                                <Star className="h-3 w-3 fill-current text-amber-500" aria-hidden />
+                              ) : (
+                                <Clock className="h-3 w-3 text-slate-500" aria-hidden />
+                              )}
+                              {payload.active_ingredient || payload.generic_name}
+                            </p>
+                            {payload.brand_name ? (
+                              <p className="text-xs font-medium text-slate-700">
+                                Comercial: {payload.brand_name}
+                              </p>
+                            ) : null}
+                            <p className="text-xs text-slate-500">
+                              {isFavoriteRow ? "Favorito" : "Usado recientemente"}
+                            </p>
+                          </button>
+                          {favorites ? (
+                            <FavoriteStarButton
+                              active={Boolean(
+                                favorites.isFavorite(
+                                  "medication",
+                                  medicationFavoriteFingerprint(payload)
+                                )
+                              )}
+                              label={payload.generic_name}
+                              onToggle={() => void favorites.toggleMedicationFavorite(payload)}
+                            />
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  }
+
+                  const item = entry.item;
+                  const draft = catalogToMedicationSelection(item);
+                  const alreadyAdded = existingKeys.has(medicationIdentityKey(draft));
+                  const brand = item.brand_name.trim();
+                  const active = item.active_ingredient.trim();
+                  const payload = payloadFromMed(draft);
+                  const starred = Boolean(
+                    favorites?.isFavorite("medication", medicationFavoriteFingerprint(payload))
+                  );
+                  return (
+                    <li key={entry.key} role="presentation">
+                      <div
+                        className={cn(
+                          "flex w-full items-start gap-2 px-3 py-2",
+                          index === highlight && "bg-teal-500/10",
+                          alreadyAdded && "drflow-clinical-combobox-option-disabled"
+                        )}
+                        onMouseEnter={() => setHighlight(index)}
+                      >
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={index === highlight}
+                          onClick={() => handleSelect(item)}
+                          className="min-w-0 flex-1 text-left"
+                        >
+                          <p className="text-sm font-semibold uppercase tracking-wide text-slate-900">
+                            {active}
+                          </p>
+                          {brand && brand.toLowerCase() !== active.toLowerCase() ? (
+                            <p className="text-xs font-medium text-slate-700">Comercial: {brand}</p>
+                          ) : null}
+                          <p className="text-xs text-slate-600">{catalogHitMeta(item)}</p>
+                          <p className="text-xs text-slate-600">
+                            {formatVademecumPrescriptionSubtitle(item)}
+                          </p>
+                          {alreadyAdded ? (
+                            <p className="drflow-clinical-combobox-option-added mt-0.5">Ya agregado</p>
+                          ) : null}
+                        </button>
+                        {favorites ? (
+                          <FavoriteStarButton
+                            active={starred}
+                            label={active}
+                            onToggle={() => void favorites.toggleMedicationFavorite(payload)}
+                          />
+                        ) : null}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+          </div>
+        </FloatingAnchorPanel>
 
         <div className="mt-1.5 flex justify-end">
           <Button
@@ -378,152 +536,6 @@ export function MedicationAutocomplete({
               onPick={(row) => handleSelectFavorite(payloadFromRecent(row))}
             />
           </div>
-        ) : null}
-
-        {error ? (
-          <p className="mt-1.5 text-xs text-red-600" role="alert">
-            {error}
-          </p>
-        ) : null}
-
-        {open &&
-        query.length >= MIN_QUERY_LENGTH &&
-        !loading &&
-        listItems.length === 0 &&
-        !error ? (
-          <p className="mt-1.5 text-xs drflow-ehr-muted">
-            Sin resultados para &quot;{query}&quot;. Probá con menos letras (ej: amoxi) o revisá la
-            ortografía.
-          </p>
-        ) : null}
-
-        {open && listItems.length > 0 ? (
-          <ul
-            id={`${listId}-listbox`}
-            role="listbox"
-            className="drflow-clinical-combobox-list absolute z-[100] mt-1 max-h-72 w-full overflow-y-auto rounded-md py-1 shadow-lg"
-          >
-            {listItems.map((entry, index) => {
-              if (entry.source === "separator") {
-                return (
-                  <li
-                    key={entry.key}
-                    role="separator"
-                    className="my-1 border-t border-slate-200"
-                    aria-hidden
-                  />
-                );
-              }
-
-              if (entry.source === "favorite" || entry.source === "recent") {
-                const payload = entry.payload;
-                const draft = favoriteToMedication(payload);
-                const alreadyAdded = existingKeys.has(medicationIdentityKey(draft));
-                const isFavoriteRow = entry.source === "favorite";
-                return (
-                  <li key={entry.key} role="presentation">
-                    <div
-                      className={cn(
-                        "flex w-full items-start gap-2 px-3 py-2",
-                        index === highlight && "bg-amber-500/10",
-                        alreadyAdded && "opacity-50"
-                      )}
-                      onMouseEnter={() => setHighlight(index)}
-                    >
-                      <button
-                        type="button"
-                        role="option"
-                        aria-selected={index === highlight}
-                        disabled={alreadyAdded}
-                        onClick={() => handleSelectFavorite(payload)}
-                        className="min-w-0 flex-1 text-left"
-                      >
-                        <p className="inline-flex items-center gap-1 text-sm font-semibold uppercase tracking-wide text-slate-900">
-                          {isFavoriteRow ? (
-                            <Star className="h-3 w-3 fill-current text-amber-500" aria-hidden />
-                          ) : (
-                            <Clock className="h-3 w-3 text-slate-500" aria-hidden />
-                          )}
-                          {payload.active_ingredient || payload.generic_name}
-                        </p>
-                        {payload.brand_name ? (
-                          <p className="text-xs font-medium text-slate-700">
-                            Comercial: {payload.brand_name}
-                          </p>
-                        ) : null}
-                        <p className="text-xs text-slate-500">
-                          {isFavoriteRow ? "Favorito" : "Usado recientemente"}
-                        </p>
-                      </button>
-                      {favorites ? (
-                        <FavoriteStarButton
-                          active={Boolean(
-                            favorites.isFavorite(
-                              "medication",
-                              medicationFavoriteFingerprint(payload)
-                            )
-                          )}
-                          label={payload.generic_name}
-                          onToggle={() => void favorites.toggleMedicationFavorite(payload)}
-                        />
-                      ) : null}
-                    </div>
-                  </li>
-                );
-              }
-
-              const item = entry.item;
-              const draft = catalogToMedicationSelection(item);
-              const alreadyAdded = existingKeys.has(medicationIdentityKey(draft));
-              const brand = item.brand_name.trim();
-              const active = item.active_ingredient.trim();
-              const payload = payloadFromMed(draft);
-              const starred = Boolean(
-                favorites?.isFavorite("medication", medicationFavoriteFingerprint(payload))
-              );
-              return (
-                <li key={entry.key} role="presentation">
-                  <div
-                    className={cn(
-                      "flex w-full items-start gap-2 px-3 py-2",
-                      index === highlight && "bg-teal-500/10",
-                      alreadyAdded && "drflow-clinical-combobox-option-disabled"
-                    )}
-                    onMouseEnter={() => setHighlight(index)}
-                  >
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={index === highlight}
-                      onClick={() => handleSelect(item)}
-                      className="min-w-0 flex-1 text-left"
-                    >
-                      <p className="text-sm font-semibold uppercase tracking-wide text-slate-900">
-                        {active}
-                      </p>
-                      {brand && brand.toLowerCase() !== active.toLowerCase() ? (
-                        <p className="text-xs font-medium text-slate-700">Comercial: {brand}</p>
-                      ) : null}
-                      <p className="text-xs drflow-ehr-muted">{catalogHitMeta(item)}</p>
-                      <p className="text-xs drflow-ehr-muted">
-                        {formatVademecumPrescriptionSubtitle(item)}
-                      </p>
-                      {alreadyAdded ? (
-                        <p className="drflow-clinical-combobox-option-added mt-0.5">Ya agregado</p>
-                      ) : null}
-                    </button>
-                    {favorites ? (
-                      <FavoriteStarButton
-                        active={starred}
-                        label={active}
-                        onToggle={() => void favorites.toggleMedicationFavorite(payload)}
-                      />
-                    ) : null}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
         ) : null}
 
         <p className="drflow-clinical-combobox-hint mt-1">

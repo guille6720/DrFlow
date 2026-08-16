@@ -19,8 +19,13 @@ async function assertPharmacologyAccess() {
   if (!user) return { error: "Sesión requerida" as const };
 
   const { role, isSuperadmin } = await getActiveClinic();
-  if (!hasPermission(role, "viewPharmacology", isSuperadmin)) {
-    return { error: "Sin permisos para consultar referencia farmacológica" as const };
+  // Consultas / recetas necesitan el catálogo aunque el rol no tenga el módulo Farmacología.
+  if (
+    !hasPermission(role, "viewPharmacology", isSuperadmin) &&
+    !hasPermission(role, "editClinicalRecords", isSuperadmin) &&
+    !hasPermission(role, "issuePrescriptions", isSuperadmin)
+  ) {
+    return { error: "Sin permisos para consultar el vademécum" as const };
   }
 
   return { error: null as null };

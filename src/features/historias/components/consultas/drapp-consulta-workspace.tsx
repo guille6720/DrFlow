@@ -605,7 +605,14 @@ function DrappConsultaWorkspaceInner({
             <input type="hidden" name="patient_id" value={patient.id} />
             <input type="hidden" name="professional_id" value={formProfessionalId} />
 
-            <section className="drapp-consulta-composer overflow-hidden rounded-sm border border-[#e8e0b8]">
+            <section
+              className={cn(
+                "drapp-consulta-composer rounded-sm border border-[#e8e0b8]",
+                openPanel === "tratamiento" || openPanel === "diagnostico"
+                  ? "overflow-visible"
+                  : "overflow-hidden"
+              )}
+            >
               <div className="drapp-consulta-actions flex flex-wrap items-center gap-1 border-b border-[#efe6b8] px-2 py-1.5">
                 <DrappActionLink
                   active={openPanel === "evolucion"}
