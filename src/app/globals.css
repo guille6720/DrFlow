@@ -1402,6 +1402,25 @@ html:not([data-ui-style="2"]) .drflow-mesh .drflow-card-light,
 html:not([data-ui-style="2"]) .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95):not(button):not(.drflow-ui-button) {
   background-color: #ffffff !important;
   color: #0f172a !important;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --muted-foreground: #475569;
+  --border: #e2e8f0;
+}
+
+/* Tarjetas UI claras: muted legible (evita --muted-foreground claro sobre blanco) */
+html[data-ui-style="2"] .drflow-ui-card.drflow-card-light,
+html[data-ui-style="2"] .drflow-ui-card.bg-white,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-card {
+  --muted: #64748b;
+  --muted-foreground: #475569;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-card .text-\[var\(--muted-foreground\)\],
+html[data-ui-style="2"] .drflow-ui-card.drflow-card-light .text-\[var\(--muted-foreground\)\],
+html[data-ui-style="2"] .drflow-card-light [class*="muted-foreground"],
+.drflow-card-light .text-\[var\(--muted-foreground\)\] {
+  color: #475569 !important;
 }
 
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-card-light :is(.text-slate-900, .text-slate-800, .text-slate-700, .font-semibold, .font-medium, .font-bold),

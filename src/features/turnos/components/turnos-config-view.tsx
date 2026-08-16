@@ -66,19 +66,19 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
   const sedeOptions = locationOptions(locations);
 
   return (
-    <div className="space-y-6">
+    <div className="drflow-card-light space-y-6 rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 shadow-sm sm:p-6">
       <div>
-        <h1 className="text-xl font-bold">Configuración de agenda</h1>
-        <p className="text-sm text-[var(--muted-foreground)]">
+        <h1 className="text-xl font-bold text-slate-900">Configuración de agenda</h1>
+        <p className="text-sm text-slate-600">
           Horarios semanales (valen todo el año), bloqueos y duración de turnos por profesional.
         </p>
       </div>
 
-      <Card title="Horarios semanales">
+      <Card title="Horarios semanales" className="drflow-card-light border-slate-200 bg-white">
         {rules.length === 0 ? (
-          <p className="text-sm text-[var(--muted-foreground)]">No hay horarios cargados.</p>
+          <p className="text-sm text-slate-600">No hay horarios cargados.</p>
         ) : (
-          <ul className="divide-y divide-[var(--border)] text-sm">
+          <ul className="divide-y divide-slate-200 text-sm">
             {rules.map((rule) => (
               <li key={rule.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
                 {editingRuleId === rule.id ? (
@@ -155,11 +155,11 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
                 ) : (
                   <>
                     <div>
-                      <p className="font-medium">
+                      <p className="font-medium text-slate-900">
                         {rule.professional_name} · {dayNames[rule.day_of_week]} · {rule.start_time}–
                         {rule.end_time}
                       </p>
-                      <p className="text-[var(--muted-foreground)]">
+                      <p className="text-slate-600">
                         Turnos de {rule.slot_duration} min ·{" "}
                         {rule.location_name ? `Sede: ${rule.location_name} · ` : "Todas las sedes · "}
                         {rule.is_active ? "Activo" : "Inactivo"}
@@ -213,7 +213,7 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
         )}
 
         <form
-          className="mt-4 grid gap-3 border-t border-[var(--border)] pt-4 sm:grid-cols-2 lg:grid-cols-3"
+          className="mt-4 grid gap-3 border-t border-slate-200 pt-4 sm:grid-cols-2 lg:grid-cols-3"
           onSubmit={(e) => {
             e.preventDefault();
             void runAction("new-rule", () => createTurnosAvailabilityRule(new FormData(e.currentTarget)));
@@ -245,16 +245,16 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
         </form>
       </Card>
 
-      <Card title="Bloqueos de agenda">
+      <Card title="Bloqueos de agenda" className="drflow-card-light border-slate-200 bg-white">
         {blocks.length === 0 ? (
-          <p className="text-sm text-[var(--muted-foreground)]">No hay bloqueos futuros.</p>
+          <p className="text-sm text-slate-600">No hay bloqueos futuros.</p>
         ) : (
-          <ul className="divide-y divide-[var(--border)] text-sm">
+          <ul className="divide-y divide-slate-200 text-sm">
             {blocks.map((block) => (
               <li key={block.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="font-medium">{block.professional_name}</p>
-                  <p className="text-[var(--muted-foreground)]">
+                  <p className="font-medium text-slate-900">{block.professional_name}</p>
+                  <p className="text-slate-600">
                     {format(parseISO(block.start_at), "d MMM yyyy HH:mm", { locale: es })} –{" "}
                     {format(parseISO(block.end_at), "HH:mm", { locale: es })}
                     {block.reason ? ` · ${block.reason}` : ""}
@@ -275,7 +275,7 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
         )}
 
         <form
-          className="mt-4 grid gap-3 border-t border-[var(--border)] pt-4 sm:grid-cols-2"
+          className="mt-4 grid gap-3 border-t border-slate-200 pt-4 sm:grid-cols-2"
           onSubmit={(e) => {
             e.preventDefault();
             void runAction("new-block", async () => {
