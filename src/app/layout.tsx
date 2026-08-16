@@ -69,7 +69,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      data-ui-style="1"
+      data-ui-style="2"
       className="h-full antialiased"
     >
       <body className="min-h-full">

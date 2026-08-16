@@ -13,10 +13,8 @@ import {
 import {
   applyUiThemeToDocument,
   CLINICAL_DARK_STORAGE_KEY,
-  isBentoStyle,
+  DEFAULT_UI_STYLE,
   readClinicalDarkFromStorage,
-  readUiStyleFromStorage,
-  UI_STYLE_STORAGE_KEY,
   type UiStyleId,
 } from "@/core/theme/ui-theme";
 
@@ -31,54 +29,46 @@ type UiThemeContextValue = {
 const UiThemeContext = createContext<UiThemeContextValue | null>(null);
 
 export function UiThemeProvider({ children }: { children: ReactNode }) {
-  const [style, setStyleState] = useState<UiStyleId>("1");
   const [clinicalDark, setClinicalDarkState] = useState(false);
 
-  const persist = useCallback((nextStyle: UiStyleId, nextDark: boolean) => {
-    applyUiThemeToDocument(nextStyle, nextDark);
+  const persist = useCallback((nextDark: boolean) => {
+    applyUiThemeToDocument(DEFAULT_UI_STYLE, nextDark);
     try {
-      localStorage.setItem(UI_STYLE_STORAGE_KEY, nextStyle);
       localStorage.setItem(CLINICAL_DARK_STORAGE_KEY, nextDark ? "1" : "0");
     } catch {
       /* private mode */
     }
   }, []);
 
-  const setStyle = useCallback(
-    (next: UiStyleId) => {
-      setStyleState(next);
-      persist(next, clinicalDark);
-    },
-    [clinicalDark, persist]
-  );
+  const setStyle = useCallback((_next: UiStyleId) => {
+    /* Tema único: se ignora el preset. */
+  }, []);
 
   const setClinicalDark = useCallback(
     (on: boolean) => {
       setClinicalDarkState(on);
-      persist(style, on);
+      persist(on);
     },
-    [persist, style]
+    [persist]
   );
 
   useEffect(() => {
     queueMicrotask(() => {
-      const s = readUiStyleFromStorage();
       const d = readClinicalDarkFromStorage();
-      setStyleState(s);
       setClinicalDarkState(d);
-      applyUiThemeToDocument(s, d);
+      applyUiThemeToDocument(DEFAULT_UI_STYLE, d);
     });
   }, []);
 
   const value = useMemo(
     () => ({
-      style,
+      style: DEFAULT_UI_STYLE,
       clinicalDark,
       setStyle,
       setClinicalDark,
-      isStyle2: isBentoStyle(style),
+      isStyle2: true,
     }),
-    [style, clinicalDark, setStyle, setClinicalDark]
+    [clinicalDark, setStyle, setClinicalDark]
   );
 
   return <UiThemeContext.Provider value={value}>{children}</UiThemeContext.Provider>;
