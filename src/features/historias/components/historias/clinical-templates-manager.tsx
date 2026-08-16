@@ -201,7 +201,7 @@ export function ClinicalTemplatesManager({ templates, specialties }: Props) {
         </div>
 
         {sortedTemplates.length === 0 ? (
-          <p className="px-2 pb-3 text-sm text-slate-700">
+          <p className="px-2 pb-3 text-sm text-slate-800">
             Todavía no hay plantillas guardadas. Podés pegar una predefinida abajo o crear la
             primera desde el formulario.
           </p>

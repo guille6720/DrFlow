@@ -250,11 +250,40 @@ html:has(.drflow-marketing-site) body {
   color: #0f172a;
 }
 
-/* Texto secundario sobre fondo oscuro fuera de islas blancas */
-.drflow-mesh main :is(p, span, li, dd).text-slate-500,
-.drflow-mesh main :is(p, span, li, dd).text-slate-600,
-.drflow-mesh main :is(p, span, li).text-slate-700 {
+/* Texto secundario sobre fondo oscuro fuera de islas blancas (solo shells oscuros) */
+html:not([data-ui-style="2"]) .drflow-mesh main :is(p, span, li, dd).text-slate-500,
+html:not([data-ui-style="2"]) .drflow-mesh main :is(p, span, li, dd).text-slate-600,
+html:not([data-ui-style="2"]) .drflow-mesh main :is(p, span, li).text-slate-700,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(p, span, li, dd).text-slate-500,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(p, span, li, dd).text-slate-600,
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(p, span, li).text-slate-700 {
   color: #cbd5e1;
+}
+
+/* Bento claro: textos slate legibles sobre fondos claros */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh main :is(p, span, li, dd).text-slate-500,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh main :is(p, span, li, dd).text-slate-600 {
+  color: #475569;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh main :is(p, span, li).text-slate-700 {
+  color: #334155;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh main :is(h1, h2, h3).text-slate-50,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh main :is(h1, h2, h3).text-slate-100,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light h1 {
+  color: #0f172a !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh .drflow-card-light :is(.text-slate-600, .text-slate-700),
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh .drflow-light-sidebar-panel :is(.text-slate-600, .text-slate-700) {
+  color: #334155 !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh .drflow-card-light :is(.text-slate-800, .text-slate-900),
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh .drflow-light-sidebar-panel :is(.text-slate-800, .text-slate-900) {
+  color: #0f172a !important;
 }
 
 .drflow-mesh main a.text-blue-600,
@@ -520,6 +549,20 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-link:hover {
 html[data-ui-style="2"] .drflow-ui-header-dark {
   border-color: var(--border);
   background: color-mix(in srgb, var(--card) 92%, transparent);
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light {
+  border-color: #e2e8f0;
+  background: #ffffff;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light h1,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light .text-slate-900 {
+  color: #0f172a !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light .text-slate-500 {
+  color: #64748b !important;
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
