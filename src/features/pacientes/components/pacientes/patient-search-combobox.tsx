@@ -380,7 +380,7 @@ export function PatientSearchCombobox({
           <div className="py-1" onMouseDown={(e) => e.preventDefault()}>
             <Link
               href={createHref}
-              className="drflow-ui-dropdown-item block px-3 py-2.5 text-sm font-medium text-teal-700 hover:bg-teal-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-inset"
+              className="drflow-ui-dropdown-item block px-3 py-2.5 text-sm font-semibold text-slate-900 hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-inset"
             >
               Paciente inexistente, crear paciente
             </Link>
@@ -395,10 +395,13 @@ export function PatientSearchCombobox({
         ) : null}
       </FloatingAnchorPanel>
       {showCreatePatient && createHref ? (
-        <div className="drflow-card-light mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
-          <p className="text-sm text-amber-950">
+        <div className="drflow-card-light turnos-create-patient-hint mt-2 rounded-xl border border-amber-300 bg-amber-50 p-3">
+          <p className="text-sm font-semibold text-slate-900">
             Paciente inexistente,{" "}
-            <Link href={createHref} className="font-semibold text-teal-700 underline hover:text-teal-800">
+            <Link
+              href={createHref}
+              className="font-semibold text-teal-800 underline decoration-2 underline-offset-2 hover:text-teal-950"
+            >
               crear paciente
             </Link>
           </p>

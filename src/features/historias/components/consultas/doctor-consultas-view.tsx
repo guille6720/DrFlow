@@ -44,6 +44,7 @@ type Props = {
 function statusLabel(status: string | null): string {
   if (status === "in_consultation") return "En consulta";
   if (status === "confirmed") return "Confirmado / Presente";
+  if (status === "waiting") return "En espera";
   return status ?? "—";
 }
 
@@ -85,8 +86,8 @@ export function DoctorConsultasView({ rows }: Props) {
     return (
       <Card title="Consultas del día">
         <p className="text-sm text-slate-600">
-          No hay pacientes confirmados ni en consulta ahora. Cuando marques{" "}
-          <strong>Confirmar</strong> en Sala de espera, vas a evolucionar acá.
+          No hay pacientes en espera, confirmados ni en consulta. En Agenda marcá{" "}
+          <strong>Presente</strong> o <strong>En espera</strong>, o confirmá desde Sala de espera.
         </p>
         <Link href="/sala-espera" className="mt-3 inline-block">
           <Button type="button" variant="outline" size="sm">

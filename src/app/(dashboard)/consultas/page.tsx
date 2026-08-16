@@ -1,4 +1,3 @@
-import { endOfDay, startOfDay } from "date-fns";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -10,6 +9,10 @@ import { hasPermission } from "@/core/permissions/roles";
 import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
+import {
+  clinicActiveQueueRange,
+  DEFAULT_CLINIC_TIMEZONE,
+} from "@/shared/utils/clinic-timezone";
 import { patientClinicalHistoryFromConsultaPath } from "@/shared/utils/clinical-navigation";
 
 import { DoctorConsultaSession } from "@/features/historias/components/consultas/doctor-consulta-session";
@@ -54,8 +57,8 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
     clinicId,
     session.id
   );
-  const dayStart = startOfDay(new Date()).toISOString();
-  const dayEnd = endOfDay(new Date()).toISOString();
+  const timeZone = clinic?.timezone?.trim() || DEFAULT_CLINIC_TIMEZONE;
+  const { startIso, endExclusiveIso } = clinicActiveQueueRange(new Date(), timeZone);
 
   // Sesión de evolución (turno o paciente desde HC → Consultas).
   const sessionPatientId = params.appointment
@@ -168,11 +171,11 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
       "id, start_at, patient_id, professional_id, waiting_room_status, patients(first_name, last_name, document_number), professionals(display_name, profiles(full_name))"
     )
     .eq("clinic_id", clinicId)
-    .gte("start_at", dayStart)
-    .lte("start_at", dayEnd)
+    .gte("start_at", startIso)
+    .lt("start_at", endExclusiveIso)
     .neq("status", "cancelled")
     .neq("status", "attended")
-    .in("waiting_room_status", ["confirmed", "in_consultation"])
+    .in("waiting_room_status", ["waiting", "confirmed", "in_consultation"])
     .order("start_at")
     .limit(100);
 

@@ -63,6 +63,22 @@ export function addClinicDays(
   );
 }
 
+/**
+ * Ventana de turnos activos para Sala de espera / Consultas:
+ * ayer → mañana (zona clínica), para no perder pacientes marcados Presente
+ * en un día distinto al “hoy” del servidor.
+ */
+export function clinicActiveQueueRange(
+  now: Date = new Date(),
+  timeZone: string = DEFAULT_CLINIC_TIMEZONE
+): { startIso: string; endExclusiveIso: string } {
+  const todayStart = startOfClinicDay(now, timeZone);
+  return {
+    startIso: addClinicDays(todayStart, -1, timeZone).toISOString(),
+    endExclusiveIso: addClinicDays(todayStart, 2, timeZone).toISOString(),
+  };
+}
+
 export function clinicDayOfWeek(
   date: Date,
   timeZone: string = DEFAULT_CLINIC_TIMEZONE

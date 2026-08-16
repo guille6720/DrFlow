@@ -79,9 +79,11 @@ const WaitingRoomCard = memo(function WaitingRoomCard({
     "Profesional";
 
   return (
-    <li className="rounded-lg border border-slate-600/40 bg-slate-900/30 p-3 text-sm">
-      <p className="font-semibold">{patient ? `${patient.last_name}, ${patient.first_name}` : "—"}</p>
-      <p className="text-xs text-slate-500">
+    <li className="drflow-card-light rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-900">
+      <p className="font-semibold text-slate-900">
+        {patient ? `${patient.last_name}, ${patient.first_name}` : "—"}
+      </p>
+      <p className="text-xs text-slate-600">
         {format(new Date(row.start_at), "HH:mm", { locale: es })} · DNI {patient?.document_number} ·{" "}
         {professional}
       </p>

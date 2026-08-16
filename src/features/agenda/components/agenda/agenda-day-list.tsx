@@ -15,8 +15,8 @@ import {
   resolveAppointmentPatient,
 } from "@/shared/utils/patient-display";
 
-import { AppointmentAttendanceSelector } from "@/features/agenda/components/agenda/appointment-attendance-selector";
 import { AgendaDayStatusFilters } from "@/features/agenda/components/agenda/agenda-day-status-filters";
+import { AppointmentAttendanceSelector } from "@/features/agenda/components/agenda/appointment-attendance-selector";
 import { filterAppointmentsForDay } from "@/features/agenda/components/agenda/appointment-row";
 import { WaitingRoomWaitTimer } from "@/features/agenda/components/agenda/waiting-room-wait-timer";
 import { AppointmentLifecycleBadge } from "@/features/turnos/components/appointment-lifecycle-badge";
@@ -62,10 +62,12 @@ function emptyCounts(): Record<AgendaDayFilterBucket, number> {
 const AgendaDayListItem = memo(function AgendaDayListItem({
   appointment,
   canManage,
+  canStartClinical,
   onAppointmentClick,
 }: {
   appointment: AppointmentAgendaRow;
   canManage?: boolean;
+  canStartClinical?: boolean;
   onAppointmentClick?: (appointment: AppointmentAgendaRow) => void;
 }) {
   const [localEnteredAt, setLocalEnteredAt] = useState<string | null>(null);
@@ -92,6 +94,13 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
   });
   const modality =
     appointment.consultation_modality === "virtual" ? "Virtual" : "Consulta";
+  const canAttend =
+    Boolean(canStartClinical) &&
+    Boolean(enteredAt) &&
+    (waitingStatus === "waiting" ||
+      waitingStatus === "confirmed" ||
+      waitingStatus === "in_consultation");
+  const attendHref = `/consultas?appointment=${appointment.id}&action=nueva&professional=${appointment.professional_id}`;
 
   const attendance = canManage ? (
     <AppointmentAttendanceSelector
@@ -99,6 +108,7 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
       status={appointment.status}
       waitingRoomStatus={appointment.waiting_room_status}
       waitingRoomEnteredAt={enteredAt}
+      openConsultaOnPresent={Boolean(canStartClinical)}
       onAttendanceSaved={(value) => {
         const previous = localWaiting ?? appointment.waiting_room_status;
         const wasInQueue =
@@ -162,6 +172,23 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
     </>
   );
 
+  const sideActions = (
+    <div className="flex shrink-0 flex-col items-end gap-1 sm:flex-row sm:items-center">
+      {canAttend ? (
+        <Link
+          href={attendHref}
+          onClick={(event) => event.stopPropagation()}
+          className="inline-flex"
+        >
+          <span className="rounded-md bg-teal-700 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-teal-800">
+            Atender
+          </span>
+        </Link>
+      ) : null}
+      {attendance}
+    </div>
+  );
+
   if (canManage && onAppointmentClick) {
     return (
       <div className={rowClassName}>
@@ -172,7 +199,7 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
         >
           {content}
         </button>
-        {attendance}
+        {sideActions}
       </div>
     );
   }
@@ -180,7 +207,7 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
   return (
     <div className={rowClassName}>
       {content}
-      {attendance}
+      {sideActions}
     </div>
   );
 });
@@ -189,7 +216,7 @@ export const AgendaDayList = memo(function AgendaDayList({
   day,
   appointments,
   canManage,
-  canStartClinical: _canStartClinical,
+  canStartClinical,
   onAppointmentClick,
   onEmptySlotClick,
 }: AgendaDayListProps) {
@@ -276,6 +303,7 @@ export const AgendaDayList = memo(function AgendaDayList({
               key={appointment.id}
               appointment={appointment}
               canManage={canManage}
+              canStartClinical={canStartClinical}
               onAppointmentClick={onAppointmentClick}
             />
           ))}

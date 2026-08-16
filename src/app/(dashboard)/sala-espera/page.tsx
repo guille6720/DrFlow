@@ -1,4 +1,3 @@
-import { endOfDay, startOfDay } from "date-fns";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -7,20 +6,25 @@ import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
+import {
+  clinicActiveQueueRange,
+  DEFAULT_CLINIC_TIMEZONE,
+} from "@/shared/utils/clinic-timezone";
+
 import { WaitingRoomView } from "@/features/administracion";
 
 import { Button } from "@/components/ui/button";
 
 export default async function SalaEsperaPage() {
-  const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
+  const { profile, clinics, clinicId, role, isSuperadmin, clinic } = await getDashboardPageContext();
 
   if (!hasPermission(role, "manageWaitingRoom", isSuperadmin) || !clinicId) {
     redirect("/dashboard");
   }
 
   const supabase = await createClient();
-  const dayStart = startOfDay(new Date()).toISOString();
-  const dayEnd = endOfDay(new Date()).toISOString();
+  const timeZone = clinic?.timezone?.trim() || DEFAULT_CLINIC_TIMEZONE;
+  const { startIso, endExclusiveIso } = clinicActiveQueueRange(new Date(), timeZone);
 
   const { data: appointments } = await supabase
     .from("appointments")
@@ -28,8 +32,8 @@ export default async function SalaEsperaPage() {
       "id, start_at, waiting_room_status, waiting_room_entered_at, patients(first_name, last_name, document_number), professionals(display_name, profiles(full_name))"
     )
     .eq("clinic_id", clinicId)
-    .gte("start_at", dayStart)
-    .lte("start_at", dayEnd)
+    .gte("start_at", startIso)
+    .lt("start_at", endExclusiveIso)
     .neq("status", "cancelled")
     .not("waiting_room_entered_at", "is", null)
     .order("start_at");

@@ -29,6 +29,8 @@ type Props = {
   status: AppointmentStatus;
   waitingRoomStatus?: WaitingRoomStatus | null;
   waitingRoomEnteredAt?: string | null;
+  /** Si true, al marcar Presente abre la sesión de Consultas. */
+  openConsultaOnPresent?: boolean;
   onAttendanceSaved?: (value: AgendaAttendanceValue) => void;
 };
 
@@ -37,6 +39,7 @@ export function AppointmentAttendanceSelector({
   status,
   waitingRoomStatus,
   waitingRoomEnteredAt,
+  openConsultaOnPresent = false,
   onAttendanceSaved,
 }: Props) {
   const router = useRouter();
@@ -66,6 +69,10 @@ export function AppointmentAttendanceSelector({
         return;
       }
       onAttendanceSaved?.(value);
+      if (openConsultaOnPresent && value === "confirmed") {
+        router.push(`/consultas?appointment=${appointmentId}&action=nueva`);
+        return;
+      }
       router.refresh();
     });
   }

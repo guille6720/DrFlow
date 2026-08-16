@@ -4528,6 +4528,10 @@ html:not([data-ui-style="2"]) .drflow-medical-order-doc {
   color: #334155 !important;
 }
 
+.turnos-nuevo-wizard .turnos-nuevo-card a:not(.drflow-ui-button):not([class*="text-white"]):not([class*="from-cyan"]) {
+  color: #115e59 !important;
+}
+
 .turnos-nuevo-wizard .turnos-nuevo-card button:not(.drflow-ui-button):not([class*="text-white"]) {
   color: #0f172a !important;
 }
@@ -4888,5 +4892,34 @@ html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card .drflow-u
 html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card label {
   color: #0f172a !important;
   opacity: 1 !important;
+}
+
+/* Nuevo turno — aviso «Paciente inexistente» legible sobre el degradado verde */
+html .turnos-nuevo-wizard .turnos-nuevo-card .turnos-create-patient-hint,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card .turnos-create-patient-hint,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card .turnos-create-patient-hint,
+html[data-ui-palette="azure"] .turnos-nuevo-wizard .turnos-nuevo-card .turnos-create-patient-hint {
+  background-color: #fffbeb !important;
+  border-color: #fcd34d !important;
+  color: #0f172a !important;
+}
+
+html .turnos-nuevo-wizard .turnos-nuevo-card .turnos-create-patient-hint :is(p, span),
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card .turnos-create-patient-hint :is(p, span),
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card .turnos-create-patient-hint :is(p, span) {
+  color: #0f172a !important;
+  opacity: 1 !important;
+}
+
+html .turnos-nuevo-wizard .turnos-nuevo-card .turnos-create-patient-hint a,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card .turnos-create-patient-hint a,
+html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .turnos-nuevo-card .turnos-create-patient-hint a {
+  color: #115e59 !important;
+  opacity: 1 !important;
+}
+
+html .turnos-nuevo-wizard .turnos-nuevo-card .turnos-create-patient-hint a:hover,
+html[data-ui-style="2"][data-clinical-dark="1"] .turnos-nuevo-wizard .turnos-nuevo-card .turnos-create-patient-hint a:hover {
+  color: #134e4a !important;
 }
 
