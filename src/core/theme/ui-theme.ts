@@ -5,7 +5,7 @@ export const CLINICAL_DARK_STORAGE_KEY = "drflow-clinical-dark";
 
 export const UI_STYLE_LABELS: Record<UiStyleId, string> = {
   "1": "Estilo 1 — Clínico teal (actual)",
-  "2": "Estilo 2 — Verde Salud + Bento",
+  "2": "Estilo 2 — Flat minimalista + Bento",
   "3": "Estilo 3 — Azul claro + Bento",
   "4": "Estilo 4 — Azul cobalto (fondo saturado)",
 };

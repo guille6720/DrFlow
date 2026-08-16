@@ -8,14 +8,12 @@ export type ButtonSize = "sm" | "md" | "lg";
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "bg-[var(--primary)] text-[var(--primary-foreground,#ffffff)] hover:bg-[var(--primary-hover,var(--primary-dark))] focus-visible:ring-[var(--primary)] shadow-md shadow-[color-mix(in_srgb,var(--primary)_22%,transparent)]",
-  secondary:
-    "bg-[var(--primary-soft,#ccfbf1)] text-[var(--primary-hover,#134e4a)] hover:brightness-95 focus-visible:ring-[var(--primary)]",
+    "bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 focus-visible:ring-teal-500 shadow-md shadow-cyan-500/25",
+  secondary: "bg-teal-50 text-teal-900 hover:bg-teal-100 focus-visible:ring-teal-400",
   outline:
-    "border border-[var(--border,#e2e8f0)] bg-[var(--surface,#ffffff)] text-[var(--text-primary,#0f172a)] hover:bg-[var(--primary-soft,#f0fdfa)] hover:border-[var(--border-strong,var(--border))]",
-  ghost:
-    "text-[var(--text-secondary,#334155)] hover:bg-[var(--primary-soft,#f0fdfa)] hover:text-[var(--primary-hover,#134e4a)]",
-  danger: "bg-[var(--error,#dc2626)] text-white hover:brightness-95 focus-visible:ring-[var(--error,#dc2626)]",
+    "border border-slate-200 bg-white text-slate-800 hover:bg-teal-50 hover:border-teal-200",
+  ghost: "text-slate-700 hover:bg-teal-50 hover:text-teal-900",
+  danger: "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500",
 };
 
 const sizes: Record<ButtonSize, string> = {
