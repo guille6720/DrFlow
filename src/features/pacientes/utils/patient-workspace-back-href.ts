@@ -1,5 +1,7 @@
 import {
+  consultaSessionReturnPath,
   isFromClinicalHistory,
+  isFromConsulta,
   patientClinicalHistoryPath,
 } from "@/shared/utils/clinical-navigation";
 
@@ -18,6 +20,8 @@ export type PatientWorkspaceBackContext = {
   sheet?: string | null;
   mode?: string | null;
   focus?: string | null;
+  appointment?: string | null;
+  professional?: string | null;
 };
 
 function hasHcDeepLinkState(ctx: PatientWorkspaceBackContext): boolean {
@@ -31,6 +35,14 @@ export function patientWorkspaceBackHref(
   ctx: PatientWorkspaceBackContext = {}
 ): string {
   const resolvedPatientId = ctx.returnPatientId ?? patientId;
+
+  if (isFromConsulta(ctx.from)) {
+    return consultaSessionReturnPath({
+      appointmentId: ctx.appointment,
+      patientId: resolvedPatientId,
+      professionalId: ctx.professional,
+    });
+  }
 
   if (isFromClinicalHistory(ctx.from)) {
     return patientClinicalHistoryPath(resolvedPatientId);

@@ -10,6 +10,8 @@ import { hasPermission } from "@/core/permissions/roles";
 import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
+import { patientClinicalHistoryFromConsultaPath } from "@/shared/utils/clinical-navigation";
+
 import { DoctorConsultaSession } from "@/features/historias/components/consultas/doctor-consulta-session";
 import {
   type DoctorConsultaRow,
@@ -110,6 +112,16 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
     );
 
     const patientName = `${patientRow.last_name}, ${patientRow.first_name}`;
+    const historyHref = patientClinicalHistoryFromConsultaPath({
+      patientId: patientRow.id,
+      appointmentId: appointment?.id ?? null,
+      professionalId:
+        params.professional ||
+        appointment?.professional_id ||
+        sessionProfessionalId ||
+        workspace.defaultProfessionalId ||
+        null,
+    });
 
     return (
       <>
@@ -133,6 +145,8 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
                 ""
               }
               patientRecord={patientRow}
+              patientDisplayName={patientName}
+              clinicalHistoryHref={historyHref}
               workspace={workspace}
               canIssue={canIssue}
               canEditClinical
@@ -186,6 +200,18 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
     };
   });
 
+  const attending = rows.find((row) => row.waiting_room_status === "in_consultation") ?? null;
+  const attendingName = attending?.patients
+    ? `${attending.patients.last_name}, ${attending.patients.first_name}`
+    : null;
+  const attendingHistoryHref = attending
+    ? patientClinicalHistoryFromConsultaPath({
+        patientId: attending.patient_id,
+        appointmentId: attending.id,
+        professionalId: attending.professional_id,
+      })
+    : null;
+
   return (
     <>
       <Header
@@ -197,7 +223,7 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
         userName={profile?.full_name}
       />
       <div className="space-y-4 p-3 sm:p-4">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link href="/sala-espera">
             <Button type="button" variant="outline" size="sm">
               Sala de espera
@@ -208,6 +234,13 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
               Agenda
             </Button>
           </Link>
+          {attendingHistoryHref && attendingName ? (
+            <Link href={attendingHistoryHref}>
+              <Button type="button" variant="secondary" size="sm">
+                Historia clínica de: {attendingName}
+              </Button>
+            </Link>
+          ) : null}
         </div>
         <DoctorConsultasView rows={rows} />
       </div>

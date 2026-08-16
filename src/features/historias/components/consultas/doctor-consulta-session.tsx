@@ -32,6 +32,8 @@ type Props = {
   appointmentId?: string | null;
   professionalId: string;
   patientRecord: Patient;
+  patientDisplayName: string;
+  clinicalHistoryHref: string;
   workspace: PatientWorkspacePagePayload;
   canIssue: boolean;
   canEditClinical: boolean;
@@ -46,6 +48,8 @@ export function DoctorConsultaSession({
   appointmentId = null,
   professionalId,
   patientRecord,
+  patientDisplayName,
+  clinicalHistoryHref,
   workspace,
   canIssue,
   canEditClinical,
@@ -120,6 +124,11 @@ export function DoctorConsultaSession({
         <Link href="/sala-espera">
           <Button type="button" variant="outline" size="sm">
             Sala de espera
+          </Button>
+        </Link>
+        <Link href={clinicalHistoryHref}>
+          <Button type="button" variant="secondary" size="sm">
+            Historia clínica de: {patientDisplayName}
           </Button>
         </Link>
       </div>

@@ -11,13 +11,11 @@ describe("patientWorkspaceBackHref", () => {
         record: "record-1",
         mode: "view",
       })
-    ).toBe("/pacientes/patient-1?tab=soap&action=nueva");
+    ).toBe("/pacientes/patient-1?tab=soap");
   });
 
   it("returns HC root from other HC sub-tabs", () => {
-    expect(patientWorkspaceBackHref(patientId, "recetas")).toBe(
-      "/pacientes/patient-1?tab=soap&action=nueva"
-    );
+    expect(patientWorkspaceBackHref(patientId, "recetas")).toBe("/pacientes/patient-1?tab=soap");
   });
 
   it("returns patient chart from clean soap tab", () => {
@@ -34,5 +32,24 @@ describe("patientWorkspaceBackHref", () => {
 
   it("returns patient chart from estudios tab", () => {
     expect(patientWorkspaceBackHref(patientId, "estudios")).toBe("/pacientes/patient-1");
+  });
+
+  it("returns consulta session when from=consulta with appointment", () => {
+    expect(
+      patientWorkspaceBackHref(patientId, "soap", {
+        from: "consulta",
+        appointment: "appt-1",
+        professional: "pro-1",
+      })
+    ).toBe("/consultas?appointment=appt-1&action=nueva&professional=pro-1");
+  });
+
+  it("returns consulta session when from=consulta with patient fallback", () => {
+    expect(
+      patientWorkspaceBackHref(patientId, "soap", {
+        from: "consulta",
+        professional: "pro-1",
+      })
+    ).toBe("/consultas?patient=patient-1&action=nueva&professional=pro-1");
   });
 });
