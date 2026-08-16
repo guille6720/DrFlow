@@ -362,41 +362,143 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-config
   min-width: 0;
 }
 
-/* ——— Estilo 2: Verde Salud (flat + Bento) ——— */
+/* ——— Estilo 1: Azul Médico Clásico ——— */
+html[data-ui-style="1"]:not([data-clinical-dark="1"]) {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --surface: #ffffff;
+  --surface-secondary: #f1f5f9;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --muted: #64748b;
+  --muted-foreground: #475569;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --primary: #1e3a8a;
+  --primary-hover: #1e40af;
+  --primary-dark: #172554;
+  --primary-light: #3b82f6;
+  --primary-soft: #dbeafe;
+  --primary-foreground: #ffffff;
+  --secondary: #3b82f6;
+  --secondary-soft: #eff6ff;
+  --accent: #3b82f6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  --sidebar-bg: #1e3a8a;
+  --sidebar-active-bg: #1e40af;
+  --sidebar-active-text: #ffffff;
+  --sidebar-accent: #3b82f6;
+  --sidebar: #1e3a8a;
+}
+
+html[data-ui-style="1"][data-clinical-dark="1"] {
+  --background: #0b1220;
+  --foreground: #f8fafc;
+  --card: #111827;
+  --surface: #111827;
+  --surface-secondary: #1e293b;
+  --border: #1e3a5f;
+  --border-strong: #334155;
+  --muted: #94a3b8;
+  --muted-foreground: #cbd5e1;
+  --text-primary: #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-dark: #1d4ed8;
+  --primary-light: #60a5fa;
+  --primary-soft: #1e3a5f;
+  --primary-foreground: #0b1220;
+  --secondary: #60a5fa;
+  --secondary-soft: #1e3a5f;
+  --accent: #60a5fa;
+  --success: #34d399;
+  --warning: #f59e0b;
+  --error: #f87171;
+  --info: #60a5fa;
+  --sidebar-bg: #0f172a;
+  --sidebar-active-bg: #1e3a8a;
+  --sidebar-active-text: #dbeafe;
+  --sidebar-accent: #3b82f6;
+  --sidebar: #0f172a;
+}
+
+html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-mesh {
+  background-color: var(--background);
+  background-image: none;
+  color: var(--foreground);
+}
+
+html[data-ui-style="1"][data-clinical-dark="1"] .drflow-mesh {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(at 0% 0%, rgb(30 58 138 / 0.35) 0, transparent 55%),
+    radial-gradient(at 100% 100%, rgb(59 130 246 / 0.12) 0, transparent 50%);
+}
+
+html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
+  background: linear-gradient(180deg, #1e3a8a 0%, #172554 55%, #1e3a8a 100%);
+}
+
+html[data-ui-style="1"][data-clinical-dark="1"] .drflow-sidebar-gradient {
+  background: linear-gradient(180deg, #0f172a 0%, #111827 55%, #0b1220 100%);
+}
+
+html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-ui-card {
+  background: var(--card);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-link {
+  color: #3b82f6;
+}
+
+html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-link:hover {
+  color: #1d4ed8;
+}
+
+/* ——— Estilo 2: Verde Bienestar (flat + Bento) ——— */
 html[data-ui-style="2"] {
   --radius: 0.75rem;
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) {
-  --background: #f8faf9;
-  --foreground: #111827;
+  --background: #d1fae5;
+  --foreground: #0f172a;
   --card: #ffffff;
   --surface: #ffffff;
-  --surface-secondary: #f3f7f4;
-  --border: #dde7e0;
-  --border-strong: #c8d8cd;
-  --muted: #6b7280;
-  --muted-foreground: #374151;
-  --text-primary: #111827;
-  --text-secondary: #374151;
-  --text-muted: #6b7280;
-  --primary: #16a34a;
-  --primary-hover: #15803d;
-  --primary-dark: #15803d;
-  --primary-light: #22c55e;
-  --primary-soft: #dcfce7;
+  --surface-secondary: #ecfdf5;
+  --border: #a7f3d0;
+  --border-strong: #6ee7b7;
+  --muted: #475569;
+  --muted-foreground: #334155;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --primary: #059669;
+  --primary-hover: #047857;
+  --primary-dark: #065f46;
+  --primary-light: #10b981;
+  --primary-soft: #a7f3d0;
   --primary-foreground: #ffffff;
-  --secondary: #059669;
+  --secondary: #10b981;
   --secondary-soft: #d1fae5;
   --accent: #0ea5e9;
-  --success: #22c55e;
+  --success: #10b981;
   --warning: #f59e0b;
   --error: #ef4444;
   --info: #0ea5e9;
-  --sidebar-bg: #ffffff;
-  --sidebar-active-bg: #dcfce7;
-  --sidebar-active-text: #15803d;
-  --sidebar-accent: #16a34a;
+  --sidebar-bg: #ecfdf5;
+  --sidebar-active-bg: #ffffff;
+  --sidebar-active-text: #047857;
+  --sidebar-accent: #059669;
 }
 
 html[data-ui-style="2"][data-clinical-dark="1"] {
@@ -412,23 +514,23 @@ html[data-ui-style="2"][data-clinical-dark="1"] {
   --text-primary: #f8fafc;
   --text-secondary: #d1d5db;
   --text-muted: #9ca3af;
-  --primary: #22c55e;
-  --primary-hover: #4ade80;
-  --primary-dark: #16a34a;
-  --primary-light: #4ade80;
+  --primary: #34d399;
+  --primary-hover: #6ee7b7;
+  --primary-dark: #059669;
+  --primary-light: #6ee7b7;
   --primary-soft: #12351f;
   --primary-foreground: #07120c;
-  --secondary: #34d399;
+  --secondary: #10b981;
   --secondary-soft: #12351f;
   --accent: #38bdf8;
-  --success: #22c55e;
+  --success: #34d399;
   --warning: #f59e0b;
-  --error: #ef4444;
+  --error: #f87171;
   --info: #38bdf8;
   --sidebar-bg: #09160f;
   --sidebar-active-bg: #12351f;
-  --sidebar-active-text: #86efac;
-  --sidebar-accent: #22c55e;
+  --sidebar-active-text: #a7f3d0;
+  --sidebar-accent: #34d399;
 }
 
 html[data-ui-style="2"] .drflow-mesh {
@@ -586,14 +688,27 @@ html[data-ui-style="2"] .drflow-ui-button[class*="from-cyan"] {
   color: var(--primary-foreground) !important;
 }
 
-html[data-ui-style="2"] .drflow-ui-topnav-dark {
+html[data-ui-style="2"]:not([data-ui-palette]):not([data-clinical-dark="1"]) .drflow-ui-topnav-dark,
+html[data-ui-style="2"]:not([data-ui-palette]):not([data-clinical-dark="1"]) .drflow-ui-header-dark {
+  border-color: #047857;
+  background: #059669;
+  color: #ffffff;
+}
+
+html[data-ui-style="2"]:not([data-ui-palette]):not([data-clinical-dark="1"]) .drflow-ui-topnav-dark :is(.text-slate-50, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400, h1),
+html[data-ui-style="2"]:not([data-ui-palette]):not([data-clinical-dark="1"]) .drflow-ui-header-dark :is(.text-slate-50, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400, h1) {
+  color: #ffffff !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette]) .drflow-ui-topnav-dark,
+html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette]) .drflow-ui-header-dark {
   border-color: var(--border);
   background: color-mix(in srgb, var(--card) 90%, transparent);
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .rounded-2xl.border-2.border-amber-400 {
-  border-color: #e2e8f0 !important;
-  background: #ffffff !important;
+html[data-ui-style="2"]:not([data-ui-palette]):not([data-clinical-dark="1"]) .rounded-2xl.border-2.border-amber-400 {
+  border-color: #f59e0b !important;
+  background: #fffbeb !important;
   box-shadow: none !important;
 }
 
@@ -756,8 +871,8 @@ select.drflow-ui-select option:checked {
 }
 
 html[data-ui-palette="cobalt"] .drflow-patient-picker-dropdown {
-  background-color: #f1f5f9;
-  border-color: #94a3b8;
+  background-color: #f0fdfa;
+  border-color: #5eead4;
 }
 
 /* Paneles claros dentro del mesh oscuro (sidebar de equipo, listas, etc.) */
@@ -926,7 +1041,7 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body dd {
   color: var(--text-primary) !important;
 }
 
-/* Tablas Verde Salud */
+/* Tablas clínicas (Estilo 2+) */
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-table th {
   background: var(--surface-secondary);
   color: var(--text-primary);
@@ -1719,48 +1834,48 @@ html:not([data-ui-style="2"]) .drflow-ehr-table-panel {
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-table-panel {
-  --ehr-accent: #16a34a;
-  --ehr-accent-bright: #22c55e;
-  --ehr-accent-soft: #15803d;
+  --ehr-accent: #059669;
+  --ehr-accent-bright: #10b981;
+  --ehr-accent-soft: #047857;
   --ehr-panel: #ffffff;
-  --ehr-text: #111827;
-  --ehr-muted: #6b7280;
-  --ehr-label: #15803d;
+  --ehr-text: #0f172a;
+  --ehr-muted: #64748b;
+  --ehr-label: #047857;
   color: var(--ehr-text);
 }
 
 html[data-ui-palette="cobalt"] .drflow-ehr-table-panel,
 html[data-ui-palette="cobalt"] .drflow-ehr-shell {
-  --ehr-accent: #2563eb;
-  --ehr-accent-bright: #3b82f6;
-  --ehr-accent-soft: #60a5fa;
+  --ehr-accent: #f97316;
+  --ehr-accent-bright: #fb923c;
+  --ehr-accent-soft: #fdba74;
   --ehr-label: var(--ehr-accent);
-  --ehr-evolution-border: #93c5fd;
-  --ehr-evolution-bg: color-mix(in srgb, var(--ehr-panel) 42%, #1d4ed8 58%);
-  --ehr-sidebar-active: color-mix(in srgb, var(--ehr-panel) 52%, #2563eb 48%);
+  --ehr-evolution-border: #fdba74;
+  --ehr-evolution-bg: color-mix(in srgb, var(--ehr-panel) 42%, #f97316 58%);
+  --ehr-sidebar-active: color-mix(in srgb, var(--ehr-panel) 52%, #ea580c 48%);
 }
 
 html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-ehr-shell,
 html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-ehr-table-panel {
-  --ehr-evolution-bg: #eff6ff;
-  --ehr-sidebar-active: #dbeafe;
+  --ehr-evolution-bg: #fff7ed;
+  --ehr-sidebar-active: #ffedd5;
 }
 
 html[data-ui-palette="azure"] .drflow-ehr-table-panel,
 html[data-ui-palette="azure"] .drflow-ehr-shell {
-  --ehr-accent: #0284c7;
-  --ehr-accent-bright: #38bdf8;
-  --ehr-accent-soft: #7dd3fc;
+  --ehr-accent: #475569;
+  --ehr-accent-bright: #64748b;
+  --ehr-accent-soft: #94a3b8;
   --ehr-label: var(--ehr-accent);
-  --ehr-evolution-border: #7dd3fc;
-  --ehr-evolution-bg: color-mix(in srgb, var(--ehr-panel) 42%, #0369a1 58%);
-  --ehr-sidebar-active: color-mix(in srgb, var(--ehr-panel) 52%, #0284c7 48%);
+  --ehr-evolution-border: #cbd5e1;
+  --ehr-evolution-bg: color-mix(in srgb, var(--ehr-panel) 42%, #475569 58%);
+  --ehr-sidebar-active: color-mix(in srgb, var(--ehr-panel) 52%, #64748b 48%);
 }
 
 html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-ehr-shell,
 html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-ehr-table-panel {
-  --ehr-evolution-bg: #f0f9ff;
-  --ehr-sidebar-active: #e0f2fe;
+  --ehr-evolution-bg: #f8fafc;
+  --ehr-sidebar-active: #e2e8f0;
 }
 
 .drflow-ehr-demo-label {
@@ -3170,247 +3285,201 @@ html[data-motion="reduce"] *::after {
   border-color: rgba(45, 212, 191, 0.25);
 }
 
-/* Clinical workspace — superficies claras (cobalt / estilo clínico claro) */
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-header,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-header {
-  border-color: #93c5fd;
-  background: linear-gradient(135deg, #eff6ff, #ffffff);
+/* Clinical workspace — superficies claras (tokens por paleta) */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-header {
+  border-color: var(--border);
+  background: linear-gradient(135deg, var(--surface-secondary), var(--card));
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-name,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-name {
-  color: #0f172a;
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-name {
+  color: var(--text-primary);
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-meta dt,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-meta dt {
-  color: #2563eb;
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-meta dt {
+  color: var(--primary);
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-meta dd,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-meta dd {
-  color: #0f172a;
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-meta dd {
+  color: var(--text-primary);
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-avatar,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-avatar {
-  background: #dbeafe;
-  color: #1d4ed8;
-  box-shadow: 0 0 0 2px #93c5fd;
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-avatar {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  box-shadow: 0 0 0 2px var(--border);
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-section,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-section {
-  border-color: #bfdbfe;
-  background: #ffffff;
-  color: #0f172a;
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-section {
+  border-color: var(--border);
+  background: var(--card);
+  color: var(--text-primary);
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-section-head h3,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-section-head h3 {
-  color: #1d4ed8;
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-section-head h3 {
+  color: var(--primary-dark);
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-vitals-grid dt,
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-last-consult dt,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-vitals-grid dt,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-last-consult dt {
-  color: #2563eb;
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-last-consult dt {
+  color: var(--primary);
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-vitals-grid dd,
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-last-consult dd,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-vitals-grid dd,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-last-consult dd {
-  color: #0f172a;
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-last-consult dd {
+  color: var(--text-primary);
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-problem-row,
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-med-row,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-problem-row,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-med-row {
-  border-bottom-color: #e2e8f0;
-  color: #0f172a;
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-med-row {
+  border-bottom-color: var(--border);
+  color: var(--text-primary);
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-alerts-empty,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-alerts-empty {
-  border-color: #bfdbfe;
-  background: #f8fafc;
-  color: #475569;
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-alerts-empty {
+  border-color: var(--border);
+  background: var(--surface-secondary);
+  color: var(--text-muted);
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-patient-chart-link,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .drflow-patient-chart-link {
-  color: #2563eb;
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-patient-chart-link {
+  color: var(--primary);
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-patient-chart-link:hover,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .drflow-patient-chart-link:hover {
-  color: #1d4ed8;
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-patient-chart-link:hover {
+  color: var(--primary-hover);
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-patient-chart-muted,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .drflow-patient-chart-muted {
-  color: #64748b;
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-patient-chart-muted {
+  color: var(--text-muted);
   opacity: 1;
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400, .text-slate-500),
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400, .text-slate-500) {
-  color: #475569 !important;
-}
-
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .font-medium,
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .truncate,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .font-medium,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .truncate {
-  color: #0f172a;
-}
-
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .text-amber-200,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .text-amber-200 {
-  color: #92400e !important;
-}
-
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-timeline li,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-timeline li {
-  border-left-color: #93c5fd;
-}
-
-.drflow-clinical-workspace-filter-btn {
-  border-radius: 9999px;
-  border: 1px solid rgba(100, 116, 139, 0.35);
-  padding: 0.125rem 0.5rem;
-  font-size: 0.625rem;
-  font-weight: 500;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
-  color: #94a3b8;
-}
-
-.drflow-clinical-workspace-filter-btn:hover {
-  border-color: rgba(100, 116, 139, 0.55);
-}
-
-.drflow-clinical-workspace-filter-btn[aria-pressed="true"] {
-  border-color: rgba(45, 212, 191, 0.5);
-  background: rgba(15, 118, 110, 0.2);
-  color: #99f6e4;
-}
-
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-section button.rounded-full,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-section button.rounded-full,
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-filter-btn,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-filter-btn {
-  border-color: #93c5fd !important;
-  background: #f8fafc !important;
-  color: #475569 !important;
-}
-
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-section button.rounded-full[aria-pressed="true"],
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-section button.rounded-full[aria-pressed="true"],
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-filter-btn[aria-pressed="true"],
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-filter-btn[aria-pressed="true"] {
-  border-color: #2563eb !important;
-  background: #eff6ff !important;
-  color: #1d4ed8 !important;
-}
-
-/* Dark clinical: Tailwind slate en workspace (solo superficies oscuras; cobalt/azure usan tarjetas claras) */
-html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"]) .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400),
-html:not([data-ui-style="2"]) .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400) {
-  color: #94a3b8 !important;
-}
-
-html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"]) .drflow-clinical-workspace .text-slate-500,
-html:not([data-ui-style="2"]) .drflow-clinical-workspace .text-slate-500 {
-  color: #cbd5e1 !important;
-}
-
-html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"]) .drflow-clinical-workspace .text-amber-200,
-html:not([data-ui-style="2"]) .drflow-clinical-workspace .text-amber-200 {
-  color: #fde68a !important;
-}
-
-/* Cobalt + estilo claro: refuerzo sobre remaps oscuros (tarjetas blancas del workspace) */
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400, .text-slate-500),
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400, .text-slate-500) {
-  color: #64748b !important;
+  color: var(--text-muted) !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .font-medium,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .truncate,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .font-medium,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .truncate {
-  color: #0f172a !important;
+  color: var(--text-primary);
 }
 
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .text-amber-200,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .text-amber-200 {
   color: #92400e !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .drflow-patient-chart-muted,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-timeline li {
+  border-left-color: var(--border-strong);
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-section button.rounded-full,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-filter-btn {
+  border-color: var(--border) !important;
+  background: var(--surface-secondary) !important;
+  color: var(--text-secondary) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-section button.rounded-full[aria-pressed="true"],
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace-filter-btn[aria-pressed="true"] {
+  border-color: var(--primary) !important;
+  background: var(--primary-soft) !important;
+  color: var(--primary-dark) !important;
+}
+
+/* Dark clinical: Tailwind slate en workspace (superficies oscuras de todos los presets) */
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400),
+html:not([data-ui-style="2"]) .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400) {
+  color: #94a3b8 !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-clinical-workspace .text-slate-500,
+html:not([data-ui-style="2"]) .drflow-clinical-workspace .text-slate-500 {
+  color: #cbd5e1 !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-clinical-workspace .text-amber-200,
+html:not([data-ui-style="2"]) .drflow-clinical-workspace .text-amber-200 {
+  color: #fde68a !important;
+}
+
+/* Cobalt (estilo 4) + estilo claro: refuerzo legible */
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400, .text-slate-500),
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace :is(.text-slate-300, .text-slate-400, .text-slate-500) {
+  color: var(--text-muted) !important;
+}
+
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .font-medium,
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .truncate,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .font-medium,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .truncate {
+  color: var(--text-primary) !important;
+}
+
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .text-amber-200,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .text-amber-200 {
+  color: #92400e !important;
+}
+
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-patient-chart-muted,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-patient-chart-muted {
-  color: #64748b !important;
+  color: var(--text-muted) !important;
   opacity: 1;
 }
 
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .drflow-physician-assist-panel {
-  border-color: #bfdbfe !important;
-  background: #f8fafc !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-physician-assist-panel {
+  border-color: #99f6e4 !important;
+  background: #f0fdfa !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .drflow-physician-assist-title {
-  color: #1d4ed8 !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-physician-assist-title {
+  color: #ea580c !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .drflow-physician-assist-disclaimer,
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .drflow-physician-assist-card-label {
-  color: #475569 !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-physician-assist-disclaimer,
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-physician-assist-card-label {
+  color: #4b6b66 !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .drflow-physician-assist-card-body {
-  color: #0f172a !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-physician-assist-card-body {
+  color: #0f3f3a !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace .drflow-physician-assist-card {
-  border-color: #e2e8f0 !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-clinical-workspace .drflow-physician-assist-card {
+  border-color: #99f6e4 !important;
   background: #ffffff !important;
 }
 
-/* Previsit + banner en workspace (fuera de tarjetas blancas) */
-html[data-ui-palette="cobalt"] .drflow-previsit-panel {
-  border-color: #bfdbfe !important;
+/* Previsit + banner en workspace (estilo 4 claro) */
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-previsit-panel {
+  border-color: #99f6e4 !important;
   background: #ffffff !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-previsit-title {
-  color: #1d4ed8 !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-previsit-title {
+  color: #ea580c !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-previsit-headline {
-  color: #0f172a !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-previsit-headline {
+  color: #0f3f3a !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-previsit-label {
-  color: #2563eb !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-previsit-label {
+  color: #f97316 !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-previsit-value {
-  color: #0f172a !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-previsit-value {
+  color: #0f3f3a !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-previsit-footer {
-  color: #64748b !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-previsit-footer {
+  color: #4b6b66 !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-previsit-divider {
-  border-color: #e2e8f0 !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-previsit-divider {
+  border-color: #99f6e4 !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-patient-context-banner .drflow-patient-banner-hint {
-  color: #475569 !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-patient-context-banner .drflow-patient-banner-hint {
+  color: #4b6b66 !important;
 }
 
 .drflow-clinical-record-print-host {
@@ -3774,66 +3843,80 @@ html[data-ui-palette="cobalt"] .drflow-patient-context-banner .drflow-patient-ba
   }
 }
 
-/* ——— Estilo 3: paleta azul / celeste (layout Estilo 2 + data-ui-palette=azure) ——— */
+/* ——— Estilo 3: Minimalismo Moderno (layout Estilo 2 + data-ui-palette=azure) ——— */
 html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) {
-  --background: #e8f2fc;
-  --foreground: #0a1628;
+  --background: #f8fafc;
+  --foreground: #1a202c;
   --card: #ffffff;
   --surface: #ffffff;
-  --surface-secondary: #f0f7ff;
-  --border: #c5dcf4;
-  --border-strong: #93c5fd;
-  --muted: #475569;
-  --muted-foreground: #334155;
-  --text-primary: #0a1628;
+  --surface-secondary: #f1f5f9;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --muted: #64748b;
+  --muted-foreground: #475569;
+  --text-primary: #1a202c;
   --text-secondary: #334155;
-  --text-muted: #475569;
-  --primary: #0284c7;
-  --primary-hover: #0369a1;
-  --primary-dark: #0369a1;
-  --primary-light: #38bdf8;
-  --primary-soft: #e0f2fe;
-  --primary-foreground: #f8fafc;
-  --sidebar-bg: #ffffff;
-  --sidebar-active-bg: #0284c7;
+  --text-muted: #64748b;
+  --primary: #475569;
+  --primary-hover: #334155;
+  --primary-dark: #1e293b;
+  --primary-light: #64748b;
+  --primary-soft: #e2e8f0;
+  --primary-foreground: #ffffff;
+  --secondary: #6366f1;
+  --secondary-soft: #eef2ff;
+  --accent: #6366f1;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #6366f1;
+  --sidebar-bg: #475569;
+  --sidebar-active-bg: #334155;
   --sidebar-active-text: #f8fafc;
+  --sidebar-accent: #6366f1;
 }
 
 html[data-ui-palette="azure"][data-clinical-dark="1"] {
-  --background: #061323;
-  --foreground: #f0f9ff;
-  --card: #0c1f38;
-  --surface: #0c1f38;
-  --surface-secondary: #0a1a30;
-  --border: #1e4a7a;
-  --border-strong: #2563a8;
-  --muted: #93c5fd;
-  --muted-foreground: #bfdbfe;
-  --text-primary: #f0f9ff;
-  --text-secondary: #bfdbfe;
-  --text-muted: #93c5fd;
-  --primary: #38bdf8;
-  --primary-hover: #7dd3fc;
-  --primary-dark: #0284c7;
-  --primary-light: #7dd3fc;
-  --primary-soft: #0c2a45;
-  --primary-foreground: #082032;
-  --sidebar-bg: #061323;
-  --sidebar-active-bg: #0c2a45;
-  --sidebar-active-text: #7dd3fc;
+  --background: #0f1419;
+  --foreground: #f1f5f9;
+  --card: #1a202c;
+  --surface: #1a202c;
+  --surface-secondary: #243044;
+  --border: #334155;
+  --border-strong: #475569;
+  --muted: #94a3b8;
+  --muted-foreground: #cbd5e1;
+  --text-primary: #f1f5f9;
+  --text-secondary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --primary: #94a3b8;
+  --primary-hover: #cbd5e1;
+  --primary-dark: #64748b;
+  --primary-light: #cbd5e1;
+  --primary-soft: #243044;
+  --primary-foreground: #0f1419;
+  --secondary: #818cf8;
+  --secondary-soft: #1e1b4b;
+  --accent: #818cf8;
+  --success: #34d399;
+  --warning: #f59e0b;
+  --error: #f87171;
+  --info: #818cf8;
+  --sidebar-bg: #111827;
+  --sidebar-active-bg: #243044;
+  --sidebar-active-text: #e2e8f0;
+  --sidebar-accent: #818cf8;
 }
 
 html[data-ui-palette="azure"] .drflow-mesh {
   background-color: var(--background);
-  background-image:
-    radial-gradient(at 0% 0%, rgb(2 132 199 / 0.1) 0, transparent 55%),
-    radial-gradient(at 100% 100%, rgb(56 189 248 / 0.12) 0, transparent 50%);
+  background-image: none;
 }
 
 html[data-ui-palette="azure"][data-clinical-dark="1"] .drflow-mesh {
   background-image:
-    radial-gradient(at 0% 0%, rgb(14 116 144 / 0.22) 0, transparent 55%),
-    radial-gradient(at 100% 100%, rgb(37 99 235 / 0.14) 0, transparent 50%);
+    radial-gradient(at 0% 0%, rgb(71 85 105 / 0.25) 0, transparent 55%),
+    radial-gradient(at 100% 100%, rgb(99 102 241 / 0.1) 0, transparent 50%);
 }
 
 html[data-ui-palette="azure"] .drflow-mesh,
@@ -3853,551 +3936,329 @@ html[data-ui-palette="azure"] .drflow-card-body :is(.text-slate-500, .text-slate
   color: var(--muted-foreground);
 }
 
+html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
+  background: linear-gradient(180deg, #475569 0%, #334155 100%);
+}
+
+html[data-ui-palette="azure"][data-clinical-dark="1"] .drflow-sidebar-gradient {
+  background: linear-gradient(180deg, #111827 0%, #0f1419 100%);
+}
+
 html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r {
-  background: #0284c7 !important;
+  background: #334155 !important;
   background-image: none !important;
-  color: #fff !important;
+  color: #f8fafc !important;
 }
 
 html[data-ui-palette="azure"] .drflow-ui-button[class*="from-cyan"],
 html[data-ui-palette="azure"] [class*="from-cyan-500"][class*="to-teal"] {
-  background: linear-gradient(to right, #0284c7, #0ea5e9) !important;
-  background-image: linear-gradient(to right, #0284c7, #0ea5e9) !important;
-  box-shadow: 0 4px 14px rgb(2 132 199 / 0.28) !important;
+  background: #475569 !important;
+  background-image: none !important;
+  box-shadow: none !important;
   color: #fff !important;
 }
 
 html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-link,
 html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-card-body dt {
-  color: #0369a1;
+  color: #475569;
 }
 
 html[data-ui-palette="azure"][data-clinical-dark="1"] .drflow-card-body dt {
-  color: #7dd3fc;
+  color: #c7d2fe;
 }
 
 html[data-ui-palette="azure"] .drflow-card-body .drflow-ui-input:focus,
 html[data-ui-palette="azure"][data-clinical-dark="1"] .drflow-mesh .drflow-ui-input:focus {
-  border-color: #38bdf8;
+  border-color: #6366f1;
   outline: none;
 }
 
 html[data-ui-palette="azure"] .drflow-patient-workspace-tab-active {
-  border-color: #0284c7 !important;
-  background: linear-gradient(135deg, #0284c7, #38bdf8) !important;
+  border-color: #6366f1 !important;
+  background: #6366f1 !important;
   color: #f8fafc !important;
-  box-shadow: 0 2px 8px rgb(2 132 199 / 30%) !important;
+  box-shadow: none !important;
 }
 
 html[data-ui-palette="azure"] .drflow-patient-workspace-tab:not(.drflow-patient-workspace-tab-active):hover {
-  background: color-mix(in srgb, var(--card) 80%, #38bdf8) !important;
-  color: #0369a1 !important;
-  border-color: color-mix(in srgb, var(--border) 50%, #38bdf8) !important;
+  background: color-mix(in srgb, var(--card) 80%, #6366f1) !important;
+  color: #4338ca !important;
+  border-color: #c7d2fe !important;
 }
 
 html[data-ui-palette="azure"][data-clinical-dark="1"] .drflow-patient-workspace-tab:not(.drflow-patient-workspace-tab-active):hover {
-  color: #bae6fd !important;
+  color: #c7d2fe !important;
 }
 
 html[data-ui-palette="azure"] .drflow-clinical-timeline-filter.is-active,
 html[data-ui-palette="azure"] .drflow-clinical-timeline-filter:hover {
-  border-color: #0284c7;
-  color: #0369a1;
+  border-color: #6366f1;
+  color: #4338ca;
 }
 
 html[data-ui-palette="azure"][data-clinical-dark="1"] .drflow-clinical-timeline-filter.is-active {
-  background: rgb(56 189 248 / 0.14);
-  color: #7dd3fc;
+  background: rgb(99 102 241 / 0.14);
+  color: #c7d2fe;
 }
 
 html[data-ui-palette="azure"] .drflow-clinical-timeline-list {
-  border-left-color: rgb(56 189 248 / 0.45);
+  border-left-color: rgb(99 102 241 / 0.45);
 }
 
 html[data-ui-palette="azure"] .drflow-ehr-shell {
-  --ehr-label: #0284c7;
-  --ehr-evolution-border: #7dd3fc;
+  --ehr-label: #475569;
+  --ehr-evolution-border: #cbd5e1;
 }
 
 html[data-ui-palette="azure"][data-clinical-dark="1"] .drflow-ehr-shell {
-  --ehr-label: #38bdf8;
-  --ehr-evolution-border: #0ea5e9;
+  --ehr-label: #94a3b8;
+  --ehr-evolution-border: #64748b;
 }
 
 html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-ehr-action-link,
 html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-ehr-table a.text-teal-600 {
-  color: #0284c7 !important;
+  color: #475569 !important;
 }
 
 html[data-ui-palette="azure"][data-clinical-dark="1"] .drflow-ehr-action-link,
 html[data-ui-palette="azure"][data-clinical-dark="1"] .drflow-ehr-table a.text-teal-600 {
-  color: #7dd3fc !important;
+  color: #c7d2fe !important;
 }
 
 html[data-ui-palette="azure"] ::-webkit-scrollbar-thumb {
-  background: #64748b;
+  background: #94a3b8;
 }
 
 html[data-ui-palette="azure"][data-clinical-dark="1"] ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #475569;
 }
 
-/* ——— Estilo 4: azul cobalto saturado (fondo #2563eb, tarjetas claras) ——— */
+/* ——— Estilo 4: Cálido y Empático (layout Estilo 2 + data-ui-palette=cobalt) ——— */
 html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) {
-  --background: #2563eb;
-  --foreground: #f8fafc;
+  --background: #fffbfe;
+  --foreground: #0f3f3a;
   --card: #ffffff;
   --surface: #ffffff;
-  --surface-secondary: #eff6ff;
-  --border: #93c5fd;
-  --border-strong: #60a5fa;
-  --muted: #dbeafe;
-  --muted-foreground: #eff6ff;
-  --text-primary: #0f172a;
-  --text-secondary: #1e3a8a;
-  --text-muted: #334155;
-  --primary: #1d4ed8;
-  --primary-hover: #1e40af;
-  --primary-dark: #1e40af;
-  --primary-light: #60a5fa;
-  --primary-soft: #dbeafe;
+  --surface-secondary: #ccfbf1;
+  --border: #99f6e4;
+  --border-strong: #5eead4;
+  --muted: #4b6b66;
+  --muted-foreground: #0f3f3a;
+  --text-primary: #0f3f3a;
+  --text-secondary: #115e59;
+  --text-muted: #4b6b66;
+  --primary: #f97316;
+  --primary-hover: #ea580c;
+  --primary-dark: #c2410c;
+  --primary-light: #fb923c;
+  --primary-soft: #ffedd5;
   --primary-foreground: #ffffff;
-  --sidebar-bg: #ffffff;
-  --sidebar-active-bg: #1d4ed8;
-  --sidebar-active-text: #ffffff;
+  --secondary: #14b8a6;
+  --secondary-soft: #ccfbf1;
+  --accent: #f97316;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #14b8a6;
+  --sidebar-bg: #0f766e;
+  --sidebar-active-bg: #115e59;
+  --sidebar-active-text: #ccfbf1;
+  --sidebar-accent: #f97316;
 }
 
 html[data-ui-palette="cobalt"][data-clinical-dark="1"] {
-  --background: #1e3a8a;
-  --foreground: #eff6ff;
-  --card: #ffffff;
-  --surface: #ffffff;
-  --surface-secondary: #eff6ff;
-  --border: #93c5fd;
-  --border-strong: #60a5fa;
-  --muted: #bfdbfe;
-  --muted-foreground: #1e3a8a;
-  --text-primary: #0f172a;
-  --text-secondary: #1e3a8a;
-  --text-muted: #334155;
-  --primary: #3b82f6;
-  --primary-hover: #60a5fa;
-  --primary-dark: #1d4ed8;
-  --primary-light: #60a5fa;
-  --primary-soft: #dbeafe;
-  --primary-foreground: #eff6ff;
-  --sidebar-bg: #1e3a8a;
-  --sidebar-active-bg: #1d4ed8;
-  --sidebar-active-text: #eff6ff;
+  --background: #061a18;
+  --foreground: #f0fdfa;
+  --card: #0c2926;
+  --surface: #0c2926;
+  --surface-secondary: #123834;
+  --border: #1f4f49;
+  --border-strong: #2a6b63;
+  --muted: #99f6e4;
+  --muted-foreground: #ccfbf1;
+  --text-primary: #f0fdfa;
+  --text-secondary: #ccfbf1;
+  --text-muted: #99f6e4;
+  --primary: #fb923c;
+  --primary-hover: #fdba74;
+  --primary-dark: #ea580c;
+  --primary-light: #fdba74;
+  --primary-soft: #3b1f0f;
+  --primary-foreground: #061a18;
+  --secondary: #2dd4bf;
+  --secondary-soft: #123834;
+  --accent: #fb923c;
+  --success: #34d399;
+  --warning: #f59e0b;
+  --error: #f87171;
+  --info: #2dd4bf;
+  --sidebar-bg: #042f2e;
+  --sidebar-active-bg: #134e4a;
+  --sidebar-active-text: #ccfbf1;
+  --sidebar-accent: #fb923c;
 }
 
 html[data-ui-palette="cobalt"] .drflow-mesh {
   background-color: var(--background);
-  background-image:
-    radial-gradient(at 0% 0%, rgb(255 255 255 / 0.08) 0, transparent 50%),
-    radial-gradient(at 100% 100%, rgb(29 78 216 / 0.35) 0, transparent 55%);
+  background-image: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
 html[data-ui-palette="cobalt"][data-clinical-dark="1"] .drflow-mesh {
-  background-color: #172554;
   background-image:
-    radial-gradient(at 0% 0%, rgb(59 130 246 / 0.18) 0, transparent 50%),
-    radial-gradient(at 100% 100%, rgb(30 58 138 / 0.45) 0, transparent 55%);
+    radial-gradient(at 0% 0%, rgb(249 115 22 / 0.12) 0, transparent 50%),
+    radial-gradient(at 100% 100%, rgb(15 118 110 / 0.2) 0, transparent 55%);
 }
 
-/* Tarjetas y paneles: siempre superficie clara para nitidez */
 html[data-ui-palette="cobalt"] .drflow-ui-card,
 html[data-ui-palette="cobalt"] .drflow-ui-stat:not(.drflow-card-light):not(.bg-white),
 html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel,
 html[data-ui-palette="cobalt"] .drflow-surface-inset {
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+}
+
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-ui-card,
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-card-light {
   background: #ffffff !important;
-  border-color: #bfdbfe !important;
-  color: #0f172a !important;
-  box-shadow:
-    0 1px 3px 0 rgb(15 23 42 / 0.08),
-    0 4px 12px rgb(37 99 235 / 0.12) !important;
+  border-color: #99f6e4 !important;
+  color: #0f3f3a !important;
 }
 
 html[data-ui-palette="cobalt"] .drflow-ui-card-title,
-html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-900, .text-slate-800, .font-semibold, .font-bold) {
-  color: #0f172a !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-ui-card :is(.text-slate-900, .text-slate-800, .font-semibold, .font-bold) {
+  color: #0f3f3a !important;
 }
 
 html[data-ui-palette="cobalt"] .drflow-ui-card-desc,
-html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-500, .text-slate-600, .text-slate-700) {
-  color: #475569 !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-ui-card :is(.text-slate-500, .text-slate-600, .text-slate-700) {
+  color: #4b6b66 !important;
 }
 
-/* Islas claras: anula reglas de clinical-dark sobre tarjetas blancas */
-html[data-ui-palette="cobalt"] .drflow-ui-card,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-card-body,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-card-body {
-  color: #0f172a !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-card-body dt,
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-ui-card dt {
+  color: #ea580c !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-50, .text-slate-100, .text-slate-200) {
-  color: #0f172a !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-300, .text-slate-400) {
-  color: #475569 !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-card-body :is(.text-slate-50, .text-slate-100, .text-slate-200),
-html[data-ui-palette="cobalt"] .drflow-card-body :is(.text-slate-300, .text-slate-400) {
-  color: #475569 !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-card-body :is(.text-slate-500, .text-slate-600, .text-slate-700),
-html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-500, .text-slate-600, .text-slate-700) {
-  color: #64748b !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-card-body dt,
-html[data-ui-palette="cobalt"] .drflow-ui-card dt {
-  color: #1d4ed8 !important;
-}
-
-/* Nuevo turno: labels oscuros y legibles sobre tarjetas blancas */
-html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card dt,
-html[data-ui-palette="cobalt"] .turnos-nuevo-wizard dt {
-  color: #334155 !important;
-}
-
-html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card-desc,
-html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card :is(.text-slate-500, .text-slate-600, .text-slate-700) {
-  color: #475569 !important;
-}
-
-html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card dd,
-html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card :is(.text-slate-900, .text-slate-950, .font-semibold, .font-bold) {
-  color: #020617 !important;
-}
-
-html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card-title {
-  color: #0f172a !important;
-}
-
-html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card label {
-  color: #1e293b !important;
-  font-weight: 600 !important;
-}
-
-html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card select,
-html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card input,
-html[data-ui-palette="cobalt"] .turnos-nuevo-wizard .drflow-ui-card textarea {
-  color: #0f172a !important;
-  border-color: #94a3b8 !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-card-body dd {
-  color: #0f172a !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-card-body label.drflow-ui-label,
-html[data-ui-palette="cobalt"] .drflow-card-body .drflow-ui-label,
-html[data-ui-palette="cobalt"] .drflow-ui-card label {
-  color: #334155 !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-ui-card :is([class*="bg-slate-800"], [class*="bg-slate-900"]) {
-  background-color: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-button.border-slate-200,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-button.bg-white,
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-ui-card .drflow-ui-button.text-slate-700,
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-ui-card .drflow-ui-button.text-slate-800 {
-  background-color: #ffffff !important;
-  border-color: #93c5fd !important;
-  color: #1e40af !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-ui-card .drflow-ui-button.border-slate-200:hover,
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-ui-card .drflow-ui-button.bg-white:hover {
-  background-color: #eff6ff !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-card-light,
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-card-light {
-  background: #ffffff !important;
-  border-color: #bfdbfe !important;
-  color: #0f172a !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-card-light :is(.text-slate-900, .text-slate-800, .text-slate-700, .font-semibold, .font-bold),
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-card-light :is(.text-slate-900, .text-slate-800, .text-slate-700, .font-semibold, .font-bold) {
-  color: #0f172a !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-card-light :is(.text-slate-500, .text-slate-600, .text-slate-400),
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-card-light :is(.text-slate-500, .text-slate-600, .text-slate-400) {
-  color: #64748b !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-card-light a:not([class*="from-cyan"]):not([class*="bg-gradient"]) {
-  color: #1d4ed8 !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-card-light .text-teal-800,
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-card-light .text-teal-800 {
-  color: #1e40af !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-card-body .drflow-ui-label,
-html[data-ui-palette="cobalt"] .drflow-card-body label.drflow-ui-label {
-  color: #334155 !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-mesh .drflow-surface-light :is(.text-slate-900, .text-slate-800, .text-slate-700, .text-slate-600, .text-slate-500),
-html[data-ui-palette="cobalt"] .drflow-mesh .drflow-workspace-overlay-panel :is(.text-slate-900, .text-slate-800, .text-slate-700, .text-slate-600, .text-slate-500) {
-  color: #0f172a !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-mesh .drflow-surface-light .text-slate-500,
-html[data-ui-palette="cobalt"] .drflow-mesh .drflow-workspace-overlay-panel .text-slate-500,
-html[data-ui-palette="cobalt"] .drflow-mesh .drflow-surface-light .text-slate-600,
-html[data-ui-palette="cobalt"] .drflow-mesh .drflow-workspace-overlay-panel .text-slate-600 {
-  color: #475569 !important;
+html[data-ui-palette="cobalt"][data-clinical-dark="1"] .drflow-card-body dt {
+  color: #fdba74 !important;
 }
 
 html[data-ui-palette="cobalt"] .drflow-mesh .drflow-ui-input,
 html[data-ui-palette="cobalt"] .drflow-card-body .drflow-ui-input {
-  background: #ffffff !important;
-  border-color: #93c5fd !important;
-  color: #0f172a !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-mesh .drflow-ui-input::placeholder {
-  color: #64748b !important;
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
 }
 
 html[data-ui-palette="cobalt"] .drflow-mesh .drflow-ui-input:focus,
 html[data-ui-palette="cobalt"] .drflow-card-body .drflow-ui-input:focus {
-  border-color: #2563eb !important;
-  box-shadow: 0 0 0 2px rgb(37 99 235 / 0.25) !important;
+  border-color: #f97316 !important;
+  box-shadow: 0 0 0 2px rgb(249 115 22 / 0.25) !important;
 }
 
-/* Sidebar y header sobre fondo azul */
-html[data-ui-palette="cobalt"] .drflow-sidebar-gradient {
-  background: #1e40af !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
+  background: linear-gradient(180deg, #0f766e 0%, #115e59 55%, #0f766e 100%) !important;
 }
 
 html[data-ui-palette="cobalt"][data-clinical-dark="1"] .drflow-sidebar-gradient {
-  background: #172554 !important;
+  background: linear-gradient(180deg, #042f2e 0%, #061a18 100%) !important;
 }
 
 html[data-ui-palette="cobalt"] .drflow-ui-sidebar {
-  border-color: rgb(147 197 253 / 0.25) !important;
+  border-color: rgb(153 246 228 / 0.25) !important;
 }
 
 html[data-ui-palette="cobalt"] .drflow-ui-sidebar .text-slate-300,
 html[data-ui-palette="cobalt"] .drflow-ui-sidebar .text-slate-400,
 html[data-ui-palette="cobalt"] .drflow-ui-sidebar .text-slate-500,
 html[data-ui-palette="cobalt"] .drflow-ui-sidebar a:not([class*="from-teal"]):not([class*="from-cyan"]) {
-  color: #dbeafe !important;
+  color: #ccfbf1 !important;
 }
 
 html[data-ui-palette="cobalt"] .drflow-ui-sidebar a.bg-gradient-to-r {
-  background: #ffffff !important;
+  background: #f97316 !important;
   background-image: none !important;
-  color: #1d4ed8 !important;
-  box-shadow: 0 2px 8px rgb(15 23 42 / 0.15) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-ui-header-dark,
-html[data-ui-palette="cobalt"] .drflow-ui-topnav-dark {
-  border-color: rgb(147 197 253 / 0.25) !important;
-  background: rgb(30 64 175 / 0.92) !important;
-  backdrop-filter: blur(8px);
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-ui-header-dark,
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-ui-topnav-dark {
+  border-color: #0d9488 !important;
+  background: #0f766e !important;
+  color: #f0fdfa !important;
+}
+
+html[data-ui-palette="cobalt"][data-clinical-dark="1"] .drflow-ui-header-dark,
+html[data-ui-palette="cobalt"][data-clinical-dark="1"] .drflow-ui-topnav-dark {
+  border-color: var(--border) !important;
+  background: color-mix(in srgb, var(--card) 92%, transparent) !important;
 }
 
 html[data-ui-palette="cobalt"] .drflow-ui-header-dark :is(h1, .text-slate-50, .text-slate-900) {
-  color: #f8fafc !important;
+  color: #f0fdfa !important;
 }
 
 html[data-ui-palette="cobalt"] .drflow-ui-header-dark :is(.text-slate-300, .text-slate-500, .text-slate-600) {
-  color: #dbeafe !important;
+  color: #ccfbf1 !important;
 }
 
-/* Texto sobre el mesh azul (fuera de tarjetas blancas) */
-html[data-ui-palette="cobalt"] .drflow-mesh main > :not(.drflow-ui-card):not(.drflow-bento):not(.drflow-agenda-view) :is(h1, h2, h3).text-slate-900,
-html[data-ui-palette="cobalt"] .drflow-mesh main .text-slate-900:not(.drflow-ui-card *):not(.drflow-card-light *):not(.drflow-surface-light *):not(.drflow-workspace-overlay-panel *):not(.drflow-agenda-view *):not(.bg-white *) {
-  color: #f8fafc !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-link {
+  color: #ea580c !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-mesh main :is(p, span, li).text-slate-600:not(.drflow-ui-card *):not(.drflow-card-light *):not(.drflow-surface-light *):not(.drflow-workspace-overlay-panel *):not(.drflow-agenda-view *),
-html[data-ui-palette="cobalt"] .drflow-mesh main :is(p, span, li).text-slate-500:not(.drflow-ui-card *):not(.drflow-card-light *):not(.drflow-surface-light *):not(.drflow-workspace-overlay-panel *):not(.drflow-agenda-view *) {
-  color: #dbeafe !important;
+html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) .drflow-link:hover {
+  color: #c2410c !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-link {
-  color: #bfdbfe !important;
+html[data-ui-palette="cobalt"][data-clinical-dark="1"] .drflow-link {
+  color: #fdba74 !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-link,
-html[data-ui-palette="cobalt"] .drflow-card-light .drflow-link,
-html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-link {
-  color: #2563eb !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-link:hover {
+html[data-ui-palette="cobalt"] .drflow-ui-button[class*="from-cyan"],
+html[data-ui-palette="cobalt"] [class*="from-cyan-500"][class*="to-teal"] {
+  background: #f97316 !important;
+  background-image: none !important;
+  box-shadow: none !important;
   color: #ffffff !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-link:hover,
-html[data-ui-palette="cobalt"] .drflow-card-light .drflow-link:hover {
-  color: #1d4ed8 !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-card-body dt {
-  color: #1d4ed8 !important;
-}
-
-/* Paneles clínicos dentro de tarjetas blancas */
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-physician-assist-panel,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-previsit-panel,
-html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-physician-assist-panel {
-  border-color: #bfdbfe !important;
-  background: #eff6ff !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-physician-assist-title,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-previsit-title {
-  color: #1e3a8a !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-physician-assist-disclaimer,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-previsit-footer {
-  color: #475569 !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-physician-assist-card,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-previsit-headline {
-  border-color: #cbd5e1 !important;
-  background: #ffffff !important;
-  color: #0f172a !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-physician-assist-card-body,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-previsit-value {
-  color: #0f172a !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-physician-assist-card-label,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-previsit-label {
-  color: #64748b !important;
-}
-
-/* Tablas y listas en tarjetas */
-html[data-ui-palette="cobalt"] .drflow-ui-card table:not(.drflow-ehr-table),
-html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel table:not(.drflow-ehr-table) {
-  color: #0f172a !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-ehr-shell .drflow-ehr-table th {
-  color: var(--ehr-label) !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-ehr-shell .drflow-ehr-table td {
-  color: var(--ehr-text) !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-ehr-shell {
-  color: var(--ehr-text);
-}
-
-html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-ehr-shell .drflow-ehr-table-panel :is(li, p, span:not([class*="text-teal"])) {
-  color: var(--ehr-text);
-}
-
-html[data-ui-palette="cobalt"] .drflow-ui-card thead.bg-slate-50,
-html[data-ui-palette="cobalt"] .drflow-ui-card tr.bg-slate-50 {
-  background-color: #f8fafc !important;
-  color: #475569 !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-ui-card :is(.divide-slate-100, .divide-slate-200) > * {
-  border-color: #e2e8f0 !important;
-}
-
-/* Selects y dropdowns */
-html[data-ui-palette="cobalt"] .drflow-ui-card select,
-html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel select {
-  background: #ffffff !important;
-  border-color: #93c5fd !important;
-  color: #0f172a !important;
-}
-
-/* Texto suelto en mesh (fuera de islas claras) */
-html[data-ui-palette="cobalt"] .drflow-mesh main .text-slate-400:not(.drflow-ui-card *):not(.drflow-card-light *) {
-  color: #dbeafe !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-config-hub > .space-y-4 .text-slate-400 {
-  color: #dbeafe !important;
-}
-
-/* Botones primarios */
-html[data-ui-palette="cobalt"] .drflow-ui-button[class*="from-cyan"],
-html[data-ui-palette="cobalt"] [class*="from-cyan-500"][class*="to-teal"] {
-  background: #ffffff !important;
-  background-image: none !important;
-  box-shadow: 0 2px 10px rgb(15 23 42 / 0.12) !important;
-  color: #1d4ed8 !important;
-}
-
 html[data-ui-palette="cobalt"] .drflow-ui-button[class*="from-cyan"]:hover {
-  background: #eff6ff !important;
+  background: #ea580c !important;
 }
 
-/* Tabs paciente */
 html[data-ui-palette="cobalt"] .drflow-patient-workspace-tab-active {
-  border-color: #2563eb !important;
-  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
-  color: #f8fafc !important;
-  box-shadow: 0 2px 8px rgb(37 99 235 / 35%) !important;
+  border-color: #f97316 !important;
+  background: #f97316 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
 }
 
 html[data-ui-palette="cobalt"] .drflow-patient-workspace-tab:not(.drflow-patient-workspace-tab-active) {
-  background: rgb(255 255 255 / 0.92) !important;
-  border-color: #93c5fd !important;
-  color: #1e40af !important;
+  background: #ffffff !important;
+  border-color: #99f6e4 !important;
+  color: #0f3f3a !important;
 }
 
 html[data-ui-palette="cobalt"] .drflow-patient-workspace-tab:not(.drflow-patient-workspace-tab-active):hover {
-  background: #ffffff !important;
-  color: #1d4ed8 !important;
+  background: #ffedd5 !important;
+  color: #c2410c !important;
 }
 
-/* Banner paciente activo */
-html[data-ui-palette="cobalt"] .drflow-patient-context-banner {
-  background: rgb(255 255 255 / 0.95) !important;
-  border-color: #93c5fd !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-patient-context-banner :is(.text-slate-900, .text-slate-800) {
-  color: #0f172a !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-patient-context-banner :is(.text-slate-500, .text-slate-600) {
-  color: #475569 !important;
-}
-
-/* EHR / timeline */
 html[data-ui-palette="cobalt"] .drflow-clinical-timeline-filter.is-active,
 html[data-ui-palette="cobalt"] .drflow-clinical-timeline-filter:hover {
-  border-color: #2563eb;
-  color: #1d4ed8;
-  background: rgb(239 246 255 / 0.95);
+  border-color: #f97316;
+  color: #c2410c;
+  background: #fff7ed;
 }
 
 html[data-ui-palette="cobalt"] .drflow-clinical-timeline-list {
-  border-left-color: rgb(37 99 235 / 0.45);
+  border-left-color: rgb(249 115 22 / 0.45);
 }
 
 html[data-ui-palette="cobalt"] .drflow-ehr-action-link,
@@ -4414,45 +4275,44 @@ html[data-ui-palette="azure"] .drflow-ehr-accent-icon {
   color: var(--ehr-label) !important;
 }
 
-/* Stat cards blancas — texto oscuro garantizado */
 html[data-ui-palette="cobalt"] .drflow-ui-stat.drflow-card-light,
 html[data-ui-palette="cobalt"] .drflow-ui-stat.bg-white {
   background: #ffffff !important;
-  border-color: #bfdbfe !important;
-  color: #0f172a !important;
+  border-color: #99f6e4 !important;
+  color: #0f3f3a !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-ui-stat.drflow-card-light :is(.text-slate-900, .text-slate-800, .text-slate-700, .font-bold, .font-semibold),
-html[data-ui-palette="cobalt"] .drflow-ui-stat.bg-white :is(.text-slate-900, .text-slate-800, .text-slate-700, .font-bold, .font-semibold) {
-  color: #0f172a !important;
+html[data-ui-palette="cobalt"] .drflow-medical-order-action-btn {
+  border-color: #fdba74 !important;
+  background: #fff7ed !important;
+  color: #c2410c !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-ui-stat.drflow-card-light :is(.text-slate-500, .text-slate-600),
-html[data-ui-palette="cobalt"] .drflow-ui-stat.bg-white :is(.text-slate-500, .text-slate-600) {
-  color: #64748b !important;
+html[data-ui-palette="cobalt"] .drflow-medical-order-action-btn:hover {
+  background: #ffedd5 !important;
 }
 
-/* Config hub — tarjetas claras con texto oscuro */
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-config-hub .drflow-card-light,
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-config-hub.drflow-card-light {
+html[data-ui-palette="cobalt"] .drflow-medical-order-action-btn + .drflow-medical-order-action-btn {
+  border-color: #99f6e4 !important;
   background: #ffffff !important;
-  border-color: #bfdbfe !important;
+  color: #0f3f3a !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-config-hub .drflow-card-light :is(.text-slate-800, .text-slate-900, .text-slate-200, .text-slate-50) {
-  color: #0f172a !important;
+html[data-ui-palette="cobalt"] .drflow-medical-order-row.border-blue-400 {
+  border-color: #f97316 !important;
+  background: #fff7ed !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-config-hub .drflow-card-light :is(.text-slate-300, .text-slate-400, .text-slate-500, .text-slate-600) {
-  color: #475569 !important;
+html[data-ui-palette="cobalt"] .drflow-medical-order-row .text-blue-700 {
+  color: #c2410c !important;
 }
 
 html[data-ui-palette="cobalt"] ::-webkit-scrollbar-thumb {
-  background: rgb(255 255 255 / 0.35);
+  background: #5eead4;
 }
 
 html[data-ui-palette="cobalt"][data-clinical-dark="1"] ::-webkit-scrollbar-thumb {
-  background: rgb(147 197 253 / 0.45);
+  background: #2a6b63;
 }
 
 /* Órdenes médicas — filas, toolbar y botones de acción visibles en todos los temas */

@@ -38,9 +38,7 @@ export function UiThemeProvider({ children }: { children: ReactNode }) {
     applyUiThemeToDocument(nextStyle, nextDark);
     try {
       localStorage.setItem(UI_STYLE_STORAGE_KEY, nextStyle);
-      if (isBentoStyle(nextStyle)) {
-        localStorage.setItem(CLINICAL_DARK_STORAGE_KEY, nextDark ? "1" : "0");
-      }
+      localStorage.setItem(CLINICAL_DARK_STORAGE_KEY, nextDark ? "1" : "0");
     } catch {
       /* private mode */
     }
@@ -49,16 +47,13 @@ export function UiThemeProvider({ children }: { children: ReactNode }) {
   const setStyle = useCallback(
     (next: UiStyleId) => {
       setStyleState(next);
-      const dark = isBentoStyle(next) ? clinicalDark : false;
-      if (next === "1") setClinicalDarkState(false);
-      persist(next, dark);
+      persist(next, clinicalDark);
     },
     [clinicalDark, persist]
   );
 
   const setClinicalDark = useCallback(
     (on: boolean) => {
-      if (style !== "2" && style !== "3" && style !== "4") return;
       setClinicalDarkState(on);
       persist(style, on);
     },

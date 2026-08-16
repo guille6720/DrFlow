@@ -1,9 +1,9 @@
 "use client";
 
-import { Droplets, Layers, LayoutGrid, Mic, Moon, Sun } from "lucide-react";
+import { Droplets, Heart, LayoutGrid, Mic, Moon, Sun, Trees } from "lucide-react";
 
 import { useUiTheme } from "@/core/components/theme/ui-theme-provider";
-import { UI_STYLE_LABELS, type UiStyleId } from "@/core/theme/ui-theme";
+import { UI_STYLE_BLURBS, UI_STYLE_LABELS, type UiStyleId } from "@/core/theme/ui-theme";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -14,26 +14,43 @@ import { Card } from "@/components/ui/card";
 
 const STYLE_ICONS: Record<UiStyleId, typeof LayoutGrid> = {
   "1": LayoutGrid,
-  "2": LayoutGrid,
+  "2": Trees,
   "3": Droplets,
-  "4": Layers,
+  "4": Heart,
 };
 
 const STYLE_ACTIVE_RING: Record<UiStyleId, string> = {
-  "1": "border-teal-400 bg-teal-500/10 ring-teal-400/40",
-  "2": "border-green-500 bg-green-500/10 ring-green-500/40",
-  "3": "border-sky-400 bg-sky-500/10 ring-sky-400/40",
-  "4": "border-blue-400 bg-blue-500/10 ring-blue-400/40",
+  "1": "border-blue-500 bg-blue-500/10 ring-blue-500/40",
+  "2": "border-emerald-500 bg-emerald-500/10 ring-emerald-500/40",
+  "3": "border-slate-500 bg-slate-500/10 ring-slate-500/40",
+  "4": "border-orange-500 bg-orange-500/10 ring-orange-500/40",
 };
 
 const STYLE_ICON_COLOR: Record<UiStyleId, string> = {
-  "1": "text-teal-300",
-  "2": "text-green-600",
-  "3": "text-sky-300",
-  "4": "text-blue-300",
+  "1": "text-blue-600",
+  "2": "text-emerald-600",
+  "3": "text-slate-600",
+  "4": "text-orange-600",
 };
 
-const BENTO_STYLES: UiStyleId[] = ["2", "3", "4"];
+const DARK_BLURBS: Record<UiStyleId, { light: string; dark: string }> = {
+  "1": {
+    light: "Azul médico clásico: navegación navy, fondos claros y enlaces azul brillante.",
+    dark: "Azul profundo nocturno con acentos #3B82F6 y contraste alto para turnos de noche.",
+  },
+  "2": {
+    light: "Verde bienestar: menta suave, navegación esmeralda y alertas ámbar.",
+    dark: "Fondos verdes neutros, texto claro y acentos esmeralda suaves.",
+  },
+  "3": {
+    light: "Minimalismo moderno: estructura slate, bordes neutros y acento índigo.",
+    dark: "Slate oscuro plano, bordes definidos y rojo nítido para errores.",
+  },
+  "4": {
+    light: "Cálido y empático: naranja de acción, teal suave y tipografía forestal.",
+    dark: "Teal profundo nocturno con acentos naranja y superficies elevadas.",
+  },
+};
 
 function AppearanceStyleControls() {
   const { style, clinicalDark, setStyle, setClinicalDark } = useUiTheme();
@@ -68,52 +85,41 @@ function AppearanceStyleControls() {
                   />
                   <span className="font-semibold text-slate-900">Estilo {id}</span>
                 </div>
-                <p className="mt-2 text-xs leading-relaxed text-slate-600">
+                <p className="mt-2 text-xs font-medium leading-relaxed text-slate-800">
                   {UI_STYLE_LABELS[id]}
                 </p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-600">{UI_STYLE_BLURBS[id]}</p>
               </button>
             );
           })}
         </div>
       </div>
 
-      {BENTO_STYLES.includes(style) && (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="flex items-center gap-2 font-semibold text-slate-900">
-                {clinicalDark ? (
-                  <Moon className="h-4 w-4 text-blue-600" />
-                ) : (
-                  <Sun className="h-4 w-4 text-amber-500" />
-                )}
-                Clinical Dark Mode
-              </p>
-              <p className="mt-1 text-xs text-slate-600">
-                {style === "4"
-                  ? clinicalDark
-                    ? "Azul profundo nocturno; tarjetas claras con texto oscuro nítido."
-                    : "Fondo azul cobalto saturado; tarjetas blancas de alto contraste."
-                  : style === "2"
-                    ? clinicalDark
-                      ? "Verde Salud oscuro: fondos verdes neutros, texto claro y acentos verdes suaves."
-                      : "Verde Salud: fondos neutros, marca verde en acciones y selección, máxima legibilidad clínica."
-                    : clinicalDark
-                      ? "Fondo oscuro clínico, bordes planos y alto contraste para turnos nocturnos."
-                      : "Modo claro plano: fondo gris muy suave, tarjetas blancas y rejilla Bento."}
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant={clinicalDark ? "primary" : "outline"}
-              size="sm"
-              onClick={() => setClinicalDark(!clinicalDark)}
-            >
-              {clinicalDark ? "Usar modo claro" : "Activar modo oscuro"}
-            </Button>
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="flex items-center gap-2 font-semibold text-slate-900">
+              {clinicalDark ? (
+                <Moon className="h-4 w-4 text-blue-600" />
+              ) : (
+                <Sun className="h-4 w-4 text-amber-500" />
+              )}
+              Clinical Dark Mode
+            </p>
+            <p className="mt-1 text-xs text-slate-600">
+              {clinicalDark ? DARK_BLURBS[style].dark : DARK_BLURBS[style].light}
+            </p>
           </div>
+          <Button
+            type="button"
+            variant={clinicalDark ? "primary" : "outline"}
+            size="sm"
+            onClick={() => setClinicalDark(!clinicalDark)}
+          >
+            {clinicalDark ? "Usar modo claro" : "Activar modo oscuro"}
+          </Button>
         </div>
-      )}
+      </div>
 
       {voice ? (
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -150,8 +156,8 @@ function AppearanceStyleControls() {
       ) : null}
 
       <p className="text-xs text-slate-600">
-        La preferencia se guarda en este navegador. Estilo 4 usa el azul de acción (#2563eb) como
-        fondo principal y mantiene formularios y tarjetas en superficies claras para lectura nítida.
+        La preferencia se guarda en este navegador. Los cuatro presets incluyen modo claro y
+        oscuro clínico.
       </p>
     </div>
   );
@@ -165,7 +171,7 @@ export function AppearanceStylePanel({ embedded = false }: { embedded?: boolean 
   return (
     <Card
       title="Apariencia de la interfaz"
-      description="Estilos 2–4 usan diseño plano con rejilla Bento. El Estilo 4 aplica fondo azul cobalto (#2563eb) con tarjetas claras para máxima nitidez. Podés activar modo oscuro en Estilos 2–4."
+      description="Cuatro paletas clínicas con modo claro y oscuro. Estilos 2–4 usan diseño plano con rejilla Bento."
     >
       <AppearanceStyleControls />
     </Card>
