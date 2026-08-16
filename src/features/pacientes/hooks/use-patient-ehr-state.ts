@@ -218,7 +218,17 @@ export function usePatientEhrState(
       treatmentRows?: PatientEhrTreatmentRow[];
     }) => {
       if (payload.consultations?.length) {
-        setExtraConsultations((current) => mergeById(payload.consultations!, current));
+        setExtraConsultations((current) => {
+          const existing = new Set(current.map((row) => row.id));
+          const netNew = payload.consultations!.filter((row) => !existing.has(row.id)).length;
+          if (netNew > 0) {
+            setRecordsPagination((pagination) => ({
+              ...pagination,
+              total: pagination.total + netNew,
+            }));
+          }
+          return mergeById(payload.consultations!, current);
+        });
       }
       if (payload.diagnosisRows?.length) {
         setExtraDiagnosisRows((current) => mergeById(payload.diagnosisRows!, current));
@@ -226,10 +236,6 @@ export function usePatientEhrState(
       if (payload.treatmentRows?.length) {
         setExtraTreatmentRows((current) => mergeById(payload.treatmentRows!, current));
       }
-      setRecordsPagination((current) => ({
-        ...current,
-        total: current.total + (payload.consultations?.length ?? 0),
-      }));
     },
     []
   );

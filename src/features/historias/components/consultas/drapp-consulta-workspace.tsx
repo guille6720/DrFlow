@@ -104,6 +104,9 @@ function DrappHistorySidebar({
   search,
   onSearchChange,
   pendingLabel,
+  editingRecordId,
+  onEditConsultation,
+  onStartNew,
 }: {
   sidebarList: PatientEhrConsultation[];
   diagnosisRows: PatientEhrDiagnosisRow[];
@@ -111,6 +114,9 @@ function DrappHistorySidebar({
   search: string;
   onSearchChange: (value: string) => void;
   pendingLabel: string;
+  editingRecordId: string | null;
+  onEditConsultation: (consultation: PatientEhrConsultation) => void;
+  onStartNew: () => void;
 }) {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -136,10 +142,25 @@ function DrappHistorySidebar({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="border-b border-slate-100 bg-[#fff8dc]/70 px-3 py-2.5">
-          <p className="text-[13px] font-semibold text-[#2f7fbf]">
-            {formatPatientEhrSidebarDate(new Date().toISOString())} {pendingLabel}
-          </p>
-          <p className="mt-0.5 text-[11px] font-medium text-amber-800/80">Consulta en curso</p>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <p className="text-[13px] font-semibold text-[#2f7fbf]">
+                {formatPatientEhrSidebarDate(new Date().toISOString())} {pendingLabel}
+              </p>
+              <p className="mt-0.5 text-[11px] font-medium text-amber-800/80">
+                {editingRecordId ? "Editando evolución" : "Consulta en curso"}
+              </p>
+            </div>
+            {editingRecordId ? (
+              <button
+                type="button"
+                onClick={onStartNew}
+                className="shrink-0 text-[11px] font-semibold text-teal-700 hover:underline"
+              >
+                Nueva
+              </button>
+            ) : null}
+          </div>
         </div>
         {filtered.length === 0 ? (
           <p className="p-4 text-center text-xs text-slate-500">Sin evoluciones previas</p>
@@ -157,19 +178,39 @@ function DrappHistorySidebar({
                 hour: "2-digit",
                 minute: "2-digit",
               });
+              const isEditing = editingRecordId === c.id;
               return (
-                <li key={c.id} className="border-b border-slate-100 px-3 py-3 text-[12px] leading-snug text-slate-700">
-                  <p className="font-semibold text-[#2f7fbf]">
-                    {formatPatientEhrSidebarDate(c.created_at)}{" "}
-                    <span className="font-medium text-[#2f7fbf]/90">{c.professional_name}</span>
-                  </p>
+                <li
+                  key={c.id}
+                  className={cn(
+                    "border-b border-slate-100 px-3 py-3 text-[12px] leading-snug text-slate-700",
+                    isEditing && "bg-[#e8f4fc]"
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-semibold text-[#2f7fbf]">
+                      {formatPatientEhrSidebarDate(c.created_at)}{" "}
+                      <span className="font-medium text-[#2f7fbf]/90">{c.professional_name}</span>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => onEditConsultation(c)}
+                      className="shrink-0 text-[11px] font-semibold text-teal-700 hover:underline"
+                    >
+                      {isEditing ? "Editando" : "Editar"}
+                    </button>
+                  </div>
                   {body ? (
-                    <div className="mt-2">
+                    <button
+                      type="button"
+                      className="mt-2 w-full text-left"
+                      onClick={() => onEditConsultation(c)}
+                    >
                       <p className="font-semibold text-slate-800">Evoluciones</p>
                       <p className="mt-0.5 text-slate-600">
                         <span className="text-slate-400">{timeLabel}</span> {body}
                       </p>
-                    </div>
+                    </button>
                   ) : null}
                   {dayDx.length > 0 ? (
                     <div className="mt-2">
@@ -311,6 +352,10 @@ function DrappConsultaWorkspaceInner({
     flushEvolutionDraft,
     saveIfDirty,
     professionalSignature,
+    editingRecordId,
+    autoSaveStatus,
+    loadConsultationForEdit,
+    startNewConsultation,
   } = useNuevaConsultaForm({
     patients: [patientRecord],
     professionals,
@@ -320,7 +365,7 @@ function DrappConsultaWorkspaceInner({
       patientId: patient.id,
       appointmentId: appointmentId ?? undefined,
       professionalId: professionalId ?? defaultProfessionalId ?? undefined,
-      onSaved: (recordId) => {
+      onSaved: (recordId, silent) => {
         const snap = historySnapshotRef.current;
         appendClinicalHistory({
           consultations: [
@@ -339,7 +384,7 @@ function DrappConsultaWorkspaceInner({
           ],
         });
         setLastSavedRecordId(recordId);
-        toast.success("Evolución guardada");
+        if (!silent) toast.success("Evolución guardada");
       },
       onClose: () => {},
     },
@@ -536,6 +581,17 @@ function DrappConsultaWorkspaceInner({
           search={sidebarSearch}
           onSearchChange={setSidebarSearch}
           pendingLabel={pendingLabel}
+          editingRecordId={editingRecordId}
+          onEditConsultation={(c) => {
+            loadConsultationForEdit(c);
+            requestOpen("evolucion");
+            queueMicrotask(() => evolutionRef.current?.focus());
+            toast.success("Evolución cargada para editar");
+          }}
+          onStartNew={() => {
+            startNewConsultation();
+            requestOpen("evolucion");
+          }}
         />
 
         <main className="drapp-consulta-main min-w-0 flex-1 bg-white p-3 sm:p-4">
@@ -620,12 +676,27 @@ function DrappConsultaWorkspaceInner({
                 ) : null}
 
                 <div className="ml-auto flex flex-wrap items-center gap-2 px-1">
+                  <span className="text-[11px] text-slate-500">
+                    {autoSaveStatus === "saving"
+                      ? "Guardando…"
+                      : autoSaveStatus === "saved"
+                        ? editingRecordId
+                          ? "Autoguardado"
+                          : null
+                        : autoSaveStatus === "error"
+                          ? "Error al guardar"
+                          : null}
+                  </span>
                   <button
                     type="submit"
                     disabled={formLoading || quickSaving}
                     className="text-[13px] font-semibold text-[#2f7fbf] hover:underline disabled:opacity-60"
                   >
-                    {formLoading ? "Guardando…" : "Guardar"}
+                    {formLoading
+                      ? "Guardando…"
+                      : editingRecordId
+                        ? "Guardar cambios"
+                        : "Guardar"}
                   </button>
                   {onFinalize ? (
                     <button

@@ -6,7 +6,21 @@ export type ConsultationDraftContext = {
   recordId?: string;
 };
 
+/** Borrador local de la consulta en curso (sessionStorage). */
+export type ConsultationDraftPayload = {
+  v: 1;
+  evolution: string;
+  chiefComplaint: string;
+  diagnosis: string;
+  indications: string;
+  vitals: string;
+  /** ID del clinical_record ya persistido (autosave / edición). */
+  recordId?: string | null;
+  updatedAt: string;
+};
+
 const QUERY_FLAG = "consulta";
+const DRAFT_VERSION = 1 as const;
 
 export function consultationDraftKey(ctx: ConsultationDraftContext): string {
   if (ctx.recordId) {
@@ -18,22 +32,62 @@ export function consultationDraftKey(ctx: ConsultationDraftContext): string {
   return `drflow-consultation-evolution-patient-${ctx.patientId}`;
 }
 
-export function readConsultationEvolution(key: string): string {
-  if (typeof window === "undefined") return "";
+function emptyPayload(): ConsultationDraftPayload {
+  return {
+    v: DRAFT_VERSION,
+    evolution: "",
+    chiefComplaint: "",
+    diagnosis: "",
+    indications: "",
+    vitals: "",
+    recordId: null,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+export function readConsultationDraft(key: string): ConsultationDraftPayload | null {
+  if (typeof window === "undefined") return null;
   try {
-    return sessionStorage.getItem(key) ?? "";
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    if (raw.startsWith("{")) {
+      const parsed = JSON.parse(raw) as ConsultationDraftPayload;
+      if (parsed && parsed.v === 1) return parsed;
+    }
+    // Formato legacy: solo texto de evolución.
+    return {
+      ...emptyPayload(),
+      evolution: raw,
+    };
   } catch {
-    return "";
+    return null;
+  }
+}
+
+/** @deprecated Prefer readConsultationDraft — mantiene compat con callers legacy. */
+export function readConsultationEvolution(key: string): string {
+  return readConsultationDraft(key)?.evolution ?? "";
+}
+
+export function saveConsultationDraft(key: string, payload: ConsultationDraftPayload): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(
+      key,
+      JSON.stringify({
+        ...payload,
+        v: DRAFT_VERSION,
+        updatedAt: new Date().toISOString(),
+      } satisfies ConsultationDraftPayload)
+    );
+  } catch {
+    /* quota / private mode */
   }
 }
 
 export function saveConsultationEvolution(key: string, text: string): void {
-  if (typeof window === "undefined") return;
-  try {
-    sessionStorage.setItem(key, text);
-  } catch {
-    /* quota / private mode */
-  }
+  const prev = readConsultationDraft(key) ?? emptyPayload();
+  saveConsultationDraft(key, { ...prev, evolution: text });
 }
 
 export function appendToConsultationEvolution(key: string, line: string): string {
