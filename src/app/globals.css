@@ -1340,7 +1340,17 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar button.text-s
 .drflow-mesh main button.border-slate-300.bg-white:not(.drflow-agenda-view *) {
   border-color: #64748b !important;
   background-color: #334155 !important;
-  color: #f8fafc !important;
+  color: #ffffff !important;
+}
+
+/* Cobalt no debe repintar esos botones oscuros con texto slate */
+html[data-ui-palette="cobalt"] .drflow-mesh main button.bg-white.text-slate-700:not(.drflow-agenda-view *),
+html[data-ui-palette="cobalt"] .drflow-mesh main button.border-slate-300.bg-white:not(.drflow-agenda-view *),
+html[data-ui-palette="cobalt"] .drflow-ui-card button.bg-white.text-slate-700,
+html[data-ui-palette="cobalt"] .drflow-ui-card button.border-slate-300.bg-white {
+  background-color: #334155 !important;
+  border-color: #64748b !important;
+  color: #ffffff !important;
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-card-body :is(.text-slate-50, .text-slate-100) {
@@ -1839,9 +1849,14 @@ html:not([data-ui-style="2"]) .drflow-ehr-evolution-box .drflow-ehr-muted {
 }
 
 .drapp-consulta-main .drflow-ehr-table-panel {
+  --ehr-panel: #ffffff;
+  --ehr-text: #0f172a;
+  --ehr-muted: #64748b;
+  --ehr-label: #0f766e;
   background: #ffffff;
   border-color: #e2e8f0;
   border-radius: 2px;
+  color: #0f172a;
 }
 
 .drapp-consulta-main .drflow-ehr-table-title {
@@ -1850,7 +1865,13 @@ html:not([data-ui-style="2"]) .drflow-ehr-evolution-box .drflow-ehr-muted {
   font-size: 13px;
 }
 
-.drapp-consulta-main .drflow-ehr-table th,
+/* Si el thead queda con fondo oscuro (vars legacy), forzar letras blancas */
+.drapp-consulta-main .drflow-ehr-table th {
+  color: #ffffff !important;
+  background: #1e293b;
+  font-size: 12px;
+}
+
 .drapp-consulta-main .drflow-ehr-table td {
   color: #334155;
   font-size: 12px;
@@ -1939,8 +1960,13 @@ html:not([data-ui-style="2"]) .drflow-ehr-action-link {
 }
 
 .drflow-ehr-table th {
-  color: var(--ehr-label);
+  color: #ffffff;
   background: color-mix(in srgb, var(--ehr-panel) 88%, var(--ehr-label) 12%);
+}
+
+/* Modo claro clínico: encabezados con texto oscuro sobre fondo claro */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-table th {
+  color: var(--ehr-label) !important;
 }
 
 .drflow-ehr-table td {
@@ -1952,7 +1978,7 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-table th,
 html:not([data-ui-style="2"]) .drflow-ehr-table th,
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-shell .drflow-ehr-table th,
 html:not([data-ui-style="2"]) .drflow-ehr-shell .drflow-ehr-table th {
-  color: var(--ehr-label) !important;
+  color: #ffffff !important;
 }
 
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-table td,
@@ -1981,11 +2007,27 @@ html:not([data-ui-style="2"]) .drflow-ehr-shell .drflow-ehr-muted {
 }
 
 /* Cobalt/azure: anula texto oscuro forzado en tablas EHR sobre paneles oscuros */
-html[data-ui-palette="cobalt"] .drflow-ehr-table-panel :is(.font-semibold, .font-bold),
-html[data-ui-palette="cobalt"] .drflow-ehr-table th,
-html[data-ui-palette="azure"] .drflow-ehr-table-panel :is(.font-semibold, .font-bold),
-html[data-ui-palette="azure"] .drflow-ehr-table th {
+html[data-ui-palette="cobalt"] .drflow-ehr-table-panel :is(.font-semibold, .font-bold):not(th):not(button),
+html[data-ui-palette="azure"] .drflow-ehr-table-panel :is(.font-semibold, .font-bold):not(th):not(button) {
   color: var(--ehr-label) !important;
+}
+
+/* Encabezados de tabla EHR sobre fondo oscuro: siempre blancos */
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-table th,
+html:not([data-ui-style="2"]) .drflow-ehr-table th,
+html[data-ui-palette="cobalt"][data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-table th,
+html[data-ui-palette="cobalt"]:not([data-ui-style="2"]) .drflow-ehr-table th,
+html[data-ui-palette="azure"][data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-table th,
+html[data-ui-palette="azure"]:not([data-ui-style="2"]) .drflow-ehr-table th,
+html[data-ui-palette="cobalt"][data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-card .drflow-ehr-table th,
+html[data-ui-palette="cobalt"]:not([data-ui-style="2"]) .drflow-ui-card .drflow-ehr-table th,
+html[data-ui-palette="azure"][data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-card .drflow-ehr-table th,
+html[data-ui-palette="azure"]:not([data-ui-style="2"]) .drflow-ui-card .drflow-ehr-table th,
+html[data-ui-palette="cobalt"][data-ui-style="2"][data-clinical-dark="1"] .drflow-patient-workspace-panel .drflow-ehr-table th,
+html[data-ui-palette="cobalt"]:not([data-ui-style="2"]) .drflow-patient-workspace-panel .drflow-ehr-table th,
+html[data-ui-palette="azure"][data-ui-style="2"][data-clinical-dark="1"] .drflow-patient-workspace-panel .drflow-ehr-table th,
+html[data-ui-palette="azure"]:not([data-ui-style="2"]) .drflow-patient-workspace-panel .drflow-ehr-table th {
+  color: #ffffff !important;
 }
 
 html[data-ui-palette="cobalt"] .drflow-ehr-table-panel :is(td, p, span, li):not([class*="text-teal"]),
@@ -1995,22 +2037,22 @@ html[data-ui-palette="azure"] .drflow-ehr-table td {
   color: var(--ehr-text) !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-ehr-table th,
 html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-ehr-table td,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ehr-table th,
 html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ehr-table td {
   color: var(--ehr-text) !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-ehr-table th,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ehr-table th {
-  color: var(--ehr-label) !important;
+html[data-ui-palette="cobalt"][data-ui-style="2"][data-clinical-dark="1"] .drflow-patient-workspace-panel .drflow-ehr-table th,
+html[data-ui-palette="cobalt"]:not([data-ui-style="2"]) .drflow-patient-workspace-panel .drflow-ehr-table th,
+html[data-ui-palette="cobalt"][data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-card .drflow-ehr-table th,
+html[data-ui-palette="cobalt"]:not([data-ui-style="2"]) .drflow-ui-card .drflow-ehr-table th {
+  color: #ffffff !important;
 }
 
 /* EHR oscuro: legibilidad garantizada (anula paletas / islas claras en workspace) — legacy shell selectors */
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-shell .drflow-ehr-table th,
 html:not([data-ui-style="2"]) .drflow-ehr-shell .drflow-ehr-table th {
-  color: var(--ehr-label) !important;
+  color: #ffffff !important;
 }
 
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-shell .drflow-ehr-table td,
@@ -3915,7 +3957,7 @@ html[data-ui-palette="cobalt"] .drflow-surface-inset {
 }
 
 html[data-ui-palette="cobalt"] .drflow-ui-card-title,
-html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-900, .text-slate-800, .font-semibold, .font-bold) {
+html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-900, .text-slate-800, .font-semibold, .font-bold):not(th):not(button) {
   color: #0f172a !important;
 }
 
@@ -4193,7 +4235,7 @@ html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel table:not(.drflow
 }
 
 html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-ehr-shell .drflow-ehr-table th {
-  color: var(--ehr-label) !important;
+  color: #ffffff !important;
 }
 
 html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel .drflow-ehr-shell .drflow-ehr-table td {
