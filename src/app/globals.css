@@ -5,39 +5,39 @@
 :root {
   --font-jakarta: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
   --font-geist-mono: "Geist Mono", ui-monospace, monospace;
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --primary: #0d9488;
-  --primary-dark: #0f766e;
-  --primary-hover: #0f766e;
-  --primary-light: #14b8a6;
-  --primary-soft: #ccfbf1;
-  --primary-foreground: #ffffff;
-  --secondary: #14b8a6;
-  --secondary-soft: #f0fdfa;
-  --accent: #0d9488;
-  --sidebar: #ffffff;
-  --sidebar-accent: #0d9488;
-  --sidebar-bg: #ffffff;
-  --sidebar-active-bg: #0d9488;
-  --sidebar-active-text: #ffffff;
-  --accent-soft: #ccfbf1;
+  --background: #3d5266;
+  --foreground: #f8fafc;
+  --primary: #2dd4bf;
+  --primary-dark: #14b8a6;
+  --primary-hover: #14b8a6;
+  --primary-light: #5eead4;
+  --primary-soft: #134e4a;
+  --primary-foreground: #0f172a;
+  --secondary: #0d9488;
+  --secondary-soft: #ccfbf1;
+  --accent: #0ea5e9;
+  --sidebar: #0f172a;
+  --sidebar-accent: #2dd4bf;
+  --sidebar-bg: #0f172a;
+  --sidebar-active-bg: #134e4a;
+  --sidebar-active-text: #5eead4;
+  --accent-soft: #134e4a;
   --accent-warm: #d97706;
-  --muted: #64748b;
-  --muted-foreground: #475569;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --card: #ffffff;
-  --surface: #ffffff;
-  --surface-secondary: #f1f5f9;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
-  --success: #10b981;
+  --muted: #cbd5e1;
+  --muted-foreground: #cbd5e1;
+  --border: #64748b;
+  --border-strong: #94a3b8;
+  --card: #475569;
+  --surface: #475569;
+  --surface-secondary: #3d5266;
+  --text-primary: #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-muted: #cbd5e1;
+  --success: #22c55e;
   --warning: #f59e0b;
   --error: #ef4444;
   --info: #0ea5e9;
-  --radius: 0.75rem;
+  --radius: 1rem;
 }
 
 @theme inline {
@@ -362,11 +362,8 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-config
   min-width: 0;
 }
 
-/* ——— Tema único: Teal clínico (estilo SincVete) ———
-   data-ui-style="1" se mantiene como alias claro (marketing / SSR).
-   data-ui-style="2" = mismo tema + layout Bento + modo oscuro. */
-html[data-ui-style="1"]:not([data-clinical-dark="1"]),
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) {
+/* ——— Estilo 1: Azul Médico Clásico ——— */
+html[data-ui-style="1"]:not([data-clinical-dark="1"]) {
   --background: #f8fafc;
   --foreground: #0f172a;
   --card: #ffffff;
@@ -379,100 +376,166 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) {
   --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-muted: #64748b;
-  --primary: #0d9488;
-  --primary-hover: #0f766e;
-  --primary-dark: #115e59;
-  --primary-light: #14b8a6;
-  --primary-soft: #ccfbf1;
+  --primary: #1e3a8a;
+  --primary-hover: #1e40af;
+  --primary-dark: #172554;
+  --primary-light: #3b82f6;
+  --primary-soft: #dbeafe;
   --primary-foreground: #ffffff;
-  --secondary: #14b8a6;
-  --secondary-soft: #f0fdfa;
-  --accent: #0d9488;
+  --secondary: #3b82f6;
+  --secondary-soft: #eff6ff;
+  --accent: #3b82f6;
   --success: #10b981;
   --warning: #f59e0b;
   --error: #ef4444;
-  --info: #0ea5e9;
-  --sidebar-bg: #ffffff;
-  --sidebar-active-bg: #0d9488;
+  --info: #3b82f6;
+  --sidebar-bg: #1e3a8a;
+  --sidebar-active-bg: #1e40af;
   --sidebar-active-text: #ffffff;
-  --sidebar-accent: #0d9488;
-  --sidebar: #ffffff;
+  --sidebar-accent: #3b82f6;
+  --sidebar: #1e3a8a;
 }
 
-html[data-ui-style="1"][data-clinical-dark="1"],
-html[data-ui-style="2"][data-clinical-dark="1"] {
-  --background: #0b1413;
-  --foreground: #f0fdfa;
-  --card: #12201e;
-  --surface: #12201e;
-  --surface-secondary: #1a2e2b;
-  --border: #23403c;
-  --border-strong: #2f5650;
+html[data-ui-style="1"][data-clinical-dark="1"] {
+  --background: #0b1220;
+  --foreground: #f8fafc;
+  --card: #111827;
+  --surface: #111827;
+  --surface-secondary: #1e293b;
+  --border: #1e3a5f;
+  --border-strong: #334155;
   --muted: #94a3b8;
   --muted-foreground: #cbd5e1;
-  --text-primary: #f0fdfa;
-  --text-secondary: #ccfbf1;
-  --text-muted: #99f6e4;
-  --primary: #2dd4bf;
-  --primary-hover: #5eead4;
-  --primary-dark: #0d9488;
-  --primary-light: #5eead4;
-  --primary-soft: #134e4a;
-  --primary-foreground: #0b1413;
-  --secondary: #14b8a6;
-  --secondary-soft: #134e4a;
-  --accent: #2dd4bf;
+  --text-primary: #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-dark: #1d4ed8;
+  --primary-light: #60a5fa;
+  --primary-soft: #1e3a5f;
+  --primary-foreground: #0b1220;
+  --secondary: #60a5fa;
+  --secondary-soft: #1e3a5f;
+  --accent: #60a5fa;
   --success: #34d399;
   --warning: #f59e0b;
   --error: #f87171;
-  --info: #38bdf8;
-  --sidebar-bg: #0f1c1a;
-  --sidebar-active-bg: #0d9488;
-  --sidebar-active-text: #ffffff;
-  --sidebar-accent: #2dd4bf;
-  --sidebar: #0f1c1a;
+  --info: #60a5fa;
+  --sidebar-bg: #0f172a;
+  --sidebar-active-bg: #1e3a8a;
+  --sidebar-active-text: #dbeafe;
+  --sidebar-accent: #3b82f6;
+  --sidebar: #0f172a;
 }
 
-html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-mesh,
-html[data-ui-style="2"] .drflow-mesh {
+html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-mesh {
   background-color: var(--background);
   background-image: none;
   color: var(--foreground);
 }
 
-html[data-ui-style="1"][data-clinical-dark="1"] .drflow-mesh,
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh {
+html[data-ui-style="1"][data-clinical-dark="1"] .drflow-mesh {
   background-color: var(--background);
   background-image:
-    radial-gradient(at 0% 0%, rgb(13 148 136 / 0.22) 0, transparent 55%),
-    radial-gradient(at 100% 100%, rgb(45 212 191 / 0.1) 0, transparent 50%);
+    radial-gradient(at 0% 0%, rgb(30 58 138 / 0.35) 0, transparent 55%),
+    radial-gradient(at 100% 100%, rgb(59 130 246 / 0.12) 0, transparent 50%);
 }
 
-html[data-ui-style="1"] .drflow-sidebar-gradient,
-html[data-ui-style="2"] .drflow-sidebar-gradient {
-  background: var(--sidebar-bg);
+html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
+  background: linear-gradient(180deg, #1e3a8a 0%, #172554 55%, #1e3a8a 100%);
 }
 
-html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-ui-card,
-html[data-ui-style="2"] .drflow-ui-card {
+html[data-ui-style="1"][data-clinical-dark="1"] .drflow-sidebar-gradient {
+  background: linear-gradient(180deg, #0f172a 0%, #111827 55%, #0b1220 100%);
+}
+
+html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-ui-card {
   background: var(--card);
   color: var(--text-primary);
   border-color: var(--border);
 }
 
-html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-link,
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-link {
-  color: #0d9488;
+html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-link {
+  color: #3b82f6;
 }
 
-html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-link:hover,
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-link:hover {
-  color: #0f766e;
+html[data-ui-style="1"]:not([data-clinical-dark="1"]) .drflow-link:hover {
+  color: #1d4ed8;
 }
 
-/* ——— Layout Bento (tema único) ——— */
+/* ——— Estilo 2: Verde Bienestar (flat + Bento) ——— */
 html[data-ui-style="2"] {
   --radius: 0.75rem;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) {
+  --background: #d1fae5;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --surface: #ffffff;
+  --surface-secondary: #ecfdf5;
+  --border: #a7f3d0;
+  --border-strong: #6ee7b7;
+  --muted: #475569;
+  --muted-foreground: #334155;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --primary: #059669;
+  --primary-hover: #047857;
+  --primary-dark: #065f46;
+  --primary-light: #10b981;
+  --primary-soft: #a7f3d0;
+  --primary-foreground: #ffffff;
+  --secondary: #10b981;
+  --secondary-soft: #d1fae5;
+  --accent: #0ea5e9;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #0ea5e9;
+  --sidebar-bg: #ecfdf5;
+  --sidebar-active-bg: #ffffff;
+  --sidebar-active-text: #047857;
+  --sidebar-accent: #059669;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] {
+  --background: #07120c;
+  --foreground: #f8fafc;
+  --card: #0d1b12;
+  --surface: #0d1b12;
+  --surface-secondary: #12251a;
+  --border: #20382a;
+  --border-strong: #31513c;
+  --muted: #9ca3af;
+  --muted-foreground: #d1d5db;
+  --text-primary: #f8fafc;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --primary: #34d399;
+  --primary-hover: #6ee7b7;
+  --primary-dark: #059669;
+  --primary-light: #6ee7b7;
+  --primary-soft: #12351f;
+  --primary-foreground: #07120c;
+  --secondary: #10b981;
+  --secondary-soft: #12351f;
+  --accent: #38bdf8;
+  --success: #34d399;
+  --warning: #f59e0b;
+  --error: #f87171;
+  --info: #38bdf8;
+  --sidebar-bg: #09160f;
+  --sidebar-active-bg: #12351f;
+  --sidebar-active-text: #a7f3d0;
+  --sidebar-accent: #34d399;
+}
+
+html[data-ui-style="2"] .drflow-mesh {
+  background-image: none;
+  background-color: var(--background);
 }
 
 html[data-ui-style="2"] .drflow-bento {
@@ -625,30 +688,25 @@ html[data-ui-style="2"] .drflow-ui-button[class*="from-cyan"] {
   color: var(--primary-foreground) !important;
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-topnav-dark,
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-dark {
+html[data-ui-style="2"]:not([data-ui-palette]):not([data-clinical-dark="1"]) .drflow-ui-topnav-dark,
+html[data-ui-style="2"]:not([data-ui-palette]):not([data-clinical-dark="1"]) .drflow-ui-header-dark {
+  border-color: #047857;
+  background: #059669;
+  color: #ffffff;
+}
+
+html[data-ui-style="2"]:not([data-ui-palette]):not([data-clinical-dark="1"]) .drflow-ui-topnav-dark :is(.text-slate-50, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400, h1),
+html[data-ui-style="2"]:not([data-ui-palette]):not([data-clinical-dark="1"]) .drflow-ui-header-dark :is(.text-slate-50, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400, h1) {
+  color: #ffffff !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette]) .drflow-ui-topnav-dark,
+html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette]) .drflow-ui-header-dark {
   border-color: var(--border);
-  background: #ffffff;
-  color: var(--text-primary);
+  background: color-mix(in srgb, var(--card) 90%, transparent);
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-topnav-dark :is(.text-slate-50, .text-slate-100, .text-slate-200, h1),
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-dark :is(.text-slate-50, .text-slate-100, .text-slate-200, h1) {
-  color: var(--text-primary) !important;
-}
-
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-topnav-dark :is(.text-slate-300, .text-slate-400),
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-dark :is(.text-slate-300, .text-slate-400) {
-  color: var(--text-muted) !important;
-}
-
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-topnav-dark,
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-header-dark {
-  border-color: var(--border);
-  background: color-mix(in srgb, var(--card) 92%, transparent);
-}
-
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .rounded-2xl.border-2.border-amber-400 {
+html[data-ui-style="2"]:not([data-ui-palette]):not([data-clinical-dark="1"]) .rounded-2xl.border-2.border-amber-400 {
   border-color: #f59e0b !important;
   background: #fffbeb !important;
   box-shadow: none !important;
@@ -1776,13 +1834,13 @@ html:not([data-ui-style="2"]) .drflow-ehr-table-panel {
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-table-panel {
-  --ehr-accent: #0d9488;
-  --ehr-accent-bright: #14b8a6;
-  --ehr-accent-soft: #0f766e;
+  --ehr-accent: #059669;
+  --ehr-accent-bright: #10b981;
+  --ehr-accent-soft: #047857;
   --ehr-panel: #ffffff;
   --ehr-text: #0f172a;
   --ehr-muted: #64748b;
-  --ehr-label: #0f766e;
+  --ehr-label: #047857;
   color: var(--ehr-text);
 }
 

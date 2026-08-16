@@ -1,4 +1,4 @@
-import { applyUiThemeToDocument, DEFAULT_UI_STYLE } from "@/core/theme/ui-theme";
+import { applyUiThemeToDocument } from "@/core/theme/ui-theme";
 
 /** Limpia datos locales de DrFlow (tema, portal, QA, etc.). */
 export function clearDrFlowClientStorage(): void {
@@ -30,5 +30,5 @@ export function clearDrFlowClientStorage(): void {
     /* ignore */
   }
 
-  applyUiThemeToDocument(DEFAULT_UI_STYLE, false);
+  applyUiThemeToDocument("1", false);
 }
