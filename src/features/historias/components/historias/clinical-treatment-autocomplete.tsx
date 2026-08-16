@@ -3,6 +3,8 @@
 import { Clock, Loader2, Star, X } from "lucide-react";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
+import { FloatingAnchorPanel } from "@/core/components/ui/floating-anchor-panel";
+
 import { cn } from "@/shared/utils/cn";
 
 import { searchClinicalTreatments } from "@/features/historias/actions/clinical-treatments";
@@ -21,6 +23,8 @@ import { CLINICAL_TREATMENT_KIND_LABELS } from "@/features/historias/types/clini
 import type { ClinicalTreatmentEntry } from "@/features/historias/utils/clinical-structured-entries";
 
 import { Button } from "@/components/ui/button";
+
+const MIN_QUERY_LENGTH = 2;
 
 type Props = {
   treatments: ClinicalTreatmentEntry[];
@@ -77,6 +81,8 @@ export function ClinicalTreatmentAutocomplete({
 }: Props) {
   const listId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const listPanelRef = useRef<HTMLDivElement>(null);
   const localInputRef = useRef<HTMLInputElement>(null);
   const favorites = useClinicalFavoritesOptional();
   const [query, setQuery] = useState("");
@@ -85,6 +91,7 @@ export function ClinicalTreatmentAutocomplete({
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
+  const panelOpen = open && query.trim().length >= MIN_QUERY_LENGTH;
 
   const selectedKeys = useMemo(() => new Set(treatments.map(entryKey)), [treatments]);
   const allTreatmentFavorites = favorites?.byKind("treatment") ?? [];
@@ -138,7 +145,7 @@ export function ClinicalTreatmentAutocomplete({
 
   const search = useCallback(
     async (q: string) => {
-      if (q.trim().length < 2) {
+      if (q.trim().length < MIN_QUERY_LENGTH) {
         setResults([]);
         setError(null);
         return;
@@ -166,7 +173,10 @@ export function ClinicalTreatmentAutocomplete({
 
   useEffect(() => {
     function handleClick(event: MouseEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      if (containerRef.current?.contains(target)) return;
+      if (listPanelRef.current?.contains(target)) return;
+      setOpen(false);
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -261,27 +271,172 @@ export function ClinicalTreatmentAutocomplete({
         <label htmlFor={listId} className="mb-1.5 block text-sm font-medium drflow-ehr-label">
           {label}
         </label>
-        <input
-          ref={assignInputRef}
-          id={listId}
-          type="text"
-          role="combobox"
-          aria-expanded={open}
-          aria-autocomplete="list"
-          aria-controls={`${listId}-listbox`}
-          placeholder={placeholder}
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-          onKeyDown={handleKeyDown}
-          className={cn(
-            "drflow-clinical-combobox-input w-full rounded-md py-2.5 px-3 focus:ring-2 focus:ring-sky-400/50",
-            highlighted && "ring-2 ring-sky-400/50"
-          )}
-        />
+        <div ref={anchorRef}>
+          <input
+            ref={assignInputRef}
+            id={listId}
+            type="text"
+            role="combobox"
+            aria-expanded={panelOpen}
+            aria-autocomplete="list"
+            aria-controls={`${listId}-listbox`}
+            placeholder={placeholder}
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
+            onKeyDown={handleKeyDown}
+            className={cn(
+              "drflow-clinical-combobox-input w-full rounded-md py-2.5 px-3 focus:ring-2 focus:ring-sky-400/50",
+              highlighted && "ring-2 ring-sky-400/50"
+            )}
+          />
+        </div>
+
+        <FloatingAnchorPanel
+          anchorRef={anchorRef}
+          open={panelOpen}
+          preferredMaxHeight={320}
+          className="rounded-md border border-slate-200 bg-white shadow-xl"
+        >
+          <div
+            ref={listPanelRef}
+            onMouseDown={(e) => e.preventDefault()}
+            className="drflow-clinical-combobox-list"
+          >
+            {loading ? (
+              <p className="inline-flex items-center gap-1 px-3 py-2 text-xs text-slate-600">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Buscando…
+              </p>
+            ) : null}
+            {error ? (
+              <p className="px-3 py-2 text-xs font-medium text-red-700" role="alert">
+                {error}
+              </p>
+            ) : null}
+            {!loading && !error && listItems.length === 0 ? (
+              <p className="px-3 py-2 text-xs font-medium text-slate-700">
+                Sin resultados para &quot;{query}&quot;. Probá &quot;IECA&quot;, &quot;antiinflamatorio&quot; o
+                &quot;+ Agregar tratamiento&quot;.
+              </p>
+            ) : null}
+            {!loading && listItems.length > 0 ? (
+              <ul id={`${listId}-listbox`} role="listbox" className="py-1">
+                {listItems.map((entry, index) => {
+                  if (entry.source === "separator") {
+                    return (
+                      <li
+                        key={entry.key}
+                        role="separator"
+                        className="my-1 border-t border-slate-200"
+                        aria-hidden
+                      />
+                    );
+                  }
+
+                  if (entry.source === "favorite" || entry.source === "recent") {
+                    const payload = entry.payload;
+                    const isFavoriteRow = entry.source === "favorite";
+                    return (
+                      <li key={entry.key} role="presentation">
+                        <div
+                          className={cn(
+                            "flex w-full items-start gap-2 px-3 py-2",
+                            index === highlight && "bg-amber-500/10"
+                          )}
+                          onMouseEnter={() => setHighlight(index)}
+                        >
+                          <button
+                            type="button"
+                            role="option"
+                            aria-selected={index === highlight}
+                            onClick={() => handleSelectFavorite(payload)}
+                            className="min-w-0 flex-1 text-left"
+                          >
+                            <p className="inline-flex items-center gap-1 text-sm font-semibold text-slate-900">
+                              {isFavoriteRow ? (
+                                <Star className="h-3 w-3 fill-current text-amber-500" aria-hidden />
+                              ) : (
+                                <Clock className="h-3 w-3 text-slate-500" aria-hidden />
+                              )}
+                              {payload.product}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {isFavoriteRow ? "Favorito" : "Usado recientemente"}
+                            </p>
+                          </button>
+                          {favorites ? (
+                            <FavoriteStarButton
+                              active={Boolean(
+                                favorites.isFavorite(
+                                  "treatment",
+                                  treatmentFavoriteFingerprint(payload)
+                                )
+                              )}
+                              label={payload.product}
+                              onToggle={() => void favorites.toggleTreatmentFavorite(payload)}
+                            />
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  }
+
+                  const item = entry.item;
+                  const payload: ClinicalFavoriteTreatmentPayload = {
+                    product: item.name,
+                    kind: item.kind,
+                    category: item.category,
+                    clinical_treatment_id: item.id,
+                  };
+                  const already = selectedKeys.has(
+                    `${item.id}|${item.kind}|${item.name}`.trim().toLowerCase()
+                  );
+                  const starred = Boolean(
+                    favorites?.isFavorite("treatment", treatmentFavoriteFingerprint(payload))
+                  );
+                  return (
+                    <li key={entry.key} role="presentation">
+                      <div
+                        className={cn(
+                          "flex w-full items-start gap-2 px-3 py-2",
+                          index === highlight && "bg-sky-500/10",
+                          already && "opacity-50"
+                        )}
+                        onMouseEnter={() => setHighlight(index)}
+                      >
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={index === highlight}
+                          disabled={already}
+                          onClick={() => handleSelect(item)}
+                          className="min-w-0 flex-1 text-left"
+                        >
+                          <p className="text-sm font-semibold text-slate-900">{item.name}</p>
+                          <p className="text-xs text-slate-500">
+                            {CLINICAL_TREATMENT_KIND_LABELS[item.kind]}
+                            {already ? " · Ya agregado" : ""}
+                          </p>
+                        </button>
+                        {favorites ? (
+                          <FavoriteStarButton
+                            active={starred}
+                            label={item.name}
+                            onToggle={() => void favorites.toggleTreatmentFavorite(payload)}
+                          />
+                        ) : null}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+          </div>
+        </FloatingAnchorPanel>
+
         <div className="flex justify-end">
           <Button
             type="button"
@@ -315,130 +470,6 @@ export function ClinicalTreatmentAutocomplete({
               onPick={(row) => handleSelectFavorite(payloadFromRecent(row))}
             />
           </>
-        ) : null}
-
-        {loading ? (
-          <p className="inline-flex items-center gap-1 text-xs text-slate-500">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Buscando…
-          </p>
-        ) : null}
-        {error ? <p className="text-xs text-red-600">{error}</p> : null}
-
-        {open && listItems.length > 0 ? (
-          <ul
-            id={`${listId}-listbox`}
-            role="listbox"
-            className="drflow-clinical-combobox-list absolute z-[100] mt-1 max-h-80 w-full overflow-y-auto rounded-md py-1 shadow-lg"
-          >
-            {listItems.map((entry, index) => {
-              if (entry.source === "separator") {
-                return (
-                  <li
-                    key={entry.key}
-                    role="separator"
-                    className="my-1 border-t border-slate-200"
-                    aria-hidden
-                  />
-                );
-              }
-
-              if (entry.source === "favorite" || entry.source === "recent") {
-                const payload = entry.payload;
-                const isFavoriteRow = entry.source === "favorite";
-                return (
-                  <li key={entry.key} role="presentation">
-                    <div
-                      className={cn(
-                        "flex w-full items-start gap-2 px-3 py-2",
-                        index === highlight && "bg-amber-500/10"
-                      )}
-                      onMouseEnter={() => setHighlight(index)}
-                    >
-                      <button
-                        type="button"
-                        role="option"
-                        aria-selected={index === highlight}
-                        onClick={() => handleSelectFavorite(payload)}
-                        className="min-w-0 flex-1 text-left"
-                      >
-                        <p className="inline-flex items-center gap-1 text-sm font-semibold text-slate-900">
-                          {isFavoriteRow ? (
-                            <Star className="h-3 w-3 fill-current text-amber-500" aria-hidden />
-                          ) : (
-                            <Clock className="h-3 w-3 text-slate-500" aria-hidden />
-                          )}
-                          {payload.product}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {isFavoriteRow ? "Favorito" : "Usado recientemente"}
-                        </p>
-                      </button>
-                      {favorites ? (
-                        <FavoriteStarButton
-                          active={Boolean(
-                            favorites.isFavorite(
-                              "treatment",
-                              treatmentFavoriteFingerprint(payload)
-                            )
-                          )}
-                          label={payload.product}
-                          onToggle={() => void favorites.toggleTreatmentFavorite(payload)}
-                        />
-                      ) : null}
-                    </div>
-                  </li>
-                );
-              }
-
-              const item = entry.item;
-              const payload: ClinicalFavoriteTreatmentPayload = {
-                product: item.name,
-                kind: item.kind,
-                category: item.category,
-                clinical_treatment_id: item.id,
-              };
-              const already = selectedKeys.has(
-                `${item.id}|${item.kind}|${item.name}`.trim().toLowerCase()
-              );
-              const starred = Boolean(
-                favorites?.isFavorite("treatment", treatmentFavoriteFingerprint(payload))
-              );
-              return (
-                <li key={entry.key} role="presentation">
-                  <div
-                    className={cn(
-                      "flex w-full items-start gap-2 px-3 py-2",
-                      index === highlight && "bg-sky-500/10",
-                      already && "opacity-50"
-                    )}
-                    onMouseEnter={() => setHighlight(index)}
-                  >
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={index === highlight}
-                      disabled={already}
-                      onClick={() => handleSelect(item)}
-                      className="min-w-0 flex-1 text-left"
-                    >
-                      <p className="text-sm font-semibold text-slate-900">{item.name}</p>
-                      <p className="text-xs text-slate-500">
-                        {CLINICAL_TREATMENT_KIND_LABELS[item.kind]}
-                        {already ? " · Ya agregado" : ""}
-                      </p>
-                    </button>
-                    {favorites ? (
-                      <FavoriteStarButton
-                        active={starred}
-                        label={item.name}
-                        onToggle={() => void favorites.toggleTreatmentFavorite(payload)}
-                      />
-                    ) : null}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
         ) : null}
 
         <p className="drflow-clinical-combobox-hint text-xs">

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { ClinicalFavoritesProvider } from "@/features/historias/components/historias/clinical-favorites-provider";
+import { ClinicalTreatmentAutocomplete } from "@/features/historias/components/historias/clinical-treatment-autocomplete";
 import { MedicationAutocomplete } from "@/features/historias/components/historias/medication-autocomplete";
 import type { ClinicalTreatmentEntry } from "@/features/historias/utils/clinical-structured-entries";
 import { medicationsToTreatmentEntries } from "@/features/historias/utils/clinical-structured-entries";
@@ -26,6 +27,7 @@ function toLocalDateInput(value = new Date()): string {
 }
 
 export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, saving }: Props) {
+  const [catalogTreatments, setCatalogTreatments] = useState<ClinicalTreatmentEntry[]>([]);
   const [medications, setMedications] = useState<PrescriptionMedication[]>([]);
   const [product, setProduct] = useState("");
   const [activeIngredient, setActiveIngredient] = useState("");
@@ -41,6 +43,7 @@ export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, savin
 
   const dirty = useMemo(
     () =>
+      catalogTreatments.length > 0 ||
       medications.length > 0 ||
       Boolean(
         product.trim() ||
@@ -54,6 +57,7 @@ export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, savin
           endedOn
       ),
     [
+      catalogTreatments,
       medications,
       product,
       activeIngredient,
@@ -68,6 +72,19 @@ export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, savin
   );
 
   function touch() {
+    onDirtyChange(true);
+  }
+
+  function handleCatalogTreatmentsChange(next: ClinicalTreatmentEntry[]) {
+    setCatalogTreatments(next);
+    const last = next.at(-1);
+    if (last) {
+      setProduct(last.product);
+      setActiveIngredient(last.active_ingredient || last.product);
+      if (last.dose) setDose(last.dose);
+      if (last.frequency) setFrequency(last.frequency);
+      if (last.status) setStatus(last.status);
+    }
     onDirtyChange(true);
   }
 
@@ -86,7 +103,7 @@ export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, savin
 
   async function handleSave() {
     const fromMeds = medicationsToTreatmentEntries(medications);
-    const base = fromMeds[0];
+    const base = catalogTreatments[0] ?? fromMeds[0];
     const productName = (base?.product || product).trim();
     if (!productName) return;
 
@@ -107,8 +124,9 @@ export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, savin
         notes: noteParts.join(" · ") || undefined,
         status,
         active_ingredient: (activeIngredient || base?.active_ingredient || "").trim() || undefined,
-        kind: "medication",
-        category: "Medicamento",
+        kind: base?.kind ?? (medications.length > 0 ? "medication" : "free_text"),
+        category: base?.category ?? (medications.length > 0 ? "Medicamento" : "Texto libre"),
+        clinical_treatment_id: base?.clinical_treatment_id ?? null,
         vademecum_code: base?.vademecum_code ?? null,
         catalog_source: base?.catalog_source ?? null,
         quantity: base?.quantity,
@@ -119,14 +137,20 @@ export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, savin
 
   return (
     <ClinicalFavoritesProvider>
-      <div className="drapp-consulta-quick-panel relative z-20 space-y-3 border-t border-[#efe6b8] bg-white p-3 overflow-visible">
+      <div className="drapp-consulta-quick-panel relative z-20 space-y-3 overflow-visible border-t border-[#efe6b8] bg-white p-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           + Tratamiento
         </p>
+        <ClinicalTreatmentAutocomplete
+          treatments={catalogTreatments}
+          onTreatmentsChange={handleCatalogTreatmentsChange}
+          label="Buscar tratamiento"
+          placeholder="Ej. IECA, amlodipina, antiinflamatorio, dieta…"
+        />
         <MedicationAutocomplete
           medications={medications}
           onMedicationsChange={handleMedicationsChange}
-          label="Buscar medicamento"
+          label="Buscar medicamento (vademécum)"
           placeholder="Ej. AMOX, enalapril, amlodipina…"
         />
         <div className="grid gap-2 sm:grid-cols-2">
@@ -238,13 +262,12 @@ export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, savin
             type="button"
             size="sm"
             loading={saving}
-            disabled={!product.trim() && medications.length === 0}
+            disabled={!product.trim() && medications.length === 0 && catalogTreatments.length === 0}
             onClick={() => void handleSave()}
           >
             Guardar
           </Button>
         </div>
-        {/* keep dirty flag synced for parent */}
         <span className="sr-only">{dirty ? "dirty" : "clean"}</span>
       </div>
     </ClinicalFavoritesProvider>

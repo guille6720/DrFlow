@@ -7,6 +7,7 @@ import { FloatingAnchorPanel } from "@/core/components/ui/floating-anchor-panel"
 
 import { cn } from "@/shared/utils/cn";
 
+import { searchClinicalTreatments } from "@/features/historias/actions/clinical-treatments";
 import { useClinicalFavoritesOptional } from "@/features/historias/components/historias/clinical-favorites-provider";
 import { ClinicalFavoritesQuickList } from "@/features/historias/components/historias/clinical-favorites-quick-list";
 import { ClinicalRecentUsageQuickList } from "@/features/historias/components/historias/clinical-recent-usage-quick-list";
@@ -17,6 +18,8 @@ import {
   medicationFavoriteFingerprint,
 } from "@/features/historias/types/clinical-favorites";
 import type { ClinicalRecentUsageRow } from "@/features/historias/types/clinical-recent-usage";
+import type { ClinicalTreatmentCatalogHit } from "@/features/historias/types/clinical-treatment-catalog";
+import { CLINICAL_TREATMENT_KIND_LABELS } from "@/features/historias/types/clinical-treatment-catalog";
 import {
   catalogToMedicationSelection,
   formatVademecumPrescriptionSubtitle,
@@ -131,7 +134,26 @@ type ListItem =
   | { source: "favorite"; key: string; payload: ClinicalFavoriteMedicationPayload }
   | { source: "recent"; key: string; payload: ClinicalFavoriteMedicationPayload }
   | { source: "separator"; key: string }
-  | { source: "catalog"; key: string; item: MedicationCatalogResult };
+  | { source: "catalog"; key: string; item: MedicationCatalogResult }
+  | { source: "clinical"; key: string; item: ClinicalTreatmentCatalogHit };
+
+function clinicalToMedication(item: ClinicalTreatmentCatalogHit): PrescriptionMedication {
+  return {
+    generic_name: item.name,
+    active_ingredient: item.name,
+    brand_name: "",
+    presentation: "",
+    concentration: "",
+    pharmaceutical_form: "",
+    quantity: 0,
+    posology: "",
+    dose: "",
+    frequency: "",
+    route: "",
+    instructions: "",
+    search_source: "manual",
+  };
+}
 
 export function MedicationAutocomplete({
   medications,
@@ -150,6 +172,8 @@ export function MedicationAutocomplete({
   const favorites = useClinicalFavoritesOptional();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MedicationCatalogResult[]>([]);
+  const [clinicalResults, setClinicalResults] = useState<ClinicalTreatmentCatalogHit[]>([]);
+  const [catalogEmpty, setCatalogEmpty] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -196,30 +220,70 @@ export function MedicationAutocomplete({
       })
       .map((item) => ({ source: "catalog" as const, key: `cat:${item.id}`, item }));
 
-    const prioritized = [...favoriteItems, ...recentItems];
-    if (prioritized.length > 0 && catalogItems.length > 0) {
-      return [...prioritized, { source: "separator", key: "sep" }, ...catalogItems];
+    for (const item of catalogItems) {
+      if (item.source === "catalog") {
+        seen.add(
+          medicationFavoriteFingerprint({
+            generic_name: catalogToMedicationSelection(item.item).generic_name,
+            brand_name: catalogToMedicationSelection(item.item).brand_name,
+            presentation: catalogToMedicationSelection(item.item).presentation,
+            vademecum_code: catalogToMedicationSelection(item.item).vademecum_code,
+          })
+        );
+      }
     }
-    return [...prioritized, ...catalogItems];
-  }, [favorites, query, results]);
+
+    const clinicalItems: ListItem[] = clinicalResults
+      .filter((item) => {
+        const draft = clinicalToMedication(item);
+        return !seen.has(medicationFavoriteFingerprint(payloadFromMed(draft)));
+      })
+      .map((item) => ({ source: "clinical" as const, key: `clin:${item.id}`, item }));
+
+    const remoteItems = [...catalogItems, ...clinicalItems];
+    const prioritized = [...favoriteItems, ...recentItems];
+    if (prioritized.length > 0 && remoteItems.length > 0) {
+      return [...prioritized, { source: "separator", key: "sep" }, ...remoteItems];
+    }
+    return [...prioritized, ...remoteItems];
+  }, [clinicalResults, favorites, query, results]);
 
   const search = useCallback(async (q: string) => {
     if (q.trim().length < MIN_QUERY_LENGTH) {
       setResults([]);
+      setClinicalResults([]);
+      setCatalogEmpty(false);
       setError(null);
       return;
     }
     setLoading(true);
     setError(null);
     const res = await searchMedicationCatalog(q);
-    setLoading(false);
     if (res.error) {
+      setLoading(false);
       setError(res.error);
       setResults([]);
-    } else {
-      setResults(res.data ?? []);
-      setHighlight(0);
+      setClinicalResults([]);
+      setCatalogEmpty(false);
+      return;
     }
+
+    const meds = res.data ?? [];
+    setResults(meds);
+    setCatalogEmpty(meds.length === 0);
+
+    if (meds.length === 0) {
+      const clinical = await searchClinicalTreatments(q, { limit: 12, kind: "pharmacologic" });
+      setClinicalResults(clinical.data ?? []);
+      if (clinical.error && !meds.length) {
+        setError(clinical.error);
+      }
+    } else {
+      setClinicalResults([]);
+    }
+
+    setHighlight(0);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -258,12 +322,17 @@ export function MedicationAutocomplete({
     void favorites?.rememberMedicationUsage(payloadFromMed(med));
     setQuery("");
     setResults([]);
+    setClinicalResults([]);
     setOpen(false);
     internalSearchRef.current?.focus();
   }
 
   function handleSelect(item: MedicationCatalogResult) {
     addMedication(catalogToMedicationSelection(item));
+  }
+
+  function handleSelectClinical(item: ClinicalTreatmentCatalogHit) {
+    addMedication(clinicalToMedication(item));
   }
 
   function handleSelectFavorite(payload: ClinicalFavoriteMedicationPayload) {
@@ -312,6 +381,7 @@ export function MedicationAutocomplete({
       const item = listItems[highlight];
       if (item?.source === "favorite" || item?.source === "recent") handleSelectFavorite(item.payload);
       else if (item?.source === "catalog") handleSelect(item.item);
+      else if (item?.source === "clinical") handleSelectClinical(item.item);
     } else if (event.key === "Escape") {
       setOpen(false);
     }
@@ -370,10 +440,16 @@ export function MedicationAutocomplete({
                 {error}
               </p>
             ) : null}
+            {!loading && !error && catalogEmpty && clinicalResults.length > 0 ? (
+              <p className="border-b border-slate-100 px-3 py-2 text-xs font-medium text-slate-700">
+                Vademécum sin productos. Mostrando clases terapéuticas del catálogo clínico.
+              </p>
+            ) : null}
             {!loading && !error && listItems.length === 0 ? (
               <p className="px-3 py-2 text-xs font-medium text-slate-700">
-                Sin resultados para &quot;{query}&quot;. Probá con más letras (ej: amoxi) o usá &quot;+
-                Agregar medicamento&quot; para carga manual.
+                {catalogEmpty
+                  ? `Sin resultados para "${query}". El vademécum parece vacío; usá "Buscar tratamiento" arriba o "+ Agregar medicamento".`
+                  : `Sin resultados para "${query}". Probá con más letras (ej: amoxi) o usá "+ Agregar medicamento".`}
               </p>
             ) : null}
             {!loading && listItems.length > 0 ? (
@@ -439,6 +515,57 @@ export function MedicationAutocomplete({
                                 )
                               )}
                               label={payload.generic_name}
+                              onToggle={() => void favorites.toggleMedicationFavorite(payload)}
+                            />
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  }
+
+                  if (entry.source === "clinical") {
+                    const item = entry.item;
+                    const draft = clinicalToMedication(item);
+                    const alreadyAdded = existingKeys.has(medicationIdentityKey(draft));
+                    const payload = payloadFromMed(draft);
+                    return (
+                      <li key={entry.key} role="presentation">
+                        <div
+                          className={cn(
+                            "flex w-full items-start gap-2 px-3 py-2",
+                            index === highlight && "bg-sky-500/10",
+                            alreadyAdded && "opacity-50"
+                          )}
+                          onMouseEnter={() => setHighlight(index)}
+                        >
+                          <button
+                            type="button"
+                            role="option"
+                            aria-selected={index === highlight}
+                            disabled={alreadyAdded}
+                            onClick={() => handleSelectClinical(item)}
+                            className="min-w-0 flex-1 text-left"
+                          >
+                            <p className="text-sm font-semibold uppercase tracking-wide text-slate-900">
+                              {item.name}
+                            </p>
+                            <p className="text-xs text-slate-600">
+                              {CLINICAL_TREATMENT_KIND_LABELS[item.kind]}
+                              {item.category ? ` · ${item.category}` : ""}
+                            </p>
+                            {alreadyAdded ? (
+                              <p className="drflow-clinical-combobox-option-added mt-0.5">Ya agregado</p>
+                            ) : null}
+                          </button>
+                          {favorites ? (
+                            <FavoriteStarButton
+                              active={Boolean(
+                                favorites.isFavorite(
+                                  "medication",
+                                  medicationFavoriteFingerprint(payload)
+                                )
+                              )}
+                              label={item.name}
                               onToggle={() => void favorites.toggleMedicationFavorite(payload)}
                             />
                           ) : null}

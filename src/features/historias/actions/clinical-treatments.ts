@@ -18,7 +18,10 @@ export async function searchClinicalTreatments(
   if (!user) return { error: "Sesión requerida" };
 
   const { role, isSuperadmin } = await getActiveClinic();
-  if (!hasPermission(role, "viewClinicalRecords", isSuperadmin)) {
+  if (
+    !hasPermission(role, "viewClinicalRecords", isSuperadmin) &&
+    !hasPermission(role, "editClinicalRecords", isSuperadmin)
+  ) {
     return { error: "Sin permisos para buscar tratamientos" };
   }
 
@@ -33,7 +36,10 @@ export async function searchClinicalTreatments(
   });
 
   if (error) {
-    return { error: "No se pudo buscar en el catálogo de tratamientos." };
+    return {
+      error:
+        "No se pudo buscar en el catálogo de tratamientos. ¿Está aplicada la migración 113 en Supabase?",
+    };
   }
 
   return {
