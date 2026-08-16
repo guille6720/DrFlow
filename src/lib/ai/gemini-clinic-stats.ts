@@ -54,7 +54,7 @@ export type GeminiClinicStatsResult = {
 };
 
 const STATS_HINT =
-  /cu[aá]nt[oa]s?|cantidad|listad[oa]|lista\s+de|estad[ií]st|ranking|promedio|porcentaje|atendid|consultas?\s+(este|esta|hoy|del|de\s+este)|pacientes?\s+con|este\s+mes|esta\s+semana|hoy\b|ayer\b|este\s+a[nñ]o|mes\s+pasado|m[aá]s\s+frecuentes|diagn[oó]sticos?\s+m[aá]s|candidat|protocolo|estudio\s+|deriv(ar|aci[oó]n)|maritime|gzmr|gzpw|presto|theseus|ekgb|muvalaplin|bax.?d[uú]o|bronquiect|polaris|zenagamtide|azure|orforglipr|cagrisema|ascvd|hfpef|hfmref|lp\(?a\)?/i;
+  /cu[aá]nt[oa]s?|cantidad|listad[oa]|lista\s+de|estad[ií]st|ranking|promedio|porcentaje|atendid|consultas?\s+(este|esta|hoy|del|de\s+este)|pacientes?\s+con|este\s+mes|esta\s+semana|hoy\b|ayer\b|este\s+a[nñ]o|mes\s+pasado|m[aá]s\s+frecuentes|diagn[oó]sticos?\s+m[aá]s|candidat|protocolo|estudio\s+|deriv(ar|aci[oó]n)|maritime|gzmr|gzpw|presto|theseus|ekgb|muvalaplin|bax.?d[uú]o|bronquiect|polaris|zenagamtide|zenith|nct07181109|hta\s+no\s+control|azure|orforglipr|cagrisema|ascvd|hfpef|hfmref|lp\(?a\)?/i;
 
 const CLINICAL_ONLY_HINT =
   /evoluci[oó]n|resumen\s+del\s+paciente|motivo\s+de\s+consulta|redact[aá]|soap|alertas?\s+de\s+seguimiento/i;

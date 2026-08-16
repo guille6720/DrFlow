@@ -9,13 +9,15 @@ export type RelatedActionKind =
   | "lab"
   | "study"
   | "interconsult"
-  | "conduct";
+  | "conduct"
+  | "pharmacologic"
+  | "non_pharmacologic";
 
 /** Qué ocurre SOLO tras confirmación explícita del profesional. */
 export type RelatedActionApplyAs = {
   type: "clinical_treatment";
   product: string;
-  treatmentKind: "conduct" | "non_pharmacologic";
+  treatmentKind: "conduct" | "non_pharmacologic" | "pharmacologic";
   category: string;
 };
 

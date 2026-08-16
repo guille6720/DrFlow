@@ -97,6 +97,62 @@ export const RELATED_ACTION_DEFINITIONS: Record<string, RelatedActionDefinition>
       category: "Estudio",
     },
   },
+  antihipertensivo: {
+    id: "antihipertensivo",
+    label: "Antihipertensivo",
+    kind: "pharmacologic",
+    applyAs: {
+      type: "clinical_treatment",
+      product: "Antihipertensivo",
+      treatmentKind: "pharmacologic",
+      category: "Farmacológicos",
+    },
+  },
+  diuretico: {
+    id: "diuretico",
+    label: "Diurético",
+    kind: "pharmacologic",
+    applyAs: {
+      type: "clinical_treatment",
+      product: "Diurético",
+      treatmentKind: "pharmacologic",
+      category: "Farmacológicos",
+    },
+  },
+  dieta_hiposodica: {
+    id: "dieta_hiposodica",
+    label: "Dieta hiposódica",
+    kind: "non_pharmacologic",
+    applyAs: {
+      type: "clinical_treatment",
+      product: "Dieta hiposódica",
+      treatmentKind: "non_pharmacologic",
+      category: "No farmacológicos",
+    },
+  },
+  optimizar_hta: {
+    id: "optimizar_hta",
+    label: "Optimizar antihipertensivos",
+    kind: "conduct",
+    applyAs: {
+      type: "clinical_treatment",
+      product: "Optimizar antihipertensivos",
+      treatmentKind: "conduct",
+      category: "Conductas",
+    },
+  },
+  evaluar_zenith: {
+    id: "evaluar_zenith",
+    label: "Evaluar estudio ZENITH",
+    kind: "conduct",
+    hint: "Screening HTA no controlada NCT07181109",
+    applyAs: {
+      type: "clinical_treatment",
+      product: "Evaluar estudio ZENITH",
+      treatmentKind: "conduct",
+      category: "Conductas",
+    },
+  },
 };
 
 /**
@@ -118,9 +174,14 @@ export const DIAGNOSIS_ASSOCIATION_RULES: DiagnosisAssociationRule[] = [
     },
     actionIds: [
       "control_pa",
+      "antihipertensivo",
+      "diuretico",
+      "optimizar_hta",
+      "dieta_hiposodica",
       "solicitar_laboratorio",
       "ecg",
       "mapa",
+      "evaluar_zenith",
       "interconsulta",
     ],
   },

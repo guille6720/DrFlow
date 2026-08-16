@@ -21,6 +21,7 @@ describe("gemini medical lexicon", () => {
         "ekgb",
         "gzpw",
         "maritime-cv",
+        "zenith",
         "maritime-hf",
         "hf-polaris",
         "azure",
@@ -31,8 +32,13 @@ describe("gemini medical lexicon", () => {
   it("indexes key clinical terms from flyers", () => {
     const labels = GEMINI_LEXICON_CONDITIONS.map((c) => c.id);
     expect(labels).toEqual(
-      expect.arrayContaining(["asma", "epoc", "bronquiectasias", "ascvd", "ic", "erc", "obesidad"])
+      expect.arrayContaining(["asma", "epoc", "bronquiectasias", "ascvd", "ic", "erc", "obesidad", "hta"])
     );
+  });
+
+  it("resolves ZENITH protocol aliases", () => {
+    expect(findProtocolByMessage(foldMedicalText("protocolo zenith hta"))?.id).toBe("zenith");
+    expect(findProtocolByMessage(foldMedicalText("nct07181109"))?.id).toBe("zenith");
   });
 
   it("formats protocol criteria for Gemini context", () => {

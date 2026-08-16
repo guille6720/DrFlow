@@ -89,25 +89,14 @@ const WaitingRoomCard = memo(function WaitingRoomCard({
       </p>
       <div className="mt-2 flex flex-wrap gap-1">
         {columnValue === "waiting" ? (
-          <>
-            <Button
-              size="sm"
-              type="button"
-              disabled={pending}
-              onClick={() => onMove(row.id, "confirmed")}
-            >
-              Confirmar → Consultas
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              type="button"
-              disabled={pending}
-              onClick={() => onMove(row.id, "absent")}
-            >
-              Ausente
-            </Button>
-          </>
+          <Button
+            size="sm"
+            type="button"
+            disabled={pending}
+            onClick={() => onMove(row.id, "confirmed")}
+          >
+            Confirmar → Consultas
+          </Button>
         ) : null}
         {columnValue === "confirmed" ? (
           <Button

@@ -7,9 +7,12 @@ export type DrappQuickPanelId =
   | "diagnostico"
   | "tratamiento"
   | "vitales"
+  | "protocolos"
   | null;
 
-function panelDirtyMessage(panel: Exclude<DrappQuickPanelId, null | "evolucion">): string {
+function panelDirtyMessage(
+  panel: Exclude<DrappQuickPanelId, null | "evolucion" | "protocolos">
+): string {
   if (panel === "diagnostico") return "Hay un diagnóstico sin guardar. ¿Descartarlo?";
   if (panel === "tratamiento") return "Hay un tratamiento sin guardar. ¿Descartarlo?";
   return "Hay signos vitales sin guardar. ¿Descartarlos?";
@@ -23,7 +26,7 @@ export function useDrappQuickPanel(initial: DrappQuickPanelId = "evolucion") {
   const requestOpen = useCallback(
     (next: DrappQuickPanelId) => {
       if (next === openPanel) {
-        if (dirty && openPanel && openPanel !== "evolucion") {
+        if (dirty && openPanel && openPanel !== "evolucion" && openPanel !== "protocolos") {
           if (!window.confirm(panelDirtyMessage(openPanel))) return;
         }
         setDirty(false);
@@ -31,7 +34,7 @@ export function useDrappQuickPanel(initial: DrappQuickPanelId = "evolucion") {
         return;
       }
 
-      if (dirty && openPanel && openPanel !== "evolucion") {
+      if (dirty && openPanel && openPanel !== "evolucion" && openPanel !== "protocolos") {
         if (!window.confirm(panelDirtyMessage(openPanel))) return;
       }
       setDirty(false);
@@ -41,7 +44,7 @@ export function useDrappQuickPanel(initial: DrappQuickPanelId = "evolucion") {
   );
 
   const closePanel = useCallback(() => {
-    if (dirty && openPanel && openPanel !== "evolucion") {
+    if (dirty && openPanel && openPanel !== "evolucion" && openPanel !== "protocolos") {
       if (!window.confirm(panelDirtyMessage(openPanel))) return false;
     }
     setDirty(false);

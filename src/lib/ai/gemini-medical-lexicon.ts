@@ -412,6 +412,61 @@ export const GEMINI_CLINICAL_PROTOCOLS: GeminiClinicalProtocol[] = [
     conditionIds: ["ascvd", "obesidad"],
   },
   {
+    id: "zenith",
+    label: "ZENITH — HTA no controlada (NCT07181109)",
+    aliases: [
+      "zenith",
+      "estudio zenith",
+      "protocolo zenith",
+      "nct07181109",
+      "hta no controlada",
+      "hipertension no controlada",
+    ],
+    area: "cardiometabolico",
+    summary:
+      "HTA ≥ 140/90 pese a ≥ 2 antihipertensivos (incluye diurético) + ECV establecida (≥ 18) o alto riesgo CV (≥ 55).",
+    inclusion: [
+      "HTA no controlada: PA ≥ 140/90 mmHg pese a tratamiento estable con ≥ 2 antihipertensivos, incluyendo un diurético",
+      "Situación 1 — ECV establecida (≥ 18 años) con ≥ 1 de: IAM o revascularización coronaria; ACV/AIT; enfermedad arterial periférica",
+      "Situación 2 — Alto riesgo CV (≥ 55 años) con ≥ 2 de: edad ≥ 70; eGFR < 60; UACR > 300 mg/g; tabaquismo activo; FA en tratamiento; CAC > 100 Agatston; NT-proBNP > 125 pg/mL; DM1/DM2 y/o obesidad (IMC ≥ 30)",
+    ],
+    exclusion: [
+      "Hipertensión secundaria conocida",
+      "eGFR < 30 mL/min/1.73 m²",
+      "Hipotensión ortostática sintomática",
+      "Potasio > 4.8 mEq/L",
+      "AST/ALT > 3× LSN",
+      "Bilirrubina total > 1.5× LSN",
+      "INR > 1.5",
+      "ECV no estable: IAM, ACV o arritmia significativa < 6 meses",
+      "Cáncer activo o tratamiento oncológico < 5 años (excepto cáncer de piel no melanoma curado)",
+      "Embarazo, lactancia o intención de embarazo durante el estudio",
+    ],
+    candidateNeedles: [
+      "hipertens",
+      "hta",
+      "140/90",
+      "antihipertens",
+      "diuretico",
+      "diurético",
+      "infarto",
+      "iam",
+      "revasculariz",
+      "acv",
+      "ait",
+      "arterial periferica",
+      "egfr",
+      "uacr",
+      "tabaquismo",
+      "fibrilacion auricular",
+      "nt-probnp",
+      "obesidad",
+      "imc",
+      "diabetes",
+    ],
+    conditionIds: ["hta", "ascvd", "erc", "diabetes", "obesidad"],
+  },
+  {
     id: "maritime-hf",
     label: "MARITIME-HF — IC + obesidad",
     aliases: ["maritime-hf", "maritime hf", "cagrisema hf", "ic obesidad"],
@@ -530,6 +585,26 @@ export function formatProtocolCatalogForPrompt(protocol?: GeminiClinicalProtocol
       return lines.filter(Boolean).join("\n");
     })
     .join("\n\n");
+}
+
+/** Texto listo para insertar en evolución desde Consultas. */
+export function formatProtocolNoteForEvolution(protocol: GeminiClinicalProtocol): string {
+  const lines = [
+    `Protocolo ${protocol.label}`,
+    protocol.summary,
+    "",
+    "Inclusión:",
+    ...protocol.inclusion.map((item) => `• ${item}`),
+  ];
+  if (protocol.exclusion.length > 0) {
+    lines.push("", "Exclusión principal:");
+    lines.push(...protocol.exclusion.map((item) => `• ${item}`));
+  }
+  lines.push(
+    "",
+    "Nota: la elegibilidad final la determina el equipo del estudio según protocolo completo."
+  );
+  return lines.join("\n");
 }
 
 export function formatLexiconTermsForPrompt(): string {

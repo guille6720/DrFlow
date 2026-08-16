@@ -9,6 +9,7 @@ import { cn } from "@/shared/utils/cn";
 
 import { DrappConsultaFullModal } from "@/features/historias/components/consultas/drapp-consulta-full-modal";
 import { DrappDiagnosisQuickForm } from "@/features/historias/components/consultas/drapp-diagnosis-quick-form";
+import { DrappProtocolsQuickPanel } from "@/features/historias/components/consultas/drapp-protocols-quick-panel";
 import { DrappTreatmentQuickForm } from "@/features/historias/components/consultas/drapp-treatment-quick-form";
 import { DrappVitalsHistory } from "@/features/historias/components/consultas/drapp-vitals-history";
 import { DrappVitalsQuickForm } from "@/features/historias/components/consultas/drapp-vitals-quick-form";
@@ -579,6 +580,13 @@ function DrappConsultaWorkspaceInner({
                   Signos vitales
                 </DrappActionLink>
                 <DrappActionLink
+                  active={openPanel === "protocolos"}
+                  onClick={() => requestOpen("protocolos")}
+                  showPlus={false}
+                >
+                  Protocolos
+                </DrappActionLink>
+                <DrappActionLink
                   active={fullModalOpen}
                   onClick={() => {
                     if (openPanel && openPanel !== "evolucion") {
@@ -663,6 +671,21 @@ function DrappConsultaWorkspaceInner({
                     void closePanel();
                   }}
                   onSave={handleSaveVitals}
+                />
+              ) : null}
+
+              {openPanel === "protocolos" ? (
+                <DrappProtocolsQuickPanel
+                  onCancel={() => {
+                    void closePanel();
+                  }}
+                  onInsertIntoEvolution={(text) => {
+                    const trimmed = evolution.trim();
+                    setEvolution(trimmed ? `${trimmed}\n\n${text}` : text);
+                    requestOpen("evolucion");
+                    queueMicrotask(() => evolutionRef.current?.focus());
+                    toast.success("Protocolo insertado en evolución");
+                  }}
                 />
               ) : null}
 
