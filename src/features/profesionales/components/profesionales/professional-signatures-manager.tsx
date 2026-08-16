@@ -144,7 +144,7 @@ export function ProfessionalSignaturesManager({ professionals, canManageAll }: P
 
   return (
     <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
-      <Card className="drflow-light-sidebar-panel h-fit">
+      <Card className="drflow-light-sidebar-panel drflow-card-light h-fit border-slate-200 bg-white">
         <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-800">
           Profesionales
         </p>
@@ -159,12 +159,17 @@ export function ProfessionalSignaturesManager({ professionals, canManageAll }: P
                   className={cn(
                     "w-full rounded-lg px-3 py-2 text-left text-sm transition",
                     selected?.id === pro.id
-                      ? "bg-blue-100 font-medium text-blue-950"
+                      ? "bg-teal-100 font-medium text-teal-950"
                       : "text-slate-800 hover:bg-slate-100"
                   )}
                 >
                   <span className="block">{getProfessionalDisplayName(pro)}</span>
-                  <span className="mt-0.5 block text-xs text-slate-600">
+                  <span
+                    className={cn(
+                      "mt-0.5 block text-xs",
+                      selected?.id === pro.id ? "text-teal-800" : "text-slate-600"
+                    )}
+                  >
                     {hasSignature ? "Firma configurada" : "Sin firma"}
                   </span>
                 </button>
@@ -181,11 +186,11 @@ export function ProfessionalSignaturesManager({ professionals, canManageAll }: P
             que requieran firma del profesional.
           </p>
 
-          <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-700">
+          <div className="drflow-card-light mb-6 rounded-lg border border-slate-200 bg-white p-4">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-800">
               Vista previa
             </p>
-            <div className="min-h-[88px] rounded-md border border-dashed border-slate-300 bg-white px-4 py-3">
+            <div className="min-h-[88px] rounded-md border border-dashed border-slate-300 bg-slate-50 px-4 py-3">
               {selected.signature_image_url ? (
                 <SignatureImage
                   src={selected.signature_image_url}
@@ -213,7 +218,7 @@ export function ProfessionalSignaturesManager({ professionals, canManageAll }: P
               </Button>
             </div>
 
-            <div className="rounded-lg border border-slate-200 p-4">
+            <div className="drflow-card-light rounded-lg border border-slate-200 bg-white p-4">
               <div className="mb-3 flex items-center gap-2">
                 <PenLine className="h-4 w-4 text-slate-600" />
                 <p className="text-sm font-medium text-slate-900">Imagen de firma (opcional)</p>

@@ -454,6 +454,38 @@ html[data-ui-style="2"] .drflow-ui-card {
   box-shadow: none;
 }
 
+/* Islas claras: no heredar fondo oscuro de .drflow-ui-card */
+html[data-ui-style="2"] .drflow-ui-card.drflow-card-light,
+html[data-ui-style="2"] .drflow-ui-card.bg-white,
+html[data-ui-style="2"] .drflow-ui-card.drflow-light-sidebar-panel {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html[data-ui-style="2"] .drflow-ui-card.drflow-card-light .drflow-ui-card-title,
+html[data-ui-style="2"] .drflow-ui-card.bg-white .drflow-ui-card-title,
+html[data-ui-style="2"] .drflow-ui-card.drflow-light-sidebar-panel .drflow-ui-card-title {
+  color: #0f172a !important;
+}
+
+html[data-ui-style="2"] .drflow-ui-card.drflow-card-light .drflow-ui-card-desc,
+html[data-ui-style="2"] .drflow-ui-card.bg-white .drflow-ui-card-desc,
+html[data-ui-style="2"] .drflow-ui-card.drflow-light-sidebar-panel .drflow-ui-card-desc {
+  color: #475569 !important;
+}
+
+/* Firmas / listas: subtítulo legible en ítem seleccionado (isla clara) */
+html[data-ui-style="2"] .drflow-light-sidebar-panel button.bg-teal-100 .text-teal-800,
+html[data-ui-style="2"] .drflow-light-sidebar-panel button.bg-blue-100 .text-blue-800 {
+  color: #115e59 !important;
+}
+
+html[data-ui-style="2"] .drflow-light-sidebar-panel button.bg-teal-100,
+html[data-ui-style="2"] .drflow-light-sidebar-panel button.bg-blue-100 {
+  color: #134e4a !important;
+}
+
 html[data-ui-style="2"] .drflow-ui-card-header {
   border-bottom: 1px solid var(--border);
 }
@@ -1325,6 +1357,7 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main :is(.bg-white,
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95):not(button):not(.drflow-ui-button),
 html:not([data-ui-style="2"]) .drflow-mesh .drflow-card-light,
 html:not([data-ui-style="2"]) .drflow-mesh main :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-white\/95):not(button):not(.drflow-ui-button) {
+  background-color: #ffffff !important;
   color: #0f172a !important;
 }
 
