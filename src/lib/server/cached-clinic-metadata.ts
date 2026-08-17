@@ -1,5 +1,6 @@
 import {
   clinicClinicalTemplatesTag,
+  clinicCoverageRulesTag,
   clinicFeatureFlagsTag,
   clinicLocationsTag,
   clinicPamiPlanillasTag,
@@ -280,6 +281,26 @@ export async function loadPamiPlanillaCatalogCached(clinicId: string) {
         "@/features/pami/services/pami-planilla-templates.service"
       );
       return loadPamiPlanillaCatalog(supabase, clinicId);
+    }
+  );
+}
+
+/** Clinic-level prescription coverage overrides — not PHI. */
+export async function loadClinicCoverageRulesCached(clinicId: string) {
+  return withClinicMetadataCache(
+    {
+      key: "coverage-rules",
+      clinicId,
+      tag: clinicCoverageRulesTag(clinicId),
+      revalidate: CLINIC_METADATA_TTL.coverageRules,
+    },
+    async (supabase) => {
+      const { data } = await supabase
+        .from("coverage_rules")
+        .select("id, coverage_kind, rules, active")
+        .eq("clinic_id", clinicId)
+        .eq("active", true);
+      return data ?? [];
     }
   );
 }

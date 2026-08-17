@@ -36,6 +36,15 @@ describe("patient workspace fetch plan", () => {
   });
 });
 
+describe("turnos dashboard scan caps", () => {
+  it("keeps today and fallback scans bounded", async () => {
+    const pagination = await import("@/core/supabase/pagination");
+    expect(pagination.TURNOS_TODAY_SCAN_MAX).toBe(200);
+    expect(pagination.TURNOS_REPORT_FALLBACK_MAX).toBe(1500);
+    expect(pagination.AVAILABILITY_RULES_MAX).toBe(400);
+  });
+});
+
 describe("dashboard loader split", () => {
   it("core and secondary query groups are disjoint", () => {
     expect(fetchDashboardCoreQueries).toBeTypeOf("function");

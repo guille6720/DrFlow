@@ -10,6 +10,7 @@ import {
 import {
   loadClinicClinicalTemplatesAdminCached,
   loadClinicClinicalTemplatesCached,
+  loadClinicCoverageRulesCached,
   loadClinicFeatureFlagsCached,
   loadClinicLocationsCached,
   loadClinicPluginsCached,
@@ -100,6 +101,11 @@ export const getCachedClinicSettings = cache(async (clinicId: string) => {
 /** Per-request dedupe for PAMI planilla catalog (categories + templates). */
 export const getCachedPamiPlanillaCatalog = cache(async (clinicId: string) => {
   return loadPamiPlanillaCatalogCached(clinicId);
+});
+
+/** Clinic coverage rule overrides for prescriptions — metadata, not PHI. */
+export const getCachedClinicCoverageRules = cache(async (clinicId: string) => {
+  return loadClinicCoverageRulesCached(clinicId);
 });
 
 /** Empty features context when no clinic is selected. */

@@ -12,12 +12,14 @@ export type ClinicalIssueAccess = {
 export async function requireClinicalIssueAccess(options?: {
   deniedMessage?: string;
 }): Promise<ServiceResult<ClinicalIssueAccess>> {
-  const user = await getSession();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const [user, clinicId, active] = await Promise.all([
+    getSession(),
+    getActiveClinicId(),
+    getActiveClinic(),
+  ]);
 
   if (!user || !clinicId) return serviceErr("Sesión requerida");
-  if (!hasPermission(role, "issuePrescriptions", isSuperadmin)) {
+  if (!hasPermission(active.role, "issuePrescriptions", active.isSuperadmin)) {
     return serviceErr(options?.deniedMessage ?? "Solo médicos pueden emitir recetas");
   }
 
@@ -40,13 +42,15 @@ export async function requireClinicalRecordAccess(
   | { error: null; clinicId: string; userId: string }
   | { error: "Sin permisos" | "Sesión requerida"; clinicId: null; userId: null }
 > {
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
   const permission = mode === "edit" ? "editClinicalRecords" : "viewClinicalRecords";
-  if (!clinicId || !hasPermission(role, permission, isSuperadmin)) {
+  const [clinicId, active, user] = await Promise.all([
+    getActiveClinicId(),
+    getActiveClinic(),
+    getSession(),
+  ]);
+  if (!clinicId || !hasPermission(active.role, permission, active.isSuperadmin)) {
     return { error: "Sin permisos", clinicId: null, userId: null };
   }
-  const user = await getSession();
   if (!user) return { error: "Sesión requerida", clinicId: null, userId: null };
   return { error: null, clinicId, userId: user.id };
 }

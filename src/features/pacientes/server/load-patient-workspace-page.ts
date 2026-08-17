@@ -39,7 +39,7 @@ import { getWorkspaceFetchPlan } from "@/features/pacientes/server/patient-works
 import { buildPatientChartPayload } from "@/features/pacientes/utils/patient-chart-model";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 import { loadPatientHceSummaryRows } from "@/features/pacientes/utils/patient-ehr-from-hce";
-import { loadActiveCoverageRulesForClinic } from "@/features/recetas/repositories/coverage-rules.repository";
+import type { CoverageRuleRow } from "@/features/recetas/repositories/coverage-rules.repository";
 import {
   buildCoverageRuleOverridesMap,
   type CoverageRuleOverridesMap,
@@ -47,6 +47,7 @@ import {
 
 import {
   getCachedClinicalTemplates,
+  getCachedClinicCoverageRules,
   getCachedClinicProfessionalsList,
   getCachedPortalContext,
 } from "@/lib/server/cached-clinic-queries";
@@ -204,7 +205,7 @@ export async function loadPatientWorkspacePageData(
         .limit(PATIENT_TIMELINE_APPOINTMENT_LIMIT)
     : Promise.resolve({ data: [] });
 
-  const coverageRulesPromise = loadActiveCoverageRulesForClinic(supabase, clinicId);
+  const coverageRulesPromise = getCachedClinicCoverageRules(clinicId);
   const hcePromise = plan.hceSummary
     ? loadPatientHceSummaryRows(supabase, clinicId, patientId)
     : Promise.resolve(null);
@@ -230,7 +231,7 @@ export async function loadPatientWorkspacePageData(
     professionals,
     clinicalProfileResult,
     templates,
-    coverageRulesResult,
+    coverageRules,
     hceRows,
     appShareResult,
     defaultProfessionalId,
@@ -345,8 +346,8 @@ export async function loadPatientWorkspacePageData(
   const mappedProfessionals = mapProfessionals(professionals);
 
   const coverageRuleOverrides =
-    coverageRulesResult.ok && coverageRulesResult.data.length > 0
-      ? buildCoverageRuleOverridesMap(coverageRulesResult.data)
+    coverageRules.length > 0
+      ? buildCoverageRuleOverridesMap(coverageRules as CoverageRuleRow[])
       : {};
 
   const tab = activeTab ?? "resumen";

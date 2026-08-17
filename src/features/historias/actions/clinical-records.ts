@@ -54,7 +54,6 @@ export async function createClinicalRecord(formData: FormData) {
   if (parsed.data.appointment_id) {
     revalidatePath("/agenda");
     revalidatePath("/dashboard");
-    revalidatePath("/atenciones");
   }
 
   void logAudit({

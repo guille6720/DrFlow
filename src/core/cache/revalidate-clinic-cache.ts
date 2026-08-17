@@ -2,6 +2,7 @@ import { updateTag } from "next/cache";
 
 import {
   clinicClinicalTemplatesTag,
+  clinicCoverageRulesTag,
   clinicFeatureFlagsTag,
   clinicLocationsTag,
   clinicMetadataTags,
@@ -46,7 +47,11 @@ export function revalidateClinicSettingsCache(clinicId: string): void {
   updateTag(clinicSettingsTag(clinicId));
 }
 
-/** Plugins, flags, portal, professionals, locations, specialties, templates. */
+export function revalidateClinicCoverageRulesCache(clinicId: string): void {
+  updateTag(clinicCoverageRulesTag(clinicId));
+}
+
+/** Plugins, flags, portal, professionals, locations, specialties, templates, coverage rules. */
 export function revalidateClinicMetadataCache(clinicId: string): void {
   for (const tag of clinicMetadataTags(clinicId)) {
     updateTag(tag);

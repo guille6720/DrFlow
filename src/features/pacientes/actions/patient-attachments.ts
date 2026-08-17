@@ -26,6 +26,17 @@ import { processClinicalPdfImport } from "@/lib/server/process-clinical-pdf-impo
 
 const BUCKET = "clinical-files";
 
+function revalidatePatientDocumentSurfaces(
+  patientId: string,
+  clinicalRecordId?: string | null
+) {
+  revalidatePath(`/pacientes/${patientId}`, "page");
+  revalidatePath("/consultas");
+  if (clinicalRecordId) {
+    revalidatePath(`/historias/${clinicalRecordId}`, "page");
+  }
+}
+
 const VALID_CATEGORIES = new Set<ClinicalDocumentCategory>([
   "historia_clinica",
   "estudio",
@@ -151,9 +162,7 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
           clinicalRecordId,
         },
       });
-      revalidatePath("/historias");
-      revalidatePath(`/pacientes/${patientParsed.data}`);
-      revalidatePath("/consultas");
+      revalidatePatientDocumentSurfaces(patientParsed.data, clinicalRecordId);
       return { success: true, id: retry.data.id };
     }
     await supabase.storage.from(BUCKET).remove([filePath]);
@@ -174,9 +183,7 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
     },
   });
 
-  revalidatePath("/historias");
-  revalidatePath(`/pacientes/${patientParsed.data}`);
-  revalidatePath("/consultas");
+  revalidatePatientDocumentSurfaces(patientParsed.data, clinicalRecordId);
   return { success: true, id: attachment.id };
 }
 
@@ -191,7 +198,7 @@ export async function deletePatientClinicalDocument(id: string) {
   const supabase = await createClient();
   const { data: attachment } = await supabase
     .from("patient_attachments")
-    .select("id, patient_id, file_path, file_name, category")
+    .select("id, patient_id, file_path, file_name, category, clinical_record_id")
     .eq("id", idParsed.data)
     .eq("clinic_id", auth.clinicId)
     .single();
@@ -220,8 +227,10 @@ export async function deletePatientClinicalDocument(id: string) {
     },
   });
 
-  revalidatePath("/historias");
-  revalidatePath(`/pacientes/${attachment.patient_id}`);
+  revalidatePatientDocumentSurfaces(
+    attachment.patient_id,
+    (attachment as { clinical_record_id?: string | null }).clinical_record_id
+  );
   return { success: true };
 }
 

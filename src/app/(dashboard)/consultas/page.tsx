@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
-import { getSession } from "@/core/auth/session.server";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
@@ -39,10 +38,9 @@ type PageProps = {
 
 export default async function ConsultasPage({ searchParams }: PageProps) {
   const { profile, clinics, clinicId, role, isSuperadmin, clinic } = await getDashboardPageContext();
-  const session = await getSession();
   const params = (await searchParams) ?? {};
 
-  if (!clinicId || !session) {
+  if (!clinicId || !profile) {
     redirect("/login");
   }
 
@@ -55,7 +53,7 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
   const sessionProfessionalId = await resolveSessionProfessionalId(
     supabase,
     clinicId,
-    session.id
+    profile.id
   );
   const timeZone = clinic?.timezone?.trim() || DEFAULT_CLINIC_TIMEZONE;
   const { startIso, endExclusiveIso } = clinicActiveQueueRange(new Date(), timeZone);

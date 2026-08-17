@@ -70,7 +70,8 @@ export async function loadClinicalRecordChildrenForPatient(
         .eq("clinic_id", clinicId)
         .eq("patient_id", patientId)
         .in("clinical_record_id", recordIds)
-        .order("sort_order", { ascending: true }),
+        .order("sort_order", { ascending: true })
+        .limit(400),
       supabase
         .from("clinical_record_treatments")
         .select(
@@ -79,7 +80,8 @@ export async function loadClinicalRecordChildrenForPatient(
         .eq("clinic_id", clinicId)
         .eq("patient_id", patientId)
         .in("clinical_record_id", recordIds)
-        .order("sort_order", { ascending: true }),
+        .order("sort_order", { ascending: true })
+        .limit(400),
     ]);
 
   if (!diagnosesError) {

@@ -15,8 +15,8 @@ import {
 } from "@/features/pacientes/utils/pacientes-page-url";
 import { applyPatientSearchFilter, findPatientIdsByPathologySearch } from "@/features/pacientes/utils/patient-search";
 
+import { getCachedPortalContext } from "@/lib/server/cached-clinic-queries";
 import { batchPatientConsultationCounts } from "@/lib/utils/batch-patient-record-counts";
-import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
 
 export { PACIENTES_PAGE_SIZE };
 
@@ -36,7 +36,7 @@ export type PacientesPageData = {
   patients: PacientesPagePatient[];
   total: number;
   portalSlug: string | null;
-  doctorInfo: Awaited<ReturnType<typeof getPortalContextForClinic>>["doctorInfo"];
+  doctorInfo: Awaited<ReturnType<typeof getCachedPortalContext>>["doctorInfo"];
   shareByPatient: Map<
     string,
     { sharedAt: string; sharedByName?: string | null; channel?: string | null }
@@ -156,9 +156,7 @@ async function loadPacientesPageDataInner(
   cobertura?: string,
   patologia?: string
 ): Promise<PacientesPageData> {
-  const portalContext = await getPortalContextForClinic(clinicId);
-  const portalSlug = portalContext.portalSlug;
-  const doctorInfo = portalContext.doctorInfo;
+  const portalPromise = getCachedPortalContext(clinicId);
   const trimmedQ = q.trim();
   const pamiOnly = cobertura === "pami";
 
@@ -189,16 +187,20 @@ async function loadPacientesPageDataInner(
     const searchSet = new Set(searchIds);
     restrictIds = restrictIds.filter((id) => searchSet.has(id));
     if (restrictIds.length === 0) {
+      const { portalSlug, doctorInfo } = await portalPromise;
       return { ...EMPTY_PAGE, portalSlug, doctorInfo, page };
     }
   } else if (trimmedQ && !restrictIds) {
-    const rpcResult = await searchPatientsForClinicListPage(supabase, {
-      clinicId,
-      q: trimmedQ,
-      page,
-      pageSize: PACIENTES_PAGE_SIZE,
-      cobertura: pamiOnly ? "pami" : undefined,
-    });
+    const [portalContext, rpcResult] = await Promise.all([
+      portalPromise,
+      searchPatientsForClinicListPage(supabase, {
+        clinicId,
+        q: trimmedQ,
+        page,
+        pageSize: PACIENTES_PAGE_SIZE,
+        cobertura: pamiOnly ? "pami" : undefined,
+      }),
+    ]);
 
     if (!rpcResult.error) {
       const rawPatients = rpcResult.patients.map(mapSearchRow);
@@ -206,14 +208,14 @@ async function loadPacientesPageDataInner(
         supabase,
         clinicId,
         rawPatients,
-        portalSlug
+        portalContext.portalSlug
       );
       const total = rpcResult.total;
       return {
         patients,
         total,
-        portalSlug,
-        doctorInfo,
+        portalSlug: portalContext.portalSlug,
+        doctorInfo: portalContext.doctorInfo,
         shareByPatient,
         totalPages: Math.max(1, Math.ceil(total / PACIENTES_PAGE_SIZE)),
         page,
@@ -247,7 +249,10 @@ async function loadPacientesPageDataInner(
   }
 
   const from = (page - 1) * PACIENTES_PAGE_SIZE;
-  const { data, count, error } = await query.range(from, from + PACIENTES_PAGE_SIZE - 1);
+  const [portalContext, { data, count, error }] = await Promise.all([
+    portalPromise,
+    query.range(from, from + PACIENTES_PAGE_SIZE - 1),
+  ]);
 
   if (error) {
     return { ...EMPTY_PAGE, page };
@@ -259,14 +264,14 @@ async function loadPacientesPageDataInner(
     supabase,
     clinicId,
     rawPatients,
-    portalSlug
+    portalContext.portalSlug
   );
 
   return {
     patients,
     total,
-    portalSlug,
-    doctorInfo,
+    portalSlug: portalContext.portalSlug,
+    doctorInfo: portalContext.doctorInfo,
     shareByPatient,
     totalPages: Math.max(1, Math.ceil(total / PACIENTES_PAGE_SIZE)),
     page,

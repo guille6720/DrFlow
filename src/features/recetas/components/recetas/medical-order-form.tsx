@@ -187,9 +187,11 @@ export function MedicalOrderForm({
           </Button>
         ) : null}
         <Button type="submit" loading={loading}>
-          {isEditing
-            ? "Guardar cambios"
-            : `Generar ${orderType === "study" ? "orden de estudios" : "derivación"}`}
+          {loading
+            ? "Guardando..."
+            : isEditing
+              ? "Guardar cambios"
+              : `Generar ${orderType === "study" ? "orden de estudios" : "derivación"}`}
         </Button>
       </div>
     </form>

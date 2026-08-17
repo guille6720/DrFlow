@@ -224,7 +224,11 @@ export function NuevaConsultaFormBody({
 
           <div className="flex flex-wrap gap-2">
             <Button type="submit" loading={loading}>
-              {journeyMode && fromAppointment ? "Guardar y continuar" : "Guardar consulta"}
+              {loading
+                ? "Guardando..."
+                : journeyMode && fromAppointment
+                  ? "Guardar y continuar"
+                  : "Guardar consulta"}
             </Button>
             {!journeyMode && canIssuePrescriptions && consultationContext ? (
               <Link

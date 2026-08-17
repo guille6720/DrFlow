@@ -1,97 +1,74 @@
 # PERFORMANCE_RESULTS_2026 — DrFlow Staging
 
-**Fecha:** 2026-08-15  
+**Fecha:** 2026-08-17  
 **Rama:** `develop` (Staging / Preview)  
 **Producción / `main`:** NO modificados  
-**Base:** `PERFORMANCE_AUDIT_2026.md` (Fase 1)
+**Base:** `PERFORMANCE_AUDIT_2026.md` (re-auditoría 17-ago)
 
 ---
 
-## Cambios aplicados (bloque Pacientes → HC → Recetas → Agenda)
+## Qué causaba la lentitud residual
 
-| Área | Antes | Después | Mejora esperada |
-| ---- | ----- | ------- | --------------- |
-| `/pacientes` conteos | Scan todos `clinical_records` + N× Storage HCE | 1× RPC `count_clinical_records_by_patients` | −1–N round-trips Storage; payload lista mucho menor |
-| `/pacientes?seccion=historias` | Idem | Idem RPC | Idem |
-| HC soap / `/consultas` | hasta **500** records | **20** iniciales + load-more | −96% rows en first paint |
-| Recetas save | patient → pro → all coverage rules (serial) | patient ∥ pro; 1 rule by kind | −1–2 RTTs; menos payload rules |
-| Recetas issue | draft before + draft again + serial ctx + revalidate ×3 listas | sin before duplicado; parallel ctx; revalidate paciente | −1–3 RTTs; menos RSC rebuild |
-| Clinical create | revalidate `/pacientes` + `/historias` listas | paciente + `/consultas` | evita re-correr enrich P0 |
-| Agenda | 3000 appts; blocks sin limit; default-pro serial | 1200 appts; blocks ≤400; default-pro en parallel | menor TTFB/payload |
-| Historia detail embed | `select(*)` + related sin limit | columnas explícitas + limits | payload acotado |
+El ciclo del 15-ago ya había bajado SOAP a 20 registros y los conteos de `/pacientes` a un RPC. Lo que todavía se sentía lento:
+
+1. **Dashboard** ejecutaba siempre un scan de **30 días** de `appointments` “por si fallaba el RPC” (en el mismo `Promise.all`).
+2. **Server Actions** (receta, consulta, turno, caja) verificaban FKs **en serie** (paciente → profesional → registro).
+3. **Anular receta** hacía un SELECT extra antes del UPDATE.
+4. **Portal** en `/pacientes` e historia detail no reutilizaba `getCachedPortalContext`.
+5. **Coverage rules** (metadata de clínica) se leían en vivo en cada workspace.
+6. **Adjuntos** invalidaban `/historias` (listado) sin necesidad.
+7. Botones con spinner pero sin copy “Guardando…” / “Emitiendo…”.
 
 ---
 
 ## Tabla rutas (cualitativa)
 
-| Ruta | Antes (audit) | Después | Mejora |
-| ---- | ------------- | ------- | -----: |
-| `/pacientes` | P0 unbounded enrich | RPC count | alto |
-| `/pacientes/[id]?tab=soap` | 500 records | 20 + paginación | alto |
-| `/consultas` sesión | soap 500 | soap 20 | alto |
-| Guardar/emitir receta | waterfall + bust listas | parallel + surfaces | alto |
-| `/turnos/agenda` | 3000 + blocks ∞ | 1200 + 400 | medio-alto |
+| Ruta | Antes (17-ago audit) | Después | Mejora |
+| ---- | -------------------- | ------- | -----: |
+| `/dashboard` | RPC + 30d raw siempre | RPC + hoy ≤200; 30d solo si RPC falla | alto |
+| `save/issue` receta | ownership 2–3 RTTs serial | Promise.all FKs; rule en paralelo al issue | alto |
+| `voidPrescription` | SELECT + UPDATE | UPDATE … RETURNING | medio |
+| `/pacientes` | portal uncached serial | portal cached ∥ search | medio |
+| `/pacientes/[id]` soap | coverage rules live | `unstable_cache` clinic tag | medio |
+| `/historias/[id]` | record → portal serial | record ∥ portal cache | medio |
+| Adjuntos | `revalidatePath("/historias")` | paciente + consulta (+ embed) | medio |
+| Botones clínicos | spinner | spinner + “Guardando/Emitiendo” | UX &lt;100 ms |
+| `/consultas` | extra `getSession` | `profile.id` del shell | bajo |
 
 ---
 
-## Métricas medidas (2026-08-15, local prod `next start` :3001)
+## Métricas medidas (2026-08-17)
 
-**Build:** `npm run build` OK (Next.js 16.2.9 webpack).  
-**Gate:** `npm run performance:gate` OK — 70 tests.  
-**Bundle first-load KB:** no disponible — `.next/diagnostics/route-bundle-stats.json` no se genera en este build (script legado).
+**Typecheck:** `npm run typecheck` OK  
+**Performance gate:** `npm run performance:gate` OK — **71** tests (antes 70).  
+**Tests de este ciclo:** ownership-guard, intelligent-cache, progressive-loading, supabase-query-cache, turnos-module, patient-workspace-loader — **41/41**.  
+**Lint de archivos tocados:** OK.  
+**Lint repo completo / `npm test`:** fallos **preexistentes** en `develop` (import-sort en `src/lib/actions/*` no tocados; CSRF billing; migraciones 117; hrefs de navegación clínica). No introducidos por este cambio.
 
-### Lighthouse (rutas públicas)
+### Queries / round-trips eliminados
 
-| Ruta | Perf | A11y | Best practices | SEO |
-| ---- | ---: | ---: | -------------: | --: |
-| `/` | 80 | 96 | 93 | 100 |
-| `/login` | 93 | 76 | 86 | 82 |
-| `/privacidad` | 98 | 100 | 93 | 100 |
-| `/terminos` | 97 | 100 | 93 | 100 |
-| `/demo` | 94 | 100 | 93 | 100 |
+1. Dashboard: 1 query de 30 días de turnos en el happy path del RPC.
+2. Ownership: 1–2 RTTs seriales por mutación clínica (ahora 1 RTT paralelo).
+3. Void receta: 1 SELECT previo.
+4. `/pacientes` / historia detail: portal deja de ser un fetch extra uncached.
+5. Workspace: coverage rules dejan de pegarle a Postgres en cada tab (TTL 300s + `updateTag` al guardar reglas).
+6. Adjuntos: dejan de invalidar el listado `/historias`.
+7. Create SOAP: deja de invalidar `/atenciones`.
 
-Fuente: `coverage/lighthouse/summary.json`
+### Índices
 
-### TTFB cold (HEAD/GET local, sin sesión)
-
-| Ruta | Antes* | Después | Mejora |
-| ---- | -----: | ------: | -----: |
-| `/` | n/d | **85 ms** | — |
-| `/login` | n/d | **17 ms** | — |
-| `/demo` | n/d | **23 ms** | — |
-| `/pacientes` (redirect auth) | n/d | **10 ms** | — |
-| `/dashboard` (redirect auth) | n/d | **8 ms** | — |
-| `/turnos/agenda` (redirect) | n/d | **8 ms** | — |
-| `/consultas` (redirect) | n/d | **8 ms** | — |
-
-\*Sin baseline Lighthouse/TTFB previo en este ciclo; comparación cualitativa vs audit estático P0.  
-Rutas clínicas autenticadas requieren sesión Preview para TTFB con datos reales.
-
-### Objetivos de referencia
-
-| Métrica | Objetivo | Estado local |
-| ------- | -------- | ------------ |
-| TTFB páginas públicas | &lt;800 ms | ✅ &lt;100 ms |
-| Lighthouse Perf públicas | alto | ✅ 80–98 |
-| Gate tests | pass | ✅ |
+Ninguna migración nueva. Cubiertos por 046/054/061/087/088. `EXPLAIN ANALYZE` en Staging sigue pendiente para confirmar `appointments(clinic_id, start_at)` vs índice existente `(clinic_id, professional_id, start_at)`.
 
 ---
 
-## Queries / round-trips eliminados o reducidos
+## Objetivos de referencia
 
-1. Listados: eliminado download CSV HCE por paciente de la página.
-2. Listados: eliminado select full-text de todos los clinical_records de la página.
-3. Recetas: eliminado load de **todas** las coverage rules (ahora `loadCoverageRuleForKind`).
-4. Recetas issue: eliminado select `before` previo al service (audit usa result).
-5. Recetas: eliminado `revalidatePath("/recetas")` y `/historias` list.
-6. Clinical create: eliminado `revalidatePath("/pacientes")` y `/historias` list.
-7. Agenda: default professional ya no espera al final del batch.
-
----
-
-## Índices
-
-Ninguna migración nueva. Índices existentes (046/054/061/087) cubren hot paths. RPC `count_clinical_records_by_patients` ya en 064.
+| Métrica | Objetivo | Estado |
+| ------- | -------- | ------ |
+| Feedback visual botón | &lt;100 ms | ✅ `setState` + spinner + copy inmediato (sin optimistic clínico) |
+| TTFB públicas (ciclo previo) | &lt;800 ms | ✅ medido 15-ago |
+| TTFB clínicas autenticadas | &lt;800 ms | Requiere sesión Preview; no medido en este entorno local sin login |
+| Gate tests | pass | ✅ 71 |
 
 ---
 
@@ -99,10 +76,12 @@ Ninguna migración nueva. Índices existentes (046/054/061/087) cubren hot paths
 
 | Riesgo | Mitigación |
 | ------ | ---------- |
-| Badge “N consultas” en lista puede diferir del sidebar HC (días dedupe / HCE) | Aceptado: lista = # registros; HC = lógica completa al abrir |
-| Print “HC completa” solo ve lo cargado (+ load-more) | **Mitigado:** `loadPatientClinicalRecordsForPrint` (hasta 2000) al imprimir HC completa |
-| Agenda >1200 turnos en ventana | Revisar ventana de fechas o paginar por día (P2) |
-| Optimistic UI no aplicado en emisión clínica | Intencional (seguridad) |
+| RPC de dashboard caído → fallback 30d (hasta 1500 filas) | Aceptable; path infrecuente |
+| Ownership paralelo consulta profesional aunque el paciente falle | Extra query solo en error; checks no se omiten |
+| Coverage rules cache 300s | Invalidación inmediata al guardar/resetear reglas |
+| Print HC completa | Sin cambio: fetch on-demand hasta 2000 |
+| Optimistic UI emisión/anulación | No aplicado (seguridad clínica) |
+| Lint/test repo en `develop` | Preexistente; no bloquea este commit de perf |
 
 ---
 
@@ -117,54 +96,24 @@ Ninguna migración nueva. Índices existentes (046/054/061/087) cubren hot paths
 
 ---
 
-## Follow-up (bloque 2 — post `9ecab58`)
+## Archivos tocados (este ciclo)
 
-| Área | Cambio |
-| ---- | ------ |
-| Workspace HC | HCE + app-share + default-pro en el mismo `Promise.all` (menos waterfall) |
-| Favoritos clínicos | `.limit(100)` |
-| Clinical ops / dashboard core | today appointments ≤ 200 |
-| `/consultas` día | appointments ≤ 100 |
-| `/pacientes` page size | 20 → **25** |
-| Recetas UX | `useTransition` alrededor de `router.refresh` tras issue/void/save |
-
-### Bloque 3
-
-| Área | Cambio |
-| ---- | ------ |
-| `/pami/planillas`, `/guia-pami` | `getDashboardPageContext` (1 shell cached) |
-| `/consultas`, `/pacientes/[id]` | idem |
-| PAMI loader | default-pro en paralelo con catalog |
-| Sidebar | prefetch de hijos al abrir grupo; `prefetch` estable |
-| Clinical top nav | `Link prefetch` |
-
-### Bloque 4
-
-| Área | Cambio |
-| ---- | ------ |
-| 23 páginas dashboard restantes | `getDashboardPageContext` (caja, config, atenciones, facturación, plantillas, etc.) |
-| Auth serial en `page.tsx` del dashboard | Eliminado (`await getProfile()` = 0 en dashboard) |
-
-### Bloque 5 — print HC completa
-
-| Área | Cambio |
-| ---- | ------ |
-| Imprimir historia clínica | Fetch on-demand hasta `PATIENT_EHR_PRINT_MAX_RECORDS` (2000) si hay más páginas |
-| First paint soap | Sin cambio (sigue en 20 + load-more) |
-
----
-
-## Archivos tocados (implementación)
-
-- `src/lib/utils/batch-patient-record-counts.ts`
-- `src/features/pacientes/server/load-patient-ehr-data.ts`
-- `src/features/pacientes/server/patient-workspace-fetch-plan.ts`
-- `src/features/recetas/actions/prescriptions.ts`
-- `src/features/recetas/services/prescriptions.service.ts`
-- `src/core/cache/revalidate-prescription-surfaces.ts` (nuevo)
-- `src/features/historias/actions/clinical-records.ts`
-- `src/features/historias/server/load-historia-detail-page.ts`
-- `src/app/(dashboard)/turnos/agenda/page.tsx`
+- `src/core/security/ownership-guard.ts`
+- `src/core/services/clinical-access.service.ts`
+- `src/core/actions/clinic-guard.ts`
+- `src/core/cache/cache-tags.ts` / `revalidate-clinic-cache.ts`
 - `src/core/supabase/pagination.ts`
-- `tests/performance/batch-patient-record-counts.test.ts`
+- `src/features/turnos/server/load-turnos-config-page.ts`
+- `src/features/pacientes/server/load-pacientes-page.ts`
+- `src/features/pacientes/server/load-patient-workspace-page.ts`
+- `src/features/pacientes/server/load-clinical-structure.ts`
+- `src/features/pacientes/actions/patient-attachments.ts`
+- `src/features/historias/server/load-historia-detail-page.ts`
+- `src/features/historias/actions/clinical-records.ts`
+- `src/features/recetas/actions/prescriptions.ts` / `coverage-rules.ts`
+- `src/features/recetas/services/prescriptions.service.ts`
+- `src/lib/server/cached-clinic-metadata.ts` / `cached-clinic-queries.ts`
+- `src/app/(dashboard)/consultas/page.tsx` + `loading.tsx`
+- Botones: consulta, receta, órdenes, finalizar
+- Tests de cache / pagination
 - `PERFORMANCE_AUDIT_2026.md` / este archivo

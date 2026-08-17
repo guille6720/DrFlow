@@ -10,8 +10,10 @@ import type {
   HistoriaPrescriptionSummary,
 } from "@/features/historias/types/historia-clinical-summaries";
 
-import { getCachedClinicProfessionalsFull } from "@/lib/server/cached-clinic-queries";
-import { getPortalContextForClinic } from "@/lib/utils/portal-doctor-info";
+import {
+  getCachedClinicProfessionalsFull,
+  getCachedPortalContext,
+} from "@/lib/server/cached-clinic-queries";
 
 export type HistoriaDetailPatient = {
   id: string;
@@ -62,7 +64,7 @@ export type HistoriaDetailPageData = {
   };
   patient: HistoriaDetailPatient;
   portalSlug: string | null;
-  doctorInfo: Awaited<ReturnType<typeof getPortalContextForClinic>>["doctorInfo"];
+  doctorInfo: Awaited<ReturnType<typeof getCachedPortalContext>>["doctorInfo"];
   audit: Array<{
     id: string;
     action: string;
@@ -92,19 +94,21 @@ export async function loadHistoriaDetailPageData(
   id: string,
   clinicId: string
 ): Promise<HistoriaDetailPageData | null> {
-  const { data: record } = await supabase
-    .from("clinical_records")
-    .select(
-      "id, created_at, updated_at, chief_complaint, diagnosis, evolution, indications, diagnosis_cie10, diagnoses_json, treatments_json, professional_id, professional_signature, appointment_id, patient_id, clinic_id, consultation_modality, patients(id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, email, allergies, regular_medication, emergency_contact_name, emergency_contact_phone), professionals(license_national, license_provincial, license_number, profiles(full_name, email))"
-    )
-    .eq("id", id)
-    .eq("clinic_id", clinicId)
-    .single();
+  const [{ data: record }, { portalSlug, doctorInfo }] = await Promise.all([
+    supabase
+      .from("clinical_records")
+      .select(
+        "id, created_at, updated_at, chief_complaint, diagnosis, evolution, indications, diagnosis_cie10, diagnoses_json, treatments_json, professional_id, professional_signature, appointment_id, patient_id, clinic_id, consultation_modality, patients(id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, email, allergies, regular_medication, emergency_contact_name, emergency_contact_phone), professionals(license_national, license_provincial, license_number, profiles(full_name, email))"
+      )
+      .eq("id", id)
+      .eq("clinic_id", clinicId)
+      .single(),
+    getCachedPortalContext(clinicId),
+  ]);
 
   if (!record) return null;
 
   const patient = record.patients as unknown as HistoriaDetailPatient;
-  const { portalSlug, doctorInfo } = await getPortalContextForClinic(clinicId);
 
   const [
     { data: audit },

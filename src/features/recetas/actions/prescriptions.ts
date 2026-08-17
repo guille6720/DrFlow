@@ -116,13 +116,6 @@ export async function voidPrescription(id: string) {
   if (!idParsed.ok) return { error: idParsed.error };
 
   const supabase = await createClient();
-  const { data: before } = await supabase
-    .from("prescription_drafts")
-    .select("id, patient_id, clinical_record_id, status")
-    .eq("id", idParsed.data)
-    .eq("clinic_id", access.data.clinicId)
-    .maybeSingle();
-
   const result = await voidPrescriptionRecord(
     supabase,
     idParsed.data,
@@ -136,18 +129,16 @@ export async function voidPrescription(id: string) {
     module: "prescriptions",
     entityType: "prescription",
     entityId: idParsed.data,
-    patientId: before?.patient_id ?? undefined,
+    patientId: result.data.patient_id,
     action: "delete",
     what: "Anuló receta",
-    metadata: { previousStatus: before?.status },
+    metadata: { status: result.data.status },
   });
 
-  if (before?.patient_id) {
-    revalidatePrescriptionSurfaces({
-      patientId: before.patient_id,
-      clinicalRecordId: before.clinical_record_id,
-    });
-  }
+  revalidatePrescriptionSurfaces({
+    patientId: result.data.patient_id,
+    clinicalRecordId: result.data.clinical_record_id,
+  });
   return { data: result.data };
 }
 

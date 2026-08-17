@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { revalidateClinicCoverageRulesCache } from "@/core/cache/revalidate-clinic-cache";
 import { recordAudit } from "@/core/security/audit-service";
 import { requireClinicalIssueAccess } from "@/core/services/clinical-access.service";
 import { createClient } from "@/core/supabase/server";
@@ -26,7 +27,8 @@ import {
   parseInfoMessagesText,
 } from "@/features/recetas/utils/coverage-rules-admin";
 
-function revalidateCoverageRuleViews() {
+function revalidateCoverageRuleViews(clinicId: string) {
+  revalidateClinicCoverageRulesCache(clinicId);
   revalidatePath("/configuracion");
   revalidatePath("/pacientes", "layout");
 }
@@ -130,7 +132,7 @@ export async function saveClinicCoverageRule(formData: FormData) {
     metadata: payload,
   });
 
-  revalidateCoverageRuleViews();
+  revalidateCoverageRuleViews(access.clinicId);
   return { data: result.data };
 }
 
@@ -151,6 +153,6 @@ export async function resetClinicCoverageRule(coverageKind: CoverageKind) {
     what: `Restauró defaults de receta (${coverageKind})`,
   });
 
-  revalidateCoverageRuleViews();
+  revalidateCoverageRuleViews(access.clinicId);
   return { data: result.data };
 }

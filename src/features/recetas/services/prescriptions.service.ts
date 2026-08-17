@@ -279,9 +279,11 @@ export async function issuePrescriptionRecord(
     return { ok: false, error: "Solo se pueden emitir recetas en borrador." };
   }
 
-  const [patientResult, professionalResult] = await Promise.all([
+  const coverageHint = (draft.coverage_kind ?? "PARTICULAR") as CoverageKind;
+  const [patientResult, professionalResult, hintedRule] = await Promise.all([
     loadPatientContext(db, clinicId, draft.patient_id),
     loadProfessionalContext(db, clinicId, draft.professional_id),
+    loadClinicRuleOverride(db, clinicId, coverageHint),
   ]);
   if (!patientResult.ok) return { ok: false, error: patientResult.error };
   if (!professionalResult.ok) return { ok: false, error: professionalResult.error };
@@ -292,11 +294,10 @@ export async function issuePrescriptionRecord(
     insurance_number: draft.insurance_number,
     insurance_plan: draft.insurance_plan,
   });
-  const ruleOverride = await loadClinicRuleOverride(
-    db,
-    clinicId,
-    authoritative.coverageKind
-  );
+  const ruleOverride =
+    authoritative.coverageKind === coverageHint
+      ? hintedRule
+      : await loadClinicRuleOverride(db, clinicId, authoritative.coverageKind);
 
   const ctx = buildPrescriptionContext({
     clinicId,

@@ -47,7 +47,7 @@ export function FinalizeConsultationButton({ appointmentId, returnHref }: Props)
       />
       <Button type="button" loading={loading} onClick={handleFinalize}>
         <CheckCircle2 className="h-4 w-4" />
-        Finalizar consulta
+        {loading ? "Guardando..." : "Finalizar consulta"}
       </Button>
     </div>
   );

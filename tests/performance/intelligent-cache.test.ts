@@ -28,6 +28,7 @@ describe("clinic metadata cache infrastructure", () => {
   it("exports TTL constants and cache helpers", async () => {
     const mod = await import("@/lib/server/clinic-metadata-unstable-cache");
     expect(mod.CLINIC_METADATA_TTL.professionals).toBe(300);
+    expect(mod.CLINIC_METADATA_TTL.coverageRules).toBe(300);
     expect(mod.withClinicMetadataCache).toBeTypeOf("function");
     expect(mod.withReferenceDataCache).toBeTypeOf("function");
   });
@@ -35,12 +36,15 @@ describe("clinic metadata cache infrastructure", () => {
   it("includes clinic settings tag in metadata tags", async () => {
     const tags = await import("@/core/cache/cache-tags");
     expect(tags.clinicSettingsTag("c1")).toBe("clinic-c1-settings");
+    expect(tags.clinicCoverageRulesTag("c1")).toBe("clinic-c1-coverage-rules");
     expect(tags.clinicMetadataTags("c1")).toContain("clinic-c1-settings");
+    expect(tags.clinicMetadataTags("c1")).toContain("clinic-c1-coverage-rules");
   });
 
   it("exports getCachedClinicSettings and admin templates helpers", async () => {
     const mod = await import("@/lib/server/cached-clinic-queries");
     expect(mod.getCachedClinicSettings).toBeTypeOf("function");
     expect(mod.getCachedClinicalTemplatesAdmin).toBeTypeOf("function");
+    expect(mod.getCachedClinicCoverageRules).toBeTypeOf("function");
   });
 });
