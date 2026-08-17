@@ -81,7 +81,7 @@ export async function insertMedicalOrder(
   db: DbClient,
   row: MedicalOrderInsertRow
 ): Promise<RepoResult<MedicalOrder>> {
-  const { data, error } = await db.from("medical_orders").insert(row).select().single();
+  const { data, error } = await db.from("medical_orders").insert(row).select(MEDICAL_ORDER_IDEMPOTENCY_COLUMNS).single();
   if (error) {
     if (isUniqueViolation(error)) {
       return repoErr(MEDICAL_ORDER_IDEMPOTENCY_CONFLICT);
@@ -115,7 +115,7 @@ export async function updateMedicalOrderRow(
     .eq("clinic_id", clinicId)
     .eq("status", "issued")
     .eq("version", expectedVersion)
-    .select()
+    .select(MEDICAL_ORDER_IDEMPOTENCY_COLUMNS)
     .maybeSingle();
 
   if (error) return repoErr(formatMedicalOrderDbError(error));

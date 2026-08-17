@@ -176,6 +176,21 @@ Objetivo: `/pacientes` pagina **25** filas en PostgreSQL (rango 25–50). La bú
 
 ---
 
+## Fase 7 — `select("*")` / returning wildcard
+
+Las lecturas de pacientes, HC, recetas, órdenes, agenda y profesionales **ya** usaban columnas explícitas. El residual era `.select()` vacío en insert/update (PostgREST = SELECT *).
+
+| Superficie | Returning |
+| ---------- | --------- |
+| Paciente insert | `PATIENT_DETAIL_COLUMNS` |
+| Receta insert/update/emit/anular/dispensar/REFEPS | `PRESCRIPTION_ISSUE_COLUMNS` |
+| Orden insert/update | `MEDICAL_ORDER_IDEMPOTENCY_COLUMNS` |
+| Turno create | `APPOINTMENT_AGENDA_COLUMNS` |
+
+No se tocaron repositorios de caja/billing (`clinic_subscriptions.select("*")` queda fuera del hot path clínico).
+
+---
+
 ## Confirmación entorno
 
 | Ítem | Estado |
@@ -257,3 +272,13 @@ Objetivo: `/pacientes` pagina **25** filas en PostgreSQL (rango 25–50). La bú
 - `src/features/pacientes/server/search-patients.ts`
 - `src/lib/server/load-patient-picker-list.ts` (offset SQL, sin slice client)
 - Tests: `pathology-search-rpc.test.ts` / `progressive-loading.test.ts`
+
+### Fase 7 (`select("*")`)
+
+- `src/features/pacientes/repositories/patients.repository.ts`
+- `src/features/recetas/repositories/prescription-drafts.repository.ts`
+- `src/features/recetas/repositories/medical-orders.repository.ts`
+- `src/lib/actions/appointments.ts`
+- `src/features/pacientes/server/load-patient-workspace-page.ts`
+- `src/features/historias/server/load-historia-detail-page.ts`
+- Tests: `tests/performance/no-select-star.test.ts`

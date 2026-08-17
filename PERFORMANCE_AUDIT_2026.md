@@ -137,8 +137,8 @@ Agenda 1200 + 400 es aceptable para la ventana −30d / horizonte. PAMI ya pagin
 | Producción / `main` | **No** |
 | Supabase Production | **No** |
 | Migración nueva | **No** (índices existentes suficientes) |
-| Siguiente paso | Fase 7 `select("*")` en rutas críticas, si hace falta |
+| Siguiente paso | Fase 8 índices (solo con EXPLAIN en staging), si hace falta |
 
 ---
 
-*Re-auditoría 17-ago. Ciclo 1: dashboard fallback, ownership paralelo, portal/coverage cache, revalidate estrecho, copy pending. Ciclo 2 (Fase 2): Server Actions. Ciclo 3 (Fase 3): `revalidatePath`. Ciclo 4 (Fase 4): pending labels. Ciclo 5 (Fase 5): HC first paint 20. Ciclo 6 (Fase 6): `/pacientes` 25/página, patología cap + búsqueda paralela.*
+*Re-auditoría 17-ago. Ciclo 1: dashboard fallback, ownership paralelo, portal/coverage cache, revalidate estrecho, copy pending. Ciclo 2 (Fase 2): Server Actions. Ciclo 3 (Fase 3): `revalidatePath`. Ciclo 4 (Fase 4): pending labels. Ciclo 5 (Fase 5): HC first paint 20. Ciclo 6 (Fase 6): `/pacientes` 25/página. Ciclo 7 (Fase 7): returning columns explícitas en mutaciones clínicas.*

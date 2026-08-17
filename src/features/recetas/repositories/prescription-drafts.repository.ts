@@ -25,7 +25,7 @@ export type PrescriptionDraftInsertRow = {
 };
 
 export const PRESCRIPTION_ISSUE_COLUMNS =
-  "id, clinic_id, patient_id, clinical_record_id, professional_id, prescription_type, diagnosis_cie10, diagnosis_text, patient_insurance, coverage_kind, insurance_number, insurance_plan, medications, notes, validity_days, disclaimer_accepted, status, prescription_number, issued_at, refeps_status, refeps_id, refeps_submitted_at, refeps_error, refeps_payload, digital_signature_hash, idempotency_key, version";
+  "id, clinic_id, patient_id, clinical_record_id, professional_id, prescription_type, diagnosis_cie10, diagnosis_text, patient_insurance, coverage_kind, insurance_number, insurance_plan, medications, notes, validity_days, disclaimer_accepted, status, prescription_number, issued_at, dispensed_at, refeps_status, refeps_id, refeps_submitted_at, refeps_error, refeps_payload, digital_signature_hash, idempotency_key, version, created_by, created_at, updated_at";
 
 export function formatPrescriptionDbError(error: {
   message?: string;
@@ -40,7 +40,7 @@ export async function insertPrescriptionDraft(
   db: DbClient,
   row: PrescriptionDraftInsertRow
 ): Promise<RepoResult<ElectronicPrescription>> {
-  const { data, error } = await db.from("prescription_drafts").insert(row).select().single();
+  const { data, error } = await db.from("prescription_drafts").insert(row).select(PRESCRIPTION_ISSUE_COLUMNS).single();
   if (error) return repoErr(formatPrescriptionDbError(error));
   return repoOk(data as ElectronicPrescription);
 }
@@ -57,7 +57,7 @@ export async function updatePrescriptionDraft(
     .eq("id", draftId)
     .eq("clinic_id", clinicId)
     .eq("status", "draft")
-    .select()
+    .select(PRESCRIPTION_ISSUE_COLUMNS)
     .single();
 
   if (error) return repoErr(formatPrescriptionDbError(error));
@@ -119,7 +119,7 @@ export async function issuePrescriptionDraft(
     .eq("id", draftId)
     .eq("clinic_id", clinicId)
     .eq("status", "draft")
-    .select()
+    .select(PRESCRIPTION_ISSUE_COLUMNS)
     .single();
 
   if (error) return repoErr(formatPrescriptionDbError(error));
@@ -139,7 +139,7 @@ export async function voidPrescriptionDraft(
     .eq("id", draftId)
     .eq("clinic_id", clinicId)
     .in("status", ["draft", "issued"])
-    .select()
+    .select(PRESCRIPTION_ISSUE_COLUMNS)
     .single();
 
   if (error) return repoErr(formatPrescriptionDbError(error));
@@ -158,7 +158,7 @@ export async function markPrescriptionDispensed(
     .eq("clinic_id", clinicId)
     .eq("status", "issued")
     .is("dispensed_at", null)
-    .select()
+    .select(PRESCRIPTION_ISSUE_COLUMNS)
     .single();
 
   if (error) return repoErr(formatPrescriptionDbError(error));
@@ -184,7 +184,7 @@ export async function updatePrescriptionRefepsState(
     .eq("id", prescriptionId)
     .eq("clinic_id", clinicId)
     .eq("status", "issued")
-    .select()
+    .select(PRESCRIPTION_ISSUE_COLUMNS)
     .single();
 
   if (error) return repoErr(formatPrescriptionDbError(error));

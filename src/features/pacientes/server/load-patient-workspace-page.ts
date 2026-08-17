@@ -7,7 +7,7 @@ import {
 import { unwrapNestedRow } from "@/core/supabase/nested-row";
 import { encodeDescCursor, PATIENT_ATTACHMENTS_LIMIT } from "@/core/supabase/pagination";
 import type { ProfessionalListRow } from "@/core/supabase/query-types";
-import { PRESCRIPTION_LIST_COLUMNS } from "@/core/supabase/select-columns";
+import { MEDICAL_ORDER_LIST_COLUMNS, PRESCRIPTION_LIST_COLUMNS } from "@/core/supabase/select-columns";
 
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
 import type { PatientChartAppointment, PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
@@ -187,7 +187,7 @@ export async function loadPatientWorkspacePageData(
   const ordersPromise = plan.orders
     ? supabase
         .from("medical_orders")
-        .select("id, order_text, notes, status, issued_at, created_at, updated_at, version, professional_id, patient_id, clinical_record_id, order_type")
+        .select(MEDICAL_ORDER_LIST_COLUMNS)
         .eq("clinic_id", clinicId)
         .eq("patient_id", patientId)
         .order("issued_at", { ascending: false })

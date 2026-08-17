@@ -5,6 +5,7 @@ import { revalidateAppointmentSurfaces } from "@/core/cache/revalidate-appointme
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { verifyAppointmentForeignKeys } from "@/core/security/ownership-guard";
+import { APPOINTMENT_AGENDA_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 import {
   appointmentStatusSchema,
@@ -101,7 +102,7 @@ export async function createAppointment(formData: FormData) {
       ...payload,
       created_by: userId,
     })
-    .select()
+    .select(APPOINTMENT_AGENDA_COLUMNS)
     .single();
 
   if (error) {

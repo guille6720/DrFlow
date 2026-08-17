@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { type InformedConsentRecord, mapInformedConsentRow } from "@/core/compliance/informed-consent-types";
 import { CONSENT_TYPES } from "@/core/legal/documents";
 import { voidRecordSensitiveAccess } from "@/core/security/sensitive-access-audit";
+import { MEDICAL_ORDER_LIST_COLUMNS } from "@/core/supabase/select-columns";
 
 import type { ClinicalDocumentItem } from "@/features/historias/components/historias/clinical-documents-panel";
 import type {
@@ -135,9 +136,7 @@ export async function loadHistoriaDetailPageData(
     getCachedClinicProfessionalsFull(clinicId),
     supabase
       .from("medical_orders")
-      .select(
-        "id, order_text, order_type, notes, status, issued_at, created_at, updated_at, version, professional_id, patient_id, clinical_record_id"
-      )
+      .select(MEDICAL_ORDER_LIST_COLUMNS)
       .eq("clinical_record_id", id)
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false })
