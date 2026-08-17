@@ -191,6 +191,22 @@ No se tocaron repositorios de caja/billing (`clinic_subscriptions.select("*")` q
 
 ---
 
+## Fase 8 — Índices
+
+Inventario de migraciones 001/013/046/054/061/088/111. Los tres patrones del brief **ya están cubiertos**. Una migración nueva (`118_*` o `065_performance_hot_paths`) duplicaría índices y ralentizaría writes.
+
+| Patrón | Índices existentes (no recrear) |
+| ------ | ------------------------------- |
+| `clinic_id` + `created_at DESC` | `idx_clinical_records_clinic_created` (054); `idx_clinical_records_clinic_patient_created` (046); adjuntos 046 |
+| `patient_id` + `created_at DESC` | drafts 013; `idx_medical_orders_clinic_patient_issued` (046); `idx_crd_clinic_patient` / `idx_crt_clinic_patient` (111) |
+| `clinic_id` + `status` | `idx_appointments_status` (001); drafts 013; `idx_appointments_clinic_patient_status_start` (046); `idx_appointments_clinic_upcoming_active` (088); `idx_ppl_clinic_patient_status` (111) |
+
+También: `pg_trgm` pacientes (061) + diagnosis GIN (088). 061 ya dropeó duplicados (`idx_clinical_records_clinic`).
+
+**No hay migración nueva.** EXPLAIN ANALYZE de workspace SOAP / agenda / recetas está en `scripts/verify-index-optimization.sql` §8 (SQL Editor Staging).
+
+---
+
 ## Confirmación entorno
 
 | Ítem | Estado |
@@ -282,3 +298,9 @@ No se tocaron repositorios de caja/billing (`clinic_subscriptions.select("*")` q
 - `src/features/pacientes/server/load-patient-workspace-page.ts`
 - `src/features/historias/server/load-historia-detail-page.ts`
 - Tests: `tests/performance/no-select-star.test.ts`
+
+### Fase 8 (índices)
+
+- Sin `supabase/migrations/118_*.sql` ni `065_performance_hot_paths.sql`
+- `scripts/verify-index-optimization.sql` (§8 inventario + EXPLAIN)
+- Tests: `tests/performance/hot-path-indexes.test.ts`
