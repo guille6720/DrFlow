@@ -161,6 +161,21 @@ Alertas, diagnósticos/tratamientos activos y última consulta salen de perfil c
 
 ---
 
+## Fase 6 — Lista de pacientes
+
+Objetivo: `/pacientes` pagina **25** filas en PostgreSQL (rango 25–50). La búsqueda de nombre/DNI sigue en RPC `search_patients_for_clinic`. No se trae el padrón completo para filtrar en React.
+
+| Ítem | Estado |
+| ---- | ------ |
+| Página default / PAMI / RPC search | `.range(25)` o RPC offset |
+| Nombre/DNI | SQL (`search_patients_for_clinic` + count) |
+| Patología + nombre | RPC en **paralelo**, luego intersect |
+| Cap `.in(id)` | 500 IDs únicos (evita URL/payload enorme) |
+| Fallback patología (sin RPC) | scan `clinical_records` con `.limit(2000)` |
+| Índices | Ya existen: `idx_patients_clinic_active_lastname`, GIN `pg_trgm` (nombre/apellido/DNI/tel), DNI dígitos. **Sin migración nueva.** |
+
+---
+
 ## Confirmación entorno
 
 | Ítem | Estado |
@@ -233,3 +248,12 @@ Alertas, diagnósticos/tratamientos activos y última consulta salen de perfil c
 - `src/features/pacientes/server/load-patient-ehr-data.ts`
 - `src/features/historias/components/historias/patient-ehr-sidebar.tsx` (“Ver anteriores”)
 - Tests: `tests/performance/progressive-loading.test.ts`
+
+### Fase 6 (lista `/pacientes`)
+
+- `src/core/supabase/pagination.ts` (`PATIENT_LIST_ID_IN_LIMIT`)
+- `src/features/pacientes/utils/patient-search.ts`
+- `src/features/pacientes/server/load-pacientes-page.ts`
+- `src/features/pacientes/server/search-patients.ts`
+- `src/lib/server/load-patient-picker-list.ts` (offset SQL, sin slice client)
+- Tests: `pathology-search-rpc.test.ts` / `progressive-loading.test.ts`

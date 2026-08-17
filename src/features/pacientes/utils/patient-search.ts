@@ -1,5 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import {
+  PATHOLOGY_SEARCH_RECORD_SCAN_LIMIT,
+  PATIENT_LIST_ID_IN_LIMIT,
+} from "@/core/supabase/pagination";
+
 /** Normaliza término de búsqueda de pacientes (nombre, apellido, DNI). */
 export function sanitizePatientSearchTerm(raw: string | undefined): string {
   return (raw ?? "").trim().replace(/\s+/g, " ").slice(0, 80);
@@ -83,6 +88,19 @@ function buildClinicalPathologyOrFilter(token: string): string {
   return [`diagnosis.ilike.${pattern}`, `chief_complaint.ilike.${pattern}`].join(",");
 }
 
+/** Dedupes and caps IDs before PostgREST `.in()` (URL / payload bound). */
+export function capUniquePatientIds(ids: string[], limit: number): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const id of ids) {
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
 type PathologySearchClient = Pick<SupabaseClient, "from">;
 
 type PathologyRpcClient = PathologySearchClient & {
@@ -108,7 +126,12 @@ export async function findPatientIdsByPathologySearch(
   });
 
   if (!rpcError && Array.isArray(rpcData)) {
-    return { patientIds: rpcData.filter((id): id is string => typeof id === "string") };
+    return {
+      patientIds: capUniquePatientIds(
+        rpcData.filter((id): id is string => typeof id === "string"),
+        PATIENT_LIST_ID_IN_LIMIT
+      ),
+    };
   }
 
   let matchedIds: string[] | null = null;
@@ -118,7 +141,8 @@ export async function findPatientIdsByPathologySearch(
       .from("clinical_records")
       .select("patient_id")
       .eq("clinic_id", clinicId)
-      .or(buildClinicalPathologyOrFilter(token));
+      .or(buildClinicalPathologyOrFilter(token))
+      .limit(PATHOLOGY_SEARCH_RECORD_SCAN_LIMIT);
 
     if (error) {
       return { patientIds: [], error: "No se pudo buscar por patología" };
@@ -138,5 +162,5 @@ export async function findPatientIdsByPathologySearch(
     }
   }
 
-  return { patientIds: matchedIds ?? [] };
+  return { patientIds: capUniquePatientIds(matchedIds ?? [], PATIENT_LIST_ID_IN_LIMIT) };
 }

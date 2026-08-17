@@ -2,6 +2,10 @@
 
 export const PACIENTES_PAGE_SIZE = 25;
 export const HISTORIAS_PAGE_SIZE = 25;
+/** Safety cap for `.in(id, …)` filters (pathology / intersect search). */
+export const PATIENT_LIST_ID_IN_LIMIT = 500;
+/** Fallback scan when pathology RPC is missing — records, not distinct patients. */
+export const PATHOLOGY_SEARCH_RECORD_SCAN_LIMIT = 2000;
 export const ATENCIONES_PAGE_SIZE = 50;
 export const PAMI_PATIENTS_PAGE_SIZE = 50;
 export const WAITING_LIST_PAGE_SIZE = 25;

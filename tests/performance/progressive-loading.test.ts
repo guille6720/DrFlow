@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { PACIENTES_PAGE_SIZE } from "@/core/supabase/pagination";
+
 import {
   fetchDashboardCoreQueries,
   fetchDashboardSecondaryQueries,
@@ -71,5 +73,13 @@ describe("dashboard loader split", () => {
   it("core and secondary query groups are disjoint", () => {
     expect(fetchDashboardCoreQueries).toBeTypeOf("function");
     expect(fetchDashboardSecondaryQueries).toBeTypeOf("function");
+  });
+});
+
+describe("pacientes list pagination", () => {
+  it("keeps /pacientes at 25 rows per server page", () => {
+    expect(PACIENTES_PAGE_SIZE).toBe(25);
+    expect(PACIENTES_PAGE_SIZE).toBeGreaterThanOrEqual(25);
+    expect(PACIENTES_PAGE_SIZE).toBeLessThanOrEqual(50);
   });
 });

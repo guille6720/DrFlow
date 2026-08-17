@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { observeQuery } from "@/core/observability/observe-query";
-import { PACIENTES_PAGE_SIZE } from "@/core/supabase/pagination";
+import { PACIENTES_PAGE_SIZE, PATIENT_LIST_ID_IN_LIMIT } from "@/core/supabase/pagination";
 
 import {
   findPatientIdsByTextSearch,
@@ -13,7 +13,11 @@ import {
   buildPacientesSearchUrl,
   resolvePacientesClearHref,
 } from "@/features/pacientes/utils/pacientes-page-url";
-import { applyPatientSearchFilter, findPatientIdsByPathologySearch } from "@/features/pacientes/utils/patient-search";
+import {
+  applyPatientSearchFilter,
+  capUniquePatientIds,
+  findPatientIdsByPathologySearch,
+} from "@/features/pacientes/utils/patient-search";
 
 import { getCachedPortalContext } from "@/lib/server/cached-clinic-queries";
 import { batchPatientConsultationCounts } from "@/lib/utils/batch-patient-record-counts";
@@ -159,33 +163,36 @@ async function loadPacientesPageDataInner(
   const portalPromise = getCachedPortalContext(clinicId);
   const trimmedQ = q.trim();
   const pamiOnly = cobertura === "pami";
+  const pamiCobertura = pamiOnly ? ("pami" as const) : undefined;
+
+  const pathologyPromise = patologia
+    ? findPatientIdsByPathologySearch(supabase, clinicId, patologia)
+    : null;
+  const textIntersectPromise =
+    trimmedQ && patologia
+      ? findPatientIdsByTextSearch(supabase, clinicId, trimmedQ, { cobertura: pamiCobertura })
+      : null;
 
   let restrictIds: string[] | null = null;
 
-  if (patologia) {
-    const { patientIds, error: pathologyError } = await findPatientIdsByPathologySearch(
-      supabase,
-      clinicId,
-      patologia
-    );
+  if (pathologyPromise) {
+    const { patientIds, error: pathologyError } = await pathologyPromise;
     if (pathologyError || patientIds.length === 0) {
       return { ...EMPTY_PAGE, page };
     }
     restrictIds = patientIds;
   }
 
-  if (trimmedQ && restrictIds) {
-    const { patientIds: searchIds, error: searchError } = await findPatientIdsByTextSearch(
-      supabase,
-      clinicId,
-      trimmedQ,
-      { cobertura: pamiOnly ? "pami" : undefined }
-    );
+  if (trimmedQ && restrictIds && textIntersectPromise) {
+    const { patientIds: searchIds, error: searchError } = await textIntersectPromise;
     if (searchError) {
       return { ...EMPTY_PAGE, page };
     }
     const searchSet = new Set(searchIds);
-    restrictIds = restrictIds.filter((id) => searchSet.has(id));
+    restrictIds = capUniquePatientIds(
+      restrictIds.filter((id) => searchSet.has(id)),
+      PATIENT_LIST_ID_IN_LIMIT
+    );
     if (restrictIds.length === 0) {
       const { portalSlug, doctorInfo } = await portalPromise;
       return { ...EMPTY_PAGE, portalSlug, doctorInfo, page };
@@ -198,7 +205,7 @@ async function loadPacientesPageDataInner(
         q: trimmedQ,
         page,
         pageSize: PACIENTES_PAGE_SIZE,
-        cobertura: pamiOnly ? "pami" : undefined,
+        cobertura: pamiCobertura,
       }),
     ]);
 
@@ -235,7 +242,7 @@ async function loadPacientesPageDataInner(
     .order("first_name");
 
   if (restrictIds) {
-    query = query.in("id", restrictIds);
+    query = query.in("id", capUniquePatientIds(restrictIds, PATIENT_LIST_ID_IN_LIMIT));
   }
 
   if (trimmedQ && restrictIds) {

@@ -34,7 +34,7 @@ No hay `select("*")` en rutas clínicas críticas. Índices hot-path ya existen 
 
 | Ruta | Queries | Secuenciales | Datos cargados | Riesgo | Prioridad |
 | ---- | ------: | -----------: | -------------: | ------ | --------- |
-| `/pacientes` | ~4–7 | Portal uncached → search → enrich RPC | 25 pacientes; conteo RPC | Medio: portal serial | **P1** |
+| `/pacientes` | ~4–7 | Portal cached ∥ search → enrich RPC | **25**/página; patología cap 500 IDs | Bajo (Fase 6) | Hecho |
 | `/pacientes?seccion=historias` | ~4–6 | Idem | 25 records + RPC count | Medio | **P1** |
 | `/pacientes/[id]` shell | ~3–6 | Auth cache | Ficha + Suspense | Bajo | **P2** |
 | `/pacientes/[id]?tab=resumen` | ~12–16 | Parallel + children dx/tx | **20** records, 40 att, 20 Rx | Bajo (Fase 5) | Hecho |
@@ -137,8 +137,8 @@ Agenda 1200 + 400 es aceptable para la ventana −30d / horizonte. PAMI ya pagin
 | Producción / `main` | **No** |
 | Supabase Production | **No** |
 | Migración nueva | **No** (índices existentes suficientes) |
-| Siguiente paso | Fase 6 lista de pacientes (paginación residual), si hace falta |
+| Siguiente paso | Fase 7 `select("*")` en rutas críticas, si hace falta |
 
 ---
 
-*Re-auditoría 17-ago. Ciclo 1: dashboard fallback, ownership paralelo, portal/coverage cache, revalidate estrecho, copy pending. Ciclo 2 (Fase 2): Server Actions. Ciclo 3 (Fase 3): `revalidatePath`. Ciclo 4 (Fase 4): pending labels. Ciclo 5 (Fase 5): HC first paint 20 evoluciones + Ver anteriores.*
+*Re-auditoría 17-ago. Ciclo 1: dashboard fallback, ownership paralelo, portal/coverage cache, revalidate estrecho, copy pending. Ciclo 2 (Fase 2): Server Actions. Ciclo 3 (Fase 3): `revalidatePath`. Ciclo 4 (Fase 4): pending labels. Ciclo 5 (Fase 5): HC first paint 20. Ciclo 6 (Fase 6): `/pacientes` 25/página, patología cap + búsqueda paralela.*
