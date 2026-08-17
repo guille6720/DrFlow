@@ -25,7 +25,7 @@ El ciclo del 15-ago ya había bajado SOAP a 20 registros y los conteos de `/paci
 
 | Ruta | Antes (17-ago audit) | Después | Mejora |
 | ---- | -------------------- | ------- | -----: |
-| `/dashboard` | RPC + 30d raw siempre | RPC + hoy ≤200; 30d solo si RPC falla | alto |
+| `/dashboard` | Turnos metrics bloquean TTFB | Clinical Ops core + secondary Suspense | alto |
 | `save/issue` receta | ownership 2–3 RTTs serial | Promise.all FKs; rule en paralelo al issue | alto |
 | `voidPrescription` | SELECT + UPDATE | UPDATE … RETURNING | medio |
 | `/pacientes` | portal uncached serial | portal cached ∥ search | medio |
@@ -238,6 +238,19 @@ PHI (`patients`, `clinical_records`, recetas, turnos) **no** entra en `cached-cl
 
 ---
 
+## Fase 11 — Dashboard
+
+`/dashboard` vuelve al **Clinical Operations Center** con carga en dos fases:
+
+| Fase | Contenido | Mecánica |
+| ---- | --------- | -------- |
+| Core (primera pintura) | Agenda de hoy (≤200), sala de espera, urgentes, alertas, acciones rápidas | `loadClinicalOperationsDashboardCore` + Suspense en la página |
+| Secundario | Borradores Rx, órdenes, labs, tareas | `ClinicalOpsSecondarySections` en Suspense anidado |
+
+El Header pinta sin esperar datos. Ya no se bloquea el TTFB con `loadTurnosReportesPageData` (RPC + slots + blocks). El fallback 30d de turnos queda solo en esa función (reportes legacy), fuera del happy path del dashboard.
+
+---
+
 ## Confirmación entorno
 
 | Ítem | Estado |
@@ -352,3 +365,10 @@ PHI (`patients`, `clinical_records`, recetas, turnos) **no** entra en `cached-cl
 - `src/features/recetas/actions/coverage-rules.ts`
 - `src/lib/server/cached-clinic-metadata.ts` (`professionals-list-v2` + `user_id`)
 - Tests: `tests/performance/clinic-metadata-cache-reuse.test.ts`
+
+### Fase 11 (dashboard)
+
+- `src/app/(dashboard)/dashboard/page.tsx` → `ClinicalOpsDashboardAsync` + Suspense
+- `src/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-center.tsx` (`ClinicalOpsQuickActions`)
+- Core / secondary loaders ya existentes
+- Tests: `tests/performance/dashboard-first-paint.test.ts`

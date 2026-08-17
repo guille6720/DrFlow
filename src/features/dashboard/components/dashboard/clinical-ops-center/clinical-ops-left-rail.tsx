@@ -61,6 +61,7 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
           <li>
             <Link
               href="/pacientes/nuevo"
+              prefetch
               className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-slate-300 hover:bg-slate-800 hover:text-teal-200"
             >
               <Plus className="h-3.5 w-3.5" aria-hidden />
@@ -70,6 +71,7 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
           <li>
             <Link
               href="/turnos/nuevo"
+              prefetch
               className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-slate-300 hover:bg-slate-800 hover:text-teal-200"
             >
               <CalendarDays className="h-3.5 w-3.5" aria-hidden />
@@ -79,6 +81,7 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
           <li>
             <Link
               href="/sala-espera"
+              prefetch
               className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-slate-300 hover:bg-slate-800 hover:text-teal-200"
             >
               <Zap className="h-3.5 w-3.5" aria-hidden />
