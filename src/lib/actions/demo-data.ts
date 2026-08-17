@@ -51,8 +51,7 @@ export async function seedDemoPatientsForActiveClinic(): Promise<DemoSeedResult>
   });
 
   revalidatePath("/pacientes");
-  revalidatePath("/historias");
-  revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
   revalidatePath("/dashboard");
 
   const parts = [

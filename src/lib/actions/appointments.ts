@@ -1,8 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { revalidateAppointmentSurfaces } from "@/core/cache/revalidate-appointment-surfaces";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { verifyAppointmentForeignKeys } from "@/core/security/ownership-guard";
@@ -118,10 +117,7 @@ export async function createAppointment(formData: FormData) {
     action: "create",
   });
 
-  revalidatePath("/agenda");
-  revalidatePath("/turnos/agenda");
-  revalidatePath("/dashboard");
-  revalidatePath("/atenciones");
+  revalidateAppointmentSurfaces({ patientId: data.patient_id });
   return { data };
 }
 
@@ -195,11 +191,7 @@ export async function updateAppointment(id: string, formData: FormData) {
     action: "update",
   });
 
-  revalidatePath("/agenda");
-  revalidatePath("/turnos/agenda");
-  revalidatePath("/dashboard");
-  revalidatePath(`/pacientes/${existing.patient_id}`);
-  revalidatePath("/atenciones");
+  revalidateAppointmentSurfaces({ patientId: existing.patient_id });
   return { success: true };
 }
 
@@ -315,11 +307,14 @@ async function updateAppointmentStatusInternal(
     },
   });
 
-  revalidatePath("/agenda");
-  revalidatePath("/turnos/agenda");
-  revalidatePath("/dashboard");
-  revalidatePath(`/pacientes/${before?.patient_id}`);
-  revalidatePath("/atenciones");
+  const attended = statusParsed.data === "attended";
+  const leftQueue = attended || statusParsed.data === "cancelled";
+  revalidateAppointmentSurfaces({
+    patientId: before?.patient_id as string | undefined,
+    includeAttendanceRegister: attended,
+    includeConsultasQueue: leftQueue,
+    includeWaitingRoom: leftQueue,
+  });
 
   const patient = before?.patients as
     | { first_name: string; last_name: string; phone: string | null }
@@ -378,7 +373,10 @@ export async function startConsultationFromAppointment(appointmentId: string) {
     metadata: { from_status: appointment.status },
   });
 
-  revalidatePath("/agenda");
+  revalidateAppointmentSurfaces({
+    patientId: appointment.patient_id as string,
+    includeConsultasQueue: true,
+  });
   return {
     patientId: appointment.patient_id as string,
     professionalId: appointment.professional_id as string,
@@ -424,11 +422,10 @@ export async function finalizeConsultation(
     metadata: { status: "attended", consultation_modality: modalityParsed.data },
   });
 
-  revalidatePath("/agenda");
-  revalidatePath("/turnos/agenda");
-  revalidatePath("/dashboard");
-  revalidatePath("/atenciones");
-  revalidatePath("/consultas");
-  revalidatePath("/sala-espera");
+  revalidateAppointmentSurfaces({
+    includeAttendanceRegister: true,
+    includeConsultasQueue: true,
+    includeWaitingRoom: true,
+  });
   return { success: true };
 }

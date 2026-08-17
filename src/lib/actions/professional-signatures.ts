@@ -67,9 +67,6 @@ async function requireSignatureEditor(professionalId: string) {
 function revalidateSignatureViews(clinicId: string) {
   revalidateClinicProfessionalsCache(clinicId);
   revalidatePath("/firmas");
-  revalidatePath("/historias", "layout");
-  revalidatePath("/pacientes", "layout");
-  revalidatePath("/recetas");
 }
 
 export async function updateProfessionalSignatureText(formData: FormData) {

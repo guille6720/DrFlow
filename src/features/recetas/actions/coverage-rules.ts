@@ -30,7 +30,6 @@ import {
 function revalidateCoverageRuleViews(clinicId: string) {
   revalidateClinicCoverageRulesCache(clinicId);
   revalidatePath("/configuracion");
-  revalidatePath("/pacientes", "layout");
 }
 
 export async function getClinicCoverageRules(): Promise<{

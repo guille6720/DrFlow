@@ -1,9 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
+import { revalidateAppointmentSurfaces } from "@/core/cache/revalidate-appointment-surfaces";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { createClient } from "@/core/supabase/server";
 import { waitingRoomStatusSchema } from "@/core/validations/cash-schemas";
@@ -45,10 +44,10 @@ export async function updateWaitingRoomStatus(
     metadata: { waiting_room_status: parsed.data },
   });
 
-  revalidatePath("/sala-espera");
-  revalidatePath("/consultas");
-  revalidatePath("/agenda");
-  revalidatePath("/turnos/agenda");
+  revalidateAppointmentSurfaces({
+    includeConsultasQueue: true,
+    includeWaitingRoom: true,
+  });
   return { data };
 }
 

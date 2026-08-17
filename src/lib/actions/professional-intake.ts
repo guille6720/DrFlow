@@ -173,7 +173,7 @@ export async function submitProfessionalIntake(formData: FormData) {
   revalidateClinicLocationsCache(clinicId);
   revalidatePath("/ingreso-profesionales");
   revalidatePath("/configuracion");
-  revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
 
   return {
     success: true as const,
@@ -264,7 +264,7 @@ export async function updateProfessionalProfile(professionalId: string, formData
   revalidateClinicLocationsCache(clinicId);
   revalidatePath("/ingreso-profesionales");
   revalidatePath("/configuracion");
-  revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
 
   return { success: true as const, message: "Datos del profesional actualizados." };
 }
@@ -353,7 +353,7 @@ export async function saveProfessionalSchedule(professionalId: string, formData:
 
   revalidatePath("/ingreso-profesionales");
   revalidatePath("/configuracion");
-  revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
 
   return {
     success: true as const,

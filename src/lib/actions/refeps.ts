@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireSettingsAccess } from "@/core/actions/clinic-guard";
+import { revalidatePrescriptionSurfaces } from "@/core/cache/revalidate-prescription-surfaces";
 import {
   getRefepsConfigurationHint,
   isRefepsApiConfigured,
@@ -108,7 +109,6 @@ export async function updateRefepsClinicSettings(formData: FormData): Promise<{
   });
 
   revalidatePath("/configuracion");
-  revalidatePath("/recetas");
 
   return {
     success: true,
@@ -151,12 +151,16 @@ export async function submitPrescriptionToRefeps(prescriptionId: string) {
   });
 
   if (!result.ok) {
-    revalidatePath("/recetas");
-    revalidatePath(`/pacientes/${prescription.patient_id}`);
+    revalidatePrescriptionSurfaces({
+      patientId: prescription.patient_id,
+      clinicalRecordId: prescription.clinical_record_id,
+    });
     return { error: result.error, data: result.data ?? null };
   }
 
-  revalidatePath("/recetas");
-  revalidatePath(`/pacientes/${prescription.patient_id}`);
+  revalidatePrescriptionSurfaces({
+    patientId: prescription.patient_id,
+    clinicalRecordId: prescription.clinical_record_id,
+  });
   return { data: result.data };
 }

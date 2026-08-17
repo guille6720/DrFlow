@@ -45,7 +45,6 @@ function revalidateTemplateViews(clinicId: string) {
   revalidatePath("/plantillas");
   revalidatePath("/historias/nueva");
   revalidatePath("/historias/[id]/editar", "page");
-  revalidatePath("/pacientes", "layout");
 }
 
 export async function createClinicalTemplate(formData: FormData) {

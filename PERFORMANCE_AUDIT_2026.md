@@ -137,8 +137,8 @@ Agenda 1200 + 400 es aceptable para la ventana −30d / horizonte. PAMI ya pagin
 | Producción / `main` | **No** |
 | Supabase Production | **No** |
 | Migración nueva | **No** (índices existentes suficientes) |
-| Siguiente paso | Fase 2 Server Actions: recortar round-trips residuales (auth ∥ client; sin getSession extra) |
+| Siguiente paso | Fase 4 UX botones (pending visual) o Agenda/PAMI residual de carga |
 
 ---
 
-*Re-auditoría 17-ago. Ciclo 1: dashboard fallback, ownership paralelo, portal/coverage cache, revalidate estrecho, copy pending. Ciclo 2 (Fase 2): Server Actions clínicas recortan hops seriales (permiso ∥ `createClient`, `userId` del gate, SOAP sin double-auth).*
+*Re-auditoría 17-ago. Ciclo 1: dashboard fallback, ownership paralelo, portal/coverage cache, revalidate estrecho, copy pending. Ciclo 2 (Fase 2): Server Actions. Ciclo 3 (Fase 3): `revalidatePath` — sin stubs `/historias` `/recetas` `/agenda`; turnos/atenciones solo si el dato cambió.*

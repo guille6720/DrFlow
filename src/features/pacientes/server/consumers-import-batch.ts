@@ -200,7 +200,6 @@ export async function processConsumersImportBatchFromBuffer(
   });
 
   revalidatePath("/pacientes");
-  revalidatePath("/historias");
 
   return {
     success: true,

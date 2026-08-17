@@ -103,6 +103,28 @@ Objetivo: botones clínicos más rápidos **sin** optimistic UI, sin debilitar R
 
 ---
 
+## Fase 3 — `revalidatePath`
+
+Objetivo: no invalidar listados ni redirects cuando sólo cambió una receta, evolución, orden o turno.
+
+`/historias`, `/recetas` y `/agenda` son **redirect stubs**. Invalidarlos no refresca UI y ensucia el router cache.
+
+| Mutación | Antes | Después |
+| -------- | ----- | ------- |
+| Receta save/issue/void | paciente + historia + **`/consultas`** | paciente + historia embed |
+| SOAP create | consultas + paciente + **agenda + dashboard** | consultas + paciente; `/turnos/agenda` sólo si hay turno |
+| Adjunto clínico | paciente + **consultas** + historia | paciente + historia embed |
+| Turno create/update | agenda stub + turnos + dashboard + **atenciones** + form nuevo | `/turnos/agenda` + dashboard + paciente |
+| Turno → atendido / finalizar | ídem + atenciones | atenciones + consultas + sala de espera |
+| Plantillas receta / SOAP | **`/pacientes` layout** + `/recetas` | `/plantillas-recetas` o `/plantillas` + cache tag |
+| Coverage rules | tag + **pacientes layout** | tag + `/configuracion` |
+| Firmas | **historias/pacientes layout** + recetas | `/firmas` + tag professionals |
+| Import bulk | `/pacientes` + **`/historias`** | `/pacientes` |
+
+La página actual se refresca sola al terminar la Server Action. `revalidatePath` queda para las otras superficies que muestran el mismo dato.
+
+---
+
 ## Confirmación entorno
 
 | Ítem | Estado |
@@ -145,3 +167,15 @@ Objetivo: botones clínicos más rápidos **sin** optimistic UI, sin debilitar R
 - `src/features/pacientes/actions/patients.ts` / `patient-attachments.ts` / `patient-chart-indicators.ts`
 - `src/lib/actions/appointments.ts` / `cash-register.ts` / `waiting-room.ts`
 - `src/features/turnos/actions/create-turno-wizard.ts` / `reschedule-appointment.ts` / `waiting-list.ts` / `fetch-turnos-wizard-slots.ts`
+
+### Fase 3 (`revalidatePath`)
+
+- `src/core/cache/revalidate-appointment-surfaces.ts` (nuevo)
+- `src/core/cache/revalidate-prescription-surfaces.ts` / `revalidate-clinical.ts`
+- `src/lib/actions/appointments.ts` / `waiting-room.ts` / `refeps.ts` / `settings.ts`
+- `src/lib/actions/professional-signatures.ts` / `clinical-templates.ts` / `clinical-reset.ts` / `demo-data.ts` / `professional-intake.ts`
+- `src/features/historias/actions/clinical-records.ts`
+- `src/features/recetas/actions/prescription-templates.ts` / `coverage-rules.ts`
+- `src/features/pacientes/actions/patient-attachments.ts` / `patient-chart-indicators.ts`
+- `src/features/turnos/actions/create-turno-wizard.ts` / `reschedule-appointment.ts` / `turnos-config.ts`
+- Tests: `revalidate-appointment-surfaces` / `revalidate-prescription-surfaces`

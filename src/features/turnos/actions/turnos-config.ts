@@ -8,7 +8,7 @@ import { createClient } from "@/core/supabase/server";
 import { firstZodIssue, optionalEntityIdSchema, parseEntityId } from "@/core/validations/params";
 import { createAvailabilityRuleSchema } from "@/core/validations/settings-schemas";
 
-const TURNO_CONFIG_PATHS = ["/turnos/configuracion", "/turnos/agenda", "/turnos/nuevo", "/configuracion", "/agenda"];
+const TURNO_CONFIG_PATHS = ["/turnos/configuracion", "/turnos/agenda", "/turnos/nuevo", "/configuracion"];
 
 function revalidateTurnosConfig() {
   for (const path of TURNO_CONFIG_PATHS) revalidatePath(path);

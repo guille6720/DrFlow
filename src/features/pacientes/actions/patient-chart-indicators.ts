@@ -45,7 +45,6 @@ export async function savePatientClinicalIndicators(
     what: "Actualizó indicadores clínicos del paciente",
   });
 
-  revalidatePath(`/pacientes/${idParsed.data}`);
-  revalidatePath(`/pacientes/${idParsed.data}?tab=soap`);
+  revalidatePath(`/pacientes/${idParsed.data}`, "page");
   return {};
 }

@@ -5,8 +5,8 @@
 import { revalidatePath } from "next/cache";
 
 import { requireSettingsAccess } from "@/core/actions/clinic-guard";
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { logAudit } from "@/core/auth/session.actions";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import {
   revalidateClinicLocationsCache,
   revalidateClinicPortalCache,
@@ -105,11 +105,7 @@ export async function updateClinicSettings(formData: FormData) {
 
   revalidateClinicSettingsCache(clinicId);
   revalidatePath("/configuracion");
-
-  revalidatePath("/agenda");
-
-  revalidatePath("/historias");
-
+  revalidatePath("/turnos/agenda");
   revalidatePath("/historias/nueva");
 
   return { success: true };
@@ -445,8 +441,7 @@ export async function createProfessional(formData: FormData) {
 
   revalidateClinicProfessionalsCache(clinicId);
   revalidatePath("/configuracion");
-
-  revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
 
   return { success: true };
 
@@ -516,8 +511,7 @@ export async function enablePublicBooking() {
 
   revalidateClinicPortalCache(clinicId);
   revalidatePath("/configuracion");
-
-  revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
 
   return { success: true, slug: clinic.slug };
 
@@ -568,7 +562,6 @@ export async function createScheduleBlock(formData: FormData) {
 
   if (error) return { error: error.message };
 
-  revalidatePath("/agenda");
   revalidatePath("/turnos/agenda");
   revalidatePath("/turnos/configuracion");
 
@@ -612,8 +605,6 @@ export async function createAvailabilityRule(formData: FormData) {
   if (error) return { error: error.message };
 
   revalidatePath("/configuracion");
-
-  revalidatePath("/agenda");
   revalidatePath("/turnos/agenda");
   revalidatePath("/turnos/configuracion");
 

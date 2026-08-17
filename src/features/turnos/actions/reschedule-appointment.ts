@@ -1,16 +1,14 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { revalidateAppointmentSurfaces } from "@/core/cache/revalidate-appointment-surfaces";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
 import { sanitizeText } from "@/core/validations/schemas";
-
-const TURNO_PATHS = ["/turnos/agenda", "/turnos/nuevo", "/agenda", "/dashboard", "/atenciones"];
 
 const rescheduleSchema = z
   .object({
@@ -25,8 +23,7 @@ const rescheduleSchema = z
   });
 
 function revalidateTurnoPaths(patientId?: string) {
-  for (const path of TURNO_PATHS) revalidatePath(path);
-  if (patientId) revalidatePath(`/pacientes/${patientId}`);
+  revalidateAppointmentSurfaces({ patientId });
 }
 
 export async function rescheduleAppointment(input: unknown) {

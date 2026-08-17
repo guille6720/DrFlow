@@ -31,7 +31,6 @@ function revalidatePatientDocumentSurfaces(
   clinicalRecordId?: string | null
 ) {
   revalidatePath(`/pacientes/${patientId}`, "page");
-  revalidatePath("/consultas");
   if (clinicalRecordId) {
     revalidatePath(`/historias/${clinicalRecordId}`, "page");
   }

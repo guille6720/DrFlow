@@ -63,8 +63,6 @@ function parseTemplateForm(
 
 function revalidateTemplateViews() {
   revalidatePath("/plantillas-recetas");
-  revalidatePath("/pacientes", "layout");
-  revalidatePath("/recetas");
 }
 
 export async function listPrescriptionTemplates(

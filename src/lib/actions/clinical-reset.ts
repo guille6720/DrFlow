@@ -4,8 +4,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
 import { resolveAccessFields } from "@/core/actions/action-response";
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { logAudit } from "@/core/auth/session.actions";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { logServerError } from "@/core/errors/log-error.server";
 import { hasPermission } from "@/core/permissions/roles";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
@@ -136,10 +136,9 @@ async function executeClinicalHistoryClear(
 }
 
 function revalidateMigrationPaths() {
-  revalidatePath("/historias");
   revalidatePath("/datos");
   revalidatePath("/pacientes");
-  revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
 }
 
 export async function clearClinicClinicalHistory(
