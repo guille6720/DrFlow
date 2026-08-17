@@ -172,6 +172,7 @@ export function WaitingListView({
                         variant="outline"
                         size="sm"
                         loading={busy}
+                        pendingLabel="Guardando..."
                         onClick={() => void handleStatus(entry.id, "contacted")}
                       >
                         Marcar contactado
@@ -181,6 +182,7 @@ export function WaitingListView({
                       type="button"
                       size="sm"
                       loading={busy}
+                      pendingLabel="Guardando..."
                       onClick={() => void handleStatus(entry.id, "scheduled")}
                     >
                       Turno agendado
@@ -190,7 +192,7 @@ export function WaitingListView({
                       variant="outline"
                       size="sm"
                       loading={busy}
-                      disabled={busy}
+                      pendingLabel="Cancelando..."
                       onClick={() => void handleStatus(entry.id, "cancelled")}
                     >
                       Cancelar

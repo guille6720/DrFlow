@@ -294,11 +294,17 @@ export function PrescriptionTemplatesManager({
           {message ? <p className="text-sm text-teal-700">{message}</p> : null}
 
           <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-            <Button type="submit" loading={loading}>
+            <Button type="submit" loading={loading} pendingLabel="Guardando...">
               {editor.id ? "Guardar cambios" : "Crear plantilla"}
             </Button>
             {editor.id ? (
-              <Button type="button" variant="outline" loading={loading} onClick={handleDelete}>
+              <Button
+                type="button"
+                variant="outline"
+                loading={loading}
+                pendingLabel="Eliminando..."
+                onClick={handleDelete}
+              >
                 <Trash2 className="h-4 w-4" />
                 Eliminar
               </Button>

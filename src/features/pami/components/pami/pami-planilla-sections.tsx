@@ -269,8 +269,7 @@ export function PamiPlanillaPreviewSection({
               size="sm"
               variant="primary"
               loading={loading}
-              disabled={loading}
-              aria-busy={loading}
+              pendingLabel="Guardando..."
               aria-label={loading ? t.preview.saveAriaLoading : t.preview.saveAriaIdle}
               onClick={handleSaveAsOrder}
               onKeyDown={(event) => {

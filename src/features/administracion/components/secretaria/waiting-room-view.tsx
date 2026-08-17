@@ -92,7 +92,8 @@ const WaitingRoomCard = memo(function WaitingRoomCard({
           <Button
             size="sm"
             type="button"
-            disabled={pending}
+            loading={pending}
+            pendingLabel="Confirmando..."
             onClick={() => onMove(row.id, "confirmed")}
           >
             Confirmar → Consultas

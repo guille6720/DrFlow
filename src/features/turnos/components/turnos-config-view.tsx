@@ -2,7 +2,7 @@
 
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Loader2, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -138,7 +138,7 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
                       options={sedeOptions}
                     />
                     <div className="flex flex-wrap items-end gap-2">
-                      <Button type="submit" size="sm" disabled={busyId === rule.id}>
+                      <Button type="submit" size="sm" loading={busyId === rule.id} pendingLabel="Guardando...">
                         Guardar
                       </Button>
                       <Button
@@ -179,7 +179,8 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
                         type="button"
                         size="sm"
                         variant="outline"
-                        disabled={busyId === rule.id}
+                        loading={busyId === rule.id}
+                        pendingLabel="Guardando..."
                         onClick={() =>
                           void runAction(rule.id, () =>
                             setAvailabilityRuleActive(rule.id, !rule.is_active)
@@ -192,16 +193,13 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
                         type="button"
                         size="sm"
                         variant="danger"
-                        disabled={busyId === rule.id}
+                        loading={busyId === rule.id}
+                        pendingLabel="Eliminando..."
                         onClick={() =>
                           void runAction(rule.id, () => deleteAvailabilityRule(rule.id))
                         }
                       >
-                        {busyId === rule.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
+                        <Trash2 className="h-4 w-4" />
                         Eliminar
                       </Button>
                     </div>
@@ -238,7 +236,7 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
           />
           <Select name="location_id" label="Sede (opcional)" options={sedeOptions} />
           <div className="flex items-end">
-            <Button type="submit" disabled={busyId === "new-rule"}>
+            <Button type="submit" loading={busyId === "new-rule"} pendingLabel="Guardando...">
               Agregar horario
             </Button>
           </div>
@@ -264,7 +262,8 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
                   type="button"
                   size="sm"
                   variant="danger"
-                  disabled={busyId === block.id}
+                  loading={busyId === block.id}
+                  pendingLabel="Eliminando..."
                   onClick={() => void runAction(block.id, () => deleteScheduleBlock(block.id))}
                 >
                   Eliminar
@@ -296,7 +295,12 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
           />
           <Input name="start_at" label="Desde" type="datetime-local" required />
           <Input name="end_at" label="Hasta" type="datetime-local" required />
-          <Button type="submit" className="sm:col-span-2" disabled={busyId === "new-block"}>
+          <Button
+            type="submit"
+            className="sm:col-span-2"
+            loading={busyId === "new-block"}
+            pendingLabel="Guardando..."
+          >
             Crear bloqueo
           </Button>
         </form>

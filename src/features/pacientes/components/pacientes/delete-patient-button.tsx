@@ -134,6 +134,7 @@ export function DeletePatientButton({ patientId, patientName }: DeletePatientBut
                 type="button"
                 variant="danger"
                 loading={loading}
+                pendingLabel="Dando de baja..."
                 disabled={loadingPolicy || !canConfirm}
                 onClick={handleDelete}
               >

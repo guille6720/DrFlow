@@ -135,7 +135,13 @@ export function PatientEhrActionLinks({
 
       <div className="ml-auto flex items-center gap-3 print:hidden">
         {consultOpen ? (
-          <Button type="submit" form={EHR_NEW_CONSULT_FORM_ID} size="sm" loading={saveLoading}>
+          <Button
+            type="submit"
+            form={EHR_NEW_CONSULT_FORM_ID}
+            size="sm"
+            loading={saveLoading}
+            pendingLabel="Guardando..."
+          >
             Guardar consulta
           </Button>
         ) : null}

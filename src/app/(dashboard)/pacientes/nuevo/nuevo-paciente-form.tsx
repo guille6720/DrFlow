@@ -87,7 +87,9 @@ export default function NuevoPacienteForm({
             />
             {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}
             <div className="flex gap-2 sm:col-span-2">
-              <Button type="submit" loading={loading}>Guardar paciente</Button>
+              <Button type="submit" loading={loading} pendingLabel="Guardando...">
+                Guardar paciente
+              </Button>
               <Link href={cancelHref}>
                 <Button type="button" variant="outline">Cancelar</Button>
               </Link>

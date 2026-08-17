@@ -383,7 +383,7 @@ export function ClinicalTemplatesManager({ templates, specialties }: Props) {
           />
 
           <div className="flex flex-wrap gap-2">
-            <Button type="submit" loading={loading}>
+            <Button type="submit" loading={loading} pendingLabel="Guardando...">
               {editor.id ? "Guardar cambios" : "Crear plantilla"}
             </Button>
             {editor.id ? (
@@ -391,6 +391,7 @@ export function ClinicalTemplatesManager({ templates, specialties }: Props) {
                 type="button"
                 variant="outline"
                 loading={loading}
+                pendingLabel="Guardando..."
                 onClick={() => {
                   const current = templates.find((t) => t.id === editor.id);
                   if (current) void toggleActive(current);

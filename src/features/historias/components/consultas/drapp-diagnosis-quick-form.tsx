@@ -187,6 +187,7 @@ export function DrappDiagnosisQuickForm({ onDirtyChange, onCancel, onSave, savin
             type="button"
             size="sm"
             loading={saving}
+            pendingLabel="Guardando..."
             disabled={!(name.trim() || selected?.name)}
             onClick={() => void handleSave()}
           >

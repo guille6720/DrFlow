@@ -270,7 +270,7 @@ export function PatientEhrNewConsultPanel({
 
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
           <p className="text-xs drflow-ehr-muted">Enter o Ctrl+Enter guarda la evolución.</p>
-          <Button type="submit" size="sm" loading={loading}>
+          <Button type="submit" size="sm" loading={loading} pendingLabel="Guardando...">
             Guardar evolución
           </Button>
         </div>

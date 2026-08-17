@@ -151,6 +151,7 @@ export function DoctorConsultasView({ rows }: Props) {
                   type="button"
                   variant="outline"
                   loading={busy}
+                  pendingLabel="Guardando..."
                   onClick={() => void handleFinalize(row.id)}
                 >
                   <CheckCircle2 className="h-4 w-4" />

@@ -979,14 +979,12 @@ export function TurnosNuevoWizard({
                 <Button
                   type="button"
                   className="mt-4 w-full"
-                  disabled={!canConfirm || submitting}
+                  loading={submitting}
+                  pendingLabel="Confirmando..."
+                  disabled={!canConfirm}
                   onClick={() => void handleConfirm()}
                 >
-                  {submitting ? (
-                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                  ) : (
-                    <CalendarCheck className="mr-1 h-4 w-4" />
-                  )}
+                  <CalendarCheck className="mr-1 h-4 w-4" />
                   Confirmar turno
                 </Button>
               </>

@@ -262,6 +262,7 @@ export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, savin
             type="button"
             size="sm"
             loading={saving}
+            pendingLabel="Guardando..."
             disabled={!product.trim() && medications.length === 0 && catalogTreatments.length === 0}
             onClick={() => void handleSave()}
           >

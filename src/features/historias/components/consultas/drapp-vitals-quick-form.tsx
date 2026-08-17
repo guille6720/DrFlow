@@ -90,6 +90,7 @@ export function DrappVitalsQuickForm({ onDirtyChange, onCancel, onSave, saving }
           type="button"
           size="sm"
           loading={saving}
+          pendingLabel="Guardando..."
           disabled={!dirty}
           onClick={() => void onSave(values)}
         >

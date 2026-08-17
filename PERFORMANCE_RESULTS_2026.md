@@ -125,6 +125,25 @@ La página actual se refresca sola al terminar la Server Action. `revalidatePath
 
 ---
 
+## Fase 4 — UX instantánea de botones
+
+Objetivo: feedback visual &lt;100 ms al click (spinner + disabled + texto pending). **Sin optimistic UI** en receta, SOAP, órdenes ni indicadores clínicos.
+
+`Button` ahora acepta `pendingLabel` y pone `aria-busy` mientras `loading`. El `setState`/`startTransition` sigue ocurriendo **antes** del `await`.
+
+| Superficie | Pending |
+| ---------- | ------- |
+| Consulta / evolución (EHR, DrApp, modal) | Guardando... |
+| Paciente alta/edición / indicadores | Guardando... |
+| Receta dispensada / REFEPS | Marcando... / Enviando... |
+| Orden anular | Anulando... |
+| Turno confirmar / lista de espera / sala | Confirmando... / Guardando... |
+| Planilla PAMI → historial | Guardando... |
+
+No se muestra como emitida/anulada/atendida una receta o consulta hasta que el servidor confirma.
+
+---
+
 ## Confirmación entorno
 
 | Ítem | Estado |
@@ -179,3 +198,13 @@ La página actual se refresca sola al terminar la Server Action. `revalidatePath
 - `src/features/pacientes/actions/patient-attachments.ts` / `patient-chart-indicators.ts`
 - `src/features/turnos/actions/create-turno-wizard.ts` / `reschedule-appointment.ts` / `turnos-config.ts`
 - Tests: `revalidate-appointment-surfaces` / `revalidate-prescription-surfaces`
+
+### Fase 4 (UX pending)
+
+- `src/components/ui/button.tsx` (`pendingLabel` + `aria-busy`)
+- Consulta/EHR/DrApp save buttons
+- Paciente alta/edición/indicadores/baja
+- Receta dispensada / REFEPS / anular orden
+- Turnos wizard / config / lista de espera / sala
+- PAMI guardar planilla
+- Tests: `ui-button-pending.test.tsx`

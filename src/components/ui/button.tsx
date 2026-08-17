@@ -40,6 +40,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
+  /** Replaces children while `loading` so the click feels instant (<100 ms). */
+  pendingLabel?: string;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -49,16 +51,19 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       variant = "primary",
       size = "md",
       loading,
+      pendingLabel,
       disabled,
       children,
       ...props
     },
     ref
   ) => {
+    const busy = Boolean(loading);
     return (
       <button
         ref={ref}
-        disabled={disabled || loading}
+        disabled={disabled || busy}
+        aria-busy={busy || undefined}
         className={cn(
           buttonSurfaceClassName(variant, size),
           "disabled:opacity-50 disabled:cursor-not-allowed",
@@ -66,10 +71,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {...props}
       >
-        {loading && (
+        {busy && (
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
         )}
-        {children}
+        {busy && pendingLabel ? pendingLabel : children}
       </button>
     );
   }

@@ -137,7 +137,7 @@ Agenda 1200 + 400 es aceptable para la ventana −30d / horizonte. PAMI ya pagin
 | Producción / `main` | **No** |
 | Supabase Production | **No** |
 | Migración nueva | **No** (índices existentes suficientes) |
-| Siguiente paso | Fase 4 UX botones (pending visual) o Agenda/PAMI residual de carga |
+| Siguiente paso | Fase 5 HC paginación residual / Fase 6 pacientes, si hace falta |
 
 ---
 

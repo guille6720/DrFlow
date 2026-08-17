@@ -268,6 +268,7 @@ export function PrescriptionList({
                       size="sm"
                       variant="outline"
                       loading={actingId === rx.id}
+                      pendingLabel="Marcando..."
                       onClick={() => onMarkDispensed(rx.id)}
                     >
                       <Pill className="h-4 w-4" />

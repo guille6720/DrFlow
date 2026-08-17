@@ -175,6 +175,7 @@ function FullConsultaForm({
         <Button
           type="button"
           loading={saving}
+          pendingLabel="Guardando..."
           disabled={!values.evolution.trim() && !values.chiefComplaint.trim()}
           onClick={() => void onSave(values)}
         >
