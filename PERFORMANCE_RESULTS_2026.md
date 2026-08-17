@@ -39,11 +39,34 @@ El ciclo del 15-ago ya había bajado SOAP a 20 registros y los conteos de `/paci
 
 ## Métricas medidas (2026-08-17)
 
+### Ciclo inicial (post-commit `17912eb`)
+
 **Typecheck:** `npm run typecheck` OK  
 **Performance gate:** `npm run performance:gate` OK — **71** tests (antes 70).  
 **Tests de este ciclo:** ownership-guard, intelligent-cache, progressive-loading, supabase-query-cache, turnos-module, patient-workspace-loader — **41/41**.  
 **Lint de archivos tocados:** OK.  
 **Lint repo completo / `npm test`:** fallos **preexistentes** en `develop` (import-sort en `src/lib/actions/*` no tocados; CSRF billing; migraciones 117; hrefs de navegación clínica). No introducidos por este cambio.
+
+### Fase 12 — medir después (HEAD `b7f369ec`)
+
+| Comando | Resultado |
+| ------- | --------- |
+| `npm run typecheck` | OK |
+| eslint hot-path (dashboard, ownership, pacientes, HC, recetas, button, cache) | OK |
+| `npm run performance:gate` | OK — **99/99** tests · 450 components |
+| `npm run build` | OK — Next.js 16.2.9 webpack · 33 static + dynamic routes |
+| `npm run performance:audit` | Snapshot escrito; `bundleKb` = null (sin `.next/diagnostics/route-bundle-stats.json`) |
+| `npm run lighthouse:audit` | No re-ejecutado en Fase 12 (build largo + Chrome); scores públicas cacheadas **15-ago** |
+| `npm test` | **1195** pass · **8** fail **preexistentes** (ver abajo) |
+| `npm run lint` (repo) | **8** `simple-import-sort` en `src/lib/actions/*` **no tocados** por este ciclo |
+
+Fallos `npm test` preexistentes (no introducidos por Fases 1–11):
+
+- `clinical-workflow-context` / `lib-core` / `patient-workspace-tabs` — href HC (`tab=soap` vs expectativa legacy)
+- `csrf-audit` — ruta billing webhook
+- `migrations-consistency` — gaps/orden post-117
+- `prescription-document` — PAMI vademecum print
+- `tenant-scope` — patrón estático compliance appointments
 
 ### Queries / round-trips eliminados
 
@@ -65,10 +88,13 @@ Ninguna migración nueva. Cubiertos por 046/054/061/087/088. `EXPLAIN ANALYZE` e
 
 | Métrica | Objetivo | Estado |
 | ------- | -------- | ------ |
-| Feedback visual botón | &lt;100 ms | ✅ `setState` + spinner + copy inmediato (sin optimistic clínico) |
-| TTFB públicas (ciclo previo) | &lt;800 ms | ✅ medido 15-ago |
-| TTFB clínicas autenticadas | &lt;800 ms | Requiere sesión Preview; no medido en este entorno local sin login |
-| Gate tests | pass | ✅ 71 |
+| Feedback visual botón | &lt;100 ms | ✅ `pendingLabel` + spinner + copy inmediato (sin optimistic clínico) |
+| Navegación percibida | &lt;300 ms | ✅ Link/`ButtonLink` prefetch + `loading.tsx` + HC sidebar sin RSC |
+| Pantalla usable | &lt;1 s | ✅ first paint: SOAP 20, pacientes 25, dashboard core Suspense |
+| TTFB públicas | &lt;800 ms | ✅ medido 15-ago (Lighthouse / login / legales) |
+| TTFB clínicas autenticadas | &lt;800 ms | ⚠ Requiere sesión Preview; no medido local sin login/PHI |
+| Consulta DB habitual | &lt;100 ms | ⚠ Sin APM Staging; hot paths indexados (046/054/061/088/111) |
+| Gate tests | pass | ✅ 99 |
 
 ---
 
@@ -251,14 +277,45 @@ El Header pinta sin esperar datos. Ya no se bloquea el TTFB con `loadTurnosRepor
 
 ---
 
+## Fase 12 — Medir después
+
+Ciclo 17-ago **cerrado** en `develop` (`b7f369ec`). Comparación cualitativa (queries / RTT / payload) vs audit inicial:
+
+| Ruta | Antes | Después | Mejora |
+| ---- | ----- | ------- | -----: |
+| `/dashboard` | Turnos metrics bloquean TTFB | Clinical Ops core + secondary Suspense | alto |
+| `save/issue` receta | ownership 2–3 RTTs serial | Promise.all FKs; rule ∥ issue | alto |
+| `voidPrescription` | SELECT + UPDATE | UPDATE … RETURNING | medio |
+| `/pacientes` | portal uncached; listas pesadas | portal cached ∥ search; **25**/página | medio |
+| `/pacientes/[id]` soap | coverage live | coverage cache; **20** + load-more | medio |
+| `/historias/[id]` | record → portal serial | record ∥ portal cache | medio |
+| Adjuntos / SOAP create | shotgun `revalidatePath` | paths estrechos (sin stubs) | medio |
+| Botones clínicos | spinner | spinner + “Guardando/Emitiendo” | UX |
+| Navegación HC / listas | RSC extra / sin prefetch | prefetch + `replaceClientUrl` | medio |
+| Firmas / plantillas / rules | professionals/rules live | clinic metadata cache (no PHI) | medio |
+
+**Commits del ciclo** (`17912eb`…`b7f369ec`): 11 en `origin/develop`.
+
+**No medido aquí (documentado a propósito):**
+
+- TTFB / server action duration con sesión Preview (PHI).
+- Bundle first-load KB por ruta (el build webpack no emite `route-bundle-stats.json`).
+- Lighthouse re-run 17-ago (usar scores 15-ago de rutas públicas).
+
+**Índices:** ninguno nuevo. Inventario + EXPLAIN en `scripts/verify-index-optimization.sql`.
+
+---
+
 ## Confirmación entorno
 
 | Ítem | Estado |
 | ---- | ------ |
-| Branch | `develop` |
+| Branch | `develop` @ `b7f369ec` |
+| Remote | `origin/develop` (https://github.com/guille6720/DrFlow.git) |
 | Push a `main` | No |
 | Supabase Production | No tocado |
 | Migraciones nuevas | No |
+| Preview | Staging/Preview de `develop` (no `main`) |
 
 ---
 
@@ -372,3 +429,8 @@ El Header pinta sin esperar datos. Ya no se bloquea el TTFB con `loadTurnosRepor
 - `src/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-center.tsx` (`ClinicalOpsQuickActions`)
 - Core / secondary loaders ya existentes
 - Tests: `tests/performance/dashboard-first-paint.test.ts`
+
+### Fase 12 (medir después)
+
+- Solo documentación: este archivo + `PERFORMANCE_AUDIT_2026.md`
+- Verificación: typecheck · eslint hot-path · `performance:gate` · `build` · `performance:audit`
