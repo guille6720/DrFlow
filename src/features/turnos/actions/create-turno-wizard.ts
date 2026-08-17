@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { getSession } from "@/core/auth/session.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { verifyAppointmentForeignKeys } from "@/core/security/ownership-guard";
@@ -21,16 +20,17 @@ function revalidateTurnoPaths(patientId?: string) {
 }
 
 export async function createTurnoWizard(input: unknown) {
-  const access = await requireClinicPermission("manageAppointments");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageAppointments"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
+  const { clinicId, userId } = access;
 
   const parsed = turnoWizardSchema.safeParse(input);
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   const data = parsed.data;
-  const supabase = await createClient();
 
   const ownership = await verifyAppointmentForeignKeys(supabase, clinicId, {
     patientId: data.patient_id,
@@ -57,7 +57,7 @@ export async function createTurnoWizard(input: unknown) {
     p_priority: data.priority,
     p_insurance_provider: data.insurance_provider ?? null,
     p_insurance_plan: data.insurance_plan ?? null,
-    p_created_by: user?.id ?? null,
+    p_created_by: userId,
   });
 
   if (error) {

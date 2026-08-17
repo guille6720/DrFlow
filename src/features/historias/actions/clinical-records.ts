@@ -4,8 +4,10 @@ import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
-import { getSession } from "@/core/auth/session.server";
-import { getAuditRequestContext } from "@/core/security/audit-context";
+import {
+  type AuditRequestContext,
+  getAuditRequestContext,
+} from "@/core/security/audit-context";
 import { verifyClinicalRecordForeignKeys } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
@@ -16,22 +18,43 @@ import {
   updateClinicalRecordEntry,
 } from "@/features/historias/services/clinical-records.service";
 
-export async function createClinicalRecord(formData: FormData) {
-  const access = await requireClinicPermission("editClinicalRecords");
-  if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
-  if (!user) return { error: "Sin sesión" };
+type ClinicWriteAccess = {
+  clinicId: string;
+  userId: string;
+};
 
+async function gateClinicalRecordWrite(): Promise<
+  | { ok: true; access: ClinicWriteAccess; ctx: AuditRequestContext }
+  | { ok: false; error: string }
+> {
+  const [access, ctx] = await Promise.all([
+    requireClinicPermission("editClinicalRecords"),
+    getAuditRequestContext(),
+  ]);
+  if (!access.ok) return { error: access.error, ok: false };
+  return {
+    ok: true,
+    access: { clinicId: access.clinicId, userId: access.userId },
+    ctx,
+  };
+}
+
+function parseClinicalRecordForm(formData: FormData) {
   const raw = Object.fromEntries(formData.entries());
   const parsed = clinicalRecordSchema.safeParse({
     ...raw,
     appointment_id: raw.appointment_id || null,
   });
+  return { raw, parsed };
+}
 
+export async function createClinicalRecord(formData: FormData) {
+  const [gate, supabase] = await Promise.all([gateClinicalRecordWrite(), createClient()]);
+  if (!gate.ok) return { error: gate.error };
+  const { clinicId, userId } = gate.access;
+
+  const { raw, parsed } = parseClinicalRecordForm(formData);
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
-
-  const supabase = await createClient();
   const ownership = await verifyClinicalRecordForeignKeys(supabase, clinicId, {
     patientId: parsed.data.patient_id,
     professionalId: parsed.data.professional_id,
@@ -39,14 +62,12 @@ export async function createClinicalRecord(formData: FormData) {
   });
   if (!ownership.ok) return { error: ownership.error };
 
-  const ctx = await getAuditRequestContext();
-
   const result = await createClinicalRecordEntry(supabase, {
     clinicId,
-    userId: user.id,
+    userId,
     parsed: parsed.data,
     consultationModalityRaw: raw.consultation_modality,
-    auditContext: ctx,
+    auditContext: gate.ctx,
   });
 
   if (!result.ok) return { error: result.error };
@@ -76,9 +97,9 @@ export async function updateClinicalRecordConsultationAt(
   recordId: string,
   consultationAtIso: string
 ) {
-  const access = await requireClinicPermission("editClinicalRecords");
-  if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
+  const [gate, supabase] = await Promise.all([gateClinicalRecordWrite(), createClient()]);
+  if (!gate.ok) return { error: gate.error };
+  const { clinicId } = gate.access;
 
   const idParsed = parseEntityId(recordId, "Consulta");
   if (!idParsed.ok) return { error: idParsed.error };
@@ -87,8 +108,6 @@ export async function updateClinicalRecordConsultationAt(
   if (Number.isNaN(parsedDate.getTime())) {
     return { error: "Fecha de consulta inválida." };
   }
-
-  const supabase = await createClient();
   const { data: record, error: fetchError } = await supabase
     .from("clinical_records")
     .select(
@@ -111,40 +130,40 @@ export async function updateClinicalRecordConsultationAt(
   formData.set("indications", record.indications ?? "");
   formData.set("consultation_at", parsedDate.toISOString());
 
-  return updateClinicalRecord(idParsed.data, formData);
+  return persistClinicalRecordUpdate(idParsed.data, formData, gate.access, gate.ctx, supabase);
 }
 
 export async function updateClinicalRecord(id: string, formData: FormData) {
-  const access = await requireClinicPermission("editClinicalRecords");
-  if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
-  if (!user) return { error: "Sin sesión" };
+  const [gate, supabase] = await Promise.all([gateClinicalRecordWrite(), createClient()]);
+  if (!gate.ok) return { error: gate.error };
 
   const idParsed = parseEntityId(id, "Consulta");
   if (!idParsed.ok) return { error: idParsed.error };
 
-  const raw = Object.fromEntries(formData.entries());
-  const parsed = clinicalRecordSchema.safeParse({
-    ...raw,
-    appointment_id: raw.appointment_id || null,
-  });
+  return persistClinicalRecordUpdate(idParsed.data, formData, gate.access, gate.ctx, supabase);
+}
+
+async function persistClinicalRecordUpdate(
+  recordId: string,
+  formData: FormData,
+  access: ClinicWriteAccess,
+  ctx: AuditRequestContext,
+  supabase: Awaited<ReturnType<typeof createClient>>
+) {
+  const { parsed } = parseClinicalRecordForm(formData);
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
-  const supabase = await createClient();
-  const ownership = await verifyClinicalRecordForeignKeys(supabase, clinicId, {
+  const ownership = await verifyClinicalRecordForeignKeys(supabase, access.clinicId, {
     patientId: parsed.data.patient_id,
     professionalId: parsed.data.professional_id,
     appointmentId: parsed.data.appointment_id,
   });
   if (!ownership.ok) return { error: ownership.error };
 
-  const ctx = await getAuditRequestContext();
-
   const result = await updateClinicalRecordEntry(supabase, {
-    recordId: idParsed.data,
-    clinicId,
-    userId: user.id,
+    recordId,
+    clinicId: access.clinicId,
+    userId: access.userId,
     parsed: parsed.data,
     auditContext: ctx,
   });
@@ -152,18 +171,18 @@ export async function updateClinicalRecord(id: string, formData: FormData) {
   if (!result.ok) return { error: result.error };
 
   await logAudit({
-    clinicId,
+    clinicId: access.clinicId,
     module: "clinical",
     what: "Modificó consulta clínica (SOAP)",
     entityType: "clinical_record",
-    entityId: idParsed.data,
+    entityId: recordId,
     patientId: String(result.data.old.patient_id),
     action: "update",
     oldValues: result.data.old,
     newValues: result.data.data,
   });
 
-  revalidatePath(`/historias/${idParsed.data}`, "page");
+  revalidatePath(`/historias/${recordId}`, "page");
   revalidatePath(`/pacientes/${String(result.data.data.patient_id)}`, "page");
   revalidatePath("/consultas");
   return { success: true };

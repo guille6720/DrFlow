@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { getSession } from "@/core/auth/session.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { createClient } from "@/core/supabase/server";
@@ -31,18 +30,18 @@ function revalidateTurnoPaths(patientId?: string) {
 }
 
 export async function rescheduleAppointment(input: unknown) {
-  const access = await requireClinicPermission("manageAppointments");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageAppointments"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
+  const { clinicId, userId } = access;
 
   const parsed = rescheduleSchema.safeParse(input);
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   const idParsed = parseEntityId(parsed.data.appointment_id, "Turno");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
 
   const { data: existing } = await supabase
     .from("appointments")
@@ -58,7 +57,7 @@ export async function rescheduleAppointment(input: unknown) {
     p_appointment_id: idParsed.data,
     p_new_start_at: parsed.data.start_at,
     p_new_end_at: parsed.data.end_at,
-    p_changed_by: user?.id ?? null,
+    p_changed_by: userId,
     p_reason: parsed.data.reason ? sanitizeText(parsed.data.reason) : null,
   });
 

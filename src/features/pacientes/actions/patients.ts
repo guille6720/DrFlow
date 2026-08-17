@@ -17,7 +17,10 @@ import {
 } from "@/features/pacientes/services/patients.service";
 
 export async function createPatient(formData: FormData) {
-  const access = await requireClinicPermission("managePatients");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("managePatients"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
   const { clinicId, role, isSuperadmin } = access;
 
@@ -33,7 +36,6 @@ export async function createPatient(formData: FormData) {
   const sanitized = sanitizePatientFields(
     parsed.data as Parameters<typeof sanitizePatientFields>[0]
   ) as SanitizedPatient;
-  const supabase = await createClient();
 
   const result = await createPatientRecord(supabase, {
     clinicId,
@@ -60,7 +62,10 @@ export async function createPatient(formData: FormData) {
 }
 
 export async function updatePatient(id: string, formData: FormData) {
-  const access = await requireClinicPermission("managePatients");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("managePatients"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
   const { clinicId, role, isSuperadmin } = access;
 
@@ -77,7 +82,6 @@ export async function updatePatient(id: string, formData: FormData) {
   const sanitized = sanitizePatientFields(
     parsed.data as Parameters<typeof sanitizePatientFields>[0]
   ) as SanitizedPatient;
-  const supabase = await createClient();
 
   const result = await updatePatientRecord(supabase, {
     patientId: idParsed.data,

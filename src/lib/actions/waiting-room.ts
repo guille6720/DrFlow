@@ -15,7 +15,10 @@ export async function updateWaitingRoomStatus(
   appointmentId: string,
   status: WaitingRoomStatus
 ) {
-  const access = await requireClinicPermission("manageWaitingRoom");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageWaitingRoom"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
@@ -24,8 +27,6 @@ export async function updateWaitingRoomStatus(
 
   const idParsed = parseEntityId(appointmentId, "Turno");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
   const { data, error } = await supabase.rpc("update_waiting_room_status_atomic", {
     p_clinic_id: clinicId,
     p_appointment_id: idParsed.data,

@@ -137,8 +137,8 @@ Agenda 1200 + 400 es aceptable para la ventana −30d / horizonte. PAMI ya pagin
 | Producción / `main` | **No** |
 | Supabase Production | **No** |
 | Migración nueva | **No** (índices existentes suficientes) |
-| Siguiente paso | Implementar P0/P1 residuales en este mismo ciclo |
+| Siguiente paso | Fase 2 Server Actions: recortar round-trips residuales (auth ∥ client; sin getSession extra) |
 
 ---
 
-*Re-auditoría 17-ago. Implementación a continuación: dashboard fallback, ownership paralelo, portal/coverage cache, revalidate estrecho, copy pending en botones.*
+*Re-auditoría 17-ago. Ciclo 1: dashboard fallback, ownership paralelo, portal/coverage cache, revalidate estrecho, copy pending. Ciclo 2 (Fase 2): Server Actions clínicas recortan hops seriales (permiso ∥ `createClient`, `userId` del gate, SOAP sin double-auth).*

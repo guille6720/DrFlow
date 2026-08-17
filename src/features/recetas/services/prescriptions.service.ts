@@ -186,9 +186,11 @@ export async function savePrescriptionDraftRecord(
     existingDraftId: string | null;
   }
 ): Promise<ServiceResult<ElectronicPrescription>> {
-  const [patientResult, professionalResult] = await Promise.all([
+  const coverageHint = (input.parsed.coverage_kind ?? "PARTICULAR") as CoverageKind;
+  const [patientResult, professionalResult, hintedRule] = await Promise.all([
     loadPatientContext(db, input.clinicId, input.parsed.patient_id),
     loadProfessionalContext(db, input.clinicId, input.parsed.professional_id),
+    loadClinicRuleOverride(db, input.clinicId, coverageHint),
   ]);
   if (!patientResult.ok) return patientResult;
   if (!professionalResult.ok) return professionalResult;
@@ -198,11 +200,14 @@ export async function savePrescriptionDraftRecord(
     patientResult.data
   );
 
-  const ruleOverride = await loadClinicRuleOverride(
-    db,
-    input.clinicId,
-    enriched.coverage_kind ?? "PARTICULAR"
-  );
+  const ruleOverride =
+    (enriched.coverage_kind ?? "PARTICULAR") === coverageHint
+      ? hintedRule
+      : await loadClinicRuleOverride(
+          db,
+          input.clinicId,
+          enriched.coverage_kind ?? "PARTICULAR"
+        );
 
   const ctx = buildPrescriptionContext({
     clinicId: input.clinicId,

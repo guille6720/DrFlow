@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { getSession } from "@/core/auth/session.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { verifyAppointmentForeignKeys } from "@/core/security/ownership-guard";
@@ -65,10 +64,12 @@ async function updateAppointmentRow(
 }
 
 export async function createAppointment(formData: FormData) {
-  const access = await requireClinicPermission("manageAppointments");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageAppointments"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
+  const { clinicId, userId } = access;
 
   const raw = Object.fromEntries(formData.entries());
   const parsed = appointmentSchema.safeParse({
@@ -86,8 +87,6 @@ export async function createAppointment(formData: FormData) {
       ? sanitizeText(parsed.data.cancellation_reason)
       : parsed.data.cancellation_reason,
   };
-
-  const supabase = await createClient();
   const ownership = await verifyAppointmentForeignKeys(supabase, clinicId, {
     patientId: parsed.data.patient_id,
     professionalId: parsed.data.professional_id,
@@ -101,7 +100,7 @@ export async function createAppointment(formData: FormData) {
     .insert({
       clinic_id: clinicId,
       ...payload,
-      created_by: user?.id,
+      created_by: userId,
     })
     .select()
     .single();
@@ -127,7 +126,10 @@ export async function createAppointment(formData: FormData) {
 }
 
 export async function updateAppointment(id: string, formData: FormData) {
-  const access = await requireClinicPermission("manageAppointments");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageAppointments"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
@@ -143,8 +145,6 @@ export async function updateAppointment(id: string, formData: FormData) {
   });
 
   if (!bodyParsed.success) return { error: firstZodIssue(bodyParsed.error) };
-
-  const supabase = await createClient();
   const { data: existing } = await supabase
     .from("appointments")
     .select("id, status, patient_id")
@@ -232,10 +232,12 @@ async function updateAppointmentStatusInternal(
   consultationModality?: ConsultationModality,
   cancellationCategory?: string
 ) {
-  const access = await requireClinicPermission("manageAppointments");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageAppointments"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
+  const { clinicId, userId } = access;
 
   const idParsed = parseEntityId(id, "Turno");
   if (!idParsed.ok) return { error: idParsed.error };
@@ -245,8 +247,6 @@ async function updateAppointmentStatusInternal(
 
   const modalityParsed = consultationModalitySchema.safeParse(consultationModality ?? "presencial");
   if (!modalityParsed.success) return { error: "Modalidad inválida" };
-
-  const supabase = await createClient();
 
   const { data: before } = await supabase
     .from("appointments")
@@ -267,7 +267,7 @@ async function updateAppointmentStatusInternal(
 
   if (statusParsed.data === "cancelled") {
     updatePayload.cancelled_at = new Date().toISOString();
-    updatePayload.cancelled_by = user?.id ?? null;
+    updatePayload.cancelled_by = userId;
     updatePayload.cancelled_by_type = "clinic";
     if (cancellationCategory?.trim()) {
       updatePayload.cancellation_category = cancellationCategory.trim();
@@ -297,7 +297,7 @@ async function updateAppointmentStatusInternal(
     fromStatus: before?.status ?? null,
     toStatus: statusParsed.data,
     fromWaitingRoomStatus: before?.waiting_room_status ?? null,
-    changedBy: user?.id ?? null,
+    changedBy: userId,
     reason: cancellationReason ?? `Estado → ${statusParsed.data}`,
   }).catch(() => {
     // Non-blocking — status update already persisted.
@@ -341,14 +341,15 @@ async function updateAppointmentStatusInternal(
 }
 
 export async function startConsultationFromAppointment(appointmentId: string) {
-  const access = await requireClinicPermission("editClinicalRecords");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("editClinicalRecords"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
   const idParsed = parseEntityId(appointmentId, "Turno");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
   const { data: appointment } = await supabase
     .from("appointments")
     .select("id, status, patient_id, professional_id")
@@ -389,7 +390,10 @@ export async function finalizeConsultation(
   appointmentId: string,
   consultationModality: ConsultationModality = "presencial"
 ) {
-  const access = await requireClinicPermission("editClinicalRecords");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("editClinicalRecords"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
@@ -398,8 +402,6 @@ export async function finalizeConsultation(
 
   const modalityParsed = consultationModalitySchema.safeParse(consultationModality);
   if (!modalityParsed.success) return { error: "Modalidad inválida" };
-
-  const supabase = await createClient();
   const { error } = await supabase
     .from("appointments")
     .update({

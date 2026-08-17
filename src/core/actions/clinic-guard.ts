@@ -1,10 +1,14 @@
 "use server";
 
-import { getActiveClinicId, getPermissionContext } from "@/core/auth/session.server";
+import { getActiveClinicId, getPermissionContext, getSession } from "@/core/auth/session.server";
 import { hasPermission, type PermissionKey } from "@/core/permissions/roles";
 
 export async function requireClinicPermission(permission: PermissionKey) {
-  const [clinicId, perm] = await Promise.all([getActiveClinicId(), getPermissionContext()]);
+  const [clinicId, perm, user] = await Promise.all([
+    getActiveClinicId(),
+    getPermissionContext(),
+    getSession(),
+  ]);
 
   if (
     !clinicId ||
@@ -12,10 +16,14 @@ export async function requireClinicPermission(permission: PermissionKey) {
   ) {
     return { ok: false as const, error: "Sin permisos" };
   }
+  if (!user) {
+    return { ok: false as const, error: "Sin sesión" };
+  }
 
   return {
     ok: true as const,
     clinicId,
+    userId: user.id,
     role: perm.role,
     isSuperadmin: perm.isSuperadmin,
     permissionOverrides: perm.permissionOverrides,

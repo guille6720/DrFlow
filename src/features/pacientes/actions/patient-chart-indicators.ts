@@ -16,7 +16,10 @@ export async function savePatientClinicalIndicators(
   patientId: string,
   input: unknown
 ): Promise<{ error?: string }> {
-  const access = await requireClinicPermission("editClinicalRecords");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("editClinicalRecords"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
 
   const idParsed = parseEntityId(patientId, "Paciente");
@@ -24,8 +27,6 @@ export async function savePatientClinicalIndicators(
 
   const parsed = clinicalIndicatorsSchema.safeParse(input);
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
-
-  const supabase = await createClient();
   const result = await saveClinicalIndicators(
     supabase,
     idParsed.data,

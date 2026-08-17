@@ -14,7 +14,6 @@ import {
 import {
   createMedicalOrderRecord,
   parseMedicalOrderForm,
-  resolveMedicalOrderExpectedVersion,
   updateMedicalOrderRecord,
   voidMedicalOrderRecord,
 } from "@/features/recetas/services/medical-orders.service";
@@ -23,14 +22,31 @@ import { normalizeMedicalOrderVersion, parseMedicalOrderExpectedVersion } from "
 const MEDICAL_ORDER_AUDIT_SELECT =
   "id, patient_id, clinical_record_id, professional_id, order_type, order_text, notes, status, version";
 
+async function loadIssuedMedicalOrderForMutation(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  clinicId: string,
+  orderId: string
+) {
+  const { data: before } = await supabase
+    .from("medical_orders")
+    .select(MEDICAL_ORDER_AUDIT_SELECT)
+    .eq("id", orderId)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+
+  if (!before || before.status !== "issued") {
+    return { ok: false as const, error: "La orden no existe o ya fue anulada." };
+  }
+  return { ok: true as const, data: before };
+}
+
 export async function createMedicalOrder(formData: FormData) {
-  const access = await requireMedicalOrderAccess();
+  const [access, supabase] = await Promise.all([requireMedicalOrderAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
   const { userId, clinicId } = access.data;
 
   const input = parseMedicalOrderForm(formData);
 
-  const supabase = await createClient();
   const ownership = await verifyMedicalOrderForeignKeys(supabase, clinicId, {
     patientId: input.patient_id,
     professionalId: input.professional_id,
@@ -63,7 +79,7 @@ export async function createMedicalOrder(formData: FormData) {
 }
 
 export async function updateMedicalOrder(id: string, formData: FormData) {
-  const access = await requireMedicalOrderAccess();
+  const [access, supabase] = await Promise.all([requireMedicalOrderAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access.data;
 
@@ -72,38 +88,27 @@ export async function updateMedicalOrder(id: string, formData: FormData) {
 
   const input = parseMedicalOrderForm(formData);
 
-  const supabase = await createClient();
-  const ownership = await verifyMedicalOrderForeignKeys(supabase, clinicId, {
-    patientId: input.patient_id,
-    professionalId: input.professional_id,
-    clinicalRecordId: input.clinical_record_id,
-  });
+  const [ownership, issued] = await Promise.all([
+    verifyMedicalOrderForeignKeys(supabase, clinicId, {
+      patientId: input.patient_id,
+      professionalId: input.professional_id,
+      clinicalRecordId: input.clinical_record_id,
+    }),
+    loadIssuedMedicalOrderForMutation(supabase, clinicId, idParsed.data),
+  ]);
   if (!ownership.ok) return { error: ownership.error };
+  if (!issued.ok) return { error: issued.error };
 
-  const versionResult = await resolveMedicalOrderExpectedVersion(
-    supabase,
-    idParsed.data,
-    clinicId,
-    parseMedicalOrderExpectedVersion(formData)
-  );
-  if (!versionResult.ok) return { error: versionResult.error };
-
-  const { data: before } = await supabase
-    .from("medical_orders")
-    .select(MEDICAL_ORDER_AUDIT_SELECT)
-    .eq("id", idParsed.data)
-    .eq("clinic_id", clinicId)
-    .maybeSingle();
-
-  if (!before || before.status !== "issued") {
-    return { error: "La orden no existe o ya fue anulada." };
-  }
+  const before = issued.data;
+  const expectedVersion =
+    parseMedicalOrderExpectedVersion(formData) ??
+    normalizeMedicalOrderVersion(before.version);
 
   const result = await updateMedicalOrderRecord(
     supabase,
     idParsed.data,
     clinicId,
-    versionResult.data,
+    expectedVersion,
     input
   );
   if (!result.ok) return { error: result.error };
@@ -126,37 +131,30 @@ export async function updateMedicalOrder(id: string, formData: FormData) {
 }
 
 export async function voidMedicalOrder(id: string, expectedVersion?: number) {
-  const access = await requireMedicalOrderAccess();
+  const [access, supabase] = await Promise.all([requireMedicalOrderAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
 
   const idParsed = parseEntityId(id, "Orden");
   if (!idParsed.ok) return { error: idParsed.error };
 
-  const supabase = await createClient();
-  const versionResult = await resolveMedicalOrderExpectedVersion(
+  const issued = await loadIssuedMedicalOrderForMutation(
     supabase,
-    idParsed.data,
     access.data.clinicId,
-    expectedVersion != null ? normalizeMedicalOrderVersion(expectedVersion) : null
+    idParsed.data
   );
-  if (!versionResult.ok) return { error: versionResult.error };
+  if (!issued.ok) return { error: issued.error };
 
-  const { data: before } = await supabase
-    .from("medical_orders")
-    .select(MEDICAL_ORDER_AUDIT_SELECT)
-    .eq("id", idParsed.data)
-    .eq("clinic_id", access.data.clinicId)
-    .maybeSingle();
-
-  if (!before || before.status !== "issued") {
-    return { error: "La orden no existe o ya fue anulada." };
-  }
+  const before = issued.data;
+  const version =
+    expectedVersion != null
+      ? normalizeMedicalOrderVersion(expectedVersion)
+      : normalizeMedicalOrderVersion(before.version);
 
   const result = await voidMedicalOrderRecord(
     supabase,
     idParsed.data,
     access.data.clinicId,
-    versionResult.data
+    version
   );
   if (!result.ok) return { error: result.error };
 

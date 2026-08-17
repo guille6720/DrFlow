@@ -11,18 +11,20 @@ export async function searchClinicalDiagnoses(
   query: string,
   limit = 10
 ): Promise<{ data?: ClinicalDiagnosisCatalogHit[]; error?: string }> {
-  const user = await getSession();
+  const [user, active, supabase] = await Promise.all([
+    getSession(),
+    getActiveClinic(),
+    createClient(),
+  ]);
   if (!user) return { error: "Sesión requerida" };
 
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { role, isSuperadmin } = active;
   if (!hasPermission(role, "viewClinicalRecords", isSuperadmin)) {
     return { error: "Sin permisos para buscar diagnósticos" };
   }
 
   const queryParsed = searchQuerySchema.safeParse(query.trim());
   if (!queryParsed.success) return { data: [] };
-
-  const supabase = await createClient();
   const { data, error } = await supabase.rpc("search_clinical_diagnoses", {
     p_query: queryParsed.data,
     p_limit: Math.min(Math.max(limit, 1), 25),

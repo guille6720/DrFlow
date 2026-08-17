@@ -18,7 +18,7 @@ import {
 } from "@/features/recetas/services/prescriptions.service";
 
 export async function savePrescriptionDraft(formData: FormData) {
-  const access = await requireClinicalIssueAccess();
+  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
   const { userId, clinicId } = access.data;
 
@@ -31,7 +31,6 @@ export async function savePrescriptionDraft(formData: FormData) {
   );
   if (!existingParsed.success) return { error: "Borrador inválido" };
 
-  const supabase = await createClient();
   const ownership = await verifyPrescriptionForeignKeys(supabase, clinicId, {
     patientId: parsed.data.patient_id,
     professionalId: parsed.data.professional_id,
@@ -68,13 +67,11 @@ export async function savePrescriptionDraft(formData: FormData) {
 }
 
 export async function issuePrescription(id: string, idempotencyKey?: string | null) {
-  const access = await requireClinicalIssueAccess();
+  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
 
   const idParsed = parseEntityId(id, "Receta");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
   const result = await issuePrescriptionRecord(
     supabase,
     idParsed.data,
@@ -109,13 +106,11 @@ export async function issuePrescription(id: string, idempotencyKey?: string | nu
 }
 
 export async function voidPrescription(id: string) {
-  const access = await requireClinicalIssueAccess();
+  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
 
   const idParsed = parseEntityId(id, "Receta");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
   const result = await voidPrescriptionRecord(
     supabase,
     idParsed.data,
@@ -143,13 +138,11 @@ export async function voidPrescription(id: string) {
 }
 
 export async function markPrescriptionDispensed(id: string) {
-  const access = await requireClinicalIssueAccess();
+  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
 
   const idParsed = parseEntityId(id, "Receta");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
   const { data: before } = await supabase
     .from("prescription_drafts")
     .select("id, patient_id, clinical_record_id, status, dispensed_at")

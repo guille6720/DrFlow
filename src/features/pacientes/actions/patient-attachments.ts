@@ -68,30 +68,34 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
     return { error: clinicalRecordParsed.error };
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const [supabase, arrayBuffer] = await Promise.all([createClient(), file.arrayBuffer()]);
+  const buffer = Buffer.from(arrayBuffer);
   const validated = validateAdminDocumentUpload(file, buffer, CLINICAL_DOCUMENT_MAX_BYTES);
   if (!validated.ok) return { error: validated.error };
 
-  const supabase = await createClient();
-
-  const { data: patient } = await supabase
+  const patientPromise = supabase
     .from("patients")
     .select("id")
     .eq("id", patientParsed.data)
     .eq("clinic_id", auth.clinicId)
-    .single();
+    .maybeSingle();
+
+  const recordPromise = clinicalRecordParsed?.ok
+    ? supabase
+        .from("clinical_records")
+        .select("id")
+        .eq("id", clinicalRecordParsed.data)
+        .eq("clinic_id", auth.clinicId)
+        .eq("patient_id", patientParsed.data)
+        .maybeSingle()
+    : Promise.resolve({ data: null as { id: string } | null });
+
+  const [{ data: patient }, { data: record }] = await Promise.all([patientPromise, recordPromise]);
 
   if (!patient) return { error: "Paciente no encontrado" };
 
   let clinicalRecordId: string | null = null;
   if (clinicalRecordParsed?.ok) {
-    const { data: record } = await supabase
-      .from("clinical_records")
-      .select("id")
-      .eq("id", clinicalRecordParsed.data)
-      .eq("clinic_id", auth.clinicId)
-      .eq("patient_id", patientParsed.data)
-      .maybeSingle();
     if (!record) return { error: "Consulta no encontrada para este paciente" };
     clinicalRecordId = record.id;
   }
@@ -188,14 +192,15 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
 }
 
 export async function deletePatientClinicalDocument(id: string) {
-  const access = await requireClinicalRecordAccess("edit");
+  const [access, supabase] = await Promise.all([
+    requireClinicalRecordAccess("edit"),
+    createClient(),
+  ]);
   const auth = resolveClinicalRecordAccess(access, { requireUserId: false });
   if (!auth.ok) return { error: auth.error };
 
   const idParsed = parseEntityId(id, "Documento");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
   const { data: attachment } = await supabase
     .from("patient_attachments")
     .select("id, patient_id, file_path, file_name, category, clinical_record_id")
@@ -235,14 +240,15 @@ export async function deletePatientClinicalDocument(id: string) {
 }
 
 export async function getPatientClinicalDocumentUrl(id: string) {
-  const access = await requireClinicalRecordAccess("view");
+  const [access, supabase] = await Promise.all([
+    requireClinicalRecordAccess("view"),
+    createClient(),
+  ]);
   const auth = resolveClinicalRecordAccess(access, { requireUserId: false });
   if (!auth.ok) return { error: auth.error };
 
   const idParsed = parseEntityId(id, "Documento");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
   const { data: attachment } = await supabase
     .from("patient_attachments")
     .select("file_path, file_name")
@@ -299,12 +305,14 @@ export async function importClinicalPdfDocument(
     return { success: false, fileName: originalName, error: "Archivo PDF inválido o mayor a 10 MB" };
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const [buffer, supabase] = await Promise.all([
+    file.arrayBuffer().then((bytes) => Buffer.from(bytes)),
+    createClient(),
+  ]);
   const validated = validatePdfUpload(file, buffer, CLINICAL_DOCUMENT_MAX_BYTES);
   if (!validated.ok) {
     return { success: false, fileName: originalName, error: validated.error };
   }
-  const supabase = await createClient();
   const result = await processClinicalPdfImport(supabase, {
     clinicId: auth.clinicId,
     userId: auth.userId,

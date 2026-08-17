@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { getSession } from "@/core/auth/session.server";
 import { logAudit } from "@/core/auth/session.actions";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { verifyCashChargeForeignKeys } from "@/core/security/ownership-guard";
@@ -19,10 +18,12 @@ import { firstZodIssue, parseEntityId } from "@/core/validations/params";
 import { isBlockedChargeKind, labelForChargeKind } from "@/lib/constants/cash-register";
 
 export async function createCashCharge(formData: FormData) {
-  const access = await requireClinicPermission("manageCashRegister");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageCashRegister"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
+  const { clinicId, userId } = access;
 
   const raw = Object.fromEntries(formData.entries());
   const parsed = createCashChargeSchema.safeParse(raw);
@@ -32,8 +33,6 @@ export async function createCashCharge(formData: FormData) {
   if (isBlockedChargeKind(kindLabel)) {
     return { error: "Tipo de cobro no autorizado." };
   }
-
-  const supabase = await createClient();
   const ownership = await verifyCashChargeForeignKeys(supabase, clinicId, {
     patientId: parsed.data.patient_id,
     professionalId: parsed.data.professional_id,
@@ -53,7 +52,7 @@ export async function createCashCharge(formData: FormData) {
     p_amount: parsed.data.amount,
     p_status: parsed.data.status,
     p_notes: parsed.data.notes?.trim() || null,
-    p_created_by: user?.id ?? null,
+    p_created_by: userId,
   });
 
   if (error) {
@@ -75,21 +74,21 @@ export async function createCashCharge(formData: FormData) {
 }
 
 export async function voidCashCharge(formData: FormData) {
-  const access = await requireClinicPermission("manageCashRegister");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageCashRegister"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
+  const { clinicId, userId } = access;
 
   const raw = Object.fromEntries(formData.entries());
   const parsed = voidCashChargeSchema.safeParse(raw);
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
-
-  const supabase = await createClient();
   const { error } = await supabase.rpc("void_cash_charge_atomic", {
     p_clinic_id: clinicId,
     p_charge_id: parsed.data.charge_id,
     p_reason: parsed.data.reason,
-    p_updated_by: user?.id ?? null,
+    p_updated_by: userId,
   });
 
   if (error) {
@@ -109,18 +108,18 @@ export async function voidCashCharge(formData: FormData) {
 }
 
 export async function addLedgerEntry(formData: FormData) {
-  const access = await requireClinicPermission("manageCashRegister");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageCashRegister"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
+  const { clinicId, userId } = access;
 
   const parsed = ledgerEntrySchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
   if (parsed.data.debit <= 0 && parsed.data.credit <= 0) {
     return { error: "Ingresá debe o haber" };
   }
-
-  const supabase = await createClient();
   const ownership = await verifyCashChargeForeignKeys(supabase, clinicId, {
     patientId: parsed.data.patient_id,
     professionalId: parsed.data.professional_id,
@@ -135,7 +134,7 @@ export async function addLedgerEntry(formData: FormData) {
     p_debit: parsed.data.debit,
     p_credit: parsed.data.credit,
     p_notes: parsed.data.notes?.trim() || null,
-    p_created_by: user?.id ?? null,
+    p_created_by: userId,
   });
 
   if (error) {
@@ -155,15 +154,15 @@ export async function addLedgerEntry(formData: FormData) {
 }
 
 export async function closeDailyCash(formData: FormData) {
-  const access = await requireClinicPermission("manageCashRegister");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageCashRegister"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
+  const { clinicId, userId } = access;
 
   const parsed = cashClosureSchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
-
-  const supabase = await createClient();
   const dayStart = `${parsed.data.closure_date}T00:00:00.000Z`;
   const dayEnd = `${parsed.data.closure_date}T23:59:59.999Z`;
 
@@ -216,7 +215,7 @@ export async function closeDailyCash(formData: FormData) {
         consultation_count: rows.length,
         cash_difference: parsed.data.cash_difference,
         notes: parsed.data.notes?.trim() || null,
-        closed_by: user?.id,
+        closed_by: userId,
         closed_at: new Date().toISOString(),
       },
       { onConflict: "clinic_id,closure_date" }
@@ -239,15 +238,15 @@ export async function closeDailyCash(formData: FormData) {
 }
 
 export async function prepareCashInvoice(chargeId: string) {
-  const access = await requireClinicPermission("manageCashRegister");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageCashRegister"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
+  const { clinicId, userId } = access;
 
   const idParsed = parseEntityId(chargeId, "Cobro");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
   const { data: charge } = await supabase
     .from("cash_charges")
     .select("id, patient_id, amount, status")
@@ -268,7 +267,7 @@ export async function prepareCashInvoice(chargeId: string) {
       amount: charge.amount,
       status: "draft",
       notes: "Preparado para integración AFIP/ARCA",
-      created_by: user?.id,
+      created_by: userId,
     })
     .select()
     .single();

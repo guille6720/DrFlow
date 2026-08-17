@@ -37,10 +37,11 @@ export async function getClinicCoverageRules(): Promise<{
   data?: CoverageRuleRow[];
   error?: string;
 }> {
-  const access = await requireClinicPermission("manageSettings");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageSettings"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-
-  const supabase = await createClient();
   const result = await loadActiveCoverageRulesForClinic(supabase, access.clinicId);
   if (!result.ok) return { error: result.error };
   return { data: result.data };
@@ -51,10 +52,8 @@ export async function getPrescriptionCoverageRuleOverrides(): Promise<{
   data?: CoverageRuleOverridesMap;
   error?: string;
 }> {
-  const access = await requireClinicalIssueAccess();
+  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
-
-  const supabase = await createClient();
   const result = await loadActiveCoverageRulesForClinic(supabase, access.data.clinicId);
   if (!result.ok) return { error: result.error };
   return { data: buildCoverageRuleOverridesMap(result.data) };
@@ -63,10 +62,12 @@ export async function getPrescriptionCoverageRuleOverrides(): Promise<{
 export async function getClinicCoverageRule(
   coverageKind: CoverageKind
 ): Promise<{ data?: CoverageRuleRow | null; error?: string }> {
-  const access = await requireClinicPermission("manageSettings");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageSettings"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
 
-  const supabase = await createClient();
   const result = await loadCoverageRuleForKind(supabase, access.clinicId, coverageKind);
   if (!result.ok) return { error: result.error };
   return { data: result.data };
@@ -82,7 +83,10 @@ const saveSchema = z.object({
 });
 
 export async function saveClinicCoverageRule(formData: FormData) {
-  const access = await requireClinicPermission("manageSettings");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageSettings"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
 
   const kindRaw = String(formData.get("coverage_kind") ?? "");
@@ -111,7 +115,6 @@ export async function saveClinicCoverageRule(formData: FormData) {
   if (!configParsed.success) return { error: firstZodIssue(configParsed.error) };
 
   const payload = buildCoverageRulePayload(configParsed.data);
-  const supabase = await createClient();
   const result = await upsertCoverageRule(
     supabase,
     access.clinicId,
@@ -137,10 +140,11 @@ export async function saveClinicCoverageRule(formData: FormData) {
 }
 
 export async function resetClinicCoverageRule(coverageKind: CoverageKind) {
-  const access = await requireClinicPermission("manageSettings");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageSettings"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-
-  const supabase = await createClient();
   const result = await deleteCoverageRuleForKind(supabase, access.clinicId, coverageKind);
   if (!result.ok) return { error: result.error };
 

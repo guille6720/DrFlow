@@ -14,10 +14,14 @@ export async function searchClinicalTreatments(
   query: string,
   options?: { limit?: number; kind?: Exclude<ClinicalTreatmentKind, "medication" | "free_text"> }
 ): Promise<{ data?: ClinicalTreatmentCatalogHit[]; error?: string }> {
-  const user = await getSession();
+  const [user, active, supabase] = await Promise.all([
+    getSession(),
+    getActiveClinic(),
+    createClient(),
+  ]);
   if (!user) return { error: "Sesión requerida" };
 
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { role, isSuperadmin } = active;
   if (
     !hasPermission(role, "viewClinicalRecords", isSuperadmin) &&
     !hasPermission(role, "editClinicalRecords", isSuperadmin)
@@ -27,8 +31,6 @@ export async function searchClinicalTreatments(
 
   const queryParsed = searchQuerySchema.safeParse(query.trim());
   if (!queryParsed.success) return { data: [] };
-
-  const supabase = await createClient();
   const { data, error } = await supabase.rpc("search_clinical_treatments", {
     p_query: queryParsed.data,
     p_limit: Math.min(Math.max(options?.limit ?? 12, 1), 30),

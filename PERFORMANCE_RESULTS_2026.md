@@ -85,6 +85,24 @@ Ninguna migración nueva. Cubiertos por 046/054/061/087/088. `EXPLAIN ANALYZE` e
 
 ---
 
+## Fase 2 — Server Actions (round-trips)
+
+Objetivo: botones clínicos más rápidos **sin** optimistic UI, sin debilitar RLS/ownership/audit.
+
+| Acción | Antes | Después |
+| ------ | ----- | ------- |
+| `requireClinicPermission` | clinic + permisos; `getSession` extra en cada mutación | sesión ∥ clinic ∥ permisos; devuelve `userId` |
+| SOAP create/update | gate → client; `updateConsultationAt` re-auth vía `updateClinicalRecord` | gate ∥ client; persist directo |
+| Receta save/issue/void/dispense | access → client; draft patient→pro serial | access ∥ client; patient ∥ pro ∥ coverage hint |
+| Órdenes update/void | SELECT extra de versión | un SELECT issued + ownership ∥ load |
+| Turnos / caja / lista de espera | `getSession` después del gate | `access.userId`; access ∥ client |
+| Adjuntos | arrayBuffer → client serial | arrayBuffer ∥ client |
+| Catálogo dx/tx | session ∥ clinic → client | session ∥ clinic ∥ client |
+
+`await logAudit` / `await recordAudit` en updates se mantiene (serverless no debe freeze antes del audit). Create SOAP sigue con `void logAudit` (preexistente).
+
+---
+
 ## Confirmación entorno
 
 | Ítem | Estado |
@@ -117,3 +135,13 @@ Ninguna migración nueva. Cubiertos por 046/054/061/087/088. `EXPLAIN ANALYZE` e
 - Botones: consulta, receta, órdenes, finalizar
 - Tests de cache / pagination
 - `PERFORMANCE_AUDIT_2026.md` / este archivo
+
+### Fase 2 (Server Actions)
+
+- `src/core/actions/clinic-guard.ts` (`userId` en el gate)
+- `src/features/historias/actions/clinical-records.ts` / `clinical-diagnoses.ts` / `clinical-treatments.ts`
+- `src/features/recetas/actions/prescriptions.ts` / `medical-orders.ts` / `coverage-rules.ts` / `prescription-templates.ts`
+- `src/features/recetas/services/prescriptions.service.ts`
+- `src/features/pacientes/actions/patients.ts` / `patient-attachments.ts` / `patient-chart-indicators.ts`
+- `src/lib/actions/appointments.ts` / `cash-register.ts` / `waiting-room.ts`
+- `src/features/turnos/actions/create-turno-wizard.ts` / `reschedule-appointment.ts` / `waiting-list.ts` / `fetch-turnos-wizard-slots.ts`
