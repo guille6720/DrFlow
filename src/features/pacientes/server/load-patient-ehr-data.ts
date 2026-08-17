@@ -35,13 +35,18 @@ import type { HceExportRow } from "@/lib/utils/hce-export-parse";
 import type { MedicalOrder } from "@/types/medical-order";
 
 export const PATIENT_EHR_RECORD_LIMIT = PATIENT_EHR_RECORD_PAGE_SIZE;
-/** First paint for soap/consulta — rest via load-more. */
+/** First paint for resumen/SOAP/consulta — rest via “Ver anteriores”. */
 export const PATIENT_EHR_INITIAL_LIMIT = 20;
 /** Cap for full HC print (UI stays paginated; print fetches on demand). */
 export const PATIENT_EHR_PRINT_MAX_RECORDS = 2000;
 export const PATIENT_TIMELINE_APPOINTMENT_LIMIT = 80;
 export const PATIENT_CHART_APPOINTMENT_LIMIT = 10;
 export const PATIENT_RX_FETCH_LIMIT = 100;
+/** Satellite caps for resumen/timeline first paint (preview + last consult). */
+export const PATIENT_EHR_INITIAL_ATTACHMENT_LIMIT = 40;
+export const PATIENT_EHR_INITIAL_RX_LIMIT = 20;
+export const PATIENT_EHR_INITIAL_ORDER_LIMIT = 20;
+export const PATIENT_EHR_INITIAL_APPOINTMENT_LIMIT = 20;
 
 export const CLINICAL_RECORD_EHR_SELECT_FULL =
   "id, created_at, chief_complaint, diagnosis, evolution, indications, diagnosis_cie10, diagnoses_json, treatments_json, professional_id, professional_signature, professionals(license_national, license_provincial, profiles(full_name, email))";
@@ -417,7 +422,7 @@ export async function loadPatientEhrWorkspaceData(
       .eq("clinic_id", clinicId)
       .eq("patient_id", patientId),
     fetchPatientClinicalRecordsForEhr(supabase, clinicId, patientId, {
-      limit: PATIENT_EHR_RECORD_PAGE_SIZE,
+      limit: PATIENT_EHR_INITIAL_LIMIT,
     }),
     supabase
       .from("patient_attachments")

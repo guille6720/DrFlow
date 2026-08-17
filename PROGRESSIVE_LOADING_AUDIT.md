@@ -38,7 +38,7 @@
 | Change | Real impact |
 |--------|-------------|
 | `getWorkspaceFetchPlan(tab)` | Tab-scoped queries — e.g. auditoría skips 6+ EHR queries |
-| `loadPatientWorkspacePageData(..., activeTab)` | Record limits per tab (50–500 vs 2000) |
+| `loadPatientWorkspacePageData(..., activeTab)` | First paint **20** evolutions; recetas/órdenes skip records |
 
 ### PAMI (`/pami/planillas`)
 

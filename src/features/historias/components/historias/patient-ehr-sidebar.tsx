@@ -91,8 +91,8 @@ export function PatientEhrSidebar({
               {loadingMoreRecords
                 ? "Cargando consultas…"
                 : totalRecordsCount
-                  ? `Cargar más (${sidebarList.length}/${totalRecordsCount})`
-                  : "Cargar más consultas"}
+                  ? `Ver anteriores (${sidebarList.length}/${totalRecordsCount})`
+                  : "Ver anteriores"}
             </button>
           </div>
         ) : null}

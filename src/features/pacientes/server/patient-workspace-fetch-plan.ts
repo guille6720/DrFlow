@@ -1,7 +1,14 @@
-import { PATIENT_EHR_RECORD_PAGE_SIZE } from "@/core/supabase/pagination";
+import { PATIENT_ATTACHMENTS_LIMIT } from "@/core/supabase/pagination";
 
 import type { PatientWorkspaceTabId } from "@/features/pacientes/constants/patient-workspace-tabs";
-import { PATIENT_EHR_INITIAL_LIMIT } from "@/features/pacientes/server/load-patient-ehr-data";
+import {
+  PATIENT_EHR_INITIAL_APPOINTMENT_LIMIT,
+  PATIENT_EHR_INITIAL_ATTACHMENT_LIMIT,
+  PATIENT_EHR_INITIAL_LIMIT,
+  PATIENT_EHR_INITIAL_ORDER_LIMIT,
+  PATIENT_EHR_INITIAL_RX_LIMIT,
+  PATIENT_RX_FETCH_LIMIT,
+} from "@/features/pacientes/server/load-patient-ehr-data";
 
 export type WorkspaceFetchPlan = {
   clinicalRecords: boolean;
@@ -13,9 +20,14 @@ export type WorkspaceFetchPlan = {
   templates: boolean;
   /** Lighter record limit for chart-focused tabs. */
   recordLimit?: number;
+  attachmentLimit?: number;
+  prescriptionLimit?: number;
+  orderLimit?: number;
+  appointmentLimit?: number;
 };
 
-const TIMELINE: WorkspaceFetchPlan = {
+/** Default landing + timeline: last 20 evolutions, not a full HC dump. */
+const FIRST_PAINT: WorkspaceFetchPlan = {
   clinicalRecords: true,
   attachments: true,
   prescriptions: true,
@@ -23,7 +35,11 @@ const TIMELINE: WorkspaceFetchPlan = {
   appointments: true,
   hceSummary: true,
   templates: false,
-  recordLimit: PATIENT_EHR_RECORD_PAGE_SIZE,
+  recordLimit: PATIENT_EHR_INITIAL_LIMIT,
+  attachmentLimit: PATIENT_EHR_INITIAL_ATTACHMENT_LIMIT,
+  prescriptionLimit: PATIENT_EHR_INITIAL_RX_LIMIT,
+  orderLimit: PATIENT_EHR_INITIAL_ORDER_LIMIT,
+  appointmentLimit: PATIENT_EHR_INITIAL_APPOINTMENT_LIMIT,
 };
 
 const LIGHT_SHELL: WorkspaceFetchPlan = {
@@ -47,24 +63,22 @@ export function getWorkspaceFetchPlan(tab: PatientWorkspaceTabId): WorkspaceFetc
       return {
         ...LIGHT_SHELL,
         prescriptions: true,
-        clinicalRecords: true,
-        recordLimit: 50,
-        hceSummary: false,
+        prescriptionLimit: PATIENT_RX_FETCH_LIMIT,
       };
 
     case "ordenes":
       return {
         ...LIGHT_SHELL,
         orders: true,
-        clinicalRecords: true,
-        recordLimit: 50,
+        orderLimit: 50,
       };
 
     case "diagnosticos":
+    case "problemas":
       return {
         ...LIGHT_SHELL,
         clinicalRecords: true,
-        recordLimit: 100,
+        recordLimit: PATIENT_EHR_INITIAL_LIMIT,
         hceSummary: true,
       };
 
@@ -78,34 +92,39 @@ export function getWorkspaceFetchPlan(tab: PatientWorkspaceTabId): WorkspaceFetc
         hceSummary: true,
         templates: true,
         recordLimit: PATIENT_EHR_INITIAL_LIMIT,
+        attachmentLimit: PATIENT_ATTACHMENTS_LIMIT,
+        prescriptionLimit: PATIENT_EHR_INITIAL_RX_LIMIT,
       };
 
     case "timeline":
-      return TIMELINE;
-
     case "resumen":
-      return {
-        ...TIMELINE,
-        templates: false,
-        recordLimit: PATIENT_EHR_RECORD_PAGE_SIZE,
-      };
+      return FIRST_PAINT;
 
-    case "problemas":
     case "alergias":
-    case "medicacion":
-    case "estudios":
-    case "archivos":
     case "vacunas":
       return {
         ...LIGHT_SHELL,
-        clinicalRecords: true,
-        attachments: true,
+        hceSummary: true,
+      };
+
+    case "medicacion":
+      return {
+        ...LIGHT_SHELL,
         prescriptions: true,
-        recordLimit: 100,
+        prescriptionLimit: PATIENT_EHR_INITIAL_RX_LIMIT,
+        hceSummary: true,
+      };
+
+    case "estudios":
+    case "archivos":
+      return {
+        ...LIGHT_SHELL,
+        attachments: true,
+        attachmentLimit: PATIENT_ATTACHMENTS_LIMIT,
         hceSummary: true,
       };
 
     default:
-      return TIMELINE;
+      return FIRST_PAINT;
   }
 }

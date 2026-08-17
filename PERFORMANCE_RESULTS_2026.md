@@ -144,6 +144,23 @@ No se muestra como emitida/anulada/atendida una receta o consulta hasta que el s
 
 ---
 
+## Fase 5 — Historia Clínica first paint
+
+Objetivo: el paciente abre en **últimas 20 evoluciones**. El resto va por “Ver anteriores” (SOAP sidebar, páginas de 80). No se bajan cientos de SOAP para esconderlos en React.
+
+| Tab | Antes | Ahora |
+| --- | ----- | ----- |
+| `resumen` (default) | 80 evoluciones + 200 att + 100 Rx + 80 turnos | **20** evoluciones + 40 att + 20 Rx + 20 órdenes + 20 turnos |
+| `soap` / `/consultas` | 20 evoluciones (ya) | 20 evoluciones; Rx de contexto 20 |
+| `timeline` | 80 evoluciones | **20** (mismo first paint) |
+| `diagnosticos` / `problemas` | 100 evoluciones | **20** (problem list sigue en `patient_problem_list`) |
+| `recetas` / `ordenes` | 50 evoluciones de contexto | **0** evoluciones (la lista no las usa) |
+| `archivos` / `estudios` | 100 evoluciones | adjuntos 200, sin evoluciones |
+
+Alertas, diagnósticos/tratamientos activos y última consulta salen de perfil clínico + problem list + esas 20 evoluciones. Impresión on-demand sigue en tope 2000.
+
+---
+
 ## Confirmación entorno
 
 | Ítem | Estado |
@@ -208,3 +225,11 @@ No se muestra como emitida/anulada/atendida una receta o consulta hasta que el s
 - Turnos wizard / config / lista de espera / sala
 - PAMI guardar planilla
 - Tests: `ui-button-pending.test.tsx`
+
+### Fase 5 (HC first paint)
+
+- `src/features/pacientes/server/patient-workspace-fetch-plan.ts`
+- `src/features/pacientes/server/load-patient-workspace-page.ts`
+- `src/features/pacientes/server/load-patient-ehr-data.ts`
+- `src/features/historias/components/historias/patient-ehr-sidebar.tsx` (“Ver anteriores”)
+- Tests: `tests/performance/progressive-loading.test.ts`

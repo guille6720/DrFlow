@@ -18,21 +18,43 @@ describe("patient workspace fetch plan", () => {
     });
   });
 
-  it("scopes recetas tab to prescriptions and limited records", () => {
+  it("scopes recetas tab to prescriptions without clinical records", () => {
     const plan = getWorkspaceFetchPlan("recetas");
     expect(plan.prescriptions).toBe(true);
-    expect(plan.clinicalRecords).toBe(true);
+    expect(plan.clinicalRecords).toBe(false);
     expect(plan.orders).toBe(false);
-    expect(plan.recordLimit).toBe(50);
+    expect(plan.prescriptionLimit).toBe(100);
   });
 
-  it("loads timeline bundle with paginated clinical records", () => {
+  it("first-paints resumen and soap with last 20 evolutions", () => {
+    const resumen = getWorkspaceFetchPlan("resumen");
+    expect(resumen.clinicalRecords).toBe(true);
+    expect(resumen.recordLimit).toBe(20);
+    expect(resumen.attachmentLimit).toBe(40);
+    expect(resumen.prescriptionLimit).toBe(20);
+    expect(resumen.orderLimit).toBe(20);
+    expect(resumen.appointmentLimit).toBe(20);
+
+    const soap = getWorkspaceFetchPlan("soap");
+    expect(soap.recordLimit).toBe(20);
+    expect(soap.prescriptionLimit).toBe(20);
+  });
+
+  it("loads timeline bundle with first-paint clinical records", () => {
     const plan = getWorkspaceFetchPlan("timeline");
     expect(plan.clinicalRecords).toBe(true);
     expect(plan.attachments).toBe(true);
     expect(plan.appointments).toBe(true);
     expect(plan.hceSummary).toBe(true);
-    expect(plan.recordLimit).toBe(80);
+    expect(plan.recordLimit).toBe(20);
+  });
+
+  it("does not dump 100 evolutions on problem-list tabs", () => {
+    expect(getWorkspaceFetchPlan("diagnosticos").recordLimit).toBe(20);
+    expect(getWorkspaceFetchPlan("problemas").recordLimit).toBe(20);
+    expect(getWorkspaceFetchPlan("ordenes").clinicalRecords).toBe(false);
+    expect(getWorkspaceFetchPlan("archivos").clinicalRecords).toBe(false);
+    expect(getWorkspaceFetchPlan("archivos").attachments).toBe(true);
   });
 });
 

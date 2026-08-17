@@ -5,11 +5,7 @@ import {
   voidRecordSensitiveAccess,
 } from "@/core/security/sensitive-access-audit";
 import { unwrapNestedRow } from "@/core/supabase/nested-row";
-import {
-  encodeDescCursor,
-  PATIENT_ATTACHMENTS_LIMIT,
-  PATIENT_EHR_RECORD_PAGE_SIZE,
-} from "@/core/supabase/pagination";
+import { encodeDescCursor, PATIENT_ATTACHMENTS_LIMIT } from "@/core/supabase/pagination";
 import type { ProfessionalListRow } from "@/core/supabase/query-types";
 import { PRESCRIPTION_LIST_COLUMNS } from "@/core/supabase/select-columns";
 
@@ -27,6 +23,7 @@ import {
   fetchPatientClinicalRecordsForEhr,
   mapClinicalRecordsForEhr,
   mapTimelineAppointments,
+  PATIENT_EHR_INITIAL_LIMIT,
   PATIENT_RX_FETCH_LIMIT,
   PATIENT_TIMELINE_APPOINTMENT_LIMIT,
   type PatientEhrWorkspaceData,
@@ -142,7 +139,11 @@ export async function loadPatientWorkspacePageData(
 ): Promise<PatientWorkspacePagePayload> {
   const patientId = patient.id;
   const plan = getWorkspaceFetchPlan(activeTab ?? "resumen");
-  const recordLimit = plan.recordLimit ?? PATIENT_EHR_RECORD_PAGE_SIZE;
+  const recordLimit = plan.recordLimit ?? PATIENT_EHR_INITIAL_LIMIT;
+  const attachmentLimit = plan.attachmentLimit ?? PATIENT_ATTACHMENTS_LIMIT;
+  const prescriptionLimit = plan.prescriptionLimit ?? PATIENT_RX_FETCH_LIMIT;
+  const orderLimit = plan.orderLimit ?? 50;
+  const appointmentLimit = plan.appointmentLimit ?? PATIENT_TIMELINE_APPOINTMENT_LIMIT;
 
   const portalContextPromise = getCachedPortalContext(clinicId);
   const professionalsPromise = getCachedClinicProfessionalsList(clinicId);
@@ -170,7 +171,7 @@ export async function loadPatientWorkspacePageData(
         .eq("patient_id", patientId)
         .eq("clinic_id", clinicId)
         .order("created_at", { ascending: false })
-        .limit(PATIENT_ATTACHMENTS_LIMIT)
+        .limit(attachmentLimit)
     : Promise.resolve({ data: [] });
 
   const rxPromise = plan.prescriptions
@@ -180,7 +181,7 @@ export async function loadPatientWorkspacePageData(
         .eq("patient_id", patientId)
         .eq("clinic_id", clinicId)
         .order("created_at", { ascending: false })
-        .limit(PATIENT_RX_FETCH_LIMIT)
+        .limit(prescriptionLimit)
     : Promise.resolve({ data: [] });
 
   const ordersPromise = plan.orders
@@ -190,7 +191,7 @@ export async function loadPatientWorkspacePageData(
         .eq("clinic_id", clinicId)
         .eq("patient_id", patientId)
         .order("issued_at", { ascending: false })
-        .limit(50)
+        .limit(orderLimit)
     : Promise.resolve({ data: [] });
 
   const appointmentsPromise = plan.appointments
@@ -202,7 +203,7 @@ export async function loadPatientWorkspacePageData(
         .eq("patient_id", patientId)
         .eq("clinic_id", clinicId)
         .order("start_at", { ascending: false })
-        .limit(PATIENT_TIMELINE_APPOINTMENT_LIMIT)
+        .limit(appointmentLimit)
     : Promise.resolve({ data: [] });
 
   const coverageRulesPromise = getCachedClinicCoverageRules(clinicId);
