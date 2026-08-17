@@ -14,7 +14,6 @@ import { COVERAGE_KINDS, type CoverageKind } from "@/features/recetas/engine/typ
 import {
   type CoverageRuleRow,
   deleteCoverageRuleForKind,
-  loadActiveCoverageRulesForClinic,
   loadCoverageRuleForKind,
   upsertCoverageRule,
 } from "@/features/recetas/repositories/coverage-rules.repository";
@@ -27,6 +26,8 @@ import {
   parseInfoMessagesText,
 } from "@/features/recetas/utils/coverage-rules-admin";
 
+import { getCachedClinicCoverageRules } from "@/lib/server/cached-clinic-queries";
+
 function revalidateCoverageRuleViews(clinicId: string) {
   revalidateClinicCoverageRulesCache(clinicId);
   revalidatePath("/configuracion");
@@ -36,14 +37,10 @@ export async function getClinicCoverageRules(): Promise<{
   data?: CoverageRuleRow[];
   error?: string;
 }> {
-  const [access, supabase] = await Promise.all([
-    requireClinicPermission("manageSettings"),
-    createClient(),
-  ]);
+  const access = await requireClinicPermission("manageSettings");
   if (!access.ok) return { error: access.error };
-  const result = await loadActiveCoverageRulesForClinic(supabase, access.clinicId);
-  if (!result.ok) return { error: result.error };
-  return { data: result.data };
+  const data = (await getCachedClinicCoverageRules(access.clinicId)) as CoverageRuleRow[];
+  return { data };
 }
 
 /** For prescribers — wizard validation aligned with clinic overrides. */
@@ -51,11 +48,10 @@ export async function getPrescriptionCoverageRuleOverrides(): Promise<{
   data?: CoverageRuleOverridesMap;
   error?: string;
 }> {
-  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
+  const access = await requireClinicalIssueAccess();
   if (!access.ok) return { error: access.error };
-  const result = await loadActiveCoverageRulesForClinic(supabase, access.data.clinicId);
-  if (!result.ok) return { error: result.error };
-  return { data: buildCoverageRuleOverridesMap(result.data) };
+  const rows = (await getCachedClinicCoverageRules(access.data.clinicId)) as CoverageRuleRow[];
+  return { data: buildCoverageRuleOverridesMap(rows) };
 }
 
 export async function getClinicCoverageRule(

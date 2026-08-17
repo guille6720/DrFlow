@@ -8,6 +8,7 @@ import { createClient } from "@/core/supabase/server";
 import { PrescriptionTemplatesManager } from "@/features/recetas/components/recetas/prescription-templates-manager";
 import { listPrescriptionTemplatesForClinic } from "@/features/recetas/repositories/prescription-templates.repository";
 
+import { getCachedClinicProfessionalsList } from "@/lib/server/cached-clinic-queries";
 import { resolveDefaultProfessionalId } from "@/lib/server/resolve-default-professional";
 
 export default async function PlantillasRecetasPage() {
@@ -22,18 +23,13 @@ export default async function PlantillasRecetasPage() {
   }
 
   const supabase = await createClient();
-  const [templatesResult, { data: professionals }] = await Promise.all([
+  const [templatesResult, professionals] = await Promise.all([
     listPrescriptionTemplatesForClinic(supabase, clinicId),
-    supabase
-      .from("professionals")
-      .select("id, display_name, license_number, profiles(full_name)")
-      .eq("clinic_id", clinicId)
-      .eq("active", true)
-      .order("display_name"),
+    getCachedClinicProfessionalsList(clinicId),
   ]);
 
   const templates = templatesResult.ok ? templatesResult.data : [];
-  const professionalRows = (professionals ?? []).map((p) => ({
+  const professionalRows = professionals.map((p) => ({
     id: p.id,
     display_name: p.display_name,
     license_number: p.license_number,

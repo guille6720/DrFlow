@@ -4,7 +4,6 @@ import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { unwrapNestedRow } from "@/core/supabase/nested-row";
-import { createClient } from "@/core/supabase/server";
 
 import type { ProfessionalSignatureRow } from "@/features/profesionales/components/profesionales/professional-signatures-manager";
 import { ProfessionalSignaturesManager } from "@/features/profesionales/components/profesionales/professional-signatures-manager";
@@ -24,30 +23,10 @@ export default async function FirmasPage() {
   }
 
   const canManageAll = hasPermission(role, "manageStaff", isSuperadmin);
-  const supabase = await createClient();
-
+  const allProfessionals = await getCachedClinicProfessionalsList(clinicId);
   const cachedProfessionals = canManageAll
-    ? await getCachedClinicProfessionalsList(clinicId)
-    : await (async () => {
-        let query = supabase
-          .from("professionals")
-          .select(
-            "id, display_name, license_number, license_national, license_provincial, signature_text, signature_image_path, user_id, profiles(full_name)"
-          )
-          .eq("clinic_id", clinicId)
-          .eq("is_active", true)
-          .order("display_name");
-
-        if (profile?.id) {
-          query = query.eq("user_id", profile.id);
-        }
-
-        const { data: professionals } = await query;
-        const { resolveProfessionalSignatureUrls } = await import(
-          "@/lib/server/resolve-professional-signature-urls"
-        );
-        return resolveProfessionalSignatureUrls(supabase, professionals ?? []);
-      })();
+    ? allProfessionals
+    : allProfessionals.filter((pro) => pro.user_id === profile?.id);
 
   const rows: ProfessionalSignatureRow[] = cachedProfessionals.map((pro) => {
     const profileRow = unwrapNestedRow(
@@ -60,8 +39,8 @@ export default async function FirmasPage() {
       license_national: pro.license_national ?? null,
       license_provincial: pro.license_provincial ?? null,
       signature_text: pro.signature_text?.trim() || buildProfessionalSignature(pro),
-      signature_image_path: pro.signature_image_path,
-      signature_image_url: pro.signature_image_url,
+      signature_image_path: pro.signature_image_path ?? null,
+      signature_image_url: pro.signature_image_url ?? null,
       profiles: profileRow?.full_name ? { full_name: String(profileRow.full_name) } : null,
     };
   });

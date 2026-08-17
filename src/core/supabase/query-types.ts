@@ -25,6 +25,7 @@ export type NestedRow<T extends Record<string, unknown>> = T | T[] | null;
 /** Professional row for lists, planillas and nueva consulta. */
 export type ProfessionalListRow = {
   id: string;
+  user_id?: string | null;
   display_name: string | null;
   license_number: string | null;
   license_national?: string | null;

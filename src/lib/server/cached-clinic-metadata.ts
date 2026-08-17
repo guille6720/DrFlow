@@ -143,7 +143,7 @@ export async function loadClinicProfessionalsSettingsCached(clinicId: string): P
 export async function loadClinicProfessionalsListRowsCached(clinicId: string): Promise<ProfessionalListRow[]> {
   return withClinicMetadataCache(
     {
-      key: "professionals-list",
+      key: "professionals-list-v2",
       clinicId,
       tag: clinicProfessionalsTag(clinicId),
       revalidate: CLINIC_METADATA_TTL.professionals,
@@ -152,7 +152,7 @@ export async function loadClinicProfessionalsListRowsCached(clinicId: string): P
       const { data } = await supabase
         .from("professionals")
         .select(
-          "id, display_name, license_number, license_national, license_provincial, signature_text, signature_image_path, profiles(full_name)"
+          "id, user_id, display_name, license_number, license_national, license_provincial, signature_text, signature_image_path, profiles(full_name)"
         )
         .eq("clinic_id", clinicId)
         .eq("is_active", true)

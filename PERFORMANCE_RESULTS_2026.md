@@ -224,6 +224,20 @@ Tabs del workspace siguen con `history.replaceState` (sin `router.push`).
 
 ---
 
+## Fase 10 — Cache
+
+Sin nueva arquitectura. Se verificó reuso de `React.cache` + `unstable_cache` (tags/TTL) y se cerraron consumidores que aún pegaban a Postgres en vivo:
+
+| Recurso | Ruta / acción | Antes | Después |
+| ------- | ------------- | ----- | ------- |
+| Professionals list | `/firmas`, `/plantillas-recetas` | query live (`active` erróneo en plantillas) | `getCachedClinicProfessionalsList` |
+| Coverage rules | wizard receta / admin list | `loadActiveCoverageRulesForClinic` live | `getCachedClinicCoverageRules` (TTL 300s + `updateTag`) |
+| Portal / templates / flags | pacientes, HC, workspace, agenda | ya cacheado (ciclos previos) | assert en test |
+
+PHI (`patients`, `clinical_records`, recetas, turnos) **no** entra en `cached-clinic-metadata`.
+
+---
+
 ## Confirmación entorno
 
 | Ítem | Estado |
@@ -331,3 +345,10 @@ Tabs del workspace siguen con `history.replaceState` (sin `router.push`).
 - Listas/FAB/header clínico / consultas / recetas-órdenes
 - `loading.tsx` historias/[id], dashboard, agenda, turnos/nuevo, sala-espera
 - Tests: `tests/performance/navigation-prefetch.test.ts`
+
+### Fase 10 (cache)
+
+- `src/app/(dashboard)/firmas/page.tsx` / `plantillas-recetas/page.tsx`
+- `src/features/recetas/actions/coverage-rules.ts`
+- `src/lib/server/cached-clinic-metadata.ts` (`professionals-list-v2` + `user_id`)
+- Tests: `tests/performance/clinic-metadata-cache-reuse.test.ts`
