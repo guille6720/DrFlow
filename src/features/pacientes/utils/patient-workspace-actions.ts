@@ -149,3 +149,9 @@ export function parsePatientWorkspaceActions(
     copilotSheetOpen: action === "copilot",
   };
 }
+
+/** Same-page query update without an RSC reload (tabs, HC sidebar). */
+export function replaceClientUrl(url: string) {
+  if (typeof window === "undefined") return;
+  window.history.replaceState(window.history.state, "", url);
+}

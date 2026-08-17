@@ -33,7 +33,6 @@ function PatientWorkflowActionBarInner({ patientId, canEditClinical, canIssue }:
     if (!result.error) {
       clearConsultationTimer(activeAppointmentId);
       router.push(buildPatientWorkspaceUrl(patientId, { tab: "soap" }));
-      router.refresh();
     }
   }, [activeAppointmentId, patientId, router]);
 

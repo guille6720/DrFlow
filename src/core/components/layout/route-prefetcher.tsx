@@ -9,7 +9,6 @@ const CORE_DASHBOARD_ROUTES = [
   "/dashboard",
   "/pacientes",
   "/turnos/agenda",
-  "/historias",
   "/caja",
 ] as const;
 

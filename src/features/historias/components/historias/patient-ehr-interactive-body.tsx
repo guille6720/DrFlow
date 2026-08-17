@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { type ReactNode, useMemo } from "react";
 
 import { PatientEhrClinicalTables } from "@/features/historias/components/historias/patient-ehr-clinical-tables";
@@ -22,11 +21,10 @@ import type {
   PatientEhrPrescription,
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
-import type {
-  PatientWorkspaceFocus,
-  PatientWorkspaceSheet,
+import {
+  buildPatientWorkspaceUrl,
+  replaceClientUrl,
 } from "@/features/pacientes/utils/patient-workspace-actions";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { DocumentSignatureBlock } from "@/features/recetas/components/recetas/document-signature-block";
 
 type Props = {
@@ -45,11 +43,6 @@ type Props = {
     professionalName: string;
   } | null;
   consultPanel?: ReactNode;
-  buildConsultHref?: (opts?: {
-    sheet?: PatientWorkspaceSheet;
-    focus?: PatientWorkspaceFocus;
-    consulta?: string;
-  }) => string;
 };
 
 export function PatientEhrInteractiveBody({
@@ -65,9 +58,7 @@ export function PatientEhrInteractiveBody({
   canIssue = false,
   pendingSidebarConsultation = null,
   consultPanel,
-  buildConsultHref,
 }: Props) {
-  const router = useRouter();
   const {
     evolutionList,
     sidebarList,
@@ -93,16 +84,11 @@ export function PatientEhrInteractiveBody({
 
   function handleSidebarSelect(id: string) {
     setSelectedId(id);
-    if (inlineConsultOpen && buildConsultHref) {
+    if (inlineConsultOpen) {
       // Stay in the in-progress consult form; don't jump to a past evolution URL.
       return;
     }
-    const url = buildPatientWorkspaceUrl(patientId, { tab: "soap", consulta: id });
-    if (inlineConsultOpen) {
-      router.push(url, { scroll: false });
-      return;
-    }
-    router.replace(url, { scroll: false });
+    replaceClientUrl(buildPatientWorkspaceUrl(patientId, { tab: "soap", consulta: id }));
   }
 
   const screenDayConsultations =

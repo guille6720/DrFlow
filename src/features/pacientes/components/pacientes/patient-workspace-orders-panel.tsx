@@ -1,12 +1,11 @@
 import { Plus } from "lucide-react";
-import Link from "next/link";
 
 import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
 import type { PatientWorkspaceProfessional } from "@/features/pacientes/server/load-patient-workspace-page";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { MedicalOrderList } from "@/features/recetas/components/recetas/medical-order-list";
 
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 type Props = {
@@ -42,12 +41,10 @@ export function PatientWorkspaceOrdersPanel({
       title="Órdenes médicas"
       action={
         canIssue ? (
-          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "ordenes", action: "nueva" })}>
-            <Button size="sm" type="button">
-              <Plus className="h-4 w-4" />
-              Nueva orden
-            </Button>
-          </Link>
+          <ButtonLink href={buildPatientWorkspaceUrl(patientId, { tab: "ordenes", action: "nueva" })} size="sm">
+            <Plus className="h-4 w-4" />
+            Nueva orden
+          </ButtonLink>
         ) : null
       }
     >

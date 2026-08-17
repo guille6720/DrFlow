@@ -207,6 +207,23 @@ También: `pg_trgm` pacientes (061) + diagnosis GIN (088). 061 ya dropeó duplic
 
 ---
 
+## Fase 9 — Navegación
+
+Sidebar ya era `<Link prefetch>`. El residual era RSC en cada click del sidebar de HC y botones envueltos en `<Link>`.
+
+| Cambio | Efecto |
+| ------ | ------ |
+| Sidebar HC: `replaceClientUrl` (sin `router.replace`) | Cambia evolución sin recargar el workspace |
+| Listas pacientes/HC + FAB + `ButtonLink` `prefetch={true}` | Prefetch de rutas dinámicas `/pacientes/[id]` |
+| Acciones clínicas → `ButtonLink` (no `<Link><Button>`) | Un solo control; prefetch |
+| `router.refresh()` tras `router.push` al salir de consulta | Evita doble fetch RSC |
+| `loading.tsx` en historias/[id], dashboard, agenda, turnos/nuevo, sala-espera | Skeleton inmediato |
+| RoutePrefetcher sin `/historias` (redirect) | No prefetch de stub |
+
+Tabs del workspace siguen con `history.replaceState` (sin `router.push`).
+
+---
+
 ## Confirmación entorno
 
 | Ítem | Estado |
@@ -304,3 +321,13 @@ También: `pg_trgm` pacientes (061) + diagnosis GIN (088). 061 ya dropeó duplic
 - Sin `supabase/migrations/118_*.sql` ni `065_performance_hot_paths.sql`
 - `scripts/verify-index-optimization.sql` (§8 inventario + EXPLAIN)
 - Tests: `tests/performance/hot-path-indexes.test.ts`
+
+### Fase 9 (navegación)
+
+- `src/features/pacientes/utils/patient-workspace-actions.ts` (`replaceClientUrl`)
+- `src/features/historias/components/historias/patient-ehr-interactive-body.tsx`
+- `src/features/historias/components/historias/patient-ehr-action-links.tsx`
+- `src/components/ui/button.tsx` (`ButtonLink` prefetch)
+- Listas/FAB/header clínico / consultas / recetas-órdenes
+- `loading.tsx` historias/[id], dashboard, agenda, turnos/nuevo, sala-espera
+- Tests: `tests/performance/navigation-prefetch.test.ts`

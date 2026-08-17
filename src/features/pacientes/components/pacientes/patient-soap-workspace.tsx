@@ -244,7 +244,6 @@ export function PatientSoapWorkspace({
           inlineConsultOpen={parsed.inlineConsultOpen}
           canIssue={canIssue}
           pendingSidebarConsultation={pendingSidebarConsultation}
-          buildConsultHref={buildConsultHref}
           consultPanel={
             parsed.inlineConsultOpen ? (
               <PatientEhrNewConsultPanel

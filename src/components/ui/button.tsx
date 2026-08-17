@@ -89,6 +89,7 @@ type ButtonLinkProps = {
   className?: string;
   children: React.ReactNode;
   prefetch?: boolean;
+  title?: string;
   "aria-label"?: string;
 };
 
@@ -99,13 +100,15 @@ export function ButtonLink({
   size = "md",
   className,
   children,
-  prefetch,
+  prefetch = true,
+  title,
   "aria-label": ariaLabel,
 }: ButtonLinkProps) {
   return (
     <Link
       href={href}
       prefetch={prefetch}
+      title={title}
       aria-label={ariaLabel}
       className={buttonSurfaceClassName(variant, size, className)}
     >

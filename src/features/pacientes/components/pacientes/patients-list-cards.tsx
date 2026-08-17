@@ -105,6 +105,7 @@ const PatientListCard = memo(function PatientListCard({
           <PatientWhatsAppButton phone={p.phone} message={contactMessage} size="icon" />
           <Link
             href={patientClinicalHistoryPath(p.id)}
+            prefetch
             className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-cyan-700 hover:to-teal-700"
           >
             <FileText className="h-3.5 w-3.5" />
@@ -113,6 +114,7 @@ const PatientListCard = memo(function PatientListCard({
           {canIssuePrescriptions ? (
             <Link
               href={buildPatientWorkspaceUrl(p.id, { tab: "recetas", action: "nueva" })}
+              prefetch
               className="inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800 hover:bg-teal-100"
             >
               <ScrollText className="h-3.5 w-3.5" />
@@ -121,6 +123,7 @@ const PatientListCard = memo(function PatientListCard({
           ) : null}
           <Link
             href={patientFichaPath(p.id)}
+            prefetch
             className="text-xs font-semibold text-slate-800 underline-offset-2 hover:text-teal-800 hover:underline"
           >
             Ficha

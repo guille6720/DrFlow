@@ -106,6 +106,7 @@ export function FloatingActions() {
             <Link
               key={action.href}
               href={action.href}
+              prefetch
               onClick={() => setOpen(false)}
               className={cn(
                 "animate-fab-in flex items-center gap-2 rounded-full py-2 pl-3 pr-4 text-sm font-medium text-white shadow-lg",

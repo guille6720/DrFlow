@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState, useTransition } from "react";
 
@@ -15,7 +14,7 @@ import {
   type PatientWorkspaceUrlOptions,
 } from "@/features/pacientes/utils/patient-workspace-actions";
 
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 import { finalizeConsultation } from "@/lib/actions/appointments";
 import { updateWaitingRoomStatus } from "@/lib/actions/waiting-room";
 import type { Patient } from "@/types/database";
@@ -109,28 +108,21 @@ export function DoctorConsultaSession({
     toast.success("Consulta guardada y turno finalizado");
     startTransition(() => {
       router.push("/consultas");
-      router.refresh();
     });
   }
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <Link href="/consultas">
-          <Button type="button" variant="outline" size="sm">
-            ← Lista de consultas
-          </Button>
-        </Link>
-        <Link href="/sala-espera">
-          <Button type="button" variant="outline" size="sm">
-            Sala de espera
-          </Button>
-        </Link>
-        <Link href={clinicalHistoryHref}>
-          <Button type="button" variant="secondary" size="sm">
-            Historia clínica de: {patientDisplayName}
-          </Button>
-        </Link>
+        <ButtonLink href="/consultas" variant="outline" size="sm">
+          ← Lista de consultas
+        </ButtonLink>
+        <ButtonLink href="/sala-espera" variant="outline" size="sm">
+          Sala de espera
+        </ButtonLink>
+        <ButtonLink href={clinicalHistoryHref} variant="secondary" size="sm">
+          Historia clínica de: {patientDisplayName}
+        </ButtonLink>
       </div>
 
       <DrappConsultaWorkspace

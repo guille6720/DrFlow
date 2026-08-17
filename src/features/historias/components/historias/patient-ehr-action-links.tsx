@@ -1,16 +1,17 @@
+"use client";
+
 import { FileText, Plus } from "lucide-react";
 import Link from "next/link";
 
 import { cn } from "@/shared/utils/cn";
 
 import { PatientEhrPrintMenu } from "@/features/historias/components/historias/patient-ehr-print-menu";
-import type {
-  PatientWorkspaceFocus,
-  PatientWorkspaceSheet,
-} from "@/features/pacientes/utils/patient-workspace-actions";
+import { usePatientEhrStateContext } from "@/features/historias/components/historias/patient-ehr-state-context";
 import {
   buildConsultaSessionUrl,
   buildPatientWorkspaceUrl,
+  type PatientWorkspaceFocus,
+  type PatientWorkspaceSheet,
 } from "@/features/pacientes/utils/patient-workspace-actions";
 
 import { Button } from "@/components/ui/button";
@@ -45,10 +46,12 @@ export function PatientEhrActionLinks({
   activeSheet,
   activeFocus,
   canIssue = false,
-  selectedConsultaId = null,
+  selectedConsultaId: selectedConsultaIdProp = null,
   onBeforeRecetaOpen,
   buildHref,
 }: Props) {
+  const { selectedId } = usePatientEhrStateContext();
+  const selectedConsultaId = selectedId ?? selectedConsultaIdProp;
   const consultUrl = (opts?: ConsultHrefOpts) =>
     buildHref?.(opts) ??
     buildConsultaSessionUrl({
@@ -81,7 +84,7 @@ export function PatientEhrActionLinks({
   return (
     <div className="drflow-ehr-actions mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[var(--border)] pb-3 text-sm font-semibold">
       {!consultOpen ? (
-        <Link href={consultUrl()} className="drflow-ehr-primary-btn">
+        <Link href={consultUrl()} prefetch className="drflow-ehr-primary-btn">
           <Plus className="h-4 w-4" /> Nueva consulta
         </Link>
       ) : null}
@@ -89,6 +92,7 @@ export function PatientEhrActionLinks({
       {canIssue ? (
         <Link
           href={recetaHref}
+          prefetch
           onClick={onBeforeRecetaOpen}
           className={cn(
             "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition",
@@ -106,18 +110,21 @@ export function PatientEhrActionLinks({
         <>
           <Link
             href={consultUrl({ sheet: "archivo", focus: "evolucion" })}
+            prefetch
             className={linkClass(activeSheet === "archivo")}
           >
             <Plus className="h-3.5 w-3.5" /> Archivo
           </Link>
           <Link
             href={consultUrl({ focus: "diagnostico" })}
+            prefetch
             className={linkClass(activeFocus === "diagnostico")}
           >
             <Plus className="h-3.5 w-3.5" /> Diagnóstico
           </Link>
           <Link
             href={consultUrl({ focus: "vitales" })}
+            prefetch
             className={linkClass(activeFocus === "vitales")}
           >
             Signos vitales
@@ -125,6 +132,7 @@ export function PatientEhrActionLinks({
           {canIssue ? (
             <Link
               href={consultUrl({ sheet: "orden" })}
+              prefetch
               className={linkClass(activeSheet === "orden")}
             >
               <FileText className="h-3.5 w-3.5" /> Orden

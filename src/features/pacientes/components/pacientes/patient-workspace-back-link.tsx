@@ -34,7 +34,7 @@ export function PatientWorkspaceBackLink({ patientId, initialFrom, returnPatient
   });
 
   return (
-    <Link href={href} className="drflow-link inline-flex items-center gap-1 text-sm">
+    <Link href={href} prefetch className="drflow-link inline-flex items-center gap-1 text-sm">
       <ArrowLeft className="h-4 w-4" aria-hidden />
       Volver
     </Link>

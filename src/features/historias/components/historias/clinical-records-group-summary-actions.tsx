@@ -39,6 +39,7 @@ export function ClinicalRecordsGroupSummaryActions({ group, whatsappName }: Prop
       />
       <Link
         href={patientClinicalHistoryPath(group.patientId)}
+        prefetch
         className="rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-cyan-700 hover:to-teal-700"
         onClick={(e) => e.stopPropagation()}
       >
@@ -46,6 +47,7 @@ export function ClinicalRecordsGroupSummaryActions({ group, whatsappName }: Prop
       </Link>
       <Link
         href={patientFichaPath(group.patientId)}
+        prefetch
         className="text-xs text-slate-600 hover:underline"
         onClick={(e) => e.stopPropagation()}
       >
