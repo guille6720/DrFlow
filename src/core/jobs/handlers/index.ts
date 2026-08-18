@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { handleExportClinicalBulkJob } from "@/core/jobs/handlers/export-clinical-bulk";
 import { handleGenerateReportJob } from "@/core/jobs/handlers/generate-report";
 import { handleImportBatchJob } from "@/core/jobs/handlers/import-batch";
 import { handleImportClinicalPdfJob } from "@/core/jobs/handlers/import-clinical-pdf";
@@ -62,6 +63,7 @@ export async function runClinicJobHandler(
     import_patients_batch: handleImportBatchJob,
     import_clinical_pdf: handleImportClinicalPdfJob,
     run_ai_task: handleRunAiTaskJob,
+    export_clinical_bulk: handleExportClinicalBulkJob,
   };
 
   const handler = handlers[job.job_type];

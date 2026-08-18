@@ -52,6 +52,33 @@ export function buildHistoriaClinicaPrintFilename(input: {
   return `${parts.join("_")}.pdf`;
 }
 
+export function buildClinicalPackageBaseName(input: {
+  last_name: string;
+  first_name: string;
+  document_number?: string;
+}): string {
+  const last = sanitizeClinicalFilenamePart(input.last_name);
+  const first = sanitizeClinicalFilenamePart(input.first_name);
+  const dni = sanitizeClinicalFilenamePart(input.document_number ?? "");
+  return [last, first, dni].filter(Boolean).join("_") || "historia_clinica";
+}
+
+export function buildClinicalPackageZipFilename(input: {
+  last_name: string;
+  first_name: string;
+  document_number?: string;
+}): string {
+  return `${buildClinicalPackageBaseName(input)}.zip`;
+}
+
+export function buildClinicalPackageJsonFilename(input: {
+  last_name: string;
+  first_name: string;
+  document_number?: string;
+}): string {
+  return `${buildClinicalPackageBaseName(input)}.json`;
+}
+
 /** Browser print/Save-as-PDF uses `document.title` as the default filename. */
 export function clinicalHistoryPrintTitle(input: {
   last_name: string;

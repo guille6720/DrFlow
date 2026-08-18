@@ -1,4 +1,5 @@
 export { ClearClinicalHistoryPanel } from "@/features/integraciones/components/datos/clear-clinical-history-panel";
+export { DataImportExportHub } from "@/features/integraciones/components/datos/data-import-export-hub";
 export { DataImportExportSidebar } from "@/features/integraciones/components/datos/data-import-export-sidebar";
 export { MigrationHealthPanel } from "@/features/integraciones/components/datos/migration-health-panel";
 export { importClinicalCsv } from "@/lib/actions/clinical-import";

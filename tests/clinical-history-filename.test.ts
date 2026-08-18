@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildClinicalHistoryFilename,
+  buildClinicalPackageZipFilename,
   buildHistoriaClinicaPrintFilename,
   clinicalHistoryPrintTitle,
   formatLocalDownloadStamp,
@@ -47,5 +48,15 @@ describe("clinical-history-filename", () => {
         downloadedAt: new Date(2026, 7, 13, 15, 7, 0),
       })
     ).toBe("Historia_Clinica_castro_angel_5844743_2026-08-13");
+  });
+
+  it("builds ZIP name as Lastname_Firstname_DocumentNumber", () => {
+    expect(
+      buildClinicalPackageZipFilename({
+        last_name: "García",
+        first_name: "Ana",
+        document_number: "30123456",
+      })
+    ).toBe("Garcia_Ana_30123456.zip");
   });
 });

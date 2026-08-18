@@ -35,6 +35,12 @@ export default async function ConfiguracionPage({ searchParams }: PageProps) {
   if (seccion === "catalogo") {
     redirect("/ingreso-profesionales");
   }
+  if (seccion === "import-export") {
+    redirect("/datos");
+  }
+  if (seccion === "import-export-audit") {
+    redirect("/datos?flujo=historial");
+  }
 
   const activeSection = resolveConfiguracionSection(seccion);
   const activeGroup = resolveConfiguracionGroup(grupo);

@@ -1,5 +1,6 @@
 import { ArrowLeftRight } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
@@ -8,46 +9,62 @@ import { createClient } from "@/core/supabase/server";
 
 import { ClinicalStructureStatsPanel } from "@/features/historias/components/historias/clinical-structure-stats-panel";
 import { loadClinicStructuredClinicalStats } from "@/features/historias/server/load-clinic-structured-clinical-stats";
-import { DataImportExportSidebar } from "@/features/integraciones";
-import { MigrationHealthPanel } from "@/features/integraciones";
-import { ClearClinicalHistoryPanel } from "@/features/integraciones";
-import { DatosBulkDownloadCards } from "@/features/integraciones/components/datos/datos-bulk-download-cards";
+import { ClearClinicalHistoryPanel, MigrationHealthPanel } from "@/features/integraciones";
+import { DataImportExportHub } from "@/features/integraciones/components/datos/data-import-export-hub";
 import { DatosNavigationHelp } from "@/features/integraciones/components/datos/datos-navigation-help";
+import { loadImportExportHistory } from "@/features/integraciones/server/load-import-export-history";
 
 import { Button } from "@/components/ui/button";
 import { SectorHero } from "@/components/ui/sector-hero";
-import type { ClinicalRecordExportRow, PatientExportRow } from "@/lib/utils/clinical-export-client";
+import { getCachedClinicProfessionalsList } from "@/lib/server/cached-clinic-queries";
 import { buildMigrationHealthReport, type MigrationHealthReport } from "@/lib/utils/migration-health";
+import { getProfessionalDisplayName } from "@/lib/utils/professional";
 
 export const maxDuration = 300;
 
-const EXPORT_PATIENT_LIMIT = 5000;
-const EXPORT_RECORDS_LIMIT = 2000;
 const MIGRATION_RECORDS_LIMIT = 25_000;
 
 export default async function DatosPage() {
-  const { profile, clinics, clinicId, clinic, role, isSuperadmin } = await getDashboardPageContext();
+  const { profile, clinics, clinicId, clinic, role, isSuperadmin, permissionOverrides } =
+    await getDashboardPageContext();
   const supabase = await createClient();
 
-  const canImportPatients = hasPermission(role, "managePatients", isSuperadmin);
-  const canImportClinical =
-    hasPermission(role, "editClinicalRecords", isSuperadmin) ||
-    hasPermission(role, "managePatients", isSuperadmin);
-  const canResetClinicalHistory = hasPermission(role, "manageClinic", isSuperadmin);
-  const canViewClinicalStats = hasPermission(role, "viewClinicalRecords", isSuperadmin);
+  const canImportPatients = hasPermission(role, "importPatients", isSuperadmin, permissionOverrides);
+  const canImportClinical = hasPermission(
+    role,
+    "importClinicalRecords",
+    isSuperadmin,
+    permissionOverrides
+  );
+  const canExportPatients = hasPermission(role, "exportPatients", isSuperadmin, permissionOverrides);
+  const canExportClinical = hasPermission(
+    role,
+    "exportClinicalRecords",
+    isSuperadmin,
+    permissionOverrides
+  );
+  const canBulkExport = hasPermission(role, "bulkExportData", isSuperadmin, permissionOverrides);
+  const canResetClinicalHistory = hasPermission(role, "manageClinic", isSuperadmin, permissionOverrides);
+  const canViewClinicalStats = hasPermission(
+    role,
+    "viewClinicalRecords",
+    isSuperadmin,
+    permissionOverrides
+  );
 
-  let exportPatients: PatientExportRow[] = [];
-  let exportRecords: ClinicalRecordExportRow[] = [];
+  let patientCount = 0;
   let migrationReport: MigrationHealthReport | null = null;
   let clinicalStats: Awaited<ReturnType<typeof loadClinicStructuredClinicalStats>> = {
     cie10: [],
     treatments: [],
   };
+  const history = await loadImportExportHistory(40);
+  let professionals: Array<{ id: string; name: string }> = [];
+  let insuranceOptions: string[] = [];
 
   if (clinicId) {
     const [
-      { data: patientsData },
-      { data: recordsData },
+      { count },
       { data: migrationPatients },
       { data: migrationAttachments },
       { count: migrationRecordCount },
@@ -55,19 +72,9 @@ export default async function DatosPage() {
     ] = await Promise.all([
       supabase
         .from("patients")
-        .select("first_name, last_name, document_number, birth_date, phone, email, insurance_provider")
+        .select("id", { count: "exact", head: true })
         .eq("clinic_id", clinicId)
-        .eq("is_active", true)
-        .order("last_name")
-        .limit(EXPORT_PATIENT_LIMIT),
-      supabase
-        .from("clinical_records")
-        .select(
-          "chief_complaint, diagnosis, evolution, indications, created_at, patients(first_name, last_name, document_number), professionals(profiles(full_name))"
-        )
-        .eq("clinic_id", clinicId)
-        .order("created_at", { ascending: false })
-        .limit(EXPORT_RECORDS_LIMIT),
+        .eq("is_active", true),
       supabase
         .from("patients")
         .select("id, first_name, last_name, document_number, notes")
@@ -88,41 +95,7 @@ export default async function DatosPage() {
         .limit(MIGRATION_RECORDS_LIMIT),
     ]);
 
-    exportPatients =
-      patientsData?.map((p) => ({
-        first_name: p.first_name,
-        last_name: p.last_name,
-        document_number: p.document_number,
-        phone: p.phone ?? "",
-        email: p.email ?? "",
-        insurance_provider: p.insurance_provider ?? "",
-        birth_date: p.birth_date ?? "",
-      })) ?? [];
-
-    exportRecords =
-      recordsData?.map((r) => {
-        const patient = r.patients as unknown as {
-          first_name: string;
-          last_name: string;
-          document_number: string;
-        } | null;
-        const patientName = patient
-          ? `${patient.last_name}, ${patient.first_name}`
-          : "Paciente";
-        return {
-          created_at: r.created_at,
-          patient_name: patientName,
-          document_number: patient?.document_number ?? "",
-          professional_name:
-            (r.professionals as { profiles?: { full_name?: string } } | null)?.profiles
-              ?.full_name ?? "Profesional",
-          chief_complaint: r.chief_complaint ?? "",
-          diagnosis: r.diagnosis ?? "",
-          evolution: r.evolution ?? "",
-          indications: r.indications ?? "",
-        };
-      }) ?? [];
-
+    patientCount = count ?? 0;
     migrationReport = buildMigrationHealthReport({
       patients: migrationPatients ?? [],
       attachments: migrationAttachments ?? [],
@@ -132,6 +105,29 @@ export default async function DatosPage() {
 
     if (canViewClinicalStats) {
       clinicalStats = await loadClinicStructuredClinicalStats(supabase, clinicId);
+    }
+    if (canImportClinical || canBulkExport) {
+      const rows = await getCachedClinicProfessionalsList(clinicId);
+      professionals = rows.map((row) => ({
+        id: row.id,
+        name: getProfessionalDisplayName(row),
+      }));
+    }
+    if (canBulkExport) {
+      const { data: coverageRows } = await supabase
+        .from("patients")
+        .select("insurance_provider")
+        .eq("clinic_id", clinicId)
+        .eq("is_active", true)
+        .not("insurance_provider", "is", null)
+        .limit(2000);
+      insuranceOptions = [
+        ...new Set(
+          (coverageRows ?? [])
+            .map((row) => (typeof row.insurance_provider === "string" ? row.insurance_provider.trim() : ""))
+            .filter(Boolean)
+        ),
+      ].sort((a, b) => a.localeCompare(b, "es"));
     }
   }
 
@@ -146,63 +142,55 @@ export default async function DatosPage() {
         userName={profile?.full_name}
       />
 
-      <div className="flex flex-col gap-4 p-3 lg:flex-row lg:items-start lg:p-4">
-        <aside className="w-full shrink-0 lg:sticky lg:top-4 lg:w-[min(100%,22rem)] lg:max-w-sm">
-          <DataImportExportSidebar
+      <div className="flex flex-col gap-4 p-3 lg:p-4">
+        <DatosNavigationHelp />
+
+        <SectorHero
+          icon={ArrowLeftRight}
+          title="Importar / Exportar datos"
+          subtitle="Configuración → Importar / Exportar. Los archivos se tratan como no confiables; la escritura espera confirmación."
+        />
+
+        <Suspense fallback={<p className="text-sm text-slate-500">Cargando módulo…</p>}>
+          <DataImportExportHub
             canImportPatients={canImportPatients}
             canImportClinical={canImportClinical}
-            exportPatients={exportPatients}
-            exportRecords={exportRecords}
+            canExportPatients={canExportPatients}
+            canExportClinical={canExportClinical}
+            canBulkExport={canBulkExport}
+            patientCount={patientCount}
+            exportRecords={[]}
+            history={history.rows}
+            historyError={history.error}
+            professionals={professionals}
+            insuranceOptions={insuranceOptions}
           />
-        </aside>
+        </Suspense>
 
-        <main className="min-w-0 flex-1">
-          <DatosNavigationHelp />
-
-          <SectorHero
-            icon={ArrowLeftRight}
-            title="Importación y exportación"
-            subtitle="Subí archivos de migración y descargá respaldos en CSV o PDF. La consulta día a día sigue en Pacientes e Historia clínica."
-          />
-
-          {migrationReport && (canImportPatients || canImportClinical) && (
-            <div className="mb-8">
-              <MigrationHealthPanel report={migrationReport} />
-            </div>
-          )}
-
-          {canViewClinicalStats ? (
-            <div className="mb-8">
-              <ClinicalStructureStatsPanel
-                cie10={clinicalStats.cie10}
-                treatments={clinicalStats.treatments}
-              />
-            </div>
-          ) : null}
-
-          {canResetClinicalHistory && clinic && (
-            <ClearClinicalHistoryPanel clinicName={clinic.name} />
-          )}
-
-          <DatosBulkDownloadCards
-            patients={exportPatients}
-            records={exportRecords}
-            patientsLimit={EXPORT_PATIENT_LIMIT}
-            recordsLimit={EXPORT_RECORDS_LIMIT}
-          />
-
-          {!canImportPatients && !canImportClinical && (
-            <p className="mt-6 text-sm text-amber-800">
-              Tu rol no incluye permisos de importación. Pedí acceso a un administrador de la clínica.
-            </p>
-          )}
-
-          <div className="mt-8">
-            <Link href="/historias">
-              <Button variant="outline">Ir a Historia clínica</Button>
-            </Link>
+        {migrationReport && (canImportPatients || canImportClinical) && (
+          <div className="mt-4">
+            <MigrationHealthPanel report={migrationReport} />
           </div>
-        </main>
+        )}
+
+        {canViewClinicalStats ? (
+          <div className="mt-4">
+            <ClinicalStructureStatsPanel
+              cie10={clinicalStats.cie10}
+              treatments={clinicalStats.treatments}
+            />
+          </div>
+        ) : null}
+
+        {canResetClinicalHistory && clinic && (
+          <ClearClinicalHistoryPanel clinicName={clinic.name} />
+        )}
+
+        <div className="mt-6">
+          <Link href="/configuracion?grupo=sistema">
+            <Button variant="outline">Volver a Configuración</Button>
+          </Link>
+        </div>
       </div>
     </>
   );

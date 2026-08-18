@@ -44,3 +44,32 @@ export async function requireActiveClinic() {
   }
   return { ok: true as const, clinicId };
 }
+
+/** Any of the listed permissions is enough (import/export hub). */
+export async function requireAnyClinicPermission(permissions: PermissionKey[]) {
+  const [clinicId, perm, user] = await Promise.all([
+    getActiveClinicId(),
+    getPermissionContext(),
+    getSession(),
+  ]);
+
+  const allowed = permissions.some((permission) =>
+    hasPermission(perm.role, permission, perm.isSuperadmin, perm.permissionOverrides)
+  );
+
+  if (!clinicId || !allowed) {
+    return { ok: false as const, error: "Sin permisos" };
+  }
+  if (!user) {
+    return { ok: false as const, error: "Sin sesión" };
+  }
+
+  return {
+    ok: true as const,
+    clinicId,
+    userId: user.id,
+    role: perm.role,
+    isSuperadmin: perm.isSuperadmin,
+    permissionOverrides: perm.permissionOverrides,
+  };
+}

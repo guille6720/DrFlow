@@ -28,6 +28,11 @@ export const PERMISSIONS = {
   manageWaitingRoom: ["superadmin", "clinic_admin", "secretary", "doctor"] as UserRole[],
   manageAdminDocuments: ["superadmin", "clinic_admin", "secretary"] as UserRole[],
   manageSettings: ["superadmin", "clinic_admin"] as UserRole[],
+  importPatients: ["superadmin", "clinic_admin", "secretary", "doctor"] as UserRole[],
+  exportPatients: ["superadmin", "clinic_admin", "secretary", "doctor"] as UserRole[],
+  importClinicalRecords: ["superadmin", "clinic_admin", "doctor"] as UserRole[],
+  exportClinicalRecords: ["superadmin", "clinic_admin", "doctor"] as UserRole[],
+  bulkExportData: ["superadmin", "clinic_admin"] as UserRole[],
 };
 
 export const MANAGEABLE_PERMISSION_KEYS = [
@@ -43,6 +48,11 @@ export const MANAGEABLE_PERMISSION_KEYS = [
   "manageCashRegister",
   "manageWaitingRoom",
   "manageAdminDocuments",
+  "importPatients",
+  "exportPatients",
+  "importClinicalRecords",
+  "exportClinicalRecords",
+  "bulkExportData",
 ] as const satisfies readonly PermissionKey[];
 
 export type ManageablePermissionKey = (typeof MANAGEABLE_PERMISSION_KEYS)[number];
@@ -118,6 +128,10 @@ export function canAccessRoute(
     "/gemini": "viewClinicalRecords",
   };
 
+  if (route.startsWith("/datos")) {
+    return canAccessImportExport(role, isSuperadmin, overrides);
+  }
+
   for (const [prefix, permission] of Object.entries(routePermissions)) {
     if (route.startsWith(prefix)) {
       return hasPermission(role, permission, isSuperadmin, overrides);
@@ -125,4 +139,23 @@ export function canAccessRoute(
   }
 
   return true;
+}
+
+export const IMPORT_EXPORT_PERMISSION_KEYS = [
+  "importPatients",
+  "exportPatients",
+  "importClinicalRecords",
+  "exportClinicalRecords",
+  "bulkExportData",
+] as const satisfies readonly PermissionKey[];
+
+export function canAccessImportExport(
+  role: UserRole | null,
+  isSuperadmin = false,
+  overrides?: PermissionOverrides
+): boolean {
+  if (isSuperadmin || role === "superadmin") return true;
+  return IMPORT_EXPORT_PERMISSION_KEYS.some((key) =>
+    hasPermission(role, key, isSuperadmin, overrides)
+  );
 }

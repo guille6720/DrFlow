@@ -12,7 +12,7 @@ import {
   type SidebarNavLink,
 } from "@/core/components/layout/sidebar-nav-config";
 import { SidebarNavContent } from "@/core/components/layout/sidebar-nav-content";
-import { hasPermission, isInvitedClinicMember, type PermissionOverrides } from "@/core/permissions/roles";
+import { canAccessImportExport, hasPermission, isInvitedClinicMember, type PermissionOverrides } from "@/core/permissions/roles";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -41,6 +41,10 @@ function filterNavLink(
   clinicFeatures: ReturnType<typeof useClinicFeatures>,
   permissionOverrides?: PermissionOverrides
 ): boolean {
+  if (item.href === "/datos") {
+    return canAccessImportExport(role, isSuperadmin ?? false, permissionOverrides);
+  }
+
   if (
     item.permission &&
     !hasPermission(role, item.permission, isSuperadmin, permissionOverrides)

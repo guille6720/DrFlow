@@ -73,6 +73,12 @@ describe("Role permissions", () => {
     expect(canAccessRoute("doctor", "/dashboard")).toBe(true);
   });
 
+  it("gates /datos behind import/export permissions", () => {
+    expect(canAccessRoute("doctor", "/datos")).toBe(true);
+    expect(canAccessRoute("secretary", "/datos")).toBe(true);
+    expect(canAccessRoute("patient", "/datos")).toBe(false);
+  });
+
   it("identifies invited clinic members", () => {
     expect(isInvitedClinicMember("doctor")).toBe(true);
     expect(isInvitedClinicMember("secretary")).toBe(true);

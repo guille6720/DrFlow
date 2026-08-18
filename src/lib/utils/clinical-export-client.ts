@@ -1,10 +1,12 @@
 "use client";
 
+import { toCsvDocument } from "@/features/integraciones/lib/spreadsheet-export-safety";
+
 import { buildClinicalHistoryFilename } from "@/lib/utils/clinical-history-filename";
 import { type JsPdfDocument, loadJsPdf } from "@/lib/utils/jspdf-loader";
 
 export function downloadCsv(filename: string, rows: string[][]) {
-  const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const csv = toCsvDocument(rows);
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

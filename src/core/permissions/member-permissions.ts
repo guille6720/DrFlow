@@ -24,6 +24,11 @@ export const MANAGEABLE_PERMISSION_LABELS: Record<ManageablePermissionKey, strin
   manageCashRegister: "Caja",
   manageWaitingRoom: "Sala de espera",
   manageAdminDocuments: "Docs administrativos",
+  importPatients: "Importar pacientes",
+  exportPatients: "Exportar pacientes",
+  importClinicalRecords: "Importar historias",
+  exportClinicalRecords: "Exportar historias",
+  bulkExportData: "Exportación masiva",
 };
 
 export type PermissionOverrideRow = {

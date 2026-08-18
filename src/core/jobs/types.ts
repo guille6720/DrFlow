@@ -39,8 +39,12 @@ export type ImportBatchJobPayload = {
   fileName: string;
   offset: number;
   batchSize: number;
-  importKind: "hce" | "patients" | "teams_jsonl";
+  importKind: "hce" | "patients" | "patients_mapped" | "teams_jsonl";
   userId: string;
+  sessionId?: string;
+  mapping?: Record<string, string>;
+  decisions?: Record<string, unknown>;
+  dateFormat?: string | null;
 };
 
 export type ImportClinicalPdfJobPayload = {
@@ -57,6 +61,21 @@ export type RunAiTaskJobPayload = {
   labSourceText?: string;
   enhanceWithLlm?: boolean;
   context?: Record<string, unknown>;
+};
+
+export type BulkClinicalExportFormat = "csv" | "xlsx" | "json" | "fhir" | "zip";
+
+export type ExportClinicalBulkJobPayload = {
+  userId: string;
+  format: BulkClinicalExportFormat;
+  scope: "all" | "selected";
+  patientIds: string[];
+  sections: string[];
+  dateFrom: string | null;
+  dateTo: string | null;
+  professionalId: string | null;
+  insuranceProvider: string | null;
+  confirmed: true;
 };
 
 export type EnqueueClinicJobInput = {

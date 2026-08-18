@@ -16,6 +16,11 @@ export type FeatureNavPermission =
   | "manageStaff"
   | "viewReports"
   | "manageSettings"
+  | "importPatients"
+  | "exportPatients"
+  | "importClinicalRecords"
+  | "exportClinicalRecords"
+  | "bulkExportData"
   | null;
 
 export type FeatureNavItem = {

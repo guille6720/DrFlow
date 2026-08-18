@@ -15,6 +15,7 @@ export const clinicJobTypeSchema = z.enum([
   "import_patients_batch",
   "import_clinical_pdf",
   "run_ai_task",
+  "export_clinical_bulk",
 ]);
 
 const sendReminderPayloadSchema = z.object({
@@ -63,6 +64,19 @@ const runAiTaskPayloadSchema = z.object({
   context: z.record(z.string().max(80), z.unknown()).optional(),
 });
 
+const exportClinicalBulkPayloadSchema = z.object({
+  userId: entityIdSchema,
+  format: z.enum(["csv", "xlsx", "json", "fhir", "zip"]),
+  scope: z.enum(["all", "selected"]),
+  patientIds: z.array(entityIdSchema).max(200),
+  sections: z.array(z.string().max(40)).min(1).max(20),
+  dateFrom: z.string().max(10).nullable(),
+  dateTo: z.string().max(10).nullable(),
+  professionalId: entityIdSchema.nullable(),
+  insuranceProvider: z.string().max(80).nullable(),
+  confirmed: z.literal(true),
+});
+
 const PAYLOAD_SCHEMAS: Record<ClinicJobType, z.ZodType<Record<string, unknown>>> = {
   send_reminder: sendReminderPayloadSchema,
   send_email: sendEmailPayloadSchema,
@@ -71,6 +85,7 @@ const PAYLOAD_SCHEMAS: Record<ClinicJobType, z.ZodType<Record<string, unknown>>>
   import_patients_batch: importBatchPayloadSchema,
   import_clinical_pdf: importClinicalPdfPayloadSchema,
   run_ai_task: runAiTaskPayloadSchema,
+  export_clinical_bulk: exportClinicalBulkPayloadSchema,
 };
 
 export function validateClinicJobEnqueue(

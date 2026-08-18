@@ -61,6 +61,8 @@ const ENTITY_MODULE_MAP: Record<string, AuditModule> = {
   user: "auth",
   consent: "compliance",
   clinic_job: "jobs",
+  data_import_session: "imports",
+  data_export: "imports",
   clinic_plugin: "plugins",
   clinic_feature_flag: "plugins",
   clinic_invitation: "settings",

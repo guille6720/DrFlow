@@ -342,5 +342,6 @@ export function usePatientEhrState(
     loadingMoreRecords,
     appendClinicalHistory,
     resolveConsultationSignature,
+    patientId: options?.patientId ?? printBundle.patient.id,
   };
 }

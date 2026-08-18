@@ -283,3 +283,30 @@ export function validateSpreadsheetImportUpload(
       : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   };
 }
+
+export function validateJsonImportUpload(
+  file: File,
+  buffer: Buffer,
+  maxBytes: number
+): UploadValidationResult {
+  if (file.size <= 0) return { ok: false, error: "Archivo vacío" };
+  if (file.size > maxBytes) return { ok: false, error: maxMbError(maxBytes) };
+
+  const lower = file.name.toLowerCase();
+  if (!lower.endsWith(".json") && !lower.endsWith(".fhir.json")) {
+    return { ok: false, error: "Solo se permiten archivos JSON FHIR (.json)" };
+  }
+  if (!looksLikeTextCsv(buffer)) {
+    return { ok: false, error: "El contenido no parece JSON de texto" };
+  }
+  const trimmed = buffer.toString("utf8").trim();
+  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
+    return { ok: false, error: "El JSON FHIR debe ser un objeto o un array" };
+  }
+
+  return {
+    ok: true,
+    sanitizedName: ensureExtension(sanitizeStorageFileName(file.name, "fhir.json"), ".json"),
+    contentType: "application/fhir+json",
+  };
+}

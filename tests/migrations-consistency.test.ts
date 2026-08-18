@@ -10,20 +10,20 @@ describe("migrations consistency", () => {
     .sort();
 
   it("has migration files in lexicographic order through latest clinical recent usage", () => {
-    expect(files.length).toBeGreaterThanOrEqual(115);
+    expect(files.length).toBeGreaterThanOrEqual(120);
     expect(files[0]).toBe("001_schema.sql");
-    expect(files[files.length - 1]).toBe("115_clinical_recent_usage.sql");
+    expect(files[files.length - 1]).toBe("120_bulk_clinical_export_job.sql");
   });
 
-  it("uses numeric prefix pattern without gaps through 115 (except b-suffix repairs)", () => {
+  it("uses numeric prefix pattern without gaps through 120 (except b-suffix repairs)", () => {
     const numeric = files
       .map((f) => f.match(/^(\d+)/)?.[1])
       .filter(Boolean)
       .map(Number);
     const unique = [...new Set(numeric)].sort((a, b) => a - b);
     expect(unique[0]).toBe(1);
-    expect(unique[unique.length - 1]).toBe(115);
-    for (let i = 1; i <= 115; i++) {
+    expect(unique[unique.length - 1]).toBe(120);
+    for (let i = 1; i <= 120; i++) {
       expect(unique).toContain(i);
     }
   });

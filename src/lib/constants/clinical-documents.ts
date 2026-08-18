@@ -24,6 +24,19 @@ export const TEAMS_JSONL_MAX_BYTES = 55 * 1024 * 1024;
 export const TEAMS_JSONL_MAX_ROWS = 20_000;
 export const TEAMS_JSONL_IMPORT_BATCH_SIZE = 150;
 
+export const FHIR_IMPORT_MAX_BYTES = 2 * 1024 * 1024;
+export const FHIR_IMPORT_MAX_PATIENTS = 50;
+export const FHIR_IMPORT_MAX_ENCOUNTERS = 200;
+export const FHIR_IMPORT_MAX_RESOURCES = 500;
+
+export const BULK_EXPORT_MAX_SELECTED_PATIENTS = 200;
+export const BULK_EXPORT_MAX_CSV_DEMOGRAPHICS = 5000;
+export const BULK_EXPORT_MAX_CSV_CLINICAL = 500;
+export const BULK_EXPORT_MAX_JSON_PATIENTS = 200;
+export const BULK_EXPORT_MAX_FHIR_PATIENTS = 100;
+export const BULK_EXPORT_MAX_ZIP_PATIENTS = 25;
+export const BULK_EXPORT_ZIP_MAX_BYTES = 80 * 1024 * 1024;
+
 export function clinicalDocumentCategoryLabel(category: string | null | undefined): string {
   return (
     CLINICAL_DOCUMENT_CATEGORIES.find((item) => item.value === category)?.label ?? "Documento"
