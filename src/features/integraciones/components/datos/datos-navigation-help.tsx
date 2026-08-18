@@ -2,7 +2,7 @@ import { MapPin } from "lucide-react";
 
 export function DatosNavigationHelp() {
   return (
-    <section className="mb-2 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-800">
+    <section className="drflow-card-light mb-2 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-800">
       <p className="flex items-center gap-2 font-semibold text-slate-900">
         <MapPin className="h-4 w-4" />
         Cómo llegar

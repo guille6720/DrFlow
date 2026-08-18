@@ -18,7 +18,7 @@ type Props = {
 export function ClinicalStructureStatsPanel({ cie10, treatments }: Props) {
   if (cie10.length === 0 && treatments.length === 0) {
     return (
-      <section className="rounded-lg border border-slate-200 bg-white p-4">
+      <section className="drflow-card-light rounded-lg border border-slate-200 bg-white p-4 text-slate-900">
         <h2 className="text-sm font-semibold text-slate-900">Reportes clínicos estructurados</h2>
         <p className="mt-2 text-sm text-slate-600">
           Todavía no hay diagnósticos CIE-10 ni tratamientos normalizados para reportar. Se
@@ -29,7 +29,7 @@ export function ClinicalStructureStatsPanel({ cie10, treatments }: Props) {
   }
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4">
+    <section className="drflow-card-light rounded-lg border border-slate-200 bg-white p-4 text-slate-900">
       <h2 className="text-sm font-semibold text-slate-900">Reportes clínicos estructurados</h2>
       <p className="mt-1 text-sm text-slate-600">
         Frecuencia por CIE-10 y por producto a partir de tablas normalizadas.

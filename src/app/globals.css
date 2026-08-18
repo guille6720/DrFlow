@@ -4165,8 +4165,8 @@ html[data-ui-palette="cobalt"] .drflow-mesh main .text-slate-900:not(.drflow-ui-
   color: #f8fafc !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-mesh main :is(p, span, li).text-slate-600:not(.drflow-ui-card *):not(.drflow-card-light *):not(.drflow-surface-light *):not(.drflow-workspace-overlay-panel *):not(.drflow-agenda-view *),
-html[data-ui-palette="cobalt"] .drflow-mesh main :is(p, span, li).text-slate-500:not(.drflow-ui-card *):not(.drflow-card-light *):not(.drflow-surface-light *):not(.drflow-workspace-overlay-panel *):not(.drflow-agenda-view *) {
+html[data-ui-palette="cobalt"] .drflow-mesh main :is(p, span, li).text-slate-600:not(.drflow-ui-card *):not(.drflow-card-light *):not(.drflow-surface-light *):not(.drflow-workspace-overlay-panel *):not(.drflow-agenda-view *):not(.bg-white *):not(.bg-teal-50 *):not(.bg-slate-50 *),
+html[data-ui-palette="cobalt"] .drflow-mesh main :is(p, span, li).text-slate-500:not(.drflow-ui-card *):not(.drflow-card-light *):not(.drflow-surface-light *):not(.drflow-workspace-overlay-panel *):not(.drflow-agenda-view *):not(.bg-white *):not(.bg-teal-50 *):not(.bg-slate-50 *) {
   color: #dbeafe !important;
 }
 

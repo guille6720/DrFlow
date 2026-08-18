@@ -145,14 +145,14 @@ export function HubCard({
   return (
     <Link
       href={`/datos?flujo=${flujo}`}
-      className={`rounded-xl border p-4 text-left shadow-sm transition ${
+      className={`drflow-card-light rounded-xl border p-4 text-left text-slate-900 shadow-sm transition ${
         active ? "border-teal-600 bg-teal-50" : "border-slate-200 bg-white hover:border-teal-400"
       }`}
     >
       <Icon className="mb-2 h-6 w-6 text-teal-800" />
       <p className="font-semibold text-slate-900">{title}</p>
-      <p className="mt-1 text-sm text-slate-600">{description}</p>
-      {phase > 1 ? <p className="mt-2 text-xs font-medium text-slate-500">Fase {phase}</p> : null}
+      <p className="mt-1 text-sm text-slate-700">{description}</p>
+      {phase > 1 ? <p className="mt-2 text-xs font-medium text-slate-600">Fase {phase}</p> : null}
     </Link>
   );
 }

@@ -48,7 +48,7 @@ export function DataImportExportHub(props: DatosHubProps) {
       </section>
 
       {flujo ? (
-        <Card title={titleForFlujo(flujo)}>
+        <Card title={titleForFlujo(flujo)} className="drflow-card-light bg-white">
           <FlujoBody {...props} flujo={flujo} />
         </Card>
       ) : null}

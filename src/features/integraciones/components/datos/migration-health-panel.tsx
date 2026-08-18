@@ -72,7 +72,7 @@ export function MigrationHealthPanel({ report }: Props) {
   const { totals, steps, recordsTruncated } = report;
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="drflow-card-light rounded-xl border border-slate-200 bg-white p-5 text-slate-900 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-900">Migración segura — estado de la clínica</h2>
       <p className="mt-1 text-sm text-slate-600">
         Orden recomendado: consumers → teams-*.jsonl (o HCE_export.csv) → PDFs de historia. Revisá pendientes antes de
