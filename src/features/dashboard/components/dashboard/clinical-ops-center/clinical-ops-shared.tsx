@@ -62,7 +62,7 @@ export function OpsSection({
       id={id}
       aria-labelledby={id ? `${id}-title` : undefined}
       className={cn(
-        "scroll-mt-24 rounded-xl border border-slate-700/60 bg-slate-900/40 p-4 shadow-sm",
+        "drflow-card-light scroll-mt-24 rounded-xl border border-slate-700/60 bg-slate-900/40 p-4 shadow-sm",
         className
       )}
     >
@@ -85,7 +85,9 @@ export function OpsSection({
   );
 }
 
-export function PriorityBadge({ priority }: { priority: ClinicalOpsWaitingPriority }) {
+export function PriorityBadge({ priority }: { priority?: ClinicalOpsWaitingPriority | null }) {
+  const tone: ClinicalOpsWaitingPriority =
+    priority === "urgent" || priority === "high" ? priority : "normal";
   const styles: Record<ClinicalOpsWaitingPriority, string> = {
     urgent: "bg-red-950/80 text-red-200 border-red-700",
     high: "bg-amber-950/80 text-amber-200 border-amber-700",
@@ -100,10 +102,10 @@ export function PriorityBadge({ priority }: { priority: ClinicalOpsWaitingPriori
     <span
       className={cn(
         "inline-flex rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase",
-        styles[priority]
+        styles[tone]
       )}
     >
-      {labels[priority]}
+      {labels[tone]}
     </span>
   );
 }

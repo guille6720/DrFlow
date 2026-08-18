@@ -9,6 +9,7 @@ import {
   mapPendingOrders,
   mapPendingStudies,
   mapQueuedReminders,
+  rowsOf,
 } from "@/features/dashboard/server/load-clinical-operations-dashboard.helpers";
 import { buildTasks } from "@/features/dashboard/server/load-clinical-operations-dashboard.tasks";
 import type {
@@ -44,10 +45,10 @@ async function loadSecondaryInner(
   const [draftRx, pendingStudies, queuedReminders, pendingOrdersResult] =
     await fetchDashboardSecondaryQueries(supabase, clinicId, todayStart, studiesSince);
 
-  const draftPrescriptions = mapDraftPrescriptions(draftRx.data ?? []);
-  const pendingStudiesMapped = mapPendingStudies(pendingStudies.data ?? []);
-  const queuedRemindersMapped = mapQueuedReminders(queuedReminders.data ?? []);
-  const pendingOrders = mapPendingOrders(pendingOrdersResult.data ?? []);
+  const draftPrescriptions = mapDraftPrescriptions(rowsOf(draftRx.data));
+  const pendingStudiesMapped = mapPendingStudies(rowsOf(pendingStudies.data));
+  const queuedRemindersMapped = mapQueuedReminders(rowsOf(queuedReminders.data));
+  const pendingOrders = mapPendingOrders(rowsOf(pendingOrdersResult.data));
 
   const tasks = buildTasks({
     todayAppointments: core.todayAppointments as LiveAppointment[],

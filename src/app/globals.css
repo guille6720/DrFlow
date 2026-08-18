@@ -4074,6 +4074,28 @@ html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-card-light :is(.text-sl
   color: #64748b !important;
 }
 
+html[data-ui-palette="cobalt"] .drflow-mesh main .clinical-ops-center.drflow-ui-card,
+html[data-ui-palette="cobalt"] .drflow-mesh main .clinical-ops-center.drflow-ui-card :is(h1, h2, h3, p, span, li, time, label, dt, dd) {
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-mesh main .clinical-ops-center.drflow-ui-card :is(.text-slate-400, .text-slate-500, .text-slate-600) {
+  color: #475569 !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-mesh main .clinical-ops-center.drflow-ui-card :is(.text-teal-200, .text-teal-300, .text-teal-400) {
+  color: #1d4ed8 !important;
+}
+
+html[data-ui-palette="cobalt"] .clinical-ops-load-warning {
+  background: #fffbeb !important;
+  border-color: #fcd34d !important;
+}
+
+html[data-ui-palette="cobalt"] .clinical-ops-load-warning p {
+  color: #92400e !important;
+}
+
 html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-card-light a:not([class*="from-cyan"]):not([class*="bg-gradient"]) {
   color: #1d4ed8 !important;
 }
@@ -4156,7 +4178,7 @@ html[data-ui-palette="cobalt"] .drflow-ui-header-dark :is(h1, .text-slate-50, .t
 }
 
 html[data-ui-palette="cobalt"] .drflow-ui-header-dark :is(.text-slate-300, .text-slate-500, .text-slate-600) {
-  color: #dbeafe !important;
+  color: #e2e8f0 !important;
 }
 
 /* Texto sobre el mesh azul (fuera de tarjetas blancas) */

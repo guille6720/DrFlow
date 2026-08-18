@@ -32,11 +32,11 @@ export async function ClinicalOpsDashboardAsync({
   canManageWaitingRoom,
   canManageSettings,
 }: Props) {
-  const supabase = await createClient();
   let coreRaw = emptyClinicalOpsCorePayload();
   let loadWarning: string | null = null;
 
   try {
+    const supabase = await createClient();
     coreRaw = await loadClinicalOperationsDashboardCore(supabase, clinicId);
   } catch (err) {
     console.error("[clinical-ops-dashboard] core load failed", err);
@@ -51,21 +51,25 @@ export async function ClinicalOpsDashboardAsync({
       {loadWarning ? <ClinicalOpsLoadWarning message={loadWarning} /> : null}
       <ClinicalOpsDashboardBoundary>
         <ClinicalOpsCenter
-        clinicId={clinicId}
-        clinicName={clinicName}
-        professionalName={professionalName}
-        core={core}
-        canManageAppointments={canManageAppointments}
-        canManageCash={canManageCash}
-        canManageWaitingRoom={canManageWaitingRoom}
-        canManageSettings={canManageSettings}
-        secondary={
-          loadWarning ? null : (
-            <Suspense fallback={<ClinicalOpsSecondarySkeleton />}>
-              <ClinicalOpsSecondarySections clinicId={clinicId} core={coreRaw} />
-            </Suspense>
-          )
-        }
+          clinicId={clinicId}
+          clinicName={clinicName}
+          professionalName={professionalName}
+          core={core}
+          canManageAppointments={canManageAppointments}
+          canManageCash={canManageCash}
+          canManageWaitingRoom={canManageWaitingRoom}
+          canManageSettings={canManageSettings}
+          secondary={
+            <ClinicalOpsDashboardBoundary
+              fallback={
+                <ClinicalOpsLoadWarning message="No pudimos cargar recetas, órdenes y tareas del día." />
+              }
+            >
+              <Suspense fallback={<ClinicalOpsSecondarySkeleton />}>
+                <ClinicalOpsSecondarySections clinicId={clinicId} core={coreRaw} />
+              </Suspense>
+            </ClinicalOpsDashboardBoundary>
+          }
         />
       </ClinicalOpsDashboardBoundary>
     </div>

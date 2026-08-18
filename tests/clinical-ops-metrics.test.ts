@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isWaitingRoomCandidate } from "@/features/dashboard/server/load-clinical-operations-dashboard.helpers";
+import { isWaitingRoomCandidate, normalizeLiveAppointment, rowsOf } from "@/features/dashboard/server/load-clinical-operations-dashboard.helpers";
 import type { LiveAppointment } from "@/features/dashboard/utils/clinical-operations-types";
 import {
   buildActionableAlerts,
@@ -119,6 +119,27 @@ describe("clinical-ops-metrics", () => {
     expect(rows[0].waitingMinutes).toBeGreaterThan(0);
   });
 
+  it("unwraps PostgREST array joins on waiting rows", () => {
+    const waiting = [
+      {
+        id: "w1",
+        start_at: "2026-07-30T14:00:00.000Z",
+        status: "confirmed",
+        patient_id: "p1",
+        waiting_room_status: "waiting",
+        patients: [{ first_name: "Ana", last_name: "García", birth_date: "1985-06-01" }],
+        professionals: [{ profiles: [{ full_name: "Dra. López" }] }],
+      },
+    ] as unknown as LiveAppointment[];
+    const rows = enrichWaitingRows({
+      waiting,
+      allergiesByPatient: new Map([["p1", null]]),
+      now: NOW,
+    });
+    expect(rows[0].patients?.first_name).toBe("Ana");
+    expect(rows[0].professionals?.profiles?.full_name).toBe("Dra. López");
+  });
+
   it("builds actionable alerts from overdue and critical patients", () => {
     const alerts = buildActionableAlerts({
       criticalPatients: [
@@ -176,5 +197,27 @@ describe("isWaitingRoomCandidate", () => {
         waiting_room_entered_at: "2026-07-30T14:50:00.000Z",
       })
     ).toBe(true);
+  });
+});
+
+describe("normalizeLiveAppointment", () => {
+  it("unwraps nested patient and professional joins", () => {
+    const row = normalizeLiveAppointment({
+      id: "a1",
+      start_at: "2026-07-30T15:00:00.000Z",
+      status: "confirmed",
+      patients: [{ first_name: "Ana", last_name: "García" }],
+      professionals: [{ profiles: [{ full_name: "Dra. López" }] }],
+    } as unknown as LiveAppointment);
+
+    expect(row.patients?.first_name).toBe("Ana");
+    expect(row.professionals?.profiles?.full_name).toBe("Dra. López");
+  });
+
+  it("treats non-array query payloads as empty", () => {
+    expect(rowsOf(null)).toEqual([]);
+    expect(rowsOf(undefined)).toEqual([]);
+    expect(rowsOf({} as never)).toEqual([]);
+    expect(rowsOf([{ id: "1" }])).toEqual([{ id: "1" }]);
   });
 });

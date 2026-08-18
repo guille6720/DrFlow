@@ -58,7 +58,7 @@ export function ClinicalOpsActivityStrip({
       {cards.map(({ label, value, icon: Icon, tone }) => (
         <div
           key={label}
-          className="rounded-xl border border-slate-700/60 bg-slate-900/50 px-3 py-3"
+          className="drflow-card-light rounded-xl border border-slate-700/60 bg-slate-900/50 px-3 py-3"
         >
           <div className="flex items-center gap-2">
             <Icon className={cn("h-4 w-4 shrink-0", tone)} aria-hidden />

@@ -162,21 +162,70 @@ export async function fetchDashboardSecondaryQueries(
   ]);
 }
 
+export function rowsOf<T>(data: T[] | null | undefined): T[] {
+  return Array.isArray(data) ? data : [];
+}
+
+/** PostgREST may return embedded relations as a one-element array. */
+export function normalizeLiveAppointment(row: LiveAppointment): LiveAppointment {
+  const patients = unwrapJoin(row.patients);
+  const professionals = unwrapJoin(row.professionals);
+  const profiles = professionals ? unwrapJoin(professionals.profiles) : null;
+
+  return {
+    ...row,
+    start_at: sanitizeIsoTimestamp(row.start_at),
+    waiting_room_entered_at: row.waiting_room_entered_at
+      ? sanitizeIsoTimestamp(row.waiting_room_entered_at)
+      : (row.waiting_room_entered_at ?? null),
+    patients,
+    professionals: professionals ? { profiles } : null,
+  };
+}
+
+export type CriticalPatientProfileRow = {
+  patient_id: string;
+  allergies?: string | null;
+  regular_medication?: string | null;
+  patients?:
+    | { first_name: string; last_name: string; document_number: string }
+    | { first_name: string; last_name: string; document_number: string }[]
+    | null;
+};
+
 export async function fetchCriticalPatientProfiles(
   supabase: SupabaseClient,
   clinicId: string,
   allergyPatientIds: string[]
-) {
+): Promise<{ data: CriticalPatientProfileRow[] }> {
   if (allergyPatientIds.length === 0) return { data: [] };
 
-  return supabase
-    .from("patient_clinical_profiles")
-    .select(
-      "patient_id, allergies, regular_medication, patients(first_name, last_name, document_number)"
-    )
-    .eq("clinic_id", clinicId)
-    .in("patient_id", allergyPatientIds)
-    .or("allergies.not.is.null,regular_medication.not.is.null");
+  try {
+    const { data, error } = await supabase
+      .from("patient_clinical_profiles")
+      .select(
+        "patient_id, allergies, regular_medication, patients(first_name, last_name, document_number)"
+      )
+      .eq("clinic_id", clinicId)
+      .in("patient_id", allergyPatientIds);
+
+    if (error) {
+      console.error("[dashboard] critical patient profiles failed:", error.message);
+      return { data: [] };
+    }
+
+    const rows = rowsOf(data as CriticalPatientProfileRow[] | null);
+    return {
+      data: rows.filter(
+        (row) =>
+          String(row.allergies ?? "").trim() !== "" ||
+          String(row.regular_medication ?? "").trim() !== ""
+      ),
+    };
+  } catch (err) {
+    console.error("[dashboard] critical patient profiles threw:", err);
+    return { data: [] };
+  }
 }
 
 export function buildAllergiesByPatient(

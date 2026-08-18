@@ -1,5 +1,7 @@
 import { differenceInMinutes, differenceInYears } from "date-fns";
 
+import { unwrapJoin } from "@/core/supabase/unwrap-join";
+
 import type {
   ClinicalOpsActionableAlert,
   ClinicalOpsActivityMetrics,
@@ -130,13 +132,13 @@ export function enrichWaitingRows(input: {
 
   return input.waiting
     .map((row) => {
+      const patient = unwrapJoin(row.patients);
+      const professional = unwrapJoin(row.professionals);
+      const profiles = professional ? unwrapJoin(professional.profiles) : null;
       const allergies =
         row.patient_id != null ? input.allergiesByPatient.get(row.patient_id) ?? null : null;
       const hasCriticalAllergy = Boolean(allergies?.trim());
-      const birthDate =
-        row.patients && "birth_date" in row.patients
-          ? (row.patients as { birth_date?: string | null }).birth_date
-          : null;
+      const birthDate = patient?.birth_date ?? null;
 
       return {
         id: row.id,
@@ -146,19 +148,16 @@ export function enrichWaitingRows(input: {
         patient_id: row.patient_id ?? null,
         professional_id: row.professional_id ?? null,
         notes: (row as { notes?: string | null }).notes ?? null,
-        patients: row.patients
+        patients: patient
           ? {
-              first_name: row.patients.first_name,
-              last_name: row.patients.last_name,
-              document_number:
-                "document_number" in row.patients
-                  ? (row.patients as { document_number?: string }).document_number
-                  : undefined,
-              phone: row.patients.phone,
-              birth_date: birthDate ?? null,
+              first_name: patient.first_name,
+              last_name: patient.last_name,
+              document_number: patient.document_number,
+              phone: patient.phone,
+              birth_date: birthDate,
             }
           : null,
-        professionals: row.professionals,
+        professionals: professional ? { profiles } : null,
         age: computePatientAge(birthDate, now),
         waitingMinutes: computeWaitingMinutes(row.start_at, now),
         allergies,
