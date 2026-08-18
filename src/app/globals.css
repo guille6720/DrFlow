@@ -4182,7 +4182,6 @@ html[data-ui-palette="cobalt"] .drflow-ui-header-dark :is(.text-slate-300, .text
 }
 
 /* Texto sobre el mesh azul (fuera de tarjetas blancas) */
-html[data-ui-palette="cobalt"] .drflow-mesh main > :not(.drflow-ui-card):not(.drflow-bento):not(.drflow-agenda-view) :is(h1, h2, h3).text-slate-900,
 html[data-ui-palette="cobalt"] .drflow-mesh main .text-slate-900:not(.drflow-ui-card *):not(.drflow-card-light *):not(.drflow-surface-light *):not(.drflow-workspace-overlay-panel *):not(.drflow-agenda-view *):not(.bg-white *) {
   color: #f8fafc !important;
 }
@@ -4396,7 +4395,8 @@ html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-config-hub.drflow-card-
   border-color: #bfdbfe !important;
 }
 
-html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-config-hub .drflow-card-light :is(.text-slate-800, .text-slate-900, .text-slate-200, .text-slate-50) {
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-config-hub .drflow-card-light :is(h1, h2, h3),
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-config-hub .drflow-card-light :is(.text-slate-800, .text-slate-900, .text-slate-200, .text-slate-50, .font-semibold) {
   color: #0f172a !important;
 }
 
