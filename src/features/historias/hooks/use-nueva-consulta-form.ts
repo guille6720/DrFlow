@@ -555,7 +555,7 @@ export function useNuevaConsultaForm({
           ? result.error
           : null;
       if (err) {
-        if (!options?.silent) setError(err);
+        setError(err);
         if (options?.silent) setAutoSaveStatus("error");
         return { ok: false as const, error: err };
       }

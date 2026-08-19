@@ -49,6 +49,20 @@ const FUNCTION_MIGRATION_HINTS: Record<string, string> = {
     "Ejecutá la migración 020 en Supabase SQL Editor (020_pami_cabecera.sql).",
   setup_user_clinic:
     "Falta ejecutar la migración 024 en Supabase SQL Editor (supabase/migrations/024_doctor_onboarding_fields.sql).",
+  create_clinical_record_atomic:
+    "No se pudo guardar la consulta: la función en Supabase está desactualizada. Ejecutá las migraciones 110 y 111 en el SQL Editor y después: NOTIFY pgrst, 'reload schema';",
+  update_clinical_record_atomic:
+    "No se pudo actualizar la consulta: la función en Supabase está desactualizada. Ejecutá las migraciones 110 y 111 en el SQL Editor y después: NOTIFY pgrst, 'reload schema';",
+  get_clinic_entitlements:
+    "Falta la migración 121 en Supabase (entitlements comerciales).",
+  increment_feature_usage:
+    "Falta la migración 121 en Supabase (increment_feature_usage).",
+  try_consume_feature_usage:
+    "Falta la migración 121 en Supabase (try_consume_feature_usage).",
+  assign_clinic_entitlement_plan:
+    "Falta la migración 122 en Supabase (asignación comercial de planes).",
+  upsert_clinic_feature_override:
+    "Falta la migración 122 en Supabase (overrides comerciales).",
 };
 
 const TABLE_MIGRATION_HINTS: Record<string, string> = {
@@ -112,8 +126,28 @@ export function extractMissingColumnKey(message: string): string | undefined {
 
 /** Extracts the function name from PostgreSQL undefined_function (42883) errors. */
 export function extractUndefinedFunctionName(message: string): string | undefined {
-  const match = message.match(/function ([a-z0-9_]+)\(/i);
-  return match?.[1];
+  const postgrest = message.match(
+    /function (?:public\.)?([a-z0-9_]+)\s*\(/i
+  );
+  if (postgrest?.[1] && postgrest[1] !== "public") return postgrest[1];
+
+  const cache = message.match(
+    /could not find the function (?:public\.)?([a-z0-9_]+)/i
+  );
+  return cache?.[1];
+}
+
+export function isMissingRpcInSchemaCache(
+  error: PostgresErrorLike | null | undefined
+): boolean {
+  const parsed = parsePostgresError(error);
+  const message = parsed.message.toLowerCase();
+  return (
+    parsed.pgCode === PG_ERROR_CODES.UNDEFINED_FUNCTION ||
+    parsed.pgCode === "PGRST202" ||
+    message.includes("schema cache") ||
+    message.includes("could not find the function")
+  );
 }
 
 /** Extracts relation name from undefined_table (42P01) errors. */
@@ -197,7 +231,7 @@ export function resolvePostgresUserMessage(
     return rpcMessages?.[parsed.rpcCode] ?? RPC_USER_MESSAGES[parsed.rpcCode];
   }
 
-  if (parsed.pgCode === PG_ERROR_CODES.UNDEFINED_FUNCTION && parsed.undefinedFunctionName) {
+  if (parsed.undefinedFunctionName) {
     const hint = FUNCTION_MIGRATION_HINTS[parsed.undefinedFunctionName];
     if (hint) return hint;
   }

@@ -7,6 +7,7 @@ export {
   extractUndefinedRelationName,
   getRpcCode,
   isCheckViolation,
+  isMissingRpcInSchemaCache,
   isUndefinedFunction,
   isUndefinedTable,
   isUniqueViolation,

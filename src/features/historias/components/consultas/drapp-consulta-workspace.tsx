@@ -683,7 +683,12 @@ function DrappConsultaWorkspaceInner({
                 ) : null}
 
                 <div className="ml-auto flex flex-wrap items-center gap-2 px-1">
-                  <span className="text-[11px] text-slate-500">
+                  <span
+                    className={cn(
+                      "text-[11px]",
+                      autoSaveStatus === "error" ? "font-medium text-red-700" : "text-slate-500"
+                    )}
+                  >
                     {autoSaveStatus === "saving"
                       ? "Guardando…"
                       : autoSaveStatus === "saved"

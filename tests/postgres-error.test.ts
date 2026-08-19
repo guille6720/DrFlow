@@ -26,6 +26,11 @@ describe("parsePostgresError", () => {
   it("detects official SQLSTATE codes", () => {
     expect(isUniqueViolation({ code: "23505", message: "duplicate key" })).toBe(true);
     expect(
+      extractUndefinedFunctionName(
+        "Could not find the function public.create_clinical_record_atomic(p_appointment_id, p_audit_ip) in the schema cache"
+      )
+    ).toBe("create_clinical_record_atomic");
+    expect(
       extractUndefinedFunctionName('function seed_pami_cabecera_for_clinic(uuid) does not exist')
     ).toBe("seed_pami_cabecera_for_clinic");
     expect(
@@ -50,6 +55,16 @@ describe("resolvePostgresUserMessage", () => {
         message: "CLINIC_NOT_FOUND",
       })
     ).toBe("La clínica activa no existe.");
+  });
+
+  it("maps PostgREST schema-cache miss for clinical record RPC", () => {
+    expect(
+      resolvePostgresUserMessage({
+        code: "PGRST202",
+        message:
+          "Could not find the function public.create_clinical_record_atomic(p_appointment_id, p_audit_ip) in the schema cache",
+      })
+    ).toContain("110");
   });
 
   it("maps undefined function to migration hint", () => {
