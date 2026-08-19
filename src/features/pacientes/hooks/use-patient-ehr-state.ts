@@ -14,6 +14,7 @@ import {
 import {
   buildConsultationSidebarList,
   filterClinicalRowsByConsultationDay,
+  formatPatientEhrSidebarDate,
   isSameCalendarDay,
   resolveConsultationAttachment,
   resolveSelectedConsultation,
@@ -82,6 +83,9 @@ export function usePatientEhrState(
   const [extraConsultations, setExtraConsultations] = useState<PatientEhrConsultation[]>([]);
   const [extraDiagnosisRows, setExtraDiagnosisRows] = useState<PatientEhrDiagnosisRow[]>([]);
   const [extraTreatmentRows, setExtraTreatmentRows] = useState<PatientEhrTreatmentRow[]>([]);
+  const [consultationDatePatches, setConsultationDatePatches] = useState<Record<string, string>>(
+    {}
+  );
   const [recordsPagination, setRecordsPagination] = useState<PatientEhrClinicalRecordsPagination>(
     options?.clinicalRecordsPagination ?? {
       total: consultations.length,
@@ -93,16 +97,32 @@ export function usePatientEhrState(
   const [printingFullHistory, setPrintingFullHistory] = useState(false);
 
   const mergedConsultations = useMemo(
-    () => mergeById(consultations, extraConsultations),
-    [consultations, extraConsultations]
+    () =>
+      mergeById(consultations, extraConsultations).map((row) => {
+        const createdAt = consultationDatePatches[row.id];
+        return createdAt ? { ...row, created_at: createdAt } : row;
+      }),
+    [consultations, extraConsultations, consultationDatePatches]
   );
   const mergedDiagnosisRows = useMemo(
-    () => mergeById(printBundle.diagnosisRows, extraDiagnosisRows),
-    [printBundle.diagnosisRows, extraDiagnosisRows]
+    () =>
+      mergeById(printBundle.diagnosisRows, extraDiagnosisRows).map((row) => {
+        const createdAt = consultationDatePatches[row.recordId];
+        return createdAt
+          ? { ...row, recordCreatedAt: createdAt, dateLabel: formatPatientEhrSidebarDate(createdAt) }
+          : row;
+      }),
+    [printBundle.diagnosisRows, extraDiagnosisRows, consultationDatePatches]
   );
   const mergedTreatmentRows = useMemo(
-    () => mergeById(printBundle.treatmentRows, extraTreatmentRows),
-    [printBundle.treatmentRows, extraTreatmentRows]
+    () =>
+      mergeById(printBundle.treatmentRows, extraTreatmentRows).map((row) => {
+        const createdAt = consultationDatePatches[row.recordId];
+        return createdAt
+          ? { ...row, recordCreatedAt: createdAt, dateLabel: formatPatientEhrSidebarDate(createdAt) }
+          : row;
+      }),
+    [printBundle.treatmentRows, extraTreatmentRows, consultationDatePatches]
   );
 
   const sorted = useMemo(
@@ -240,6 +260,10 @@ export function usePatientEhrState(
     []
   );
 
+  const patchConsultationDate = useCallback((recordId: string, createdAt: string) => {
+    setConsultationDatePatches((current) => ({ ...current, [recordId]: createdAt }));
+  }, []);
+
   async function triggerPrint(scope: PatientEhrPrintScope) {
     if (scope === "day" && dayPrintConsultations.length === 0) return;
     if (printingFullHistory) return;
@@ -341,6 +365,7 @@ export function usePatientEhrState(
     loadMoreRecords,
     loadingMoreRecords,
     appendClinicalHistory,
+    patchConsultationDate,
     resolveConsultationSignature,
     patientId: options?.patientId ?? printBundle.patient.id,
   };

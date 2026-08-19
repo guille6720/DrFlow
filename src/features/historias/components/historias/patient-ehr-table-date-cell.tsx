@@ -1,9 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { toast } from "@/core/notifications/toast";
+
 import { updateClinicalRecordConsultationAt } from "@/features/historias/actions/clinical-records";
+import { usePatientEhrStateContext } from "@/features/historias/components/historias/patient-ehr-state-context";
 import { toPatientEhrDatetimeLocalValue } from "@/features/historias/components/historias/patient-ehr-utils";
 
 import { Button } from "@/components/ui/button";
@@ -16,7 +18,7 @@ type Props = {
 };
 
 export function PatientEhrTableDateCell({ recordId, createdAt, dateLabel }: Props) {
-  const router = useRouter();
+  const { patchConsultationDate } = usePatientEhrStateContext();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(() => toPatientEhrDatetimeLocalValue(createdAt));
   const [loading, setLoading] = useState(false);
@@ -29,21 +31,27 @@ export function PatientEhrTableDateCell({ recordId, createdAt, dateLabel }: Prop
   async function handleSave() {
     setLoading(true);
     setError(null);
-    const result = await updateClinicalRecordConsultationAt(recordId, new Date(value).toISOString());
+    const iso = new Date(value).toISOString();
+    const result = await updateClinicalRecordConsultationAt(recordId, iso);
     setLoading(false);
     if (result.error) {
       setError(result.error);
       return;
     }
+    patchConsultationDate(recordId, iso);
+    toast.success("Fecha guardada");
     setEditing(false);
-    router.refresh();
   }
 
   if (!editing) {
     return (
       <button
         type="button"
-        onClick={() => setEditing(true)}
+        onClick={() => {
+          setValue(toPatientEhrDatetimeLocalValue(createdAt));
+          setError(null);
+          setEditing(true);
+        }}
         className="text-left hover:underline"
         title="Editar fecha"
       >
