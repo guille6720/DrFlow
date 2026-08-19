@@ -142,17 +142,11 @@ export function usePatientEhrState(
   const defaultSelectedId =
     sidebarList[0]?.id ?? evolutionList[0]?.id ?? sorted[0]?.id ?? null;
 
-  const [localSelectedId, setLocalSelectedId] = useState<string | null>(defaultSelectedId);
+  const [localSelectedId, setLocalSelectedId] = useState<string | null>(
+    initialSelectedId ?? defaultSelectedId
+  );
 
   const selectedId = useMemo(() => {
-    const fromUrl = resolveSelectedConsultation(
-      initialSelectedId ?? null,
-      sidebarList,
-      evolutionList,
-      sorted
-    )?.id;
-    if (fromUrl) return fromUrl;
-
     const fromLocal = resolveSelectedConsultation(
       localSelectedId,
       sidebarList,
@@ -160,6 +154,14 @@ export function usePatientEhrState(
       sorted
     )?.id;
     if (fromLocal) return fromLocal;
+
+    const fromUrl = resolveSelectedConsultation(
+      initialSelectedId ?? null,
+      sidebarList,
+      evolutionList,
+      sorted
+    )?.id;
+    if (fromUrl) return fromUrl;
 
     return defaultSelectedId;
   }, [initialSelectedId, localSelectedId, sidebarList, evolutionList, sorted, defaultSelectedId]);
