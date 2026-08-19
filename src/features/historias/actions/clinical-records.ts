@@ -132,6 +132,50 @@ export async function updateClinicalRecordConsultationAt(
   return persistClinicalRecordUpdate(idParsed.data, formData, gate.access, gate.ctx, supabase);
 }
 
+export async function updateClinicalRecordNotes(
+  recordId: string,
+  fields: {
+    chief_complaint: string;
+    evolution: string;
+    diagnosis?: string;
+    indications?: string;
+  }
+) {
+  const [gate, supabase] = await Promise.all([gateClinicalRecordWrite(), createClient()]);
+  if (!gate.ok) return { error: gate.error };
+  const { clinicId } = gate.access;
+
+  const idParsed = parseEntityId(recordId, "Consulta");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const { data: record, error: fetchError } = await supabase
+    .from("clinical_records")
+    .select(
+      "id, patient_id, professional_id, appointment_id, chief_complaint, diagnosis, evolution, indications, created_at"
+    )
+    .eq("id", idParsed.data)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+
+  if (fetchError) return { error: fetchError.message };
+  if (!record) return { error: "Consulta no encontrada." };
+  if (!record.professional_id) {
+    return { error: "Esta evolución no tiene profesional asignado y no se puede editar." };
+  }
+
+  const formData = new FormData();
+  formData.set("patient_id", record.patient_id);
+  formData.set("professional_id", record.professional_id);
+  if (record.appointment_id) formData.set("appointment_id", record.appointment_id);
+  formData.set("chief_complaint", fields.chief_complaint);
+  formData.set("diagnosis", fields.diagnosis ?? record.diagnosis ?? "");
+  formData.set("evolution", fields.evolution);
+  formData.set("indications", fields.indications ?? record.indications ?? "");
+  formData.set("consultation_at", record.created_at);
+
+  return persistClinicalRecordUpdate(idParsed.data, formData, gate.access, gate.ctx, supabase);
+}
+
 export async function updateClinicalRecord(id: string, formData: FormData) {
   const [gate, supabase] = await Promise.all([gateClinicalRecordWrite(), createClient()]);
   if (!gate.ok) return { error: gate.error };

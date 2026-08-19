@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import { PatientEhrClinicalTables } from "@/features/historias/components/historias/patient-ehr-clinical-tables";
 import { PatientEhrEvolutionPanel } from "@/features/historias/components/historias/patient-ehr-evolution-panel";
@@ -81,14 +81,25 @@ export function PatientEhrInteractiveBody({
     loadingMoreRecords,
     resolveConsultationSignature,
   } = usePatientEhrStateContext();
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   function handleSidebarSelect(id: string) {
     setSelectedId(id);
+    if (editingId && editingId !== id) setEditingId(null);
     if (inlineConsultOpen) {
       // Stay in the in-progress consult form; don't jump to a past evolution URL.
       return;
     }
     replaceClientUrl(buildPatientWorkspaceUrl(patientId, { tab: "soap", consulta: id }));
+  }
+
+  function handleStartEdit(id: string) {
+    if (id.startsWith("hce-")) return;
+    setSelectedId(id);
+    setEditingId(id);
+    if (!inlineConsultOpen) {
+      replaceClientUrl(buildPatientWorkspaceUrl(patientId, { tab: "soap", consulta: id }));
+    }
   }
 
   const screenDayConsultations =
@@ -125,6 +136,8 @@ export function PatientEhrInteractiveBody({
             selectedId={selectedId}
             pendingConsultation={pendingSidebarConsultation}
             onSelect={handleSidebarSelect}
+            onEdit={inlineConsultOpen ? undefined : handleStartEdit}
+            editingId={editingId}
             hasMoreRecords={clinicalRecordsPagination.hasMore}
             loadingMoreRecords={loadingMoreRecords}
             onLoadMoreRecords={loadMoreRecords}
@@ -148,6 +161,9 @@ export function PatientEhrInteractiveBody({
                       patientId={patientId}
                       selected={consultation}
                       canIssue={canIssue}
+                      editing={editingId === consultation.id}
+                      onStartEdit={() => handleStartEdit(consultation.id)}
+                      onStopEdit={() => setEditingId(null)}
                       documentAttachment={consultationAttachmentById.get(consultation.id) ?? null}
                       openingAttachmentId={openingAttachmentId}
                       attachmentError={attachmentError}
