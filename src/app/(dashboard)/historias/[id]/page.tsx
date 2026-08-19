@@ -36,8 +36,7 @@ export default async function HistoriaDetailPage({
     redirect(
       buildPatientWorkspaceUrl(recordRef.patient_id, {
         tab: "soap",
-        record: id,
-        mode: "view",
+        consulta: id,
       })
     );
   }

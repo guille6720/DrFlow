@@ -7,8 +7,6 @@ import { useState } from "react";
 
 import { toast } from "@/core/notifications/toast";
 
-import { withClinicalHistoryReturn } from "@/shared/utils/clinical-navigation";
-
 import { updateClinicalRecordNotes } from "@/features/historias/actions/clinical-records";
 import { PatientEhrConsultationDateEditor } from "@/features/historias/components/historias/patient-ehr-consultation-date-editor";
 import {
@@ -187,14 +185,6 @@ export function PatientEhrEvolutionPanel({
           ) : null}
           {attachmentError ? (
             <p className="mt-2 text-xs text-red-600">{attachmentError}</p>
-          ) : null}
-          {!selected.id.startsWith("hce-") && !editing ? (
-            <Link
-              href={withClinicalHistoryReturn(`/historias/${selected.id}`, patientId)}
-              className="drflow-ehr-action-link mt-3 inline-block text-sm font-semibold hover:underline"
-            >
-              Abrir consulta completa →
-            </Link>
           ) : null}
         </>
       ) : (

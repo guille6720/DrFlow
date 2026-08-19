@@ -141,7 +141,7 @@ export function parsePatientWorkspaceActions(
       (action === "nueva" && tab === "ordenes") ||
       (tab === "soap" && sheet === "orden"),
     archivoSheetOpen: inlineConsult && sheet === "archivo",
-    recordSheetOpen: Boolean(record && tab === "soap" && action !== "nueva"),
+    recordSheetOpen: Boolean(record && tab === "soap" && action !== "nueva" && mode === "edit"),
     dischargeSheetOpen: action === "alta",
     certificateSheetOpen: action === "certificado",
     closeEncounterSheetOpen: action === "cerrar",
