@@ -73,7 +73,7 @@ export function extractClinicalSection(
 
   const headerPattern = headers.map((h) => h.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
   const regex = new RegExp(
-    `(?:^|\\n)\\s*(?:${headerPattern})\\s*[:\\-]?\\s*([\\s\\S]*?)(?=\\n\\s*(?:laboratorio|estudios?|ecg|rx|radiograf|ecograf|resonanc|tomograf|informe|diagn[oó]stic|tratamiento|indicacion|evoluci|signos?\\s+vital)|$)`,
+    `(?:^|\\n)\\s*(?:#{1,6}\\s*)?(?:${headerPattern})\\b\\s*[:.\\-]?\\s*([\\s\\S]*?)(?=\\n\\s*(?:#{1,6}\\s*)?(?:laboratorio|estudios?\\s+complementarios?|diagn[oó]stic|tratamiento|indicacion|evoluci[oó]n|signos?\\s+vital)|$)`,
     "i"
   );
   const match = raw.match(regex);
@@ -237,10 +237,14 @@ export function formatCompactMatricula(consultation: PatientEhrConsultation): st
 
 export function evolutionBodyWithoutExtractedBlocks(text: string): string {
   return text
-    .replace(/\n?\s*signos?\s+vitales?\s*[:\-]?[\s\S]*?(?=\n\s*\n|$)/i, "")
     .replace(
-      /\n?\s*(?:laboratorio|estudios?\s+complementarios?|ecg|rx|radiograf(?:[íi]a)?|ecograf(?:[íi]a)?|resonanc(?:ia)?|tomograf(?:[íi]a)?|informe)\s*[:\-]?[\s\S]*?(?=\n\s*\n|$)/gi,
-      ""
+      /(?:^|\n)\s*#{0,6}\s*signos?\s+vitales?\b\s*[:.\-]?[\s\S]*?(?=\n\s*#{1,6}\s|$)/gi,
+      "\n"
     )
+    .replace(
+      /(?:^|\n)\s*#{0,6}\s*(?:laboratorio|estudios?\s+complementarios?)\b\s*[:.\-]?[\s\S]*?(?=\n\s*#{1,6}\s|$)/gi,
+      "\n"
+    )
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }

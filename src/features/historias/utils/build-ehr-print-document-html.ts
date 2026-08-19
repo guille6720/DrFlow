@@ -256,23 +256,11 @@ function renderEvolutionBlock(
       .join("\n")
   );
   const labText =
-    extractClinicalSection(rawBody, ["laboratorio", "lab", "análisis", "analisis"]) ||
-    extractClinicalSection(consultation.indications, ["laboratorio", "lab"]);
+    extractClinicalSection(rawBody, ["laboratorio"]) ||
+    extractClinicalSection(consultation.indications, ["laboratorio"]);
   const studiesText =
-    extractClinicalSection(rawBody, [
-      "estudios complementarios",
-      "estudios",
-      "ecografía",
-      "ecografia",
-      "radiografía",
-      "radiografia",
-      "resonancia",
-      "tomografía",
-      "tomografia",
-      "ecg",
-      "electrocardiograma",
-      "informe",
-    ]) || extractClinicalSection(consultation.indications, ["estudios", "ecg", "rx"]);
+    extractClinicalSection(rawBody, ["estudios complementarios"]) ||
+    extractClinicalSection(consultation.indications, ["estudios complementarios"]);
 
   let body = evolutionBodyWithoutExtractedBlocks(rawBody);
   if (consultation.chief_complaint?.trim() && consultation.category === "evolution") {
