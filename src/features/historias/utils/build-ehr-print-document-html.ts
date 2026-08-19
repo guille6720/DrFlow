@@ -313,7 +313,7 @@ function renderEvolutionBlock(
       </header>
       ${
         showBody
-          ? `<section class="block keep-with"><h3 class="block-title">Evolución</h3><div class="prose">${escapeHtml(body)}</div></section>`
+          ? `<section class="block evo-body"><h3 class="block-title">Evolución</h3><div class="prose">${escapeHtml(body)}</div></section>`
           : ""
       }
       ${dxHtml}
@@ -463,6 +463,8 @@ function printStyles(patientLabel: string, generatedAt: string): string {
       color: #0f172a;
       border-bottom: 1px solid #cbd5e1;
       padding-bottom: 3px;
+      break-after: avoid;
+      page-break-after: avoid;
     }
     .block-title {
       margin: 8px 0 4px;
@@ -471,8 +473,10 @@ function printStyles(patientLabel: string, generatedAt: string): string {
       text-transform: uppercase;
       letter-spacing: 0.03em;
       color: #334155;
+      break-after: avoid;
+      page-break-after: avoid;
     }
-    .prose { white-space: pre-wrap; font-size: 10.5pt; }
+    .prose { white-space: pre-wrap; font-size: 10.5pt; orphans: 3; widows: 3; }
     .allergies { margin-top: 6px; padding: 6px 8px; border: 1px solid #e2e8f0; }
     .allergies-alert { border-color: #b91c1c; background: #fff5f5; }
     .allergies-alert .block-title { color: #991b1b; }
@@ -494,11 +498,17 @@ function printStyles(patientLabel: string, generatedAt: string): string {
       margin-top: 12px;
       padding-top: 10px;
       border-top: 1px solid #94a3b8;
+      break-inside: auto;
+      page-break-inside: auto;
     }
     .evo-head { margin-bottom: 6px; }
     .evo-when { font-size: 11pt; font-weight: 700; }
     .evo-pro { margin-top: 2px; font-size: 10pt; color: #1d4f91; font-weight: 600; }
     .block { margin-top: 6px; }
+    .evo-body, .evo-body .prose {
+      break-inside: auto;
+      page-break-inside: auto;
+    }
     .bullets { padding-left: 1.1rem; }
     .bullets li { margin: 2px 0; }
     .code { color: #475569; font-weight: 600; }

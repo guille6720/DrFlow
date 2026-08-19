@@ -3553,7 +3553,8 @@ html[data-ui-palette="cobalt"] .drflow-patient-context-banner .drflow-patient-ba
     border: none !important;
     color: #0f172a !important;
     padding: 0.75rem 0;
-    page-break-inside: avoid;
+    page-break-inside: auto;
+    break-inside: auto;
   }
 
   .drflow-ehr-print-evolution + .drflow-ehr-print-evolution {

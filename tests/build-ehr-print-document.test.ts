@@ -239,6 +239,7 @@ describe("buildEhrPrintDocumentHtml", () => {
     expect(html).toContain("López Vida, Maria del Carmen");
     expect(html).toContain("Antecedentes Clínicos");
     expect(html).toContain("Control ambulatorio estable.");
+    expect(html).toContain('class="block evo-body"');
     expect(html).not.toMatch(/<h3 class="block-title">Evolución<\/h3><div class="prose">##<\/div>/);
   });
 });
