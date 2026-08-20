@@ -43,8 +43,9 @@ const nextConfig: NextConfig = {
         source: "/sw-portal.js",
         headers: [{ key: "Cache-Control", value: SW_CACHE }],
       },
+      // Do not attach CSP to static assets (SVG-as-<img> breaks when the asset itself carries CSP).
       {
-        source: "/:path*",
+        source: "/:path((?!.*\\.(?:png|jpg|jpeg|webp|avif|svg|ico|woff2?)$).*)",
         headers: [...SECURITY_RESPONSE_HEADERS],
       },
     ];

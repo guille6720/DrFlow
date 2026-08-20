@@ -59,13 +59,6 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
-  {
-    // Manual SVGs are static public assets; next/image rejects SVG by default.
-    files: ["src/core/components/superadmin/manual/manual-image.tsx"],
-    rules: {
-      "@next/next/no-img-element": "off",
-    },
-  },
   globalIgnores([
     ".next/**",
     "out/**",

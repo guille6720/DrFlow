@@ -1,3 +1,5 @@
+import type { ManualIllustrationId } from "@/core/components/superadmin/manual/manual-illustration-markup";
+
 /** Metadata del Manual de Superadmin (mantenible). */
 export const SUPERADMIN_MANUAL_META = {
   title: "Manual de Superadmin",
@@ -29,7 +31,7 @@ export type ManualSectionId =
   | "glossary";
 
 export type ManualImageRef = {
-  src: string;
+  illustrationId: ManualIllustrationId;
   alt: string;
   caption?: string;
 };
@@ -55,7 +57,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     keywords: ["inicio", "pasos", "flujo", "quick"],
     summary: "Flujo habitual para revisar y ajustar una clínica.",
     image: {
-      src: "/superadmin-manual/quick-start.svg",
+      illustrationId: "quick-start",
       alt: "Ilustración del flujo rápido: clínicas → detalle → plan o override → auditoría",
       caption: "Ilustración (datos demo). Flujo operativo típico.",
     },
@@ -66,7 +68,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     keywords: ["dashboard", "métricas", "trial", "límites", "recomendaciones"],
     summary: "Vista operativa de clínicas, planes y alertas comerciales.",
     image: {
-      src: "/superadmin-manual/dashboard-overview.svg",
+      illustrationId: "dashboard-overview",
       alt: "Ilustración del dashboard Superadmin con métricas demo",
       caption: "Ilustración del dashboard (clínicas y métricas ficticias).",
     },
@@ -77,7 +79,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     keywords: ["clínicas", "buscar", "filtro", "plan", "estado", "legacy", "trial"],
     summary: "Listado, búsqueda y filtros comerciales.",
     image: {
-      src: "/superadmin-manual/clinics-list.svg",
+      illustrationId: "clinics-list",
       alt: "Ilustración del listado de clínicas con badges de plan",
       caption: "Ilustración del listado (nombres demo).",
     },
@@ -88,7 +90,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     keywords: ["detalle", "entitlements", "uso", "historial", "override"],
     summary: "Ficha comercial de una clínica.",
     image: {
-      src: "/superadmin-manual/clinic-detail.svg",
+      illustrationId: "clinic-detail",
       alt: "Ilustración del detalle comercial de una clínica demo",
       caption: "Ilustración del detalle (sin datos clínicos).",
     },
@@ -99,7 +101,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     keywords: ["cambiar", "plan", "diff", "features", "límites", "confirmar"],
     summary: "Cambio manual de plan con comparación de features.",
     image: {
-      src: "/superadmin-manual/change-plan.svg",
+      illustrationId: "change-plan",
       alt: "Ilustración del diálogo de confirmación de cambio de plan",
       caption: "Ilustración de la confirmación con diff de features.",
     },
@@ -116,7 +118,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     keywords: ["override", "excepción", "pami", "ai", "whatsapp", "precedencia"],
     summary: "Excepciones por clínica sobre el plan.",
     image: {
-      src: "/superadmin-manual/feature-override.svg",
+      illustrationId: "feature-override",
       alt: "Ilustración del formulario de override de feature",
       caption: "Ilustración de alta de override (motivo y vigencia).",
     },
@@ -133,7 +135,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     keywords: ["planes", "trial", "basic", "pro", "premium", "enterprise", "legacy"],
     summary: "Catálogo comercial y edición de metadatos.",
     image: {
-      src: "/superadmin-manual/plans.svg",
+      illustrationId: "plans",
       alt: "Ilustración del catálogo de planes",
       caption: "Ilustración del catálogo (Legacy marcado como interno).",
     },
@@ -144,7 +146,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     keywords: ["features", "boolean", "limit", "metered", "key", "desactivar"],
     summary: "Catálogo de funcionalidades comerciales.",
     image: {
-      src: "/superadmin-manual/features.svg",
+      illustrationId: "features",
       alt: "Ilustración del catálogo de features",
       caption: "Ilustración del catálogo de features (claves técnicas en inglés).",
     },
@@ -155,7 +157,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     keywords: ["consumo", "uso", "límite", "70", "85", "100", "porcentaje"],
     summary: "Monitoreo de uso medido y umbrales.",
     image: {
-      src: "/superadmin-manual/usage.svg",
+      illustrationId: "usage",
       alt: "Ilustración de la pantalla de consumo",
       caption: "Ilustración de consumo con bandas Normal / Warning / Critical.",
     },
@@ -166,7 +168,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     keywords: ["recomendaciones", "upgrade", "dismiss", "accepted", "reviewed"],
     summary: "Sugerencias de plan sin cambio automático.",
     image: {
-      src: "/superadmin-manual/recommendations.svg",
+      illustrationId: "recommendations",
       alt: "Ilustración de alertas de upgrade recomendado",
       caption: "Ilustración de recomendaciones (decisión siempre manual).",
     },

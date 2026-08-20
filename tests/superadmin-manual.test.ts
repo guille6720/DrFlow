@@ -86,19 +86,24 @@ describe("superadmin manual content", () => {
     );
   });
 
-  it("images have alt text", () => {
+  it("images have alt text and inlined illustration ids", () => {
     for (const section of MANUAL_SECTIONS) {
       if (!section.image) continue;
       expect(section.image.alt.trim().length).toBeGreaterThan(8);
-      expect(section.image.src.startsWith("/superadmin-manual/")).toBe(true);
-      expect(section.image.src.endsWith(".svg")).toBe(true);
+      expect(section.image.illustrationId.length).toBeGreaterThan(2);
     }
   });
 
-  it("manual image renderer serves SVG via img (not next/image optimizer)", () => {
-    const source = readSrc("src/core/components/superadmin/manual/manual-image.tsx");
-    expect(source).toContain("<img");
-    expect(source).not.toMatch(/from ["']next\/image["']/);
+  it("manual illustrations are inlined (not fetched as <img> assets)", () => {
+    const imageSource = readSrc("src/core/components/superadmin/manual/manual-image.tsx");
+    const markupSource = readSrc(
+      "src/core/components/superadmin/manual/manual-illustration-markup.ts"
+    );
+    expect(imageSource).toContain("dangerouslySetInnerHTML");
+    expect(imageSource).not.toMatch(/from ["']next\/image["']/);
+    expect(imageSource).not.toMatch(/<img[\s>]/);
+    expect(markupSource).toContain("MANUAL_ILLUSTRATION_MARKUP");
+    expect(markupSource).toContain("recommendations");
   });
 
   it("includes Legacy safety warning", () => {
@@ -146,6 +151,14 @@ describe("superadmin manual content", () => {
       for (const hint of secretHints) {
         expect(text).not.toContain(hint);
       }
+    }
+
+    const markup = readSrc(
+      "src/core/components/superadmin/manual/manual-illustration-markup.ts"
+    );
+    expect(markup).not.toContain(productionRef);
+    for (const hint of secretHints) {
+      expect(markup).not.toContain(hint);
     }
   });
 

@@ -3,13 +3,12 @@
 import { useState } from "react";
 
 import type { ManualImageRef } from "@/core/components/superadmin/manual/manual-data";
+import { MANUAL_ILLUSTRATION_MARKUP } from "@/core/components/superadmin/manual/manual-illustration-markup";
 
-/**
- * Manual illustrations are local SVGs under /public.
- * next/image's default optimizer rejects SVG, which shows a broken image in production/preview.
- */
+/** Renders inlined SVG markup so illustrations never depend on static asset CSP or external image fetches. */
 export function ManualImage({ image }: { image: ManualImageRef }) {
   const [zoomed, setZoomed] = useState(false);
+  const markup = MANUAL_ILLUSTRATION_MARKUP[image.illustrationId];
 
   return (
     <figure className="space-y-2">
@@ -19,14 +18,13 @@ export function ManualImage({ image }: { image: ManualImageRef }) {
         className="block w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-950 text-left shadow-sm outline-none ring-teal-500 focus-visible:ring-2 dark:border-slate-700"
         aria-label={zoomed ? "Reducir imagen" : "Ampliar imagen"}
       >
-        {/* Local static SVG — intentionally not next/image */}
-        <img
-          src={image.src}
-          alt={image.alt}
-          width={960}
-          height={420}
-          decoding="async"
-          className={`h-auto w-full object-contain transition-transform ${zoomed ? "scale-110" : "scale-100"}`}
+        <div
+          role="img"
+          aria-label={image.alt}
+          className={`w-full origin-center transition-transform [&_svg]:h-auto [&_svg]:w-full ${
+            zoomed ? "scale-110" : "scale-100"
+          }`}
+          dangerouslySetInnerHTML={{ __html: markup }}
         />
       </button>
       {image.caption ? (
