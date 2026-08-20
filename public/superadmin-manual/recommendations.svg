@@ -3,7 +3,7 @@
   <rect x="24" y="24" width="912" height="252" rx="12" fill="#1e293b" stroke="#334155"/>
   <text x="48" y="60" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="20" font-weight="700">Recomendaciones de upgrade</text>
   <g font-family="system-ui,sans-serif" font-size="12">
-    <text x="48" y="100" fill="#64748b">Clínica</text>
+    <text x="48" y="100" fill="#64748b">Clinica</text>
     <text x="240" y="100" fill="#64748b">Actual</text>
     <text x="340" y="100" fill="#64748b">Sugerido</text>
     <text x="460" y="100" fill="#64748b">Severidad</text>
@@ -19,6 +19,6 @@
     <text x="340" y="184" fill="#94a3b8">pro</text>
     <text x="460" y="184" fill="#94a3b8">medium</text>
     <text x="580" y="184" fill="#64748b">reviewed</text>
-    <text x="48" y="240" fill="#64748b">Las recomendaciones NUNCA cambian el plan solas. Decisión humana.</text>
+    <text x="48" y="240" fill="#64748b">Las recomendaciones NUNCA cambian el plan solas. Decision humana.</text>
   </g>
 </svg>

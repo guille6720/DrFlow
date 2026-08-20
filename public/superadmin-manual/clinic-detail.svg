@@ -7,20 +7,20 @@
   <rect x="104" y="84" width="64" height="24" rx="6" fill="#1e3a8a"/>
   <text x="116" y="101" fill="#bfdbfe" font-family="system-ui,sans-serif" font-size="12">active</text>
   <rect x="48" y="128" width="420" height="160" rx="10" fill="#0f172a" stroke="#334155"/>
-  <text x="64" y="156" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="14" font-weight="600">1 · Suscripción</text>
+  <text x="64" y="156" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="14" font-weight="600">1 - Suscripcion</text>
   <text x="64" y="186" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Plan: pro</text>
   <text x="64" y="210" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Inicio: 01/03/2026</text>
-  <text x="64" y="234" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Trial comercial: </text>
+  <text x="64" y="234" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Trial comercial: -</text>
   <text x="64" y="258" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Uso IA / WA (mes): 120 / 40</text>
   <rect x="492" y="128" width="420" height="160" rx="10" fill="#0f172a" stroke="#334155"/>
-  <text x="508" y="156" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="14" font-weight="600">2 · Recomendación</text>
+  <text x="508" y="156" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="14" font-weight="600">2 - Recomendacion</text>
   <text x="508" y="186" fill="#fef08a" font-family="system-ui,sans-serif" font-size="12">Recomendado: premium</text>
-  <text x="508" y="214" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">" Señal Premium: ai.enabled</text>
-  <text x="508" y="238" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">" patients.max cerca del límite</text>
+  <text x="508" y="214" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">- Senal Premium: ai.enabled</text>
+  <text x="508" y="238" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">- patients.max cerca del limite</text>
   <rect x="48" y="308" width="420" height="88" rx="10" fill="#0f172a" stroke="#334155"/>
-  <text x="64" y="336" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="14" font-weight="600">3 · Cambiar plan</text>
-  <text x="64" y="364" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Ver diferencias ’ Confirmar (auditoría)</text>
+  <text x="64" y="336" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="14" font-weight="600">3 - Cambiar plan</text>
+  <text x="64" y="364" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Ver diferencias - Confirmar (auditoria)</text>
   <rect x="492" y="308" width="420" height="88" rx="10" fill="#0f172a" stroke="#334155"/>
-  <text x="508" y="336" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="14" font-weight="600">4 · Overrides</text>
-  <text x="508" y="364" fill="#5eead4" font-family="system-ui,sans-serif" font-size="12">OVERRIDE · fuente efectiva</text>
+  <text x="508" y="336" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="14" font-weight="600">4 - Overrides</text>
+  <text x="508" y="364" fill="#5eead4" font-family="system-ui,sans-serif" font-size="12">OVERRIDE - fuente efectiva</text>
 </svg>

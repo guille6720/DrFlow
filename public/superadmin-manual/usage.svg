@@ -3,9 +3,9 @@
   <rect x="24" y="24" width="912" height="292" rx="12" fill="#1e293b" stroke="#334155"/>
   <text x="48" y="60" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="20" font-weight="700">Consumo (usage)</text>
   <g font-family="system-ui,sans-serif" font-size="12">
-    <text x="48" y="100" fill="#64748b">Clínica</text>
+    <text x="48" y="100" fill="#64748b">Clinica</text>
     <text x="260" y="100" fill="#64748b">Feature</text>
-    <text x="440" y="100" fill="#64748b">Uso / Límite</text>
+    <text x="440" y="100" fill="#64748b">Uso / Limite</text>
     <text x="600" y="100" fill="#64748b">%</text>
     <text x="680" y="100" fill="#64748b">Estado</text>
     <line x1="48" y1="112" x2="900" y2="112" stroke="#334155"/>
@@ -27,6 +27,6 @@
     <text x="600" y="224" fill="#f87171">100%</text>
     <rect x="680" y="208" width="110" height="24" rx="6" fill="#7f1d1d"/>
     <text x="692" y="225" fill="#fecaca">critical</text>
-    <text x="48" y="280" fill="#64748b">Umbrales: 70% informativo · 85% recomendación · 100% límite</text>
+    <text x="48" y="280" fill="#64748b">Umbrales: 70% informativo - 85% recomendacion - 100% limite</text>
   </g>
 </svg>

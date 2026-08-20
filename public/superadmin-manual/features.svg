@@ -14,8 +14,8 @@
     <text x="520" y="140" fill="#94a3b8">premium, enterprise</text>
     <text x="48" y="172" fill="#5eead4">ai.monthly_requests</text>
     <text x="280" y="172" fill="#94a3b8">limit</text>
-    <text x="400" y="172" fill="#5eead4">sí</text>
-    <text x="520" y="172" fill="#94a3b8">premium&</text>
+    <text x="400" y="172" fill="#5eead4">si</text>
+    <text x="520" y="172" fill="#94a3b8">premium...</text>
     <text x="48" y="204" fill="#5eead4">pami.enabled</text>
     <text x="280" y="204" fill="#94a3b8">boolean</text>
     <text x="400" y="204" fill="#94a3b8">no</text>
@@ -23,6 +23,6 @@
     <text x="48" y="236" fill="#5eead4">whatsapp.enabled</text>
     <text x="280" y="236" fill="#94a3b8">boolean</text>
     <text x="400" y="236" fill="#94a3b8">no</text>
-    <text x="520" y="236" fill="#94a3b8">según plan</text>
+    <text x="520" y="236" fill="#94a3b8">segun plan</text>
   </g>
 </svg>
