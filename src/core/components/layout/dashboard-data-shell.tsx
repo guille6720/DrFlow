@@ -9,6 +9,8 @@ import { AccessibilityProvider } from "@/core/components/accessibility/accessibi
 import { RouteAnnouncer } from "@/core/components/accessibility/route-announcer";
 import { SkipToContent } from "@/core/components/accessibility/skip-to-content";
 import { CommandPaletteProvider } from "@/core/components/command-palette/command-palette-provider";
+import { CommercialStatusBanner } from "@/core/components/entitlements/commercial-status-banner";
+import { EntitlementsProvider } from "@/core/components/entitlements/entitlements-provider";
 import { ClinicalTopNav } from "@/core/components/layout/clinical-top-nav";
 import { DashboardMain } from "@/core/components/layout/dashboard-main";
 import { DashboardSessionBootstrap } from "@/core/components/layout/dashboard-session-bootstrap";
@@ -22,6 +24,9 @@ import { PwaRegister } from "@/core/components/pwa/pwa-register";
 import { UiThemeProvider } from "@/core/components/theme/ui-theme-provider";
 import { TrialBanner } from "@/core/components/trial/trial-banner";
 import { UpdateBanner } from "@/core/components/updates/update-banner";
+import { getClinicEntitlements } from "@/core/entitlements/entitlements.server";
+import { emptyEntitlements, toClientEntitlementsSnapshot } from "@/core/entitlements/resolve";
+import { isVoiceInputEntitledBySnapshot } from "@/core/entitlements/voice-features";
 import { canAccessRoute } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 import {
@@ -101,6 +106,15 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
     }
   }
 
+  let entitlementsSnapshot = toClientEntitlementsSnapshot(emptyEntitlements(clinicId ?? null));
+  if (clinicId) {
+    try {
+      entitlementsSnapshot = toClientEntitlementsSnapshot(await getClinicEntitlements());
+    } catch (err) {
+      console.error("[dashboard-shell] getClinicEntitlements failed:", err);
+    }
+  }
+
   if (path && !canAccessRoute(role, path, isSuperadmin, permissionOverrides)) {
     await logAudit({
       clinicId: clinicId ?? undefined,
@@ -155,47 +169,52 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
         <TrialBanner trialEndsAt={clinic.trial_ends_at} daysRemaining={daysLeft} />
       )}
       <DashboardSidebarProvider>
-        <ClinicFeaturesProvider plugins={clinicFeatures.plugins} flags={clinicFeatures.flags}>
-          <LazyDashboardInteractionHosts role={role} isSuperadmin={isSuperadmin} />
-          <ClinicalCopilotProvider>
-            <AdminOpsCopilotProvider>
-              <CommandPaletteProvider
-                role={role}
-                isSuperadmin={isSuperadmin}
-                permissionOverrides={permissionOverrides}
-                enabled={clinicFeatures.flags.command_palette}
-              >
-                <AccessibilityProvider>
-                  <UiThemeProvider>
-                    <VoiceInputProvider
-                      clinicVoiceInputEnabled={
-                        clinic?.voice_input_enabled !== false && clinicFeatures.plugins.voice
-                      }
-                    >
-                      <SkipToContent />
-                      <RouteAnnouncer />
-                      <Sidebar
-                        clinicId={clinicId}
-                        clinicName={clinicDisplayName}
-                        role={role}
-                        isSuperadmin={isSuperadmin}
-                        permissionOverrides={permissionOverrides}
-                      />
-                      <DashboardSidebarReveal />
-                      <DashboardMain>
-                        <Suspense fallback={null}>
-                          <ClinicalTopNav />
-                        </Suspense>
-                        {children}
-                      </DashboardMain>
-                      <LazyDashboardCopilotHosts />
-                    </VoiceInputProvider>
-                  </UiThemeProvider>
-                </AccessibilityProvider>
-              </CommandPaletteProvider>
-            </AdminOpsCopilotProvider>
-          </ClinicalCopilotProvider>
-        </ClinicFeaturesProvider>
+        <EntitlementsProvider snapshot={entitlementsSnapshot}>
+          <CommercialStatusBanner />
+          <ClinicFeaturesProvider plugins={clinicFeatures.plugins} flags={clinicFeatures.flags}>
+            <LazyDashboardInteractionHosts role={role} isSuperadmin={isSuperadmin} />
+            <ClinicalCopilotProvider>
+              <AdminOpsCopilotProvider>
+                <CommandPaletteProvider
+                  role={role}
+                  isSuperadmin={isSuperadmin}
+                  permissionOverrides={permissionOverrides}
+                  enabled={clinicFeatures.flags.command_palette}
+                >
+                  <AccessibilityProvider>
+                    <UiThemeProvider>
+                      <VoiceInputProvider
+                        clinicVoiceInputEnabled={
+                          clinic?.voice_input_enabled !== false &&
+                          clinicFeatures.plugins.voice &&
+                          isVoiceInputEntitledBySnapshot(entitlementsSnapshot)
+                        }
+                      >
+                        <SkipToContent />
+                        <RouteAnnouncer />
+                        <Sidebar
+                          clinicId={clinicId}
+                          clinicName={clinicDisplayName}
+                          role={role}
+                          isSuperadmin={isSuperadmin}
+                          permissionOverrides={permissionOverrides}
+                        />
+                        <DashboardSidebarReveal />
+                        <DashboardMain>
+                          <Suspense fallback={null}>
+                            <ClinicalTopNav />
+                          </Suspense>
+                          {children}
+                        </DashboardMain>
+                        <LazyDashboardCopilotHosts />
+                      </VoiceInputProvider>
+                    </UiThemeProvider>
+                  </AccessibilityProvider>
+                </CommandPaletteProvider>
+              </AdminOpsCopilotProvider>
+            </ClinicalCopilotProvider>
+          </ClinicFeaturesProvider>
+        </EntitlementsProvider>
       </DashboardSidebarProvider>
     </div>
   );

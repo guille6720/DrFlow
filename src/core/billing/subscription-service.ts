@@ -14,9 +14,11 @@ import {
   formatPlanPriceArs,
   getBillingPlan,
 } from "@/core/billing/plans";
+import { commercialPlanKeyFromBillingPlan } from "@/core/entitlements/billing-plan-map";
 import { logServerError } from "@/core/errors/log-error.server";
 import { buildAuditLogRow } from "@/core/security/audit-log";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
+import { toJson } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 import { isClinicTrialExpired, trialDaysRemaining } from "@/core/trial/clinic-trial";
 
@@ -184,7 +186,7 @@ export async function processApprovedMercadoPagoPayment(
     status: payment.status,
     plan_id: ref.planId,
     billing_cycle: ref.cycle,
-    raw: payment as unknown as Record<string, unknown>,
+    raw: toJson(payment),
   });
 
   if (payError) {
@@ -217,6 +219,15 @@ export async function processApprovedMercadoPagoPayment(
     },
   });
   await admin.from("audit_logs").insert({ ...auditRow, user_id: null });
+
+  const { error: entitlementError } = await admin.rpc("assign_clinic_entitlement_plan", {
+    p_clinic_id: ref.clinicId,
+    p_plan_key: commercialPlanKeyFromBillingPlan(ref.planId),
+    p_reason: "mercadopago_payment",
+  });
+  if (entitlementError) {
+    logServerError("billing.entitlement.assign", entitlementError, { persist: false });
+  }
 
   if (payerEmail) {
     const { data: clinic } = await admin

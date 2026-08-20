@@ -72,6 +72,12 @@ export const TABLES_REQUIRING_RLS = [
   "appointment_notification_queue",
   "clinical_favorites",
   "clinical_recent_usage",
+  "plans",
+  "features",
+  "plan_features",
+  "clinic_entitlement_subscriptions",
+  "clinic_feature_overrides",
+  "feature_usage",
 ] as const;
 
 /** RPC SECURITY DEFINER que deben acotar tenant (nombre → migración de referencia). */
@@ -104,4 +110,20 @@ export const SECURITY_DEFINER_RPC_CHECKS: { name: string; migrationHint: string 
   { name: "claim_user_device_session", migrationHint: "109" },
   { name: "touch_user_device_session", migrationHint: "109" },
   { name: "revoke_user_device_session", migrationHint: "109" },
+  { name: "assert_entitlement_clinic_access", migrationHint: "123" },
+  { name: "get_clinic_entitlements", migrationHint: "121" },
+  { name: "increment_feature_usage", migrationHint: "121" },
+  { name: "try_consume_feature_usage", migrationHint: "121" },
+  { name: "onboard_clinic_entitlement_subscription", migrationHint: "121" },
+  { name: "assert_entitlement_superadmin", migrationHint: "122" },
+  { name: "assign_clinic_entitlement_plan", migrationHint: "122" },
+  { name: "upsert_clinic_feature_override", migrationHint: "122" },
+  { name: "get_clinic_entitlement_usage", migrationHint: "124" },
+  { name: "set_clinic_entitlement_status", migrationHint: "124" },
+  { name: "clinic_current_entitlement_subscription_id", migrationHint: "125" },
+  { name: "entitlement_metered_commercially_blocked", migrationHint: "126" },
+  { name: "clear_clinic_feature_override", migrationHint: "126" },
+  { name: "entitlement_subscription_is_live", migrationHint: "127" },
+  { name: "set_clinic_entitlement_trial_end", migrationHint: "127" },
+  { name: "expire_lapsed_clinic_entitlement_trials", migrationHint: "128" },
 ];

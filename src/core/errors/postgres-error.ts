@@ -63,6 +63,22 @@ const FUNCTION_MIGRATION_HINTS: Record<string, string> = {
     "Falta la migración 122 en Supabase (asignación comercial de planes).",
   upsert_clinic_feature_override:
     "Falta la migración 122 en Supabase (overrides comerciales).",
+  get_clinic_entitlement_usage:
+    "Falta la migración 124 en Supabase (uso comercial medido).",
+  set_clinic_entitlement_status:
+    "Falta la migración 124/125 en Supabase (estado comercial).",
+  clinic_current_entitlement_subscription_id:
+    "Falta la migración 125 en Supabase (suscripción comercial vigente).",
+  entitlement_metered_commercially_blocked:
+    "Falta la migración 126 en Supabase (pausa de consumo medido).",
+  clear_clinic_feature_override:
+    "Falta la migración 126 en Supabase (quitar override comercial).",
+  set_clinic_entitlement_trial_end:
+    "Falta la migración 127 en Supabase (ventana de prueba comercial).",
+  entitlement_subscription_is_live:
+    "Falta la migración 127 en Supabase (trial comercial vigente).",
+  expire_lapsed_clinic_entitlement_trials:
+    "Falta la migración 128 en Supabase (expirar trial comercial vencido).",
 };
 
 const TABLE_MIGRATION_HINTS: Record<string, string> = {

@@ -4,6 +4,9 @@ import {
   auditEntityLabel,
   sanitizeAuditSnapshot,
 } from "@/core/security/audit-types";
+import { toJson, toJsonObject } from "@/core/supabase/json";
+
+import type { Json } from "@/types/supabase";
 
 /** Functional modules for immutable audit trail grouping. */
 export const AUDIT_MODULES = [
@@ -132,6 +135,13 @@ export function auditModuleLabel(module: string): string {
   return labels[module] ?? module;
 }
 
+function snapshotToJson(
+  value: Record<string, unknown> | null | undefined
+): Json | null {
+  const snap = sanitizeAuditSnapshot(value);
+  return snap === null ? null : toJson(snap);
+}
+
 /** Row payload for audit_logs INSERT (immutable — no updates). */
 export function buildAuditLogRow(params: ImmutableAuditParams) {
   const auditModule = params.module ?? deriveAuditModule(params.entityType);
@@ -149,9 +159,9 @@ export function buildAuditLogRow(params: ImmutableAuditParams) {
     entity_id: params.entityId ?? null,
     patient_id: patientId ?? null,
     action: params.action,
-    metadata: params.metadata ?? {},
-    old_values: sanitizeAuditSnapshot(params.oldValues ?? null),
-    new_values: sanitizeAuditSnapshot(params.newValues ?? null),
+    metadata: toJsonObject(params.metadata ?? {}),
+    old_values: snapshotToJson(params.oldValues),
+    new_values: snapshotToJson(params.newValues),
     ip_address: params.ipAddress ?? null,
     user_agent: params.userAgent ?? null,
   };

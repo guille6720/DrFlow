@@ -22,6 +22,17 @@ export const RPC_ERROR_CODES = {
   RECORD_NOT_FOUND: "RECORD_NOT_FOUND",
   SLUG_TAKEN: "SLUG_TAKEN",
   TEMPLATE_NOT_FOUND: "TEMPLATE_NOT_FOUND",
+  INVALID_AMOUNT: "INVALID_AMOUNT",
+  UNKNOWN_FEATURE: "UNKNOWN_FEATURE",
+  FEATURE_INACTIVE: "FEATURE_INACTIVE",
+  FEATURE_NOT_METERED: "FEATURE_NOT_METERED",
+  FEATURE_DISABLED: "FEATURE_DISABLED",
+  QUOTA_EXCEEDED: "QUOTA_EXCEEDED",
+  COMMERCIAL_SUSPENDED: "COMMERCIAL_SUSPENDED",
+  ONBOARDING_PLAN_MISSING: "ONBOARDING_PLAN_MISSING",
+  ONBOARDING_PLAN_FORBIDDEN: "ONBOARDING_PLAN_FORBIDDEN",
+  INVALID_STATUS: "INVALID_STATUS",
+  NO_LIVE_SUBSCRIPTION: "NO_LIVE_SUBSCRIPTION",
 } as const;
 
 export type RpcErrorCode = (typeof RPC_ERROR_CODES)[keyof typeof RPC_ERROR_CODES];
@@ -50,6 +61,17 @@ export const RPC_USER_MESSAGES: Record<RpcErrorCode, string> = {
   RECORD_NOT_FOUND: "Consulta no encontrada.",
   SLUG_TAKEN: "Ese identificador URL ya está en uso.",
   TEMPLATE_NOT_FOUND: "Plantilla no encontrada.",
+  INVALID_AMOUNT: "La cantidad de uso debe ser un entero positivo.",
+  UNKNOWN_FEATURE: "La funcionalidad comercial no existe.",
+  FEATURE_INACTIVE: "La funcionalidad comercial está inactiva.",
+  FEATURE_NOT_METERED: "La funcionalidad no admite consumo medido.",
+  FEATURE_DISABLED: "La funcionalidad no está incluida en el plan.",
+  QUOTA_EXCEEDED: "Se alcanzó el límite de uso del plan.",
+  COMMERCIAL_SUSPENDED: "El plan comercial está suspendido. El consultorio clínico sigue disponible.",
+  ONBOARDING_PLAN_MISSING: "Falta el plan de alta (trial) en el catálogo comercial.",
+  ONBOARDING_PLAN_FORBIDDEN: "El plan de alta automática no es asignable.",
+  INVALID_STATUS: "Estado comercial inválido.",
+  NO_LIVE_SUBSCRIPTION: "El consultorio no tiene una suscripción comercial vigente.",
 };
 
 export function isKnownRpcErrorCode(value: string | undefined): value is RpcErrorCode {

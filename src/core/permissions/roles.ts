@@ -90,8 +90,12 @@ export function canAccessRoute(
 ): boolean {
   if (isSuperadmin || role === "superadmin") return true;
 
-  // Mocks / QA interno: fuera del producto clínico
-  if (route.startsWith("/qa") || route.startsWith("/pagos")) {
+  // Mocks / QA interno / Superadmin comercial: fuera del producto clínico
+  if (
+    route.startsWith("/qa") ||
+    route.startsWith("/pagos") ||
+    route.startsWith("/superadmin")
+  ) {
     return false;
   }
 

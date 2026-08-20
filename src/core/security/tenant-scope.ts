@@ -14,6 +14,9 @@ export const CLINIC_SCOPED_TABLES = [
   "professionals",
   "cash_charges",
   "patient_admin_documents",
+  "clinic_entitlement_subscriptions",
+  "clinic_feature_overrides",
+  "feature_usage",
 ] as const;
 
 export type ClinicScopedTable = (typeof CLINIC_SCOPED_TABLES)[number];

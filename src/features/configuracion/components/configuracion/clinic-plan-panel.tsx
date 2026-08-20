@@ -9,6 +9,7 @@ import {
 } from "@/core/billing/plans";
 import type { ClinicSubscriptionSummary } from "@/core/billing/subscription-service";
 import { MercadoPagoCheckoutButton } from "@/core/components/billing/mercadopago-checkout-button";
+import { ClinicUpgradeHintCard } from "@/core/components/entitlements/clinic-upgrade-hint-card";
 
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,9 +17,25 @@ import { Card } from "@/components/ui/card";
 type Props = {
   summary: ClinicSubscriptionSummary;
   paymentNotice?: "ok" | "error" | "pending" | null;
+  commercialPlanKey?: string | null;
+  commercialStatus?: string | null;
+  commercialTrialEndsAt?: string | null;
+  commercialQuotas?: { label: string; value: string }[];
+  commercialModules?: {
+    included: { key: string; label: string }[];
+    excluded: { key: string; label: string }[];
+  };
 };
 
-export function ClinicPlanPanel({ summary, paymentNotice }: Props) {
+export function ClinicPlanPanel({
+  summary,
+  paymentNotice,
+  commercialPlanKey,
+  commercialStatus,
+  commercialTrialEndsAt,
+  commercialQuotas,
+  commercialModules,
+}: Props) {
   const subscriptionActive =
     summary.subscription != null &&
     (summary.subscription.status === "active" || summary.subscription.status === "manual") &&
@@ -46,6 +63,71 @@ export function ClinicPlanPanel({ summary, paymentNotice }: Props) {
         {paymentNotice === "error" ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-900">
             El pago no se completó. Podés reintentar abajo o contactar a ventas.
+          </div>
+        ) : null}
+
+        {commercialPlanKey ? (
+          <p className="text-xs text-slate-500">
+            Catálogo comercial: <span className="font-medium text-slate-700">{commercialPlanKey}</span>
+            {commercialStatus ? (
+              <>
+                {" "}
+                · estado <span className="font-medium text-slate-700">{commercialStatus}</span>
+              </>
+            ) : null}
+            {commercialTrialEndsAt ? (
+              <>
+                {" "}
+                · prueba comercial hasta{" "}
+                <span className="font-medium text-slate-700">
+                  {format(new Date(commercialTrialEndsAt), "PPp", { locale: es })}
+                </span>
+              </>
+            ) : null}
+          </p>
+        ) : null}
+
+        {commercialQuotas && commercialQuotas.length > 0 ? (
+          <ul className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+            {commercialQuotas.map((row) => (
+              <li key={row.label} className="flex justify-between gap-3 py-0.5">
+                <span>{row.label}</span>
+                <span className="font-medium text-slate-900">{row.value}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {commercialModules &&
+        (commercialModules.included.length > 0 || commercialModules.excluded.length > 0) ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {commercialModules.included.length > 0 ? (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
+                  Incluido
+                </p>
+                <ul className="mt-2 space-y-1 text-sm text-emerald-950">
+                  {commercialModules.included.map((row) => (
+                    <li key={row.key}>{row.label}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {commercialModules.excluded.length > 0 ? (
+              <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  No incluido
+                </p>
+                <ul className="mt-2 space-y-1 text-sm text-slate-700">
+                  {commercialModules.excluded.map((row) => (
+                    <li key={row.key}>{row.label}</li>
+                  ))}
+                </ul>
+                <Link href="/planes" className="mt-2 inline-block text-xs font-medium text-teal-700 hover:underline">
+                  Ver planes
+                </Link>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -157,6 +239,7 @@ export function ClinicPlanPanel({ summary, paymentNotice }: Props) {
           </div>
         )}
       </div>
+      <ClinicUpgradeHintCard />
     </Card>
   );
 }

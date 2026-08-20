@@ -3,6 +3,8 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { createTraceId } from "@/core/observability/trace-id";
 
+import type { Database } from "@/types/supabase";
+
 import { getSupabaseAnonKey, getSupabaseUrl } from "./env";
 
 const AUTH_TIMEOUT_MS = 5000;
@@ -13,7 +15,7 @@ function hasAuthCookie(request: NextRequest): boolean {
 }
 
 async function getUserWithTimeout(
-  supabase: ReturnType<typeof createServerClient>
+  supabase: ReturnType<typeof createServerClient<Database>>
 ) {
   try {
     const result = await Promise.race([
@@ -48,7 +50,7 @@ function withRequestPath(response: NextResponse, path: string, traceId: string):
 async function ensureActiveClinicCookieOnResponse(
   request: NextRequest,
   response: NextResponse,
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: ReturnType<typeof createServerClient<Database>>,
   userId: string
 ): Promise<NextResponse> {
   if (request.cookies.get(CLINIC_COOKIE)?.value) return response;
@@ -147,7 +149,7 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
-  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+  const supabase = createServerClient<Database>(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

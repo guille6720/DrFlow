@@ -133,5 +133,28 @@ export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
   { featureId: "pacientes", href: "/pacientes", label: "Pacientes", permission: "managePatients" },
 ];
 
+/** Superadmin-only commercial control (sidebar append). */
+export const SUPERADMIN_NAV_ENTRIES: FeatureNavEntry[] = [
+  {
+    type: "group",
+    id: "superadmin",
+    label: "Superadmin",
+    featureId: "administracion",
+    children: [
+      { featureId: "administracion", href: "/superadmin", label: "Dashboard", permission: null },
+      { featureId: "administracion", href: "/superadmin/clinics", label: "Clínicas", permission: null },
+      { featureId: "administracion", href: "/superadmin/plans", label: "Planes", permission: null },
+      { featureId: "administracion", href: "/superadmin/features", label: "Features", permission: null },
+      { featureId: "administracion", href: "/superadmin/usage", label: "Consumo", permission: null },
+      {
+        featureId: "administracion",
+        href: "/superadmin/recommendations",
+        label: "Recomendaciones",
+        permission: null,
+      },
+    ],
+  },
+];
+
 /** Flat list of all sidebar links (groups expanded). */
 export const FEATURE_NAV_ITEMS: FeatureNavItem[] = flattenNavEntries(FEATURE_NAV_ENTRIES);

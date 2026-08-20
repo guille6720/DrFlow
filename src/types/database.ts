@@ -213,3 +213,22 @@ export interface DashboardStats {
   noShowRate: number;
   upcomingAppointments: Appointment[];
 }
+
+export type EntitlementSubscriptionStatus =
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "cancelled"
+  | "expired";
+
+export type EntitlementFeatureType = "boolean" | "limit";
+
+export type {
+  ClinicEntitlementSubscriptionRow as ClinicEntitlementSubscription,
+  ClinicFeatureOverrideRow as ClinicFeatureOverride,
+  FeaturesRow as CommercialFeature,
+  PlansRow as CommercialPlan,
+  FeatureUsageRow as FeatureUsage,
+  PlanFeaturesRow as PlanFeature,
+} from "@/types/supabase-entitlements";
+

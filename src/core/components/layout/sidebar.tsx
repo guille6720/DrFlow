@@ -4,14 +4,18 @@ import { Menu, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
+import { useEntitlementsSnapshot } from "@/core/components/entitlements/entitlements-provider";
 import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-context";
 import {
   isSidebarNavGroup,
   SIDEBAR_NAV_ENTRIES,
   type SidebarNavEntry,
   type SidebarNavLink,
+  SUPERADMIN_SIDEBAR_NAV_ENTRIES,
 } from "@/core/components/layout/sidebar-nav-config";
 import { SidebarNavContent } from "@/core/components/layout/sidebar-nav-content";
+import { isHrefEntitledBySnapshot } from "@/core/entitlements/nav-features";
+import type { ClientEntitlementsSnapshot } from "@/core/entitlements/types";
 import { canAccessImportExport, hasPermission, isInvitedClinicMember, type PermissionOverrides } from "@/core/permissions/roles";
 
 import { cn } from "@/shared/utils/cn";
@@ -34,15 +38,27 @@ interface SidebarProps {
   permissionOverrides?: PermissionOverrides;
 }
 
+function isNavHrefEntitled(
+  href: string,
+  snapshot: ClientEntitlementsSnapshot | null
+): boolean {
+  return isHrefEntitledBySnapshot(href, snapshot);
+}
+
 function filterNavLink(
   item: SidebarNavLink,
   role: UserRole | null,
   isSuperadmin: boolean | undefined,
   clinicFeatures: ReturnType<typeof useClinicFeatures>,
-  permissionOverrides?: PermissionOverrides
+  permissionOverrides?: PermissionOverrides,
+  entitlements?: ClientEntitlementsSnapshot | null
 ): boolean {
   if (item.href === "/datos") {
     return canAccessImportExport(role, isSuperadmin ?? false, permissionOverrides);
+  }
+
+  if (item.href.startsWith("/superadmin")) {
+    return Boolean(isSuperadmin);
   }
 
   if (
@@ -62,6 +78,10 @@ function filterNavLink(
     return false;
   }
 
+  if (!isNavHrefEntitled(item.href, entitlements ?? null)) {
+    return false;
+  }
+
   return true;
 }
 
@@ -70,19 +90,34 @@ function filterSidebarNavEntries(
   role: UserRole | null,
   isSuperadmin: boolean | undefined,
   clinicFeatures: ReturnType<typeof useClinicFeatures>,
-  permissionOverrides?: PermissionOverrides
+  permissionOverrides?: PermissionOverrides,
+  entitlements?: ClientEntitlementsSnapshot | null
 ): SidebarNavEntry[] {
   return entries
     .map((entry) => {
       if (isSidebarNavGroup(entry)) {
         const children = entry.children.filter((child) =>
-          filterNavLink(child, role, isSuperadmin, clinicFeatures, permissionOverrides)
+          filterNavLink(
+            child,
+            role,
+            isSuperadmin,
+            clinicFeatures,
+            permissionOverrides,
+            entitlements
+          )
         );
         if (children.length === 0) return null;
         return { ...entry, children };
       }
 
-      return filterNavLink(entry, role, isSuperadmin, clinicFeatures, permissionOverrides)
+      return filterNavLink(
+        entry,
+        role,
+        isSuperadmin,
+        clinicFeatures,
+        permissionOverrides,
+        entitlements
+      )
         ? entry
         : null;
     })
@@ -101,18 +136,28 @@ export function Sidebar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const { hidden: desktopHidden, toggleHidden } = useDashboardSidebar();
   const clinicFeatures = useClinicFeatures();
+  const entitlements = useEntitlementsSnapshot();
 
-  const visibleItems = useMemo(
-    () =>
-      filterSidebarNavEntries(
-        SIDEBAR_NAV_ENTRIES,
-        role,
-        isSuperadmin,
-        clinicFeatures,
-        permissionOverrides
-      ),
-    [role, isSuperadmin, clinicFeatures, permissionOverrides]
-  );
+  const visibleItems = useMemo(() => {
+    const base = filterSidebarNavEntries(
+      SIDEBAR_NAV_ENTRIES,
+      role,
+      isSuperadmin,
+      clinicFeatures,
+      permissionOverrides,
+      entitlements
+    );
+    if (!isSuperadmin) return base;
+    const superadmin = filterSidebarNavEntries(
+      SUPERADMIN_SIDEBAR_NAV_ENTRIES,
+      role,
+      isSuperadmin,
+      clinicFeatures,
+      permissionOverrides,
+      entitlements
+    );
+    return [...base, ...superadmin];
+  }, [role, isSuperadmin, clinicFeatures, permissionOverrides, entitlements]);
 
   const isInvitedMember = isInvitedClinicMember(role, isSuperadmin);
 

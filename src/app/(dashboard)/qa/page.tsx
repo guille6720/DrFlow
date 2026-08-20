@@ -29,6 +29,11 @@ export default async function QaPage() {
           <p className="flex-1">
             Marcá cada ítem al probarlo. Los links abren el módulo directamente.
           </p>
+          <Link href="/qa/comercial">
+            <Button type="button" variant="outline" size="sm">
+              Planes comerciales
+            </Button>
+          </Link>
           <Link href="/configuracion">
             <Button type="button" variant="outline" size="sm">
               Configuración

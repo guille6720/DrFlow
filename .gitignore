@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/blob-report/
 
 # next.js
 /.next/
@@ -38,6 +41,17 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# local agent / capture artifacts (never commit)
+.tmp-*/
+.tmp-drapp-frames/
+.tmp-turnos-frames/
+.tmp-entitlements-staging-push/
+.tmp-superadmin-staging-push/
+
+# local ANMAT / data dumps (never commit)
+/data/anmat/
+/data/**/anmat/
 
 # typescript
 *.tsbuildinfo
