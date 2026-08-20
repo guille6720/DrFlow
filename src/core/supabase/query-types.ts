@@ -52,6 +52,12 @@ export type ProfessionalAgendaRow = {
   specialties?: NestedRow<{ name: string }>;
 };
 
+/**
+ * DB contract (migration 104):
+ * CHECK (booking_source IN ('manual', 'online', 'api'))
+ */
+export type AppointmentBookingSource = "manual" | "online" | "api";
+
 /** Appointment row with agenda joins (matches APPOINTMENT_AGENDA_COLUMNS select). */
 export type AppointmentAgendaRow = {
   id: string;
@@ -64,7 +70,7 @@ export type AppointmentAgendaRow = {
   end_at: string;
   status: AppointmentStatus;
   notes: string | null;
-  booking_source?: "manual" | "online" | null;
+  booking_source?: AppointmentBookingSource | null;
   cancellation_reason: string | null;
   cancellation_category?: string | null;
   cancelled_at: string | null;

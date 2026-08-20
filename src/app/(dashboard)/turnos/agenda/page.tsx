@@ -2,8 +2,9 @@ import { subDays } from "date-fns";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
+import { toAppointmentAgendaRows } from "@/core/supabase/appointment-agenda-map";
 import { APPOINTMENTS_AGENDA_MAX, SCHEDULE_BLOCKS_AGENDA_MAX } from "@/core/supabase/pagination";
-import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
+import type { ProfessionalAgendaRow } from "@/core/supabase/query-types";
 import { APPOINTMENT_AGENDA_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
@@ -63,7 +64,7 @@ export default async function TurnosAgendaPage() {
 
   const professionalRows: ProfessionalAgendaRow[] = professionals as ProfessionalAgendaRow[];
 
-  const appointmentRows: AppointmentAgendaRow[] = appointments.data ?? [];
+  const appointmentRows = toAppointmentAgendaRows(appointments.data ?? []);
 
   return (
     <>

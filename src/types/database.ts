@@ -135,7 +135,7 @@ export interface Appointment {
   end_at: string;
   status: AppointmentStatus;
   notes: string | null;
-  booking_source?: "manual" | "online" | null;
+  booking_source?: "manual" | "online" | "api" | null;
   cancellation_reason: string | null;
   cancelled_at: string | null;
   cancelled_by: string | null;
