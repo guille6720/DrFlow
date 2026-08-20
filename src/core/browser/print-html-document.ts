@@ -123,7 +123,9 @@ function triggerPrintWithCleanup(targetWindow: Window, onCleanup: () => void): v
 function tryPrintViaPopup(html: string): PrintHtmlDocumentResult {
   let printWindow: Window | null = null;
   try {
-    printWindow = window.open("about:blank", "_blank", "noopener,noreferrer");
+    // Do not use noopener/noreferrer: Chrome opens about:blank but returns null,
+    // leaving an empty tab and blocking document.write + print().
+    printWindow = window.open("about:blank", "_blank");
   } catch {
     return fail("popup_blocked", POPUP_BLOCKED_MESSAGE);
   }
