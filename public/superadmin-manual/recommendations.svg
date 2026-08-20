@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="300" viewBox="0 0 960 300" role="img">
+  <rect width="960" height="300" fill="#0f172a"/>
+  <rect x="24" y="24" width="912" height="252" rx="12" fill="#1e293b" stroke="#334155"/>
+  <text x="48" y="60" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="20" font-weight="700">Recomendaciones de upgrade</text>
+  <g font-family="system-ui,sans-serif" font-size="12">
+    <text x="48" y="100" fill="#64748b">Clínica</text>
+    <text x="240" y="100" fill="#64748b">Actual</text>
+    <text x="340" y="100" fill="#64748b">Sugerido</text>
+    <text x="460" y="100" fill="#64748b">Severidad</text>
+    <text x="580" y="100" fill="#64748b">Estado</text>
+    <line x1="48" y1="112" x2="900" y2="112" stroke="#334155"/>
+    <text x="48" y="144" fill="#e2e8f0">Demo Norte</text>
+    <text x="240" y="144" fill="#94a3b8">pro</text>
+    <text x="340" y="144" fill="#fef08a">premium</text>
+    <text x="460" y="144" fill="#fb923c">high</text>
+    <text x="580" y="144" fill="#5eead4">recommended</text>
+    <text x="48" y="184" fill="#e2e8f0">Demo Sur</text>
+    <text x="240" y="184" fill="#94a3b8">basic</text>
+    <text x="340" y="184" fill="#94a3b8">pro</text>
+    <text x="460" y="184" fill="#94a3b8">medium</text>
+    <text x="580" y="184" fill="#64748b">reviewed</text>
+    <text x="48" y="240" fill="#64748b">Las recomendaciones NUNCA cambian el plan solas. Decisión humana.</text>
+  </g>
+</svg>

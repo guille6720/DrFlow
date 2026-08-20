@@ -152,6 +152,12 @@ export const SUPERADMIN_NAV_ENTRIES: FeatureNavEntry[] = [
         label: "Recomendaciones",
         permission: null,
       },
+      {
+        featureId: "administracion",
+        href: "/superadmin/manual",
+        label: "Manual de uso",
+        permission: null,
+      },
     ],
   },
 ];

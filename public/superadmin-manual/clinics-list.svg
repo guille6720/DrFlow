@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="380" viewBox="0 0 960 380" role="img">
+  <rect width="960" height="380" fill="#0f172a"/>
+  <rect x="24" y="24" width="912" height="332" rx="12" fill="#1e293b" stroke="#334155"/>
+  <text x="48" y="60" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="20" font-weight="700">Clínicas</text>
+  <rect x="48" y="80" width="280" height="36" rx="8" fill="#0f172a" stroke="#475569"/>
+  <text x="64" y="103" fill="#64748b" font-family="system-ui,sans-serif" font-size="12">Buscar clínica, dueño o email&</text>
+  <rect x="344" y="80" width="120" height="36" rx="8" fill="#0f172a" stroke="#475569"/>
+  <text x="360" y="103" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Plan: Pro</text>
+  <rect x="480" y="80" width="140" height="36" rx="8" fill="#0f172a" stroke="#475569"/>
+  <text x="496" y="103" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Estado: active</text>
+  <g font-family="system-ui,sans-serif" font-size="12">
+    <text x="48" y="150" fill="#64748b">Clínica</text>
+    <text x="280" y="150" fill="#64748b">Plan</text>
+    <text x="400" y="150" fill="#64748b">Estado</text>
+    <text x="520" y="150" fill="#64748b">Uso</text>
+    <text x="680" y="150" fill="#64748b">Recomendado</text>
+    <line x1="48" y1="160" x2="900" y2="160" stroke="#334155"/>
+    <text x="48" y="190" fill="#e2e8f0" font-weight="600">Consultorio Demo Norte</text>
+    <rect x="280" y="172" width="56" height="24" rx="6" fill="#0f766e"/>
+    <text x="292" y="189" fill="#ccfbf1">pro</text>
+    <text x="400" y="190" fill="#94a3b8">active</text>
+    <text x="520" y="190" fill="#94a3b8">87% pacientes</text>
+    <rect x="680" y="172" width="72" height="24" rx="6" fill="#854d0e"/>
+    <text x="692" y="189" fill="#fef08a">premium</text>
+    <text x="48" y="230" fill="#e2e8f0" font-weight="600">Clínica Demo Sur</text>
+    <rect x="280" y="212" width="56" height="24" rx="6" fill="#334155"/>
+    <text x="292" y="229" fill="#e2e8f0">basic</text>
+    <text x="400" y="230" fill="#94a3b8">active</text>
+    <text x="520" y="230" fill="#94a3b8">42%</text>
+    <text x="680" y="230" fill="#64748b"></text>
+    <text x="48" y="270" fill="#e2e8f0" font-weight="600">Migración Demo Legacy</text>
+    <rect x="280" y="252" width="64" height="24" rx="6" fill="#7f1d1d"/>
+    <text x="290" y="269" fill="#fecaca">legacy</text>
+    <text x="400" y="270" fill="#94a3b8">active</text>
+    <text x="680" y="270" fill="#fbbf24">Revisión manual</text>
+  </g>
+  <text x="48" y="330" fill="#64748b" font-family="system-ui,sans-serif" font-size="11">Ilustración  nombres demo · sin emails reales · sin datos clínicos</text>
+</svg>

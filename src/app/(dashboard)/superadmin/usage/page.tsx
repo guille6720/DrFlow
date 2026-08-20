@@ -1,4 +1,5 @@
 import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
+import { ManualHelpLink } from "@/core/components/superadmin/manual/manual-help-link";
 import {
   listSuperadminClinicCommercialRows,
   loadUsageThresholds,
@@ -21,6 +22,9 @@ export default async function SuperadminUsagePage() {
         title="Consumo"
         subtitle={`Umbrales: info ${thresholds.infoPct}% · warn ${thresholds.warnPct}% · critical ${thresholds.criticalPct}%`}
       />
+      <div className="flex justify-end">
+        <ManualHelpLink anchor="usage" label="Ayuda · Consumo" />
+      </div>
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
         <table className="min-w-full text-left text-sm">
           <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500">

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="300" viewBox="0 0 960 300" role="img">
+  <rect width="960" height="300" fill="#0f172a"/>
+  <rect x="24" y="24" width="912" height="252" rx="12" fill="#1e293b" stroke="#334155"/>
+  <text x="48" y="60" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="20" font-weight="700">Features / entitlements</text>
+  <g font-family="system-ui,sans-serif" font-size="12">
+    <text x="48" y="100" fill="#64748b">Key</text>
+    <text x="280" y="100" fill="#64748b">Tipo</text>
+    <text x="400" y="100" fill="#64748b">Metered</text>
+    <text x="520" y="100" fill="#64748b">Planes</text>
+    <line x1="48" y1="112" x2="900" y2="112" stroke="#334155"/>
+    <text x="48" y="140" fill="#5eead4">ai.enabled</text>
+    <text x="280" y="140" fill="#94a3b8">boolean</text>
+    <text x="400" y="140" fill="#94a3b8">no</text>
+    <text x="520" y="140" fill="#94a3b8">premium, enterprise</text>
+    <text x="48" y="172" fill="#5eead4">ai.monthly_requests</text>
+    <text x="280" y="172" fill="#94a3b8">limit</text>
+    <text x="400" y="172" fill="#5eead4">sí</text>
+    <text x="520" y="172" fill="#94a3b8">premium&</text>
+    <text x="48" y="204" fill="#5eead4">pami.enabled</text>
+    <text x="280" y="204" fill="#94a3b8">boolean</text>
+    <text x="400" y="204" fill="#94a3b8">no</text>
+    <text x="520" y="204" fill="#94a3b8">pro+</text>
+    <text x="48" y="236" fill="#5eead4">whatsapp.enabled</text>
+    <text x="280" y="236" fill="#94a3b8">boolean</text>
+    <text x="400" y="236" fill="#94a3b8">no</text>
+    <text x="520" y="236" fill="#94a3b8">según plan</text>
+  </g>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="440" viewBox="0 0 960 440" role="img">
+  <rect width="960" height="440" fill="#0f172a"/>
+  <rect x="24" y="24" width="912" height="392" rx="12" fill="#1e293b" stroke="#334155"/>
+  <text x="48" y="64" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="22" font-weight="700">Consultorio Demo Norte</text>
+  <rect x="48" y="84" width="48" height="24" rx="6" fill="#0f766e"/>
+  <text x="58" y="101" fill="#ccfbf1" font-family="system-ui,sans-serif" font-size="12">pro</text>
+  <rect x="104" y="84" width="64" height="24" rx="6" fill="#1e3a8a"/>
+  <text x="116" y="101" fill="#bfdbfe" font-family="system-ui,sans-serif" font-size="12">active</text>
+  <rect x="48" y="128" width="420" height="160" rx="10" fill="#0f172a" stroke="#334155"/>
+  <text x="64" y="156" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="14" font-weight="600">1 · Suscripción</text>
+  <text x="64" y="186" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Plan: pro</text>
+  <text x="64" y="210" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Inicio: 01/03/2026</text>
+  <text x="64" y="234" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Trial comercial: </text>
+  <text x="64" y="258" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Uso IA / WA (mes): 120 / 40</text>
+  <rect x="492" y="128" width="420" height="160" rx="10" fill="#0f172a" stroke="#334155"/>
+  <text x="508" y="156" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="14" font-weight="600">2 · Recomendación</text>
+  <text x="508" y="186" fill="#fef08a" font-family="system-ui,sans-serif" font-size="12">Recomendado: premium</text>
+  <text x="508" y="214" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">" Señal Premium: ai.enabled</text>
+  <text x="508" y="238" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">" patients.max cerca del límite</text>
+  <rect x="48" y="308" width="420" height="88" rx="10" fill="#0f172a" stroke="#334155"/>
+  <text x="64" y="336" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="14" font-weight="600">3 · Cambiar plan</text>
+  <text x="64" y="364" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="12">Ver diferencias ’ Confirmar (auditoría)</text>
+  <rect x="492" y="308" width="420" height="88" rx="10" fill="#0f172a" stroke="#334155"/>
+  <text x="508" y="336" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="14" font-weight="600">4 · Overrides</text>
+  <text x="508" y="364" fill="#5eead4" font-family="system-ui,sans-serif" font-size="12">OVERRIDE · fuente efectiva</text>
+</svg>

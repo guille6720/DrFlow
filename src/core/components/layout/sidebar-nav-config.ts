@@ -80,6 +80,7 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
   "/superadmin/features": ClipboardList,
   "/superadmin/usage": BarChart3,
   "/superadmin/recommendations": Sparkles,
+  "/superadmin/manual": BookOpen,
 };
 
 const GROUP_ICONS: Record<string, typeof LayoutDashboard> = {

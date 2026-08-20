@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
+import { ManualHelpLink } from "@/core/components/superadmin/manual/manual-help-link";
 import { SuperadminClearOverrideButton } from "@/core/components/superadmin/superadmin-clear-override-button";
 import { SuperadminClinicPlanForm } from "@/core/components/superadmin/superadmin-clinic-plan-form";
 import { SuperadminOverrideForm } from "@/core/components/superadmin/superadmin-override-form";
@@ -34,12 +35,16 @@ export default async function SuperadminClinicDetailPage({
         title={clinic.clinicName}
         subtitle="Detalle comercial — los datos clínicos no se modifican al cambiar el plan."
       />
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Badge>{clinic.planKey ?? "sin plan"}</Badge>
         <Badge variant="info">{clinic.status ?? "—"}</Badge>
         {clinic.shouldRecommendUpgrade ? (
           <Badge variant="warning">Recomienda {clinic.recommendedPlan}</Badge>
         ) : null}
+        <span className="ml-auto flex flex-wrap gap-3">
+          <ManualHelpLink anchor="change-plan" label="Ayuda · Cambiar plan" />
+          <ManualHelpLink anchor="overrides" label="Ayuda · Overrides" />
+        </span>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">

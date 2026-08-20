@@ -1,4 +1,5 @@
 import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
+import { ManualHelpLink } from "@/core/components/superadmin/manual/manual-help-link";
 import { SuperadminPlanEditForm } from "@/core/components/superadmin/superadmin-plan-edit-form";
 import { SuperadminPlanFeatureForm } from "@/core/components/superadmin/superadmin-plan-feature-form";
 import { listSuperadminPlans } from "@/core/entitlements/superadmin-catalog.server";
@@ -17,6 +18,9 @@ export default async function SuperadminPlansPage() {
         title="Planes"
         subtitle="Catálogo comercial. Legacy permanece interno / no público."
       />
+      <div className="flex justify-end">
+        <ManualHelpLink anchor="plans" label="Ayuda · Planes" />
+      </div>
       <div className="grid gap-3 md:grid-cols-2">
         {plans.map((plan) => (
           <Card key={plan.id} title={plan.name} description={plan.key}>

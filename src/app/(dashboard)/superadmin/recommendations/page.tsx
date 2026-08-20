@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
+import { ManualHelpLink } from "@/core/components/superadmin/manual/manual-help-link";
 import { SuperadminRecommendationActions } from "@/core/components/superadmin/superadmin-recommendation-actions";
 import { SuperadminSyncRecommendationsButton } from "@/core/components/superadmin/superadmin-sync-recommendations-button";
 import { listSuperadminClinicCommercialRows } from "@/core/entitlements/superadmin-clinics.server";
@@ -32,6 +33,9 @@ export default async function SuperadminRecommendationsPage() {
         title="Recomendaciones"
         subtitle="Alertas operativas. Ningún plan se cambia solo."
       />
+      <div className="flex justify-end">
+        <ManualHelpLink anchor="recommendations" label="Ayuda · Recomendaciones" />
+      </div>
       <SuperadminSyncRecommendationsButton />
       <div className="space-y-3">
         {rows.map((row) => (

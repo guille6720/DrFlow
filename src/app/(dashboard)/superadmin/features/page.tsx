@@ -1,4 +1,5 @@
 import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
+import { ManualHelpLink } from "@/core/components/superadmin/manual/manual-help-link";
 import { SuperadminFeatureActiveToggle } from "@/core/components/superadmin/superadmin-feature-active-toggle";
 import { listSuperadminFeatures } from "@/core/entitlements/superadmin-catalog.server";
 import { requireSuperadminPage } from "@/core/entitlements/superadmin-guard.server";
@@ -15,6 +16,9 @@ export default async function SuperadminFeaturesPage() {
         title="Features"
         subtitle="Catálogo. Preferir desactivar antes que borrar features referenciadas."
       />
+      <div className="flex justify-end">
+        <ManualHelpLink anchor="features" label="Ayuda · Features" />
+      </div>
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
         <table className="min-w-full text-left text-sm">
           <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500 dark:border-slate-800 dark:bg-slate-900">
