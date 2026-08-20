@@ -1,9 +1,12 @@
 import { createHmac } from "node:crypto";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   buildExternalReference,
+  getMercadoPagoAccessToken,
+  getMercadoPagoWebhookSecret,
+  isMercadoPagoConfigured,
   parseExternalReference,
   paymentAmountToCents,
   subscriptionPeriodEndFromCycle,
@@ -44,6 +47,31 @@ describe("mercadopago external reference", () => {
   it("rejects malformed reference", () => {
     expect(parseExternalReference("bad")).toBeNull();
     expect(parseExternalReference(`${clinicId}:solo:weekly`)).toBeNull();
+  });
+});
+
+describe("Mercado Pago env aliases", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("accepts MERCADOPAGO_ACCESS_TOKEN when MP_ACCESS_TOKEN is missing", () => {
+    vi.stubEnv("MP_ACCESS_TOKEN", "");
+    vi.stubEnv("MERCADOPAGO_ACCESS_TOKEN", "TEST-TOKEN");
+    expect(getMercadoPagoAccessToken()).toBe("TEST-TOKEN");
+    expect(isMercadoPagoConfigured()).toBe(true);
+  });
+
+  it("prefers MP_ACCESS_TOKEN over MERCADOPAGO_ACCESS_TOKEN", () => {
+    vi.stubEnv("MP_ACCESS_TOKEN", "MP-TOKEN");
+    vi.stubEnv("MERCADOPAGO_ACCESS_TOKEN", "ALT-TOKEN");
+    expect(getMercadoPagoAccessToken()).toBe("MP-TOKEN");
+  });
+
+  it("accepts MERCADOPAGO_WEBHOOK_SECRET alias", () => {
+    vi.stubEnv("MP_WEBHOOK_SECRET", "");
+    vi.stubEnv("MERCADOPAGO_WEBHOOK_SECRET", "whsec");
+    expect(getMercadoPagoWebhookSecret()).toBe("whsec");
   });
 });
 

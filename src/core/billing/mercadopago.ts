@@ -12,6 +12,23 @@ import { getPublicSiteUrl } from "@/core/supabase/env";
 
 const MP_API_BASE = "https://api.mercadopago.com";
 
+/** Accept both MP_* (code convention) and MERCADOPAGO_* (Vercel naming). */
+export function getMercadoPagoAccessToken(): string | null {
+  const token =
+    process.env.MP_ACCESS_TOKEN?.trim() ||
+    process.env.MERCADOPAGO_ACCESS_TOKEN?.trim() ||
+    "";
+  return token || null;
+}
+
+export function getMercadoPagoWebhookSecret(): string | null {
+  const secret =
+    process.env.MP_WEBHOOK_SECRET?.trim() ||
+    process.env.MERCADOPAGO_WEBHOOK_SECRET?.trim() ||
+    "";
+  return secret || null;
+}
+
 export type MercadoPagoExternalReference = {
   clinicId: string;
   planId: BillingPlanId;
@@ -33,7 +50,7 @@ export type CreatePreferenceResult =
   | { ok: false; error: string };
 
 export function isMercadoPagoConfigured(): boolean {
-  return Boolean(process.env.MP_ACCESS_TOKEN?.trim());
+  return Boolean(getMercadoPagoAccessToken());
 }
 
 export function buildExternalReference(input: MercadoPagoExternalReference): string {
@@ -59,7 +76,7 @@ export function verifyMercadoPagoWebhookSignature(input: {
   dataId: string;
   secret?: string | null;
 }): boolean {
-  const secret = input.secret?.trim() ?? process.env.MP_WEBHOOK_SECRET?.trim();
+  const secret = input.secret?.trim() ?? getMercadoPagoWebhookSecret() ?? "";
   if (!secret || !input.signatureHeader) return false;
 
   const parts = Object.fromEntries(
@@ -92,9 +109,12 @@ export async function createCheckoutPreference(input: {
   cycle: BillingCycle;
   payerEmail?: string | null;
 }): Promise<CreatePreferenceResult> {
-  const accessToken = process.env.MP_ACCESS_TOKEN?.trim();
+  const accessToken = getMercadoPagoAccessToken();
   if (!accessToken) {
-    return { ok: false, error: "Mercado Pago no está configurado (MP_ACCESS_TOKEN)." };
+    return {
+      ok: false,
+      error: "Mercado Pago no está configurado (MP_ACCESS_TOKEN / MERCADOPAGO_ACCESS_TOKEN).",
+    };
   }
 
   const amount = getPlanPriceArs(input.planId, input.cycle);
@@ -169,7 +189,7 @@ export async function createCheckoutPreference(input: {
 }
 
 export async function fetchMercadoPagoPayment(paymentId: string): Promise<MercadoPagoPayment | null> {
-  const accessToken = process.env.MP_ACCESS_TOKEN?.trim();
+  const accessToken = getMercadoPagoAccessToken();
   if (!accessToken) return null;
 
   const response = await fetch(`${MP_API_BASE}/v1/payments/${encodeURIComponent(paymentId)}`, {

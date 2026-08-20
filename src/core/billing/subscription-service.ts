@@ -2,6 +2,7 @@ import "server-only";
 
 import {
   fetchMercadoPagoPayment,
+  isMercadoPagoConfigured,
   type MercadoPagoPayment,
   parseExternalReference,
   paymentAmountToCents,
@@ -112,7 +113,7 @@ export async function loadClinicSubscriptionSummary(
     cycleLabel: sub ? billingCycleLabel(sub.billing_cycle) : null,
     periodEndLabel: formatPeriodEnd(sub?.current_period_end ?? null),
     lastPaymentAt: lastPayment?.created_at ?? null,
-    mercadoPagoConfigured: Boolean(process.env.MP_ACCESS_TOKEN?.trim()),
+    mercadoPagoConfigured: isMercadoPagoConfigured(),
   };
 }
 

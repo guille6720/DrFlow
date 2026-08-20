@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import {
   fetchMercadoPagoPayment,
+  getMercadoPagoWebhookSecret,
   verifyMercadoPagoWebhookSignature,
 } from "@/core/billing/mercadopago";
 import { processApprovedMercadoPagoPayment } from "@/core/billing/subscription-service";
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
     dataId: paymentId,
   });
 
-  if (!signatureOk && process.env.MP_WEBHOOK_SECRET?.trim()) {
+  if (!signatureOk && getMercadoPagoWebhookSecret()) {
     return NextResponse.json({ error: "Firma inválida." }, { status: 401, headers: NO_STORE });
   }
 
@@ -98,7 +99,7 @@ export async function GET(request: Request) {
     dataId: paymentId,
   });
 
-  if (!signatureOk && process.env.MP_WEBHOOK_SECRET?.trim()) {
+  if (!signatureOk && getMercadoPagoWebhookSecret()) {
     return NextResponse.json({ error: "Firma inválida." }, { status: 401, headers: NO_STORE });
   }
 
