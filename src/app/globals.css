@@ -3446,6 +3446,27 @@ html[data-ui-palette="cobalt"] .drflow-patient-context-banner .drflow-patient-ba
     color: #111 !important;
   }
 
+  /* Live-page print (workspace Imprimir / Ctrl+P): unlock viewport clip. */
+  .drflow-app-shell,
+  .drflow-app-main,
+  .drflow-app-main > :not(.drflow-ui-header):not(.drflow-ui-topnav):last-child,
+  .drflow-page-fill {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .line-clamp-1,
+  .line-clamp-2,
+  .line-clamp-3,
+  .truncate {
+    -webkit-line-clamp: unset !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    white-space: normal !important;
+  }
+
   .drflow-ui-header,
   #drflow-sidebar,
   .drflow-command-palette-trigger,

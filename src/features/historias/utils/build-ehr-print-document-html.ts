@@ -493,7 +493,8 @@ function printStyles(patientLabel: string, generatedAt: string): string {
       text-align: left;
     }
     table.data th, table.vitals th { background: #f8fafc; font-weight: 700; }
-    tr { break-inside: avoid; page-break-inside: avoid; }
+    /* Allow row/section splits so long notes are not clipped past the page edge. */
+    tr { break-inside: auto; page-break-inside: auto; }
     .evolution {
       margin-top: 12px;
       padding-top: 10px;
@@ -501,13 +502,15 @@ function printStyles(patientLabel: string, generatedAt: string): string {
       break-inside: auto;
       page-break-inside: auto;
     }
-    .evo-head { margin-bottom: 6px; }
+    .evo-head { margin-bottom: 6px; break-after: avoid; page-break-after: avoid; }
     .evo-when { font-size: 11pt; font-weight: 700; }
     .evo-pro { margin-top: 2px; font-size: 10pt; color: #1d4f91; font-weight: 600; }
-    .block { margin-top: 6px; }
-    .evo-body, .evo-body .prose {
+    .block { margin-top: 6px; break-inside: auto; page-break-inside: auto; }
+    .evo-body, .evo-body .prose, .prose {
       break-inside: auto;
       page-break-inside: auto;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .bullets { padding-left: 1.1rem; }
     .bullets li { margin: 2px 0; }
@@ -545,9 +548,9 @@ function printStyles(patientLabel: string, generatedAt: string): string {
     }
     .sig-name { font-size: 9.5pt; font-weight: 700; }
     .sig-mat { font-size: 9pt; color: #475569; }
-    .keep-with { break-inside: avoid; page-break-inside: avoid; }
+    /* Keep small headers with following content; never lock long clinical blocks. */
+    .keep-with { break-inside: auto; page-break-inside: auto; }
     .keep-start { break-before: auto; page-break-before: auto; }
-    .evo-head { break-after: avoid; page-break-after: avoid; }
     .appendix { margin-top: 16px; }
     @media print {
       a[href]::after { content: none !important; }
