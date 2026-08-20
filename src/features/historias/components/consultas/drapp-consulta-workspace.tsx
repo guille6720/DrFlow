@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarDays, CheckCircle2, Plus } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "@/core/notifications/toast";
 
@@ -78,6 +78,8 @@ type Props = PatientEhrViewProps & {
   onOpenSheet?: (sheet: "receta" | "orden" | "archivo") => void;
   onFinalize?: () => void | Promise<void>;
   finalizing?: boolean;
+  /** Rendered above the consulta shell (inside EHR provider — e.g. nav chips + print). */
+  headerSlot?: ReactNode;
 };
 
 function truncate(text: string, max = 180): string {
@@ -299,6 +301,7 @@ function DrappConsultaWorkspaceInner({
   | "usesHceExport"
   | "clinicalRecordsPagination"
   | "embedded"
+  | "headerSlot"
 >) {
   const {
     filters,
@@ -434,6 +437,17 @@ function DrappConsultaWorkspaceInner({
     pendingLabel,
     professionalSignature,
   ]);
+
+  /** New consult starts empty: only show DX/TX tied to this session's record. */
+  const sessionRecordId = editingRecordId ?? lastSavedRecordId;
+  const sessionDiagnosisRows = useMemo(() => {
+    if (!sessionRecordId) return [];
+    return diagnosisRows.filter((row) => row.recordId === sessionRecordId);
+  }, [diagnosisRows, sessionRecordId]);
+  const sessionTreatmentRows = useMemo(() => {
+    if (!sessionRecordId) return [];
+    return treatmentRows.filter((row) => row.recordId === sessionRecordId);
+  }, [sessionRecordId, treatmentRows]);
 
   const applyQuickResult = useCallback(
     (result: Awaited<ReturnType<typeof saveQuickDiagnosis>>) => {
@@ -590,6 +604,7 @@ function DrappConsultaWorkspaceInner({
           }}
           onStartNew={() => {
             startNewConsultation();
+            setLastSavedRecordId(null);
             requestOpen("evolucion");
           }}
         />
@@ -847,8 +862,8 @@ function DrappConsultaWorkspaceInner({
           <div className="drapp-consulta-tables mt-4 space-y-3">
             <PatientEhrClinicalTables
               patientId={patient.id}
-              diagnosisRows={filters.diagnostics ? diagnosisRows : []}
-              treatmentRows={filters.treatments ? treatmentRows : []}
+              diagnosisRows={filters.diagnostics ? sessionDiagnosisRows : []}
+              treatmentRows={filters.treatments ? sessionTreatmentRows : []}
               showDiagnostics={filters.diagnostics}
               showTreatments={filters.treatments}
               stacked
@@ -886,6 +901,7 @@ export function DrappConsultaWorkspace(props: Props) {
     patient,
     clinicalRecordsPagination,
     professionals,
+    headerSlot,
     ...rest
   } = props;
 
@@ -900,6 +916,7 @@ export function DrappConsultaWorkspace(props: Props) {
       clinicalRecordsPagination={clinicalRecordsPagination}
       professionals={professionals}
     >
+      {headerSlot ? <div className="mb-3">{headerSlot}</div> : null}
       <PatientEhrShellFrame>
         <div className="drapp-consulta-shell overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           <DrappConsultaWorkspaceInner

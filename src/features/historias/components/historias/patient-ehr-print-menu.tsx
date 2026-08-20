@@ -3,6 +3,9 @@
 import { ChevronDown, Loader2, Printer } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
+import { commercialFeatureLabel } from "@/core/entitlements/feature-labels";
+import { FEATURES } from "@/core/entitlements/features";
 import { toast } from "@/core/notifications/toast";
 
 import { cn } from "@/shared/utils/cn";
@@ -14,9 +17,15 @@ import {
   downloadFromUrl,
 } from "@/features/integraciones/components/datos/download-file";
 
-export function PatientEhrPrintMenu() {
+export function PatientEhrPrintMenu({
+  triggerLabel = "Exportar",
+}: {
+  /** Visible label on the trigger button. */
+  triggerLabel?: string;
+}) {
   const { selected, dayPrintConsultations, triggerPrint, printingFullHistory, patientId } =
     usePatientEhrStateContext();
+  const canExportFhir = useCanUseFeature(FEATURES.INTEGRATIONS);
   const [open, setOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -82,7 +91,7 @@ export function PatientEhrPrintMenu() {
         ) : (
           <Printer className="h-3.5 w-3.5" aria-hidden />
         )}
-        {busy ? "Preparando…" : "Exportar"}
+        {busy ? "Preparando…" : triggerLabel}
         <ChevronDown className={cn("h-3.5 w-3.5 transition", open && "rotate-180")} aria-hidden />
       </button>
 
@@ -123,10 +132,22 @@ export function PatientEhrPrintMenu() {
             type="button"
             role="menuitem"
             disabled={busy || !patientId}
-            onClick={() => void handlePackage("fhir")}
+            onClick={() => {
+              if (!canExportFhir) {
+                toast.error(
+                  `${commercialFeatureLabel(FEATURES.INTEGRATIONS)} no está incluido en tu plan. Revisá /planes o Configuración → Tu plan.`
+                );
+                setOpen(false);
+                return;
+              }
+              void handlePackage("fhir");
+            }}
             className="block w-full px-3 py-2 text-left text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Exportar FHIR R4
+            {!canExportFhir ? (
+              <span className="mt-0.5 block text-xs text-amber-800">Requiere plan con integraciones</span>
+            ) : null}
           </button>
           <button
             type="button"

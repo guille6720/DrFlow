@@ -8,6 +8,7 @@ import { toast } from "@/core/notifications/toast";
 
 import { DrappConsultaWorkspace } from "@/features/historias/components/consultas/drapp-consulta-workspace";
 import { clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
+import { PatientEhrPrintMenu } from "@/features/historias/components/historias/patient-ehr-print-menu";
 import type { PatientWorkspacePagePayload } from "@/features/pacientes/server/load-patient-workspace-page";
 import {
   buildConsultaSessionUrl,
@@ -111,20 +112,23 @@ export function DoctorConsultaSession({
     });
   }
 
+  const sessionHeader = (
+    <div className="flex flex-wrap items-center gap-2">
+      <ButtonLink href="/consultas" variant="outline" size="sm">
+        ← Lista de consultas
+      </ButtonLink>
+      <ButtonLink href="/sala-espera" variant="outline" size="sm">
+        Sala de espera
+      </ButtonLink>
+      <ButtonLink href={clinicalHistoryHref} variant="secondary" size="sm">
+        Historia clínica de: {patientDisplayName}
+      </ButtonLink>
+      <PatientEhrPrintMenu triggerLabel="Imprimir historia" />
+    </div>
+  );
+
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <ButtonLink href="/consultas" variant="outline" size="sm">
-          ← Lista de consultas
-        </ButtonLink>
-        <ButtonLink href="/sala-espera" variant="outline" size="sm">
-          Sala de espera
-        </ButtonLink>
-        <ButtonLink href={clinicalHistoryHref} variant="secondary" size="sm">
-          Historia clínica de: {patientDisplayName}
-        </ButtonLink>
-      </div>
-
       <DrappConsultaWorkspace
         key={`${patientId}:${appointmentId ?? ""}`}
         patient={ehr.patientInfo}
@@ -144,6 +148,7 @@ export function DoctorConsultaSession({
         appointmentId={appointmentId}
         professionalId={professionalId}
         finalizing={finalizing}
+        headerSlot={sessionHeader}
         onFinalize={appointmentId ? () => void handleFinalize() : undefined}
         onOpenSheet={(sheet) => {
           navigateWorkspace({
