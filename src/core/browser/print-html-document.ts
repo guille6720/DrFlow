@@ -29,7 +29,6 @@ const PRINT_UNAVAILABLE_MESSAGE =
 const UNKNOWN_MESSAGE = "No se pudo imprimir. Intentá de nuevo.";
 
 const PRINT_CLEANUP_FALLBACK_MS = 120_000;
-const IFRAME_CLEANUP_FALLBACK_MS = 5_000;
 
 /** A4 at 96dpi — zero-size iframes clip multi-page prints in Chrome/Edge. */
 const PRINT_FRAME_WIDTH_PX = "794px";
@@ -42,14 +41,6 @@ function fail(
   message: string
 ): PrintHtmlDocumentResult {
   return { ok: false, reason, message };
-}
-
-function isMobilePrintContext(): boolean {
-  if (typeof window === "undefined") return false;
-  return (
-    window.matchMedia("(max-width: 768px)").matches ||
-    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
-  );
 }
 
 function applyHtmlDocumentTitle(html: string, title: string): string {
@@ -103,7 +94,6 @@ function triggerPrintWithCleanup(targetWindow: Window, onCleanup: () => void): v
 
   const print = () => {
     try {
-      targetWindow.focus();
       targetWindow.print();
     } catch {
       cleanup();
@@ -154,6 +144,7 @@ function getSharedPrintFrame(): HTMLIFrameElement | null {
     const iframe = document.createElement("iframe");
     iframe.setAttribute("aria-hidden", "true");
     iframe.setAttribute("title", "Impresión");
+    iframe.tabIndex = -1;
     iframe.style.position = "fixed";
     iframe.style.left = "-10000px";
     iframe.style.top = "0";
@@ -161,6 +152,7 @@ function getSharedPrintFrame(): HTMLIFrameElement | null {
     iframe.style.height = PRINT_FRAME_HEIGHT_PX;
     iframe.style.border = "0";
     iframe.style.opacity = "0";
+    iframe.style.visibility = "hidden";
     iframe.style.pointerEvents = "none";
     document.body.appendChild(iframe);
     sharedPrintFrame = iframe;
@@ -192,32 +184,34 @@ function tryPrintViaIframe(html: string): PrintHtmlDocumentResult {
     return fail("print_unavailable", PRINT_UNAVAILABLE_MESSAGE);
   }
 
+  let started = false;
+  const startPrint = () => {
+    if (started) return;
+    started = true;
+    triggerPrintWithCleanup(frameWindow, () => {
+      try {
+        iframe.srcdoc = "";
+      } catch {
+        /* ignore */
+      }
+    });
+  };
+
+  iframe.addEventListener("load", () => window.setTimeout(startPrint, 50), { once: true });
+
   if (!loadHtmlInFrame(iframe, html)) {
     return fail("document_write_failed", DOCUMENT_WRITE_FAILED_MESSAGE);
   }
 
-  triggerPrintWithCleanup(frameWindow, () => {
-    try {
-      iframe.srcdoc = "";
-    } catch {
-      /* ignore */
-    }
-  });
-  window.setTimeout(() => {
-    try {
-      iframe.srcdoc = "";
-    } catch {
-      /* ignore */
-    }
-  }, IFRAME_CLEANUP_FALLBACK_MS);
+  // Fallback if this engine does not fire load for an identical/empty-to-content srcdoc swap.
+  window.setTimeout(startPrint, 400);
 
   return { ok: true, method: "iframe" };
 }
 
 /**
- * Opens an isolated HTML document and triggers the browser print dialog.
- * Prefers a popup on desktop (reliable multi-page layout); falls back to an
- * off-screen A4-sized iframe when popups are blocked or on mobile.
+ * Triggers the browser print dialog for an isolated HTML document.
+ * Prefers a hidden off-screen A4 iframe so no extra tab/page opens; popup is fallback only.
  */
 export function printHtmlDocument(options: PrintHtmlDocumentOptions): PrintHtmlDocumentResult {
   const printTitle = options.title?.replace(/\.pdf$/i, "").trim();
@@ -232,9 +226,10 @@ export function printHtmlDocument(options: PrintHtmlDocumentOptions): PrintHtmlD
 
   try {
     const run = (): PrintHtmlDocumentResult => {
-      const strategies: Array<() => PrintHtmlDocumentResult> = isMobilePrintContext()
-        ? [() => tryPrintViaIframe(html), () => tryPrintViaPopup(html)]
-        : [() => tryPrintViaPopup(html), () => tryPrintViaIframe(html)];
+      const strategies: Array<() => PrintHtmlDocumentResult> = [
+        () => tryPrintViaIframe(html),
+        () => tryPrintViaPopup(html),
+      ];
 
       let lastFailure: PrintHtmlDocumentResult = fail("unknown", UNKNOWN_MESSAGE);
       for (const strategy of strategies) {
