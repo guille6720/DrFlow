@@ -91,7 +91,14 @@ describe("superadmin manual content", () => {
       if (!section.image) continue;
       expect(section.image.alt.trim().length).toBeGreaterThan(8);
       expect(section.image.src.startsWith("/superadmin-manual/")).toBe(true);
+      expect(section.image.src.endsWith(".svg")).toBe(true);
     }
+  });
+
+  it("manual image renderer serves SVG via img (not next/image optimizer)", () => {
+    const source = readSrc("src/core/components/superadmin/manual/manual-image.tsx");
+    expect(source).toContain("<img");
+    expect(source).not.toMatch(/from ["']next\/image["']/);
   });
 
   it("includes Legacy safety warning", () => {
