@@ -147,7 +147,7 @@ export async function submitPrescriptionToRefeps(prescriptionId: string) {
   const result = await submitIssuedPrescriptionToRefeps(supabase, {
     clinicId: access.data.clinicId,
     userId: access.data.userId,
-    prescription: prescription as ElectronicPrescription,
+    prescription: prescription as unknown as ElectronicPrescription,
   });
 
   if (!result.ok) {

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { revalidatePamiPlanillaSurfaces } from "@/core/cache/revalidate-pami-planillas";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
+import { nullToUndefined } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 import {
   PAMI_PLANILLA_FIELD_MULTILINE_MAX,
@@ -120,7 +121,7 @@ export async function publishPamiPlanillaTemplate(input: {
       is_required: false,
       sort_order: index + 1,
     })),
-    p_change_notes: input.changeNotes?.trim() || null,
+    p_change_notes: nullToUndefined(input.changeNotes?.trim() || null),
     p_clinic_id: access.clinicId,
   });
 

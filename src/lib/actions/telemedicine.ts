@@ -8,6 +8,7 @@ import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { getSession } from "@/core/auth/session.server";
 import { recordAudit } from "@/core/security/audit-service";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
+import { nullToUndefined } from "@/core/supabase/json";
 import {
   APPOINTMENT_TELEMEDICINE_COLUMNS,
   TELEMEDICINE_SESSION_LIST_COLUMNS,
@@ -55,6 +56,7 @@ export async function getOrCreateTelemedicineSession(appointmentId: string) {
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
   const user = await getSession();
+  if (!user?.id) return { error: "Sesión requerida" };
 
   const idParsed = parseEntityId(appointmentId, "Turno");
   if (!idParsed.ok) return { error: idParsed.error };
@@ -101,11 +103,11 @@ export async function getOrCreateTelemedicineSession(appointmentId: string) {
     p_appointment_id: idParsed.data,
     p_room_url: room.roomUrl,
     p_status: room.status,
-    p_created_by: user?.id ?? null,
+    p_created_by: user.id,
     p_provider: room.provider,
-    p_external_room_id: room.externalRoomId,
-    p_patient_join_url: null,
-    p_expires_at: room.expiresAt,
+    p_external_room_id: nullToUndefined(room.externalRoomId),
+    p_patient_join_url: nullToUndefined<string>(null),
+    p_expires_at: nullToUndefined(room.expiresAt),
   });
 
   if (error) return { error: error.message };

@@ -2,6 +2,7 @@
 
 import { getActiveClinic, getSession } from "@/core/auth/session.server";
 import { hasPermission } from "@/core/permissions/roles";
+import { nullToUndefined } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 import { searchQuerySchema } from "@/core/validations/params";
 
@@ -34,7 +35,7 @@ export async function searchClinicalTreatments(
   const { data, error } = await supabase.rpc("search_clinical_treatments", {
     p_query: queryParsed.data,
     p_limit: Math.min(Math.max(options?.limit ?? 12, 1), 30),
-    p_kind: options?.kind ?? null,
+    p_kind: nullToUndefined(options?.kind ?? null),
   });
 
   if (error) {

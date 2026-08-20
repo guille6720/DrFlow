@@ -18,6 +18,9 @@ import { appointmentSchema, sanitizeText, updateAppointmentBodySchema } from "@/
 import { recordAppointmentStatusHistory } from "@/features/turnos/server/record-appointment-status-history";
 
 import type { ConsultationModality } from "@/lib/constants/consultation-modality";
+import type { Database } from "@/types/supabase";
+
+type AppointmentUpdate = Database["public"]["Tables"]["appointments"]["Update"];
 
 function isMissingAppointmentsColumnError(
   error: { code?: string | null; message?: string | null },
@@ -42,7 +45,7 @@ async function updateAppointmentRow(
   let payload = updatePayload;
   let result = await supabase
     .from("appointments")
-    .update(payload)
+    .update(payload as unknown as AppointmentUpdate)
     .eq("id", id)
     .eq("clinic_id", clinicId);
 
@@ -55,7 +58,7 @@ async function updateAppointmentRow(
     payload = fallbackPayload;
     result = await supabase
       .from("appointments")
-      .update(payload)
+      .update(payload as unknown as AppointmentUpdate)
       .eq("id", id)
       .eq("clinic_id", clinicId);
   }

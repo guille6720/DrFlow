@@ -2,6 +2,7 @@ import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { publicApiError, publicApiJson } from "@/core/public-api/types";
 import { withPublicApiRoute } from "@/core/public-api/with-public-api-route";
 import { createAdminClient } from "@/core/supabase/admin";
+import { nullToUndefined } from "@/core/supabase/json";
 import { firstZodIssue } from "@/core/validations/params";
 import {
   apiCreateAppointmentSchema,
@@ -31,10 +32,10 @@ export const GET = withPublicApiRoute(
 
     const { data, error } = await admin.rpc("api_list_appointments", {
       p_clinic_id: auth.clinicId,
-      p_from: fromIso,
-      p_to: toIso,
-      p_professional_id: parsed.data.professional_id ?? null,
-      p_status: parsed.data.status ?? null,
+      p_from: nullToUndefined(fromIso),
+      p_to: nullToUndefined(toIso),
+      p_professional_id: nullToUndefined(parsed.data.professional_id ?? null),
+      p_status: nullToUndefined(parsed.data.status ?? null),
       p_limit: parsed.data.limit ?? 100,
     });
 
@@ -75,8 +76,8 @@ export const POST = withPublicApiRoute(
       p_last_name: parsed.data.last_name,
       p_document_number: parsed.data.document_number,
       p_phone: parsed.data.phone,
-      p_email: parsed.data.email || null,
-      p_reason: parsed.data.reason || null,
+      p_email: nullToUndefined(parsed.data.email || null),
+      p_reason: nullToUndefined(parsed.data.reason || null),
     });
 
     if (error) {

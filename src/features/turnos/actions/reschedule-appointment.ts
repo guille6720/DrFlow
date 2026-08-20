@@ -6,6 +6,7 @@ import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { revalidateAppointmentSurfaces } from "@/core/cache/revalidate-appointment-surfaces";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
+import { nullToUndefined } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
 import { sanitizeText } from "@/core/validations/schemas";
@@ -55,7 +56,9 @@ export async function rescheduleAppointment(input: unknown) {
     p_new_start_at: parsed.data.start_at,
     p_new_end_at: parsed.data.end_at,
     p_changed_by: userId,
-    p_reason: parsed.data.reason ? sanitizeText(parsed.data.reason) : null,
+    p_reason: nullToUndefined(
+      parsed.data.reason ? sanitizeText(parsed.data.reason) : null
+    ),
   });
 
   if (error) {

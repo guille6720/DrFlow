@@ -21,12 +21,15 @@ import {
   CLINICAL_DOCUMENT_MAX_BYTES,
   type ClinicalDocumentCategory,
 } from "@/lib/constants/clinical-documents";
+import type { Database } from "@/types/supabase";
 
 const BUCKET = "clinical-files";
 const MAX_FILES = 10;
 const VALID_CATEGORIES = new Set<ClinicalDocumentCategory>(
   CLINICAL_DOCUMENT_CATEGORIES.map((item) => item.value)
 );
+
+type PatientAttachmentInsert = Database["public"]["Tables"]["patient_attachments"]["Insert"];
 
 export type HistoricalDocumentImportItem =
   | { fileName: string; ok: true; attachmentId: string }
@@ -41,12 +44,12 @@ function parseCategory(raw: unknown): ClinicalDocumentCategory {
 
 async function insertAttachment(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  payload: Record<string, unknown>
+  payload: PatientAttachmentInsert
 ) {
   const first = await supabase.from("patient_attachments").insert(payload).select("id").single();
   if (!first.error) return first;
   if (!/document_date|source|professional_id/i.test(first.error.message)) return first;
-  const fallback = { ...payload };
+  const fallback: PatientAttachmentInsert = { ...payload };
   delete fallback.document_date;
   delete fallback.source;
   delete fallback.professional_id;
@@ -125,7 +128,7 @@ export async function importHistoricalClinicalDocuments(formData: FormData): Pro
       continue;
     }
 
-    const payload: Record<string, unknown> = {
+    const payload: PatientAttachmentInsert = {
       patient_id: patientParsed.data,
       clinic_id: auth.clinicId,
       file_name: fileName,

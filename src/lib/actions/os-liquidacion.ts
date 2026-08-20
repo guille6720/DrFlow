@@ -3,9 +3,10 @@
 import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { getSession } from "@/core/auth/session.server";
 import { logAudit } from "@/core/auth/session.actions";
+import { getSession } from "@/core/auth/session.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
+import { nullToUndefined } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 import {
   createOsLiquidationBatchSchema,
@@ -89,7 +90,7 @@ export async function createOsLiquidationBatch(formData: FormData) {
     p_insurance_provider: parsed.data.insurance_provider.trim(),
     p_period_from: periodFrom.toISOString(),
     p_period_to: periodTo.toISOString(),
-    p_created_by: user?.id ?? null,
+    p_created_by: nullToUndefined(user?.id ?? null),
   });
 
   if (error) {

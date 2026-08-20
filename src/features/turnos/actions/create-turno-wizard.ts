@@ -5,6 +5,7 @@ import { revalidateAppointmentSurfaces } from "@/core/cache/revalidate-appointme
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { verifyAppointmentForeignKeys } from "@/core/security/ownership-guard";
+import { nullToUndefined } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
 import { sanitizeText } from "@/core/validations/schemas";
@@ -42,17 +43,17 @@ export async function createTurnoWizard(input: unknown) {
     p_professional_id: data.professional_id,
     p_start_at: data.start_at,
     p_end_at: data.end_at,
-    p_location_id: data.location_id ?? null,
-    p_specialty_id: data.specialty_id ?? null,
-    p_notes: data.notes ? sanitizeText(data.notes) : null,
+    p_location_id: nullToUndefined(data.location_id ?? null),
+    p_specialty_id: nullToUndefined(data.specialty_id ?? null),
+    p_notes: nullToUndefined(data.notes ? sanitizeText(data.notes) : null),
     p_consultation_modality: data.consultation_modality,
     p_is_overbooking: data.is_overbooking,
-    p_overbooking_reason: data.overbooking_reason
-      ? sanitizeText(data.overbooking_reason)
-      : null,
+    p_overbooking_reason: nullToUndefined(
+      data.overbooking_reason ? sanitizeText(data.overbooking_reason) : null
+    ),
     p_priority: data.priority,
-    p_insurance_provider: data.insurance_provider ?? null,
-    p_insurance_plan: data.insurance_plan ?? null,
+    p_insurance_provider: nullToUndefined(data.insurance_provider ?? null),
+    p_insurance_plan: nullToUndefined(data.insurance_plan ?? null),
     p_created_by: userId,
   });
 

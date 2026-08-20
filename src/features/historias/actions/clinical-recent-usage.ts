@@ -3,6 +3,7 @@
 import { z } from "zod";
 
 import { getSession } from "@/core/auth/session.server";
+import { toJson } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 
 import {
@@ -122,7 +123,7 @@ async function recordUsage(args: {
     p_kind: args.kind,
     p_fingerprint: args.fingerprint,
     p_label: args.label,
-    p_payload: args.payload,
+    p_payload: toJson(args.payload),
     p_keep_per_kind: 40,
   });
 

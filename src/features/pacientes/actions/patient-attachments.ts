@@ -23,8 +23,11 @@ import {
   type ClinicalDocumentCategory,
 } from "@/lib/constants/clinical-documents";
 import { processClinicalPdfImport } from "@/lib/server/process-clinical-pdf-import";
+import type { Database } from "@/types/supabase";
 
 const BUCKET = "clinical-files";
+
+type PatientAttachmentInsert = Database["public"]["Tables"]["patient_attachments"]["Insert"];
 
 function revalidatePatientDocumentSurfaces(
   patientId: string,
@@ -121,7 +124,7 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
     return { error: uploadError.message };
   }
 
-  const insertPayload: Record<string, unknown> = {
+  const insertPayload: PatientAttachmentInsert = {
     patient_id: patientParsed.data,
     clinic_id: auth.clinicId,
     file_name: fileName,

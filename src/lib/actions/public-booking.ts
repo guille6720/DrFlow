@@ -5,6 +5,7 @@ import {
   CONSENT_TYPES,
   LEGAL_PATIENT_NOTICE_VERSION,
 } from "@/core/legal/documents";
+import { nullToUndefined } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
 import {
@@ -45,8 +46,8 @@ export async function submitPublicBooking(formData: FormData) {
     p_last_name: sanitizeText(data.last_name),
     p_document_number: sanitizeText(data.document_number),
     p_phone: sanitizeText(data.phone),
-    p_email: data.email ? sanitizeText(data.email) : null,
-    p_reason: data.reason ? sanitizeText(data.reason) : null,
+    p_email: nullToUndefined(data.email ? sanitizeText(data.email) : null),
+    p_reason: nullToUndefined(data.reason ? sanitizeText(data.reason) : null),
     p_consent_type: CONSENT_TYPES.patientDataProcessingBooking,
     p_consent_document_version: LEGAL_PATIENT_NOTICE_VERSION,
   });

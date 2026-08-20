@@ -19,6 +19,8 @@ import {
 } from "@/features/recetas/services/medical-orders.service";
 import { normalizeMedicalOrderVersion, parseMedicalOrderExpectedVersion } from "@/features/recetas/utils/medical-order-version";
 
+import type { MedicalOrder } from "@/types/medical-order";
+
 const MEDICAL_ORDER_AUDIT_SELECT =
   "id, patient_id, clinical_record_id, professional_id, order_type, order_text, notes, status, version";
 
@@ -37,7 +39,7 @@ async function loadIssuedMedicalOrderForMutation(
   if (!before || before.status !== "issued") {
     return { ok: false as const, error: "La orden no existe o ya fue anulada." };
   }
-  return { ok: true as const, data: before };
+  return { ok: true as const, data: before as unknown as MedicalOrder };
 }
 
 export async function createMedicalOrder(formData: FormData) {

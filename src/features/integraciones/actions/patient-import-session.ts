@@ -393,7 +393,12 @@ export async function listImportMappingTemplates(): Promise<{
     .eq("import_type", "patients")
     .order("last_used_at", { ascending: false, nullsFirst: false });
   if (error) return { error: "No se pudieron cargar las plantillas." };
-  return { templates: data ?? [] };
+  return {
+    templates: (data ?? []).map((row) => ({
+      ...row,
+      mapping: row.mapping as unknown as PatientColumnMapping,
+    })),
+  };
 }
 
 export async function saveImportMappingTemplate(

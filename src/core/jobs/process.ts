@@ -3,6 +3,7 @@ import { runClinicJobHandler } from "@/core/jobs/handlers";
 import type { ClinicJobRow } from "@/core/jobs/types";
 import { createTraceId, recordObservabilityEvent } from "@/core/observability/record";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
+import { nullToUndefined, toJson } from "@/core/supabase/json";
 
 export type ProcessJobsResult = {
   processed: number;
@@ -67,8 +68,8 @@ export async function processPendingClinicJobs(options?: {
       await supabase.rpc("complete_clinic_job", {
         p_job_id: job.id,
         p_status: "completed",
-        p_result: result,
-        p_error_message: null,
+        p_result: toJson(result),
+        p_error_message: nullToUndefined<string>(null),
       });
       void recordObservabilityEvent({
         clinicId: job.clinic_id,

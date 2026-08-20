@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { logAudit } from "@/core/auth/session.actions";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import {
   type InformedConsentRecord,
   mapInformedConsentRow,
@@ -13,6 +13,7 @@ import { CONSENT_TYPES } from "@/core/legal/documents";
 import { INFORMED_CONSENT_DOCUMENT_VERSION } from "@/core/legal/informed-consent";
 import { hasPermission } from "@/core/permissions/roles";
 import { getAuditRequestContext } from "@/core/security/audit-context";
+import { nullToUndefined } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 import { parseEntityId } from "@/core/validations/params";
 
@@ -113,8 +114,8 @@ export async function recordInformedConsent(formData: FormData) {
     p_procedure_description: parsed.data.procedure_description,
     p_signature_name: parsed.data.signature_name,
     p_document_version: INFORMED_CONSENT_DOCUMENT_VERSION,
-    p_appointment_id: parsed.data.appointment_id ?? null,
-    p_notes: parsed.data.notes ?? null,
+    p_appointment_id: nullToUndefined(parsed.data.appointment_id ?? null),
+    p_notes: nullToUndefined(parsed.data.notes ?? null),
     p_ip_address: ctx.ip_address ?? null,
   });
 

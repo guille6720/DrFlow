@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { logAudit } from "@/core/auth/session.actions";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import {
   buildPatientDeactivationEvaluation,
   isWithinClinicalRetentionPeriod,
