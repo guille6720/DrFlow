@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import {
   PATIENT_EHR_FILTER_OPTIONS,
@@ -14,6 +15,8 @@ type Props = {
   onToggleFilter: (key: PatientEhrFilterKey) => void;
   totalConsultations: number;
   usesHceExport?: boolean;
+  /** Shown on the right, before the consultation count (e.g. print menu). */
+  trailingActions?: ReactNode;
 };
 
 export function PatientEhrFiltersBar({
@@ -21,6 +24,7 @@ export function PatientEhrFiltersBar({
   onToggleFilter,
   totalConsultations,
   usesHceExport = false,
+  trailingActions,
 }: Props) {
   return (
     <>
@@ -40,9 +44,12 @@ export function PatientEhrFiltersBar({
             {label}
           </label>
         ))}
-        <span className="ml-auto text-xs drflow-ehr-filter-meta">
-          {formatPatientConsultationCount(totalConsultations)}
-        </span>
+        <div className="ml-auto flex flex-wrap items-center gap-3">
+          {trailingActions}
+          <span className="text-xs drflow-ehr-filter-meta">
+            {formatPatientConsultationCount(totalConsultations)}
+          </span>
+        </div>
       </div>
 
       {usesHceExport ? (

@@ -17,6 +17,7 @@ import { useDrappQuickPanel } from "@/features/historias/components/consultas/us
 import { PatientEhrClinicalTables } from "@/features/historias/components/historias/patient-ehr-clinical-tables";
 import { PatientEhrDemographics } from "@/features/historias/components/historias/patient-ehr-demographics";
 import { PatientEhrFiltersBar } from "@/features/historias/components/historias/patient-ehr-filters-bar";
+import { PatientEhrPrintMenu } from "@/features/historias/components/historias/patient-ehr-print-menu";
 import { PatientEhrShellFrame } from "@/features/historias/components/historias/patient-ehr-shell-frame";
 import {
   PatientEhrStateProvider,
@@ -317,6 +318,9 @@ function DrappConsultaWorkspaceInner({
   const [fullModalOpen, setFullModalOpen] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [lastSavedRecordId, setLastSavedRecordId] = useState<string | null>(null);
+  /** DX/TX of this visit only — never preload the patient's historical tables. */
+  const [composerDiagnosisRows, setComposerDiagnosisRows] = useState<PatientEhrDiagnosisRow[]>([]);
+  const [composerTreatmentRows, setComposerTreatmentRows] = useState<PatientEhrTreatmentRow[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const evolutionRef = useRef<HTMLTextAreaElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
@@ -438,17 +442,6 @@ function DrappConsultaWorkspaceInner({
     professionalSignature,
   ]);
 
-  /** New consult starts empty: only show DX/TX tied to this session's record. */
-  const sessionRecordId = editingRecordId ?? lastSavedRecordId;
-  const sessionDiagnosisRows = useMemo(() => {
-    if (!sessionRecordId) return [];
-    return diagnosisRows.filter((row) => row.recordId === sessionRecordId);
-  }, [diagnosisRows, sessionRecordId]);
-  const sessionTreatmentRows = useMemo(() => {
-    if (!sessionRecordId) return [];
-    return treatmentRows.filter((row) => row.recordId === sessionRecordId);
-  }, [sessionRecordId, treatmentRows]);
-
   const applyQuickResult = useCallback(
     (result: Awaited<ReturnType<typeof saveQuickDiagnosis>>) => {
       if (!result.ok) {
@@ -461,6 +454,18 @@ function DrappConsultaWorkspaceInner({
         treatmentRows: result.treatmentRows,
       });
       setLastSavedRecordId(result.recordId);
+      if (result.diagnosisRows.length > 0) {
+        setComposerDiagnosisRows((prev) => {
+          const seen = new Set(prev.map((row) => row.id));
+          return [...prev, ...result.diagnosisRows.filter((row) => !seen.has(row.id))];
+        });
+      }
+      if (result.treatmentRows.length > 0) {
+        setComposerTreatmentRows((prev) => {
+          const seen = new Set(prev.map((row) => row.id));
+          return [...prev, ...result.treatmentRows.filter((row) => !seen.has(row.id))];
+        });
+      }
       toast.success("Guardado");
       markCleanAndClose();
       return true;
@@ -585,6 +590,7 @@ function DrappConsultaWorkspaceInner({
         filters={filters}
         onToggleFilter={toggleFilter}
         totalConsultations={sidebarList.length}
+        trailingActions={<PatientEhrPrintMenu triggerLabel="Imprimir historia" />}
       />
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
@@ -598,6 +604,9 @@ function DrappConsultaWorkspaceInner({
           editingRecordId={editingRecordId}
           onEditConsultation={(c) => {
             loadConsultationForEdit(c);
+            setComposerDiagnosisRows(diagnosisRows.filter((row) => row.recordId === c.id));
+            setComposerTreatmentRows(treatmentRows.filter((row) => row.recordId === c.id));
+            setLastSavedRecordId(c.id);
             requestOpen("evolucion");
             queueMicrotask(() => evolutionRef.current?.focus());
             toast.success("Evolución cargada para editar");
@@ -605,6 +614,8 @@ function DrappConsultaWorkspaceInner({
           onStartNew={() => {
             startNewConsultation();
             setLastSavedRecordId(null);
+            setComposerDiagnosisRows([]);
+            setComposerTreatmentRows([]);
             requestOpen("evolucion");
           }}
         />
@@ -862,8 +873,8 @@ function DrappConsultaWorkspaceInner({
           <div className="drapp-consulta-tables mt-4 space-y-3">
             <PatientEhrClinicalTables
               patientId={patient.id}
-              diagnosisRows={filters.diagnostics ? sessionDiagnosisRows : []}
-              treatmentRows={filters.treatments ? sessionTreatmentRows : []}
+              diagnosisRows={filters.diagnostics ? composerDiagnosisRows : []}
+              treatmentRows={filters.treatments ? composerTreatmentRows : []}
               showDiagnostics={filters.diagnostics}
               showTreatments={filters.treatments}
               stacked

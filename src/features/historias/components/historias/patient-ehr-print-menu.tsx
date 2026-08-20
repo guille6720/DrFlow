@@ -73,14 +73,14 @@ export function PatientEhrPrintMenu({
   }
 
   return (
-    <div ref={rootRef} className="relative ml-auto print:hidden">
+    <div ref={rootRef} className="relative print:hidden">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-haspopup="menu"
         disabled={busy}
-        className="drflow-ehr-action-muted inline-flex items-center gap-1 disabled:opacity-60"
+        className="drflow-ehr-action-muted inline-flex items-center gap-1 text-xs font-medium disabled:opacity-60"
       >
         {busy ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
