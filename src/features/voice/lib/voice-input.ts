@@ -55,7 +55,15 @@ export function appendSpeechToTextarea(textarea: HTMLTextAreaElement, transcript
   const current = textarea.value;
   const needsSpace =
     current.length > 0 && !current.endsWith(" ") && !current.endsWith("\n");
-  textarea.value = current + (needsSpace ? " " : "") + chunk;
+  const next = current + (needsSpace ? " " : "") + chunk;
+
+  // Prefer the native setter so React's value tracker sees a real change on controlled fields.
+  const nativeSetter = Object.getOwnPropertyDescriptor(
+    HTMLTextAreaElement.prototype,
+    "value"
+  )?.set;
+  if (nativeSetter) nativeSetter.call(textarea, next);
+  else textarea.value = next;
 
   textarea.dispatchEvent(new Event("input", { bubbles: true }));
   textarea.dispatchEvent(new Event("change", { bubbles: true }));

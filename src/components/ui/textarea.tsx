@@ -1,7 +1,12 @@
 "use client";
 
 import { Mic, MicOff } from "lucide-react";
-import { forwardRef, type TextareaHTMLAttributes, useRef } from "react";
+import {
+  type ChangeEvent,
+  forwardRef,
+  type TextareaHTMLAttributes,
+  useRef,
+} from "react";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -31,6 +36,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       grow = false,
       onVoiceAppend,
       onKeyDown,
+      onChange,
       ...props
     },
     ref
@@ -53,11 +59,21 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       else if (ref) ref.current = node;
     }
 
+    function syncControlledValue(el: HTMLTextAreaElement) {
+      if (!onChange) return;
+      const event = {
+        target: el,
+        currentTarget: el,
+      } as ChangeEvent<HTMLTextAreaElement>;
+      onChange(event);
+    }
+
     function handleVoiceToggle() {
       const el = innerRef.current;
       if (!el) return;
       toggle((text) => {
         appendSpeechToTextarea(el, text);
+        syncControlledValue(el);
         onVoiceAppend?.(text, el.value);
       });
     }
@@ -90,8 +106,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                 onClick={handleVoiceToggle}
                 title={
                   listening
-                    ? "Presioná Enter para guardar el dictado"
-                    : "Dictar por voz (español). Revisá el texto antes de guardar."
+                    ? "Clic o Enter para detener y guardar el texto dictado"
+                    : "Dictar por voz (español). Revisá el texto antes de guardar la consulta."
                 }
                 aria-label={listening ? "Detener dictado por voz" : "Iniciar dictado por voz"}
                 aria-pressed={listening}
@@ -131,7 +147,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-400 opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-teal-500" />
             </span>
-            Presioná Enter para guardar el dictado
+            Hablá con claridad. Clic en Escuchando… o Enter para volcar el texto al campo.
           </p>
         ) : null}
         <textarea
@@ -144,6 +160,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             className
           )}
           {...props}
+          onChange={onChange}
           onKeyDown={handleKeyDown}
         />
         {speechError && showVoice ? (
