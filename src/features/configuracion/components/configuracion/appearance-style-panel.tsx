@@ -1,12 +1,12 @@
 "use client";
 
-import { Droplets, Layers, LayoutGrid, Mic, Moon, Sparkles, Sun } from "lucide-react";
+import { Droplets, Layers, LayoutGrid, Mic, Moon, Palette, Sparkles, Sun } from "lucide-react";
 
 import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
 import { useCanUseVoiceInput } from "@/core/components/entitlements/entitlements-provider";
 import { useUiTheme } from "@/core/components/theme/ui-theme-provider";
 import { FEATURES } from "@/core/entitlements/features";
-import { UI_STYLE_LABELS, type UiStyleId } from "@/core/theme/ui-theme";
+import { UI_STYLE_IDS, UI_STYLE_LABELS, type UiStyleId } from "@/core/theme/ui-theme";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -20,6 +20,7 @@ const STYLE_ICONS: Record<UiStyleId, typeof LayoutGrid> = {
   "2": Sparkles,
   "3": Droplets,
   "4": Layers,
+  "5": Palette,
 };
 
 const STYLE_ACTIVE_RING: Record<UiStyleId, string> = {
@@ -27,6 +28,7 @@ const STYLE_ACTIVE_RING: Record<UiStyleId, string> = {
   "2": "border-[var(--accent,#0F766E)] bg-[var(--accent-soft,#ECFDF5)] ring-[var(--accent,#0F766E)]/40",
   "3": "border-sky-400 bg-sky-500/10 ring-sky-400/40",
   "4": "border-blue-400 bg-blue-500/10 ring-blue-400/40",
+  "5": "border-[#0D9488] bg-[#CCFBF1] ring-[#0D9488]/40",
 };
 
 const STYLE_ICON_COLOR: Record<UiStyleId, string> = {
@@ -34,6 +36,7 @@ const STYLE_ICON_COLOR: Record<UiStyleId, string> = {
   "2": "text-[var(--accent,#0F766E)]",
   "3": "text-sky-600",
   "4": "text-blue-600",
+  "5": "text-[#0D9488]",
 };
 
 const STYLE_SWATCHES: Record<UiStyleId, string[]> = {
@@ -41,9 +44,31 @@ const STYLE_SWATCHES: Record<UiStyleId, string[]> = {
   "2": ["#F8FAFC", "#0F4C5C", "#0F766E", "#0B1220"],
   "3": ["#e8f2fc", "#0284c7", "#38bdf8"],
   "4": ["#2563eb", "#1d4ed8", "#ffffff"],
+  "5": ["#F9FAFB", "#0D9488", "#F3E8FF", "#DCFCE7", "#0B1118"],
 };
 
-const BENTO_STYLES: UiStyleId[] = ["2", "3", "4"];
+const BENTO_STYLES: UiStyleId[] = ["2", "3", "4", "5"];
+
+function darkModeHint(style: UiStyleId, clinicalDark: boolean): string {
+  if (style === "5") {
+    return clinicalDark
+      ? "Soft Clinic oscuro (#0B1118): teal activo, chips pastel adaptados y alto contraste."
+      : "Soft Clinic claro: fondo #F9FAFB, sidebar blanca, activo teal #0D9488 y acentos pastel.";
+  }
+  if (style === "4") {
+    return clinicalDark
+      ? "Azul profundo nocturno; tarjetas claras con texto oscuro nítido."
+      : "Fondo azul cobalto saturado; tarjetas blancas de alto contraste.";
+  }
+  if (style === "2") {
+    return clinicalDark
+      ? "Modo oscuro Clinical Blue (#0B1220)."
+      : "Clinical Blue + Teal claro: fondo #F8FAFC, primary #0F4C5C.";
+  }
+  return clinicalDark
+    ? "Fondo oscuro clínico, bordes planos y alto contraste para turnos nocturnos."
+    : "Modo claro plano: fondo gris muy suave, tarjetas blancas y rejilla Bento.";
+}
 
 function AppearanceStyleControls() {
   const { style, clinicalDark, setStyle, setClinicalDark } = useUiTheme();
@@ -54,8 +79,8 @@ function AppearanceStyleControls() {
     <div className="space-y-6">
       <div>
         <p className="mb-3 text-sm font-medium text-[var(--muted-foreground,#475569)]">Preset de estilo</p>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {(["1", "2", "3", "4"] as UiStyleId[]).map((id) => {
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {UI_STYLE_IDS.map((id) => {
             const active = style === id;
             const Icon = STYLE_ICONS[id];
             return (
@@ -78,13 +103,13 @@ function AppearanceStyleControls() {
                     )}
                   />
                   <span className="font-semibold text-[var(--foreground,#0F172A)]">Estilo {id}</span>
-                  {id === "2" ? (
-                    <span className="rounded-full bg-[var(--accent,#0F766E)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                  {id === "5" ? (
+                    <span className="rounded-full bg-[#0D9488] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
                       Nuevo
                     </span>
                   ) : null}
                 </div>
-                <div className="mt-2 flex gap-1">
+                <div className="mt-2 flex flex-wrap gap-1">
                   {STYLE_SWATCHES[id].map((color) => (
                     <span
                       key={color}
@@ -116,17 +141,7 @@ function AppearanceStyleControls() {
                 Clinical Dark Mode
               </p>
               <p className="mt-1 text-xs text-[var(--muted-foreground,#475569)]">
-                {style === "4"
-                  ? clinicalDark
-                    ? "Azul profundo nocturno; tarjetas claras con texto oscuro nítido."
-                    : "Fondo azul cobalto saturado; tarjetas blancas de alto contraste."
-                  : style === "2"
-                    ? clinicalDark
-                      ? "Modo oscuro activo (#0B1220). Tocá «Usar modo claro» para ver la paleta Clinical Blue nueva (#0F4C5C)."
-                      : "Modo claro Clinical Blue + Teal: fondo #F8FAFC, primary #0F4C5C, acento #0F766E."
-                    : clinicalDark
-                      ? "Fondo oscuro clínico, bordes planos y alto contraste para turnos nocturnos."
-                      : "Modo claro plano: fondo gris muy suave, tarjetas blancas y rejilla Bento."}
+                {darkModeHint(style, clinicalDark)}
               </p>
             </div>
             <Button
@@ -184,8 +199,8 @@ function AppearanceStyleControls() {
       ) : null}
 
       <p className="text-xs text-[var(--muted-foreground,#475569)]">
-        La preferencia se guarda en este navegador. El Estilo 2 (badge Nuevo) es Clinical Blue + Teal:
-        elegilo y usá modo claro para ver el cambio de colores.
+        La preferencia se guarda en este navegador. El Estilo 5 (Soft Clinic) copia la paleta pastel +
+        teal de la referencia: sidebar blanca, activo teal y chips de color.
       </p>
     </div>
   );
@@ -199,7 +214,7 @@ export function AppearanceStylePanel({ embedded = false }: { embedded?: boolean 
   return (
     <Card
       title="Apariencia de la interfaz"
-      description="Estilos 2–4 usan diseño plano con rejilla Bento. El Estilo 2 (Nuevo) aplica Clinical Blue + Teal. Podés activar modo oscuro en Estilos 2–4."
+      description="Estilos 2–5 usan diseño plano con rejilla Bento. El Estilo 5 (Nuevo) aplica Soft Clinic pastel + teal. Podés activar modo oscuro en Estilos 2–5."
     >
       <AppearanceStyleControls />
     </Card>

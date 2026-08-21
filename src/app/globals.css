@@ -4086,6 +4086,206 @@ html[data-ui-palette="cobalt"] .drflow-patient-context-banner .drflow-patient-ba
   }
 }
 
+/* ——— Estilo 5: Soft Clinic (referencia pastel + teal, layout Bento) ——— */
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) {
+  --background: #f9fafb;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --border: #e5e7eb;
+  --input: #d1d5db;
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+  --primary: #0d9488;
+  --primary-dark: #0f766e;
+  --primary-light: #14b8a6;
+  --primary-foreground: #ffffff;
+  --secondary: #ffffff;
+  --secondary-foreground: #111827;
+  --accent: #0f766e;
+  --accent-foreground: #ffffff;
+  --accent-soft: #ccfbf1;
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+  --success: #15803d;
+  --warning: #b45309;
+  --ring: #0d9488;
+  --sidebar: #ffffff;
+  --sidebar-accent: #ffffff;
+  --sidebar-active-bg: #0d9488;
+  --table-hover: #f3f4f6;
+  --placeholder: #9ca3af;
+  /* Pastel chips (acciones rápidas) */
+  --chip-purple-bg: #f3e8ff;
+  --chip-purple-fg: #7e22ce;
+  --chip-teal-bg: #e0f2f1;
+  --chip-teal-fg: #00796b;
+  --chip-green-bg: #dcfce7;
+  --chip-green-fg: #15803d;
+  --chip-blue-bg: #e0f2fe;
+  --chip-blue-fg: #0369a1;
+  --chip-rose-bg: #fee2e2;
+  --chip-rose-fg: #b91c1c;
+  --chip-amber-bg: #fef3c7;
+  --chip-amber-fg: #b45309;
+  --chip-violet-bg: #ede9fe;
+  --chip-violet-fg: #6d28d9;
+  --chip-sky-bg: #e0f2fe;
+  --chip-sky-fg: #0284c7;
+}
+
+html[data-ui-palette="clinicsoft"][data-clinical-dark="1"] {
+  --background: #0b1118;
+  --foreground: #f8fafc;
+  --card: #121a24;
+  --card-foreground: #f8fafc;
+  --border: #1f2a37;
+  --input: #374151;
+  --muted: #15202b;
+  --muted-foreground: #cbd5e1;
+  --primary: #14b8a6;
+  --primary-dark: #0d9488;
+  --primary-light: #2dd4bf;
+  --primary-foreground: #042f2e;
+  --secondary: #121a24;
+  --secondary-foreground: #f8fafc;
+  --accent: #2dd4bf;
+  --accent-foreground: #042f2e;
+  --accent-soft: #134e4a;
+  --destructive: #f87171;
+  --destructive-foreground: #0b1118;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --ring: #14b8a6;
+  --sidebar: #0b1118;
+  --sidebar-accent: #042f2e;
+  --sidebar-active-bg: #0d9488;
+  --table-hover: #1a2430;
+  --placeholder: #94a3b8;
+  --chip-purple-bg: #2e1065;
+  --chip-purple-fg: #e9d5ff;
+  --chip-teal-bg: #134e4a;
+  --chip-teal-fg: #99f6e4;
+  --chip-green-bg: #14532d;
+  --chip-green-fg: #bbf7d0;
+  --chip-blue-bg: #0c4a6e;
+  --chip-blue-fg: #bae6fd;
+  --chip-rose-bg: #7f1d1d;
+  --chip-rose-fg: #fecaca;
+  --chip-amber-bg: #78350f;
+  --chip-amber-fg: #fde68a;
+  --chip-violet-bg: #4c1d95;
+  --chip-violet-fg: #ddd6fe;
+  --chip-sky-bg: #0c4a6e;
+  --chip-sky-fg: #7dd3fc;
+}
+
+html[data-ui-palette="clinicsoft"] .drflow-mesh {
+  background-color: var(--background);
+  background-image: none;
+}
+
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
+  background: #ffffff !important;
+}
+
+html[data-ui-palette="clinicsoft"][data-clinical-dark="1"] .drflow-sidebar-gradient {
+  background: #0b1118 !important;
+}
+
+/* Active nav: solid teal + white text (como la referencia) */
+html[data-ui-palette="clinicsoft"] .drflow-ui-sidebar a.bg-gradient-to-r {
+  background: var(--sidebar-active-bg) !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgb(13 148 136 / 0.28) !important;
+}
+
+html[data-ui-palette="clinicsoft"] .drflow-ui-sidebar a.bg-gradient-to-r svg {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a:not(.bg-gradient-to-r) {
+  color: #4b5563 !important;
+}
+
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a:not(.bg-gradient-to-r):hover {
+  background: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+html[data-ui-palette="clinicsoft"] .drflow-ui-button[class*="from-cyan"],
+html[data-ui-palette="clinicsoft"] .drflow-ui-button.drflow-btn-primary {
+  background: var(--primary) !important;
+  background-image: none !important;
+  color: var(--primary-foreground) !important;
+  box-shadow: 0 4px 14px rgb(13 148 136 / 0.25) !important;
+}
+
+html[data-ui-palette="clinicsoft"] .drflow-ui-button[class*="from-cyan"]:hover,
+html[data-ui-palette="clinicsoft"] .drflow-ui-button.drflow-btn-primary:hover {
+  background: var(--primary-dark) !important;
+}
+
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-link,
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-card-body dt {
+  color: #0f766e;
+}
+
+html[data-ui-palette="clinicsoft"][data-clinical-dark="1"] .drflow-card-body dt {
+  color: #2dd4bf;
+}
+
+html[data-ui-palette="clinicsoft"] .drflow-ui-card-title {
+  color: var(--foreground);
+}
+
+html[data-ui-palette="clinicsoft"] .drflow-ui-card-desc {
+  color: var(--muted-foreground);
+}
+
+html[data-ui-palette="clinicsoft"] .drflow-patient-workspace-tab-active {
+  border-color: #0d9488 !important;
+  background: linear-gradient(135deg, #0d9488, #14b8a6) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgb(13 148 136 / 30%) !important;
+}
+
+/* Utilidades pastel para chips/acciones rápidas */
+.drflow-chip-purple {
+  background: var(--chip-purple-bg);
+  color: var(--chip-purple-fg);
+}
+.drflow-chip-teal {
+  background: var(--chip-teal-bg);
+  color: var(--chip-teal-fg);
+}
+.drflow-chip-green {
+  background: var(--chip-green-bg);
+  color: var(--chip-green-fg);
+}
+.drflow-chip-blue {
+  background: var(--chip-blue-bg);
+  color: var(--chip-blue-fg);
+}
+.drflow-chip-rose {
+  background: var(--chip-rose-bg);
+  color: var(--chip-rose-fg);
+}
+.drflow-chip-amber {
+  background: var(--chip-amber-bg);
+  color: var(--chip-amber-fg);
+}
+.drflow-chip-violet {
+  background: var(--chip-violet-bg);
+  color: var(--chip-violet-fg);
+}
+.drflow-chip-sky {
+  background: var(--chip-sky-bg);
+  color: var(--chip-sky-fg);
+}
+
 /* ——— Estilo 3: paleta azul / celeste (layout Estilo 2 + data-ui-palette=azure) ——— */
 html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) {
   --background: #e8f2fc;
