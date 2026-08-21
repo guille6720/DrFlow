@@ -368,7 +368,9 @@ export function PatientSearchCombobox({
                       <span className="font-medium">
                         {p.last_name}, {p.first_name}
                       </span>
-                      <span className="ml-2 text-xs opacity-80">DNI {p.document_number}</span>
+                      <span className="ml-2 text-xs text-[var(--text-muted,var(--muted-foreground))]">
+                        DNI {p.document_number}
+                      </span>
                     </>
                   )}
                 </button>

@@ -268,6 +268,45 @@ textarea.drflow-ui-input::placeholder {
   border-color: var(--border) !important;
 }
 
+/*
+ * Anti-patterns: parent/utility opacity must not wash clinical text.
+ * Prefer --text-muted / --text-disabled over opacity-* on copy.
+ */
+.drflow-mesh main :is(p, span, li, label, dd, dt, small, figcaption).opacity-40,
+.drflow-mesh main :is(p, span, li, label, dd, dt, small, figcaption).opacity-50,
+.drflow-mesh main :is(p, span, li, label, dd, dt, small, figcaption).opacity-60,
+.drflow-mesh main :is(p, span, li, label, dd, dt, small, figcaption).opacity-70,
+.drflow-mesh main :is(p, span, li, label, dd, dt, small, figcaption).opacity-80 {
+  opacity: 1 !important;
+  color: var(--text-muted, var(--muted-foreground)) !important;
+}
+
+.drflow-mesh main :is(.text-white\/20, .text-white\/30, .text-white\/40, .text-white\/50) {
+  color: var(--text-secondary, #cbd5e1) !important;
+}
+
+.drflow-mesh main :is(button, a, [role="button"]):disabled:not([aria-busy="true"]):not(.animate-ping),
+.drflow-mesh main :is(button, a, [role="button"])[aria-disabled="true"]:not([aria-busy="true"]) {
+  opacity: 1 !important;
+}
+
+.drflow-mesh main :is(button, a)[class*="text-"]:disabled:not(.drflow-ui-button):not([aria-busy="true"]),
+.drflow-mesh main :is(button, a)[class*="text-"][aria-disabled="true"]:not(.drflow-ui-button) {
+  color: var(--text-disabled, var(--muted-foreground)) !important;
+}
+
+.drflow-mesh main :is(button, a)[class*="bg-"]:disabled:not(.drflow-ui-button):not([aria-busy="true"]),
+.drflow-mesh main :is(button, a)[class*="bg-"][aria-disabled="true"]:not(.drflow-ui-button) {
+  background-color: var(--muted) !important;
+  color: var(--text-disabled, var(--muted-foreground)) !important;
+  border-color: var(--border) !important;
+}
+
+.drflow-mesh main :is(input, textarea)::placeholder {
+  opacity: 1 !important;
+  color: var(--placeholder, var(--text-muted)) !important;
+}
+
 /* Selected rows / tabs: keep text readable */
 [aria-selected="true"],
 [data-selected="true"],

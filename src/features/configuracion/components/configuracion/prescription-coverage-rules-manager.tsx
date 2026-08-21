@@ -36,7 +36,14 @@ export function PrescriptionCoverageRulesManager({ savedRules }: Props) {
           >
             {coverageKindLabel(kind)}
             {savedByKind(kind) ? (
-              <span className="ml-1.5 text-xs opacity-80">· custom</span>
+              <span
+                className={cn(
+                  "ml-1.5 text-xs",
+                  activeKind === kind ? "text-teal-100" : "text-[var(--text-muted,#64748b)]"
+                )}
+              >
+                · custom
+              </span>
             ) : null}
           </button>
         ))}

@@ -41,7 +41,7 @@ export function AgendaDayStatusFilters({ active, counts, onChange }: Props) {
             <span
               className={cn(
                 "rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
-                selected ? "bg-white/20 text-white" : "bg-white text-slate-600"
+                selected ? "bg-white/25 text-white" : "bg-white text-slate-700"
               )}
             >
               {count}

@@ -277,7 +277,7 @@ export function renderManualSectionBody(
               {thresholds.infoPct}% → informativo · {thresholds.warnPct}% → upgrade recomendado ·{" "}
               {thresholds.criticalPct}% → límite alcanzado
             </p>
-            <p className="mt-1 text-xs opacity-80">
+            <p className="mt-1 text-xs text-[var(--text-muted,var(--muted-foreground))]">
               Valores leídos de la configuración efectiva del entorno (fallback a defaults del motor).
             </p>
           </ManualCallout>

@@ -278,10 +278,7 @@ html[data-ui-palette="midnight"] .drflow-ui-button.drflow-btn-danger {
   color: var(--destructive-foreground) !important;
 }
 
-html[data-ui-palette="midnight"] .drflow-ui-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
+/* Disabled handled in a11y-contrast.css (no parent opacity wash) */
 
 /* ——— Forms ——— */
 html[data-ui-palette="midnight"] .drflow-ui-input,

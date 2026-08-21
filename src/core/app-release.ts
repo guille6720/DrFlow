@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.7",
+    date: "2026-08-21",
+    title: "Eliminación de opacidades que apagan texto clínico",
+    highlights: [
+      "Capa anti-patrones: opacity-* en texto y disabled:opacity bajos se neutralizan en .drflow-mesh",
+      "Placeholders y botones Midnight sin opacity padre; labels KPI/lab usan --text-muted",
+      "Script audit-problematic-css.mts para detectar text-white/xx, rgba bajos y opacity peligrosos",
+    ],
+  },
+  {
     version: "0.2.6",
     date: "2026-08-21",
     title: "WCAG AA contrast floors across Cobalt, Soft Clinic and Midnight",
