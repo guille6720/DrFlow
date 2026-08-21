@@ -49,6 +49,12 @@ export function UiThemeProvider({ children }: { children: ReactNode }) {
   const setStyle = useCallback(
     (next: UiStyleId) => {
       setStyleState(next);
+      // Al elegir Clinical Blue + Teal, arrancar en modo claro para que se note la paleta nueva.
+      if (next === "2") {
+        setClinicalDarkState(false);
+        persist(next, false);
+        return;
+      }
       const dark = isBentoStyle(next) ? clinicalDark : false;
       if (next === "1") setClinicalDarkState(false);
       persist(next, dark);

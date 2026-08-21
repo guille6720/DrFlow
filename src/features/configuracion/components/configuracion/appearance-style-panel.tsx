@@ -1,6 +1,6 @@
 "use client";
 
-import { Droplets, Layers, LayoutGrid, Mic, Moon, Sun } from "lucide-react";
+import { Droplets, Layers, LayoutGrid, Mic, Moon, Sparkles, Sun } from "lucide-react";
 
 import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
 import { useCanUseVoiceInput } from "@/core/components/entitlements/entitlements-provider";
@@ -17,23 +17,30 @@ import { Card } from "@/components/ui/card";
 
 const STYLE_ICONS: Record<UiStyleId, typeof LayoutGrid> = {
   "1": LayoutGrid,
-  "2": LayoutGrid,
+  "2": Sparkles,
   "3": Droplets,
   "4": Layers,
 };
 
 const STYLE_ACTIVE_RING: Record<UiStyleId, string> = {
   "1": "border-teal-400 bg-teal-500/10 ring-teal-400/40",
-  "2": "border-teal-400 bg-teal-500/10 ring-teal-400/40",
+  "2": "border-[var(--accent,#0F766E)] bg-[var(--accent-soft,#ECFDF5)] ring-[var(--accent,#0F766E)]/40",
   "3": "border-sky-400 bg-sky-500/10 ring-sky-400/40",
   "4": "border-blue-400 bg-blue-500/10 ring-blue-400/40",
 };
 
 const STYLE_ICON_COLOR: Record<UiStyleId, string> = {
-  "1": "text-teal-300",
-  "2": "text-teal-300",
-  "3": "text-sky-300",
-  "4": "text-blue-300",
+  "1": "text-teal-600",
+  "2": "text-[var(--accent,#0F766E)]",
+  "3": "text-sky-600",
+  "4": "text-blue-600",
+};
+
+const STYLE_SWATCHES: Record<UiStyleId, string[]> = {
+  "1": ["#3d5266", "#2dd4bf", "#0f172a"],
+  "2": ["#F8FAFC", "#0F4C5C", "#0F766E", "#0B1220"],
+  "3": ["#e8f2fc", "#0284c7", "#38bdf8"],
+  "4": ["#2563eb", "#1d4ed8", "#ffffff"],
 };
 
 const BENTO_STYLES: UiStyleId[] = ["2", "3", "4"];
@@ -60,19 +67,34 @@ function AppearanceStyleControls() {
                   "rounded-xl border p-4 text-left transition",
                   active
                     ? cn("ring-2", STYLE_ACTIVE_RING[id])
-                    : "border-[var(--border)] bg-[var(--muted)] hover:border-[var(--ring)]"
+                    : "border-[var(--border,#D7E0E8)] bg-[var(--card,#fff)] hover:border-[var(--ring,#0F766E)]"
                 )}
               >
                 <div className="flex items-center gap-2">
                   <Icon
                     className={cn(
                       "h-5 w-5",
-                      active ? STYLE_ICON_COLOR[id] : "text-[var(--muted-foreground)]"
+                      active ? STYLE_ICON_COLOR[id] : "text-[var(--muted-foreground,#475569)]"
                     )}
                   />
-                  <span className="font-semibold text-[var(--foreground)]">Estilo {id}</span>
+                  <span className="font-semibold text-[var(--foreground,#0F172A)]">Estilo {id}</span>
+                  {id === "2" ? (
+                    <span className="rounded-full bg-[var(--accent,#0F766E)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                      Nuevo
+                    </span>
+                  ) : null}
                 </div>
-                <p className="mt-2 text-xs leading-relaxed text-[var(--muted-foreground)]">
+                <div className="mt-2 flex gap-1">
+                  {STYLE_SWATCHES[id].map((color) => (
+                    <span
+                      key={color}
+                      className="h-3.5 w-3.5 rounded-full border border-black/10"
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    />
+                  ))}
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-[var(--muted-foreground,#475569)]">
                   {UI_STYLE_LABELS[id]}
                 </p>
               </button>
@@ -82,14 +104,14 @@ function AppearanceStyleControls() {
       </div>
 
       {BENTO_STYLES.includes(style) && (
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-4">
+        <div className="rounded-xl border border-[var(--border,#D7E0E8)] bg-[var(--muted,#F1F5F9)] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="flex items-center gap-2 font-semibold text-[var(--foreground)]">
+              <p className="flex items-center gap-2 font-semibold text-[var(--foreground,#0F172A)]">
                 {clinicalDark ? (
-                  <Moon className="h-4 w-4 text-[var(--accent)]" />
+                  <Moon className="h-4 w-4 text-[var(--accent,#0F766E)]" />
                 ) : (
-                  <Sun className="h-4 w-4 text-[var(--warning)]" />
+                  <Sun className="h-4 w-4 text-[var(--warning,#B45309)]" />
                 )}
                 Clinical Dark Mode
               </p>
@@ -100,8 +122,8 @@ function AppearanceStyleControls() {
                     : "Fondo azul cobalto saturado; tarjetas blancas de alto contraste."
                   : style === "2"
                     ? clinicalDark
-                      ? "Clinical Blue + Teal oscuro: fondo #0B1220, acento teal y alto contraste nocturno."
-                      : "Clinical Blue + Teal claro: fondo #F8FAFC, primary #0F4C5C y lectura clínica nítida."
+                      ? "Modo oscuro activo (#0B1220). Tocá «Usar modo claro» para ver la paleta Clinical Blue nueva (#0F4C5C)."
+                      : "Modo claro Clinical Blue + Teal: fondo #F8FAFC, primary #0F4C5C, acento #0F766E."
                     : clinicalDark
                       ? "Fondo oscuro clínico, bordes planos y alto contraste para turnos nocturnos."
                       : "Modo claro plano: fondo gris muy suave, tarjetas blancas y rejilla Bento."}
@@ -120,14 +142,14 @@ function AppearanceStyleControls() {
       )}
 
       {voice ? (
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-4">
+        <div className="rounded-xl border border-[var(--border,#D7E0E8)] bg-[var(--muted,#F1F5F9)] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="flex items-center gap-2 font-semibold text-[var(--foreground)]">
-                <Mic className="h-4 w-4 text-[var(--accent)]" />
+              <p className="flex items-center gap-2 font-semibold text-[var(--foreground,#0F172A)]">
+                <Mic className="h-4 w-4 text-[var(--accent,#0F766E)]" />
                 Dictado por voz (historias clínicas)
               </p>
-              <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+              <p className="mt-1 text-xs text-[var(--muted-foreground,#475569)]">
                 {!canUseVoice
                   ? "El dictado por voz no está incluido en el plan comercial del consultorio."
                   : voice.clinicEnabled
@@ -136,7 +158,7 @@ function AppearanceStyleControls() {
                       : "Desactivado en este navegador. Podés volver a activarlo cuando quieras."
                     : "El administrador del consultorio desactivó el dictado por voz."}
                 {canUseVoice && !voice.browserSupported && voice.clinicEnabled ? (
-                  <span className="mt-1 block text-amber-700">
+                  <span className="mt-1 block text-[var(--warning,#B45309)]">
                     Tu navegador no soporta reconocimiento de voz (probá Chrome o Edge).
                   </span>
                 ) : null}
@@ -162,8 +184,8 @@ function AppearanceStyleControls() {
       ) : null}
 
       <p className="text-xs text-[var(--muted-foreground,#475569)]">
-        La preferencia se guarda en este navegador. El Estilo 2 (Clinical Blue + Teal) es el recomendado
-        para consulta diaria: alto contraste, modo claro/oscuro y superficies clínicas limpias.
+        La preferencia se guarda en este navegador. El Estilo 2 (badge Nuevo) es Clinical Blue + Teal:
+        elegilo y usá modo claro para ver el cambio de colores.
       </p>
     </div>
   );
@@ -177,7 +199,7 @@ export function AppearanceStylePanel({ embedded = false }: { embedded?: boolean 
   return (
     <Card
       title="Apariencia de la interfaz"
-      description="Estilos 2–4 usan diseño plano con rejilla Bento. El Estilo 2 aplica la paleta Clinical Blue + Teal (claro/oscuro). Podés activar modo oscuro en Estilos 2–4."
+      description="Estilos 2–4 usan diseño plano con rejilla Bento. El Estilo 2 (Nuevo) aplica Clinical Blue + Teal. Podés activar modo oscuro en Estilos 2–4."
     >
       <AppearanceStyleControls />
     </Card>
