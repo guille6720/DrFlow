@@ -12,10 +12,10 @@ html[data-ui-palette="midnight"] {
   --surface-active: #1c4064;
   --border-subtle: #19344f;
   --border-strong: #2a4a69;
-  --text-primary: #f4f7fc;
-  --text-secondary: #a9b8cb;
-  --text-muted: #71849d;
-  --text-disabled: #53657b;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-disabled: #64748b;
   --accent-blue: #5cb8f6;
   --accent-purple: #8457f4;
   --accent-magenta: #f84fa3;
@@ -28,13 +28,13 @@ html[data-ui-palette="midnight"] {
   --popover: #102845;
   --popover-foreground: #f4f7fc;
 
-  --foreground: #f4f7fc;
+  --foreground: #f8fafc;
   --card: #102845;
-  --card-foreground: #f4f7fc;
+  --card-foreground: #f8fafc;
   --border: #203b59;
   --input: #0a1d36;
   --muted: #142f50;
-  --muted-foreground: #a9b8cb;
+  --muted-foreground: #cbd5e1;
   --primary: #5cb8f6;
   --primary-dark: #3aa0e8;
   --primary-light: #7ec8f8;
@@ -53,8 +53,7 @@ html[data-ui-palette="midnight"] {
   --sidebar-accent: #5cb8f6;
   --sidebar-active-bg: rgb(92 184 246 / 0.12);
   --table-hover: #183858;
-  --placeholder: #71849d;
-  --radius: 10px;
+  --placeholder: #94a3b8;
 
   --chip-purple-bg: rgb(132 87 244 / 0.18);
   --chip-purple-fg: #c4b0ff;
@@ -86,16 +85,16 @@ html[data-ui-palette="midnight"]:not([data-clinical-dark="1"]) {
   --surface-active: #d9e3f0;
   --border-subtle: #d5dee9;
   --border-strong: #b8c5d6;
-  --text-primary: #07182d;
-  --text-secondary: #3d5168;
-  --text-muted: #53657b;
-  --foreground: #07182d;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #07182d;
+  --card-foreground: #0f172a;
   --border: #c5d0de;
   --input: #ffffff;
   --muted: #eef2f7;
-  --muted-foreground: #3d5168;
+  --muted-foreground: #334155;
   --primary: #1d7fc7;
   --primary-dark: #1568a8;
   --primary-light: #5cb8f6;
@@ -110,8 +109,7 @@ html[data-ui-palette="midnight"]:not([data-clinical-dark="1"]) {
   --sidebar-accent: #5cb8f6;
   --sidebar-active-bg: rgb(92 184 246 / 0.12);
   --table-hover: #eef2f7;
-  --placeholder: #71849d;
-  --popover: #ffffff;
+  --placeholder: #64748b;
   --popover-foreground: #07182d;
   --overlay: rgb(7 24 45 / 0.55);
 }

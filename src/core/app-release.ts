@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.5",
+    date: "2026-08-21",
+    title: "Contraste WCAG AA en todos los presets de apariencia",
+    highlights: [
+      "Tokens semánticos de texto (--text-primary/secondary/muted) en Midnight, Soft Clinic, Azure, Cobalt y Style 2",
+      "Selector de estilo: estados seleccionados siempre legibles (sin texto claro sobre pastel)",
+      "Placeholders, labels, errores y botones deshabilitados sin opacity que apague el texto",
+    ],
+  },
+  {
     version: "0.2.4",
     date: "2026-08-21",
     title: "Midnight Navy — sistema visual premium en toda la app",

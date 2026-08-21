@@ -68,7 +68,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={busy || undefined}
         className={cn(
           buttonSurfaceClassName(variant, size),
-          "disabled:opacity-50 disabled:cursor-not-allowed",
+            "disabled:cursor-not-allowed disabled:opacity-100",
           className
         )}
         {...props}

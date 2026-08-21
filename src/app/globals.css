@@ -2,6 +2,7 @@
 @import "@fontsource-variable/plus-jakarta-sans/wght.css";
 @import "@fontsource/geist-mono/latin.css";
 @import "../core/theme/midnight-navy.css";
+@import "../core/theme/a11y-contrast.css";
 
 :root {
   --font-jakarta: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
@@ -418,7 +419,7 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) {
   --border: #d7e0e8;
   --input: #cbd5e1;
   --muted: #f1f5f9;
-  --muted-foreground: #475569;
+  --muted-foreground: #334155;
   --primary: #0f4c5c;
   --primary-dark: #0c3d4a;
   --primary-light: #0f766e;
@@ -438,6 +439,11 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) {
   --sidebar-active-bg: #ecfdf5;
   --table-hover: #f1f5f9;
   --placeholder: #64748b;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-on-selected: #0f172a;
+  --surface-selected: #ecfdf5;
 }
 
 /* Style 2 â€” Clinical Blue + Teal (dark) */
@@ -469,6 +475,11 @@ html[data-ui-style="2"][data-clinical-dark="1"] {
   --sidebar-active-bg: #134e4a;
   --table-hover: #1e293b;
   --placeholder: #94a3b8;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-on-selected: #f8fafc;
+  --surface-selected: #1e293b;
 }
 
 html[data-ui-style="2"] .drflow-mesh {
@@ -4096,7 +4107,7 @@ html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) {
   --border: #e5e7eb;
   --input: #d1d5db;
   --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
+  --muted-foreground: #374151;
   --primary: #0d9488;
   --primary-dark: #0f766e;
   --primary-light: #14b8a6;
@@ -4115,7 +4126,7 @@ html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) {
   --sidebar-accent: #ffffff;
   --sidebar-active-bg: #0d9488;
   --table-hover: #f3f4f6;
-  --placeholder: #9ca3af;
+  --placeholder: #6b7280;
   /* Pastel chips (acciones rÃ¡pidas) */
   --chip-purple-bg: #f3e8ff;
   --chip-purple-fg: #7e22ce;
@@ -4295,24 +4306,38 @@ html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) {
   --background: #e8f2fc;
   --foreground: #0a1628;
   --card: #ffffff;
+  --card-foreground: #0a1628;
   --border: #c5dcf4;
-  --muted: #475569;
-  --muted-foreground: #334155;
+  --muted: #e0f2fe;
+  --muted-foreground: #1e3a5f;
   --primary: #0284c7;
   --primary-light: #38bdf8;
   --primary-foreground: #f8fafc;
+  --placeholder: #64748b;
+  --text-primary: #0a1628;
+  --text-secondary: #1e3a5f;
+  --text-muted: #334155;
+  --text-on-selected: #0a1628;
+  --surface-selected: #e0f2fe;
 }
 
 html[data-ui-palette="azure"][data-clinical-dark="1"] {
   --background: #061323;
   --foreground: #f0f9ff;
   --card: #0c1f38;
+  --card-foreground: #f0f9ff;
   --border: #1e4a7a;
-  --muted: #93c5fd;
-  --muted-foreground: #bfdbfe;
+  --muted: #0c1f38;
+  --muted-foreground: #bae6fd;
   --primary: #38bdf8;
   --primary-light: #7dd3fc;
   --primary-foreground: #082032;
+  --placeholder: #7dd3fc;
+  --text-primary: #f0f9ff;
+  --text-secondary: #bae6fd;
+  --text-muted: #7dd3fc;
+  --text-on-selected: #f0f9ff;
+  --surface-selected: #0c4a6e;
 }
 
 html[data-ui-palette="azure"] .drflow-mesh {

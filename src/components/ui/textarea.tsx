@@ -166,7 +166,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         {speechError && showVoice ? (
           <p className="text-xs text-amber-700">{speechError}</p>
         ) : null}
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p className="drflow-ui-error text-xs">{error}</p>}
       </div>
     );
   }

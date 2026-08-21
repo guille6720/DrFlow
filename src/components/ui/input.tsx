@@ -34,7 +34,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error && (
-          <p className="text-xs font-medium text-red-600" role="alert">
+          <p className="drflow-ui-error text-xs font-medium" role="alert">
             {error}
           </p>
         )}
