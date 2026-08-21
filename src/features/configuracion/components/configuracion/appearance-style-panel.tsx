@@ -60,19 +60,19 @@ function AppearanceStyleControls() {
                   "rounded-xl border p-4 text-left transition",
                   active
                     ? cn("ring-2", STYLE_ACTIVE_RING[id])
-                    : "border-slate-200 bg-slate-50 hover:border-blue-300 hover:bg-blue-50/50"
+                    : "border-[var(--border)] bg-[var(--muted)] hover:border-[var(--ring)]"
                 )}
               >
                 <div className="flex items-center gap-2">
                   <Icon
                     className={cn(
                       "h-5 w-5",
-                      active ? STYLE_ICON_COLOR[id] : "text-slate-500"
+                      active ? STYLE_ICON_COLOR[id] : "text-[var(--muted-foreground)]"
                     )}
                   />
-                  <span className="font-semibold text-slate-900">Estilo {id}</span>
+                  <span className="font-semibold text-[var(--foreground)]">Estilo {id}</span>
                 </div>
-                <p className="mt-2 text-xs leading-relaxed text-slate-600">
+                <p className="mt-2 text-xs leading-relaxed text-[var(--muted-foreground)]">
                   {UI_STYLE_LABELS[id]}
                 </p>
               </button>
@@ -82,14 +82,14 @@ function AppearanceStyleControls() {
       </div>
 
       {BENTO_STYLES.includes(style) && (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="flex items-center gap-2 font-semibold text-slate-900">
+              <p className="flex items-center gap-2 font-semibold text-[var(--foreground)]">
                 {clinicalDark ? (
-                  <Moon className="h-4 w-4 text-blue-600" />
+                  <Moon className="h-4 w-4 text-[var(--accent)]" />
                 ) : (
-                  <Sun className="h-4 w-4 text-amber-500" />
+                  <Sun className="h-4 w-4 text-[var(--warning)]" />
                 )}
                 Clinical Dark Mode
               </p>
@@ -120,14 +120,14 @@ function AppearanceStyleControls() {
       )}
 
       {voice ? (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="flex items-center gap-2 font-semibold text-slate-900">
-                <Mic className="h-4 w-4 text-blue-600" />
+              <p className="flex items-center gap-2 font-semibold text-[var(--foreground)]">
+                <Mic className="h-4 w-4 text-[var(--accent)]" />
                 Dictado por voz (historias clínicas)
               </p>
-              <p className="mt-1 text-xs text-slate-600">
+              <p className="mt-1 text-xs text-[var(--muted-foreground)]">
                 {!canUseVoice
                   ? "El dictado por voz no está incluido en el plan comercial del consultorio."
                   : voice.clinicEnabled

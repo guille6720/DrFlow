@@ -54,9 +54,12 @@ export function UpdateBanner() {
       if (!contentType.includes("application/json")) return;
 
       const data = (await res.json()) as ReleaseInfo;
+      if (!data?.version || !data?.buildId) return;
+
       const stored = readStored();
 
       if (!stored) {
+        // Primera visita: guardar sin avisar.
         writeStored({ version: data.version, buildId: data.buildId });
         return;
       }
@@ -81,17 +84,20 @@ export function UpdateBanner() {
     };
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onVisible);
-    const interval = window.setInterval(() => void check(), 5 * 60 * 1000);
+    const interval = window.setInterval(() => void check(), 2 * 60 * 1000);
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.addEventListener("controllerchange", () => {
         void check();
       });
-      navigator.serviceWorker.getRegistration().then((reg) => {
-        reg?.addEventListener("updatefound", () => {
-          void check();
-        });
-      }).catch((err) => logClientError("update-banner.service-worker", err));
+      navigator.serviceWorker
+        .getRegistration()
+        .then((reg) => {
+          reg?.addEventListener("updatefound", () => {
+            void check();
+          });
+        })
+        .catch((err) => logClientError("update-banner.service-worker", err));
     }
 
     return () => {
@@ -116,21 +122,21 @@ export function UpdateBanner() {
   return (
     <div
       role="status"
-      className="fixed inset-x-0 bottom-0 z-[60] p-3 sm:bottom-4 sm:left-auto sm:right-4 sm:max-w-md sm:p-0 lg:bottom-6"
+      className="fixed inset-x-0 bottom-0 z-[80] p-3 sm:bottom-4 sm:left-auto sm:right-4 sm:max-w-md sm:p-0 lg:bottom-6"
     >
-      <div className="rounded-2xl border border-blue-200 bg-white p-4 shadow-xl shadow-blue-900/15">
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-[var(--foreground)] shadow-xl shadow-slate-900/20">
         <div className="flex items-start gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-700 text-white">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)]">
             <Sparkles className="h-4 w-4" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm font-semibold text-[var(--foreground)]">
               Nueva versión DrFlow {release.version}
             </p>
-            <p className="mt-0.5 text-xs text-slate-600">{release.title}</p>
-            {release.highlights[0] && (
-              <p className="mt-2 text-xs text-slate-500">{release.highlights[0]}</p>
-            )}
+            <p className="mt-0.5 text-xs text-[var(--muted-foreground)]">{release.title}</p>
+            {release.highlights[0] ? (
+              <p className="mt-2 text-xs text-[var(--muted-foreground)]">{release.highlights[0]}</p>
+            ) : null}
             <div className="mt-3 flex flex-wrap gap-2">
               <Button type="button" size="sm" onClick={reloadApp}>
                 <RefreshCw className="h-3.5 w-3.5" />
@@ -139,14 +145,14 @@ export function UpdateBanner() {
               <Link
                 href="/ayuda"
                 onClick={dismiss}
-                className="inline-flex items-center rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-blue-800 hover:bg-blue-50"
+                className="inline-flex items-center rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--accent)] hover:bg-[var(--muted)]"
               >
                 Ver manual
               </Link>
               <button
                 type="button"
                 onClick={dismiss}
-                className="ml-auto rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                className="ml-auto rounded-lg p-1.5 text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
                 aria-label="Cerrar"
               >
                 <X className="h-4 w-4" />

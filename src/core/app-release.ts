@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.2",
+    date: "2026-08-21",
+    title: "Tema Clinical Blue + Teal con modo claro y oscuro",
+    highlights: [
+      "Estilo 2 recomendado: alto contraste clínico para lectura prolongada",
+      "Modo oscuro Clinical Dark con fondo #0B1220 (sin negro puro)",
+      "Mejor legibilidad en historia clínica, tablas, botones y formularios",
+    ],
+  },
+  {
     version: "0.2.1",
     date: "2026-08-03",
     title: "Recetas y órdenes por paciente, ingreso de profesionales y consulta unificada",

@@ -23,15 +23,17 @@ export function isPublicLightPath(pathname: string): boolean {
 }
 
 export function readUiStyleFromStorage(): UiStyleId {
-  if (typeof window === "undefined") return "1";
+  if (typeof window === "undefined") return "2";
   try {
     const raw = localStorage.getItem(UI_STYLE_STORAGE_KEY);
     if (raw === "4") return "4";
     if (raw === "3") return "3";
     if (raw === "2") return "2";
-    return "1";
+    if (raw === "1") return "1";
+    // Sin preferencia previa: Clinical Blue + Teal
+    return "2";
   } catch {
-    return "1";
+    return "2";
   }
 }
 
@@ -67,4 +69,4 @@ export function applyUiThemeToDocument(style: UiStyleId, clinicalDark: boolean) 
   }
 }
 
-export const UI_THEME_BOOTSTRAP_SCRIPT = `(function(){try{var p=location.pathname;var isPublic=p==="/"||p==="/planes"||/^\\/(login|register|demo|privacidad|terminos|probar|aviso-paciente|portal|solicitar-turno|onboarding|acceso-invitado)(\\/|$)/.test(p);if(isPublic){document.documentElement.setAttribute("data-ui-style", "1");document.documentElement.removeAttribute("data-ui-palette");document.documentElement.removeAttribute("data-clinical-dark");return;}var s=localStorage.getItem("${UI_STYLE_STORAGE_KEY}")||"1";var d=localStorage.getItem("${CLINICAL_DARK_STORAGE_KEY}")==="1";if(s==="4"){document.documentElement.setAttribute("data-ui-style", "2");document.documentElement.setAttribute("data-ui-palette", "cobalt");document.documentElement.setAttribute("data-clinical-dark", d?"1":"0");return;}if(s==="3"){document.documentElement.setAttribute("data-ui-style", "2");document.documentElement.setAttribute("data-ui-palette", "azure");document.documentElement.setAttribute("data-clinical-dark", d?"1":"0");return;}document.documentElement.removeAttribute("data-ui-palette");document.documentElement.setAttribute("data-ui-style",s==="2"?"2":"1");if(s==="2")document.documentElement.setAttribute("data-clinical-dark",d?"1":"0");else document.documentElement.removeAttribute("data-clinical-dark");}catch(e){}})();`;
+export const UI_THEME_BOOTSTRAP_SCRIPT = `(function(){try{var p=location.pathname;var isPublic=p==="/"||p==="/planes"||/^\\/(login|register|demo|privacidad|terminos|probar|aviso-paciente|portal|solicitar-turno|onboarding|acceso-invitado)(\\/|$)/.test(p);if(isPublic){document.documentElement.setAttribute("data-ui-style", "1");document.documentElement.removeAttribute("data-ui-palette");document.documentElement.removeAttribute("data-clinical-dark");return;}var s=localStorage.getItem("${UI_STYLE_STORAGE_KEY}")||"2";var d=localStorage.getItem("${CLINICAL_DARK_STORAGE_KEY}")==="1";if(s==="4"){document.documentElement.setAttribute("data-ui-style", "2");document.documentElement.setAttribute("data-ui-palette", "cobalt");document.documentElement.setAttribute("data-clinical-dark", d?"1":"0");return;}if(s==="3"){document.documentElement.setAttribute("data-ui-style", "2");document.documentElement.setAttribute("data-ui-palette", "azure");document.documentElement.setAttribute("data-clinical-dark", d?"1":"0");return;}document.documentElement.removeAttribute("data-ui-palette");document.documentElement.setAttribute("data-ui-style",s==="1"?"1":"2");if(s!=="1")document.documentElement.setAttribute("data-clinical-dark",d?"1":"0");else document.documentElement.removeAttribute("data-clinical-dark");}catch(e){}})();`;

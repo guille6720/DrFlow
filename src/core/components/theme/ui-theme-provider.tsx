@@ -31,7 +31,7 @@ type UiThemeContextValue = {
 const UiThemeContext = createContext<UiThemeContextValue | null>(null);
 
 export function UiThemeProvider({ children }: { children: ReactNode }) {
-  const [style, setStyleState] = useState<UiStyleId>("1");
+  const [style, setStyleState] = useState<UiStyleId>("2");
   const [clinicalDark, setClinicalDarkState] = useState(false);
 
   const persist = useCallback((nextStyle: UiStyleId, nextDark: boolean) => {
