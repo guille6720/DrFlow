@@ -151,6 +151,13 @@ export const THEME_CONTRAST_PAIRS: Array<{
   { id: "form-dark-helper", fg: "#94A3B8", bg: "#102845" },
   { id: "form-dark-error", fg: "#F87171", bg: "#102845" },
   { id: "form-disabled-light", fg: "#475569", bg: "#F1F5F9" },
+  // Selected states — pale surfaces need dark ink; saturated need light ink
+  { id: "sel-mint-card", fg: "#0F172A", bg: "#ECFDF5" },
+  { id: "sel-sky-card", fg: "#0F172A", bg: "#E0F2FE" },
+  { id: "sel-blue-chip", fg: "#1D4ED8", bg: "#EFF6FF" },
+  { id: "sel-softclinic-nav", fg: "#FFFFFF", bg: "#0F766E" },
+  { id: "sel-tab-active", fg: "#FFFFFF", bg: "#0F766E" },
+  { id: "sel-dark-nav", fg: "#F8FAFC", bg: "#134E4A" },
   // Selected accent soft (light mint) must use dark text
   { id: "selected-mint", fg: "#0F172A", bg: "#ECFDF5" },
   { id: "selected-sky", fg: "#0F172A", bg: "#E0F2FE" },

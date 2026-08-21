@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.13",
+    date: "2026-08-21",
+    title: "Estados selected legibles (cards, tabs, menú, filas)",
+    highlights: [
+      "selected-states.css: pale mint/sky/blue → ink #0F172A; Soft Clinic nav activo teal + blanco",
+      "Tabs paciente activos con texto blanco; theme cards selected fuerzan --text-on-selected",
+      "EHR sidebar active, dropdown selected y filas hover sin texto casi invisible",
+    ],
+  },
+  {
     version: "0.2.12",
     date: "2026-08-21",
     title: "Formularios legibles: labels, placeholders y disabled",

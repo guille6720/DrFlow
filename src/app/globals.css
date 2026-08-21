@@ -6,6 +6,7 @@
 @import "../core/theme/a11y-contrast.css";
 @import "../core/theme/button-states.css";
 @import "../core/theme/form-states.css";
+@import "../core/theme/selected-states.css";
 
 :root {
   --font-jakarta: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
@@ -680,6 +681,7 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.text-
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r {
   background: var(--sidebar-active-bg) !important;
   background-image: none !important;
+  /* Soft Clinic saturated teal handled in selected-states.css */
   color: var(--foreground) !important;
   box-shadow: none !important;
 }
@@ -2869,10 +2871,10 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-patient-chart-summ
 }
 
 .drflow-patient-workspace-tab-active {
-  border-color: #14b8a6;
-  background: linear-gradient(135deg, #14b8a6, #06b6d4);
-  color: #0f172a;
-  box-shadow: 0 2px 8px rgb(20 184 166 / 25%);
+  border-color: #0f766e;
+  background: linear-gradient(135deg, #0f766e, #0d9488);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgb(15 118 110 / 25%);
 }
 
 .drflow-patient-workspace-hc-subtabs {
