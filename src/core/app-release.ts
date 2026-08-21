@@ -14,6 +14,66 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.19",
+    date: "2026-08-21",
+    title: "Entregables a11y/tema (staging review)",
+    highlights: [
+      "Informe §15: arquitectura, causas, archivos, tokens, patrones, tests — sin deploy a producción",
+      "Gate lint/typecheck/build + suite tema; commits de tema aislados del WIP comercial",
+      "DrFlow Staging (develop) listo para revisión visual humana",
+    ],
+  },
+  {
+    version: "0.2.18",
+    date: "2026-08-21",
+    title: "Alcance a11y: solo visual/tema (sin lógica)",
+    highlights: [
+      "Política §14: no tocar Supabase, auth, permisos, entitlements, API, actions ni lógica clínica",
+      "scripts/check-a11y-theme-scope.mjs + tests/a11y-scope.test.ts (allowlist / denylist)",
+      "Commits de tema deben aislarse del WIP comercial/entitlements",
+    ],
+  },
+  {
+    version: "0.2.17",
+    date: "2026-08-21",
+    title: "Verificación visual manual (checklist + Superadmin)",
+    highlights: [
+      "QA → Legibilidad visual: settings, theme selector, paciente, HC, agenda, dashboard, forms/tables/modals, Superadmin, sidebar",
+      "manual-visual-states.css + shell Superadmin para muted legible en tablas",
+      "Canvas de matriz pantalla×paleta + captura Playwright a11y-visual para revisión humana",
+    ],
+  },
+  {
+    version: "0.2.16",
+    date: "2026-08-21",
+    title: "Auditoría a11y automatizada (Playwright + axe)",
+    highlights: [
+      "e2e/a11y-theme-audit: módulos representativos × desktop/tablet/mobile",
+      "Todos los temas clínicos (2–6 × light/dark) en login; sample dashboard/pacientes/config",
+      "@axe-core/playwright + muestreo runtime de contraste texto/fondo",
+    ],
+  },
+  {
+    version: "0.2.15",
+    date: "2026-08-21",
+    title: "Tipografía clínica (peso, no sombra)",
+    highlights: [
+      "typography-states.css: body 400, labels 500, headings 600, buttons 500–600",
+      "Sin text-shadow para fingir contraste; el contraste sigue en tokens de color",
+      "Marcador required suavizado a 600; no se engrosa el texto clínico de forma global",
+    ],
+  },
+  {
+    version: "0.2.14",
+    date: "2026-08-21",
+    title: "Modales y drawers legibles (islas claras)",
+    highlights: [
+      "modal-states.css: paneles blancos con títulos/subtítulos/notas/close en ink oscuro",
+      "Midnight ya no pinta todos los [role=dialog] como popover oscuro (excluye paneles claros)",
+      "Guest appearance, Mi cuenta, workspace overlay y diálogos de agenda usan drflow-modal-panel",
+    ],
+  },
+  {
     version: "0.2.13",
     date: "2026-08-21",
     title: "Estados selected legibles (cards, tabs, menú, filas)",

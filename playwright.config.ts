@@ -2,6 +2,10 @@ import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
 
+/**
+ * Default smoke/auth E2E stays on Desktop Chrome.
+ * A11y suite runs on desktop + tablet + mobile via dedicated projects.
+ */
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -13,7 +17,37 @@ export default defineConfig({
     baseURL,
     trace: "on-first-retry",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    {
+      name: "chromium",
+      testIgnore: /a11y-.*\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "a11y-desktop",
+      testMatch: /a11y-.*\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+      },
+    },
+    {
+      name: "a11y-tablet",
+      testMatch: /a11y-.*\.spec\.ts/,
+      use: {
+        ...devices["iPad (gen 7)"],
+        viewport: { width: 768, height: 1024 },
+      },
+    },
+    {
+      name: "a11y-mobile",
+      testMatch: /a11y-.*\.spec\.ts/,
+      use: {
+        ...devices["Pixel 5"],
+        viewport: { width: 390, height: 844 },
+      },
+    },
+  ],
   webServer: process.env.PLAYWRIGHT_SKIP_WEBSERVER
     ? undefined
     : {

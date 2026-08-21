@@ -1,0 +1,24 @@
+/**
+ * Residual locks for Superadmin / dense admin tables during manual visual QA.
+ * Muted emails and limit suffixes must stay readable on card surfaces.
+ */
+
+.drflow-mesh main .drflow-superadmin-shell :is(.text-slate-400, .text-slate-500, .text-gray-400),
+.drflow-mesh main [data-superadmin] :is(.text-slate-400, .text-slate-500),
+.drflow-mesh main table :is(td, th) .text-slate-400,
+.drflow-mesh main table :is(td, th) .text-slate-500 {
+  color: var(--text-muted, #475569) !important;
+}
+
+html[data-clinical-dark="1"] .drflow-mesh main .drflow-superadmin-shell :is(.text-slate-400, .text-slate-500),
+html[data-clinical-dark="1"] .drflow-mesh main [data-superadmin] :is(.text-slate-400, .text-slate-500),
+html[data-clinical-dark="1"] .drflow-mesh main table :is(td, th) .text-slate-400,
+html[data-clinical-dark="1"] .drflow-mesh main table :is(td, th) .text-slate-500 {
+  color: var(--text-muted, #94a3b8) !important;
+}
+
+/* Dense admin forms on white cards keep dark ink even under cobalt page chrome */
+html[data-ui-palette="cobalt"] .drflow-mesh main .drflow-card-light :is(.text-slate-400, .text-slate-500),
+html[data-ui-palette="cobalt"] .drflow-mesh main table.drflow-card-light :is(.text-slate-400, .text-slate-500) {
+  color: #475569 !important;
+}

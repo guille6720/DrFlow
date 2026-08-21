@@ -125,7 +125,7 @@ export function DiagnosisRelatedActionsPanel({
 
       {pending ? (
         <div
-          className="mt-3 rounded-md border border-amber-300 bg-white p-3 shadow-sm"
+          className="drflow-modal-panel mt-3 rounded-md border border-amber-300 bg-white p-3 text-slate-900 shadow-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="related-action-confirm-title"

@@ -9,7 +9,10 @@ export default async function SuperadminLayout({
 }) {
   await requireSuperadminPage();
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-4 p-4 sm:p-6">
+    <div
+      data-superadmin
+      className="drflow-superadmin-shell mx-auto w-full max-w-7xl space-y-4 p-4 sm:p-6"
+    >
       <nav className="flex flex-wrap gap-2 border-b border-slate-200 pb-3 text-sm dark:border-slate-700">
         {[
           { href: "/superadmin", label: "Dashboard" },

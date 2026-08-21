@@ -17,7 +17,7 @@
 .drflow-ui-required {
   margin-left: 0.15rem;
   color: var(--destructive);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .drflow-ui-helper {

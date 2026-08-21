@@ -367,14 +367,16 @@ html[data-ui-palette="midnight"] table tbody tr[data-selected="true"] {
   background: rgb(92 184 246 / 0.12) !important;
 }
 
-/* ——— Overlays / popovers / command palette ——— */
+/* ——— Overlays / popovers / command palette ———
+   Do NOT restyle light modal panels (white drawers / dialogs) as dark popovers. */
 html[data-ui-palette="midnight"] [data-radix-popper-content-wrapper] > *,
-html[data-ui-palette="midnight"] [role="dialog"],
 html[data-ui-palette="midnight"] [role="menu"],
 html[data-ui-palette="midnight"] [role="listbox"],
 html[data-ui-palette="midnight"] .drflow-command-palette,
 html[data-ui-palette="midnight"] .drflow-popover,
-html[data-ui-palette="midnight"] .drflow-dropdown {
+html[data-ui-palette="midnight"] .drflow-dropdown,
+html[data-ui-palette="midnight"]
+  [role="dialog"]:not(.drflow-modal-panel):not(.drflow-dialog-panel):not(.drflow-workspace-overlay-panel):not(.drflow-card-light):not(.drflow-surface-light):not(.bg-white) {
   background: var(--popover) !important;
   border: 1px solid var(--border) !important;
   color: var(--popover-foreground) !important;

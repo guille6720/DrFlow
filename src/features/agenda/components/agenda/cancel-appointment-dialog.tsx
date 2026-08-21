@@ -83,7 +83,7 @@ export function CancelAppointmentDialog({
         onClick={handleClose}
       />
       <div
-        className="drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl pointer-events-auto"
+        className="drflow-modal-panel drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl pointer-events-auto"
         role="dialog"
         aria-modal="true"
         aria-labelledby="cancel-appointment-title"
@@ -98,8 +98,9 @@ export function CancelAppointmentDialog({
           <button
             type="button"
             onClick={handleClose}
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+            className="drflow-modal-close rounded-lg p-2 text-slate-500 hover:bg-slate-100"
             disabled={busy}
+            aria-label="Cerrar"
           >
             <X className="h-5 w-5" />
           </button>
@@ -132,7 +133,7 @@ export function CancelAppointmentDialog({
             rows={3}
             error={error ?? undefined}
           />
-          <p className="text-xs text-slate-500">
+          <p className="drflow-modal-footnote text-xs text-slate-500">
             Quedará registrado en la agenda, historial y app del paciente. Si el paciente tiene
             teléfono, podés avisarle por WhatsApp al confirmar.
           </p>

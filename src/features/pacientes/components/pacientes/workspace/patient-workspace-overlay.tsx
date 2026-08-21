@@ -52,7 +52,7 @@ export function PatientWorkspaceOverlay({
       ) : null}
       <div
         className={cn(
-          "drflow-workspace-overlay-panel drflow-surface-light relative z-10 flex w-full flex-col bg-white text-slate-900 shadow-xl",
+          "drflow-workspace-overlay-panel drflow-modal-panel drflow-surface-light relative z-10 flex w-full flex-col bg-white text-slate-900 shadow-xl",
           fullscreen
             ? "h-[100dvh] max-h-[100dvh] rounded-none"
             : cn(
@@ -69,7 +69,9 @@ export function PatientWorkspaceOverlay({
             <h2 id="patient-workspace-overlay-title" className="text-lg font-semibold text-slate-900">
               {title}
             </h2>
-            {subtitle ? <p className="mt-1 text-sm text-slate-500">{subtitle}</p> : null}
+            {subtitle ? (
+              <p className="drflow-modal-subtitle mt-1 text-sm text-slate-500">{subtitle}</p>
+            ) : null}
           </div>
           {headerActions ? (
             <div className="flex shrink-0 items-center gap-2">{headerActions}</div>
@@ -78,7 +80,8 @@ export function PatientWorkspaceOverlay({
             type="button"
             onClick={handleClose}
             disabled={closeDisabled}
-            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 disabled:text-slate-300"
+            aria-label="Cerrar"
+            className="drflow-modal-close rounded-lg p-2 text-slate-600 hover:bg-slate-100 disabled:text-slate-400"
           >
             <X className="h-5 w-5" />
           </button>

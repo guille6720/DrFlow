@@ -73,7 +73,7 @@ export function DrappConsultaFullModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="my-4 w-full max-w-3xl rounded-lg border border-slate-200 bg-white shadow-xl"
+        className="drflow-modal-panel drflow-dialog-panel my-4 w-full max-w-3xl rounded-lg border border-slate-200 bg-white text-slate-900 shadow-xl"
       >
         <FullConsultaForm
           key={`${patient.id}-${open}`}

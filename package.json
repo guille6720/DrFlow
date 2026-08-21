@@ -1,6 +1,6 @@
 {
   "name": "drflow-app",
-  "version": "0.2.13",
+  "version": "0.2.19",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -28,6 +28,9 @@
     "test:coverage": "vitest run --coverage",
     "test:perf": "vitest run tests/performance",
     "test:e2e": "playwright test",
+    "test:e2e:a11y": "playwright test --project=a11y-desktop --project=a11y-tablet --project=a11y-mobile",
+    "test:e2e:a11y:desktop": "playwright test --project=a11y-desktop",
+    "check:a11y-scope": "node scripts/check-a11y-theme-scope.mjs --theme-only",
     "test:all": "npm test && npm run test:coverage && npm run test:perf",
     "check:coverage": "node scripts/check-coverage.mjs",
     "enterprise:status": "node scripts/enterprise-status.mjs",
@@ -110,6 +113,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",

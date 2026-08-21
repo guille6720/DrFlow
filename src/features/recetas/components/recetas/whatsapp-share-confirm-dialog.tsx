@@ -23,20 +23,20 @@ export function WhatsAppShareConfirmDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="whatsapp-share-title"
+      className="drflow-modal-root fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-4"
       onClick={onCancel}
     >
       <div
-        className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-5 shadow-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="whatsapp-share-title"
+        className="drflow-modal-panel w-full max-w-md rounded-xl border border-slate-200 bg-white p-5 text-slate-900 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="whatsapp-share-title" className="text-lg font-semibold text-slate-900">
           {title}
         </h2>
-        <p className="mt-2 text-sm text-slate-600">{description}</p>
+        <p className="drflow-modal-subtitle mt-2 text-sm text-slate-600">{description}</p>
         <pre className="mt-3 max-h-40 overflow-auto rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs whitespace-pre-wrap text-slate-800">
           {preview}
         </pre>

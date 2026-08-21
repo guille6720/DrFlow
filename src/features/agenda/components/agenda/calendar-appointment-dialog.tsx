@@ -81,7 +81,7 @@ function CalendarAppointmentDialogContent({
             aria-label="Cerrar"
             onClick={onClose}
           />
-          <div className="drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl">
+          <div className="drflow-modal-panel drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h2 className="text-lg font-semibold text-slate-900">{patientName}</h2>
