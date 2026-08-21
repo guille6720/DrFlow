@@ -43,7 +43,7 @@ export function StatCard({
   );
 
   const classes = cn(
-    "drflow-card-light rounded-[10px] border border-[var(--border)] bg-[var(--card)] p-5 text-[var(--card-foreground)] shadow-[0_4px_14px_rgba(0,0,0,0.18)] transition-shadow drflow-card-accent drflow-ui-stat w-full text-left",
+    "drflow-card-light rounded-[10px] border border-[var(--border-default,var(--border))] bg-[var(--surface-card,var(--card))] p-5 text-[var(--text-on-card,var(--card-foreground))] shadow-[0_4px_14px_rgba(0,0,0,0.18)] transition-shadow drflow-card-accent drflow-ui-stat w-full text-left",
     onClick
       ? "cursor-pointer hover:bg-[var(--surface-hover,var(--muted))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]/40"
       : "hover:bg-[var(--surface-hover,var(--muted))]",

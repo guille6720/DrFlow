@@ -23,7 +23,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={selectId}
           className={cn(
-            "drflow-ui-input drflow-ui-select w-full rounded-[10px] border border-[var(--border-strong,var(--border,#cbd5e1))] bg-[var(--input,var(--card,#fff))] px-3 py-2 text-sm text-[var(--foreground)] focus:border-[var(--ring)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]/15",
+            "drflow-ui-input drflow-ui-select w-full rounded-[10px] border border-[var(--border-strong,var(--border,#cbd5e1))] bg-[var(--surface-input,var(--input,var(--card,#fff)))] px-3 py-2 text-sm text-[var(--text-primary,var(--foreground))] focus:border-[var(--ring)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]/15",
             error && "border-[var(--destructive)]",
             className
           )}
