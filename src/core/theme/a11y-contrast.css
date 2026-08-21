@@ -120,15 +120,16 @@ html[data-ui-palette="azure"][data-clinical-dark="1"] {
 
 /* ——— Cobalt: page is blue; cards are white — dual text tokens ——— */
 html[data-ui-palette="cobalt"] {
-  --text-primary: #f8fafc;
-  --text-secondary: #dbeafe;
-  --text-muted: #bfdbfe;
+  --text-primary: #ffffff;
+  --text-secondary: #f1f5f9;
+  --text-muted: #eff6ff;
   --text-on-selected: #0f172a;
   --surface-selected: #dbeafe;
   --text-on-card: #0f172a;
-  /* Page chrome stays light-on-blue; card copy is forced dark below */
-  --muted-foreground: #dbeafe;
+  /* Page chrome: ≥4.5:1 on #2563EB; cards override below */
+  --muted-foreground: #eff6ff;
   --placeholder: #64748b;
+  --foreground: #ffffff;
 }
 
 html[data-ui-palette="cobalt"] .drflow-ui-card,
@@ -164,7 +165,7 @@ html[data-ui-palette="midnight"][data-clinical-dark="1"] {
   --surface-input: #0a1d36;
   --surface-hover: #183858;
   --border-default: #203b59;
-  --border-strong: #2a4a69;
+  --border-strong: #64748b;
   --foreground: #f8fafc;
   --card-foreground: #f8fafc;
   --muted-foreground: #cbd5e1;

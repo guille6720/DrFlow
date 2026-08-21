@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.6",
+    date: "2026-08-21",
+    title: "WCAG AA contrast floors across Cobalt, Soft Clinic and Midnight",
+    highlights: [
+      "Texto en página Cobalt ≥4.5:1 (blanco / slate-100 / blue-50)",
+      "Soft Clinic: botones y nav activo en #0F766E para texto blanco legible",
+      "Midnight: bordes de input #64748B (≥3:1) + suite de contraste ampliada",
+    ],
+  },
+  {
     version: "0.2.5",
     date: "2026-08-21",
     title: "Contraste WCAG AA en todos los presets de apariencia",

@@ -4108,9 +4108,9 @@ html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) {
   --input: #d1d5db;
   --muted: #f3f4f6;
   --muted-foreground: #374151;
-  --primary: #0d9488;
-  --primary-dark: #0f766e;
-  --primary-light: #14b8a6;
+  --primary: #0f766e;
+  --primary-dark: #115e59;
+  --primary-light: #0d9488;
   --primary-foreground: #ffffff;
   --secondary: #ffffff;
   --secondary-foreground: #111827;
@@ -4124,7 +4124,7 @@ html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) {
   --ring: #0d9488;
   --sidebar: #ffffff;
   --sidebar-accent: #ffffff;
-  --sidebar-active-bg: #0d9488;
+  --sidebar-active-bg: #0f766e;
   --table-hover: #f3f4f6;
   --placeholder: #6b7280;
   /* Pastel chips (acciones rÃ¡pidas) */
@@ -4171,7 +4171,7 @@ html[data-ui-palette="clinicsoft"][data-clinical-dark="1"] {
   --ring: #14b8a6;
   --sidebar: #0b1118;
   --sidebar-accent: #042f2e;
-  --sidebar-active-bg: #0d9488;
+  --sidebar-active-bg: #0f766e;
   --table-hover: #1a2430;
   --placeholder: #94a3b8;
   --chip-purple-bg: #2e1065;
@@ -4232,7 +4232,7 @@ html[data-ui-palette="clinicsoft"] .drflow-ui-button.drflow-btn-primary {
   background: var(--primary) !important;
   background-image: none !important;
   color: var(--primary-foreground) !important;
-  box-shadow: 0 4px 14px rgb(13 148 136 / 0.25) !important;
+  box-shadow: 0 4px 14px rgb(15 118 110 / 0.25) !important;
 }
 
 html[data-ui-palette="clinicsoft"] .drflow-ui-button[class*="from-cyan"]:hover,
@@ -4258,10 +4258,10 @@ html[data-ui-palette="clinicsoft"] .drflow-ui-card-desc {
 }
 
 html[data-ui-palette="clinicsoft"] .drflow-patient-workspace-tab-active {
-  border-color: #0d9488 !important;
-  background: linear-gradient(135deg, #0d9488, #14b8a6) !important;
+  border-color: #0f766e !important;
+  background: #0f766e !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 8px rgb(13 148 136 / 30%) !important;
+  box-shadow: 0 2px 8px rgb(15 118 110 / 30%) !important;
 }
 
 /* ——— Estilo 6: Midnight Navy — see midnight-navy.css ——— */
@@ -4462,7 +4462,7 @@ html[data-ui-palette="azure"][data-clinical-dark="1"] ::-webkit-scrollbar-thumb 
 /* â€”â€”â€” Estilo 4: azul cobalto saturado (fondo #2563eb, tarjetas claras) â€”â€”â€” */
 html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) {
   --background: #2563eb;
-  --foreground: #f8fafc;
+  --foreground: #ffffff;
   --card: #ffffff;
   --border: #93c5fd;
   --muted: #dbeafe;
@@ -4470,18 +4470,24 @@ html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) {
   --primary: #1d4ed8;
   --primary-light: #60a5fa;
   --primary-foreground: #ffffff;
+  --text-primary: #ffffff;
+  --text-secondary: #f1f5f9;
+  --text-muted: #eff6ff;
 }
 
 html[data-ui-palette="cobalt"][data-clinical-dark="1"] {
   --background: #1e3a8a;
-  --foreground: #f0f9ff;
+  --foreground: #ffffff;
   --card: #ffffff;
   --border: #3b82f6;
   --muted: #93c5fd;
-  --muted-foreground: #bfdbfe;
+  --muted-foreground: #eff6ff;
   --primary: #3b82f6;
   --primary-light: #60a5fa;
-  --primary-foreground: #eff6ff;
+  --primary-foreground: #0f172a;
+  --text-primary: #ffffff;
+  --text-secondary: #f1f5f9;
+  --text-muted: #eff6ff;
 }
 
 html[data-ui-palette="cobalt"] .drflow-mesh {

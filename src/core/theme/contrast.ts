@@ -1,6 +1,11 @@
 /**
  * WCAG contrast helpers for DrFlow theme tokens (unit-testable).
  * Relative luminance + contrast ratio per WCAG 2.x.
+ *
+ * Targets (medical UI prefers ≥ minimum):
+ * - Normal text: 4.5:1 (AA)
+ * - Large/bold text (≥18pt / 14pt bold): 3:1 (AA)
+ * - UI controls / icons / borders that convey info: 3:1 (AA non-text)
  */
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -34,8 +39,21 @@ export function contrastRatio(fg: string, bg: string): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-export function meetsWcagAa(fg: string, bg: string, largeText = false): boolean {
-  return contrastRatio(fg, bg) >= (largeText ? 3 : 4.5);
+export type ContrastRole = "text" | "largeText" | "ui";
+
+export function requiredRatio(role: ContrastRole): number {
+  if (role === "text") return 4.5;
+  return 3;
+}
+
+export function meetsWcagAa(
+  fg: string,
+  bg: string,
+  role: ContrastRole | boolean = "text"
+): boolean {
+  const resolved: ContrastRole =
+    typeof role === "boolean" ? (role ? "largeText" : "text") : role;
+  return contrastRatio(fg, bg) >= requiredRatio(resolved);
 }
 
 /** Canonical readable pairs used by DrFlow palettes (must stay AA). */
@@ -43,6 +61,8 @@ export const THEME_CONTRAST_PAIRS: Array<{
   id: string;
   fg: string;
   bg: string;
+  role?: ContrastRole;
+  /** @deprecated use role */
   large?: boolean;
 }> = [
   // Style 2 light
@@ -64,6 +84,9 @@ export const THEME_CONTRAST_PAIRS: Array<{
   { id: "mn-dark-placeholder", fg: "#94A3B8", bg: "#0A1D36" },
   { id: "mn-dark-btn", fg: "#061426", bg: "#5CB8F6" },
   { id: "mn-dark-selected", fg: "#F8FAFC", bg: "#183858" },
+  { id: "mn-dark-input-border", fg: "#64748B", bg: "#0A1D36", role: "ui" },
+  { id: "mn-dark-focus-ring", fg: "#5CB8F6", bg: "#0A1D36", role: "ui" },
+  { id: "mn-dark-icon-accent", fg: "#5CB8F6", bg: "#07182D", role: "ui" },
   // Midnight light
   { id: "mn-light-primary", fg: "#0F172A", bg: "#E8EEF6" },
   { id: "mn-light-on-card", fg: "#0F172A", bg: "#FFFFFF" },
@@ -71,14 +94,19 @@ export const THEME_CONTRAST_PAIRS: Array<{
   { id: "mn-light-selected", fg: "#0F172A", bg: "#DBEAFE" },
   // Soft clinic light/dark
   { id: "sc-light-primary", fg: "#111827", bg: "#F9FAFB" },
+  { id: "sc-light-btn", fg: "#FFFFFF", bg: "#0F766E" },
+  { id: "sc-light-nav-active", fg: "#FFFFFF", bg: "#0F766E" },
   { id: "sc-dark-primary", fg: "#F8FAFC", bg: "#0B1118" },
   { id: "sc-dark-secondary", fg: "#CBD5E1", bg: "#121A24" },
+  { id: "sc-dark-nav-active", fg: "#FFFFFF", bg: "#0F766E" },
   // Azure
   { id: "az-light-primary", fg: "#0A1628", bg: "#E8F2FC" },
   { id: "az-dark-primary", fg: "#F0F9FF", bg: "#061323" },
   { id: "az-dark-on-card", fg: "#F0F9FF", bg: "#0C1F38" },
-  // Cobalt — page chrome (light text on blue) + white cards (dark text)
-  { id: "co-page", fg: "#F8FAFC", bg: "#2563EB" },
+  // Cobalt — page chrome (≥4.5) + white cards
+  { id: "co-page-primary", fg: "#FFFFFF", bg: "#2563EB" },
+  { id: "co-page-secondary", fg: "#F1F5F9", bg: "#2563EB" },
+  { id: "co-page-muted", fg: "#EFF6FF", bg: "#2563EB" },
   { id: "co-card-primary", fg: "#0F172A", bg: "#FFFFFF" },
   { id: "co-card-secondary", fg: "#334155", bg: "#FFFFFF" },
   // Selected accent soft (light mint) must use dark text
