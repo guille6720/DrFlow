@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.10",
+    date: "2026-08-21",
+    title: "Temas oscuros: contraste cómodo y capas de superficie",
+    highlights: [
+      "Dark text: #F8FAFC / #CBD5E1 / #94A3B8 en Clinical, Azure, Soft Clinic y Midnight",
+      "Sin negros puros: páginas en navy/slate elevados; ladder page→card→elevated, input recessed, hover≠selected",
+      "Mesh/cards/inputs/sidebar/selected consumen --surface-* en Clinical Dark",
+    ],
+  },
+  {
     version: "0.2.9",
     date: "2026-08-21",
     title: "Temas claros: texto oscuro en superficies pálidas",

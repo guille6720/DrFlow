@@ -76,16 +76,17 @@ html[data-ui-style="2"][data-clinical-dark="1"][data-ui-palette=""] {
   --text-on-sidebar: #e2e8f0;
   --text-on-selected: #f8fafc;
 
-  --surface-page: #0b1220;
-  --surface-card: #111827;
-  --surface-elevated: #1e293b;
-  --surface-sidebar: #0f172a;
-  --surface-input: #1e293b;
-  --surface-hover: #1e293b;
+  /* Surface ladder (no pure black): page < card < elevated; input recessed; hover ≠ selected */
+  --surface-page: #0f172a;
+  --surface-card: #1e293b;
+  --surface-elevated: #334155;
+  --surface-sidebar: #111827;
+  --surface-input: #162032;
+  --surface-hover: #2a3a4f;
   --surface-selected: #134e4a;
 
   --border-default: #334155;
-  --border-strong: #475569;
+  --border-strong: #64748b;
 }
 
 /* ——— Azure ——— */
@@ -114,27 +115,27 @@ html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) {
 }
 
 html[data-ui-palette="azure"][data-clinical-dark="1"] {
-  --text-primary: #f0f9ff;
-  --text-secondary: #bae6fd;
-  --text-muted: #7dd3fc;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
   --text-disabled: #64748b;
   --text-on-primary: #082032;
-  --text-on-secondary: #f0f9ff;
+  --text-on-secondary: #f8fafc;
   --text-on-accent: #082032;
-  --text-on-card: #f0f9ff;
+  --text-on-card: #f8fafc;
   --text-on-sidebar: #e0f2fe;
-  --text-on-selected: #f0f9ff;
+  --text-on-selected: #f8fafc;
 
-  --surface-page: #061323;
-  --surface-card: #0c1f38;
-  --surface-elevated: #0f2744;
-  --surface-sidebar: #04101c;
+  --surface-page: #0a1628;
+  --surface-card: #102845;
+  --surface-elevated: #163556;
+  --surface-sidebar: #071422;
   --surface-input: #0c1f38;
-  --surface-hover: #0c4a6e;
+  --surface-hover: #183858;
   --surface-selected: #0c4a6e;
 
   --border-default: #1e4a7a;
-  --border-strong: #38bdf8;
+  --border-strong: #64748b;
 }
 
 /* ——— Cobalt: page chrome is saturated blue; cards are light islands ——— */
@@ -165,9 +166,14 @@ html[data-ui-palette="cobalt"] {
 html[data-ui-palette="cobalt"][data-clinical-dark="1"] {
   --surface-page: #1e3a8a;
   --surface-sidebar: #172554;
+  --surface-hover: #1e40af;
+  --surface-selected: #2563eb;
   --border-default: #3b82f6;
   --border-strong: #60a5fa;
   --text-on-primary: #0f172a;
+  --text-primary: #f8fafc;
+  --text-secondary: #f1f5f9;
+  --text-muted: #e2e8f0;
 }
 
 /* Cobalt cards / light islands — dark text on white */
@@ -233,16 +239,16 @@ html[data-ui-palette="clinicsoft"][data-clinical-dark="1"] {
   --text-on-sidebar: #e2e8f0;
   --text-on-selected: #f8fafc;
 
-  --surface-page: #0b1118;
-  --surface-card: #121a24;
-  --surface-elevated: #1a2430;
-  --surface-sidebar: #0b1118;
+  --surface-page: #0f1720;
+  --surface-card: #1a2430;
+  --surface-elevated: #243344;
+  --surface-sidebar: #121a24;
   --surface-input: #15202b;
-  --surface-hover: #1a2430;
+  --surface-hover: #243344;
   --surface-selected: #134e4a;
 
-  --border-default: #1f2a37;
-  --border-strong: #374151;
+  --border-default: #2a3747;
+  --border-strong: #64748b;
 }
 
 /* ——— Midnight Navy ——— */
@@ -264,7 +270,7 @@ html[data-ui-palette="midnight"][data-clinical-dark="1"] {
   --surface-sidebar: #0a1d36;
   --surface-input: #0a1d36;
   --surface-hover: #183858;
-  --surface-selected: #183858;
+  --surface-selected: #1c4064;
 
   --border-default: #203b59;
   --border-strong: #64748b;
@@ -429,5 +435,63 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="coba
 html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette]) .drflow-ui-sidebar {
   --text-on-sidebar: #334155;
+  color: var(--text-on-sidebar);
+}
+
+/*
+ * Dark themes: comfortable text + clear surface separation.
+ * Ladder: page → card → elevated; input recessed; hover ≠ selected.
+ */
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) {
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-disabled: #64748b;
+  --text-on-card: #f8fafc;
+  --text-on-selected: #f8fafc;
+  --foreground: #f8fafc;
+  --card-foreground: #f8fafc;
+  --muted-foreground: #cbd5e1;
+  --placeholder: #94a3b8;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-mesh {
+  background-color: var(--surface-page) !important;
+  color: var(--text-primary);
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-card:not(.drflow-card-light),
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-stat:not(.drflow-card-light):not(.bg-white) {
+  background-color: var(--surface-card) !important;
+  color: var(--text-on-card);
+  border-color: var(--border-default) !important;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-input,
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-select,
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+  .drflow-mesh
+  main
+  :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(.drflow-card-light *):not(.drflow-surface-light *) {
+  background-color: var(--surface-input) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-strong) !important;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-sidebar a:hover,
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-mesh main [role="option"]:hover,
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-mesh main [role="menuitem"]:hover,
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-mesh main tr:hover {
+  background-color: var(--surface-hover);
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+  :is([aria-selected="true"], [data-selected="true"], [aria-pressed="true"]):not(.drflow-ui-button):not(.drflow-theme-option):not(option) {
+  background-color: var(--surface-selected) !important;
+  color: var(--text-on-selected) !important;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-sidebar {
+  background-color: var(--surface-sidebar) !important;
   color: var(--text-on-sidebar);
 }
