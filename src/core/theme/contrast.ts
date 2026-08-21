@@ -69,8 +69,10 @@ export const THEME_CONTRAST_PAIRS: Array<{
   { id: "s2-light-primary", fg: "#0F172A", bg: "#F8FAFC" },
   { id: "s2-light-secondary", fg: "#334155", bg: "#FFFFFF" },
   { id: "s2-light-muted", fg: "#475569", bg: "#FFFFFF" },
+  { id: "s2-light-muted-page", fg: "#475569", bg: "#F8FAFC" },
   { id: "s2-light-placeholder", fg: "#64748B", bg: "#FFFFFF" },
   { id: "s2-light-btn", fg: "#FFFFFF", bg: "#0F4C5C" },
+  { id: "s2-light-no-white-on-white", fg: "#0F172A", bg: "#FFFFFF" },
   // Style 2 dark
   { id: "s2-dark-primary", fg: "#F8FAFC", bg: "#0B1220" },
   { id: "s2-dark-secondary", fg: "#CBD5E1", bg: "#111827" },
@@ -91,16 +93,22 @@ export const THEME_CONTRAST_PAIRS: Array<{
   { id: "mn-light-primary", fg: "#0F172A", bg: "#E8EEF6" },
   { id: "mn-light-on-card", fg: "#0F172A", bg: "#FFFFFF" },
   { id: "mn-light-secondary", fg: "#334155", bg: "#FFFFFF" },
+  { id: "mn-light-muted", fg: "#475569", bg: "#E8EEF6" },
   { id: "mn-light-selected", fg: "#0F172A", bg: "#DBEAFE" },
   // Soft clinic light/dark
-  { id: "sc-light-primary", fg: "#111827", bg: "#F9FAFB" },
+  { id: "sc-light-primary", fg: "#0F172A", bg: "#F9FAFB" },
+  { id: "sc-light-secondary", fg: "#334155", bg: "#FFFFFF" },
+  { id: "sc-light-muted", fg: "#475569", bg: "#F9FAFB" },
+  { id: "sc-light-pastel-teal", fg: "#0F172A", bg: "#CCFBF1" },
   { id: "sc-light-btn", fg: "#FFFFFF", bg: "#0F766E" },
   { id: "sc-light-nav-active", fg: "#FFFFFF", bg: "#0F766E" },
   { id: "sc-dark-primary", fg: "#F8FAFC", bg: "#0B1118" },
   { id: "sc-dark-secondary", fg: "#CBD5E1", bg: "#121A24" },
   { id: "sc-dark-nav-active", fg: "#FFFFFF", bg: "#0F766E" },
-  // Azure
-  { id: "az-light-primary", fg: "#0A1628", bg: "#E8F2FC" },
+  // Azure light/dark
+  { id: "az-light-primary", fg: "#0F172A", bg: "#E8F2FC" },
+  { id: "az-light-secondary", fg: "#334155", bg: "#FFFFFF" },
+  { id: "az-light-muted", fg: "#475569", bg: "#E8F2FC" },
   { id: "az-dark-primary", fg: "#F0F9FF", bg: "#061323" },
   { id: "az-dark-on-card", fg: "#F0F9FF", bg: "#0C1F38" },
   // Cobalt — page chrome (≥4.5) + white cards
@@ -109,6 +117,7 @@ export const THEME_CONTRAST_PAIRS: Array<{
   { id: "co-page-muted", fg: "#EFF6FF", bg: "#2563EB" },
   { id: "co-card-primary", fg: "#0F172A", bg: "#FFFFFF" },
   { id: "co-card-secondary", fg: "#334155", bg: "#FFFFFF" },
+  { id: "co-card-muted", fg: "#475569", bg: "#FFFFFF" },
   // Selected accent soft (light mint) must use dark text
   { id: "selected-mint", fg: "#0F172A", bg: "#ECFDF5" },
   { id: "selected-sky", fg: "#0F172A", bg: "#E0F2FE" },

@@ -4104,19 +4104,19 @@ html[data-ui-palette="cobalt"] .drflow-patient-context-banner .drflow-patient-ba
 /* â€”â€”â€” Estilo 5: Soft Clinic (referencia pastel + teal, layout Bento) â€”â€”â€” */
 html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) {
   --background: #f9fafb;
-  --foreground: #111827;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #111827;
+  --card-foreground: #0f172a;
   --border: #e5e7eb;
   --input: #d1d5db;
   --muted: #f3f4f6;
-  --muted-foreground: #374151;
+  --muted-foreground: #334155;
   --primary: #0f766e;
   --primary-dark: #115e59;
   --primary-light: #0d9488;
   --primary-foreground: #ffffff;
   --secondary: #ffffff;
-  --secondary-foreground: #111827;
+  --secondary-foreground: #0f172a;
   --accent: #0f766e;
   --accent-foreground: #ffffff;
   --accent-soft: #ccfbf1;
@@ -4129,7 +4129,7 @@ html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) {
   --sidebar-accent: #ffffff;
   --sidebar-active-bg: #0f766e;
   --table-hover: #f3f4f6;
-  --placeholder: #6b7280;
+  --placeholder: #64748b;
   /* Pastel chips (acciones rÃ¡pidas) */
   --chip-purple-bg: #f3e8ff;
   --chip-purple-fg: #7e22ce;
@@ -4307,20 +4307,20 @@ html[data-ui-palette="clinicsoft"] .drflow-patient-workspace-tab-active {
 /* â€”â€”â€” Estilo 3: paleta azul / celeste (layout Estilo 2 + data-ui-palette=azure) â€”â€”â€” */
 html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) {
   --background: #e8f2fc;
-  --foreground: #0a1628;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #0a1628;
+  --card-foreground: #0f172a;
   --border: #c5dcf4;
   --muted: #e0f2fe;
-  --muted-foreground: #1e3a5f;
+  --muted-foreground: #334155;
   --primary: #0284c7;
   --primary-light: #38bdf8;
   --primary-foreground: #f8fafc;
   --placeholder: #64748b;
-  --text-primary: #0a1628;
-  --text-secondary: #1e3a5f;
-  --text-muted: #334155;
-  --text-on-selected: #0a1628;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-on-selected: #0f172a;
   --surface-selected: #e0f2fe;
 }
 

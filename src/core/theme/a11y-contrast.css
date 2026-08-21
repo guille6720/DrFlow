@@ -128,7 +128,7 @@ html[data-clinical-dark="1"] [data-selected="true"]:not(option) {
   color: var(--text-primary);
 }
 
-/* Light islands inside dark themes: never keep pale text on white */
+/* Light islands inside dark themes + Cobalt cards: never pale text on white */
 html[data-clinical-dark="1"] .drflow-card-light,
 html[data-clinical-dark="1"] .drflow-surface-light,
 html[data-ui-palette="cobalt"] .drflow-ui-card {
@@ -143,6 +143,12 @@ html[data-ui-palette="cobalt"] .drflow-ui-card {
 html[data-clinical-dark="1"] .drflow-card-light :is(.text-slate-50, .text-slate-100, .text-slate-200, .text-white),
 html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-50, .text-slate-100, .text-slate-200, .text-white):not(button):not(.drflow-ui-button) {
   color: #0f172a !important;
+}
+
+/* Pale selected / hover chips in light themes keep dark ink */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-theme-option[aria-pressed="true"],
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-theme-option[data-selected="true"] {
+  color: var(--text-on-selected, #0f172a) !important;
 }
 
 /* Utility aliases */

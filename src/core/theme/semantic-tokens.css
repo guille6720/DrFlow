@@ -90,16 +90,16 @@ html[data-ui-style="2"][data-clinical-dark="1"][data-ui-palette=""] {
 
 /* ——— Azure ——— */
 html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) {
-  --text-primary: #0a1628;
-  --text-secondary: #1e3a5f;
-  --text-muted: #334155;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
   --text-disabled: #94a3b8;
   --text-on-primary: #f8fafc;
-  --text-on-secondary: #0a1628;
+  --text-on-secondary: #0f172a;
   --text-on-accent: #f8fafc;
-  --text-on-card: #0a1628;
+  --text-on-card: #0f172a;
   --text-on-sidebar: #e0f2fe;
-  --text-on-selected: #0a1628;
+  --text-on-selected: #0f172a;
 
   --surface-page: #e8f2fc;
   --surface-card: #ffffff;
@@ -198,16 +198,16 @@ html[data-ui-palette="cobalt"] .drflow-surface-light {
 
 /* ——— Soft Clinic ——— */
 html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) {
-  --text-primary: #111827;
-  --text-secondary: #374151;
-  --text-muted: #4b5563;
-  --text-disabled: #9ca3af;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-disabled: #94a3b8;
   --text-on-primary: #ffffff;
-  --text-on-secondary: #111827;
+  --text-on-secondary: #0f172a;
   --text-on-accent: #ffffff;
-  --text-on-card: #111827;
-  --text-on-sidebar: #111827;
-  --text-on-selected: #111827;
+  --text-on-card: #0f172a;
+  --text-on-sidebar: #0f172a;
+  --text-on-selected: #0f172a;
 
   --surface-page: #f9fafb;
   --surface-card: #ffffff;
@@ -378,5 +378,56 @@ html {
 
 .drflow-ui-sidebar {
   background-color: var(--surface-sidebar);
+  color: var(--text-on-sidebar);
+}
+
+/*
+ * Light themes (Clinical Dark off, excluding Cobalt page chrome):
+ * dark ink on white / pale blue / gray / pastel. Never near-white text.
+ * Muted uses #475569 (not #64748B) so body copy stays ≥4.5:1 on pale page tints;
+ * placeholders on white inputs may use #64748B.
+ */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"]) {
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-disabled: #94a3b8;
+  --text-on-card: #0f172a;
+  --text-on-selected: #0f172a;
+  --foreground: #0f172a;
+  --card-foreground: #0f172a;
+  --muted-foreground: #334155;
+  --placeholder: #64748b;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"]) .drflow-mesh main,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"]) .drflow-ui-card,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"]) .drflow-card-light,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"]) .drflow-surface-light {
+  color: var(--text-primary);
+}
+
+/* Never leave near-white utility text on pale backgrounds in light mode */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"])
+  .drflow-mesh
+  main
+  :is(.text-white, .text-slate-50, .text-slate-100, .text-slate-200, .text-gray-50, .text-gray-100):not(button):not(.drflow-ui-button):not(a.bg-gradient-to-r):not([class*="bg-slate-8"]):not([class*="bg-slate-9"]):not([class*="bg-teal-"]):not([class*="bg-primary"]):not([class*="from-"]),
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"])
+  .drflow-ui-card
+  :is(.text-white, .text-slate-50, .text-slate-100, .text-slate-200):not(button):not(.drflow-ui-button) {
+  color: var(--text-primary) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"])
+  .drflow-mesh
+  main
+  :is(.text-slate-300, .text-slate-400, .text-gray-300, .text-gray-400):not(button):not(.drflow-ui-button) {
+  color: var(--text-muted) !important;
+}
+
+/* Soft Clinic / Clinical light sidebars that are white: dark nav labels */
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette]) .drflow-ui-sidebar {
+  --text-on-sidebar: #334155;
   color: var(--text-on-sidebar);
 }

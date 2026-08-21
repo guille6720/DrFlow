@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.9",
+    date: "2026-08-21",
+    title: "Temas claros: texto oscuro en superficies pálidas",
+    highlights: [
+      "Light modes: --text-primary #0F172A · --text-secondary #334155 · --text-muted #475569 (≥4.5:1 en azul/gris pastel)",
+      "Guardas CSS: text-white / slate-50–200 en light → tinta oscura (excepto botones/gradientes)",
+      "Cobalt cards y Soft Clinic pastel teal usan ink oscuro; placeholders #64748B solo sobre inputs blancos",
+    ],
+  },
+  {
     version: "0.2.8",
     date: "2026-08-21",
     title: "Tokens semánticos de texto/superficie por paleta",
