@@ -35,7 +35,7 @@ export function ClinicalOpsCenter({
   return (
     <section
       aria-label="Centro de operaciones clínicas"
-      className="clinical-ops-center drflow-ui-card space-y-4 p-4 text-slate-900"
+      className="clinical-ops-center drflow-ui-card space-y-4 p-4 text-[var(--card-foreground,#0f172a)]"
     >
       <ClinicalOpsDashboardBoundary fallback={null}>
         <ClinicalOpsRealtime clinicId={clinicId} />

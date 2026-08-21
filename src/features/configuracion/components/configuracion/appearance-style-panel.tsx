@@ -28,7 +28,7 @@ const STYLE_ACTIVE_RING: Record<UiStyleId, string> = {
   "3": "border-sky-400 bg-sky-500/10 ring-sky-400/40",
   "4": "border-blue-400 bg-blue-500/10 ring-blue-400/40",
   "5": "border-[#0D9488] bg-[#CCFBF1] ring-[#0D9488]/40",
-  "6": "border-[#22D3EE] bg-[#0B1424] ring-[#A78BFA]/50",
+  "6": "border-[#5CB8F6] bg-[#0A1D36] ring-[#5CB8F6]/40",
 };
 
 const STYLE_ICON_COLOR: Record<UiStyleId, string> = {
@@ -36,7 +36,7 @@ const STYLE_ICON_COLOR: Record<UiStyleId, string> = {
   "3": "text-sky-600",
   "4": "text-blue-600",
   "5": "text-[#0D9488]",
-  "6": "text-[#22D3EE]",
+  "6": "text-[#5CB8F6]",
 };
 
 const STYLE_SWATCHES: Record<UiStyleId, string[]> = {
@@ -44,7 +44,7 @@ const STYLE_SWATCHES: Record<UiStyleId, string[]> = {
   "3": ["#e8f2fc", "#0284c7", "#38bdf8"],
   "4": ["#2563eb", "#1d4ed8", "#ffffff"],
   "5": ["#F9FAFB", "#0D9488", "#F3E8FF", "#DCFCE7", "#0B1118"],
-  "6": ["#0B1424", "#EC4899", "#8B5CF6", "#F59E0B", "#22D3EE"],
+  "6": ["#07182D", "#5CB8F6", "#8457F4", "#F84FA3", "#FFBC58", "#56D3DE"],
 };
 
 const BENTO_STYLES: UiStyleId[] = ["2", "3", "4", "5", "6"];
@@ -52,8 +52,8 @@ const BENTO_STYLES: UiStyleId[] = ["2", "3", "4", "5", "6"];
 function darkModeHint(style: UiStyleId, clinicalDark: boolean): string {
   if (style === "6") {
     return clinicalDark
-      ? "Neon Navy oscuro (#0B1424): magenta, violeta, ámbar y cian sobre navy profundo."
-      : "Neon Navy claro: fondo slate suave, acento cian y chips neón.";
+      ? "Midnight Navy (#07182D): azul, violeta, magenta y cian con alto contraste clínico."
+      : "Midnight Navy claro: superficies blancas con acento #5CB8F6 (sidebar navy).";
   }
   if (style === "5") {
     return clinicalDark
@@ -109,7 +109,7 @@ function AppearanceStyleControls() {
                   />
                   <span className="font-semibold text-[var(--foreground,#0F172A)]">Estilo {id}</span>
                   {id === "6" ? (
-                    <span className="rounded-full bg-gradient-to-r from-[#EC4899] to-[#22D3EE] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                    <span className="rounded-full bg-[#5CB8F6] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#061426]">
                       Nuevo
                     </span>
                   ) : null}

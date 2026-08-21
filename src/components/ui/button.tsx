@@ -10,7 +10,7 @@ const variants: Record<ButtonVariant, string> = {
   primary:
     "drflow-btn-primary bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary-dark)] focus-visible:ring-[var(--ring)] shadow-sm",
   secondary:
-    "bg-[var(--accent-soft)] text-[var(--accent)] hover:opacity-90 focus-visible:ring-[var(--ring)]",
+    "drflow-btn-secondary bg-[var(--secondary)] text-[var(--secondary-foreground)] border border-[var(--border-strong,var(--border))] hover:bg-[var(--surface-hover,var(--muted))] focus-visible:ring-[var(--ring)]",
   outline:
     "drflow-btn-outline border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--muted)] focus-visible:ring-[var(--ring)]",
   ghost: "text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]",

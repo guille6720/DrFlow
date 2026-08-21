@@ -31,8 +31,8 @@ type UiThemeContextValue = {
 const UiThemeContext = createContext<UiThemeContextValue | null>(null);
 
 export function UiThemeProvider({ children }: { children: ReactNode }) {
-  const [style, setStyleState] = useState<UiStyleId>("2");
-  const [clinicalDark, setClinicalDarkState] = useState(false);
+  const [style, setStyleState] = useState<UiStyleId>("6");
+  const [clinicalDark, setClinicalDarkState] = useState(true);
 
   const persist = useCallback((nextStyle: UiStyleId, nextDark: boolean) => {
     applyUiThemeToDocument(nextStyle, nextDark);
@@ -49,7 +49,7 @@ export function UiThemeProvider({ children }: { children: ReactNode }) {
   const setStyle = useCallback(
     (next: UiStyleId) => {
       setStyleState(next);
-      // Neon Navy (DEPOSITO): arrancar en oscuro (referencia).
+      // Midnight Navy: arrancar en oscuro (sistema de diseño principal).
       if (next === "6") {
         setClinicalDarkState(true);
         persist(next, true);

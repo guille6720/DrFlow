@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.4",
+    date: "2026-08-21",
+    title: "Midnight Navy — sistema visual premium en toda la app",
+    highlights: [
+      "Estilo 6 Midnight Navy por defecto: navy #07182D, acentos azul/violeta/magenta/cian",
+      "Sidebar, header, tarjetas, formularios, tablas y badges unificados con tokens semánticos",
+      "Impresión clínica y PDF siguen en layout claro profesional",
+    ],
+  },
+  {
     version: "0.2.3",
     date: "2026-08-21",
     title: "Nuevo Estilo 6 Neon Navy y retiro del Estilo 1",

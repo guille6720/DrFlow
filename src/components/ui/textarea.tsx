@@ -154,9 +154,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={setRefs}
           id={textareaId}
           className={cn(
-            "drflow-ui-input w-full rounded-lg border border-slate-300 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 min-h-[100px]",
+            "drflow-ui-input w-full rounded-[10px] border border-[var(--border-strong,var(--border,#cbd5e1))] bg-[var(--input,var(--card,#fff))] px-3 py-2 text-sm text-[var(--foreground)] placeholder:text-[var(--placeholder,#64748b)] focus:border-[var(--ring)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]/15 min-h-[100px]",
             grow && "min-h-[12rem] flex-1 resize-y",
-            error && "border-red-500",
+            error && "border-[var(--destructive)]",
             className
           )}
           {...props}
