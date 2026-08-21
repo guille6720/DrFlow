@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 
 import { ClinicalOpsLeftRail } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-left-rail";
 import { ClinicalOpsMainSectionsCore } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-main-sections-core";
-import { ClinicalOpsQuickActions } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-quick-actions";
 import { ClinicalOpsRealtime } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-realtime";
 import { ClinicalOpsTopBar } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-top-bar";
 import { ClinicalOpsDashboardBoundary } from "@/features/dashboard/components/dashboard/clinical-ops-dashboard-boundary";
@@ -69,10 +68,6 @@ export function ClinicalOpsCenter({
           secondary={secondary}
         />
       </div>
-
-      <ClinicalOpsDashboardBoundary fallback={null}>
-        <ClinicalOpsQuickActions />
-      </ClinicalOpsDashboardBoundary>
     </section>
   );
 }
