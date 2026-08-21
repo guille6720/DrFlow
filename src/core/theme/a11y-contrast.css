@@ -61,20 +61,16 @@ textarea.drflow-ui-input::placeholder {
   opacity: 1 !important;
 }
 
-/* Disabled: prefer muted color over collapsing parent opacity on children */
+/* Disabled: variant-specific rules live in button-states.css.
+   Keep a safe no-opacity baseline here for any .drflow-ui-button without a variant class. */
 .drflow-ui-button:disabled:not([aria-busy="true"]),
 .drflow-ui-button[aria-disabled="true"]:not([aria-busy="true"]) {
   opacity: 1 !important;
-  background: color-mix(in srgb, var(--primary) 40%, var(--muted)) !important;
-  color: color-mix(in srgb, var(--primary-foreground) 75%, var(--muted-foreground)) !important;
   cursor: not-allowed;
 }
 
-.drflow-ui-button.drflow-btn-outline:disabled:not([aria-busy="true"]),
-.drflow-ui-button.drflow-btn-secondary:disabled:not([aria-busy="true"]) {
-  background: var(--muted) !important;
-  color: var(--text-disabled, var(--muted-foreground)) !important;
-  border-color: var(--border) !important;
+.drflow-ui-button[aria-busy="true"] {
+  opacity: 1 !important;
 }
 
 /*

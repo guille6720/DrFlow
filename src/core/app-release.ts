@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.11",
+    date: "2026-08-21",
+    title: "Botones legibles en todos los estados",
+    highlights: [
+      "button-states.css: primary/secondary/outline/ghost/danger con hover, active, focus, disabled y loading",
+      "Labels anclados a --text-on-*; loading (aria-busy) sin opacity; Cobalt CTA blanco mantiene azul en hover",
+      "Spinner usa currentColor; focus ring doble sobre --surface-page",
+    ],
+  },
+  {
     version: "0.2.10",
     date: "2026-08-21",
     title: "Temas oscuros: contraste cómodo y capas de superficie",

@@ -8,15 +8,15 @@ export type ButtonSize = "sm" | "md" | "lg";
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "drflow-btn-primary bg-[var(--primary)] text-[var(--text-on-primary,var(--primary-foreground))] hover:bg-[var(--primary-dark)] focus-visible:ring-[var(--ring)] shadow-sm",
+    "drflow-btn-primary bg-[var(--primary)] text-[var(--text-on-primary,var(--primary-foreground))] hover:bg-[var(--primary-dark)] active:brightness-95 focus-visible:ring-[var(--ring)] shadow-sm",
   secondary:
-    "drflow-btn-secondary bg-[var(--secondary)] text-[var(--text-on-secondary,var(--secondary-foreground))] border border-[var(--border-strong,var(--border))] hover:bg-[var(--surface-hover,var(--muted))] focus-visible:ring-[var(--ring)]",
+    "drflow-btn-secondary bg-[var(--secondary)] text-[var(--text-on-secondary,var(--secondary-foreground))] border border-[var(--border-strong,var(--border))] hover:bg-[var(--surface-hover,var(--muted))] active:bg-[var(--surface-hover,var(--muted))] focus-visible:ring-[var(--ring)]",
   outline:
-    "drflow-btn-outline border border-[var(--border-default,var(--border))] bg-[var(--surface-card,var(--card))] text-[var(--text-on-card,var(--foreground))] hover:bg-[var(--surface-hover,var(--muted))] focus-visible:ring-[var(--ring)]",
+    "drflow-btn-outline border border-[var(--border-default,var(--border))] bg-[var(--surface-card,var(--card))] text-[var(--text-on-card,var(--foreground))] hover:bg-[var(--surface-hover,var(--muted))] active:bg-[var(--surface-hover,var(--muted))] focus-visible:ring-[var(--ring)]",
   ghost:
-    "text-[var(--text-primary,var(--foreground))] hover:bg-[var(--surface-hover,var(--muted))] hover:text-[var(--text-primary,var(--foreground))]",
+    "drflow-btn-ghost text-[var(--text-primary,var(--foreground))] hover:bg-[var(--surface-hover,var(--muted))] hover:text-[var(--text-primary,var(--foreground))] active:bg-[var(--surface-hover,var(--muted))] focus-visible:ring-[var(--ring)]",
   danger:
-    "drflow-btn-danger bg-[var(--destructive)] text-[var(--destructive-foreground)] hover:bg-[var(--destructive)] focus-visible:ring-[var(--destructive)]",
+    "drflow-btn-danger bg-[var(--destructive)] text-[var(--destructive-foreground)] hover:brightness-95 active:brightness-90 focus-visible:ring-[var(--destructive)]",
 };
 
 const sizes: Record<ButtonSize, string> = {
@@ -69,13 +69,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={busy || undefined}
         className={cn(
           buttonSurfaceClassName(variant, size),
-            "disabled:cursor-not-allowed disabled:opacity-100",
+          "disabled:cursor-not-allowed disabled:opacity-100",
+          busy && "drflow-btn-loading",
           className
         )}
         {...props}
       >
         {busy && (
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          <span
+            className="drflow-btn-spinner h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent"
+            aria-hidden
+          />
         )}
         {busy && pendingLabel ? pendingLabel : children}
       </button>
