@@ -5,27 +5,57 @@
 :root {
   --font-jakarta: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
   --font-geist-mono: "Geist Mono", ui-monospace, monospace;
+  /* Style 1 legacy shell (dark teal dashboard) */
   --background: #3d5266;
   --foreground: #f8fafc;
+  --card: #475569;
+  --card-foreground: #f8fafc;
   --primary: #2dd4bf;
   --primary-dark: #14b8a6;
   --primary-light: #5eead4;
   --primary-foreground: #0f172a;
-  --sidebar: #0f172a;
-  --sidebar-accent: #2dd4bf;
+  --secondary: #334155;
+  --secondary-foreground: #f8fafc;
+  --muted: #cbd5e1;
+  --muted-foreground: #cbd5e1;
+  --accent: #2dd4bf;
+  --accent-foreground: #0f172a;
   --accent-soft: #134e4a;
   --accent-warm: #d97706;
-  --muted: #cbd5e1;
+  --destructive: #f87171;
+  --destructive-foreground: #0f172a;
+  --success: #4ade80;
+  --warning: #fbbf24;
   --border: #64748b;
-  --card: #475569;
-  --success: #34d399;
+  --input: #475569;
+  --ring: #2dd4bf;
+  --sidebar: #0f172a;
+  --sidebar-accent: #2dd4bf;
+  --sidebar-active-bg: #134e4a;
+  --table-hover: #1e293b;
+  --placeholder: #94a3b8;
   --radius: 1rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --font-sans: var(--font-jakarta);
   --font-mono: var(--font-geist-mono);
 }
@@ -378,25 +408,66 @@ html[data-ui-style="2"] {
   --radius: 0.75rem;
 }
 
+/* Style 2 — Clinical Blue + Teal (light) */
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) {
-  --background: #eef2f6;
+  --background: #f8fafc;
   --foreground: #0f172a;
   --card: #ffffff;
-  --border: #e2e8f0;
-  --muted: #64748b;
-  --muted-foreground: #64748b;
-  --primary: #0d9488;
-  --primary-light: #14b8a6;
+  --card-foreground: #0f172a;
+  --border: #d7e0e8;
+  --input: #cbd5e1;
+  --muted: #f1f5f9;
+  --muted-foreground: #475569;
+  --primary: #0f4c5c;
+  --primary-dark: #0c3d4a;
+  --primary-light: #0f766e;
+  --primary-foreground: #ffffff;
+  --secondary: #ffffff;
+  --secondary-foreground: #0f172a;
+  --accent: #0f766e;
+  --accent-foreground: #ffffff;
+  --accent-soft: #ecfdf5;
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+  --success: #15803d;
+  --warning: #b45309;
+  --ring: #0f766e;
+  --sidebar: #ffffff;
+  --sidebar-accent: #0f766e;
+  --sidebar-active-bg: #ecfdf5;
+  --table-hover: #f1f5f9;
+  --placeholder: #64748b;
 }
 
+/* Style 2 — Clinical Blue + Teal (dark) */
 html[data-ui-style="2"][data-clinical-dark="1"] {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
-  --card: #1e293b;
+  --background: #0b1220;
+  --foreground: #f8fafc;
+  --card: #111827;
+  --card-foreground: #f8fafc;
   --border: #334155;
-  --muted: #94a3b8;
+  --input: #475569;
+  --muted: #1e293b;
   --muted-foreground: #cbd5e1;
   --primary: #2dd4bf;
+  --primary-dark: #14b8a6;
+  --primary-light: #5eead4;
+  --primary-foreground: #0b1220;
+  --secondary: #111827;
+  --secondary-foreground: #f8fafc;
+  --accent: #38bdf8;
+  --accent-foreground: #0b1220;
+  --accent-soft: #134e4a;
+  --destructive: #f87171;
+  --destructive-foreground: #0b1220;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --ring: #2dd4bf;
+  --sidebar: #0f172a;
+  --sidebar-accent: #2dd4bf;
+  --sidebar-active-bg: #134e4a;
+  --table-hover: #1e293b;
+  --placeholder: #94a3b8;
 }
 
 html[data-ui-style="2"] .drflow-mesh {
@@ -524,26 +595,26 @@ html[data-ui-style="2"] .drflow-ui-card-title {
 }
 
 html[data-ui-style="2"] .drflow-ui-card-desc {
-  color: var(--muted);
+  color: var(--muted-foreground);
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-card-body dt {
-  color: #0d9488;
+  color: var(--accent);
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-card-body dd {
-  color: #0f172a;
+  color: var(--foreground);
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-card-body :is(.text-slate-500, .text-slate-600, .text-slate-700) {
-  color: #475569;
+  color: var(--muted-foreground);
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-link {
-  color: #0d9488;
+  color: var(--accent);
 }
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-link:hover {
-  color: #0f766e;
+  color: var(--primary);
 }
 
 html[data-ui-style="2"] .drflow-ui-header-dark {
@@ -552,52 +623,87 @@ html[data-ui-style="2"] .drflow-ui-header-dark {
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light {
-  border-color: #e2e8f0;
-  background: #ffffff;
+  border-color: var(--border);
+  background: var(--card);
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light h1,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light .text-slate-900 {
-  color: #0f172a !important;
+  color: var(--foreground) !important;
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light .text-slate-500 {
-  color: #64748b !important;
+  color: var(--muted-foreground) !important;
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
-  background: #ffffff;
+  background: var(--sidebar);
 }
 
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-sidebar-gradient {
-  background: #0f172a;
+  background: var(--sidebar);
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar {
-  border-color: #e2e8f0;
+  border-color: var(--border);
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar .text-slate-300,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar .text-slate-400 {
-  color: #64748b;
+  color: var(--muted-foreground);
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.text-slate-300 {
-  color: #334155;
+  color: var(--foreground);
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r {
-  background: #0d9488 !important;
+  background: var(--sidebar-active-bg) !important;
   background-image: none !important;
-  color: #fff !important;
+  color: var(--foreground) !important;
   box-shadow: none !important;
 }
 
-html[data-ui-style="2"] .drflow-ui-button[class*="from-cyan"] {
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r svg {
+  color: var(--sidebar-accent) !important;
+  opacity: 1 !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar a.bg-gradient-to-r {
+  background: var(--sidebar-active-bg) !important;
+  background-image: none !important;
+  color: var(--foreground) !important;
+  box-shadow: none !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar a.bg-gradient-to-r svg {
+  color: var(--sidebar-accent) !important;
+  opacity: 1 !important;
+}
+
+html[data-ui-style="2"] .drflow-ui-button[class*="from-cyan"],
+html[data-ui-style="2"] .drflow-ui-button.drflow-btn-primary {
   background: var(--primary) !important;
   background-image: none !important;
   box-shadow: none !important;
-  color: #fff !important;
+  color: var(--primary-foreground) !important;
+}
+
+html[data-ui-style="2"] .drflow-ui-button[class*="from-cyan"]:hover,
+html[data-ui-style="2"] .drflow-ui-button.drflow-btn-primary:hover {
+  background: var(--primary-dark) !important;
+}
+
+html[data-ui-style="2"] .drflow-ui-button.drflow-btn-outline {
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+html[data-ui-style="2"] .drflow-ui-button.drflow-btn-danger,
+html[data-ui-style="2"] .drflow-ui-button.bg-red-600 {
+  background: var(--destructive) !important;
+  color: var(--destructive-foreground) !important;
 }
 
 html[data-ui-style="2"] .drflow-ui-topnav-dark {
@@ -645,29 +751,33 @@ html:not([data-ui-style="2"]) .drflow-ui-stat.drflow-card-light :is(.text-slate-
 
 /* ——— Campos de formulario (legibles en tarjetas oscuras) ——— */
 .drflow-ui-input {
-  background-color: #ffffff;
-  color: #0f172a;
+  background-color: var(--card, #ffffff);
+  color: var(--foreground, #0f172a);
+  border-color: var(--input, #cbd5e1);
 }
 
 .drflow-ui-input::placeholder {
-  color: #94a3b8;
+  color: var(--placeholder, #64748b);
 }
 
 .drflow-card-body .drflow-ui-input,
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-ui-input {
-  background-color: #0f172a;
-  color: #f8fafc;
-  border-color: #475569;
+  background-color: var(--card);
+  color: var(--foreground);
+  border-color: var(--input);
 }
 
 .drflow-card-body .drflow-ui-input::placeholder,
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-ui-input::placeholder {
-  color: #64748b;
+  color: var(--placeholder);
 }
 
 .drflow-card-body .drflow-ui-input:focus,
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-ui-input:focus {
-  border-color: #2dd4bf;
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh .drflow-ui-input:focus,
+.drflow-ui-input:focus {
+  border-color: var(--ring);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 25%, transparent);
 }
 
 /* Select nativo + listbox: desplegable del SO siempre legible (Windows/Chrome) */
@@ -1664,26 +1774,26 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-shell {
   color: var(--ehr-text);
 }
 
-html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-table-panel,
-html:not([data-ui-style="2"]) .drflow-ehr-table-panel {
-  --ehr-accent: #14b8a6;
-  --ehr-accent-bright: #06b6d4;
-  --ehr-accent-soft: #5eead4;
-  --ehr-panel: #1e293b;
-  --ehr-text: #f1f5f9;
-  --ehr-muted: #94a3b8;
-  --ehr-label: var(--ehr-accent-soft);
-  color: var(--ehr-text);
-}
-
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-table-panel {
-  --ehr-accent: #0d9488;
-  --ehr-accent-bright: #06b6d4;
+  --ehr-accent: #0f766e;
+  --ehr-accent-bright: #0f4c5c;
   --ehr-accent-soft: #14b8a6;
   --ehr-panel: #ffffff;
   --ehr-text: #0f172a;
-  --ehr-muted: #64748b;
+  --ehr-muted: #475569;
   --ehr-label: var(--ehr-accent);
+  color: var(--ehr-text);
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ehr-table-panel,
+html:not([data-ui-style="2"]) .drflow-ehr-table-panel {
+  --ehr-accent: #2dd4bf;
+  --ehr-accent-bright: #5eead4;
+  --ehr-accent-soft: #5eead4;
+  --ehr-panel: #111827;
+  --ehr-text: #f8fafc;
+  --ehr-muted: #cbd5e1;
+  --ehr-label: var(--ehr-accent-soft);
   color: var(--ehr-text);
 }
 
@@ -1802,18 +1912,90 @@ html:not([data-ui-style="2"]) .drflow-ehr-evolution-box .drflow-ehr-muted {
   letter-spacing: 0.02em;
 }
 
+.drapp-consulta-shell .drflow-ehr-demo-label {
+  color: var(--muted-foreground, #475569);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
 .drapp-consulta-shell .drflow-ehr-demo-value {
-  color: #0f172a;
-  font-size: 13px;
+  color: var(--foreground, #0f172a);
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .drapp-consulta-shell .drflow-ehr-demographics > .drflow-ehr-demo-cell:first-child .drflow-ehr-demo-value {
-  color: #2f7fbf;
-  font-weight: 700;
+  color: var(--primary, #0f4c5c);
+  font-size: 1.0625rem;
+  font-weight: 600;
 }
 
 .drapp-consulta-shell .drflow-ehr-accent-checkbox {
-  accent-color: #4f9fe0;
+  accent-color: var(--accent, #0f766e);
+}
+
+/* Style 2: clean clinical surfaces (no decorative yellow composer) */
+html[data-ui-style="2"] .drapp-consulta-composer,
+html[data-ui-style="2"] .drapp-consulta-actions,
+html[data-ui-style="2"] .drapp-consulta-evolution {
+  background: var(--card);
+}
+
+html[data-ui-style="2"] .drapp-consulta-evolution-input,
+html[data-ui-style="2"] .drapp-consulta-shell .drapp-consulta-evolution textarea {
+  background: var(--card) !important;
+  color: var(--foreground) !important;
+  border-color: var(--input) !important;
+  font-size: 1rem !important;
+  line-height: 1.55 !important;
+}
+
+html[data-ui-style="2"] .drapp-consulta-evolution-input:focus,
+html[data-ui-style="2"] .drapp-consulta-shell .drapp-consulta-evolution textarea:focus {
+  border-color: var(--ring) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 22%, transparent) !important;
+}
+
+/* Tables: readable headers + hover */
+html[data-ui-style="2"] table thead th {
+  color: var(--foreground);
+  font-weight: 600;
+  border-bottom-color: var(--border);
+}
+
+html[data-ui-style="2"] table tbody tr:hover {
+  background: var(--table-hover);
+}
+
+html[data-ui-style="2"] table tbody td {
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+/* Badges — dark mode contrast (keep light Tailwind utility bases) */
+html[data-ui-style="2"][data-clinical-dark="1"] .bg-slate-100 {
+  background-color: color-mix(in srgb, var(--muted-foreground) 14%, var(--card)) !important;
+  color: var(--foreground) !important;
+}
+html[data-ui-style="2"][data-clinical-dark="1"] .bg-emerald-100 {
+  background-color: color-mix(in srgb, var(--success) 18%, var(--card)) !important;
+  color: var(--success) !important;
+}
+html[data-ui-style="2"][data-clinical-dark="1"] .bg-amber-100 {
+  background-color: color-mix(in srgb, var(--warning) 18%, var(--card)) !important;
+  color: var(--warning) !important;
+}
+html[data-ui-style="2"][data-clinical-dark="1"] .bg-red-100 {
+  background-color: color-mix(in srgb, var(--destructive) 18%, var(--card)) !important;
+  color: var(--destructive) !important;
+}
+html[data-ui-style="2"][data-clinical-dark="1"] .bg-sky-100 {
+  background-color: color-mix(in srgb, var(--accent) 18%, var(--card)) !important;
+  color: var(--accent) !important;
+}
+html[data-ui-style="2"][data-clinical-dark="1"] .bg-teal-100 {
+  background-color: color-mix(in srgb, var(--primary) 18%, var(--card)) !important;
+  color: var(--primary) !important;
 }
 
 .drapp-consulta-composer {

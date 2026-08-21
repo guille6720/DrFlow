@@ -27,8 +27,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            "drflow-ui-input w-full rounded-xl border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20",
-            error && "border-red-500 focus:border-red-500 focus:ring-red-500/20",
+            "drflow-ui-input w-full rounded-xl border border-[var(--input,#cbd5e1)] bg-[var(--card,#fff)] px-3 py-2 text-sm text-[var(--foreground)] placeholder:text-[var(--placeholder,#64748b)] focus:border-[var(--ring)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20",
+            error && "border-[var(--destructive)] focus:border-[var(--destructive)] focus:ring-[var(--destructive)]/20",
             className
           )}
           {...props}

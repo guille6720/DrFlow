@@ -8,12 +8,14 @@ export type ButtonSize = "sm" | "md" | "lg";
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 focus-visible:ring-teal-500 shadow-md shadow-cyan-500/25",
-  secondary: "bg-teal-50 text-teal-900 hover:bg-teal-100 focus-visible:ring-teal-400",
+    "drflow-btn-primary bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary-dark)] focus-visible:ring-[var(--ring)] shadow-sm",
+  secondary:
+    "bg-[var(--accent-soft)] text-[var(--accent)] hover:opacity-90 focus-visible:ring-[var(--ring)]",
   outline:
-    "border border-slate-200 bg-white text-slate-800 hover:bg-teal-50 hover:border-teal-200",
-  ghost: "text-slate-700 hover:bg-teal-50 hover:text-teal-900",
-  danger: "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500",
+    "drflow-btn-outline border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--muted)] focus-visible:ring-[var(--ring)]",
+  ghost: "text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]",
+  danger:
+    "drflow-btn-danger bg-[var(--destructive)] text-[var(--destructive-foreground)] hover:opacity-90 focus-visible:ring-[var(--destructive)]",
 };
 
 const sizes: Record<ButtonSize, string> = {
