@@ -49,14 +49,19 @@ export function UiThemeProvider({ children }: { children: ReactNode }) {
   const setStyle = useCallback(
     (next: UiStyleId) => {
       setStyleState(next);
-      // Paletas nuevas: arrancar en claro para que se note el cambio de colores.
+      // Neon Navy (DEPOSITO): arrancar en oscuro (referencia).
+      if (next === "6") {
+        setClinicalDarkState(true);
+        persist(next, true);
+        return;
+      }
+      // Paletas claras: arrancar en claro para que se note el cambio de colores.
       if (next === "2" || next === "5") {
         setClinicalDarkState(false);
         persist(next, false);
         return;
       }
       const dark = isBentoStyle(next) ? clinicalDark : false;
-      if (next === "1") setClinicalDarkState(false);
       persist(next, dark);
     },
     [clinicalDark, persist]

@@ -48,9 +48,9 @@ export function Header({
   const showAppearance = Boolean(role) || isSuperadmin;
   const { hidden: sidebarHidden } = useDashboardSidebar();
   const theme = useUiThemeOptional();
-  /** Estilo 1 y cobalto usan chrome oscuro; Bento solo en clinical dark. */
+  /** Cobalto usa chrome oscuro; Bento solo en clinical dark. */
   const shellDark = theme
-    ? theme.style === "1" || theme.style === "4" || (isBentoStyle(theme.style) && theme.clinicalDark)
+    ? theme.style === "4" || (isBentoStyle(theme.style) && theme.clinicalDark)
     : true;
 
   return (

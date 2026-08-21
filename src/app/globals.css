@@ -4252,6 +4252,177 @@ html[data-ui-palette="clinicsoft"] .drflow-patient-workspace-tab-active {
   box-shadow: 0 2px 8px rgb(13 148 136 / 30%) !important;
 }
 
+/* ——— Estilo 6: Neon Navy / DEPOSITO (navy profundo + magenta / violeta / ámbar / cian) ——— */
+html[data-ui-palette="neonavio"]:not([data-clinical-dark="1"]) {
+  --background: #eef2f7;
+  --foreground: #0b1424;
+  --card: #ffffff;
+  --card-foreground: #0b1424;
+  --border: #d5dee9;
+  --input: #cbd5e1;
+  --muted: #e8eef6;
+  --muted-foreground: #475569;
+  --primary: #0891b2;
+  --primary-dark: #0e7490;
+  --primary-light: #22d3ee;
+  --primary-foreground: #ffffff;
+  --secondary: #ffffff;
+  --secondary-foreground: #0b1424;
+  --accent: #7c3aed;
+  --accent-foreground: #ffffff;
+  --accent-soft: #ede9fe;
+  --destructive: #be123c;
+  --destructive-foreground: #ffffff;
+  --success: #15803d;
+  --warning: #d97706;
+  --ring: #22d3ee;
+  --sidebar: #0b1424;
+  --sidebar-accent: #22d3ee;
+  --sidebar-active-bg: #8b5cf6;
+  --table-hover: #e8eef6;
+  --placeholder: #64748b;
+  --chip-purple-bg: #ede9fe;
+  --chip-purple-fg: #6d28d9;
+  --chip-teal-bg: #cffafe;
+  --chip-teal-fg: #0e7490;
+  --chip-green-bg: #dcfce7;
+  --chip-green-fg: #15803d;
+  --chip-blue-bg: #e0f2fe;
+  --chip-blue-fg: #0369a1;
+  --chip-rose-bg: #fce7f3;
+  --chip-rose-fg: #be185d;
+  --chip-amber-bg: #fef3c7;
+  --chip-amber-fg: #b45309;
+  --chip-violet-bg: #ede9fe;
+  --chip-violet-fg: #5b21b6;
+  --chip-sky-bg: #cffafe;
+  --chip-sky-fg: #0891b2;
+}
+
+html[data-ui-palette="neonavio"][data-clinical-dark="1"] {
+  --background: #0b1424;
+  --foreground: #f8fafc;
+  --card: #121c2e;
+  --card-foreground: #f8fafc;
+  --border: #1e2d45;
+  --input: #334155;
+  --muted: #152238;
+  --muted-foreground: #94a3b8;
+  --primary: #22d3ee;
+  --primary-dark: #06b6d4;
+  --primary-light: #67e8f9;
+  --primary-foreground: #082f49;
+  --secondary: #121c2e;
+  --secondary-foreground: #f8fafc;
+  --accent: #a78bfa;
+  --accent-foreground: #1e1b4b;
+  --accent-soft: #2e1065;
+  --destructive: #fb7185;
+  --destructive-foreground: #0b1424;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --ring: #22d3ee;
+  --sidebar: #0a1220;
+  --sidebar-accent: #22d3ee;
+  --sidebar-active-bg: #8b5cf6;
+  --table-hover: #152238;
+  --placeholder: #64748b;
+  --chip-purple-bg: #2e1065;
+  --chip-purple-fg: #ddd6fe;
+  --chip-teal-bg: #164e63;
+  --chip-teal-fg: #a5f3fc;
+  --chip-green-bg: #14532d;
+  --chip-green-fg: #bbf7d0;
+  --chip-blue-bg: #0c4a6e;
+  --chip-blue-fg: #bae6fd;
+  --chip-rose-bg: #831843;
+  --chip-rose-fg: #fbcfe8;
+  --chip-amber-bg: #78350f;
+  --chip-amber-fg: #fde68a;
+  --chip-violet-bg: #4c1d95;
+  --chip-violet-fg: #ddd6fe;
+  --chip-sky-bg: #155e75;
+  --chip-sky-fg: #a5f3fc;
+}
+
+html[data-ui-palette="neonavio"] .drflow-mesh {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(at 12% 8%, rgb(139 92 246 / 0.14) 0, transparent 42%),
+    radial-gradient(at 88% 0%, rgb(34 211 238 / 0.1) 0, transparent 40%),
+    radial-gradient(at 80% 90%, rgb(236 72 153 / 0.08) 0, transparent 45%);
+}
+
+html[data-ui-palette="neonavio"][data-clinical-dark="1"] .drflow-sidebar-gradient {
+  background: #0a1220 !important;
+}
+
+html[data-ui-palette="neonavio"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
+  background: #0b1424 !important;
+}
+
+html[data-ui-palette="neonavio"] .drflow-ui-sidebar a.bg-gradient-to-r {
+  background: linear-gradient(135deg, #8b5cf6, #22d3ee) !important;
+  background-image: linear-gradient(135deg, #8b5cf6, #22d3ee) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 18px rgb(139 92 246 / 0.35) !important;
+}
+
+html[data-ui-palette="neonavio"] .drflow-ui-sidebar a.bg-gradient-to-r svg {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html[data-ui-palette="neonavio"] .drflow-ui-sidebar a:not(.bg-gradient-to-r) {
+  color: #94a3b8 !important;
+}
+
+html[data-ui-palette="neonavio"] .drflow-ui-sidebar a:not(.bg-gradient-to-r):hover {
+  background: rgb(34 211 238 / 0.1) !important;
+  color: #e2e8f0 !important;
+}
+
+html[data-ui-palette="neonavio"] .drflow-ui-button[class*="from-cyan"],
+html[data-ui-palette="neonavio"] .drflow-ui-button.drflow-btn-primary {
+  background: linear-gradient(135deg, #8b5cf6, #22d3ee) !important;
+  background-image: linear-gradient(135deg, #8b5cf6, #22d3ee) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgb(34 211 238 / 0.28) !important;
+}
+
+html[data-ui-palette="neonavio"] .drflow-ui-button[class*="from-cyan"]:hover,
+html[data-ui-palette="neonavio"] .drflow-ui-button.drflow-btn-primary:hover {
+  filter: brightness(1.08);
+}
+
+html[data-ui-palette="neonavio"][data-clinical-dark="1"] .drflow-ui-card {
+  background: var(--card);
+  border-color: var(--border);
+  box-shadow:
+    0 0 0 1px rgb(34 211 238 / 0.04),
+    0 8px 28px rgb(0 0 0 / 0.35);
+}
+
+html[data-ui-palette="neonavio"] .drflow-link,
+html[data-ui-palette="neonavio"] .drflow-card-body dt {
+  color: var(--primary);
+}
+
+html[data-ui-palette="neonavio"] .drflow-ui-card-title {
+  color: var(--foreground);
+}
+
+html[data-ui-palette="neonavio"] .drflow-ui-card-desc {
+  color: var(--muted-foreground);
+}
+
+html[data-ui-palette="neonavio"] .drflow-patient-workspace-tab-active {
+  border-color: #22d3ee !important;
+  background: linear-gradient(135deg, #8b5cf6, #22d3ee) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgb(139 92 246 / 35%) !important;
+}
+
 /* Utilidades pastel para chips/acciones rápidas */
 .drflow-chip-purple {
   background: var(--chip-purple-bg);

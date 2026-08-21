@@ -1,6 +1,6 @@
 "use client";
 
-import { Droplets, Layers, LayoutGrid, Mic, Moon, Palette, Sparkles, Sun } from "lucide-react";
+import { Droplets, Layers, Mic, Moon, Palette, Sparkles, Sun, Zap } from "lucide-react";
 
 import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
 import { useCanUseVoiceInput } from "@/core/components/entitlements/entitlements-provider";
@@ -15,41 +15,46 @@ import { useVoiceInputOptional } from "@/features/voice/components/voice/voice-i
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-const STYLE_ICONS: Record<UiStyleId, typeof LayoutGrid> = {
-  "1": LayoutGrid,
+const STYLE_ICONS: Record<UiStyleId, typeof Sparkles> = {
   "2": Sparkles,
   "3": Droplets,
   "4": Layers,
   "5": Palette,
+  "6": Zap,
 };
 
 const STYLE_ACTIVE_RING: Record<UiStyleId, string> = {
-  "1": "border-teal-400 bg-teal-500/10 ring-teal-400/40",
   "2": "border-[var(--accent,#0F766E)] bg-[var(--accent-soft,#ECFDF5)] ring-[var(--accent,#0F766E)]/40",
   "3": "border-sky-400 bg-sky-500/10 ring-sky-400/40",
   "4": "border-blue-400 bg-blue-500/10 ring-blue-400/40",
   "5": "border-[#0D9488] bg-[#CCFBF1] ring-[#0D9488]/40",
+  "6": "border-[#22D3EE] bg-[#0B1424] ring-[#A78BFA]/50",
 };
 
 const STYLE_ICON_COLOR: Record<UiStyleId, string> = {
-  "1": "text-teal-600",
   "2": "text-[var(--accent,#0F766E)]",
   "3": "text-sky-600",
   "4": "text-blue-600",
   "5": "text-[#0D9488]",
+  "6": "text-[#22D3EE]",
 };
 
 const STYLE_SWATCHES: Record<UiStyleId, string[]> = {
-  "1": ["#3d5266", "#2dd4bf", "#0f172a"],
   "2": ["#F8FAFC", "#0F4C5C", "#0F766E", "#0B1220"],
   "3": ["#e8f2fc", "#0284c7", "#38bdf8"],
   "4": ["#2563eb", "#1d4ed8", "#ffffff"],
   "5": ["#F9FAFB", "#0D9488", "#F3E8FF", "#DCFCE7", "#0B1118"],
+  "6": ["#0B1424", "#EC4899", "#8B5CF6", "#F59E0B", "#22D3EE"],
 };
 
-const BENTO_STYLES: UiStyleId[] = ["2", "3", "4", "5"];
+const BENTO_STYLES: UiStyleId[] = ["2", "3", "4", "5", "6"];
 
 function darkModeHint(style: UiStyleId, clinicalDark: boolean): string {
+  if (style === "6") {
+    return clinicalDark
+      ? "Neon Navy oscuro (#0B1424): magenta, violeta, ámbar y cian sobre navy profundo."
+      : "Neon Navy claro: fondo slate suave, acento cian y chips neón.";
+  }
   if (style === "5") {
     return clinicalDark
       ? "Soft Clinic oscuro (#0B1118): teal activo, chips pastel adaptados y alto contraste."
@@ -103,8 +108,8 @@ function AppearanceStyleControls() {
                     )}
                   />
                   <span className="font-semibold text-[var(--foreground,#0F172A)]">Estilo {id}</span>
-                  {id === "5" ? (
-                    <span className="rounded-full bg-[#0D9488] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                  {id === "6" ? (
+                    <span className="rounded-full bg-gradient-to-r from-[#EC4899] to-[#22D3EE] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
                       Nuevo
                     </span>
                   ) : null}

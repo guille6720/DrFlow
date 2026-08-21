@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.3",
+    date: "2026-08-21",
+    title: "Nuevo Estilo 6 Neon Navy y retiro del Estilo 1",
+    highlights: [
+      "Estilo 6 Neon Navy (DEPOSITO): navy profundo con magenta, violeta, ámbar y cian",
+      "Se eliminó el Estilo 1 del selector de apariencia (quien lo tenía pasa a Estilo 2)",
+      "Modo oscuro recomendado al elegir Neon Navy; también disponible en claro",
+    ],
+  },
+  {
     version: "0.2.2",
     date: "2026-08-21",
     title: "Tema Clinical Blue + Teal con modo claro y oscuro",
