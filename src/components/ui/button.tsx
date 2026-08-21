@@ -8,14 +8,15 @@ export type ButtonSize = "sm" | "md" | "lg";
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "drflow-btn-primary bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary-dark)] focus-visible:ring-[var(--ring)] shadow-sm",
+    "drflow-btn-primary bg-[var(--primary)] text-[var(--text-on-primary,var(--primary-foreground))] hover:bg-[var(--primary-dark)] focus-visible:ring-[var(--ring)] shadow-sm",
   secondary:
-    "drflow-btn-secondary bg-[var(--secondary)] text-[var(--secondary-foreground)] border border-[var(--border-strong,var(--border))] hover:bg-[var(--surface-hover,var(--muted))] focus-visible:ring-[var(--ring)]",
+    "drflow-btn-secondary bg-[var(--secondary)] text-[var(--text-on-secondary,var(--secondary-foreground))] border border-[var(--border-strong,var(--border))] hover:bg-[var(--surface-hover,var(--muted))] focus-visible:ring-[var(--ring)]",
   outline:
-    "drflow-btn-outline border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--muted)] focus-visible:ring-[var(--ring)]",
-  ghost: "text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]",
+    "drflow-btn-outline border border-[var(--border-default,var(--border))] bg-[var(--surface-card,var(--card))] text-[var(--text-on-card,var(--foreground))] hover:bg-[var(--surface-hover,var(--muted))] focus-visible:ring-[var(--ring)]",
+  ghost:
+    "text-[var(--text-primary,var(--foreground))] hover:bg-[var(--surface-hover,var(--muted))] hover:text-[var(--text-primary,var(--foreground))]",
   danger:
-    "drflow-btn-danger bg-[var(--destructive)] text-[var(--destructive-foreground)] hover:opacity-90 focus-visible:ring-[var(--destructive)]",
+    "drflow-btn-danger bg-[var(--destructive)] text-[var(--destructive-foreground)] hover:bg-[var(--destructive)] focus-visible:ring-[var(--destructive)]",
 };
 
 const sizes: Record<ButtonSize, string> = {

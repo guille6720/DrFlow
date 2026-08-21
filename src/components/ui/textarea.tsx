@@ -154,7 +154,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={setRefs}
           id={textareaId}
           className={cn(
-            "drflow-ui-input w-full rounded-[10px] border border-[var(--border-strong,var(--border,#cbd5e1))] bg-[var(--input,var(--card,#fff))] px-3 py-2 text-sm text-[var(--foreground)] placeholder:text-[var(--placeholder,#64748b)] focus:border-[var(--ring)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]/15 min-h-[100px]",
+            "drflow-ui-input w-full rounded-[10px] border border-[var(--border-strong,var(--border,#cbd5e1))] bg-[var(--surface-input,var(--input,var(--card,#fff)))] px-3 py-2 text-sm text-[var(--text-primary,var(--foreground))] placeholder:text-[var(--placeholder,var(--text-muted,#64748b))] focus:border-[var(--ring)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]/15 min-h-[100px]",
             grow && "min-h-[12rem] flex-1 resize-y",
             error && "border-[var(--destructive)]",
             className

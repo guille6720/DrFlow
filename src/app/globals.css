@@ -2,6 +2,7 @@
 @import "@fontsource-variable/plus-jakarta-sans/wght.css";
 @import "@fontsource/geist-mono/latin.css";
 @import "../core/theme/midnight-navy.css";
+@import "../core/theme/semantic-tokens.css";
 @import "../core/theme/a11y-contrast.css";
 
 :root {

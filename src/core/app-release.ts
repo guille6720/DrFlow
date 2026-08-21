@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.8",
+    date: "2026-08-21",
+    title: "Tokens semánticos de texto/superficie por paleta",
+    highlights: [
+      "Contrato único en semantic-tokens.css: text/surface/border en Clinical, Azure, Cobalt, Soft Clinic y Midnight",
+      "Primitives (Button, Input, Textarea, EmptyState, Card) consumen --text-* / --surface-* / --border-*",
+      "Catálogo TypeScript + test de contrato; a11y-contrast solo remaps de comportamiento",
+    ],
+  },
+  {
     version: "0.2.7",
     date: "2026-08-21",
     title: "Eliminación de opacidades que apagan texto clínico",
