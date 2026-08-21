@@ -1956,6 +1956,131 @@ html[data-ui-style="2"] .drapp-consulta-shell .drapp-consulta-evolution textarea
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 22%, transparent) !important;
 }
 
+/* Style 2 dark: consulta must NOT keep light-island text (#0f172a on dark card) */
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell {
+  background: var(--card) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drflow-ehr-demographics,
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drflow-ehr-filters,
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drapp-consulta-main,
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drapp-consulta-sidebar,
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .sticky.bg-white {
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell :is(
+  .text-slate-900,
+  .text-slate-800,
+  .text-slate-700,
+  .text-slate-600,
+  .font-semibold,
+  .font-medium,
+  .font-bold,
+  p,
+  span,
+  label,
+  button,
+  td,
+  th,
+  li
+) {
+  color: var(--foreground) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell :is(
+  .text-slate-500,
+  .text-slate-400,
+  .drflow-ehr-demo-label,
+  .drflow-ehr-filter-label,
+  .drflow-ehr-filter-meta
+) {
+  color: var(--muted-foreground) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drflow-ehr-demo-value {
+  color: var(--foreground) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drflow-ehr-demographics > .drflow-ehr-demo-cell:first-child .drflow-ehr-demo-value,
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell :is(
+  .text-\[\#2f7fbf\],
+  button.text-\[\#2f7fbf\],
+  .text-teal-700
+) {
+  color: var(--primary) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell :is(
+  input,
+  textarea,
+  select,
+  .drapp-consulta-evolution-input,
+  .drapp-consulta-search,
+  .drflow-ui-input
+) {
+  background: var(--background) !important;
+  color: var(--foreground) !important;
+  border-color: var(--input) !important;
+  -webkit-text-fill-color: var(--foreground) !important;
+  caret-color: var(--foreground) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell :is(input, textarea)::placeholder {
+  color: var(--placeholder) !important;
+  opacity: 1 !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drapp-consulta-actions,
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drapp-consulta-composer,
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drapp-consulta-evolution {
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drapp-consulta-actions button,
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell button[type="submit"] {
+  color: var(--primary) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .text-red-700,
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .text-red-600 {
+  color: var(--destructive) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drapp-consulta-sidebar :is(
+  .bg-\[\#fff8dc\]\/70,
+  .bg-white,
+  .border-slate-100,
+  .border-slate-200
+) {
+  background: var(--muted) !important;
+  border-color: var(--border) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell table :is(th, td) {
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drflow-ui-label {
+  color: var(--muted-foreground) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drapp-consulta-action:not(.bg-\[var\(--accent\)\]) {
+  color: var(--primary) !important;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drapp-consulta-action.text-white,
+html[data-ui-style="2"][data-clinical-dark="1"] .drapp-consulta-shell .drapp-consulta-action.bg-\[var\(--accent\,\#0F766E\)\] {
+  color: var(--accent-foreground) !important;
+}
+
 /* Tables: readable headers + hover */
 html[data-ui-style="2"] table thead th {
   color: var(--foreground);

@@ -131,26 +131,26 @@ function DrappHistorySidebar({
   }, [search, sidebarList]);
 
   return (
-    <aside className="drapp-consulta-sidebar flex w-full shrink-0 flex-col border-b border-slate-200 bg-white lg:w-[300px] lg:border-b-0 lg:border-r">
-      <div className="border-b border-slate-200 p-2.5">
+    <aside className="drapp-consulta-sidebar flex w-full shrink-0 flex-col border-b border-[var(--border)] bg-[var(--card)] lg:w-[300px] lg:border-b-0 lg:border-r">
+      <div className="border-b border-[var(--border)] p-2.5">
         <label className="relative block">
           <input
             type="search"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscador de evoluciones..."
-            className="drapp-consulta-search w-full rounded border border-slate-200 bg-white py-2 pl-3 pr-2 text-xs text-slate-800 outline-none focus:border-[#5ba4e6] focus:ring-1 focus:ring-[#5ba4e6]/40"
+            className="drapp-consulta-search w-full rounded border border-[var(--input)] bg-[var(--card)] py-2 pl-3 pr-2 text-xs text-[var(--foreground)] outline-none focus:border-[var(--ring)] focus:ring-1 focus:ring-[var(--ring)]/40"
           />
         </label>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="border-b border-slate-100 bg-[#fff8dc]/70 px-3 py-2.5">
+        <div className="border-b border-[var(--border)] bg-[var(--muted)] px-3 py-2.5">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="text-[13px] font-semibold text-[#2f7fbf]">
+              <p className="text-[13px] font-semibold text-[var(--primary)]">
                 {formatPatientEhrSidebarDate(new Date().toISOString())} {pendingLabel}
               </p>
-              <p className="mt-0.5 text-[11px] font-medium text-amber-800/80">
+              <p className="mt-0.5 text-[11px] font-medium text-[var(--warning)]">
                 {editingRecordId ? "Editando evolución" : "Consulta en curso"}
               </p>
             </div>
@@ -158,7 +158,7 @@ function DrappHistorySidebar({
               <button
                 type="button"
                 onClick={onStartNew}
-                className="shrink-0 text-[11px] font-semibold text-teal-700 hover:underline"
+                      className="shrink-0 text-[11px] font-semibold text-[var(--accent)] hover:underline"
               >
                 Nueva
               </button>
@@ -186,19 +186,19 @@ function DrappHistorySidebar({
                 <li
                   key={c.id}
                   className={cn(
-                    "border-b border-slate-100 px-3 py-3 text-[12px] leading-snug text-slate-700",
-                    isEditing && "bg-[#e8f4fc]"
+                    "border-b border-[var(--border)] px-3 py-3 text-[12px] leading-snug text-[var(--foreground)]",
+                    isEditing && "bg-[var(--accent-soft)]"
                   )}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="font-semibold text-[#2f7fbf]">
+                    <p className="font-semibold text-[var(--primary)]">
                       {formatPatientEhrSidebarDate(c.created_at)}{" "}
-                      <span className="font-medium text-[#2f7fbf]/90">{c.professional_name}</span>
+                      <span className="font-medium text-[var(--primary)]">{c.professional_name}</span>
                     </p>
                     <button
                       type="button"
                       onClick={() => onEditConsultation(c)}
-                      className="shrink-0 text-[11px] font-semibold text-teal-700 hover:underline"
+                      className="shrink-0 text-[11px] font-semibold text-[var(--accent)] hover:underline"
                     >
                       {isEditing ? "Editando" : "Editar"}
                     </button>
@@ -209,16 +209,16 @@ function DrappHistorySidebar({
                       className="mt-2 w-full text-left"
                       onClick={() => onEditConsultation(c)}
                     >
-                      <p className="font-semibold text-slate-800">Evoluciones</p>
-                      <p className="mt-0.5 text-slate-600">
-                        <span className="text-slate-400">{timeLabel}</span> {body}
+                      <p className="font-semibold text-[var(--foreground)]">Evoluciones</p>
+                      <p className="mt-0.5 text-[var(--muted-foreground)]">
+                        <span className="text-[var(--muted-foreground)]">{timeLabel}</span> {body}
                       </p>
                     </button>
                   ) : null}
                   {dayDx.length > 0 ? (
                     <div className="mt-2">
-                      <p className="font-semibold text-slate-800">Diagnósticos</p>
-                      <ul className="mt-0.5 list-disc space-y-0.5 pl-4 text-slate-600">
+                      <p className="font-semibold text-[var(--foreground)]">Diagnósticos</p>
+                      <ul className="mt-0.5 list-disc space-y-0.5 pl-4 text-[var(--muted-foreground)]">
                         {dayDx.map((d) => (
                           <li key={d.id}>{d.name}</li>
                         ))}
@@ -227,8 +227,8 @@ function DrappHistorySidebar({
                   ) : null}
                   {dayTx.length > 0 ? (
                     <div className="mt-2">
-                      <p className="font-semibold text-slate-800">Tratamientos</p>
-                      <ul className="mt-0.5 list-disc space-y-0.5 pl-4 text-slate-600">
+                      <p className="font-semibold text-[var(--foreground)]">Tratamientos</p>
+                      <ul className="mt-0.5 list-disc space-y-0.5 pl-4 text-[var(--muted-foreground)]">
                         {dayTx.map((t) => (
                           <li key={t.id}>
                             {t.product}
@@ -269,8 +269,8 @@ function DrappActionLink({
       className={cn(
         "drapp-consulta-action inline-flex items-center gap-0.5 px-2 py-1 text-[13px] font-medium transition disabled:opacity-50",
         active
-          ? "rounded bg-[#4f9fe0] text-white shadow-sm"
-          : "rounded text-[#2f7fbf] hover:bg-[#e8f4fc]"
+          ? "rounded bg-[var(--accent,#0F766E)] text-[var(--accent-foreground,#fff)] shadow-sm"
+          : "rounded text-[var(--primary,#0F4C5C)] hover:bg-[var(--accent-soft,#ECFDF5)]"
       )}
     >
       {showPlus ? <Plus className="h-3.5 w-3.5" strokeWidth={2.25} /> : null}
@@ -583,7 +583,7 @@ function DrappConsultaWorkspaceInner({
 
   return (
     <>
-      <div className="sticky top-0 z-20 bg-white">
+      <div className="sticky top-0 z-20 bg-[var(--card,#fff)]">
         <PatientEhrDemographics patient={patient} totalConsultations={sidebarList.length} />
       </div>
       <PatientEhrFiltersBar
@@ -620,7 +620,7 @@ function DrappConsultaWorkspaceInner({
           }}
         />
 
-        <main className="drapp-consulta-main min-w-0 flex-1 bg-white p-3 sm:p-4">
+        <main className="drapp-consulta-main min-w-0 flex-1 bg-[var(--card,#fff)] p-3 text-[var(--foreground,#0f172a)] sm:p-4">
           <form
             id={EHR_NEW_CONSULT_FORM_ID}
             ref={formRef}
@@ -633,13 +633,13 @@ function DrappConsultaWorkspaceInner({
 
             <section
               className={cn(
-                "drapp-consulta-composer rounded-sm border border-[#e8e0b8]",
+                "drapp-consulta-composer rounded-sm border border-[var(--border,#e8e0b8)]",
                 openPanel === "tratamiento" || openPanel === "diagnostico"
                   ? "overflow-visible"
                   : "overflow-hidden"
               )}
             >
-              <div className="drapp-consulta-actions flex flex-wrap items-center gap-1 border-b border-[#efe6b8] px-2 py-1.5">
+              <div className="drapp-consulta-actions flex flex-wrap items-center gap-1 border-b border-[var(--border,#efe6b8)] px-2 py-1.5">
                 <DrappActionLink
                   active={openPanel === "evolucion"}
                   onClick={() => {
@@ -712,7 +712,9 @@ function DrappConsultaWorkspaceInner({
                   <span
                     className={cn(
                       "text-[11px]",
-                      autoSaveStatus === "error" ? "font-medium text-red-700" : "text-slate-500"
+                      autoSaveStatus === "error"
+                        ? "font-medium text-[var(--destructive,#b91c1c)]"
+                        : "text-[var(--muted-foreground,#64748b)]"
                     )}
                   >
                     {autoSaveStatus === "saving"
@@ -728,7 +730,7 @@ function DrappConsultaWorkspaceInner({
                   <button
                     type="submit"
                     disabled={formLoading || quickSaving}
-                    className="text-[13px] font-semibold text-[#2f7fbf] hover:underline disabled:opacity-60"
+                    className="text-[13px] font-semibold text-[var(--primary,#0F4C5C)] hover:underline disabled:opacity-60"
                   >
                     {formLoading
                       ? "Guardando…"
@@ -741,7 +743,7 @@ function DrappConsultaWorkspaceInner({
                       type="button"
                       disabled={finalizing || formLoading || quickSaving}
                       onClick={() => void handleFinalizeClick()}
-                      className="inline-flex items-center gap-1 text-[13px] font-semibold text-[#2f7fbf] hover:underline disabled:opacity-60"
+                      className="inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--primary)] hover:underline disabled:opacity-60"
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       {finalizing ? "Finalizando…" : "Finalizar"}
@@ -808,7 +810,7 @@ function DrappConsultaWorkspaceInner({
                     value={chiefComplaint}
                     onChange={(e) => setChiefComplaint(e.target.value)}
                     placeholder="Motivo de la consulta…"
-                    className="drapp-consulta-evolution-input border-[#e8d98a] bg-transparent text-slate-900"
+                    className="drapp-consulta-evolution-input border-[var(--input,#e8d98a)] bg-transparent text-[var(--foreground,#0f172a)]"
                   />
                   <Textarea
                     ref={evolutionRef}
@@ -820,13 +822,13 @@ function DrappConsultaWorkspaceInner({
                     value={evolution}
                     onChange={(e) => setEvolution(e.target.value)}
                     placeholder="Escribe aquí la evolución"
-                    className="drapp-consulta-evolution-input min-h-[180px] border-[#e8d98a] bg-transparent text-[14px] leading-relaxed text-slate-900"
+                    className="drapp-consulta-evolution-input min-h-[180px] border-[var(--input,#e8d98a)] bg-transparent text-[14px] leading-relaxed text-[var(--foreground,#0f172a)]"
                   />
 
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                    <label className="inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-slate-700">
-                      <CalendarDays className="h-4 w-4 text-[#2f7fbf]" aria-hidden />
-                      <span className="font-medium text-[#2f7fbf]">
+                    <label className="inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-[var(--foreground,#0f172a)]">
+                      <CalendarDays className="h-4 w-4 text-[var(--primary,#0F4C5C)]" aria-hidden />
+                      <span className="font-medium text-[var(--primary,#0F4C5C)]">
                         {formatConsultationDateLabel(consultationAt)}
                       </span>
                       <input
@@ -929,7 +931,7 @@ export function DrappConsultaWorkspace(props: Props) {
     >
       {headerSlot ? <div className="mb-3">{headerSlot}</div> : null}
       <PatientEhrShellFrame>
-        <div className="drapp-consulta-shell overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div className="drapp-consulta-shell overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] shadow-sm">
           <DrappConsultaWorkspaceInner
             key={`${patient.id}:${rest.appointmentId ?? ""}`}
             {...rest}
