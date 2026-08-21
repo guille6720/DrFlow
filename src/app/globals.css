@@ -5,6 +5,7 @@
 @import "../core/theme/semantic-tokens.css";
 @import "../core/theme/a11y-contrast.css";
 @import "../core/theme/button-states.css";
+@import "../core/theme/form-states.css";
 
 :root {
   --font-jakarta: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;

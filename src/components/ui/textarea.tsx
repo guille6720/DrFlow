@@ -4,6 +4,7 @@ import { Mic, MicOff } from "lucide-react";
 import {
   type ChangeEvent,
   forwardRef,
+  type ReactNode,
   type TextareaHTMLAttributes,
   useRef,
 } from "react";
@@ -17,6 +18,7 @@ import { appendSpeechToTextarea } from "@/features/voice/lib/voice-input";
 interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
+  helperText?: ReactNode;
   /** Muestra botón de dictado por voz (historias clínicas). */
   voiceInput?: boolean;
   /** Expande verticalmente dentro de un contenedor flex. */
@@ -31,7 +33,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       className,
       label,
       error,
+      helperText,
       id,
+      required,
       voiceInput = false,
       grow = false,
       onVoiceAppend,
@@ -42,6 +46,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     ref
   ) => {
     const textareaId = id ?? label?.toLowerCase().replace(/\s/g, "-");
+    const helperId = helperText && textareaId ? `${textareaId}-helper` : undefined;
+    const errorId = error && textareaId ? `${textareaId}-error` : undefined;
     const innerRef = useRef<HTMLTextAreaElement | null>(null);
     const voice = useVoiceInputOptional();
     const { listening, error: speechError, toggle, stop, supported } = useSpeechToText();
@@ -94,8 +100,20 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         {(label || showVoice) && (
           <div className="flex items-center justify-between gap-2">
             {label ? (
-              <label htmlFor={textareaId} className="drflow-ui-label block text-sm font-medium">
+              <label
+                htmlFor={textareaId}
+                className={cn(
+                  "drflow-ui-label block text-sm font-medium",
+                  error && "drflow-ui-label-error"
+                )}
+                data-invalid={error ? "true" : undefined}
+              >
                 {label}
+                {required ? (
+                  <span className="drflow-ui-required" aria-hidden="true">
+                    *
+                  </span>
+                ) : null}
               </label>
             ) : (
               <span />
@@ -153,10 +171,14 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={setRefs}
           id={textareaId}
+          required={required}
+          aria-invalid={error ? true : undefined}
+          aria-required={required || undefined}
+          aria-describedby={[helperId, errorId].filter(Boolean).join(" ") || undefined}
           className={cn(
-            "drflow-ui-input w-full rounded-[10px] border border-[var(--border-strong,var(--border,#cbd5e1))] bg-[var(--surface-input,var(--input,var(--card,#fff)))] px-3 py-2 text-sm text-[var(--text-primary,var(--foreground))] placeholder:text-[var(--placeholder,var(--text-muted,#64748b))] focus:border-[var(--ring)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]/15 min-h-[100px]",
+            "drflow-ui-input w-full rounded-[10px] border border-[var(--border-strong,var(--border,#cbd5e1))] bg-[var(--surface-input,var(--input,var(--card,#fff)))] px-3 py-2 text-sm text-[var(--text-primary,var(--foreground))] placeholder:text-[var(--placeholder,var(--text-muted,#64748b))] focus:border-[var(--ring)] focus:outline-none focus:ring-[3px] focus:ring-[var(--ring)]/15 min-h-[100px] disabled:cursor-not-allowed",
             grow && "min-h-[12rem] flex-1 resize-y",
-            error && "border-[var(--destructive)]",
+            error && "drflow-ui-input-error border-[var(--destructive)]",
             className
           )}
           {...props}
@@ -166,7 +188,16 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         {speechError && showVoice ? (
           <p className="text-xs text-amber-700">{speechError}</p>
         ) : null}
-        {error && <p className="drflow-ui-error text-xs">{error}</p>}
+        {helperText && !error ? (
+          <p id={helperId} className="drflow-ui-helper">
+            {helperText}
+          </p>
+        ) : null}
+        {error && (
+          <p id={errorId} className="drflow-ui-error text-xs" role="alert">
+            {error}
+          </p>
+        )}
       </div>
     );
   }

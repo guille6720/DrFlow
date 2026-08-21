@@ -139,6 +139,18 @@ export const THEME_CONTRAST_PAIRS: Array<{
   { id: "co-btn-primary", fg: "#1D4ED8", bg: "#FFFFFF" },
   { id: "co-btn-primary-hover", fg: "#1E40AF", bg: "#EFF6FF" },
   { id: "co-btn-primary-disabled", fg: "#1E40AF", bg: "#E2E8F0" },
+  // Forms — values / placeholders / helpers / errors on input surfaces
+  { id: "form-light-value", fg: "#0F172A", bg: "#FFFFFF" },
+  { id: "form-light-label", fg: "#334155", bg: "#FFFFFF" },
+  { id: "form-light-placeholder", fg: "#64748B", bg: "#FFFFFF" },
+  { id: "form-light-helper", fg: "#475569", bg: "#FFFFFF" },
+  { id: "form-light-error", fg: "#B91C1C", bg: "#FFFFFF" },
+  { id: "form-dark-value", fg: "#F8FAFC", bg: "#0A1D36" },
+  { id: "form-dark-label", fg: "#CBD5E1", bg: "#102845" },
+  { id: "form-dark-placeholder", fg: "#94A3B8", bg: "#0A1D36" },
+  { id: "form-dark-helper", fg: "#94A3B8", bg: "#102845" },
+  { id: "form-dark-error", fg: "#F87171", bg: "#102845" },
+  { id: "form-disabled-light", fg: "#475569", bg: "#F1F5F9" },
   // Selected accent soft (light mint) must use dark text
   { id: "selected-mint", fg: "#0F172A", bg: "#ECFDF5" },
   { id: "selected-sky", fg: "#0F172A", bg: "#E0F2FE" },

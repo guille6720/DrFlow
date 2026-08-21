@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.12",
+    date: "2026-08-21",
+    title: "Formularios legibles: labels, placeholders y disabled",
+    highlights: [
+      "form-states.css: labels, valores, placeholders (opacity 1), select, textarea, checkbox/radio, errores, helpers, required",
+      "Campos disabled sin opacity padre; Input/Select/Textarea con helperText, aria-invalid y * required",
+      "Islas claras en dark/Cobalt: ink oscuro + placeholder #64748B",
+    ],
+  },
+  {
     version: "0.2.11",
     date: "2026-08-21",
     title: "Botones legibles en todos los estados",

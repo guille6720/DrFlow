@@ -39,27 +39,7 @@
   color: var(--text-on-selected) !important;
 }
 
-/* ——— Form labels / helper / errors stay token-driven ——— */
-.drflow-ui-label {
-  color: var(--text-secondary, var(--muted-foreground)) !important;
-  font-weight: 500;
-}
-
-.drflow-ui-helper {
-  color: var(--text-muted, var(--muted-foreground));
-}
-
-.drflow-ui-error {
-  color: var(--destructive);
-  font-weight: 500;
-}
-
-/* Placeholders: softer but still ≥ ~4.5:1 via token values above */
-.drflow-ui-input::placeholder,
-textarea.drflow-ui-input::placeholder {
-  color: var(--placeholder) !important;
-  opacity: 1 !important;
-}
+/* Form labels / helpers / errors / placeholders — see form-states.css */
 
 /* Disabled: variant-specific rules live in button-states.css.
    Keep a safe no-opacity baseline here for any .drflow-ui-button without a variant class. */
@@ -111,6 +91,8 @@ textarea.drflow-ui-input::placeholder {
   opacity: 1 !important;
   color: var(--placeholder, var(--text-muted)) !important;
 }
+
+/* (field disabled / checkbox / radio rules → form-states.css) */
 
 /* Selected rows / tabs: keep text readable */
 [aria-selected="true"],
