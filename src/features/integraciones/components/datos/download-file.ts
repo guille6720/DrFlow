@@ -1,5 +1,7 @@
 "use client";
 
+import { EXPORT_CACHE_CONTROL_NO_STORE } from "@/core/compliance/data-export-security";
+
 export function downloadBase64File(fileName: string, mime: string, base64: string) {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
@@ -9,6 +11,7 @@ export function downloadBase64File(fileName: string, mime: string, base64: strin
   const link = document.createElement("a");
   link.href = url;
   link.download = fileName;
+  link.rel = "noopener";
   link.click();
   URL.revokeObjectURL(url);
 }
@@ -19,18 +22,28 @@ export function downloadTextFile(fileName: string, mime: string, contents: strin
   const link = document.createElement("a");
   link.href = url;
   link.download = fileName;
+  link.rel = "noopener";
   link.click();
   URL.revokeObjectURL(url);
 }
 
+/** Fetch a short-lived signed export URL without browser HTTP cache. */
 export async function downloadFromUrl(fileName: string, url: string) {
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    cache: "no-store",
+    credentials: "omit",
+    headers: {
+      "Cache-Control": EXPORT_CACHE_CONTROL_NO_STORE,
+      Pragma: "no-cache",
+    },
+  });
   if (!response.ok) throw new Error("No se pudo descargar el archivo.");
   const blob = await response.blob();
   const objectUrl = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = objectUrl;
   link.download = fileName;
+  link.rel = "noopener";
   link.click();
   URL.revokeObjectURL(objectUrl);
 }

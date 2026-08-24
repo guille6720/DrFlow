@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { getSession } from "@/core/auth/session.server";
+import { FEATURES } from "@/core/entitlements/features";
+import { requirePermissionAndAddon } from "@/core/entitlements/guard.server";
 import { generatePublicApiKeyMaterial } from "@/core/public-api/auth";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
@@ -33,7 +35,7 @@ export async function listClinicApiKeys(clinicId: string): Promise<ClinicApiKeyR
 }
 
 export async function createClinicApiKey(formData: FormData) {
-  const access = await requireClinicPermission("manageSettings");
+  const access = await requirePermissionAndAddon("manageSettings", FEATURES.API);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
   const user = await getSession();

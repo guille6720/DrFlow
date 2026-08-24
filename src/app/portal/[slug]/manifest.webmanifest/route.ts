@@ -1,3 +1,4 @@
+import { isPublicPortalAllowedForSlug } from "@/core/entitlements/public-portal.server";
 import { createClient } from "@/core/supabase/server";
 import { bookingSlugSchema } from "@/core/validations/params";
 
@@ -16,6 +17,9 @@ export async function GET(
     return Response.json({ error: "Not found" }, { status: 404 });
   }
   const slug = slugParsed.data;
+  if (!(await isPublicPortalAllowedForSlug(slug))) {
+    return Response.json({ error: "Not found" }, { status: 404 });
+  }
   const origin = new URL(request.url).origin;
   const supabase = await createClient();
 

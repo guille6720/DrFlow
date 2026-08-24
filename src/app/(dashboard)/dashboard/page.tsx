@@ -4,6 +4,8 @@ import { Suspense } from "react";
 
 import { getDashboardShell, resolveClinicDisplayName } from "@/core/auth/session";
 import { Header } from "@/core/components/layout/header";
+import { canUseEnforcedFeature } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import { hasPermission } from "@/core/permissions/roles";
 
 import { ClinicalOpsDashboardAsync } from "@/features/dashboard/components/dashboard/clinical-ops-dashboard-async";
@@ -43,12 +45,14 @@ export default async function DashboardPage() {
                 isSuperadmin,
                 permissionOverrides
               )}
-              canManageCash={hasPermission(
-                role,
-                "manageCashRegister",
-                isSuperadmin,
-                permissionOverrides
-              )}
+              canManageCash={
+                hasPermission(
+                  role,
+                  "manageCashRegister",
+                  isSuperadmin,
+                  permissionOverrides
+                ) && (await canUseEnforcedFeature(FEATURES.CASH_REGISTER))
+              }
               canManageWaitingRoom={hasPermission(
                 role,
                 "manageWaitingRoom",

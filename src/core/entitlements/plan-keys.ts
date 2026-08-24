@@ -4,6 +4,8 @@
  */
 export const PLAN_KEYS = {
   TRIAL: "trial",
+  /** Public commercial SKU — 1 professional, no AI. */
+  ESSENTIAL: "essential",
   BASIC: "basic",
   PRO: "pro",
   PREMIUM: "premium",

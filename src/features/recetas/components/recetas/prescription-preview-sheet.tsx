@@ -23,7 +23,7 @@ export function PrescriptionPreviewSheet({ open, data, onClose }: Props) {
   return (
     <PatientWorkspaceOverlay
       open={open}
-      title="Vista previa — Receta electrónica"
+      title="Vista previa — Receta local / borrador"
       subtitle={patientName}
       onClose={onClose}
       wide

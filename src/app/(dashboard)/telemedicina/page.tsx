@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
+import { FEATURES } from "@/core/entitlements/features";
+import { requireAddonFeatureOrRedirect } from "@/core/entitlements/guard.server";
 import { canAccessRoute } from "@/core/permissions/roles";
 import { TELEMEDICINE_SESSION_LIST_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
@@ -10,6 +12,7 @@ import { TelemedicinaView } from "@/features/telemedicina";
 const TELEMEDICINE_SESSION_COLUMNS = TELEMEDICINE_SESSION_LIST_COLUMNS;
 
 export default async function TelemedicinaPage() {
+  await requireAddonFeatureOrRedirect(FEATURES.TELEMEDICINE);
   const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
 
   if (!canAccessRoute(role, "/telemedicina", isSuperadmin)) {

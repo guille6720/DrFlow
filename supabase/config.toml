@@ -1,5 +1,11 @@
 # Auth URLs de producción — `supabase config push` actualiza Site URL y Redirect URLs.
 # Ver: node scripts/print-supabase-redirects.mjs
+#
+# SAFETY: this project_id is PRODUCTION (nipqdarduknydqptqzup) for auth URL tooling only.
+# CLI link for entitlements / staging migrations must be DrFlow-Staging (gprmsufvhabntbrytwyi).
+# Never use this file's project_id as the target for `supabase db push` during entitlements work.
+# Preflight: npm run supabase:preflight:staging
+# Dry-run:   npm run entitlements:db-push:dry-run
 project_id = "nipqdarduknydqptqzup"
 
 [auth]

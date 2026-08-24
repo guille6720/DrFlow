@@ -19,14 +19,18 @@ import {
 } from "@/core/billing/plans";
 
 describe("billing plans helpers", () => {
-  it("resolves monthly and annual prices", () => {
+  it("resolves commercial promo prices; historic solo still priced for webhooks", () => {
+    expect(getPlanPriceArs("essential", "monthly")).toBe(25_000);
+    expect(getPlanPriceArs("pro", "monthly")).toBe(40_000);
+    expect(getPlanPriceArs("essential", "annual")).toBeNull();
     expect(getPlanPriceArs("solo", "monthly")).toBe(24_900);
     expect(getPlanPriceArs("solo", "annual")).toBe(249_000);
     expect(getPlanPriceArs("clinica", "monthly")).toBeNull();
   });
 
   it("builds mercado pago sku per cycle", () => {
-    expect(getPlanMercadoPagoSku("consultorio", "monthly")).toBe("drflow-consultorio-mensual");
+    expect(getPlanMercadoPagoSku("pro", "monthly")).toBe("drflow-pro-mensual");
+    expect(getPlanMercadoPagoSku("essential", "monthly")).toBe("drflow-essential-mensual");
     expect(getPlanMercadoPagoSku("consultorio", "annual")).toBe("drflow-consultorio-anual");
     expect(billingCycleLabel("annual")).toBe("Anual");
   });
@@ -36,12 +40,16 @@ describe("mercadopago external reference", () => {
   const clinicId = "11111111-1111-1111-1111-111111111111";
 
   it("roundtrips clinic plan cycle", () => {
-    const ref = buildExternalReference({ clinicId, planId: "solo", cycle: "monthly" });
+    const ref = buildExternalReference({ clinicId, planId: "essential", cycle: "monthly" });
     expect(parseExternalReference(ref)).toEqual({
       clinicId,
-      planId: "solo",
+      planId: "essential",
       cycle: "monthly",
     });
+  });
+
+  it("still parses historic solo references", () => {
+    expect(parseExternalReference(`${clinicId}:solo:monthly`)?.planId).toBe("solo");
   });
 
   it("rejects malformed reference", () => {

@@ -7,6 +7,13 @@ import { randomUUID } from "crypto";
 
 import { logAudit } from "@/core/auth/session.actions";
 import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
+import { insertClinicalRecordCreationAudit } from "@/core/compliance/clinical-record-integrity";
+import { getPatientCreateHeadroom } from "@/core/entitlements/limits.server";
+import {
+  consumePatientCreateHeadroom,
+  shouldAllowPatientCreate,
+} from "@/core/entitlements/quota-display";
+import { assertClinicStorageCapacity } from "@/core/entitlements/storage.server";
 import { sanitizeText } from "@/core/validations/schemas";
 
 import { upsertPatientClinicalProfile } from "@/features/pacientes/server/patient-clinical-profile";
@@ -64,7 +71,8 @@ async function resolvePatientForHceRow(
   clinicId: string,
   row: HceExportRow,
   defaultInsurance: string | null,
-  importNote: string
+  importNote: string,
+  allowCreate: boolean
 ): Promise<{ patientId: string; created: boolean } | { error: string }> {
   const existingId = await findPatientByConsumerRef(supabase, clinicId, row.paciente_id);
   if (existingId) return { patientId: existingId, created: false };
@@ -84,7 +92,8 @@ async function resolvePatientForHceRow(
     clinicId,
     extract,
     defaultInsurance,
-    `${importNote}\nImport ${row.paciente_id}`
+    `${importNote}\nImport ${row.paciente_id}`,
+    { allowCreate }
   );
 
   if ("error" in result) return { error: result.error };
@@ -128,6 +137,13 @@ async function ensureHceAttachment(
 
   const csv = buildPatientHceCsv(allRowsForPatient);
   const buffer = Buffer.from(csv, "utf-8");
+  const storage = await assertClinicStorageCapacity({
+    clinicId,
+    extraBytes: buffer.length,
+    supabase,
+  });
+  if (!storage.ok) return false;
+
   const filePath = `${clinicId}/patients/${patientId}/${randomUUID()}-${HCE_ATTACHMENT_NAME}`;
 
   const { error: uploadError } = await supabase.storage
@@ -208,6 +224,7 @@ export async function processHceImportBatchFromContent(
   const parseErrors = offset === 0 ? [...errors] : [];
   const patientCache = new Map<string, string>();
   const touchedConsumers = new Set<string>();
+  let remaining = await getPatientCreateHeadroom({ clinicId, supabase });
 
   for (const row of batch) {
     touchedConsumers.add(row.paciente_id);
@@ -218,7 +235,8 @@ export async function processHceImportBatchFromContent(
         clinicId,
         row,
         defaultInsurance,
-        `Import HCE: ${originalName}`
+        `Import HCE: ${originalName}`,
+        shouldAllowPatientCreate(remaining)
       );
       if ("error" in resolved) {
         parseErrors.push(`Fila ${row.lineNumber}: ${resolved.error}`);
@@ -226,7 +244,10 @@ export async function processHceImportBatchFromContent(
       }
       patientId = resolved.patientId;
       patientCache.set(row.paciente_id, patientId);
-      if (resolved.created) patientsCreated += 1;
+      if (resolved.created) {
+        remaining = consumePatientCreateHeadroom(remaining, true);
+        patientsCreated += 1;
+      }
     }
 
     const clinical = hceRowToClinicalRecord(row);
@@ -245,7 +266,7 @@ export async function processHceImportBatchFromContent(
         const createdAt = clinical.consultation_date
           ? `${clinical.consultation_date}T12:00:00.000Z`
           : new Date().toISOString();
-        const { error: insertError } = await supabase.from("clinical_records").insert({
+        const { data: inserted, error: insertError } = await supabase.from("clinical_records").insert({
           clinic_id: clinicId,
           patient_id: patientId,
           professional_id: professionalId,
@@ -256,10 +277,18 @@ export async function processHceImportBatchFromContent(
           created_by: userId,
           created_at: createdAt,
           updated_at: createdAt,
-        });
+        }).select("id").single();
         if (insertError) {
           parseErrors.push(`Fila ${row.lineNumber}: ${insertError.message}`);
-        } else {
+        } else if (inserted?.id) {
+          await insertClinicalRecordCreationAudit(supabase, {
+            clinicalRecordId: inserted.id,
+            clinicId,
+            patientId,
+            changedBy: userId,
+            source: "hce_batch_import",
+            marker: clinical.marker,
+          });
           recordsCreated += 1;
         }
       }

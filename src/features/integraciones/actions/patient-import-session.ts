@@ -18,6 +18,7 @@ import {
 } from "@/features/integraciones/lib/patient-import-duplicates";
 import {
   type ImportTemplateCandidate,
+  parsePatientColumnMapping,
   type PatientColumnMapping,
   pickCompatibleTemplate,
   remapTemplateToHeaders,
@@ -395,8 +396,10 @@ export async function listImportMappingTemplates(): Promise<{
   if (error) return { error: "No se pudieron cargar las plantillas." };
   return {
     templates: (data ?? []).map((row) => ({
-      ...row,
-      mapping: row.mapping as unknown as PatientColumnMapping,
+      id: row.id,
+      name: row.name,
+      mapping: parsePatientColumnMapping(row.mapping),
+      date_format: row.date_format,
     })),
   };
 }

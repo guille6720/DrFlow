@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { requireStaffManagerWithUser } from "@/core/actions/guard-adapters";
+import { FEATURES } from "@/core/entitlements/features";
+import { assertClinicSeatCapacity } from "@/core/entitlements/limits.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit, recordAuditChange } from "@/core/security/audit-service";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
@@ -169,6 +171,12 @@ export async function inviteClinicMember(formData: FormData): Promise<InviteMemb
   });
 
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
+
+  const seat = await assertClinicSeatCapacity({
+    clinicId,
+    featureKey: FEATURES.USERS_MAX,
+  });
+  if (!seat.ok) return { error: seat.error };
 
   const initialPassword = generateInitialPassword();
 

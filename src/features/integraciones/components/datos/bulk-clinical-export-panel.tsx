@@ -3,6 +3,9 @@
 import { Download } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
+import { FEATURES } from "@/core/entitlements/features";
+
 import {
   enqueueBulkClinicalExport,
   getBulkClinicalExportJob,
@@ -111,6 +114,7 @@ export function BulkClinicalExportPanel({
 
   return (
     <div className="space-y-3">
+      <AddonUpgradeNotice feature={FEATURES.DATA_EXPORT} />
       <p className="text-sm text-slate-600">
         Padrón activo estimado: {estimatedCount} paciente{estimatedCount === 1 ? "" : "s"}. El archivo se
         arma en segundo plano; no se envía al navegador hasta estar listo.

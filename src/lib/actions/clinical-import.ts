@@ -3,6 +3,7 @@
 import { resolveImportAccess } from "@/core/actions/action-response";
 import { logAudit } from "@/core/auth/session.actions";
 import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
+import { getPatientCreateHeadroom } from "@/core/entitlements/limits.server";
 import { requireClinicalImportAccess } from "@/core/services/import-access.service";
 import { createClient } from "@/core/supabase/server";
 
@@ -68,6 +69,7 @@ export async function importClinicalCsv(formData: FormData): Promise<ImportClini
   const defaultInsurance = clinic?.default_insurance_provider ?? null;
   const patientCache = new Map<string, { patientId: string; created: boolean }>();
   const professionalCache = new Map<string, string | null>();
+  const quota = { remaining: await getPatientCreateHeadroom({ clinicId: auth.clinicId, supabase }) };
 
   let recordsCreated = 0;
   let recordsSkipped = 0;
@@ -82,6 +84,7 @@ export async function importClinicalCsv(formData: FormData): Promise<ImportClini
       originalName,
       defaultInsurance,
       patientCache,
+      quota,
     });
     if ("error" in patientResult) {
       rowErrors.push(`Fila ${row.lineNumber}: ${patientResult.error}`);

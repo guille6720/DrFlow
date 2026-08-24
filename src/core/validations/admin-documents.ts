@@ -2,12 +2,15 @@ import { z } from "zod";
 
 import { entityIdSchema } from "@/core/validations/params";
 
-import { ADMIN_DOCUMENT_CATEGORIES } from "@/lib/constants/cash-register";
+import type { Database } from "@/types/supabase";
 
-const adminDocumentCategories = ADMIN_DOCUMENT_CATEGORIES.map((c) => c.value) as [
-  (typeof ADMIN_DOCUMENT_CATEGORIES)[number]["value"],
-  ...(typeof ADMIN_DOCUMENT_CATEGORIES)[number]["value"][],
-];
+const adminDocumentCategories = [
+  "authorization",
+  "medical_order",
+  "patient_study",
+  "general",
+  "other",
+] as const satisfies ReadonlyArray<Database["public"]["Enums"]["admin_document_category"]>;
 
 export const adminDocumentUploadSchema = z.object({
   patient_id: entityIdSchema,

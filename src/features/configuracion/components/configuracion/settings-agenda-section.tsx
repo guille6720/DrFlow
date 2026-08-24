@@ -3,6 +3,9 @@
 import { Copy, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
+import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
+import { FEATURES } from "@/core/entitlements/features";
 import { nestedProfileFullName } from "@/core/supabase/nested-row";
 import type { NestedRow } from "@/core/supabase/query-types";
 
@@ -42,10 +45,13 @@ export function SettingsAgendaSection({
     value: p.id,
     label: p.display_name ?? nestedProfileFullName(p.profiles) ?? "Profesional",
   }));
+  const canUsePortal = useCanUseFeature(FEATURES.PORTAL);
 
   return (
     <>
       <Card title="Reserva pública online">
+        {canUsePortal ? (
+          <>
         <p className="mb-3 text-sm text-slate-600">
           Tu página de turnos usa el nombre de la clínica. Compartí el link para que pacientes reserven online.
         </p>
@@ -81,6 +87,10 @@ export function SettingsAgendaSection({
           </div>
         ) : (
           <Button onClick={() => onResult(enablePublicBooking)}>Activar reserva pública</Button>
+        )}
+          </>
+        ) : (
+          <AddonUpgradeNotice feature={FEATURES.PORTAL} />
         )}
       </Card>
 

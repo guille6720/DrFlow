@@ -78,6 +78,16 @@ export const TABLES_REQUIRING_RLS = [
   "clinic_entitlement_subscriptions",
   "clinic_feature_overrides",
   "feature_usage",
+  // Phase 10 — tables with RLS that were missing from CI manifest (103–129)
+  "clinic_api_keys",
+  "os_fee_schedules",
+  "os_billable_items",
+  "os_liquidation_batches",
+  "data_import_sessions",
+  "import_mapping_templates",
+  "clinic_plan_recommendations",
+  "commercial_usage_thresholds",
+  "privacy_rights_requests",
 ] as const;
 
 /** RPC SECURITY DEFINER que deben acotar tenant (nombre → migración de referencia). */
@@ -97,6 +107,8 @@ export const SECURITY_DEFINER_RPC_CHECKS: { name: string; migrationHint: string 
   { name: "cancel_patient_appointment", migrationHint: "026" },
   { name: "record_patient_data_consent", migrationHint: "033" },
   { name: "record_informed_consent", migrationHint: "098" },
+  { name: "withdraw_patient_consent", migrationHint: "134" },
+  { name: "record_clinic_legal_consent", migrationHint: "134" },
   { name: "remove_clinic_member_user", migrationHint: "035" },
   { name: "delete_own_account", migrationHint: "039" },
   { name: "update_my_doctor_profile", migrationHint: "025" },
@@ -126,4 +138,8 @@ export const SECURITY_DEFINER_RPC_CHECKS: { name: string; migrationHint: string 
   { name: "entitlement_subscription_is_live", migrationHint: "127" },
   { name: "set_clinic_entitlement_trial_end", migrationHint: "127" },
   { name: "expire_lapsed_clinic_entitlement_trials", migrationHint: "128" },
+  // Phase 10 — public API tenant gate
+  { name: "assert_public_api_clinic_access", migrationHint: "133" },
+  { name: "api_list_appointments", migrationHint: "104/133" },
+  { name: "api_submit_appointment", migrationHint: "104/133" },
 ];

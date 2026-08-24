@@ -1,6 +1,10 @@
 "use server";
 
 import { resolveImportAccess } from "@/core/actions/action-response";
+import { buildExportAuditMetadata } from "@/core/compliance/data-export-security";
+import { assertClinicJobEnqueueAllowed } from "@/core/entitlements/clinic-job-guard.server";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import { scheduleAfterTask } from "@/core/errors/background.server";
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
 import { processPendingClinicJobs } from "@/core/jobs/process";
@@ -38,8 +42,16 @@ export async function previewBulkClinicalExport(raw: unknown): Promise<{
   const auth = resolveImportAccess(access);
   if (!auth.ok) return { error: auth.error };
 
+  const entitlement = await requireAddonFeatureAccess(FEATURES.DATA_EXPORT);
+  if (!entitlement.ok) return { error: entitlement.error };
+
   const parsed = parseBulkClinicalExportFilters(raw);
   if (!parsed.ok) return { error: parsed.error };
+
+  if (parsed.request.format === "fhir") {
+    const fhir = await requireAddonFeatureAccess(FEATURES.INTEGRATIONS);
+    if (!fhir.ok) return { error: fhir.error };
+  }
 
   const cap = bulkExportPatientCap(parsed.request.format, parsed.request.sections);
   const supabase = await createClient();
@@ -69,8 +81,16 @@ export async function enqueueBulkClinicalExport(raw: unknown): Promise<{
   const auth = resolveImportAccess(access);
   if (!auth.ok) return { error: auth.error };
 
+  const entitlement = await requireAddonFeatureAccess(FEATURES.DATA_EXPORT);
+  if (!entitlement.ok) return { error: entitlement.error };
+
   const parsed = parseBulkClinicalExportRequest(raw);
   if (!parsed.ok) return { error: parsed.error };
+
+  if (parsed.request.format === "fhir") {
+    const fhir = await requireAddonFeatureAccess(FEATURES.INTEGRATIONS);
+    if (!fhir.ok) return { error: fhir.error };
+  }
   if (parsed.request.professionalId) {
     const professional = parseEntityId(parsed.request.professionalId, "Profesional");
     if (!professional.ok) return { error: professional.error };
@@ -82,6 +102,16 @@ export async function enqueueBulkClinicalExport(raw: unknown): Promise<{
 
   const supabase = await createClient();
   try {
+    const guard = await assertClinicJobEnqueueAllowed({
+      clinicId: auth.clinicId,
+      jobType: "export_clinical_bulk",
+      payload: {
+        format: parsed.request.format,
+      },
+      supabase,
+    });
+    if (!guard.ok) return { error: guard.error };
+
     const { id } = await enqueueClinicJob(supabase, {
       clinicId: auth.clinicId,
       jobType: "export_clinical_bulk",
@@ -107,17 +137,21 @@ export async function enqueueBulkClinicalExport(raw: unknown): Promise<{
       entityId: auth.clinicId,
       action: "export",
       what: "Encoló exportación masiva",
-      metadata: {
-        type: "bulk_clinical_export",
-        jobId: id,
+      metadata: buildExportAuditMetadata({
+        channel: "bulk_clinical_job",
         format: parsed.request.format,
-        sections: parsed.request.sections,
-        scope: parsed.request.scope,
-        selectedCount: parsed.request.patientIds.length,
-        dateRange: parsed.request.range,
-        professionalId: parsed.request.professionalId,
-        insuranceProvider: parsed.request.insuranceProvider,
-      },
+        recordCount: parsed.request.patientIds.length,
+        extra: {
+          type: "bulk_clinical_export",
+          jobId: id,
+          sections: parsed.request.sections,
+          scope: parsed.request.scope,
+          selectedCount: parsed.request.patientIds.length,
+          dateRange: parsed.request.range,
+          professionalId: parsed.request.professionalId,
+          insuranceProvider: parsed.request.insuranceProvider,
+        },
+      }),
     });
 
     scheduleWorker(auth.clinicId);

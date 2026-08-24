@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { isPublicPortalAllowedForSlug } from "@/core/entitlements/public-portal.server";
 import { getSiteUrl } from "@/core/supabase/env";
 
 import {
@@ -17,6 +18,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  if (!(await isPublicPortalAllowedForSlug(slug))) {
+    return { title: "Instalar app | DrFlow" };
+  }
   const doctor = await resolvePortalDoctorInfo(slug);
   if (!doctor) {
     return { title: "Instalar app | DrFlow" };
@@ -61,6 +65,7 @@ export default async function PatientAppInstallPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  if (!(await isPublicPortalAllowedForSlug(slug))) notFound();
   const doctor = await resolvePortalDoctorInfo(slug);
   if (!doctor) notFound();
 

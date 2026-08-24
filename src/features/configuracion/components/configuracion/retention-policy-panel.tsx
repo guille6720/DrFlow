@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 
 import {
   DATA_RETENTION_CATEGORIES,
+  DEFAULT_CLINICAL_RETENTION_YEARS,
   deletionPolicyLabel,
   RETENTION_YEARS_MAX,
   RETENTION_YEARS_MIN,
@@ -52,7 +53,7 @@ export function RetentionPolicyPanel({ summary, error }: Props) {
   return (
     <Card
       title="Retención y eliminación de datos"
-      description="Política operativa del consultorio conforme Ley 26.529 y Ley 25.326. DrFlow no elimina historias clínicas automáticamente."
+      description="Política operativa del consultorio (Ley 26.529 / Ley 25.326). El reloj de HC corre desde la última consulta. DrFlow no elimina historias clínicas automáticamente."
     >
       <div className="space-y-4 text-sm">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -81,8 +82,27 @@ export function RetentionPolicyPanel({ summary, error }: Props) {
             {summary.newestRecordAt
               ? ` — ${format(new Date(summary.newestRecordAt), "PP", { locale: es })}`
               : null}
+            {summary.historyRetentionUntilNewest ? (
+              <>
+                . Conservación estimada (desde última consulta): hasta{" "}
+                {format(new Date(summary.historyRetentionUntilNewest), "PP", { locale: es })}.
+              </>
+            ) : null}
           </p>
         ) : null}
+
+        {!summary.meetsDefaultMinimum ? (
+          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            La retención configurada ({summary.retentionYears} años) está por debajo del default de
+            producto ({DEFAULT_CLINICAL_RETENTION_YEARS} años). Revisá con asesoramiento legal antes
+            de operar en producción.
+          </p>
+        ) : null}
+
+        <p className="text-xs text-slate-500">
+          Purge automático de HC: deshabilitado. Solo herramientas de migración (staging) pueden
+          vaciar datos con confirmación explícita.
+        </p>
 
         <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-4">
           <div className="min-w-[180px]">
@@ -130,8 +150,9 @@ export function RetentionPolicyPanel({ summary, error }: Props) {
 
         <p className="text-xs text-slate-600">
           La baja de un paciente es lógica: oculta la ficha pero conserva historias, recetas,
-          consentimientos y auditoría. Ante pedidos ARCO, usá la exportación Habeas Data antes de
-          cualquier acción manual fuera del sistema.
+          consentimientos y auditoría al menos {summary.retentionYears} años desde la última
+          consulta. Ante pedidos ARCO, usá la exportación Habeas Data antes de cualquier acción
+          manual fuera del sistema.
         </p>
       </div>
     </Card>

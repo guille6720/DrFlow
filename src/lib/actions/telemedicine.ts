@@ -6,6 +6,9 @@ import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { getSession } from "@/core/auth/session.server";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
+import { consumeAddonUsage } from "@/core/entitlements/metered.server";
 import { recordAudit } from "@/core/security/audit-service";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { nullToUndefined } from "@/core/supabase/json";
@@ -54,9 +57,10 @@ async function loadAppointmentForTelemedicine(clinicId: string, appointmentId: s
 export async function getOrCreateTelemedicineSession(appointmentId: string) {
   const access = await requireClinicPermission("viewClinicalRecords");
   if (!access.ok) return { error: access.error };
+  const entitlement = await requireAddonFeatureAccess(FEATURES.TELEMEDICINE);
+  if (!entitlement.ok) return { error: entitlement.error };
   const { clinicId } = access;
   const user = await getSession();
-  if (!user?.id) return { error: "Sesión requerida" };
 
   const idParsed = parseEntityId(appointmentId, "Turno");
   if (!idParsed.ok) return { error: idParsed.error };
@@ -86,6 +90,7 @@ export async function getOrCreateTelemedicineSession(appointmentId: string) {
 
   const appointment = await loadAppointmentForTelemedicine(clinicId, idParsed.data);
   if (!appointment) return { error: "Turno no encontrado" };
+  if (!user?.id) return { error: "Sesión requerida" };
 
   const patient = appointment.patients as unknown as {
     first_name: string;
@@ -106,7 +111,6 @@ export async function getOrCreateTelemedicineSession(appointmentId: string) {
     p_created_by: user.id,
     p_provider: room.provider,
     p_external_room_id: nullToUndefined(room.externalRoomId),
-    p_patient_join_url: nullToUndefined<string>(null),
     p_expires_at: nullToUndefined(room.expiresAt),
   });
 
@@ -225,6 +229,11 @@ export async function sendTelemedicineLinkToPatient(appointmentId: string) {
   }
 
   if (patient.phone?.trim()) {
+    const whatsappEntitlement = await requireAddonFeatureAccess(FEATURES.WHATSAPP);
+    if (!whatsappEntitlement.ok) return { error: whatsappEntitlement.error };
+    const quota = await consumeAddonUsage({ featureKey: FEATURES.WHATSAPP_MONTHLY_MESSAGES });
+    if (!quota.ok) return { error: quota.error };
+
     const whatsappResult = await deliverTelemedicineLinkWhatsApp({
       to: patient.phone.trim(),
       patientName,
@@ -329,6 +338,8 @@ export async function loadPublicTelemedicineSession(
 export async function loadStaffTelemedicineSession(sessionId: string) {
   const access = await requireClinicPermission("viewClinicalRecords");
   if (!access.ok) return { error: access.error };
+  const entitlement = await requireAddonFeatureAccess(FEATURES.TELEMEDICINE);
+  if (!entitlement.ok) return { error: entitlement.error };
   const { clinicId } = access;
 
   const idParsed = parseEntityId(sessionId, "Sesión");

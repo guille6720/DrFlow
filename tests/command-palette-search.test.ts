@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { COMMAND_PALETTE_ACTIONS } from "@/lib/constants/command-palette-items";
+import { FEATURES } from "@/core/entitlements/features";
+
+import { COMMAND_PALETTE_ACTIONS, COMMAND_PALETTE_NAV } from "@/lib/constants/command-palette-items";
 import {
   filterCommandPaletteItems,
   isEditableTarget,
@@ -19,10 +21,23 @@ describe("filterCommandPaletteItems", () => {
     expect(result.some((i) => i.id === "action-new-patient")).toBe(false);
   });
 
-  it("hides clinical actions from secretary", () => {
-    const result = filterCommandPaletteItems(COMMAND_PALETTE_ACTIONS, "", "secretary", false);
-    expect(result.some((i) => i.id === "action-new-consultation")).toBe(false);
-    expect(result.some((i) => i.id === "action-new-appointment")).toBe(true);
+  it("hides caja when the commercial catalog denies it", () => {
+    const result = filterCommandPaletteItems(
+      COMMAND_PALETTE_NAV,
+      "caja",
+      "clinic_admin",
+      false,
+      undefined,
+      {
+        catalogAvailable: true,
+        planKey: "basic",
+        status: "active",
+        allowed: { [FEATURES.CASH_REGISTER]: false },
+        usage: {},
+        limits: {},
+      }
+    );
+    expect(result.some((item) => item.href === "/caja")).toBe(false);
   });
 });
 

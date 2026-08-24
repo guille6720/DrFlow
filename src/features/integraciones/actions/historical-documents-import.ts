@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { resolveImportAccess } from "@/core/actions/action-response";
 import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
+import { assertClinicStorageCapacity } from "@/core/entitlements/storage.server";
 import { recordAudit } from "@/core/security/audit-service";
 import {
   buildPatientFilePath,
@@ -37,9 +38,10 @@ export type HistoricalDocumentImportItem =
 
 function parseCategory(raw: unknown): ClinicalDocumentCategory {
   const value = String(raw ?? "otro").trim();
-  return VALID_CATEGORIES.has(value as ClinicalDocumentCategory)
-    ? (value as ClinicalDocumentCategory)
-    : "otro";
+  for (const cat of VALID_CATEGORIES) {
+    if (cat === value) return cat;
+  }
+  return "otro";
 }
 
 async function insertAttachment(
@@ -49,10 +51,12 @@ async function insertAttachment(
   const first = await supabase.from("patient_attachments").insert(payload).select("id").single();
   if (!first.error) return first;
   if (!/document_date|source|professional_id/i.test(first.error.message)) return first;
-  const fallback: PatientAttachmentInsert = { ...payload };
-  delete fallback.document_date;
-  delete fallback.source;
-  delete fallback.professional_id;
+  const {
+    document_date: _documentDate,
+    source: _source,
+    professional_id: _professionalId,
+    ...fallback
+  } = payload;
   return supabase.from("patient_attachments").insert(fallback).select("id").single();
 }
 
@@ -108,6 +112,16 @@ export async function importHistoricalClinicalDocuments(formData: FormData): Pro
     const validated = validateAdminDocumentUpload(file, buffer, CLINICAL_DOCUMENT_MAX_BYTES);
     if (!validated.ok) {
       results.push({ fileName: file.name, ok: false, error: validated.error });
+      continue;
+    }
+
+    const storage = await assertClinicStorageCapacity({
+      clinicId: auth.clinicId,
+      extraBytes: file.size,
+      supabase,
+    });
+    if (!storage.ok) {
+      results.push({ fileName: file.name, ok: false, error: storage.error });
       continue;
     }
 

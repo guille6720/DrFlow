@@ -1,6 +1,9 @@
 "use server";
 
 import { resolveImportAccess } from "@/core/actions/action-response";
+import { buildExportAuditMetadata } from "@/core/compliance/data-export-security";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import { recordAudit } from "@/core/security/audit-service";
 import { verifyPatientInClinic } from "@/core/security/ownership-guard";
 import { requireClinicalExportAccess } from "@/core/services/import-access.service";
@@ -58,6 +61,15 @@ export async function exportPatientClinicalPackage(
     return { error: "Formato de exportación inválido." };
   }
 
+  if (input.format === "pdf") {
+    const pdfEntitlement = await requireAddonFeatureAccess(FEATURES.PDF_EXPORT);
+    if (!pdfEntitlement.ok) return { error: pdfEntitlement.error };
+  }
+  if (input.format === "fhir") {
+    const fhirEntitlement = await requireAddonFeatureAccess(FEATURES.INTEGRATIONS);
+    if (!fhirEntitlement.ok) return { error: fhirEntitlement.error };
+  }
+
   const sections = parseClinicalExportSections(input.sections);
   const rangeParsed = parseExportDateRange(input.dateFrom, input.dateTo);
   if (!rangeParsed.ok) return { error: rangeParsed.error };
@@ -77,6 +89,9 @@ export async function exportPatientClinicalPackage(
   const recordCount = countExportedRecords(document);
   const names = packed.snapshot.patient;
 
+  const exportChannel =
+    input.format === "zip" ? "clinical_package_signed_url" : "clinical_package_inline";
+
   await recordAudit({
     clinicId: auth.clinicId,
     module: "imports",
@@ -85,13 +100,16 @@ export async function exportPatientClinicalPackage(
     patientId: parsed.data,
     action: "export",
     what: "Exportó historia clínica",
-    metadata: {
+    metadata: buildExportAuditMetadata({
+      channel: exportChannel,
       format: input.format,
-      sections,
       recordCount,
-      dateRange: rangeParsed.range,
-      documentNumber: names.document_number,
-    },
+      extra: {
+        sections,
+        dateRange: rangeParsed.range,
+        documentNumber: names.document_number,
+      },
+    }),
   });
 
   if (input.format === "json") {

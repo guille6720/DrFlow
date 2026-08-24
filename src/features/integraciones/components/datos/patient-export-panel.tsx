@@ -3,6 +3,9 @@
 import { Download } from "lucide-react";
 import { useState } from "react";
 
+import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
+import { FEATURES } from "@/core/entitlements/features";
+
 import { exportClinicPatientsSpreadsheet } from "@/features/integraciones/actions/patient-export";
 import { downloadBase64File } from "@/features/integraciones/components/datos/download-file";
 
@@ -39,6 +42,7 @@ export function PatientExportPanel({ canExport, estimatedCount, bulk }: Props) {
 
   return (
     <div className="space-y-3">
+      <AddonUpgradeNotice feature={FEATURES.DATA_EXPORT} />
       <p className="text-sm text-slate-600">
         Padrón activo estimado: {estimatedCount} paciente{estimatedCount === 1 ? "" : "s"} (máx. 5000).
         Datos demográficos solamente.

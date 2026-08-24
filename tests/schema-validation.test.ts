@@ -55,6 +55,19 @@ describe("schema expectations vs migrations", () => {
       "search_pami_vademecum",
       "search_medication_catalog",
       "claim_clinic_jobs",
+      "get_clinic_entitlements",
+      "increment_feature_usage",
+      "try_consume_feature_usage",
+      "assign_clinic_entitlement_plan",
+      "upsert_clinic_feature_override",
+      "get_clinic_entitlement_usage",
+      "set_clinic_entitlement_status",
+      "clinic_current_entitlement_subscription_id",
+      "clear_clinic_feature_override",
+      "entitlement_metered_commercially_blocked",
+      "entitlement_subscription_is_live",
+      "set_clinic_entitlement_trial_end",
+      "expire_lapsed_clinic_entitlement_trials",
     ];
     for (const rpc of rpcs) {
       expect(sql, `RPC ${rpc}`).toMatch(new RegExp(`FUNCTION\\s+(?:public\\.)?${rpc}\\b`, "i"));

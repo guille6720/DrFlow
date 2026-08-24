@@ -96,16 +96,18 @@ export async function loadPatientDeactivationPolicy(patientId: string) {
 
   const retentionYears = normalizeRetentionYears(clinic?.clinical_record_retention_years);
   const dates = (records ?? []).map((row) => row.created_at as string);
-  const recordsWithinRetention = dates.filter((createdAt) =>
-    isWithinClinicalRetentionPeriod(createdAt, retentionYears)
-  ).length;
+  const latestRecordAt = dates[0] ?? null;
+  // Patient-level clock: last clinical entry. Individual rows still counted for UI stats.
+  const recordsWithinRetention = latestRecordAt
+    ? dates.filter(() => isWithinClinicalRetentionPeriod(latestRecordAt, retentionYears)).length
+    : 0;
 
   return {
     data: buildPatientDeactivationEvaluation({
       retentionYears,
       clinicalRecordCount: dates.length,
       recordsWithinRetention,
-      latestRecordAt: dates[0] ?? null,
+      latestRecordAt,
     }),
   };
 }

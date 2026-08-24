@@ -19,6 +19,7 @@ import {
   Sparkles,
   Stethoscope,
   Users,
+  Video,
 } from "lucide-react";
 
 import type { PERMISSIONS } from "@/core/permissions/roles";
@@ -188,6 +189,15 @@ export const COMMAND_PALETTE_NAV: CommandPaletteItemDef[] = [
   },
   { id: "nav-datos", label: "Importar / Exportar", href: "/datos", group: "navegacion", icon: ArrowDownUp, permission: "importPatients", keywords: ["importar", "exportar", "excel", "csv", "datos"] },
   { id: "nav-recordatorios", label: "Recordatorios", href: "/recordatorios", group: "navegacion", icon: Bell },
+  {
+    id: "nav-telemedicina",
+    label: "Telemedicina",
+    href: "/telemedicina",
+    group: "navegacion",
+    icon: Video,
+    permission: "viewClinicalRecords",
+    keywords: ["video", "jitsi", "consulta virtual", "videoconsulta"],
+  },
   { id: "nav-ayuda", label: "Ayuda / Manual", href: "/ayuda", group: "navegacion", icon: BookOpen },
   {
     id: "nav-gemini",

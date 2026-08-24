@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
+import { FEATURES } from "@/core/entitlements/features";
+import { requireAddonFeatureOrRedirect } from "@/core/entitlements/guard.server";
 import { hasPermission } from "@/core/permissions/roles";
 import { parsePageParam } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
@@ -24,6 +26,7 @@ export default async function PamiPlanillasPage({
   const q = sanitizePatientSearchTerm(qRaw);
   const page = parsePageParam(pageParam);
 
+  await requireAddonFeatureOrRedirect(FEATURES.PAMI);
   const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
   const supabase = await createClient();
 

@@ -2,6 +2,9 @@
 
 import { useRouter } from "next/navigation";
 
+import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
+import { FEATURES } from "@/core/entitlements/features";
 import {
   canEditMemberPermissions,
   getEffectivePermissionsForRole,
@@ -38,6 +41,7 @@ export function TeamPermissionsMatrix({
   onError,
 }: Props) {
   const router = useRouter();
+  const canUseAi = useCanUseFeature(FEATURES.AI);
   const editableMembers = members.filter((m) => canEditMemberPermissions(m.role as UserRole));
 
   if (editableMembers.length === 0) {
@@ -73,7 +77,9 @@ export function TeamPermissionsMatrix({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200">
+    <div className="space-y-3">
+      {!canUseAi ? <AddonUpgradeNotice feature={FEATURES.AI} /> : null}
+      <div className="overflow-x-auto rounded-xl border border-slate-200">
       <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
         <thead className="bg-slate-50">
           <tr>
@@ -145,10 +151,12 @@ export function TeamPermissionsMatrix({
                   <input
                     type="checkbox"
                     checked={member.uses_shared_ai}
-                    disabled={!hasSharedCredentials || acting === `${member.id}-shared-ai`}
+                    disabled={!canUseAi || !hasSharedCredentials || acting === `${member.id}-shared-ai`}
                     aria-label={`Credenciales compartidas para ${member.profiles?.full_name ?? "usuario"}`}
                     title={
-                      hasSharedCredentials
+                      !canUseAi
+                        ? "La IA no está incluida en el plan del consultorio"
+                        : hasSharedCredentials
                         ? "Usar credenciales de IA del consultorio"
                         : "Configurá credenciales compartidas arriba"
                     }
@@ -165,6 +173,7 @@ export function TeamPermissionsMatrix({
         Los recuadros con borde ámbar indican un permiso personalizado. El administrador siempre
         tiene acceso total y usa credenciales propias.
       </p>
+    </div>
     </div>
   );
 }

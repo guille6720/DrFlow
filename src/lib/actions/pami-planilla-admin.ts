@@ -4,8 +4,10 @@ import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { revalidatePamiPlanillaSurfaces } from "@/core/cache/revalidate-pami-planillas";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
-import { nullToUndefined } from "@/core/supabase/json";
+import { nullToUndefined, toJson } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 import {
   PAMI_PLANILLA_FIELD_MULTILINE_MAX,
@@ -48,11 +50,19 @@ function mapAdminCatalog(payload: {
   };
 }
 
+async function requirePamiPlanillaAdmin() {
+  const access = await requireClinicPermission("manageSettings");
+  if (!access.ok) return access;
+  const entitlement = await requireAddonFeatureAccess(FEATURES.PAMI);
+  if (!entitlement.ok) return entitlement;
+  return access;
+}
+
 export async function loadPamiPlanillaAdminCatalog(): Promise<{
   catalog?: PamiPlanillaAdminCatalog;
   error?: string;
 }> {
-  const access = await requireClinicPermission("manageSettings");
+  const access = await requirePamiPlanillaAdmin();
   if (!access.ok) return { error: access.error };
 
   const supabase = await createClient();
@@ -103,7 +113,7 @@ export async function publishPamiPlanillaTemplate(input: {
   fields: PamiPlanillaFieldDef[];
   changeNotes?: string;
 }): Promise<{ success?: boolean; versionNumber?: number; error?: string }> {
-  const access = await requireClinicPermission("manageSettings");
+  const access = await requirePamiPlanillaAdmin();
   if (!access.ok) return { error: access.error };
 
   const validationError = validatePublishInput(input.bodyTemplate, input.fields);
@@ -113,14 +123,16 @@ export async function publishPamiPlanillaTemplate(input: {
   const { data, error } = await supabase.rpc("publish_pami_planilla_version", {
     p_template_slug: input.templateSlug,
     p_body_template: input.bodyTemplate.trim(),
-    p_fields: input.fields.map((f, index) => ({
-      key: f.key,
-      label: f.label.trim(),
-      multiline: f.multiline ?? false,
-      placeholder: f.placeholder?.trim() || null,
-      is_required: false,
-      sort_order: index + 1,
-    })),
+    p_fields: toJson(
+      input.fields.map((f, index) => ({
+        key: f.key,
+        label: f.label.trim(),
+        multiline: f.multiline ?? false,
+        placeholder: f.placeholder?.trim() || null,
+        is_required: false,
+        sort_order: index + 1,
+      }))
+    ),
     p_change_notes: nullToUndefined(input.changeNotes?.trim() || null),
     p_clinic_id: access.clinicId,
   });
@@ -144,7 +156,7 @@ export async function setPamiPlanillaClinicActive(
   templateSlug: string,
   isActive: boolean
 ): Promise<{ success?: boolean; error?: string }> {
-  const access = await requireClinicPermission("manageSettings");
+  const access = await requirePamiPlanillaAdmin();
   if (!access.ok) return { error: access.error };
 
   const supabase = await createClient();

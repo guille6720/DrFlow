@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
 import { getSession } from "@/core/auth/session.server";
+import { assertClinicJobEnqueueAllowed } from "@/core/entitlements/clinic-job-guard.server";
 import { scheduleAfterTask } from "@/core/errors/background.server";
 import { logServerError } from "@/core/errors/log-error.server";
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
@@ -34,6 +35,14 @@ export async function enqueueClinicJobAction(
 
   const user = await getSession();
   const supabase = await createClient();
+
+  const guard = await assertClinicJobEnqueueAllowed({
+    clinicId: access.clinicId,
+    jobType: validated.jobType,
+    payload: validated.payload,
+    supabase,
+  });
+  if (!guard.ok) return { error: guard.error };
 
   try {
     const { id } = await enqueueClinicJob(supabase, {

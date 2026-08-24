@@ -4,7 +4,9 @@ import { PenLine, Trash2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { PlanCapHint } from "@/core/components/entitlements/plan-cap-hint";
 import { SignatureImage } from "@/core/components/ui/signature-image";
+import { FEATURES } from "@/core/entitlements/features";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -181,6 +183,7 @@ export function ProfessionalSignaturesManager({ professionals, canManageAll }: P
 
       {selected ? (
         <Card title={`Firma — ${getProfessionalDisplayName(selected)}`}>
+          <PlanCapHint feature={FEATURES.STORAGE_MAX_MB} />
           <p className="mb-4 text-sm text-slate-700">
             La firma se aplica automáticamente en evoluciones, recetas, órdenes médicas y documentos
             que requieran firma del profesional.

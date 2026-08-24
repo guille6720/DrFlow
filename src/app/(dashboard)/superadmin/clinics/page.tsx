@@ -62,7 +62,7 @@ export default async function SuperadminClinicsPage({
         />
         <select name="plan" defaultValue={plan} className="rounded-md border border-slate-300 px-2 py-2">
           <option value="">Todos los planes</option>
-          {["trial", "basic", "pro", "premium", "enterprise", "legacy"].map((p) => (
+          {["trial", "essential", "basic", "pro", "premium", "enterprise", "legacy"].map((p) => (
             <option key={p} value={p}>
               {p}
             </option>

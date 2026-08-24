@@ -39,10 +39,11 @@ const CLINICAL_TEMPLATE_ADMIN_COLUMNS = `${CLINICAL_TEMPLATE_COLUMNS}, specialty
 
 /** Session client signs URLs after cross-request DB cache (URLs expire; paths are cached). */
 async function signProfessionalRows<T extends { signature_image_path?: string | null }>(
-  rows: T[]
+  rows: T[],
+  clinicId: string
 ): Promise<Array<T & { signature_image_url: string | null }>> {
   const supabase = await createClient();
-  return resolveProfessionalSignatureUrls(supabase, rows);
+  return resolveProfessionalSignatureUrls(supabase, rows, clinicId);
 }
 
 export async function loadClinicPluginsCached(clinicId: string) {
@@ -164,7 +165,7 @@ export async function loadClinicProfessionalsListRowsCached(clinicId: string): P
 
 export async function loadClinicProfessionalsListCached(clinicId: string) {
   const rows = await loadClinicProfessionalsListRowsCached(clinicId);
-  return signProfessionalRows(rows);
+  return signProfessionalRows(rows, clinicId);
 }
 
 export async function loadClinicProfessionalsFullRowsCached(clinicId: string) {
@@ -188,7 +189,7 @@ export async function loadClinicProfessionalsFullRowsCached(clinicId: string) {
 
 export async function loadClinicProfessionalsFullCached(clinicId: string) {
   const rows = await loadClinicProfessionalsFullRowsCached(clinicId);
-  return signProfessionalRows(rows);
+  return signProfessionalRows(rows, clinicId);
 }
 
 export async function loadClinicLocationsCached(clinicId: string) {

@@ -1,5 +1,13 @@
 import "server-only";
 
+import {
+  ClinicalAiSanitizationError,
+  prepareExternalClinicalAiPayload,
+} from "@/lib/ai/external-clinical-ai-gateway.server";
+import {
+  sanitizeClinicalAIInput,
+  type SanitizeClinicalAIOptions,
+} from "@/lib/ai/sanitize-clinical-ai-input";
 import type { AiChatMessage, UserAiCredentials } from "@/lib/ai/user-ai-provider-types";
 import type { ClinicalAiAgentId, ClinicalAiEngine } from "@/lib/utils/clinical-ai-orchestrator";
 
@@ -8,6 +16,8 @@ type LlmEnhanceInput = {
   body: string;
   contextSummary?: string;
   credentials?: UserAiCredentials | null;
+  knownIdentifiers?: string[];
+  strictSanitization?: boolean;
 };
 
 type LlmEnhanceResult = {
@@ -20,7 +30,15 @@ type UserAiChatInput = {
   messages: AiChatMessage[];
   contextSummary?: string;
   ruleBasedFallback?: string;
+  knownIdentifiers?: string[];
+  strictSanitization?: boolean;
 };
+
+function buildSanitizeOptions(input: {
+  knownIdentifiers?: string[];
+}): SanitizeClinicalAIOptions {
+  return { knownIdentifiers: input.knownIdentifiers };
+}
 
 const SYSTEM_PROMPT = `Sos un asistente clínico administrativo en DrFlow (Argentina).
 Respondé en español claro y profesional.
@@ -191,13 +209,37 @@ async function callUserAiChatInternal(
 /** Multi-turn chat using the user's preferred provider (or env fallback). */
 export async function runUserAiChat(input: UserAiChatInput): Promise<LlmEnhanceResult> {
   const fallback = input.ruleBasedFallback ?? "No pude obtener respuesta del modelo en este momento.";
+  const options = buildSanitizeOptions(input);
+
+  let preparedMessages: AiChatMessage[];
+  try {
+    const prepared = prepareExternalClinicalAiPayload({
+      messages: input.messages,
+      knownIdentifiers: input.knownIdentifiers,
+    });
+    preparedMessages = prepared.messages;
+  } catch (err) {
+    if (input.strictSanitization && err instanceof ClinicalAiSanitizationError) throw err;
+    return { body: err instanceof Error ? err.message : fallback, engine: "rule_based" };
+  }
+
+  let contextSummary = input.contextSummary;
+  if (contextSummary?.trim()) {
+    const contextResult = sanitizeClinicalAIInput(contextSummary, options);
+    if (contextResult.blocked) {
+      if (input.strictSanitization) {
+        throw new ClinicalAiSanitizationError(
+          contextResult.blockReason ?? "Contexto clínico no pudo anonimizarse.",
+          contextResult
+        );
+      }
+      return { body: contextResult.blockReason ?? fallback, engine: "rule_based" };
+    }
+    contextSummary = contextResult.sanitized;
+  }
 
   try {
-    const text = await callUserAiChatInternal(
-      input.credentials,
-      input.messages,
-      input.contextSummary
-    );
+    const text = await callUserAiChatInternal(input.credentials, preparedMessages, contextSummary);
     if (!text) {
       return { body: fallback, engine: "rule_based" };
     }
@@ -231,6 +273,8 @@ export async function enhanceClinicalAiBodyIfConfigured(
     messages: [{ role: "user", content: userContent }],
     contextSummary: input.contextSummary,
     ruleBasedFallback: input.body,
+    knownIdentifiers: input.knownIdentifiers,
+    strictSanitization: input.strictSanitization,
   });
 }
 

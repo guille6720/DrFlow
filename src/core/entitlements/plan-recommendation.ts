@@ -38,6 +38,7 @@ export type PlanRecommendationResult = {
 
 const PLAN_RANK: Record<string, number> = {
   [PLAN_KEYS.TRIAL]: 0,
+  [PLAN_KEYS.ESSENTIAL]: 1,
   [PLAN_KEYS.BASIC]: 1,
   [PLAN_KEYS.PRO]: 2,
   [PLAN_KEYS.PREMIUM]: 3,
@@ -196,7 +197,8 @@ export function getPlanRecommendation(input: PlanRecommendationInput): PlanRecom
   } else if (
     proHits.length > 0 ||
     seatSignals.length > 0 ||
-    (current === PLAN_KEYS.BASIC && score >= 15)
+    (current === PLAN_KEYS.BASIC && score >= 15) ||
+    (current === PLAN_KEYS.ESSENTIAL && score >= 15)
   ) {
     target = PLAN_KEYS.PRO;
     severity = seatSignals.some((s) => s.includes("al límite")) ? "critical" : "warning";
@@ -207,10 +209,10 @@ export function getPlanRecommendation(input: PlanRecommendationInput): PlanRecom
 
   // Trial: suggest best-fit paid plan without auto-convert.
   if (current === PLAN_KEYS.TRIAL) {
-    if (!target) target = PLAN_KEYS.BASIC;
+    if (!target) target = PLAN_KEYS.ESSENTIAL;
     if (premiumFromPlan.length > 0) target = PLAN_KEYS.PREMIUM;
     else if (proHits.length > 0 || seatSignals.length > 0) target = PLAN_KEYS.PRO;
-    else target = PLAN_KEYS.BASIC;
+    else target = PLAN_KEYS.ESSENTIAL;
     severity = "info";
     reasons.unshift("Trial — plan pago sugerido (sin conversión automática)");
     score = Math.max(score, 40);
@@ -237,7 +239,12 @@ export function getPlanRecommendation(input: PlanRecommendationInput): PlanRecom
     score = Math.min(score, 30);
   }
 
-  if (current === PLAN_KEYS.BASIC && !target && proHits.length === 0 && seatSignals.length === 0) {
+  if (
+    (current === PLAN_KEYS.BASIC || current === PLAN_KEYS.ESSENTIAL) &&
+    !target &&
+    proHits.length === 0 &&
+    seatSignals.length === 0
+  ) {
     return {
       currentPlan: current,
       recommendedPlan: null,

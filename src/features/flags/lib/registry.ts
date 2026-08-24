@@ -9,6 +9,7 @@ export type FeatureFlagId =
   | "recordatorios"
   | "consultation_assistant"
   | "admin_ops_assistant"
+  | "clinical_research_protocols"
   | "patient_audit_tab"
   | "public_booking_online";
 
@@ -73,6 +74,16 @@ export const FEATURE_FLAG_REGISTRY: FeatureFlagDefinition[] = [
     description: "Copilot de secretaría y operaciones (cola, caja, tareas del día).",
     category: "ux",
     defaultEnabled: true,
+    requiresPlugin: "ia",
+  },
+  {
+    id: "clinical_research_protocols",
+    label: "Protocolos de investigación clínica",
+    description:
+      "Panel de protocolos de ensayos clínicos y búsqueda de candidatos en Gemini. " +
+      "Desactivado por defecto — requiere revisión legal/privacidad antes de activar en producción.",
+    category: "compliance",
+    defaultEnabled: false,
     requiresPlugin: "ia",
   },
   {

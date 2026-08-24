@@ -56,9 +56,7 @@ export async function rescheduleAppointment(input: unknown) {
     p_new_start_at: parsed.data.start_at,
     p_new_end_at: parsed.data.end_at,
     p_changed_by: userId,
-    p_reason: nullToUndefined(
-      parsed.data.reason ? sanitizeText(parsed.data.reason) : null
-    ),
+    p_reason: nullToUndefined(parsed.data.reason ? sanitizeText(parsed.data.reason) : null),
   });
 
   if (error) {

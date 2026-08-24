@@ -5,6 +5,11 @@ import { revalidatePath } from "next/cache";
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
 import {
+  clinicalLifecycleLabel,
+  type ClinicalLifecycleStatus,
+  isArchivableLifecycle,
+} from "@/core/compliance/clinical-deletion-protection";
+import {
   type AuditRequestContext,
   getAuditRequestContext,
 } from "@/core/security/audit-context";
@@ -229,4 +234,65 @@ async function persistClinicalRecordUpdate(
   revalidatePath(`/pacientes/${String(result.data.data.patient_id)}`, "page");
   revalidatePath("/consultas");
   return { success: true };
+}
+
+/**
+ * Phase 7 — Soft lifecycle change (archive / superseded / corrected).
+ * Never hard-deletes clinical content.
+ */
+export async function archiveClinicalRecord(
+  recordId: string,
+  options?: {
+    reason?: string;
+    lifecycle?: Exclude<ClinicalLifecycleStatus, "active">;
+  }
+) {
+  const [gate, supabase] = await Promise.all([gateClinicalRecordWrite(), createClient()]);
+  if (!gate.ok) return { error: gate.error };
+  const { clinicId } = gate.access;
+
+  const idParsed = parseEntityId(recordId, "Consulta");
+  if (!idParsed.ok) return { error: idParsed.error };
+
+  const lifecycle = options?.lifecycle ?? "archived";
+  if (!isArchivableLifecycle(lifecycle)) {
+    return { error: "Estado de ciclo de vida inválido." };
+  }
+
+  const { data, error } = await supabase.rpc(
+    "archive_clinical_record" as never,
+    {
+      p_clinic_id: clinicId,
+      p_record_id: idParsed.data,
+      p_reason: options?.reason?.trim() || null,
+      p_lifecycle: lifecycle,
+    } as never
+  );
+
+  if (error) return { error: error.message };
+  if (!data) return { error: "No se pudo archivar la consulta." };
+
+  const patientId =
+    typeof data === "object" && data && "patient_id" in data
+      ? String((data as { patient_id: string }).patient_id)
+      : null;
+
+  await logAudit({
+    clinicId,
+    module: "clinical",
+    what: `${clinicalLifecycleLabel(lifecycle)} consulta clínica (sin borrado físico)`,
+    entityType: "clinical_record",
+    entityId: idParsed.data,
+    patientId: patientId ?? undefined,
+    action: "update",
+    newValues: {
+      lifecycle_status: lifecycle,
+      archive_reason: options?.reason?.trim() || null,
+    },
+  });
+
+  revalidatePath(`/historias/${idParsed.data}`, "page");
+  if (patientId) revalidatePath(`/pacientes/${patientId}`, "page");
+  revalidatePath("/consultas");
+  return { success: true, lifecycle };
 }

@@ -1,5 +1,8 @@
 "use client";
 
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
+import { FEATURES } from "@/core/entitlements/features";
+
 import type { BulkClinicalExportFormat } from "@/features/integraciones/lib/bulk-clinical-export";
 import {
   ALL_CLINICAL_EXPORT_SECTIONS,
@@ -45,6 +48,7 @@ type Props = {
 };
 
 export function BulkClinicalExportFilters({ draft, onChange, professionals, insuranceOptions }: Props) {
+  const canExportFhir = useCanUseFeature(FEATURES.INTEGRATIONS);
   function patch(partial: Partial<BulkExportDraft>) {
     onChange({ ...draft, ...partial });
   }
@@ -106,7 +110,7 @@ export function BulkClinicalExportFilters({ draft, onChange, professionals, insu
           { value: "csv", label: "CSV" },
           { value: "xlsx", label: "Excel" },
           { value: "json", label: "JSON estructurado" },
-          { value: "fhir", label: "FHIR R4" },
+          ...(canExportFhir ? [{ value: "fhir" as const, label: "FHIR R4" }] : []),
           { value: "zip", label: "ZIP completo" },
         ]}
       />

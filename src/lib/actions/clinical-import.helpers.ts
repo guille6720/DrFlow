@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import {
+  consumePatientCreateHeadroom,
+  shouldAllowPatientCreate,
+} from "@/core/entitlements/quota-display";
 import { validateCsvImportUpload } from "@/core/security/file-upload";
 import { sanitizeText } from "@/core/validations/schemas";
 
@@ -81,6 +85,8 @@ export async function validateClinicalCsvSource(
 
 type PatientCacheEntry = { patientId: string; created: boolean };
 
+export type PatientImportQuota = { remaining: number | null };
+
 export async function resolvePatientForCsvRow(input: {
   supabase: SupabaseClient;
   clinicId: string;
@@ -88,6 +94,7 @@ export async function resolvePatientForCsvRow(input: {
   originalName: string;
   defaultInsurance: string | null;
   patientCache: Map<string, PatientCacheEntry>;
+  quota?: PatientImportQuota;
 }): Promise<{ entry: PatientCacheEntry; created: boolean } | { error: string }> {
   let patientEntry = input.patientCache.get(input.row.document_number);
   if (patientEntry) return { entry: patientEntry, created: false };
@@ -103,7 +110,8 @@ export async function resolvePatientForCsvRow(input: {
     input.clinicId,
     extract,
     input.row.insurance_provider ?? input.defaultInsurance,
-    `Paciente importado desde CSV: ${input.originalName}`
+    `Paciente importado desde CSV: ${input.originalName}`,
+    { allowCreate: shouldAllowPatientCreate(input.quota?.remaining ?? null) }
   );
   if ("error" in patientResult) {
     return { error: patientResult.error };
@@ -111,6 +119,12 @@ export async function resolvePatientForCsvRow(input: {
 
   patientEntry = { patientId: patientResult.patientId, created: patientResult.created };
   input.patientCache.set(input.row.document_number, patientEntry);
+  if (input.quota) {
+    input.quota.remaining = consumePatientCreateHeadroom(
+      input.quota.remaining,
+      patientResult.created
+    );
+  }
 
   const patientUpdates: Record<string, string> = {};
   if (input.row.phone) patientUpdates.phone = sanitizeText(input.row.phone);

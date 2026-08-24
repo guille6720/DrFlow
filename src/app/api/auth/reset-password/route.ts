@@ -3,6 +3,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { isSameOriginPost } from "@/core/security/csrf";
+import {
+  AUTH_RESET_RATE_LIMIT,
+  checkRateLimit,
+  getRequestClientIp,
+} from "@/core/security/rate-limit";
 import { getPublicSiteUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/core/supabase/env";
 import { firstZodIssue } from "@/core/validations/params";
 
@@ -21,6 +26,12 @@ export async function POST(request: NextRequest) {
 
   if (!isSameOriginPost(request)) {
     loginUrl.searchParams.set("error", "Solicitud no válida. Volvé a intentar desde la página de login.");
+    return redirectGet(loginUrl);
+  }
+
+  const clientIp = getRequestClientIp(request);
+  if (!checkRateLimit(`auth:reset:${clientIp}`, AUTH_RESET_RATE_LIMIT)) {
+    loginUrl.searchParams.set("error", "Demasiados intentos. Esperá unos minutos e intentá de nuevo.");
     return redirectGet(loginUrl);
   }
 

@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { canUseFeatureAsSystem } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import type { ClinicJobRow, ExportClinicalBulkJobPayload } from "@/core/jobs/types";
 
 import { parseBulkClinicalExportRequest } from "@/features/integraciones/lib/bulk-clinical-export";
@@ -12,6 +14,25 @@ export async function handleExportClinicalBulkJob(
   job: ClinicJobRow
 ): Promise<Record<string, unknown>> {
   const payload = job.payload as unknown as ExportClinicalBulkJobPayload;
+
+  if (
+    !(await canUseFeatureAsSystem({
+      clinicId: job.clinic_id,
+      featureKey: FEATURES.DATA_EXPORT,
+    }))
+  ) {
+    throw new Error("La exportación no está incluida en el plan del consultorio.");
+  }
+  if (
+    payload.format === "fhir" &&
+    !(await canUseFeatureAsSystem({
+      clinicId: job.clinic_id,
+      featureKey: FEATURES.INTEGRATIONS,
+    }))
+  ) {
+    throw new Error("FHIR no está incluido en el plan del consultorio.");
+  }
+
   const parsed = parseBulkClinicalExportRequest({
     ...payload,
     confirmed: true,

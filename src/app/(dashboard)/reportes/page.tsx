@@ -5,11 +5,14 @@ import { redirect } from "next/navigation";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
+import { canUseEnforcedFeature } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
 import { AsyncReportButton } from "@/features/dashboard/components/reportes/async-report-button";
 import { ExportCsvButton } from "@/features/dashboard/components/reportes/export-csv-button";
+import { ReportesBiUpsell } from "@/features/dashboard/components/reportes/reportes-bi-upsell";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -50,6 +53,8 @@ export default async function ReportesPage() {
     );
   }
 
+  const canUseBi = await canUseEnforcedFeature(FEATURES.ADVANCED_REPORTS);
+
   return (
     <>
       <Header
@@ -63,11 +68,17 @@ export default async function ReportesPage() {
 
       <div className="space-y-6 p-4 sm:p-6">
         <div className="flex flex-wrap justify-end gap-2">
-          <Link href="/reportes/bi">
-            <Button size="sm" variant="outline">
-              BI especialidad / cobertura
-            </Button>
-          </Link>
+          {canUseBi ? (
+            <Link href="/reportes/bi">
+              <Button size="sm" variant="outline">
+                BI especialidad / cobertura
+              </Button>
+            </Link>
+          ) : (
+            <div className="w-full sm:ml-auto sm:w-auto sm:max-w-md">
+              <ReportesBiUpsell />
+            </div>
+          )}
           <ExportCsvButton rows={report.csvRows} filename={`reporte-${format(now, "yyyy-MM")}.csv`} />
         </div>
 

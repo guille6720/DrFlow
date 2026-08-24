@@ -70,6 +70,10 @@ export type HistoriaDetailPageData = {
     id: string;
     action: string;
     changed_at: string;
+    what: string | null;
+    change_reason: string | null;
+    old_values: Record<string, unknown> | null;
+    new_values: Record<string, unknown> | null;
     profiles: { full_name: string } | null;
   }>;
   prescriptions: HistoriaPrescriptionSummary[];
@@ -122,7 +126,9 @@ export async function loadHistoriaDetailPageData(
   ] = await Promise.all([
     supabase
       .from("clinical_record_audit")
-      .select("id, action, changed_at, profiles:changed_by(full_name)")
+      .select(
+        "id, action, what, change_reason, changed_at, old_values, new_values, profiles:changed_by(full_name)"
+      )
       .eq("clinical_record_id", id)
       .order("changed_at", { ascending: false })
       .limit(40),

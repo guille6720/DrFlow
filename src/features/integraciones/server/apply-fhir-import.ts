@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { insertClinicalRecordCreationAudit } from "@/core/compliance/clinical-record-integrity";
 import { isUniqueViolation } from "@/core/errors/postgres-error";
 import type { FhirImportDraft, FhirImportPatientDraft } from "@/core/services/interoperability/fhir";
 import { sanitizeText } from "@/core/validations/schemas";
@@ -111,7 +112,7 @@ async function appendEncounters(
     const complaint = sanitizeText(
       `${marker} ${encounter.chiefComplaint || "Migración FHIR"}`.trim()
     );
-    const { error } = await supabase.from("clinical_records").insert({
+    const { data: inserted, error } = await supabase.from("clinical_records").insert({
       clinic_id: params.clinicId,
       patient_id: params.patientId,
       professional_id: professionalId,
@@ -125,9 +126,19 @@ async function appendEncounters(
       created_by: params.userId,
       created_at: createdAt,
       updated_at: createdAt,
-    });
+    }).select("id").single();
     if (error) skipped += 1;
-    else created += 1;
+    else if (inserted?.id) {
+      await insertClinicalRecordCreationAudit(supabase, {
+        clinicalRecordId: inserted.id,
+        clinicId: params.clinicId,
+        patientId: params.patientId,
+        changedBy: params.userId,
+        source: "fhir_import",
+        marker,
+      });
+      created += 1;
+    }
   }
   return { created, skipped };
 }

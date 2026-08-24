@@ -2,9 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
 import { getSession } from "@/core/auth/session.server";
+import { FEATURES } from "@/core/entitlements/features";
+import { requirePermissionAndAddon } from "@/core/entitlements/guard.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { nullToUndefined } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
@@ -17,7 +18,7 @@ import {
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
 
 export async function upsertOsFeeSchedule(formData: FormData) {
-  const access = await requireClinicPermission("manageCashRegister");
+  const access = await requirePermissionAndAddon("manageCashRegister", FEATURES.INSURANCE);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
@@ -47,7 +48,7 @@ export async function upsertOsFeeSchedule(formData: FormData) {
 }
 
 export async function deleteOsFeeSchedule(formData: FormData) {
-  const access = await requireClinicPermission("manageCashRegister");
+  const access = await requirePermissionAndAddon("manageCashRegister", FEATURES.INSURANCE);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
@@ -69,7 +70,7 @@ export async function deleteOsFeeSchedule(formData: FormData) {
 }
 
 export async function createOsLiquidationBatch(formData: FormData) {
-  const access = await requireClinicPermission("manageCashRegister");
+  const access = await requirePermissionAndAddon("manageCashRegister", FEATURES.INSURANCE);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
   const user = await getSession();
@@ -116,7 +117,7 @@ export async function createOsLiquidationBatch(formData: FormData) {
 }
 
 export async function updateOsLiquidationBatchStatus(formData: FormData) {
-  const access = await requireClinicPermission("manageCashRegister");
+  const access = await requirePermissionAndAddon("manageCashRegister", FEATURES.INSURANCE);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
@@ -149,7 +150,7 @@ export async function updateOsLiquidationBatchStatus(formData: FormData) {
 }
 
 export async function updateOsLiquidationNotes(batchId: string, notes: string) {
-  const access = await requireClinicPermission("manageCashRegister");
+  const access = await requirePermissionAndAddon("manageCashRegister", FEATURES.INSURANCE);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 

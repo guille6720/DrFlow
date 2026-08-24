@@ -127,8 +127,7 @@ export async function submitPrescriptionToRefepsProvider(input: {
   }
 }
 
-export const REFEPS_SANDBOX_DISCLAIMER =
-  "Modo sandbox DrFlow: el identificador REFEPS generado es de prueba hasta homologación MSN y credenciales API reales.";
-
-export const REFEPS_SUBMITTED_DISCLAIMER =
-  "Receta registrada en REFEPS/RENaPDiS según trámite de homologación del consultorio. Verificá el identificador en farmacia.";
+export {
+  REFEPS_SANDBOX_DISCLAIMER,
+  REFEPS_SUBMITTED_DISCLAIMER,
+} from "@/core/compliance/prescription-compliance";

@@ -1,4 +1,6 @@
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
+import { FEATURES } from "@/core/entitlements/features";
+import { requireAddonFeatureOrRedirect } from "@/core/entitlements/guard.server";
 import { createClient } from "@/core/supabase/server";
 
 import { RecordatoriosView } from "@/features/agenda/components/recordatorios/recordatorios-view";
@@ -10,6 +12,7 @@ const REMINDER_LOG_COLUMNS =
   "id, clinic_id, appointment_id, recipient, channel, status, message, sent_at, error_message, created_at";
 
 export default async function RecordatoriosPage() {
+  await requireAddonFeatureOrRedirect(FEATURES.WHATSAPP_REMINDERS);
   const { profile, clinics, clinicId, role } = await getDashboardPageContext();
   const supabase = await createClient();
 

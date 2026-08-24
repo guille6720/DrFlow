@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+
 import {
   formatProtocolNoteForEvolution,
   GEMINI_CLINICAL_PROTOCOLS,
@@ -14,10 +16,26 @@ type Props = {
 };
 
 export function DrappProtocolsQuickPanel({ onInsertIntoEvolution, onCancel }: Props) {
+  const researchEnabled = useFeatureFlag("clinical_research_protocols");
   const protocols = useMemo(() => GEMINI_CLINICAL_PROTOCOLS, []);
   const [selectedId, setSelectedId] = useState(protocols[0]?.id ?? "");
   const selected: GeminiClinicalProtocol | null =
     protocols.find((p) => p.id === selectedId) ?? protocols[0] ?? null;
+
+  if (!researchEnabled) {
+    return (
+      <div className="space-y-2 border-t border-[#efe6b8] bg-[#fffdf5] p-3">
+        <p className="text-sm text-slate-600">
+          Los protocolos de investigación clínica están desactivados para este consultorio. Active el
+          flag &quot;Protocolos de investigación clínica&quot; en Configuración tras completar la
+          revisión legal y de privacidad requerida.
+        </p>
+        <button type="button" className="text-sm font-semibold text-[#2f7fbf]" onClick={onCancel}>
+          Cerrar
+        </button>
+      </div>
+    );
+  }
 
   if (!selected) {
     return (

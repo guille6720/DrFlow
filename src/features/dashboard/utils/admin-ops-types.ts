@@ -1,3 +1,5 @@
+import type { ClientEntitlementsSnapshot } from "@/core/entitlements/types";
+
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 
 import type { AdminAnalyticsSnapshot } from "@/lib/utils/admin-analytics-types";
@@ -53,6 +55,7 @@ export type AdminOpsContext = {
   canManageWaitingRoom?: boolean;
   canManageSettings?: boolean;
   canViewReports?: boolean;
+  entitlementsSnapshot?: ClientEntitlementsSnapshot | null;
 };
 
 export type AdminOpsIntentId =

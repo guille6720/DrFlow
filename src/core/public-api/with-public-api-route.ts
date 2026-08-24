@@ -1,5 +1,7 @@
 import "server-only";
 
+import { canUseFeatureAsSystem } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { authenticatePublicApiKey } from "@/core/public-api/auth";
 import { checkPublicApiRateLimit } from "@/core/public-api/rate-limit";
@@ -30,6 +32,17 @@ async function runPublicApiAuth(
 
   const { auth } = authResult;
   obsCtx.clinicId = auth.clinicId;
+
+  if (!(await canUseFeatureAsSystem({ clinicId: auth.clinicId, featureKey: FEATURES.API }))) {
+    return {
+      ok: false,
+      response: publicApiError(
+        "La API pública no está incluida en el plan del consultorio.",
+        403,
+        obsCtx.traceId
+      ),
+    };
+  }
 
   if (!checkPublicApiRateLimit(auth.keyId)) {
     return {

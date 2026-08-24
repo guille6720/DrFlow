@@ -6,6 +6,12 @@ import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { getSession } from "@/core/auth/session.server";
+import {
+  assertClinicJobEnqueueAllowed,
+  assertWhatsAppReminderSendAllowed,
+} from "@/core/entitlements/clinic-job-guard.server";
+import { FEATURES } from "@/core/entitlements/features";
+import { consumeAddonUsage } from "@/core/entitlements/metered.server";
 import { scheduleAfterTask } from "@/core/errors/background.server";
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
 import { processPendingClinicJobs } from "@/core/jobs/process";
@@ -84,6 +90,12 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
       : buildAppointmentReminderMessage(patientFullName, dateLabel, profName);
 
   if (selectedChannel === "whatsapp") {
+    const whatsappGuard = await assertWhatsAppReminderSendAllowed({ clinicId, supabase });
+    if (!whatsappGuard.ok) return { error: whatsappGuard.error };
+
+    const quota = await consumeAddonUsage({ featureKey: FEATURES.WHATSAPP_MONTHLY_MESSAGES });
+    if (!quota.ok) return { error: quota.error };
+
     const delivery = await deliverReminderWhatsApp({
       to: recipient,
       message,
@@ -137,6 +149,20 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
   }
 
   const user = await getSession();
+  const reminderPayload = {
+    appointmentId: idParsed.data,
+    channel: selectedChannel,
+    recipient,
+    message,
+  };
+  const guard = await assertClinicJobEnqueueAllowed({
+    clinicId,
+    jobType: "send_reminder",
+    payload: reminderPayload,
+    supabase,
+  });
+  if (!guard.ok) return { error: guard.error };
+
   const { data: queuedLog } = await supabase
     .from("reminder_logs")
     .insert({
@@ -154,10 +180,7 @@ export async function sendReminder(appointmentId: string, channel: "email" | "wh
     clinicId,
     jobType: "send_reminder",
     payload: {
-      appointmentId: idParsed.data,
-      channel: selectedChannel,
-      recipient,
-      message,
+      ...reminderPayload,
       reminderLogId: queuedLog?.id,
     },
     createdBy: user?.id,

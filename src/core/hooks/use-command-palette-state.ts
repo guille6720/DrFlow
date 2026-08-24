@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useEntitlementsSnapshot } from "@/core/components/entitlements/entitlements-provider";
 import { useCommandPaletteKeyboard } from "@/core/hooks/use-command-palette-keyboard";
 import { useCommandPalettePatientSearch } from "@/core/hooks/use-command-palette-patient-search";
 import type { PermissionOverrides } from "@/core/permissions/roles";
@@ -31,6 +32,7 @@ export function useCommandPaletteState({
 }: Options) {
   const router = useRouter();
   const pathname = usePathname();
+  const entitlements = useEntitlementsSnapshot();
   const activePatientId = parsePatientIdFromPath(pathname);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -47,7 +49,8 @@ export function useCommandPaletteState({
           query,
           role,
           isSuperadmin,
-          permissionOverrides
+          permissionOverrides,
+          entitlements
         )
       : [];
     const actions = filterCommandPaletteItems(
@@ -55,17 +58,19 @@ export function useCommandPaletteState({
       query,
       role,
       isSuperadmin,
-      permissionOverrides
+      permissionOverrides,
+      entitlements
     );
     const nav = filterCommandPaletteItems(
       COMMAND_PALETTE_NAV,
       query,
       role,
       isSuperadmin,
-      permissionOverrides
+      permissionOverrides,
+      entitlements
     );
     return [...ctx, ...actions, ...nav];
-  }, [activePatientId, query, role, isSuperadmin, permissionOverrides]);
+  }, [activePatientId, query, role, isSuperadmin, permissionOverrides, entitlements]);
 
   const flatResults = useMemo(
     () => [

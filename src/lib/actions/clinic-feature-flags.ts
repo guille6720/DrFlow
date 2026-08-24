@@ -6,6 +6,8 @@ import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
 import { getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { revalidateClinicFeatureFlagsCache } from "@/core/cache/revalidate-clinic-cache";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { addonFeatureForClinicFeatureFlag } from "@/core/entitlements/flag-features";
 import { createClient } from "@/core/supabase/server";
 
 import {
@@ -24,6 +26,14 @@ export async function updateClinicFeatureFlag(
   if (!access.ok) return { error: access.error };
 
   getFeatureFlagDefinition(flagId);
+
+  if (enabled) {
+    const addon = addonFeatureForClinicFeatureFlag(flagId);
+    if (addon) {
+      const entitlement = await requireAddonFeatureAccess(addon);
+      if (!entitlement.ok) return { error: entitlement.error };
+    }
+  }
 
   const user = await getSession();
   if (!user) return { error: "Sin sesión" };

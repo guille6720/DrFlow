@@ -9,6 +9,10 @@ import { lookupFeature } from "@/core/entitlements/resolve";
 import { decideStorageCapacity } from "@/core/entitlements/storage";
 import { createClient } from "@/core/supabase/server";
 
+/**
+ * WARNING: incomplete storage metering must fail open (return null).
+ * Never delete clinical files to “enforce” a storage cap.
+ */
 function parseSumPayload(data: unknown): number | null {
   if (data == null) return 0;
   if (typeof data === "number" && Number.isFinite(data)) return data;

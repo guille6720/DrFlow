@@ -6,6 +6,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/core/auth/session.actions";
+import { getPatientCreateHeadroom } from "@/core/entitlements/limits.server";
+import {
+  consumePatientCreateHeadroom,
+  shouldAllowPatientCreate,
+} from "@/core/entitlements/quota-display";
 import { sanitizeText } from "@/core/validations/schemas";
 
 import {
@@ -174,6 +179,7 @@ export async function processMappedPatientImportBatch(
   let patientsSkipped = 0;
   let patientsFailed = 0;
   const parseErrors: string[] = [];
+  let remaining = await getPatientCreateHeadroom({ clinicId, supabase });
 
   for (const item of prepared) {
     const { lineNumber, cells, mapped } = item;
@@ -236,7 +242,8 @@ export async function processMappedPatientImportBatch(
       clinicId,
       extract,
       mapped.insurance_provider,
-      `Import pacientes: ${originalName}`
+      `Import pacientes: ${originalName}`,
+      { allowCreate: shouldAllowPatientCreate(remaining) }
     );
 
     if ("error" in created) {
@@ -246,6 +253,7 @@ export async function processMappedPatientImportBatch(
     }
 
     if (created.created) {
+      remaining = consumePatientCreateHeadroom(remaining, true);
       await mergeDemographics(supabase, clinicId, created.patientId, mapped);
       patientsCreated += 1;
     } else {

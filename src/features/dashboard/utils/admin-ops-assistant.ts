@@ -1,3 +1,5 @@
+import { isHrefEntitledBySnapshot } from "@/core/entitlements/nav-features";
+
 import {
   ADMIN_OPS_DISCLAIMER,
   ANALYTICS_INTENTS,
@@ -128,12 +130,28 @@ function requireAnalytics(ctx: AdminOpsContext): AdminOpsResponse | null {
   return {
     intent: "admin_help",
     title: "Sin datos de caja",
-    body: "Abrí Caja o Reportes de caja para cargar ingresos y autorizaciones del período.",
-    actions: [
-      { label: "Ir a caja", href: "/caja" },
-      { label: "Reportes de caja", href: "/caja/reportes" },
-    ],
+    body:
+      ctx.canManageCash === false
+        ? "La caja no está incluida en el plan del consultorio."
+        : "Abrí Caja o Reportes de caja para cargar ingresos y autorizaciones del período.",
+    actions:
+      ctx.canManageCash === false
+        ? [{ label: "Ir al dashboard", href: "/dashboard" }]
+        : [
+            { label: "Ir a caja", href: "/caja" },
+            { label: "Reportes de caja", href: "/caja/reportes" },
+          ],
   };
+}
+
+function filterAdminOpsActions(actions: AdminOpsAction[], ctx: AdminOpsContext): AdminOpsAction[] {
+  return actions.filter((action) => {
+    if (!action.href) return true;
+    if (ctx.canManageCash === false && (action.href === "/caja" || action.href.startsWith("/caja/"))) {
+      return false;
+    }
+    return isHrefEntitledBySnapshot(action.href, ctx.entitlementsSnapshot ?? null);
+  });
 }
 
 /** Context-aware suggested prompts for empty admin ops copilot. */
@@ -143,21 +161,20 @@ export function buildAdminOpsSuggestedPrompts(ctx: AdminOpsContext): string[] {
 
 /** Build admin/ops response for matched intent (Phase G/H — rule-based). */
 export function buildAdminOpsResponse(intent: AdminOpsIntentId, ctx: AdminOpsContext): AdminOpsResponse {
+  let response: AdminOpsResponse;
   if (intent === "daily_ops_summary" && !ctx.ops && !ctx.analytics) {
-    return requireOps(ctx)!;
-  }
-
-  if (ANALYTICS_INTENTS.includes(intent)) {
+    response = requireOps(ctx)!;
+  } else if (ANALYTICS_INTENTS.includes(intent)) {
     const missing = requireAnalytics(ctx);
-    if (missing) return missing;
-  }
-
-  if (OPS_INTENTS.includes(intent)) {
+    response = missing ?? buildAdminOpsResponseForIntent(intent, ctx);
+  } else if (OPS_INTENTS.includes(intent)) {
     const missing = requireOps(ctx);
-    if (missing) return missing;
+    response = missing ?? buildAdminOpsResponseForIntent(intent, ctx);
+  } else {
+    response = buildAdminOpsResponseForIntent(intent, ctx);
   }
 
-  return buildAdminOpsResponseForIntent(intent, ctx);
+  return { ...response, actions: filterAdminOpsActions(response.actions ?? [], ctx) };
 }
 
 export { ADMIN_OPS_DISCLAIMER };

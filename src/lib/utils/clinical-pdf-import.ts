@@ -14,7 +14,8 @@ export async function findOrCreatePatientFromExtract(
   clinicId: string,
   extract: ExtractedPatientInfo,
   defaultInsurance: string | null,
-  importNote: string
+  importNote: string,
+  options?: { allowCreate?: boolean }
 ): Promise<{ patientId: string; created: boolean; patientName: string } | { error: string }> {
   const { data: existing } = await supabase
     .from("patients")
@@ -32,6 +33,10 @@ export async function findOrCreatePatientFromExtract(
       created: false,
       patientName: `${existing.last_name}, ${existing.first_name}`,
     };
+  }
+
+  if (options?.allowCreate === false) {
+    return { error: "Alcanzaste el máximo de pacientes de tu plan." };
   }
 
   const { data, error } = await supabase

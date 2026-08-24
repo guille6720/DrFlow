@@ -1,3 +1,6 @@
+import { FeatureGate } from "@/core/components/entitlements/feature-gate";
+import { FEATURES } from "@/core/entitlements/features";
+
 import { SettingsPanel } from "@/features/configuracion";
 import { AiProviderPanel } from "@/features/configuracion/components/configuracion/ai-provider-panel";
 import { AppearanceStylePanel } from "@/features/configuracion/components/configuracion/appearance-style-panel";
@@ -85,7 +88,11 @@ export function renderConfiguracionSectionContent(
     case "apariencia":
       return <AppearanceStylePanel />;
     case "asistente-ia":
-      return <AiProviderPanel />;
+      return (
+        <FeatureGate feature={FEATURES.AI}>
+          <AiProviderPanel />
+        </FeatureGate>
+      );
     case "coberturas":
       return (
         <div className="space-y-6">
@@ -112,19 +119,21 @@ export function renderConfiguracionSectionContent(
       );
     case "pami":
       return (
-        <div className="space-y-6">
-          <PamiSetupPanel
-            practiceProfile={extras.practiceProfile}
-            defaultInsurance={extras.defaultInsurance}
-          />
-          {extras.pamiPlanillaAdminCatalog ? (
-            <PamiPlanillasAdminPanel initialCatalog={extras.pamiPlanillaAdminCatalog} />
-          ) : extras.pamiPlanillaAdminError ? (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-              {extras.pamiPlanillaAdminError}
-            </div>
-          ) : null}
-        </div>
+        <FeatureGate feature={FEATURES.PAMI}>
+          <div className="space-y-6">
+            <PamiSetupPanel
+              practiceProfile={extras.practiceProfile}
+              defaultInsurance={extras.defaultInsurance}
+            />
+            {extras.pamiPlanillaAdminCatalog ? (
+              <PamiPlanillasAdminPanel initialCatalog={extras.pamiPlanillaAdminCatalog} />
+            ) : extras.pamiPlanillaAdminError ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                {extras.pamiPlanillaAdminError}
+              </div>
+            ) : null}
+          </div>
+        </FeatureGate>
       );
     case "plugins":
       return <ClinicPluginsPanel plugins={extras.pluginSettings} />;
@@ -144,7 +153,11 @@ export function renderConfiguracionSectionContent(
     case "demo":
       return <DemoDataPanel patientCount={extras.patientCount} />;
     case "api-publica":
-      return <PublicApiKeysPanel keys={extras.apiPublicKeys ?? []} />;
+      return (
+        <FeatureGate feature={FEATURES.API}>
+          <PublicApiKeysPanel keys={extras.apiPublicKeys ?? []} />
+        </FeatureGate>
+      );
     case "clinica":
       return <SettingsPanel section="clinica" {...settingsProps} />;
     case "equipo":

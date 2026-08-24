@@ -2,6 +2,10 @@
 
 import { useRef, useState } from "react";
 
+import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
+import { FEATURES } from "@/core/entitlements/features";
+
 import {
   confirmFhirImportSession,
   createFhirImportSession,
@@ -19,6 +23,7 @@ import { Select } from "@/components/ui/select";
 type Props = { canImport: boolean };
 
 export function FhirImportPanel({ canImport }: Props) {
+  const entitled = useCanUseFeature(FEATURES.INTEGRATIONS);
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +33,10 @@ export function FhirImportPanel({ canImport }: Props) {
 
   if (!canImport) {
     return <p className="text-sm text-slate-600">No tenés permiso para importar FHIR.</p>;
+  }
+
+  if (!entitled) {
+    return <AddonUpgradeNotice feature={FEATURES.INTEGRATIONS} />;
   }
 
   async function onUpload(file: File) {

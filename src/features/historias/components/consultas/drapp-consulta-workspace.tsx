@@ -3,6 +3,7 @@
 import { CalendarDays, CheckCircle2, Plus } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { CLINICAL_RESEARCH_PROTOCOLS_FLAG } from "@/core/compliance/clinical-research-ai";
 import { toast } from "@/core/notifications/toast";
 
 import { cn } from "@/shared/utils/cn";
@@ -51,6 +52,7 @@ import type {
   PatientEhrDiagnosisRow,
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
+import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
 import { Textarea } from "@/components/ui/textarea";
 import { EHR_NEW_CONSULT_FORM_ID } from "@/lib/utils/clinical-history-filename";
@@ -328,6 +330,7 @@ function DrappConsultaWorkspaceInner({
 
   const { openPanel, setDirty, requestOpen, closePanel, markCleanAndClose } =
     useDrappQuickPanel("evolucion");
+  const researchProtocolsEnabled = useFeatureFlag(CLINICAL_RESEARCH_PROTOCOLS_FLAG);
 
   const historySnapshotRef = useRef({
     professionalId: professionalId ?? defaultProfessionalId ?? "",
@@ -668,13 +671,15 @@ function DrappConsultaWorkspaceInner({
                 >
                   Signos vitales
                 </DrappActionLink>
-                <DrappActionLink
-                  active={openPanel === "protocolos"}
-                  onClick={() => requestOpen("protocolos")}
-                  showPlus={false}
-                >
-                  Protocolos
-                </DrappActionLink>
+                {researchProtocolsEnabled ? (
+                  <DrappActionLink
+                    active={openPanel === "protocolos"}
+                    onClick={() => requestOpen("protocolos")}
+                    showPlus={false}
+                  >
+                    Protocolos
+                  </DrappActionLink>
+                ) : null}
                 <DrappActionLink
                   active={fullModalOpen}
                   onClick={() => {

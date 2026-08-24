@@ -6,6 +6,9 @@ import { CheckCircle2, Copy, MessageCircle, RefreshCw, Smartphone } from "lucide
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
+import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
+import { FEATURES } from "@/core/entitlements/features";
 import { toast } from "@/core/notifications/toast";
 
 import { cn } from "@/shared/utils/cn";
@@ -55,6 +58,7 @@ export function PatientAppShareControl({
   const [pending, startTransition] = useTransition();
   const [localShare, setLocalShare] = useState<PatientAppShareInfo | null>(share ?? null);
   const [error, setError] = useState<string | null>(null);
+  const canUsePortal = useCanUseFeature(FEATURES.PORTAL);
 
   const { installUrl, message, whatsappUrl } = useMemo(() => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -101,6 +105,15 @@ export function PatientAppShareControl({
       void navigator.clipboard.writeText(message);
       toast.copySuccess("Mensaje copiado al portapapeles");
     });
+  }
+
+  if (!canUsePortal) {
+    if (compact) return null;
+    return (
+      <div className={cn("space-y-2", className)}>
+        <AddonUpgradeNotice feature={FEATURES.PORTAL} />
+      </div>
+    );
   }
 
   if (compact) {

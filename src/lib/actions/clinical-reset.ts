@@ -6,6 +6,10 @@ import { revalidatePath } from "next/cache";
 import { resolveAccessFields } from "@/core/actions/action-response";
 import { logAudit } from "@/core/auth/session.actions";
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
+import {
+  isClinicalHistoryResetEnabled,
+  parsePurgeClinicClinicalDataResult,
+} from "@/core/compliance/clinical-deletion-protection";
 import { logServerError } from "@/core/errors/log-error.server";
 import { hasPermission } from "@/core/permissions/roles";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
@@ -55,6 +59,14 @@ async function requireClinicalResetAccess() {
       userId: null,
     };
   }
+  if (!isClinicalHistoryResetEnabled()) {
+    return {
+      error:
+        "El vaciado masivo de historia clínica está deshabilitado en este entorno. Configure ALLOW_CLINICAL_HISTORY_RESET=true solo en staging/migración.",
+      clinicId: null,
+      userId: null,
+    };
+  }
   return { error: null, clinicId, userId: user.id };
 }
 
@@ -84,54 +96,41 @@ async function executeClinicalHistoryClear(
     const batch = paths.slice(i, i + STORAGE_REMOVE_BATCH);
     const { error: storageError } = await admin.storage.from(BUCKET).remove(batch);
     if (storageError) {
-      logServerError("clinical-reset.storage-remove", storageError, { clinicId, metadata: { batchSize: batch.length } });
+      logServerError("clinical-reset.storage-remove", storageError, {
+        clinicId,
+        metadata: { batchSize: batch.length },
+      });
     } else {
       storageObjectsRemoved += batch.length;
     }
   }
 
-  const { count: recordsBefore } = await admin
-    .from("clinical_records")
-    .select("id", { count: "exact", head: true })
-    .eq("clinic_id", clinicId);
+  // Phase 7: hard delete via SECURITY DEFINER purge RPC (sets transaction GUC).
+  // Direct DELETE on clinical_records is blocked by triggers.
+  const { data, error: purgeError } = await admin.rpc(
+    "purge_clinic_clinical_data_for_migration" as never,
+    {
+      p_clinic_id: clinicId,
+      p_confirm_phrase: CLEAR_CLINICAL_HISTORY_CONFIRM_PHRASE,
+    } as never
+  );
 
-  const attachmentCount = attachments?.length ?? 0;
-
-  const { error: recordsError } = await admin
-    .from("clinical_records")
-    .delete()
-    .eq("clinic_id", clinicId);
-
-  if (recordsError) {
-    return { error: `No se pudieron borrar consultas: ${recordsError.message}` };
+  if (purgeError) {
+    return {
+      error: `No se pudo vaciar la historia clínica (protección anti-borrado): ${purgeError.message}`,
+    };
   }
 
-  const { error: attDeleteError } = await admin
-    .from("patient_attachments")
-    .delete()
-    .eq("clinic_id", clinicId);
-
-  if (attDeleteError) return { error: attDeleteError.message };
-
-  const { count: rxCountBefore, error: rxCountError } = await admin
-    .from("prescription_drafts")
-    .select("id", { count: "exact", head: true })
-    .eq("clinic_id", clinicId);
-
-  if (rxCountError) return { error: rxCountError.message };
-
-  const { error: rxError } = await admin
-    .from("prescription_drafts")
-    .delete()
-    .eq("clinic_id", clinicId);
-
-  if (rxError) return { error: rxError.message };
+  const parsed = parsePurgeClinicClinicalDataResult(data);
+  if (!parsed) {
+    return { error: "Respuesta inválida del purge de migración." };
+  }
 
   return {
-    clinicalRecordsDeleted: recordsBefore ?? 0,
-    attachmentsDeleted: attachmentCount,
+    clinicalRecordsDeleted: parsed.clinical_records_deleted,
+    attachmentsDeleted: parsed.attachments_deleted,
     storageObjectsRemoved,
-    prescriptionDraftsDeleted: rxCountBefore ?? 0,
+    prescriptionDraftsDeleted: parsed.prescription_drafts_deleted,
   };
 }
 
@@ -164,7 +163,11 @@ export async function clearClinicClinicalHistory(
     entityType: "clinical_record",
     entityId: auth.clinicId,
     action: "delete",
-    metadata: { type: "clinic_clinical_history_reset", ...cleared },
+    metadata: {
+      type: "clinic_clinical_history_reset",
+      via: "purge_clinic_clinical_data_for_migration",
+      ...cleared,
+    },
   });
 
   revalidateMigrationPaths();
@@ -225,6 +228,7 @@ export async function clearClinicFullMigrationReset(
     action: "delete",
     metadata: {
       type: "clinic_full_migration_reset",
+      via: "purge_clinic_clinical_data_for_migration",
       ...cleared,
       patientsDeleted: patientsBefore ?? 0,
       paymentsDeleted: paymentsBefore ?? 0,

@@ -6,6 +6,8 @@ const QUOTA_MESSAGES: Record<string, string> = {
   COMMERCIAL_SUSPENDED: ADDON_SUSPENDED_MESSAGE,
 };
 
+export const AI_MONTHLY_QUOTA_MESSAGE = "Límite mensual de IA alcanzado";
+
 export const USAGE_RPC_UNAVAILABLE = "USAGE_RPC_UNAVAILABLE";
 
 export type MeteredUsageGateDecision = { ok: true } | { ok: false; error: string };

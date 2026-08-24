@@ -20,7 +20,7 @@ import { parseEntityId } from "@/core/validations/params";
 
 import { PRESCRIPTION_ISSUE_COLUMNS } from "@/features/recetas/repositories/prescription-drafts.repository";
 
-import type { ElectronicPrescription } from "@/types/prescription";
+import { toElectronicPrescription } from "@/types/prescription";
 
 export type RefepsClinicSettingsView = {
   enabled: boolean;
@@ -114,9 +114,9 @@ export async function updateRefepsClinicSettings(formData: FormData): Promise<{
     success: true,
     message: enabled
       ? autoSubmit
-        ? "REFEPS habilitado — las recetas se enviarán al emitir."
-        : "REFEPS habilitado — enviá manualmente desde cada receta emitida."
-      : "REFEPS deshabilitado — las recetas quedan en modo local.",
+        ? "REFEPS habilitado — envío al emitir vía adapter (sandbox o API). No implica homologación MSN automática."
+        : "REFEPS habilitado — envío manual desde cada receta emitida (adapter). No implica homologación MSN automática."
+      : "REFEPS deshabilitado — las recetas quedan en modo local / borrador.",
   };
 }
 
@@ -144,10 +144,15 @@ export async function submitPrescriptionToRefeps(prescriptionId: string) {
     return { error: "Esta receta ya fue registrada en REFEPS." };
   }
 
+  const mapped = toElectronicPrescription(prescription);
+  if (!mapped) {
+    return { error: "Receta emitida con formato inválido." };
+  }
+
   const result = await submitIssuedPrescriptionToRefeps(supabase, {
     clinicId: access.data.clinicId,
     userId: access.data.userId,
-    prescription: prescription as unknown as ElectronicPrescription,
+    prescription: mapped,
   });
 
   if (!result.ok) {

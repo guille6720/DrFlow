@@ -2,6 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
+
 import {
   deleteUserAiConnection,
   getUserAiConnectionPublic,
@@ -20,6 +23,9 @@ export async function saveUserAiConnectionAction(input: {
   model?: string | null;
   label?: string | null;
 }) {
+  const entitlement = await requireAddonFeatureAccess(FEATURES.AI);
+  if (!entitlement.ok) return { error: entitlement.error };
+
   const result = await saveUserAiConnection(input);
   if (!result.error) {
     revalidatePath("/configuracion");

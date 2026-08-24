@@ -3,26 +3,40 @@ import { z } from "zod";
 
 import { requireSettingsAccess } from "@/core/actions/clinic-guard";
 import { getDashboardShell } from "@/core/auth/session.server";
+import {
+  loadSubscriptionPromoSnapshot,
+  resolveCheckoutAmountArs,
+} from "@/core/billing/checkout-amount";
 import { createCheckoutPreference, isMercadoPagoConfigured } from "@/core/billing/mercadopago";
+import {
+  classifyPlanChange,
+  evaluateDowngradeToEssential,
+} from "@/core/billing/plan-change";
 import {
   type BillingCycle,
   type BillingPlanId,
   getBillingPlan,
-  getPlanPriceArs,
   isPlanAvailableForPurchase,
 } from "@/core/billing/plans";
+import { FEATURES } from "@/core/entitlements/features";
+import { countClinicSeatRows } from "@/core/entitlements/limits.server";
 import { logServerError } from "@/core/errors/log-error.server";
+import { requireSameOriginMutation } from "@/core/security/csrf";
+import { createClient } from "@/core/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 const bodySchema = z.object({
-  planId: z.enum(["solo", "consultorio", "clinica"]),
+  planId: z.enum(["essential", "pro"]),
   cycle: z.enum(["monthly", "annual"]).default("monthly"),
 });
 
 const NO_STORE = { "Cache-Control": "no-store" } as const;
 
 export async function POST(request: Request) {
+  const csrfBlock = requireSameOriginMutation(request);
+  if (csrfBlock) return csrfBlock;
+
   if (!isMercadoPagoConfigured()) {
     return NextResponse.json(
       { error: "Mercado Pago no configurado." },
@@ -49,11 +63,30 @@ export async function POST(request: Request) {
 
   const { planId, cycle } = parsed.data as { planId: BillingPlanId; cycle: BillingCycle };
   const plan = getBillingPlan(planId);
-  if (!plan || !isPlanAvailableForPurchase(plan) || getPlanPriceArs(planId, cycle) == null) {
+  if (!plan || !isPlanAvailableForPurchase(plan)) {
     return NextResponse.json({ error: "Plan no disponible." }, { status: 400, headers: NO_STORE });
   }
 
   try {
+    const snapshot = await loadSubscriptionPromoSnapshot(access.clinicId);
+    if (classifyPlanChange(snapshot?.plan_id, planId) === "downgrade") {
+      const supabase = await createClient();
+      const activeProfessionals = await countClinicSeatRows(
+        supabase,
+        FEATURES.PROFESSIONALS_MAX,
+        access.clinicId
+      );
+      const downgrade = evaluateDowngradeToEssential({ activeProfessionals });
+      if (!downgrade.ok) {
+        return NextResponse.json({ error: downgrade.error }, { status: 400, headers: NO_STORE });
+      }
+    }
+
+    const amountArs = resolveCheckoutAmountArs({ planId, cycle, snapshot });
+    if (amountArs == null) {
+      return NextResponse.json({ error: "Plan no disponible." }, { status: 400, headers: NO_STORE });
+    }
+
     const { clinic, profile } = await getDashboardShell();
     const result = await createCheckoutPreference({
       clinicId: access.clinicId,
@@ -61,6 +94,7 @@ export async function POST(request: Request) {
       planId,
       cycle,
       payerEmail: profile?.email,
+      amountArs,
     });
 
     if (!result.ok) {

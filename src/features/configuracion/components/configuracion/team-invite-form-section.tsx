@@ -2,6 +2,9 @@
 
 import { UserPlus } from "lucide-react";
 
+import { PlanCapHint } from "@/core/components/entitlements/plan-cap-hint";
+import { FEATURES } from "@/core/entitlements/features";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -25,6 +28,9 @@ export function TeamInviteFormSection({
       onSubmit={onSubmit}
       className="drflow-card-light mb-6 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2"
     >
+      <div className="sm:col-span-2">
+        <PlanCapHint feature={FEATURES.USERS_MAX} />
+      </div>
       <Input name="full_name" label="Nombre completo" required placeholder="Ej: Dra. Ana Martínez" />
       <Input name="email" label="Email (usuario de acceso)" type="email" required placeholder="usuario@email.com" />
       <Select

@@ -13,7 +13,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
 import { useCopilotFabVisible } from "@/core/components/layout/unified-copilot-fab";
+import { FEATURES } from "@/core/entitlements/features";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -86,8 +88,14 @@ export function FloatingActions() {
   const [open, setOpen] = useState(false);
   const enabled = useFeatureFlag("floating_actions");
   const copilotFabVisible = useCopilotFabVisible();
+  const canUsePharmacology = useCanUseFeature(FEATURES.PHARMACOLOGY);
   const patientId = parsePatientIdFromPath(pathname);
-  const actions = patientId ? patientActions(patientId) : globalActions;
+  const actions = patientId
+    ? patientActions(patientId)
+    : globalActions.filter(
+        (action) =>
+          action.href !== "/herramientas/farmacologia" || canUsePharmacology
+      );
 
   if (!enabled || pathname === "/dashboard") {
     return null;

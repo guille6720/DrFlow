@@ -1,6 +1,9 @@
 "use server";
 
 import { resolveImportAccess } from "@/core/actions/action-response";
+import { buildExportAuditMetadata } from "@/core/compliance/data-export-security";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import { recordAudit } from "@/core/security/audit-service";
 import {
   requireBulkExportAccess,
@@ -99,6 +102,9 @@ export async function exportClinicPatientsSpreadsheet(
   const auth = resolveImportAccess(access);
   if (!auth.ok) return { error: auth.error };
 
+  const entitlement = await requireAddonFeatureAccess(FEATURES.DATA_EXPORT);
+  if (!entitlement.ok) return { error: entitlement.error };
+
   const patients = await loadExportPatients(auth.clinicId);
   const fileBase = sanitizeExportFileName(`pacientes-drflow-${auth.clinicId.slice(0, 8)}`);
 
@@ -109,12 +115,15 @@ export async function exportClinicPatientsSpreadsheet(
     entityId: auth.clinicId,
     action: "export",
     what: "Exportó padrón de pacientes",
-    metadata: {
+    metadata: buildExportAuditMetadata({
+      channel: "patient_roster_csv_xlsx",
       format,
-      bulk: Boolean(options?.bulk),
       recordCount: patients.length,
-      sections: ["demographics"],
-    },
+      extra: {
+        bulk: Boolean(options?.bulk),
+        sections: ["demographics"],
+      },
+    }),
   });
 
   if (format === "csv") {
@@ -145,6 +154,10 @@ export async function countClinicPatientsForExport(): Promise<{
   const access = await requirePatientExportAccess();
   const auth = resolveImportAccess(access);
   if (!auth.ok) return { error: auth.error };
+
+  const entitlement = await requireAddonFeatureAccess(FEATURES.DATA_EXPORT);
+  if (!entitlement.ok) return { error: entitlement.error };
+
   const supabase = await createClient();
   const { count, error } = await supabase
     .from("patients")

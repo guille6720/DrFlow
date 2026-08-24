@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { useEntitlementsSnapshot } from "@/core/components/entitlements/entitlements-provider";
+
 import {
   type AdminOpsContext,
   buildAdminOpsSnapshotFromDashboard,
@@ -25,6 +27,7 @@ export function AdminOpsDashboardBridge({
   canManageSettings,
 }: Props) {
   const { setSession } = useAdminOpsCopilot();
+  const entitlementsSnapshot = useEntitlementsSnapshot();
 
   useEffect(() => {
     const next: AdminOpsContext = {
@@ -33,9 +36,17 @@ export function AdminOpsDashboardBridge({
       canManageCash,
       canManageWaitingRoom,
       canManageSettings,
+      entitlementsSnapshot,
     };
     setSession(next);
-  }, [ops, canManageCash, canManageWaitingRoom, canManageSettings, setSession]);
+  }, [
+    ops,
+    canManageCash,
+    canManageWaitingRoom,
+    canManageSettings,
+    entitlementsSnapshot,
+    setSession,
+  ]);
 
   return null;
 }

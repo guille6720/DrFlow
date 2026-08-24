@@ -2,6 +2,9 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { canUseFeatureAsSystem } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
+import { consumeAddonUsageAsSystem } from "@/core/entitlements/metered.server";
 import { buildAppointmentNotificationMessage } from "@/core/notifications/appointment-notification-message";
 
 import { sendTransactionalEmail } from "@/lib/services/transactional-email";
@@ -59,6 +62,26 @@ export async function sendAppointmentNotification(
   }
 
   if (row.channel === "whatsapp") {
+    if (
+      !(await canUseFeatureAsSystem({
+        clinicId: row.clinic_id,
+        featureKey: FEATURES.WHATSAPP,
+      }))
+    ) {
+      return {
+        status: "failed",
+        errorMessage: "WhatsApp no está incluido en el plan del consultorio.",
+      };
+    }
+
+    const quota = await consumeAddonUsageAsSystem({
+      clinicId: row.clinic_id,
+      featureKey: FEATURES.WHATSAPP_MONTHLY_MESSAGES,
+    });
+    if (!quota.ok) {
+      return { status: "failed", errorMessage: quota.error };
+    }
+
     const result = await deliverWhatsAppMessage({
       to: row.recipient,
       text,

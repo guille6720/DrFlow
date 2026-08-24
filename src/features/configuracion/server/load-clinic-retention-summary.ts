@@ -2,8 +2,11 @@ import "server-only";
 
 import { getActiveClinic, getActiveClinicId } from "@/core/auth/session.server";
 import {
+  evaluateRetentionPreservationSupport,
   isWithinClinicalRetentionPeriod,
+  latestClinicalEntryAt,
   normalizeRetentionYears,
+  patientHistoryRetentionUntil,
 } from "@/core/compliance/data-retention-policy";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
@@ -16,6 +19,11 @@ export type ClinicRetentionSummary = {
   recordsWithinRetention: number;
   oldestRecordAt: string | null;
   newestRecordAt: string | null;
+  /** ISO date when HC retention (from last entry) would elapse for the newest note clinic-wide. */
+  historyRetentionUntilNewest: string | null;
+  meetsDefaultMinimum: boolean;
+  autoPurgeEnabled: false;
+  retentionNotes: string[];
 };
 
 export async function loadClinicRetentionSummary(): Promise<{
@@ -65,9 +73,17 @@ export async function loadClinicRetentionSummary(): Promise<{
   ]);
 
   const dates = (recordDates ?? []).map((row) => row.created_at as string);
-  const recordsWithinRetention = dates.filter((createdAt) =>
-    isWithinClinicalRetentionPeriod(createdAt, retentionYears)
-  ).length;
+  const newestRecordAt = latestClinicalEntryAt(dates);
+  const oldestRecordAt = dates.length
+    ? dates.reduce((oldest, current) =>
+        new Date(current).getTime() < new Date(oldest).getTime() ? current : oldest
+      )
+    : null;
+  const recordsWithinRetention = newestRecordAt
+    ? dates.filter((createdAt) => isWithinClinicalRetentionPeriod(createdAt, retentionYears)).length
+    : 0;
+  const historyUntil = patientHistoryRetentionUntil(newestRecordAt, retentionYears);
+  const preservation = evaluateRetentionPreservationSupport(retentionYears);
 
   return {
     data: {
@@ -76,8 +92,12 @@ export async function loadClinicRetentionSummary(): Promise<{
       inactivePatients: inactivePatients ?? 0,
       clinicalRecordCount: clinicalRecordCount ?? 0,
       recordsWithinRetention,
-      oldestRecordAt: dates[0] ?? null,
-      newestRecordAt: dates.at(-1) ?? null,
+      oldestRecordAt,
+      newestRecordAt,
+      historyRetentionUntilNewest: historyUntil ? historyUntil.toISOString() : null,
+      meetsDefaultMinimum: preservation.meetsMinimumAssumption,
+      autoPurgeEnabled: false,
+      retentionNotes: preservation.notes,
     },
   };
 }

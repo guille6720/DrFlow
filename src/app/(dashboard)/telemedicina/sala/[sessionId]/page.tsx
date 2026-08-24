@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { TelemedicineRoomEmbed } from "@/core/components/telemedicine/telemedicine-room-embed";
+import { FEATURES } from "@/core/entitlements/features";
+import { requireAddonFeatureOrRedirect } from "@/core/entitlements/guard.server";
 import { canAccessRoute } from "@/core/permissions/roles";
 import { unwrapJoin } from "@/core/supabase/unwrap-join";
 import { buildPatientJoinUrl, buildTelemedicineEmbedUrl } from "@/core/telemedicine/provider";
@@ -19,6 +21,7 @@ type PageProps = {
 };
 
 export default async function TelemedicinaSalaPage({ params }: PageProps) {
+  await requireAddonFeatureOrRedirect(FEATURES.TELEMEDICINE);
   const { sessionId } = await params;
   const { profile, role, isSuperadmin } = await getDashboardPageContext();
 

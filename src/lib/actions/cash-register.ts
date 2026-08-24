@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
+import { FEATURES } from "@/core/entitlements/features";
+import { requirePermissionAndAddon } from "@/core/entitlements/guard.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { verifyCashChargeForeignKeys } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
@@ -19,7 +20,7 @@ import { isBlockedChargeKind, labelForChargeKind } from "@/lib/constants/cash-re
 
 export async function createCashCharge(formData: FormData) {
   const [access, supabase] = await Promise.all([
-    requireClinicPermission("manageCashRegister"),
+    requirePermissionAndAddon("manageCashRegister", FEATURES.CASH_REGISTER),
     createClient(),
   ]);
   if (!access.ok) return { error: access.error };
@@ -75,7 +76,7 @@ export async function createCashCharge(formData: FormData) {
 
 export async function voidCashCharge(formData: FormData) {
   const [access, supabase] = await Promise.all([
-    requireClinicPermission("manageCashRegister"),
+    requirePermissionAndAddon("manageCashRegister", FEATURES.CASH_REGISTER),
     createClient(),
   ]);
   if (!access.ok) return { error: access.error };
@@ -109,7 +110,7 @@ export async function voidCashCharge(formData: FormData) {
 
 export async function addLedgerEntry(formData: FormData) {
   const [access, supabase] = await Promise.all([
-    requireClinicPermission("manageCashRegister"),
+    requirePermissionAndAddon("manageCashRegister", FEATURES.CASH_REGISTER),
     createClient(),
   ]);
   if (!access.ok) return { error: access.error };
@@ -155,7 +156,7 @@ export async function addLedgerEntry(formData: FormData) {
 
 export async function closeDailyCash(formData: FormData) {
   const [access, supabase] = await Promise.all([
-    requireClinicPermission("manageCashRegister"),
+    requirePermissionAndAddon("manageCashRegister", FEATURES.CASH_REGISTER),
     createClient(),
   ]);
   if (!access.ok) return { error: access.error };
@@ -239,7 +240,7 @@ export async function closeDailyCash(formData: FormData) {
 
 export async function prepareCashInvoice(chargeId: string) {
   const [access, supabase] = await Promise.all([
-    requireClinicPermission("manageCashRegister"),
+    requirePermissionAndAddon("manageCashRegister", FEATURES.CASH_REGISTER),
     createClient(),
   ]);
   if (!access.ok) return { error: access.error };

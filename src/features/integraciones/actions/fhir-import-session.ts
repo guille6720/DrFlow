@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { resolveImportAccess } from "@/core/actions/action-response";
 import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import { recordAudit } from "@/core/security/audit-service";
 import { validateJsonImportUpload } from "@/core/security/file-upload";
 import { requireClinicalImportAccess } from "@/core/services/import-access.service";
@@ -47,6 +49,9 @@ export async function createFhirImportSession(formData: FormData): Promise<{
   const access = await requireClinicalImportAccess();
   const auth = resolveImportAccess(access);
   if (!auth.ok) return { error: auth.error };
+
+  const entitlement = await requireAddonFeatureAccess(FEATURES.INTEGRATIONS);
+  if (!entitlement.ok) return { error: entitlement.error };
 
   const file = formData.get("file");
   if (!(file instanceof File)) return { error: "Seleccioná un JSON FHIR R4." };
@@ -125,6 +130,10 @@ export async function confirmFhirImportSession(
   const access = await requireClinicalImportAccess();
   const auth = resolveImportAccess(access);
   if (!auth.ok) return { error: auth.error };
+
+  const entitlement = await requireAddonFeatureAccess(FEATURES.INTEGRATIONS);
+  if (!entitlement.ok) return { error: entitlement.error };
+
   const parsed = parseEntityId(sessionIdRaw, "Sesión");
   if (!parsed.ok) return { error: parsed.error };
 

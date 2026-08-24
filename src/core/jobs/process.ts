@@ -1,9 +1,16 @@
 import { logServerError } from "@/core/errors/log-error.server";
 import { runClinicJobHandler } from "@/core/jobs/handlers";
+import {
+  CLINIC_JOB_REGISTRY,
+  type ClinicJobStatus,
+  type ClinicJobType,
+} from "@/core/jobs/registry";
 import type { ClinicJobRow } from "@/core/jobs/types";
 import { createTraceId, recordObservabilityEvent } from "@/core/observability/record";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
-import { nullToUndefined, toJson } from "@/core/supabase/json";
+import { toJson } from "@/core/supabase/json";
+
+import type { Json } from "@/types/supabase";
 
 export type ProcessJobsResult = {
   processed: number;
@@ -12,8 +19,72 @@ export type ProcessJobsResult = {
   jobIds: string[];
 };
 
-function mapJobRow(row: Record<string, unknown>): ClinicJobRow {
-  return row as unknown as ClinicJobRow;
+const JOB_TYPES = new Set<string>(CLINIC_JOB_REGISTRY.map((j) => j.id));
+const JOB_STATUSES = new Set<string>([
+  "pending",
+  "running",
+  "completed",
+  "failed",
+  "cancelled",
+]);
+
+function isClinicJobType(value: string): value is ClinicJobType {
+  return JOB_TYPES.has(value);
+}
+
+function isClinicJobStatus(value: string): value is ClinicJobStatus {
+  return JOB_STATUSES.has(value);
+}
+
+function jsonObjectOrEmpty(value: Json | null | undefined): Record<string, unknown> {
+  if (value === null || value === undefined) return {};
+  if (typeof value === "object" && !Array.isArray(value)) {
+    const out: Record<string, unknown> = {};
+    for (const [key, entry] of Object.entries(value)) {
+      out[key] = entry;
+    }
+    return out;
+  }
+  return {};
+}
+
+function mapJobRow(row: {
+  id: string;
+  clinic_id: string;
+  job_type: string;
+  status: string;
+  payload: Json;
+  result: Json | null;
+  error_message: string | null;
+  attempts: number;
+  max_attempts: number;
+  scheduled_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}): ClinicJobRow | null {
+  if (!isClinicJobType(row.job_type) || !isClinicJobStatus(row.status)) {
+    return null;
+  }
+  return {
+    id: row.id,
+    clinic_id: row.clinic_id,
+    job_type: row.job_type,
+    status: row.status,
+    payload: jsonObjectOrEmpty(row.payload),
+    result: row.result === null ? null : jsonObjectOrEmpty(row.result),
+    error_message: row.error_message,
+    attempts: row.attempts,
+    max_attempts: row.max_attempts,
+    scheduled_at: row.scheduled_at,
+    started_at: row.started_at,
+    completed_at: row.completed_at,
+    created_by: row.created_by,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
 }
 
 export async function processPendingClinicJobs(options?: {
@@ -48,7 +119,7 @@ export async function processPendingClinicJobs(options?: {
     throw new Error(claimError.message);
   }
 
-  const jobs = (claimed ?? []) as Record<string, unknown>[];
+  const jobs = claimed ?? [];
   const filtered = options?.clinicId
     ? jobs.filter((j) => j.clinic_id === options.clinicId)
     : jobs;
@@ -59,6 +130,10 @@ export async function processPendingClinicJobs(options?: {
 
   for (const raw of filtered) {
     const job = mapJobRow(raw);
+    if (!job) {
+      failed += 1;
+      continue;
+    }
     jobIds.push(job.id);
     const jobStart = performance.now();
 
@@ -69,7 +144,6 @@ export async function processPendingClinicJobs(options?: {
         p_job_id: job.id,
         p_status: "completed",
         p_result: toJson(result),
-        p_error_message: nullToUndefined<string>(null),
       });
       void recordObservabilityEvent({
         clinicId: job.clinic_id,
@@ -88,7 +162,6 @@ export async function processPendingClinicJobs(options?: {
       await supabase.rpc("complete_clinic_job", {
         p_job_id: job.id,
         p_status: retry ? "pending" : "failed",
-        p_result: null,
         p_error_message: message,
       });
       void recordObservabilityEvent({

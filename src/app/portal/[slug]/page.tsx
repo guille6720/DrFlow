@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { isPublicPortalAllowedForClinic, isPublicPortalAllowedForSlug } from "@/core/entitlements/public-portal.server";
 import { createClient } from "@/core/supabase/server";
 
 import { PatientPortalView } from "@/features/portal/components/portal/patient-portal-view";
@@ -17,6 +18,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  if (!(await isPublicPortalAllowedForSlug(slug))) {
+    return { title: "App pacientes | DrFlow" };
+  }
   return {
     title: `App pacientes — ${slug} | DrFlow`,
     description: "Pedí turno, recetas y contactá a tu consultorio por WhatsApp.",
@@ -50,6 +54,13 @@ export default async function PatientPortalPage({
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();
+
+  let clinicId = link?.clinic_id ?? null;
+  if (!clinicId) {
+    const { data: clinicRow } = await supabase.from("clinics").select("id").eq("slug", slug).maybeSingle();
+    clinicId = clinicRow?.id ?? null;
+  }
+  if (!clinicId || !(await isPublicPortalAllowedForClinic(clinicId))) notFound();
 
   const doctor = link
     ? (doctorInfoFromBookingLink(link) ?? (await resolvePortalDoctorInfo(slug)))

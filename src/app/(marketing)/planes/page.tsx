@@ -10,6 +10,7 @@ import {
 } from "@/core/billing/plans";
 import { MarketingFooter } from "@/core/components/landing/marketing-footer";
 import { MarketingHeader } from "@/core/components/landing/marketing-header";
+import { PlansModuleNotice } from "@/core/components/landing/plans-module-notice";
 import { PlansPricingSection } from "@/core/components/landing/plans-pricing-section";
 
 import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
@@ -19,9 +20,9 @@ import { ButtonLink } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Planes y precios | DrFlow",
   description:
-    "Planes DrFlow para consultorios en Argentina. Prueba 10 días gratis. Agenda, HC, recetas PAMI y app paciente.",
+    "Planes DrFlow Essential y Pro. Prueba 14 días gratis. Agenda, HC, recetas PAMI y app paciente.",
   openGraph: {
-    title: "Planes DrFlow — consultorios Argentina",
+    title: "Planes DrFlow — Essential y Pro",
     url: "https://drflow.opusorg.com/planes",
     siteName: "DrFlow",
     locale: "es_AR",
@@ -29,10 +30,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function PlanesPage() {
+export default async function PlanesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ modulo?: string }>;
+}) {
   const salesEmail = getSalesContactEmail();
   const phone = getSalesWhatsAppPhone();
   const session = await getSession();
+  const { modulo } = await searchParams;
   const mercadoPagoEnabled = isMercadoPagoConfigured();
   const salesWhatsAppHref =
     phone && buildWhatsAppUrl(phone, "Hola, quiero consultar planes DrFlow.")
@@ -44,13 +50,14 @@ export default async function PlanesPage() {
       <MarketingHeader />
       <main className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
         <div className="mb-10 flex flex-wrap justify-center gap-3">
-          <ButtonLink href="/register?trial=10" size="lg">
+          <ButtonLink href="/register?trial=14" size="lg">
             Empezar prueba gratis
           </ButtonLink>
           <ButtonLink href={`mailto:${salesEmail}?subject=Consulta%20planes%20DrFlow`} variant="outline" size="lg">
             Escribinos
           </ButtonLink>
         </div>
+        {modulo ? <PlansModuleNotice featureKey={modulo} /> : null}
         <PlansPricingSection
           mercadoPagoEnabled={mercadoPagoEnabled}
           isAuthenticated={Boolean(session)}

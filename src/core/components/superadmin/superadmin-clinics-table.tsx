@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 
 const planVariant: Record<string, "default" | "info" | "success" | "warning" | "danger" | "brand"> = {
   trial: "info",
+  essential: "default",
   basic: "default",
   pro: "brand",
   premium: "success",
@@ -24,6 +25,8 @@ export function SuperadminClinicsTable({ rows }: { rows: SuperadminClinicCommerc
             <th className="px-3 py-2">Clínica</th>
             <th className="px-3 py-2">Admin</th>
             <th className="px-3 py-2">Plan</th>
+            <th className="px-3 py-2">Billing</th>
+            <th className="px-3 py-2">Promo/Regular</th>
             <th className="px-3 py-2">Estado</th>
             <th className="px-3 py-2">Users</th>
             <th className="px-3 py-2">Prof.</th>
@@ -45,6 +48,21 @@ export function SuperadminClinicsTable({ rows }: { rows: SuperadminClinicCommerc
                 <Badge variant={planVariant[row.planKey ?? ""] ?? "default"}>
                   {row.planKey ?? "sin plan"}
                 </Badge>
+              </td>
+              <td className="px-3 py-2 text-xs text-slate-600">{row.billingPlanId ?? "—"}</td>
+              <td className="px-3 py-2 text-xs tabular-nums text-slate-600">
+                {row.promoPriceArs != null || row.regularPriceArs != null ? (
+                  <>
+                    {row.promoPriceArs ?? "—"} / {row.regularPriceArs ?? "—"}
+                    {row.promoEndsAt ? (
+                      <div className="text-[10px] text-slate-400">
+                        hasta {new Date(row.promoEndsAt).toLocaleDateString("es-AR")}
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  "—"
+                )}
               </td>
               <td className="px-3 py-2 text-slate-700">{row.status ?? "—"}</td>
               <td className="px-3 py-2 tabular-nums">{row.users}</td>
@@ -84,7 +102,7 @@ export function SuperadminClinicsTable({ rows }: { rows: SuperadminClinicCommerc
           ))}
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={10} className="px-3 py-8 text-center text-slate-500">
+              <td colSpan={12} className="px-3 py-8 text-center text-slate-500">
                 No hay clínicas con estos filtros.
               </td>
             </tr>

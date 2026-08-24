@@ -6,7 +6,6 @@ import {
   type BillingCycle,
   type BillingPlanId,
   getPlanMercadoPagoSku,
-  getPlanPriceArs,
 } from "@/core/billing/plans";
 import { getPublicSiteUrl } from "@/core/supabase/env";
 
@@ -65,9 +64,16 @@ export function parseExternalReference(
   if (parts.length !== 3) return null;
   const [clinicId, planId, cycle] = parts;
   if (!clinicId || !planId) return null;
-  if (planId !== "solo" && planId !== "consultorio" && planId !== "clinica") return null;
+  const allowedPlans: BillingPlanId[] = [
+    "essential",
+    "pro",
+    "solo",
+    "consultorio",
+    "clinica",
+  ];
+  if (!allowedPlans.includes(planId as BillingPlanId)) return null;
   if (cycle !== "monthly" && cycle !== "annual") return null;
-  return { clinicId, planId, cycle };
+  return { clinicId, planId: planId as BillingPlanId, cycle };
 }
 
 export function verifyMercadoPagoWebhookSignature(input: {
@@ -108,6 +114,8 @@ export async function createCheckoutPreference(input: {
   planId: BillingPlanId;
   cycle: BillingCycle;
   payerEmail?: string | null;
+  /** Whole ARS from resolveCheckoutAmountArs (server). Required for promo snapshot. */
+  amountArs: number;
 }): Promise<CreatePreferenceResult> {
   const accessToken = getMercadoPagoAccessToken();
   if (!accessToken) {
@@ -117,8 +125,8 @@ export async function createCheckoutPreference(input: {
     };
   }
 
-  const amount = getPlanPriceArs(input.planId, input.cycle);
-  if (amount == null) {
+  const amount = input.amountArs;
+  if (!Number.isFinite(amount) || amount <= 0) {
     return { ok: false, error: "Plan no disponible para compra." };
   }
 

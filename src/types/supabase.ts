@@ -2256,10 +2256,15 @@ export type Database = {
           id: string
           ip_address: unknown
           notes: string | null
-          patient_id: string
+          patient_id: string | null
           procedure_description: string | null
+          purpose: string | null
           recorded_by: string | null
           signature_name: string | null
+          source: string | null
+          withdrawal_reason: string | null
+          withdrawn_at: string | null
+          withdrawn_by: string | null
         }
         Insert: {
           appointment_id?: string | null
@@ -2273,10 +2278,15 @@ export type Database = {
           id?: string
           ip_address?: unknown
           notes?: string | null
-          patient_id: string
+          patient_id?: string | null
           procedure_description?: string | null
+          purpose?: string | null
           recorded_by?: string | null
           signature_name?: string | null
+          source?: string | null
+          withdrawal_reason?: string | null
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
         }
         Update: {
           appointment_id?: string | null
@@ -2290,10 +2300,15 @@ export type Database = {
           id?: string
           ip_address?: unknown
           notes?: string | null
-          patient_id?: string
+          patient_id?: string | null
           procedure_description?: string | null
+          purpose?: string | null
           recorded_by?: string | null
           signature_name?: string | null
+          source?: string | null
+          withdrawal_reason?: string | null
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
         }
         Relationships: [
           {
@@ -4091,6 +4106,60 @@ export type Database = {
           },
         ]
       }
+      privacy_rights_requests: {
+        Row: {
+          id: string
+          clinic_id: string
+          patient_id: string | null
+          request_type: string
+          status: string
+          requester_name: string | null
+          requester_contact: string | null
+          description: string | null
+          retention_warning_acknowledged: boolean
+          resolution_notes: string | null
+          created_by: string | null
+          resolved_by: string | null
+          resolved_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          patient_id?: string | null
+          request_type: string
+          status?: string
+          requester_name?: string | null
+          requester_contact?: string | null
+          description?: string | null
+          retention_warning_acknowledged?: boolean
+          resolution_notes?: string | null
+          created_by?: string | null
+          resolved_by?: string | null
+          resolved_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          patient_id?: string | null
+          request_type?: string
+          status?: string
+          requester_name?: string | null
+          requester_contact?: string | null
+          description?: string | null
+          retention_warning_acknowledged?: boolean
+          resolution_notes?: string | null
+          created_by?: string | null
+          resolved_by?: string | null
+          resolved_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           created_at: string
@@ -5582,6 +5651,16 @@ export type Database = {
         }
         Returns: string
       }
+      record_clinic_legal_consent: {
+        Args: {
+          p_clinic_id: string
+          p_consent_type: string
+          p_document_version: string
+          p_purpose?: string
+          p_source?: string
+        }
+        Returns: string
+      }
       record_patient_data_consent: {
         Args: {
           p_consent_type: string
@@ -5591,6 +5670,14 @@ export type Database = {
           p_slug: string
         }
         Returns: undefined
+      }
+      withdraw_patient_consent: {
+        Args: {
+          p_clinic_id: string
+          p_consent_id: string
+          p_reason?: string
+        }
+        Returns: string
       }
       remove_clinic_member_user: {
         Args: { p_clinic_id: string; p_user_id: string }

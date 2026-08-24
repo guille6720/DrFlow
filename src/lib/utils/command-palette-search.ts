@@ -1,3 +1,5 @@
+import { isHrefEntitledBySnapshot } from "@/core/entitlements/nav-features";
+import type { ClientEntitlementsSnapshot } from "@/core/entitlements/types";
 import { hasPermission, type PermissionOverrides } from "@/core/permissions/roles";
 
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
@@ -17,11 +19,13 @@ export function filterCommandPaletteItems(
   query: string,
   role: UserRole | null,
   isSuperadmin: boolean,
-  permissionOverrides?: PermissionOverrides
+  permissionOverrides?: PermissionOverrides,
+  entitlements?: ClientEntitlementsSnapshot | null
 ): CommandPaletteItemDef[] {
   const permitted = items.filter(
     (item) =>
-      !item.permission || hasPermission(role, item.permission, isSuperadmin, permissionOverrides)
+      (!item.permission || hasPermission(role, item.permission, isSuperadmin, permissionOverrides)) &&
+      isHrefEntitledBySnapshot(item.href, entitlements ?? null)
   );
 
   const q = normalize(query.trim());

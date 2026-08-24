@@ -1,6 +1,9 @@
 import type { z } from "zod";
 
 import {
+  insertClinicalRecordPatchAudit,
+} from "@/core/compliance/clinical-record-integrity";
+import {
   isMissingRpcInSchemaCache,
   resolvePostgresUserMessage,
 } from "@/core/errors/postgres-error";
@@ -93,22 +96,66 @@ async function tryPersistStructuredColumns(
   db: DbClient,
   recordId: string,
   clinicId: string,
+  userId: string,
+  auditContext: { ip_address: string | null; user_agent: string | null },
   payload: {
     diagnosis_cie10: string | null;
     diagnoses: unknown;
     treatments: unknown;
   }
 ) {
+  const { data: before } = await db
+    .from("clinical_records")
+    .select(
+      "id, patient_id, diagnosis_cie10, diagnoses_json, treatments_json, record_version"
+    )
+    .eq("id", recordId)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+
+  if (!before) return;
+
   const { error } = await db
     .from("clinical_records")
     .update({
       diagnosis_cie10: payload.diagnosis_cie10,
       diagnoses_json: payload.diagnoses,
       treatments_json: payload.treatments,
+      record_version: (before.record_version ?? 1) + 1,
+      updated_by: userId,
+      updated_at: new Date().toISOString(),
     })
     .eq("id", recordId)
     .eq("clinic_id", clinicId);
-  void error;
+
+  if (error) return;
+
+  const beforeSnap = {
+    diagnosis_cie10: before.diagnosis_cie10,
+    diagnoses_json: before.diagnoses_json,
+    treatments_json: before.treatments_json,
+    record_version: before.record_version ?? 1,
+  };
+  const afterSnap = {
+    diagnosis_cie10: payload.diagnosis_cie10,
+    diagnoses_json: payload.diagnoses,
+    treatments_json: payload.treatments,
+    record_version: (before.record_version ?? 1) + 1,
+  };
+
+  if (JSON.stringify(beforeSnap) === JSON.stringify(afterSnap)) return;
+
+  await insertClinicalRecordPatchAudit(db, {
+    clinicalRecordId: recordId,
+    clinicId,
+    patientId: before.patient_id,
+    changedBy: userId,
+    what: "Actualizó diagnósticos/tratamientos estructurados (legacy RPC)",
+    oldValues: beforeSnap,
+    newValues: afterSnap,
+    ipAddress: auditContext.ip_address,
+    userAgent: auditContext.user_agent,
+  });
 }
 
 export async function createClinicalRecordEntry(
@@ -156,7 +203,7 @@ export async function createClinicalRecordEntry(
 
   const row = data as ClinicalRecordRow;
   if (row?.id) {
-    await tryPersistStructuredColumns(db, row.id, input.clinicId, {
+    await tryPersistStructuredColumns(db, row.id, input.clinicId, input.userId, input.auditContext, {
       diagnosis_cie10: sanitized.diagnosis_cie10,
       diagnoses: structured.diagnoses,
       treatments: structured.treatments,
@@ -204,7 +251,7 @@ export async function updateClinicalRecordEntry(
     return serviceErr(resolvePostgresUserMessage(error, { fallback: error.message }));
   }
 
-  await tryPersistStructuredColumns(db, input.recordId, input.clinicId, {
+  await tryPersistStructuredColumns(db, input.recordId, input.clinicId, input.userId, input.auditContext, {
     diagnosis_cie10: sanitized.diagnosis_cie10,
     diagnoses: structured.diagnoses,
     treatments: structured.treatments,

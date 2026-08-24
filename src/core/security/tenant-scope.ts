@@ -17,6 +17,14 @@ export const CLINIC_SCOPED_TABLES = [
   "clinic_entitlement_subscriptions",
   "clinic_feature_overrides",
   "feature_usage",
+  "clinic_api_keys",
+  "os_fee_schedules",
+  "os_billable_items",
+  "os_liquidation_batches",
+  "data_import_sessions",
+  "audit_logs",
+  "clinical_record_audit",
+  "consent_records",
 ] as const;
 
 export type ClinicScopedTable = (typeof CLINIC_SCOPED_TABLES)[number];

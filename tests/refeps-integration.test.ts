@@ -146,8 +146,9 @@ describe("refeps integration phase 2E", () => {
     });
 
     expect(qr.showQr).toBe(true);
-    expect(qr.qrTitle).toBe("Verificación REFEPS");
+    expect(qr.qrTitle).toBe("Verificación REFEPS (sandbox / prueba)");
     expect(qr.qrPayload).toContain("REFEPS-SBX-ABC123");
+    expect(qr.qrHint).toMatch(/No constituye aprobación gubernamental/i);
   });
 
   it("builds local QR when not submitted", () => {

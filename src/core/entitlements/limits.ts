@@ -5,7 +5,7 @@ export type SeatCapacityDecision = { ok: true } | { ok: false; error: string };
 
 const SEAT_LIMIT_MESSAGES: Partial<Record<FeatureKey, string>> = {
   "users.max": "Alcanzaste el máximo de usuarios de tu plan.",
-  "professionals.max": "Alcanzaste el máximo de profesionales de tu plan.",
+  "professionals.max": "Tu plan incluye 1 profesional o hasta el máximo contratado. No se pueden agregar más sin actualizar el plan.",
   "patients.max": "Alcanzaste el máximo de pacientes de tu plan.",
   "automations.max_active": "Alcanzaste el máximo de automatizaciones activas de tu plan.",
 };
@@ -31,9 +31,18 @@ export function decideSeatCapacity(input: {
     };
   }
   if (input.currentCount + extra > limit) {
+    const professionalsMsg =
+      input.featureKey === "professionals.max"
+        ? limit === 1
+          ? "Tu plan incluye 1 profesional. Actualizá a Pro para agregar más."
+          : `Tu plan incluye hasta ${limit} profesionales.`
+        : null;
     return {
       ok: false,
-      error: SEAT_LIMIT_MESSAGES[input.featureKey] ?? "Se alcanzó el límite del plan.",
+      error:
+        professionalsMsg ??
+        SEAT_LIMIT_MESSAGES[input.featureKey] ??
+        "Se alcanzó el límite del plan.",
     };
   }
   return { ok: true };

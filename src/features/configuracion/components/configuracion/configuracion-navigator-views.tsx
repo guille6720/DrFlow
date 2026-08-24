@@ -3,6 +3,10 @@
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { useEntitlementsSnapshot } from "@/core/components/entitlements/entitlements-provider";
+import { isConfiguracionSectionEntitledBySnapshot } from "@/core/entitlements/config-features";
+import { isHrefEntitledBySnapshot } from "@/core/entitlements/nav-features";
+
 import { cn } from "@/shared/utils/cn";
 
 import { ConfiguracionSectionCard } from "@/features/configuracion/components/configuracion/configuracion-section-card";
@@ -137,6 +141,7 @@ export function ConfiguracionNavigatorHubView({
   onOpenGroup: (id: ConfiguracionGroupId) => void;
   deleteAccount?: ReactNode;
 }) {
+  const snapshot = useEntitlementsSnapshot();
   return (
     <div className="drflow-config-hub space-y-6">
       <div className="drflow-card-light rounded-2xl border border-slate-200 bg-white p-5 text-slate-900 sm:p-6">
@@ -151,6 +156,7 @@ export function ConfiguracionNavigatorHubView({
         {CONFIGURACION_GROUPS.map((group) => {
           const GroupIcon = group.icon;
           const sections = getSectionsForGroup(group.id);
+          if (sections.length === 0) return null;
 
           return (
             <button
@@ -172,14 +178,24 @@ export function ConfiguracionNavigatorHubView({
               <p className="mt-4 text-base font-semibold text-slate-900">{group.title}</p>
               <p className="mt-1 text-sm leading-snug text-slate-700">{group.description}</p>
               <ul className="mt-4 flex flex-wrap gap-1.5">
-                {sections.map((section) => (
-                  <li
-                    key={section.id}
-                    className="rounded-full bg-slate-200/90 px-2.5 py-0.5 text-xs font-medium text-slate-800 group-hover:bg-teal-100 group-hover:text-teal-900"
-                  >
-                    {section.title}
-                  </li>
-                ))}
+                {sections.map((section) => {
+                  const locked =
+                    !isConfiguracionSectionEntitledBySnapshot(section.id, snapshot) ||
+                    (Boolean(section.href) && !isHrefEntitledBySnapshot(section.href!, snapshot));
+                  return (
+                    <li
+                      key={section.id}
+                      className={cn(
+                        "rounded-full px-2.5 py-0.5 text-xs font-medium",
+                        locked
+                          ? "bg-amber-100 text-amber-950"
+                          : "bg-slate-200/90 text-slate-800 group-hover:bg-teal-100 group-hover:text-teal-900"
+                      )}
+                    >
+                      {section.title}
+                    </li>
+                  );
+                })}
               </ul>
             </button>
           );

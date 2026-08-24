@@ -1,12 +1,24 @@
 import { NextResponse } from "next/server";
 
 import { getActiveClinic, getActiveClinicId } from "@/core/auth/session.server";
+import { recordAiAuditEvent } from "@/core/compliance/ai-audit";
+import { assertAutomationJobCapacity } from "@/core/entitlements/automation-jobs.server";
+import { addonFeaturesForClinicalAiTask } from "@/core/entitlements/clinical-ai-features";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
+import { consumeAddonUsage } from "@/core/entitlements/metered.server";
+import { AI_MONTHLY_QUOTA_MESSAGE } from "@/core/entitlements/metered-gate";
 import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { hasPermission } from "@/core/permissions/roles";
 import { requireSameOriginMutation } from "@/core/security/csrf";
+import { verifyPatientInClinic } from "@/core/security/ownership-guard";
+import { createClient } from "@/core/supabase/server";
 import { clinicalAiRequestSchema } from "@/core/validations/clinical-ai-api";
 
-import { runGeminiClinicalChat } from "@/lib/ai/run-gemini-clinical.server";
+import { clinicalAiSanitizationFailureResponse } from "@/lib/ai/clinical-ai-failsafe";
+import { loadPatientKnownIdentifiers } from "@/lib/ai/patient-ai-identifiers.server";
+import { ClinicalAiSanitizationError, runGeminiClinicalChat } from "@/lib/ai/run-gemini-clinical.server";
+import { sanitizeClinicalAIInput } from "@/lib/ai/sanitize-clinical-ai-input";
 import {
   getUserAiConnectionPublic,
   getUserAiCredentialsForSession,
@@ -55,6 +67,11 @@ export const POST = withObservabilityApiRoute("clinical_ai", async (request, ctx
     return NextResponse.json({ error: "Sin permisos clínicos" }, { status: 403 });
   }
 
+  const entitlement = await requireAddonFeatureAccess(FEATURES.AI);
+  if (!entitlement.ok) {
+    return NextResponse.json({ error: entitlement.error }, { status: 403 });
+  }
+
   let json: unknown;
   try {
     json = await request.json();
@@ -67,7 +84,44 @@ export const POST = withObservabilityApiRoute("clinical_ai", async (request, ctx
     return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
   }
 
+  for (const extraFeature of addonFeaturesForClinicalAiTask(parsed.data.task)) {
+    const extra = await requireAddonFeatureAccess(extraFeature);
+    if (!extra.ok) {
+      return NextResponse.json({ error: extra.error }, { status: 403 });
+    }
+  }
+
+  const supabase = await createClient();
+  const automationCap = await assertAutomationJobCapacity({
+    clinicId,
+    jobType: "run_ai_task",
+    payload: { task: parsed.data.task },
+    supabase,
+  });
+  if (!automationCap.ok) {
+    return NextResponse.json({ error: automationCap.error }, { status: 403 });
+  }
+
+  const quota = await consumeAddonUsage({ featureKey: FEATURES.AI_MONTHLY_REQUESTS });
+  if (!quota.ok) {
+    const isQuota =
+      quota.error === "Se alcanzó el límite de uso del plan." ||
+      /límite|quota/i.test(quota.error);
+    return NextResponse.json(
+      { error: isQuota ? AI_MONTHLY_QUOTA_MESSAGE : quota.error },
+      { status: 403 }
+    );
+  }
+
   const payload = parsed.data;
+
+  if (payload.patientId) {
+    const owned = await verifyPatientInClinic(supabase, clinicId, payload.patientId);
+    if (!owned.ok) {
+      return NextResponse.json({ error: "Paciente no pertenece al consultorio activo" }, { status: 403 });
+    }
+  }
+
   const orchestratorInput = buildClinicalAiOrchestratorInput(payload);
   const result = runClinicalAiOrchestrator(orchestratorInput);
 
@@ -82,45 +136,176 @@ export const POST = withObservabilityApiRoute("clinical_ai", async (request, ctx
     (payload.enhanceWithLlm || payload.useUserProvider || payload.task === "copilot_query");
 
   if (payload.task === "copilot_query" && payload.message?.trim()) {
-    const geminiResult = await runGeminiClinicalChat({
-      clinicId,
-      patientId: payload.patientId,
-      message: payload.message.trim(),
-      chatHistory: payload.chatHistory,
-      geminiApiKey: credentials?.provider === "gemini" ? credentials.apiKey : null,
-      geminiModel: credentials?.provider === "gemini" ? credentials.model : undefined,
-    });
-    if (geminiResult) {
-      result.body = geminiResult.body;
-      result.engine = geminiResult.engine;
-      result.structured = geminiResult.structured;
-      return NextResponse.json({ result });
+    try {
+      const geminiResult = await runGeminiClinicalChat({
+        clinicId,
+        patientId: payload.patientId,
+        message: payload.message.trim(),
+        chatHistory: payload.chatHistory,
+        geminiApiKey: credentials?.provider === "gemini" ? credentials.apiKey : null,
+        geminiModel: credentials?.provider === "gemini" ? credentials.model : undefined,
+      });
+      if (geminiResult) {
+        result.body = geminiResult.body;
+        result.engine = geminiResult.engine;
+        result.structured = geminiResult.structured;
+        return NextResponse.json({ result });
+      }
+    } catch (err) {
+      if (err instanceof ClinicalAiSanitizationError) {
+        await recordAiAuditEvent({
+          clinicId,
+          patientId: payload.patientId,
+          feature: "gemini_clinical_chat",
+          provider: "unknown",
+          task: payload.task,
+          success: false,
+          sanitizationStatus: "blocked",
+          errorCode: "sanitization_blocked",
+        });
+        return NextResponse.json(clinicalAiSanitizationFailureResponse(err), { status: 422 });
+      }
+      throw err;
     }
   }
 
   if (wantsLlm && credentials) {
     const copilotCtx = orchestratorInput.copilotContext ?? {};
-    const contextSummary =
+    const dbIdentifiers = payload.patientId
+      ? await loadPatientKnownIdentifiers(clinicId, payload.patientId)
+      : [];
+    const knownIdentifiers = [
+      ...dbIdentifiers,
+      payload.patientName,
+      copilotCtx.patientName,
+      copilotCtx.assistContext?.patientName,
+    ].filter((v): v is string => Boolean(v?.trim()));
+
+    const uniqueIdentifiers = [...new Set(knownIdentifiers)];
+
+    const rawContextSummary =
       buildClinicalCopilotContextSummary(copilotCtx) || payload.patientName || undefined;
+    const sanitizedContext = rawContextSummary
+      ? sanitizeClinicalAIInput(rawContextSummary, { knownIdentifiers: uniqueIdentifiers })
+      : null;
+
+    if (sanitizedContext?.blocked) {
+      await recordAiAuditEvent({
+        clinicId,
+        patientId: payload.patientId,
+        feature: "clinical_ai_byok",
+        provider: credentials.provider,
+        task: payload.task,
+        success: false,
+        sanitizationStatus: "blocked",
+        errorCode: "sanitization_blocked",
+      });
+      return NextResponse.json(clinicalAiSanitizationFailureResponse(sanitizedContext.blockReason!), {
+        status: 422,
+      });
+    }
+
+    const contextSummary = sanitizedContext?.sanitized;
 
     if (payload.task === "copilot_query" && payload.message?.trim()) {
-      const chatResult = await runUserAiChat({
-        credentials,
-        messages: buildCopilotChatMessages(payload.chatHistory, payload.message),
-        contextSummary,
-        ruleBasedFallback: result.body,
-      });
-      result.body = chatResult.body;
-      result.engine = chatResult.engine;
+      try {
+        const messageSanitized = sanitizeClinicalAIInput(payload.message.trim(), {
+          knownIdentifiers: uniqueIdentifiers,
+        });
+        if (messageSanitized.blocked) {
+          await recordAiAuditEvent({
+            clinicId,
+            patientId: payload.patientId,
+            feature: "clinical_ai_byok",
+            provider: credentials.provider,
+            task: payload.task,
+            success: false,
+            sanitizationStatus: "blocked",
+            errorCode: "sanitization_blocked",
+          });
+          return NextResponse.json(clinicalAiSanitizationFailureResponse(messageSanitized), {
+            status: 422,
+          });
+        }
+
+        const chatResult = await runUserAiChat({
+          credentials,
+          messages: buildCopilotChatMessages(payload.chatHistory, messageSanitized.sanitized),
+          contextSummary,
+          ruleBasedFallback: result.body,
+          knownIdentifiers: uniqueIdentifiers,
+          strictSanitization: true,
+        });
+        result.body = chatResult.body;
+        result.engine = chatResult.engine;
+
+        await recordAiAuditEvent({
+          clinicId,
+          patientId: payload.patientId,
+          feature: "clinical_ai_byok",
+          provider: credentials.provider,
+          model: credentials.model,
+          task: payload.task,
+          success: chatResult.engine === "llm_enhanced",
+          sanitizationStatus: messageSanitized.status === "partial" ? "partial" : "ok",
+          redactionCount: messageSanitized.redactionCount,
+        });
+      } catch (err) {
+        if (err instanceof ClinicalAiSanitizationError) {
+          await recordAiAuditEvent({
+            clinicId,
+            patientId: payload.patientId,
+            feature: "clinical_ai_byok",
+            provider: credentials.provider,
+            task: payload.task,
+            success: false,
+            sanitizationStatus: "blocked",
+            errorCode: "sanitization_blocked",
+          });
+          return NextResponse.json(clinicalAiSanitizationFailureResponse(err), { status: 422 });
+        }
+        throw err;
+      }
     } else {
-      const enhanced = await enhanceClinicalAiBodyIfConfigured({
-        agentId: result.agentId,
-        body: result.body,
-        contextSummary,
-        credentials,
-      });
-      result.body = enhanced.body;
-      result.engine = enhanced.engine;
+      try {
+        const enhanced = await enhanceClinicalAiBodyIfConfigured({
+          agentId: result.agentId,
+          body: result.body,
+          contextSummary,
+          credentials,
+          knownIdentifiers: uniqueIdentifiers,
+          strictSanitization: true,
+        });
+        result.body = enhanced.body;
+        result.engine = enhanced.engine;
+
+        await recordAiAuditEvent({
+          clinicId,
+          patientId: payload.patientId,
+          feature: "clinical_ai_byok",
+          provider: credentials.provider,
+          model: credentials.model,
+          task: payload.task,
+          success: enhanced.engine === "llm_enhanced",
+          sanitizationStatus: sanitizedContext?.status === "partial" ? "partial" : "ok",
+          redactionCount: sanitizedContext?.redactionCount,
+        });
+      } catch (err) {
+        if (err instanceof ClinicalAiSanitizationError) {
+          await recordAiAuditEvent({
+            clinicId,
+            patientId: payload.patientId,
+            feature: "clinical_ai_byok",
+            provider: credentials.provider,
+            task: payload.task,
+            success: false,
+            sanitizationStatus: "blocked",
+            errorCode: "sanitization_blocked",
+          });
+          return NextResponse.json(clinicalAiSanitizationFailureResponse(err), { status: 422 });
+        }
+        throw err;
+      }
     }
   }
 

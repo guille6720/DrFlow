@@ -16,7 +16,7 @@ export type InformedConsentRecord = {
 export function mapInformedConsentRow(row: {
   id: string;
   clinical_record_id: string | null;
-  patient_id: string;
+  patient_id: string | null;
   appointment_id: string | null;
   granted: boolean;
   granted_at: string | null;
@@ -27,7 +27,7 @@ export function mapInformedConsentRow(row: {
   created_at: string;
   profiles?: { full_name: string } | { full_name: string }[] | null;
 }): InformedConsentRecord | null {
-  if (!row.clinical_record_id) return null;
+  if (!row.clinical_record_id || !row.patient_id) return null;
   const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
   return {
     id: row.id,

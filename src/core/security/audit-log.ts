@@ -25,6 +25,7 @@ export const AUDIT_MODULES = [
   "jobs",
   "plugins",
   "waiting_room",
+  "ia",
   "system",
 ] as const;
 
@@ -71,6 +72,7 @@ const ENTITY_MODULE_MAP: Record<string, AuditModule> = {
   clinic_invitation: "settings",
   clinic_member: "settings",
   waiting_room: "waiting_room",
+  ai_request: "ia",
 };
 
 export function deriveAuditModule(entityType: string): AuditModule {
@@ -130,6 +132,7 @@ export function auditModuleLabel(module: string): string {
     jobs: "Trabajos",
     plugins: "Plugins",
     waiting_room: "Sala de espera",
+    ia: "IA / Asistente",
     system: "Sistema",
   };
   return labels[module] ?? module;

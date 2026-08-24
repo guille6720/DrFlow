@@ -76,6 +76,7 @@ export async function getInformedConsentForClinicalRecord(
     .eq("clinical_record_id", parsed.data)
     .eq("consent_type", CONSENT_TYPES.informedConsentClinicalAct)
     .eq("granted", true)
+    .is("withdrawn_at", null)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -151,4 +152,60 @@ export async function recordInformedConsent(formData: FormData) {
 
   const loaded = await getInformedConsentForClinicalRecord(parsed.data.clinical_record_id);
   return { data: loaded.data ?? null };
+}
+
+export async function withdrawPatientConsent(formData: FormData) {
+  const clinicId = await getActiveClinicId();
+  const { role, isSuperadmin } = await getActiveClinic();
+  const user = await getSession();
+
+  if (
+    !clinicId ||
+    !user ||
+    !hasPermission(role, "editClinicalRecords", isSuperadmin)
+  ) {
+    return { error: "Sin permisos para retirar el consentimiento." };
+  }
+
+  const consentId = String(formData.get("consent_id") ?? "");
+  const reason = String(formData.get("withdrawal_reason") ?? "").trim() || null;
+  const parsedId = parseEntityId(consentId, "Consentimiento");
+  if (!parsedId.ok) return { error: parsedId.error };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("withdraw_patient_consent", {
+    p_consent_id: parsedId.data,
+    p_clinic_id: clinicId,
+    p_reason: nullToUndefined(reason),
+  });
+
+  if (error) {
+    const msg = error.message ?? "";
+    if (msg.includes("CONSENT_ALREADY_WITHDRAWN")) {
+      return { error: "Este consentimiento ya fue retirado." };
+    }
+    if (msg.includes("CONSENT_NOT_FOUND")) {
+      return { error: "Consentimiento no encontrado." };
+    }
+    if (msg.includes("FORBIDDEN")) {
+      return { error: "Sin permisos para retirar el consentimiento." };
+    }
+    return { error: "No se pudo registrar el retiro del consentimiento." };
+  }
+
+  await logAudit({
+    clinicId,
+    module: "compliance",
+    what: "Retiró consentimiento del paciente",
+    entityType: "consent",
+    entityId: parsedId.data,
+    action: "update",
+    metadata: {
+      withdrawal_reason: reason,
+    },
+  });
+
+  revalidatePath("/pacientes");
+  revalidatePath("/historias");
+  return { success: true };
 }

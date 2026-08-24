@@ -6,7 +6,9 @@ import { Bell, Mail, MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { EntitlementUsageHint } from "@/core/components/entitlements/entitlement-usage-hint";
 import { Header } from "@/core/components/layout/header";
+import { FEATURES } from "@/core/entitlements/features";
 
 import { formatPatientName } from "@/shared/utils/patient-display";
 
@@ -90,6 +92,10 @@ export function RecordatoriosView({
       />
 
       <div className="space-y-6 p-4 sm:p-6">
+        <EntitlementUsageHint
+          feature={FEATURES.WHATSAPP_MONTHLY_MESSAGES}
+          label="Uso de WhatsApp este mes"
+        />
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
           <p>
             <strong>WhatsApp</strong>{" "}

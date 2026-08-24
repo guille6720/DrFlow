@@ -140,14 +140,18 @@ function conditionFromProtocol(protocol: GeminiClinicalProtocol): GeminiStatsCon
 }
 
 /** True when the doctor is asking for clinic-wide counts/lists/protocols, not a single HC. */
-export function parseGeminiClinicStatsQuery(message: string): GeminiClinicStatsQuery | null {
+export function parseGeminiClinicStatsQuery(
+  message: string,
+  options?: { allowClinicalResearchProtocols?: boolean }
+): GeminiClinicStatsQuery | null {
   const trimmed = message.trim();
   if (!trimmed) return null;
 
   const folded = foldStatsText(trimmed);
   if (CLINICAL_ONLY_HINT.test(trimmed) && !STATS_HINT.test(trimmed)) return null;
 
-  const protocol = findProtocolByMessage(folded);
+  const allowResearch = options?.allowClinicalResearchProtocols !== false;
+  const protocol = allowResearch ? findProtocolByMessage(folded) : null;
   const wantProtocolCriteria =
     Boolean(protocol) &&
     /criterio|protocolo|estudio|incluir|inclusion|exclusi|deriv|candidato|perfil|que\s+paciente|buscar/.test(
@@ -161,6 +165,16 @@ export function parseGeminiClinicStatsQuery(message: string): GeminiClinicStatsQ
       : conditionFromText;
 
   if (!STATS_HINT.test(trimmed) && !protocol) return null;
+
+  // Research-only prompts must not fall through to generic clinic dumps when gated off.
+  if (!allowResearch && !protocol) {
+    const wouldBeProtocol = findProtocolByMessage(folded);
+    if (wouldBeProtocol || /candidat|reclut|protocolo|ensayo\s+cl[ií]n/.test(folded)) {
+      if (!conditionFromText && !/estad[ií]st|cu[aá]nt[oa]s?|ranking|listad|este\s+mes|hoy\b|ayer\b/.test(folded)) {
+        return null;
+      }
+    }
+  }
 
   const hasConditionOrProtocol = Boolean(condition || protocol);
 
@@ -180,6 +194,47 @@ export function textMatchesCondition(text: string, condition: GeminiStatsConditi
     const n = needle.trim();
     return n.length >= 2 && folded.includes(n);
   });
+}
+
+/** Format clinic stats for external AI — patient names are tokenized, not sent in clear text. */
+export function formatGeminiClinicStatsContextForAI(result: GeminiClinicStatsResult): string {
+  const anonymizedPatients = result.patients.map((row, index) => ({
+    token: `PACIENTE_${String.fromCharCode(65 + (index % 26))}${index >= 26 ? Math.floor(index / 26) : ""}`,
+    date: row.date,
+    diagnosis: row.diagnosis,
+    coverage: row.coverage,
+  }));
+
+  const header = [
+    result.protocolLabel ? `Protocolo: ${result.protocolLabel}` : null,
+    `Período: ${result.periodLabel}`,
+    result.conditionLabel ? `Filtro: ${result.conditionLabel}` : null,
+    result.coverageLabel ? `Cobertura: ${result.coverageLabel}` : null,
+    `Consultas: ${result.visitCount}`,
+    `Pacientes únicos: ${result.patientCount}`,
+    result.truncated ? "Listado recortado al máximo permitido." : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const diagnoses =
+    result.topDiagnoses.length > 0
+      ? `Diagnósticos más frecuentes:\n${result.topDiagnoses
+          .map((row) => `• ${row.label}: ${row.count}`)
+          .join("\n")}`
+      : null;
+
+  const patients =
+    anonymizedPatients.length > 0
+      ? `Pacientes (anonimizados):\n${anonymizedPatients
+          .map(
+            (row) =>
+              `• ${row.token} (${row.date})${row.diagnosis ? ` — ${row.diagnosis}` : ""}${row.coverage ? ` [${row.coverage}]` : ""}`
+          )
+          .join("\n")}`
+      : "Pacientes: ninguno en el período con esos términos en la HC de DrFlow.";
+
+  return [result.protocolContext, header, diagnoses, patients].filter(Boolean).join("\n\n");
 }
 
 export function formatGeminiClinicStatsContext(result: GeminiClinicStatsResult): string {

@@ -1,5 +1,7 @@
 import qrcode from "qrcode-generator";
 
+import { resolveRefepsDocumentLanguage } from "@/core/compliance/prescription-compliance";
+
 import type { CoverageRuleConfig } from "@/features/recetas/engine/types";
 import {
   getEffectiveCoverageRule,
@@ -99,7 +101,11 @@ export function resolvePrescriptionDocumentQr(input: {
   qrTitle: string;
   qrHint: string;
 } {
-  if (input.refepsStatus === "submitted" && input.refepsId?.trim()) {
+  const refepsLanguage = resolveRefepsDocumentLanguage({
+    refepsStatus: input.refepsStatus,
+    refepsId: input.refepsId,
+  });
+  if (refepsLanguage && input.refepsId?.trim()) {
     return {
       showQr: true,
       qrPayload: buildRefepsQrPayload({
@@ -107,9 +113,8 @@ export function resolvePrescriptionDocumentQr(input: {
         prescriptionNumber: input.prescriptionNumber,
         digitalSignatureHash: input.digitalSignatureHash,
       }),
-      qrTitle: "Verificación REFEPS",
-      qrHint:
-        "Receta registrada en REFEPS/RENaPDiS. Verificá el identificador en farmacia según homologación del consultorio.",
+      qrTitle: refepsLanguage.qrTitle,
+      qrHint: refepsLanguage.qrHint,
     };
   }
 

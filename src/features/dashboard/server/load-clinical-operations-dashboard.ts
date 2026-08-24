@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { endOfDay, startOfDay } from "date-fns";
 
+import { getClinicEntitlements } from "@/core/entitlements/entitlements.server";
+import { toClientEntitlementsSnapshot } from "@/core/entitlements/resolve";
 import { observeQuery } from "@/core/observability/observe-query";
 
 import {
@@ -87,6 +89,9 @@ async function loadClinicalOperationsDashboardInner(
   const pendingStudiesMapped = mapPendingStudies(pendingStudies.data ?? []);
   const queuedRemindersMapped = mapQueuedReminders(queuedReminders.data ?? []);
   const pendingOrders = mapPendingOrders(pendingOrdersResult.data ?? []);
+  const entitlements = toClientEntitlementsSnapshot(
+    await getClinicEntitlements({ clinicId })
+  );
 
   const tasks = buildTasks({
     todayAppointments,
@@ -94,6 +99,7 @@ async function loadClinicalOperationsDashboardInner(
     draftPrescriptions,
     pendingStudies: pendingStudiesMapped,
     queuedReminders: queuedRemindersMapped,
+    entitlements,
   });
 
   const enrichedWaiting = enrichWaitingRows({

@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { startOfDay } from "date-fns";
 
+import { getClinicEntitlements } from "@/core/entitlements/entitlements.server";
+import { toClientEntitlementsSnapshot } from "@/core/entitlements/resolve";
 import { observeQuery } from "@/core/observability/observe-query";
 
 import {
@@ -49,6 +51,9 @@ async function loadSecondaryInner(
   const pendingStudiesMapped = mapPendingStudies(rowsOf(pendingStudies.data));
   const queuedRemindersMapped = mapQueuedReminders(rowsOf(queuedReminders.data));
   const pendingOrders = mapPendingOrders(rowsOf(pendingOrdersResult.data));
+  const entitlements = toClientEntitlementsSnapshot(
+    await getClinicEntitlements({ clinicId })
+  );
 
   const tasks = buildTasks({
     todayAppointments: core.todayAppointments as LiveAppointment[],
@@ -56,6 +61,7 @@ async function loadSecondaryInner(
     draftPrescriptions,
     pendingStudies: pendingStudiesMapped,
     queuedReminders: queuedRemindersMapped,
+    entitlements,
   });
 
   const recentLabs = prioritizeLabResults(pendingStudiesMapped, now);

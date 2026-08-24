@@ -4,6 +4,8 @@ import { ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { FeatureGate } from "@/core/components/entitlements/feature-gate";
+import { FEATURES } from "@/core/entitlements/features";
 import type { ManageablePermissionKey } from "@/core/permissions/member-permissions";
 
 import { TeamPermissionsMatrix } from "@/features/configuracion/components/configuracion/team-permissions-matrix";
@@ -31,7 +33,9 @@ export function TeamAccessPanel({ members, permissionOverrides, hasSharedCredent
 
   return (
     <div id="permisos-equipo" className="space-y-6">
-      <TeamSharedCredentialsPanel />
+      <FeatureGate feature={FEATURES.AI}>
+        <TeamSharedCredentialsPanel />
+      </FeatureGate>
 
       <Card title="Permisos de acceso a recursos">
         <div className="mb-4 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">

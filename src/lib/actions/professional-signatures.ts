@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { getActiveClinic, getActiveClinicId, getProfile } from "@/core/auth/session.server";
 import { revalidateClinicProfessionalsCache } from "@/core/cache/revalidate-clinic-cache";
+import { assertClinicStorageCapacity } from "@/core/entitlements/storage.server";
 import { hasPermission } from "@/core/permissions/roles";
 import { recordAudit } from "@/core/security/audit-service";
 import {
@@ -118,6 +119,13 @@ export async function uploadProfessionalSignature(formData: FormData) {
   const buffer = Buffer.from(await file.arrayBuffer());
   const validated = validateSignatureImageUpload(file, buffer);
   if (!validated.ok) return { error: validated.error };
+
+  const storage = await assertClinicStorageCapacity({
+    clinicId: access.clinicId,
+    extraBytes: buffer.length,
+    supabase: access.supabase,
+  });
+  if (!storage.ok) return { error: storage.error };
 
   const filePath = buildProfessionalSignaturePath(
     access.clinicId,

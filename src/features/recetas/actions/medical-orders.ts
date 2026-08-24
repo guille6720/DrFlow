@@ -19,10 +19,14 @@ import {
 } from "@/features/recetas/services/medical-orders.service";
 import { normalizeMedicalOrderVersion, parseMedicalOrderExpectedVersion } from "@/features/recetas/utils/medical-order-version";
 
-import type { MedicalOrder } from "@/types/medical-order";
+import type { MedicalOrderStatus } from "@/types/medical-order";
 
 const MEDICAL_ORDER_AUDIT_SELECT =
   "id, patient_id, clinical_record_id, professional_id, order_type, order_text, notes, status, version";
+
+function isIssuedMedicalOrderStatus(status: string): status is Extract<MedicalOrderStatus, "issued"> {
+  return status === "issued";
+}
 
 async function loadIssuedMedicalOrderForMutation(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -36,10 +40,16 @@ async function loadIssuedMedicalOrderForMutation(
     .eq("clinic_id", clinicId)
     .maybeSingle();
 
-  if (!before || before.status !== "issued") {
+  if (!before || !isIssuedMedicalOrderStatus(before.status)) {
     return { ok: false as const, error: "La orden no existe o ya fue anulada." };
   }
-  return { ok: true as const, data: before as unknown as MedicalOrder };
+  return {
+    ok: true as const,
+    data: {
+      ...before,
+      status: before.status,
+    },
+  };
 }
 
 export async function createMedicalOrder(formData: FormData) {

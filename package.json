@@ -16,6 +16,8 @@
     "quality:gate:fast": "node scripts/quality-gate.mjs --skip-build",
     "code-quality:gate": "node scripts/code-quality-gate.mjs",
     "security:gate": "node scripts/security-gate.mjs",
+    "commercial:gate": "node scripts/commercial-release-gate.mjs",
+    "compliance:migrations:verify-staging": "node scripts/verify-compliance-migrations-staging.mjs",
     "architecture:gate": "node scripts/architecture-gate.mjs",
     "stabilization:gate": "node scripts/stabilization-gate.mjs",
     "stabilization:audit": "node scripts/stabilization-audit.mjs --write",

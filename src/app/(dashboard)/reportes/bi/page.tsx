@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
+import { FEATURES } from "@/core/entitlements/features";
+import { requireAddonFeatureOrRedirect } from "@/core/entitlements/guard.server";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
@@ -18,6 +20,7 @@ export default async function BiReportesPage({
 }) {
   const { period: periodParam } = await searchParams;
   const period = parseBiReportPeriod(periodParam);
+  await requireAddonFeatureOrRedirect(FEATURES.ADVANCED_REPORTS);
   const { profile, clinics, clinicId, role, isSuperadmin, permissionOverrides } =
     await getDashboardPageContext();
 

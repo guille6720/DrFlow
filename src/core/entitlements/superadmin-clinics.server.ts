@@ -36,6 +36,11 @@ export type SuperadminClinicCommercialRow = {
   recommendationSeverity: string | null;
   recommendationReasons: string[];
   shouldRecommendUpgrade: boolean;
+  /** Mercado Pago billing SKU if present. */
+  billingPlanId: string | null;
+  promoPriceArs: number | null;
+  regularPriceArs: number | null;
+  promoEndsAt: string | null;
 };
 
 export type SuperadminDashboardStats = {
@@ -105,6 +110,7 @@ export async function listSuperadminClinicCommercialRows(): Promise<
     { data: planFeatures },
     { data: overrides },
     { data: admins },
+    { data: billingSubs },
   ] = await Promise.all([
     supabase
       .from("clinic_entitlement_subscriptions")
@@ -133,7 +139,36 @@ export async function listSuperadminClinicCommercialRows(): Promise<
       .eq("is_active", true)
       .eq("role", "clinic_admin")
       .in("clinic_id", clinicIds),
+    untypedDb(supabase)
+      .from("clinic_subscriptions")
+      .select("clinic_id, plan_id, promo_price_amount, regular_price_amount, promo_ends_at")
+      .in("clinic_id", clinicIds),
   ]);
+
+  const billingByClinic = new Map<
+    string,
+    {
+      planId: string | null;
+      promoPriceArs: number | null;
+      regularPriceArs: number | null;
+      promoEndsAt: string | null;
+    }
+  >();
+  for (const row of billingSubs ?? []) {
+    const typed = row as {
+      clinic_id: string;
+      plan_id: string | null;
+      promo_price_amount: number | null;
+      regular_price_amount: number | null;
+      promo_ends_at: string | null;
+    };
+    billingByClinic.set(typed.clinic_id, {
+      planId: typed.plan_id,
+      promoPriceArs: typed.promo_price_amount,
+      regularPriceArs: typed.regular_price_amount,
+      promoEndsAt: typed.promo_ends_at,
+    });
+  }
 
   const planFeatureMap = new Map<string, Map<string, { enabled: boolean; value: number | null }>>();
   for (const row of planFeatures ?? []) {
@@ -316,6 +351,7 @@ export async function listSuperadminClinicCommercialRows(): Promise<
       thresholds,
     });
 
+    const billing = billingByClinic.get(clinic.id);
     return {
       clinicId: clinic.id,
       clinicName: clinic.name,
@@ -335,6 +371,10 @@ export async function listSuperadminClinicCommercialRows(): Promise<
       recommendationSeverity: recommendation.severity,
       recommendationReasons: recommendation.reasons,
       shouldRecommendUpgrade: recommendation.shouldRecommendUpgrade,
+      billingPlanId: billing?.planId ?? null,
+      promoPriceArs: billing?.promoPriceArs ?? null,
+      regularPriceArs: billing?.regularPriceArs ?? null,
+      promoEndsAt: billing?.promoEndsAt ?? null,
     };
   });
 }

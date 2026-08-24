@@ -3,6 +3,10 @@
 import { Download } from "lucide-react";
 import { useState } from "react";
 
+import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
+import { FEATURES } from "@/core/entitlements/features";
+
 import {
   type ClinicalExportFormat,
   exportPatientClinicalPackage,
@@ -25,6 +29,8 @@ import { Select } from "@/components/ui/select";
 type Props = { canExport: boolean };
 
 export function ClinicalRecordExportPanel({ canExport }: Props) {
+  const canExportPdf = useCanUseFeature(FEATURES.PDF_EXPORT);
+  const canExportFhir = useCanUseFeature(FEATURES.INTEGRATIONS);
   const [patientId, setPatientId] = useState("");
   const [format, setFormat] = useState<ClinicalExportFormat>("json");
   const [rangeMode, setRangeMode] = useState<"all" | "custom">("all");
@@ -64,6 +70,8 @@ export function ClinicalRecordExportPanel({ canExport }: Props) {
 
   return (
     <div className="space-y-3">
+      {!canExportPdf ? <AddonUpgradeNotice feature={FEATURES.PDF_EXPORT} /> : null}
+      {!canExportFhir ? <AddonUpgradeNotice feature={FEATURES.INTEGRATIONS} /> : null}
       <p className="text-sm text-slate-600">
         JSON estructurado, FHIR R4, PDF resumido o ZIP con HC, datos, adjuntos y carpeta FHIR/.
       </p>
@@ -81,8 +89,8 @@ export function ClinicalRecordExportPanel({ canExport }: Props) {
         onChange={(event) => setFormat(event.target.value as ClinicalExportFormat)}
         options={[
           { value: "json", label: "JSON estructurado" },
-          { value: "fhir", label: "FHIR R4 (Bundle)" },
-          { value: "pdf", label: "PDF resumido" },
+          ...(canExportFhir ? [{ value: "fhir", label: "FHIR R4 (Bundle)" }] : []),
+          ...(canExportPdf ? [{ value: "pdf", label: "PDF resumido" }] : []),
           { value: "zip", label: "ZIP completo" },
         ]}
       />

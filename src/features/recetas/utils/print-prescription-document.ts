@@ -133,7 +133,7 @@ export function buildPrescriptionDocumentHtml(data: PrescriptionDocumentData): s
     <article class="order-doc">
       <header class="order-doc-header">
         <p class="order-doc-kicker">República Argentina — DrFlow</p>
-        <h1>RECETA ELECTRÓNICA</h1>
+        <h1>RECETA LOCAL / BORRADOR</h1>
         <p class="order-doc-meta">
           N° ${escapeHtml(data.prescriptionNumber ?? "—")} · ${escapeHtml(issued)} ·
           ${escapeHtml(PRESCRIPTION_TYPE_LABELS[data.prescriptionType])} ·
@@ -252,7 +252,7 @@ const PRINT_STYLES = `
 `;
 
 function buildPrintDocumentHtml(data: PrescriptionDocumentData): string {
-  return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8" /><title>Receta electrónica</title><style>${PRINT_STYLES}</style></head><body>${buildPrescriptionDocumentHtml(data)}</body></html>`;
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8" /><title>Receta local / borrador</title><style>${PRINT_STYLES}</style></head><body>${buildPrescriptionDocumentHtml(data)}</body></html>`;
 }
 
 function triggerPrint(targetWindow: Window): void {

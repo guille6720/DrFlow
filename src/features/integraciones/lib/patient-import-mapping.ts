@@ -158,6 +158,19 @@ export function requiredMappingHeadersPresent(
   });
 }
 
+export function parsePatientColumnMapping(value: unknown): PatientColumnMapping {
+  if (value === null || value === undefined || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+  const out: PatientColumnMapping = {};
+  for (const field of PATIENT_IMPORT_FIELDS) {
+    if (!Object.prototype.hasOwnProperty.call(value, field)) continue;
+    const entry = Reflect.get(value, field);
+    if (typeof entry === "string") out[field] = entry;
+  }
+  return out;
+}
+
 export function remapTemplateToHeaders(
   mapping: PatientColumnMapping,
   headers: string[]

@@ -89,11 +89,12 @@ export async function issuePrescription(id: string, idempotencyKey?: string | nu
       entityId: idParsed.data,
       patientId: result.data.patient_id,
       action: "update",
-      what: "Emitió receta electrónica",
+      what: "Emitió receta local (borrador — sin homologación REFEPS)",
       metadata: {
         status: "issued",
         coverage_kind: result.data.coverage_kind,
         prescription_number: result.data.prescription_number,
+        legal_validity: "local_draft_only",
       },
     });
   }

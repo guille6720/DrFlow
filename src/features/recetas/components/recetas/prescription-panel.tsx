@@ -82,7 +82,7 @@ export function PrescriptionPanel({
   const defaultPro = professionals[0];
 
   return (
-    <Card title="Receta electrónica (Argentina)">
+    <Card title="Receta local (Argentina — sin homologación REFEPS)">
       {canIssue && (
         <div className="mb-4">
           <Button type="button" size="sm" variant="outline" onClick={() => setShowForm(!showForm)}>

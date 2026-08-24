@@ -40,7 +40,7 @@ async function updateAppointmentRow(
   supabase: Awaited<ReturnType<typeof createClient>>,
   id: string,
   clinicId: string,
-  updatePayload: Record<string, unknown>
+  updatePayload: AppointmentUpdate
 ) {
   let payload = updatePayload;
   let result = await supabase
@@ -251,7 +251,7 @@ async function updateAppointmentStatusInternal(
     .eq("clinic_id", clinicId)
     .single();
 
-  const updatePayload: Record<string, unknown> = {
+  const updatePayload: AppointmentUpdate = {
     status: statusParsed.data,
     cancellation_reason:
       statusParsed.data === "cancelled"
