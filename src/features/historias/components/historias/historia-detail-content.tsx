@@ -182,6 +182,9 @@ export function HistoriaDetailContent({
                 patient={patient}
                 clinicalRecordId={id}
                 diagnosis={record.diagnosis}
+                diagnosisCie10={
+                  typeof record.diagnosis_cie10 === "string" ? record.diagnosis_cie10 : null
+                }
                 professionals={professionalList}
                 clinic={{
                   name: clinic.name,

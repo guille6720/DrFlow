@@ -1,11 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
@@ -19,10 +14,7 @@ type PageProps = {
 
 export default async function LiquidacionDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
 
   if (!hasPermission(role, "manageCashRegister", isSuperadmin) || !clinicId) {
     redirect("/dashboard");

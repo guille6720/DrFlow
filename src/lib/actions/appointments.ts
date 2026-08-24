@@ -1,12 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { getSession } from "@/core/auth/session.server";
+import { revalidateAppointmentSurfaces } from "@/core/cache/revalidate-appointment-surfaces";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { recordAudit } from "@/core/security/audit-service";
 import { verifyAppointmentForeignKeys } from "@/core/security/ownership-guard";
+import { APPOINTMENT_AGENDA_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 import {
   appointmentStatusSchema,
@@ -19,6 +18,9 @@ import { appointmentSchema, sanitizeText, updateAppointmentBodySchema } from "@/
 import { recordAppointmentStatusHistory } from "@/features/turnos/server/record-appointment-status-history";
 
 import type { ConsultationModality } from "@/lib/constants/consultation-modality";
+import type { Database } from "@/types/supabase";
+
+type AppointmentUpdate = Database["public"]["Tables"]["appointments"]["Update"];
 
 function isMissingAppointmentsColumnError(
   error: { code?: string | null; message?: string | null },
@@ -38,12 +40,12 @@ async function updateAppointmentRow(
   supabase: Awaited<ReturnType<typeof createClient>>,
   id: string,
   clinicId: string,
-  updatePayload: Record<string, unknown>
+  updatePayload: AppointmentUpdate
 ) {
   let payload = updatePayload;
   let result = await supabase
     .from("appointments")
-    .update(payload)
+    .update(payload as unknown as AppointmentUpdate)
     .eq("id", id)
     .eq("clinic_id", clinicId);
 
@@ -56,7 +58,7 @@ async function updateAppointmentRow(
     payload = fallbackPayload;
     result = await supabase
       .from("appointments")
-      .update(payload)
+      .update(payload as unknown as AppointmentUpdate)
       .eq("id", id)
       .eq("clinic_id", clinicId);
   }
@@ -65,10 +67,12 @@ async function updateAppointmentRow(
 }
 
 export async function createAppointment(formData: FormData) {
-  const access = await requireClinicPermission("manageAppointments");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageAppointments"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
+  const { clinicId, userId } = access;
 
   const raw = Object.fromEntries(formData.entries());
   const parsed = appointmentSchema.safeParse({
@@ -86,8 +90,6 @@ export async function createAppointment(formData: FormData) {
       ? sanitizeText(parsed.data.cancellation_reason)
       : parsed.data.cancellation_reason,
   };
-
-  const supabase = await createClient();
   const ownership = await verifyAppointmentForeignKeys(supabase, clinicId, {
     patientId: parsed.data.patient_id,
     professionalId: parsed.data.professional_id,
@@ -101,9 +103,9 @@ export async function createAppointment(formData: FormData) {
     .insert({
       clinic_id: clinicId,
       ...payload,
-      created_by: user?.id,
+      created_by: userId,
     })
-    .select()
+    .select(APPOINTMENT_AGENDA_COLUMNS)
     .single();
 
   if (error) {
@@ -119,15 +121,15 @@ export async function createAppointment(formData: FormData) {
     action: "create",
   });
 
-  revalidatePath("/agenda");
-  revalidatePath("/turnos/agenda");
-  revalidatePath("/dashboard");
-  revalidatePath("/atenciones");
+  revalidateAppointmentSurfaces({ patientId: data.patient_id });
   return { data };
 }
 
 export async function updateAppointment(id: string, formData: FormData) {
-  const access = await requireClinicPermission("manageAppointments");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageAppointments"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
@@ -143,8 +145,6 @@ export async function updateAppointment(id: string, formData: FormData) {
   });
 
   if (!bodyParsed.success) return { error: firstZodIssue(bodyParsed.error) };
-
-  const supabase = await createClient();
   const { data: existing } = await supabase
     .from("appointments")
     .select("id, status, patient_id")
@@ -195,11 +195,7 @@ export async function updateAppointment(id: string, formData: FormData) {
     action: "update",
   });
 
-  revalidatePath("/agenda");
-  revalidatePath("/turnos/agenda");
-  revalidatePath("/dashboard");
-  revalidatePath(`/pacientes/${existing.patient_id}`);
-  revalidatePath("/atenciones");
+  revalidateAppointmentSurfaces({ patientId: existing.patient_id });
   return { success: true };
 }
 
@@ -232,10 +228,12 @@ async function updateAppointmentStatusInternal(
   consultationModality?: ConsultationModality,
   cancellationCategory?: string
 ) {
-  const access = await requireClinicPermission("manageAppointments");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageAppointments"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
+  const { clinicId, userId } = access;
 
   const idParsed = parseEntityId(id, "Turno");
   if (!idParsed.ok) return { error: idParsed.error };
@@ -246,8 +244,6 @@ async function updateAppointmentStatusInternal(
   const modalityParsed = consultationModalitySchema.safeParse(consultationModality ?? "presencial");
   if (!modalityParsed.success) return { error: "Modalidad inválida" };
 
-  const supabase = await createClient();
-
   const { data: before } = await supabase
     .from("appointments")
     .select("id, start_at, patient_id, status, waiting_room_status, patients(first_name, last_name, phone)")
@@ -255,7 +251,7 @@ async function updateAppointmentStatusInternal(
     .eq("clinic_id", clinicId)
     .single();
 
-  const updatePayload: Record<string, unknown> = {
+  const updatePayload: AppointmentUpdate = {
     status: statusParsed.data,
     cancellation_reason:
       statusParsed.data === "cancelled"
@@ -267,7 +263,7 @@ async function updateAppointmentStatusInternal(
 
   if (statusParsed.data === "cancelled") {
     updatePayload.cancelled_at = new Date().toISOString();
-    updatePayload.cancelled_by = user?.id ?? null;
+    updatePayload.cancelled_by = userId;
     updatePayload.cancelled_by_type = "clinic";
     updatePayload.waiting_room_status = "cancelled";
     if (cancellationCategory?.trim()) {
@@ -298,7 +294,7 @@ async function updateAppointmentStatusInternal(
     fromStatus: before?.status ?? null,
     toStatus: statusParsed.data,
     fromWaitingRoomStatus: before?.waiting_room_status ?? null,
-    changedBy: user?.id ?? null,
+    changedBy: userId,
     reason: cancellationReason ?? `Estado → ${statusParsed.data}`,
   }).catch(() => {
     // Non-blocking — status update already persisted.
@@ -316,11 +312,14 @@ async function updateAppointmentStatusInternal(
     },
   });
 
-  revalidatePath("/agenda");
-  revalidatePath("/turnos/agenda");
-  revalidatePath("/dashboard");
-  revalidatePath(`/pacientes/${before?.patient_id}`);
-  revalidatePath("/atenciones");
+  const attended = statusParsed.data === "attended";
+  const leftQueue = attended || statusParsed.data === "cancelled";
+  revalidateAppointmentSurfaces({
+    patientId: before?.patient_id as string | undefined,
+    includeAttendanceRegister: attended,
+    includeConsultasQueue: leftQueue,
+    includeWaitingRoom: leftQueue,
+  });
 
   const patient = before?.patients as
     | { first_name: string; last_name: string; phone: string | null }
@@ -342,14 +341,15 @@ async function updateAppointmentStatusInternal(
 }
 
 export async function startConsultationFromAppointment(appointmentId: string) {
-  const access = await requireClinicPermission("editClinicalRecords");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("editClinicalRecords"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
   const idParsed = parseEntityId(appointmentId, "Turno");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
   const { data: appointment } = await supabase
     .from("appointments")
     .select("id, status, patient_id, professional_id")
@@ -378,7 +378,10 @@ export async function startConsultationFromAppointment(appointmentId: string) {
     metadata: { from_status: appointment.status },
   });
 
-  revalidatePath("/agenda");
+  revalidateAppointmentSurfaces({
+    patientId: appointment.patient_id as string,
+    includeConsultasQueue: true,
+  });
   return {
     patientId: appointment.patient_id as string,
     professionalId: appointment.professional_id as string,
@@ -390,7 +393,10 @@ export async function finalizeConsultation(
   appointmentId: string,
   consultationModality: ConsultationModality = "presencial"
 ) {
-  const access = await requireClinicPermission("editClinicalRecords");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("editClinicalRecords"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
@@ -399,8 +405,6 @@ export async function finalizeConsultation(
 
   const modalityParsed = consultationModalitySchema.safeParse(consultationModality);
   if (!modalityParsed.success) return { error: "Modalidad inválida" };
-
-  const supabase = await createClient();
   const { error } = await supabase
     .from("appointments")
     .update({
@@ -423,9 +427,10 @@ export async function finalizeConsultation(
     metadata: { status: "attended", consultation_modality: modalityParsed.data },
   });
 
-  revalidatePath("/agenda");
-  revalidatePath("/turnos/agenda");
-  revalidatePath("/dashboard");
-  revalidatePath("/atenciones");
+  revalidateAppointmentSurfaces({
+    includeAttendanceRegister: true,
+    includeConsultasQueue: true,
+    includeWaitingRoom: true,
+  });
   return { success: true };
 }

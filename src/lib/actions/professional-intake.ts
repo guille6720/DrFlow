@@ -8,6 +8,8 @@ import {
   revalidateClinicProfessionalsCache,
   revalidateClinicSpecialtiesCache,
 } from "@/core/cache/revalidate-clinic-cache";
+import { FEATURES } from "@/core/entitlements/features";
+import { assertClinicSeatCapacity } from "@/core/entitlements/limits.server";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
 import {
@@ -76,6 +78,12 @@ function validateIntakeForm(formData: FormData) {
 export async function submitProfessionalIntake(formData: FormData) {
   const access = await requireStaffManager();
   if (!access.ok) return { error: access.error };
+
+  const seat = await assertClinicSeatCapacity({
+    clinicId: access.clinicId,
+    featureKey: FEATURES.PROFESSIONALS_MAX,
+  });
+  if (!seat.ok) return { error: seat.error };
 
   const validated = validateIntakeForm(formData);
   if ("error" in validated) return { error: validated.error };
@@ -173,7 +181,7 @@ export async function submitProfessionalIntake(formData: FormData) {
   revalidateClinicLocationsCache(clinicId);
   revalidatePath("/ingreso-profesionales");
   revalidatePath("/configuracion");
-  revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
 
   return {
     success: true as const,
@@ -264,7 +272,7 @@ export async function updateProfessionalProfile(professionalId: string, formData
   revalidateClinicLocationsCache(clinicId);
   revalidatePath("/ingreso-profesionales");
   revalidatePath("/configuracion");
-  revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
 
   return { success: true as const, message: "Datos del profesional actualizados." };
 }
@@ -353,7 +361,7 @@ export async function saveProfessionalSchedule(professionalId: string, formData:
 
   revalidatePath("/ingreso-profesionales");
   revalidatePath("/configuracion");
-  revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
 
   return {
     success: true as const,

@@ -165,7 +165,7 @@ export async function downloadPrescriptionPdf(data: PrescriptionDocumentData): P
       : null;
 
   doc.setFontSize(14);
-  doc.text("RECETA ELECTRÓNICA", 105, 18, { align: "center" });
+  doc.text("RECETA LOCAL / BORRADOR", 105, 18, { align: "center" });
   doc.setFontSize(9);
   doc.text("República Argentina — DrFlow", 105, 24, { align: "center" });
 

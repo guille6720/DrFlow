@@ -1,9 +1,6 @@
 import { redirect } from "next/navigation";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { hasPermission } from "@/core/permissions/roles";
 import { PATIENT_ADMIN_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
@@ -18,8 +15,7 @@ export default async function SecretariaDocumentosPage({
   searchParams: Promise<{ patient?: string }>;
 }) {
   const { patient: patientIdParam } = await searchParams;
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { clinicId, role, isSuperadmin } = await getDashboardPageContext();
 
   if (!hasPermission(role, "manageAdminDocuments", isSuperadmin) || !clinicId) {
     redirect("/dashboard");

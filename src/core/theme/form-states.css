@@ -1,0 +1,191 @@
+/**
+ * DrFlow form control readability — labels, values, placeholders, selects,
+ * textareas, checkboxes/radios, errors, helpers, required, disabled.
+ */
+
+/* ——— Labels ——— */
+.drflow-ui-label {
+  color: var(--text-secondary, var(--muted-foreground)) !important;
+  font-weight: 500;
+}
+
+.drflow-ui-label.drflow-ui-label-error,
+.drflow-ui-label[data-invalid="true"] {
+  color: var(--destructive) !important;
+}
+
+.drflow-ui-required {
+  margin-left: 0.15rem;
+  color: var(--destructive);
+  font-weight: 600;
+}
+
+.drflow-ui-helper {
+  color: var(--text-muted, var(--muted-foreground)) !important;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.drflow-ui-error {
+  color: var(--destructive) !important;
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+/* ——— Text fields (input / textarea / select) ——— */
+.drflow-ui-input,
+.drflow-ui-select,
+textarea.drflow-ui-input {
+  background-color: var(--surface-input, var(--input, var(--card))) !important;
+  color: var(--text-primary, var(--foreground)) !important;
+  border-color: var(--border-strong, var(--border)) !important;
+  opacity: 1 !important;
+}
+
+.drflow-ui-input:focus,
+.drflow-ui-select:focus,
+textarea.drflow-ui-input:focus {
+  border-color: var(--ring) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 22%, transparent);
+}
+
+.drflow-ui-input[aria-invalid="true"],
+.drflow-ui-select[aria-invalid="true"],
+textarea.drflow-ui-input[aria-invalid="true"],
+.drflow-ui-input.drflow-ui-input-error,
+.drflow-ui-select.drflow-ui-input-error {
+  border-color: var(--destructive) !important;
+}
+
+.drflow-ui-input[aria-invalid="true"]:focus,
+.drflow-ui-select[aria-invalid="true"]:focus,
+textarea.drflow-ui-input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive) 22%, transparent);
+}
+
+/* Entered value stays primary; placeholder softer but opacity 1 */
+.drflow-ui-input::placeholder,
+textarea.drflow-ui-input::placeholder,
+.drflow-mesh main :is(input, textarea)::placeholder {
+  color: var(--placeholder, var(--text-muted)) !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: var(--placeholder, var(--text-muted));
+}
+
+/* Select: empty/placeholder option softer; real options use primary ink */
+.drflow-ui-select:has(option[value=""]:checked) {
+  color: var(--placeholder, var(--text-muted)) !important;
+}
+
+.drflow-ui-select option {
+  color: var(--text-primary, var(--foreground));
+  background-color: var(--surface-elevated, var(--surface-card, var(--card)));
+}
+
+.drflow-ui-select option[value=""] {
+  color: var(--placeholder, var(--text-muted));
+}
+
+/* Disabled fields: never wash with parent opacity */
+.drflow-ui-input:disabled,
+.drflow-ui-select:disabled,
+textarea.drflow-ui-input:disabled,
+.drflow-mesh main :is(input, textarea, select):disabled:not([type="checkbox"]):not([type="radio"]) {
+  opacity: 1 !important;
+  cursor: not-allowed;
+  background-color: var(--surface-hover, var(--muted)) !important;
+  /* Disabled copy must stay ≥4.5:1 — prefer muted over pale disabled gray on light fills */
+  color: var(--text-muted, #475569) !important;
+  border-color: var(--border-default, var(--border)) !important;
+  -webkit-text-fill-color: var(--text-muted, #475569);
+}
+
+.drflow-ui-input:disabled::placeholder,
+textarea.drflow-ui-input:disabled::placeholder {
+  color: var(--text-muted, #475569) !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: var(--text-muted, #475569);
+}
+
+.drflow-ui-label:has(+ :is(input, select, textarea):disabled),
+.drflow-ui-label:has(+ * :is(input, select, textarea):disabled) {
+  color: var(--text-muted, #475569) !important;
+}
+
+/* ——— Checkboxes & radios ——— */
+.drflow-mesh main input[type="checkbox"],
+.drflow-mesh main input[type="radio"],
+.drflow-ui-checkbox,
+.drflow-ui-radio {
+  accent-color: var(--primary);
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.drflow-mesh main input[type="checkbox"]:focus-visible,
+.drflow-mesh main input[type="radio"]:focus-visible,
+.drflow-ui-checkbox:focus-visible,
+.drflow-ui-radio:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.drflow-mesh main input[type="checkbox"]:disabled,
+.drflow-mesh main input[type="radio"]:disabled,
+.drflow-ui-checkbox:disabled,
+.drflow-ui-radio:disabled {
+  opacity: 1 !important;
+  cursor: not-allowed;
+  accent-color: var(--text-disabled, #94a3b8);
+}
+
+/* Adjacent label text for checkbox/radio rows */
+.drflow-mesh main label:has(input[type="checkbox"]),
+.drflow-mesh main label:has(input[type="radio"]) {
+  color: var(--text-primary, var(--foreground));
+}
+
+.drflow-mesh main label:has(input[type="checkbox"]:disabled),
+.drflow-mesh main label:has(input[type="radio"]:disabled) {
+  color: var(--text-disabled, var(--muted-foreground));
+}
+
+/* Light islands inside dark themes: form ink stays dark on white */
+html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-label,
+html[data-clinical-dark="1"] .drflow-surface-light .drflow-ui-label,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-label {
+  color: #334155 !important;
+}
+
+html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-input,
+html[data-clinical-dark="1"] .drflow-surface-light .drflow-ui-input,
+html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-select,
+html[data-clinical-dark="1"] .drflow-surface-light .drflow-ui-select,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-input,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-input::placeholder,
+html[data-clinical-dark="1"] .drflow-surface-light .drflow-ui-input::placeholder,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-input::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b;
+}
+
+html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-helper,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-helper {
+  color: #475569 !important;
+}
+
+html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-error,
+html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-error {
+  color: #b91c1c !important;
+}

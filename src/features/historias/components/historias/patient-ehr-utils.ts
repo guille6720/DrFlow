@@ -35,13 +35,12 @@ export function calendarDayKey(iso: string): string {
   return `${y}-${m}-${day}`;
 }
 
-/** Una entrada por día de consulta (evolución principal), sin repetir fechas. */
+/** Una entrada por día de consulta (incluye todas las categorías visibles). */
 export function buildConsultationSidebarList(
   sorted: PatientEhrConsultation[],
   evolutionList: PatientEhrConsultation[]
 ): PatientEhrConsultation[] {
-  const evolutionOnly = sorted.filter((c) => c.category === "evolution");
-  const source = evolutionOnly.length > 0 ? evolutionOnly : evolutionList;
+  const source = sorted.length > 0 ? sorted : evolutionList;
 
   const byDay = new Map<string, PatientEhrConsultation>();
   for (const consultation of source) {

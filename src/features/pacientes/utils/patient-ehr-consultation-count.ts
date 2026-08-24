@@ -9,20 +9,11 @@ import {
   type PatientEhrConsultation,
 } from "@/features/pacientes/utils/patient-ehr-model";
 
-import { filterRecordsForEhrSupplement, type HceExportRow } from "@/lib/utils/hce-export-parse";
+import type { HceExportRow } from "@/lib/utils/hce-export-parse";
 
 function buildEvolutionList(sorted: PatientEhrConsultation[]): PatientEhrConsultation[] {
-  const withText = sorted.filter(
-    (c) =>
-      c.category === "evolution" ||
-      c.category === "document" ||
-      (c.evolution?.trim().length ?? 0) > 15 ||
-      (c.category !== "vitals" &&
-        c.category !== "treatment" &&
-        c.category !== "diagnostic" &&
-        (c.chief_complaint?.trim().length ?? 0) > 20)
-  );
-  return withText.length > 0 ? withText : sorted.filter((c) => c.category === "evolution");
+  // Misma regla que la HC: contar/mostrar todos los registros, no solo evoluciones.
+  return sorted;
 }
 
 /** Cantidad de consultas = días de evolución visibles en el sidebar de la HC. */
@@ -57,11 +48,13 @@ export function countPatientConsultationsFromSources(input: {
       mappedRecords.find((record) => record.professional_name !== "Profesional")
         ?.professional_name ?? "Importación HCE";
     const fromHce = buildEhrPayloadFromHceRows(hceRows, professionalFallback);
-    const supplement = buildEhrPayloadFromRecords(
-      filterRecordsForEhrSupplement(mappedRecords)
-    );
-    return countEhrConsultations(mergeEhrPayload(fromHce, supplement).consultations);
+    const fromRecords = buildEhrPayloadFromRecords(mappedRecords, {
+      includeHceStructural: true,
+    });
+    return countEhrConsultations(mergeEhrPayload(fromHce, fromRecords).consultations);
   }
 
-  return countEhrConsultations(buildEhrPayloadFromRecords(mappedRecords).consultations);
+  return countEhrConsultations(
+    buildEhrPayloadFromRecords(mappedRecords, { includeHceStructural: true }).consultations
+  );
 }

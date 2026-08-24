@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
+import { revalidateClinicCoverageRulesCache } from "@/core/cache/revalidate-clinic-cache";
 import { recordAudit } from "@/core/security/audit-service";
 import { requireClinicalIssueAccess } from "@/core/services/clinical-access.service";
 import { createClient } from "@/core/supabase/server";
@@ -13,7 +14,6 @@ import { COVERAGE_KINDS, type CoverageKind } from "@/features/recetas/engine/typ
 import {
   type CoverageRuleRow,
   deleteCoverageRuleForKind,
-  loadActiveCoverageRulesForClinic,
   loadCoverageRuleForKind,
   upsertCoverageRule,
 } from "@/features/recetas/repositories/coverage-rules.repository";
@@ -26,9 +26,11 @@ import {
   parseInfoMessagesText,
 } from "@/features/recetas/utils/coverage-rules-admin";
 
-function revalidateCoverageRuleViews() {
+import { getCachedClinicCoverageRules } from "@/lib/server/cached-clinic-queries";
+
+function revalidateCoverageRuleViews(clinicId: string) {
+  revalidateClinicCoverageRulesCache(clinicId);
   revalidatePath("/configuracion");
-  revalidatePath("/pacientes", "layout");
 }
 
 export async function getClinicCoverageRules(): Promise<{
@@ -37,11 +39,8 @@ export async function getClinicCoverageRules(): Promise<{
 }> {
   const access = await requireClinicPermission("manageSettings");
   if (!access.ok) return { error: access.error };
-
-  const supabase = await createClient();
-  const result = await loadActiveCoverageRulesForClinic(supabase, access.clinicId);
-  if (!result.ok) return { error: result.error };
-  return { data: result.data };
+  const data = (await getCachedClinicCoverageRules(access.clinicId)) as CoverageRuleRow[];
+  return { data };
 }
 
 /** For prescribers — wizard validation aligned with clinic overrides. */
@@ -51,20 +50,19 @@ export async function getPrescriptionCoverageRuleOverrides(): Promise<{
 }> {
   const access = await requireClinicalIssueAccess();
   if (!access.ok) return { error: access.error };
-
-  const supabase = await createClient();
-  const result = await loadActiveCoverageRulesForClinic(supabase, access.data.clinicId);
-  if (!result.ok) return { error: result.error };
-  return { data: buildCoverageRuleOverridesMap(result.data) };
+  const rows = (await getCachedClinicCoverageRules(access.data.clinicId)) as CoverageRuleRow[];
+  return { data: buildCoverageRuleOverridesMap(rows) };
 }
 
 export async function getClinicCoverageRule(
   coverageKind: CoverageKind
 ): Promise<{ data?: CoverageRuleRow | null; error?: string }> {
-  const access = await requireClinicPermission("manageSettings");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageSettings"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
 
-  const supabase = await createClient();
   const result = await loadCoverageRuleForKind(supabase, access.clinicId, coverageKind);
   if (!result.ok) return { error: result.error };
   return { data: result.data };
@@ -80,7 +78,10 @@ const saveSchema = z.object({
 });
 
 export async function saveClinicCoverageRule(formData: FormData) {
-  const access = await requireClinicPermission("manageSettings");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageSettings"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
 
   const kindRaw = String(formData.get("coverage_kind") ?? "");
@@ -109,7 +110,6 @@ export async function saveClinicCoverageRule(formData: FormData) {
   if (!configParsed.success) return { error: firstZodIssue(configParsed.error) };
 
   const payload = buildCoverageRulePayload(configParsed.data);
-  const supabase = await createClient();
   const result = await upsertCoverageRule(
     supabase,
     access.clinicId,
@@ -130,15 +130,16 @@ export async function saveClinicCoverageRule(formData: FormData) {
     metadata: payload,
   });
 
-  revalidateCoverageRuleViews();
+  revalidateCoverageRuleViews(access.clinicId);
   return { data: result.data };
 }
 
 export async function resetClinicCoverageRule(coverageKind: CoverageKind) {
-  const access = await requireClinicPermission("manageSettings");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageSettings"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-
-  const supabase = await createClient();
   const result = await deleteCoverageRuleForKind(supabase, access.clinicId, coverageKind);
   if (!result.ok) return { error: result.error };
 
@@ -151,6 +152,6 @@ export async function resetClinicCoverageRule(coverageKind: CoverageKind) {
     what: `Restauró defaults de receta (${coverageKind})`,
   });
 
-  revalidateCoverageRuleViews();
+  revalidateCoverageRuleViews(access.clinicId);
   return { data: result.data };
 }

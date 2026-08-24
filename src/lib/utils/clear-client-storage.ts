@@ -30,5 +30,5 @@ export function clearDrFlowClientStorage(): void {
     /* ignore */
   }
 
-  applyUiThemeToDocument("1", false);
+  applyUiThemeToDocument("6", true);
 }

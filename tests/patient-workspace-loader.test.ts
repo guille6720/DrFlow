@@ -74,4 +74,95 @@ describe("buildPatientEhrWorkspaceData", () => {
     expect(ehr.consultations).toHaveLength(1);
     expect(ehr.usesHceExport).toBe(false);
   });
+
+  it("does not treat empty HCE array as export mode and keeps clinical records", () => {
+    const ehr = buildPatientEhrWorkspaceData({
+      patient,
+      totalRecords: 6,
+      mappedRecords: [
+        {
+          id: "r1",
+          created_at: "2025-01-01T00:00:00.000Z",
+          chief_complaint: "Control",
+          diagnosis: "HTA",
+          evolution: "Estable",
+          indications: "",
+          professional_name: "Dr. López",
+        },
+        {
+          id: "r2",
+          created_at: "2025-02-01T00:00:00.000Z",
+          chief_complaint: "[HCE:x] Diagnóstico importado",
+          diagnosis: "Asma",
+          evolution: "",
+          indications: "",
+          professional_name: "Importación HCE",
+        },
+      ],
+      attachments: [],
+      rxList: [],
+      orders: [],
+      timelineAppointments: [],
+      hceRows: [],
+      clinicalRecordsPagination: { total: 6, hasMore: false, nextCursor: null },
+    });
+
+    expect(ehr.usesHceExport).toBe(false);
+    expect(ehr.consultations.length).toBeGreaterThanOrEqual(1);
+    expect(ehr.consultations.some((c) => c.id === "r1")).toBe(true);
+    expect(ehr.consultations.some((c) => c.id === "r2")).toBe(true);
+  });
+
+  it("keeps BD structural rows when HCE CSV has diagnostics but no evolutions", () => {
+    const ehr = buildPatientEhrWorkspaceData({
+      patient,
+      totalRecords: 2,
+      mappedRecords: [
+        {
+          id: "r-struct",
+          created_at: "2025-01-01T00:00:00.000Z",
+          chief_complaint: "[HCE:diagnostics] Asma",
+          diagnosis: "Asma",
+          evolution: "",
+          indications: "",
+          professional_name: "Importación HCE",
+        },
+        {
+          id: "r-evo",
+          created_at: "2025-02-01T00:00:00.000Z",
+          chief_complaint: "Control",
+          diagnosis: "HTA",
+          evolution: "Estable en control",
+          indications: "",
+          professional_name: "Dr. López",
+        },
+      ],
+      attachments: [],
+      rxList: [],
+      orders: [],
+      timelineAppointments: [],
+      hceRows: [
+        {
+          lineNumber: 1,
+          paciente_id: "pat-1",
+          last_name: "García",
+          first_name: "Ana",
+          document_number: "12345678",
+          tipo_registro: "diagnostics",
+          fecha_inicio: "2025-01-01",
+          fecha_fin: null,
+          estado: "chronic",
+          diagnostico: "Asma",
+          cie10: "J45",
+          notas: "",
+        },
+      ],
+      clinicalRecordsPagination: { total: 2, hasMore: false, nextCursor: null },
+    });
+
+    expect(ehr.usesHceExport).toBe(true);
+    expect(ehr.consultations.some((c) => c.id === "r-evo")).toBe(true);
+    expect(ehr.consultations.some((c) => c.id === "r-struct")).toBe(true);
+    expect(ehr.diagnosisRows.length).toBeGreaterThan(0);
+  });
 });

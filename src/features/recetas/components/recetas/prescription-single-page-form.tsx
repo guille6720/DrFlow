@@ -536,7 +536,7 @@ export function PrescriptionSinglePageForm({
           onClick={() => void onGenerate()}
           className="min-w-[160px]"
         >
-          Generar receta
+          {loading ? "Guardando..." : "Generar receta"}
         </Button>
         {onCancel ? (
           <Button type="button" variant="ghost" onClick={onCancel} disabled={loading}>

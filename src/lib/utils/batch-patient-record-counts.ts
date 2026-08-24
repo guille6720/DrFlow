@@ -156,8 +156,23 @@ async function batchHceRowsByPatient(
   return rowsByPatient;
 }
 
-/** Consultas visibles en HC: misma lógica que el sidebar (BD + resumen HCE). */
+/**
+ * Listados (/pacientes, historias): conteo rápido vía RPC.
+ * Evita bajar todos los clinical_records + CSV HCE en cada página.
+ * La paridad exacta del sidebar HC se calcula al abrir el paciente.
+ */
 export async function batchPatientConsultationCounts(
+  supabase: SupabaseClient,
+  clinicId: string,
+  patientIds: string[]
+): Promise<Map<string, number>> {
+  return batchPatientRecordCounts(supabase, clinicId, patientIds);
+}
+
+/**
+ * Conteo alineado al sidebar HC (BD + HCE). Costoso: solo usar fuera de listados.
+ */
+export async function batchPatientConsultationCountsDetailed(
   supabase: SupabaseClient,
   clinicId: string,
   patientIds: string[]

@@ -1,10 +1,12 @@
 "use server";
 
+import { isPublicPortalAllowedForSlug } from "@/core/entitlements/public-portal.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import {
   CONSENT_TYPES,
   LEGAL_PATIENT_NOTICE_VERSION,
 } from "@/core/legal/documents";
+import { nullToUndefined } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
 import {
@@ -15,6 +17,8 @@ import {
   publicBookingStatusesSchema,
 } from "@/core/validations/public-booking";
 import { sanitizeText } from "@/core/validations/schemas";
+
+const PORTAL_UNAVAILABLE = "La reserva online no está disponible.";
 
 export async function submitPublicBooking(formData: FormData) {
   const parsed = publicBookingSchema.safeParse({
@@ -36,6 +40,9 @@ export async function submitPublicBooking(formData: FormData) {
 
   const data = parsed.data;
   const supabase = await createClient();
+  if (!(await isPublicPortalAllowedForSlug(data.slug))) {
+    return { error: PORTAL_UNAVAILABLE };
+  }
 
   const { data: result, error } = await supabase.rpc("submit_public_booking", {
     p_slug: data.slug,
@@ -45,8 +52,8 @@ export async function submitPublicBooking(formData: FormData) {
     p_last_name: sanitizeText(data.last_name),
     p_document_number: sanitizeText(data.document_number),
     p_phone: sanitizeText(data.phone),
-    p_email: data.email ? sanitizeText(data.email) : null,
-    p_reason: data.reason ? sanitizeText(data.reason) : null,
+    p_email: nullToUndefined(data.email ? sanitizeText(data.email) : null),
+    p_reason: nullToUndefined(data.reason ? sanitizeText(data.reason) : null),
     p_consent_type: CONSENT_TYPES.patientDataProcessingBooking,
     p_consent_document_version: LEGAL_PATIENT_NOTICE_VERSION,
   });
@@ -91,6 +98,10 @@ export async function fetchPatientAppointmentStatuses(
   }
 
   const supabase = await createClient();
+  if (!(await isPublicPortalAllowedForSlug(parsed.data.slug))) {
+    return { error: PORTAL_UNAVAILABLE, statuses: [] };
+  }
+
   const { data, error } = await supabase.rpc("get_patient_appointment_statuses", {
     p_slug: parsed.data.slug,
     p_document_number: parsed.data.document_number,
@@ -139,6 +150,10 @@ export async function cancelPatientAppointment(
   }
 
   const supabase = await createClient();
+  if (!(await isPublicPortalAllowedForSlug(parsed.data.slug))) {
+    return { error: PORTAL_UNAVAILABLE };
+  }
+
   const { error } = await supabase.rpc("cancel_patient_appointment", {
     p_slug: parsed.data.slug,
     p_document_number: parsed.data.document_number,
@@ -170,6 +185,10 @@ export async function fetchPatientPortalAppointments(slug: string, documentNumbe
   }
 
   const supabase = await createClient();
+  if (!(await isPublicPortalAllowedForSlug(parsed.data.slug))) {
+    return { error: PORTAL_UNAVAILABLE, appointments: [] };
+  }
+
   const { data, error } = await supabase.rpc("get_patient_portal_appointments", {
     p_slug: parsed.data.slug,
     p_document_number: parsed.data.document_number,
@@ -220,6 +239,9 @@ export async function loadPublicBookingSlots(
   }
 
   const supabase = await createClient();
+  if (!(await isPublicPortalAllowedForSlug(parsed.data.slug))) {
+    return { error: PORTAL_UNAVAILABLE, slots: [] };
+  }
 
   const { data: link } = await supabase
     .from("public_booking_links")

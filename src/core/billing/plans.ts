@@ -1,4 +1,12 @@
-export type BillingPlanId = "solo" | "consultorio" | "clinica";
+import {
+  COMMERCIAL_SKU_PRICING,
+  type CommercialSkuId,
+  formatPromoCopyEs,
+  isCommercialSkuId,
+} from "@/core/billing/commercial-pricing";
+
+/** Purchasable SKUs + historic IDs still parseable from Mercado Pago external_reference. */
+export type BillingPlanId = "essential" | "pro" | "solo" | "consultorio" | "clinica";
 
 export type BillingCycle = "monthly" | "annual";
 
@@ -6,66 +14,90 @@ export type BillingPlan = {
   id: BillingPlanId;
   name: string;
   tagline: string;
+  /** Promotional / list monthly price (ARS whole units). */
   priceArsMonthly?: number;
+  /** Post-promo monthly price (Essential/Pro). */
+  priceArsRegular?: number;
   priceArsAnnual?: number;
   /** Sin precio publicado — mostrar badge "En desarrollo". */
-  status?: "development";
+  status?: "development" | "legacy";
   professionalsIncluded: string;
   highlights: string[];
   recommended?: boolean;
   mercadoPagoPreferenceSku?: string;
 };
 
-/** Precios orientativos AR — ajustá antes de cobrar. Anual = 10 meses (≈17% off). */
+/** Public commercial catalog. Legacy Solo/Consultorio/Clínica kept for historic refs only. */
 export const DRFLOW_BILLING_PLANS: BillingPlan[] = [
   {
-    id: "solo",
-    name: "Solo",
-    tagline: "Un médico, consultorio chico",
-    priceArsMonthly: 24_900,
-    priceArsAnnual: 249_000,
+    id: "essential",
+    name: COMMERCIAL_SKU_PRICING.essential.displayName,
+    tagline: COMMERCIAL_SKU_PRICING.essential.tagline,
+    priceArsMonthly: COMMERCIAL_SKU_PRICING.essential.promoPriceArs,
+    priceArsRegular: COMMERCIAL_SKU_PRICING.essential.regularPriceArs,
     professionalsIncluded: "1 profesional",
     highlights: [
-      "Agenda, HC, recetas y órdenes PAMI",
-      "App paciente + turnos online",
-      "1 usuario médico",
+      "Agenda, pacientes e historia clínica",
+      "Recetas y órdenes",
+      "5 GB de almacenamiento",
+      "Pacientes ilimitados",
       "Soporte por email",
     ],
+    mercadoPagoPreferenceSku: "drflow-essential-mensual",
+  },
+  {
+    id: "pro",
+    name: COMMERCIAL_SKU_PRICING.pro.displayName,
+    tagline: COMMERCIAL_SKU_PRICING.pro.tagline,
+    priceArsMonthly: COMMERCIAL_SKU_PRICING.pro.promoPriceArs,
+    priceArsRegular: COMMERCIAL_SKU_PRICING.pro.regularPriceArs,
+    professionalsIncluded: "Hasta 5 profesionales",
+    recommended: true,
+    highlights: [
+      "Todo Essential + automatización avanzada",
+      "IA clínica (hasta 1000 acciones/mes)",
+      "25 GB de almacenamiento",
+      "Reportes avanzados",
+      "Soporte prioritario",
+    ],
+    mercadoPagoPreferenceSku: "drflow-pro-mensual",
+  },
+  // Historic SKUs — not sold; kept for webhook external_reference parsing / amount checks.
+  {
+    id: "solo",
+    name: "Solo (histórico)",
+    tagline: "Plan histórico — ya no se vende",
+    priceArsMonthly: 24_900,
+    priceArsAnnual: 249_000,
+    status: "legacy",
+    professionalsIncluded: "1 profesional",
+    highlights: [],
     mercadoPagoPreferenceSku: "drflow-solo-mensual",
   },
   {
     id: "consultorio",
-    name: "Consultorio",
-    tagline: "Médico + secretaría + equipo chico",
+    name: "Consultorio (histórico)",
+    tagline: "Plan histórico — ya no se vende",
     priceArsMonthly: 39_900,
     priceArsAnnual: 399_000,
+    status: "legacy",
     professionalsIncluded: "Hasta 3 profesionales",
-    recommended: true,
-    highlights: [
-      "Todo Solo + caja y sala de espera",
-      "Usuarios invitados (médico / secretaría)",
-      "Permisos por miembro",
-      "Dictado por voz e IA clínica",
-    ],
+    highlights: [],
     mercadoPagoPreferenceSku: "drflow-consultorio-mensual",
   },
   {
     id: "clinica",
-    name: "Clínica",
-    tagline: "Varios médicos, operación completa",
-    status: "development",
+    name: "Clínica (histórico)",
+    tagline: "Plan histórico — ya no se vende",
+    status: "legacy",
     professionalsIncluded: "Profesionales ilimitados",
-    highlights: [
-      "Todo Consultorio sin límite de médicos",
-      "Reportes, importación de datos",
-      "Prioridad en soporte",
-      "Onboarding asistido",
-    ],
+    highlights: [],
     mercadoPagoPreferenceSku: "drflow-clinica-mensual",
   },
 ];
 
-export const TRIAL_DAYS_INCLUDED = 10;
+/** Trial gratuito cardless (marketing + enforcement). */
+export const TRIAL_DAYS_INCLUDED = 14;
 
 export function formatPlanPriceArs(amount: number): string {
   return new Intl.NumberFormat("es-AR", {
@@ -76,18 +108,38 @@ export function formatPlanPriceArs(amount: number): string {
 }
 
 export function isPlanAvailableForPurchase(plan: BillingPlan): boolean {
-  return plan.status !== "development" && plan.priceArsMonthly != null;
+  return (
+    isCommercialSkuId(plan.id) &&
+    plan.status !== "development" &&
+    plan.status !== "legacy" &&
+    plan.priceArsMonthly != null
+  );
+}
+
+export function getPublicBillingPlans(): BillingPlan[] {
+  return DRFLOW_BILLING_PLANS.filter(isPlanAvailableForPurchase);
 }
 
 export function getBillingPlan(planId: BillingPlanId): BillingPlan | undefined {
   return DRFLOW_BILLING_PLANS.find((p) => p.id === planId);
 }
 
+/** Catalog list price (promo for commercial; historic for legacy). Used when no snapshot. */
 export function getPlanPriceArs(planId: BillingPlanId, cycle: BillingCycle): number | null {
   const plan = getBillingPlan(planId);
-  if (!plan || !isPlanAvailableForPurchase(plan)) return null;
+  if (!plan) return null;
+  if (isCommercialSkuId(planId)) {
+    if (cycle === "annual") return null; // commercial cut is monthly only
+    return plan.priceArsMonthly ?? null;
+  }
+  // Historic: allow amount validation even if not purchasable
   if (cycle === "annual") return plan.priceArsAnnual ?? null;
   return plan.priceArsMonthly ?? null;
+}
+
+export function getPlanRegularPriceArs(planId: BillingPlanId): number | null {
+  const plan = getBillingPlan(planId);
+  return plan?.priceArsRegular ?? null;
 }
 
 export function getPlanMercadoPagoSku(planId: BillingPlanId, cycle: BillingCycle): string {
@@ -109,6 +161,10 @@ export function buildPlanSalesMessage(planId: BillingPlanId, clinicName?: string
   if (plan?.status === "development") {
     return `Hola, me interesa el plan ${label} de DrFlow (en desarrollo). ¿Cuándo estará disponible?${clinic}`;
   }
+  if (isCommercialSkuId(planId)) {
+    const copy = formatPromoCopyEs(planId);
+    return `Hola, quiero activar ${label} (${copy.currentPromoLine}; ${copy.thenRegularLine})${clinic}.`;
+  }
   return `Hola, quiero activar DrFlow plan ${label}${clinic}. ¿Me pasan link de pago?`;
 }
 
@@ -119,7 +175,6 @@ export function getSalesContactEmail(): string {
 export function getSalesWhatsAppPhone(): string | null {
   const raw = process.env.NEXT_PUBLIC_SALES_WHATSAPP?.trim();
   if (raw) return raw;
-  // Número comercial DrFlow (AR). Override con NEXT_PUBLIC_SALES_WHATSAPP en Vercel.
   return "5491152591607";
 }
 
@@ -132,3 +187,5 @@ export function formatWhatsAppDisplay(phone: string): string {
   }
   return phone;
 }
+
+export type { CommercialSkuId };

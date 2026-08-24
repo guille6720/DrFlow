@@ -53,10 +53,16 @@ describe("047 + tenant hardening (static)", () => {
     expect(src).toMatch(/eq\("id", record\.patient_id\)[\s\S]*eq\("clinic_id", clinicId\)/);
   });
 
-  it("compliance ARCO export scopes appointments by clinic_id", async () => {
+  it("compliance ARCO export scopes patient and sections by clinic_id", async () => {
     const { readFileSync } = await import("fs");
     const { resolve } = await import("path");
-    const src = readFileSync(resolve(process.cwd(), "src/lib/actions/compliance.ts"), "utf8");
-    expect(src).toMatch(/from\("appointments"\)[\s\S]*eq\("clinic_id", clinicId\)/);
+    const actions = readFileSync(resolve(process.cwd(), "src/lib/actions/compliance.ts"), "utf8");
+    const habeas = readFileSync(
+      resolve(process.cwd(), "src/core/compliance/habeas-data-export.ts"),
+      "utf8"
+    );
+    expect(actions).toMatch(/from\("patients"\)[\s\S]*eq\("clinic_id", clinicId\)/);
+    expect(habeas).toMatch(/eq\("clinic_id", clinicId\)/);
+    expect(habeas).toMatch(/from\("appointments"\)/);
   });
 });

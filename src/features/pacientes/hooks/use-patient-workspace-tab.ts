@@ -11,6 +11,7 @@ import {
 import {
   buildPatientWorkspaceUrl,
   type PatientWorkspaceUrlOptions,
+  replaceClientUrl,
 } from "@/features/pacientes/utils/patient-workspace-actions";
 
 type TabSearchParams = {
@@ -67,7 +68,7 @@ export function usePatientWorkspaceTab(patientId: string, initialTab?: PatientWo
   const applyWorkspaceUrl = useCallback((url: string) => {
     const params = searchParamsFromPatientUrl(url);
     setManualOverride(params);
-    window.history.replaceState(window.history.state, "", url);
+    replaceClientUrl(url);
   }, []);
 
   const navigateWorkspace = useCallback(
@@ -86,7 +87,7 @@ export function usePatientWorkspaceTab(patientId: string, initialTab?: PatientWo
   );
 
   const openHcWorkspace = useCallback(() => {
-    navigateWorkspace({ tab: "soap", action: "nueva" });
+    navigateWorkspace({ tab: "soap" });
   }, [navigateWorkspace]);
 
   return { activeTab, setTab, openHcWorkspace, navigateWorkspace, workspaceSearchParams };

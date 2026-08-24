@@ -78,14 +78,16 @@ export function buildDailySummary(
 
 export function buildAdminOpsSuggestedPromptsForHelp(ctx: AdminOpsContext): string[] {
   const prompts: string[] = [];
-  if (ctx.analytics) {
+  if (ctx.analytics && ctx.canManageCash !== false) {
     prompts.push("Ingresos de hoy", "Desglose por método de pago", "Autorizaciones");
   }
   if (ctx.ops) {
     prompts.push("Resumen del día", "¿Quién está en espera?", "Tareas pendientes");
   }
   if (prompts.length === 0) {
-    return ["Resumen del día", "Ingresos de hoy", "Ayuda de caja"];
+    return ctx.canManageCash === false
+      ? ["Resumen del día", "¿Quién está en espera?", "Tareas pendientes"]
+      : ["Resumen del día", "Ingresos de hoy", "Ayuda de caja"];
   }
   return prompts.slice(0, 5);
 }

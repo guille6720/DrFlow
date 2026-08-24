@@ -2,6 +2,8 @@
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { revalidatePamiCabeceraSurfaces } from "@/core/cache/revalidate-pami-cabecera";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { createClient } from "@/core/supabase/server";
 
@@ -22,6 +24,8 @@ export async function configurePamiCabecera(): Promise<{
 }> {
   const access = await requireClinicPermission("manageSettings");
   if (!access.ok) return { error: access.error };
+  const entitlement = await requireAddonFeatureAccess(FEATURES.PAMI);
+  if (!entitlement.ok) return { error: entitlement.error };
   const clinicId = access.clinicId;
 
   const supabase = await createClient();

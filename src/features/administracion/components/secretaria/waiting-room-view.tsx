@@ -25,8 +25,9 @@ export type WaitingRoomRow = {
   professionals: { display_name: string | null; profiles: { full_name: string } | null } | null;
 };
 
+/** Sin columna "En consultorio": confirmado abre Consultas para evolucionar. */
 const COLUMNS = WAITING_ROOM_STATUSES.filter((s) =>
-  ["waiting", "confirmed", "in_consultation", "finished"].includes(s.value)
+  ["waiting", "confirmed", "finished"].includes(s.value)
 );
 
 function groupWaitingRoomRows(rows: WaitingRoomRow[]) {
@@ -42,7 +43,10 @@ function groupWaitingRoomRows(rows: WaitingRoomRow[]) {
       issues.push(row);
       continue;
     }
-    const bucket = byStatus.get(row.waiting_room_status);
+    // Pacientes ya "en consultorio" se muestran en Confirmado (flujo → Consultas).
+    const statusKey =
+      row.waiting_room_status === "in_consultation" ? "confirmed" : row.waiting_room_status;
+    const bucket = byStatus.get(statusKey);
     if (bucket) {
       bucket.push(row);
     }
@@ -51,16 +55,22 @@ function groupWaitingRoomRows(rows: WaitingRoomRow[]) {
   return { byStatus, issues };
 }
 
+function consultasHref(appointmentId: string) {
+  return `/consultas?appointment=${appointmentId}&action=nueva`;
+}
+
 const WaitingRoomCard = memo(function WaitingRoomCard({
   row,
   columnValue,
   pending,
   onMove,
+  onGoToConsultas,
 }: {
   row: WaitingRoomRow;
   columnValue: string;
   pending: boolean;
   onMove: (id: string, status: WaitingRoomStatus) => void;
+  onGoToConsultas: (id: string) => void;
 }) {
   const patient = row.patients;
   const professional =
@@ -69,52 +79,34 @@ const WaitingRoomCard = memo(function WaitingRoomCard({
     "Profesional";
 
   return (
-    <li className="rounded-lg border border-slate-600/40 bg-slate-900/30 p-3 text-sm">
-      <p className="font-semibold">{patient ? `${patient.last_name}, ${patient.first_name}` : "—"}</p>
-      <p className="text-xs text-slate-500">
+    <li className="drflow-card-light rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-900">
+      <p className="font-semibold text-slate-900">
+        {patient ? `${patient.last_name}, ${patient.first_name}` : "—"}
+      </p>
+      <p className="text-xs text-slate-600">
         {format(new Date(row.start_at), "HH:mm", { locale: es })} · DNI {patient?.document_number} ·{" "}
         {professional}
       </p>
       <div className="mt-2 flex flex-wrap gap-1">
         {columnValue === "waiting" ? (
-          <>
-            <Button
-              size="sm"
-              type="button"
-              disabled={pending}
-              onClick={() => onMove(row.id, "confirmed")}
-            >
-              Confirmar
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              type="button"
-              disabled={pending}
-              onClick={() => onMove(row.id, "absent")}
-            >
-              Ausente
-            </Button>
-          </>
+          <Button
+            size="sm"
+            type="button"
+            loading={pending}
+            pendingLabel="Confirmando..."
+            onClick={() => onMove(row.id, "confirmed")}
+          >
+            Confirmar → Consultas
+          </Button>
         ) : null}
         {columnValue === "confirmed" ? (
           <Button
             size="sm"
             type="button"
             disabled={pending}
-            onClick={() => onMove(row.id, "in_consultation")}
+            onClick={() => onGoToConsultas(row.id)}
           >
-            A consultorio
-          </Button>
-        ) : null}
-        {columnValue === "in_consultation" ? (
-          <Button
-            size="sm"
-            type="button"
-            disabled={pending}
-            onClick={() => onMove(row.id, "finished")}
-          >
-            Finalizar
+            Evolucionar
           </Button>
         ) : null}
       </div>
@@ -171,10 +163,24 @@ export function WaitingRoomView({
     };
   }, [clinicId, router]);
 
+  const goToConsultas = useCallback(
+    (id: string) => {
+      router.push(consultasHref(id));
+    },
+    [router]
+  );
+
   const move = useCallback(
     (id: string, status: WaitingRoomStatus) => {
       startTransition(async () => {
-        await updateWaitingRoomStatus(id, status);
+        const result = await updateWaitingRoomStatus(id, status);
+        if (result?.error) {
+          return;
+        }
+        if (status === "confirmed") {
+          router.push(consultasHref(id));
+          return;
+        }
         router.refresh();
       });
     },
@@ -185,7 +191,7 @@ export function WaitingRoomView({
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {COLUMNS.map((col) => {
           const columnRows = byStatus.get(col.value) ?? [];
           return (
@@ -198,6 +204,7 @@ export function WaitingRoomView({
                     columnValue={col.value}
                     pending={pending}
                     onMove={move}
+                    onGoToConsultas={goToConsultas}
                   />
                 ))}
                 {columnRows.length === 0 ? (

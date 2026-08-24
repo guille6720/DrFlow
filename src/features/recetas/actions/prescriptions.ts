@@ -1,8 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import { logAudit } from "@/core/auth/session.actions";
+import { revalidatePrescriptionSurfaces } from "@/core/cache/revalidate-prescription-surfaces";
 import { recordAudit } from "@/core/security/audit-service";
 import { verifyPrescriptionForeignKeys } from "@/core/security/ownership-guard";
 import { requireClinicalIssueAccess } from "@/core/services/clinical-access.service";
@@ -19,7 +18,7 @@ import {
 } from "@/features/recetas/services/prescriptions.service";
 
 export async function savePrescriptionDraft(formData: FormData) {
-  const access = await requireClinicalIssueAccess();
+  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
   const { userId, clinicId } = access.data;
 
@@ -32,7 +31,6 @@ export async function savePrescriptionDraft(formData: FormData) {
   );
   if (!existingParsed.success) return { error: "Borrador inválido" };
 
-  const supabase = await createClient();
   const ownership = await verifyPrescriptionForeignKeys(supabase, clinicId, {
     patientId: parsed.data.patient_id,
     professionalId: parsed.data.professional_id,
@@ -61,26 +59,19 @@ export async function savePrescriptionDraft(formData: FormData) {
     });
   }
 
-  revalidatePath("/recetas");
-  revalidatePath("/historias");
+  revalidatePrescriptionSurfaces({
+    patientId: parsed.data.patient_id,
+    clinicalRecordId: parsed.data.clinical_record_id,
+  });
   return { data: result.data };
 }
 
 export async function issuePrescription(id: string, idempotencyKey?: string | null) {
-  const access = await requireClinicalIssueAccess();
+  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
 
   const idParsed = parseEntityId(id, "Receta");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
-  const { data: before } = await supabase
-    .from("prescription_drafts")
-    .select("id, patient_id, status")
-    .eq("id", idParsed.data)
-    .eq("clinic_id", access.data.clinicId)
-    .maybeSingle();
-
   const result = await issuePrescriptionRecord(
     supabase,
     idParsed.data,
@@ -96,38 +87,31 @@ export async function issuePrescription(id: string, idempotencyKey?: string | nu
       module: "prescriptions",
       entityType: "prescription",
       entityId: idParsed.data,
-      patientId: before?.patient_id ?? result.data.patient_id,
+      patientId: result.data.patient_id,
       action: "update",
-      what: "Emitió receta electrónica",
+      what: "Emitió receta local (borrador — sin homologación REFEPS)",
       metadata: {
         status: "issued",
         coverage_kind: result.data.coverage_kind,
         prescription_number: result.data.prescription_number,
+        legal_validity: "local_draft_only",
       },
     });
   }
 
-  revalidatePath("/recetas");
-  revalidatePath("/historias");
-  revalidatePath(`/pacientes/${result.data.patient_id}`);
+  revalidatePrescriptionSurfaces({
+    patientId: result.data.patient_id,
+    clinicalRecordId: result.data.clinical_record_id,
+  });
   return { data: result.data };
 }
 
 export async function voidPrescription(id: string) {
-  const access = await requireClinicalIssueAccess();
+  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
 
   const idParsed = parseEntityId(id, "Receta");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
-  const { data: before } = await supabase
-    .from("prescription_drafts")
-    .select("id, patient_id, status")
-    .eq("id", idParsed.data)
-    .eq("clinic_id", access.data.clinicId)
-    .maybeSingle();
-
   const result = await voidPrescriptionRecord(
     supabase,
     idParsed.data,
@@ -141,28 +125,28 @@ export async function voidPrescription(id: string) {
     module: "prescriptions",
     entityType: "prescription",
     entityId: idParsed.data,
-    patientId: before?.patient_id ?? undefined,
+    patientId: result.data.patient_id,
     action: "delete",
     what: "Anuló receta",
-    metadata: { previousStatus: before?.status },
+    metadata: { status: result.data.status },
   });
 
-  revalidatePath("/recetas");
-  revalidatePath("/historias");
+  revalidatePrescriptionSurfaces({
+    patientId: result.data.patient_id,
+    clinicalRecordId: result.data.clinical_record_id,
+  });
   return { data: result.data };
 }
 
 export async function markPrescriptionDispensed(id: string) {
-  const access = await requireClinicalIssueAccess();
+  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
 
   const idParsed = parseEntityId(id, "Receta");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
   const { data: before } = await supabase
     .from("prescription_drafts")
-    .select("id, patient_id, status, dispensed_at")
+    .select("id, patient_id, clinical_record_id, status, dispensed_at")
     .eq("id", idParsed.data)
     .eq("clinic_id", access.data.clinicId)
     .maybeSingle();
@@ -190,8 +174,9 @@ export async function markPrescriptionDispensed(id: string) {
     metadata: { dispensed_at: result.data.dispensed_at },
   });
 
-  revalidatePath("/recetas");
-  revalidatePath("/historias");
-  revalidatePath(`/pacientes/${before.patient_id}`);
+  revalidatePrescriptionSurfaces({
+    patientId: before.patient_id,
+    clinicalRecordId: before.clinical_record_id,
+  });
   return { data: result.data };
 }

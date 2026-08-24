@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { startOfDay } from "date-fns";
 
+import { getClinicEntitlements } from "@/core/entitlements/entitlements.server";
+import { toClientEntitlementsSnapshot } from "@/core/entitlements/resolve";
 import { observeQuery } from "@/core/observability/observe-query";
 
 import {
@@ -9,6 +11,7 @@ import {
   mapPendingOrders,
   mapPendingStudies,
   mapQueuedReminders,
+  rowsOf,
 } from "@/features/dashboard/server/load-clinical-operations-dashboard.helpers";
 import { buildTasks } from "@/features/dashboard/server/load-clinical-operations-dashboard.tasks";
 import type {
@@ -44,10 +47,13 @@ async function loadSecondaryInner(
   const [draftRx, pendingStudies, queuedReminders, pendingOrdersResult] =
     await fetchDashboardSecondaryQueries(supabase, clinicId, todayStart, studiesSince);
 
-  const draftPrescriptions = mapDraftPrescriptions(draftRx.data ?? []);
-  const pendingStudiesMapped = mapPendingStudies(pendingStudies.data ?? []);
-  const queuedRemindersMapped = mapQueuedReminders(queuedReminders.data ?? []);
-  const pendingOrders = mapPendingOrders(pendingOrdersResult.data ?? []);
+  const draftPrescriptions = mapDraftPrescriptions(rowsOf(draftRx.data));
+  const pendingStudiesMapped = mapPendingStudies(rowsOf(pendingStudies.data));
+  const queuedRemindersMapped = mapQueuedReminders(rowsOf(queuedReminders.data));
+  const pendingOrders = mapPendingOrders(rowsOf(pendingOrdersResult.data));
+  const entitlements = toClientEntitlementsSnapshot(
+    await getClinicEntitlements({ clinicId })
+  );
 
   const tasks = buildTasks({
     todayAppointments: core.todayAppointments as LiveAppointment[],
@@ -55,6 +61,7 @@ async function loadSecondaryInner(
     draftPrescriptions,
     pendingStudies: pendingStudiesMapped,
     queuedReminders: queuedRemindersMapped,
+    entitlements,
   });
 
   const recentLabs = prioritizeLabResults(pendingStudiesMapped, now);

@@ -1,0 +1,242 @@
+/**
+ * Selected / active / highlighted states — never pale bg + washed-out text.
+ *
+ * Policy:
+ * - Pale selected surfaces (mint, sky, blue-50, etc.) → dark ink (#0F172A / #334155)
+ * - Saturated selected (teal/navy/primary fills) → on-primary / white ink
+ */
+
+/* ——— Token floors ——— */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"]) {
+  --text-on-selected: #0f172a;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) {
+  --text-on-selected: #f8fafc;
+}
+
+/* Soft Clinic light: active nav is saturated teal — must use white labels */
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) {
+  --sidebar-active-bg: #0f766e;
+  --text-on-selected: #0f172a;
+}
+
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r,
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a[aria-current="page"] {
+  background: #0f766e !important;
+  background-image: none !important;
+  color: #ffffff !important;
+}
+
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r svg,
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a[aria-current="page"] svg {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Clinical / Azure light: pale active chip → dark ink */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="clinicsoft"]):not([data-ui-palette="cobalt"])
+  .drflow-ui-sidebar
+  a.bg-gradient-to-r {
+  background: var(--sidebar-active-bg, #ecfdf5) !important;
+  color: #0f172a !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="clinicsoft"]):not([data-ui-palette="cobalt"])
+  .drflow-ui-sidebar
+  a.bg-gradient-to-r
+  svg {
+  color: var(--sidebar-accent, #0f766e) !important;
+  opacity: 1 !important;
+}
+
+/* Dark clinical active nav: teal/navy fill + light label */
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-sidebar a.bg-gradient-to-r {
+  background: var(--sidebar-active-bg, #134e4a) !important;
+  color: #f8fafc !important;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-sidebar a.bg-gradient-to-r svg {
+  color: var(--sidebar-accent, #2dd4bf) !important;
+  opacity: 1 !important;
+}
+
+/* ——— Appearance theme cards ——— */
+.drflow-theme-option[aria-pressed="true"],
+.drflow-theme-option[data-selected="true"] {
+  background: var(--surface-selected) !important;
+  color: var(--text-on-selected) !important;
+  border-color: var(--ring) !important;
+}
+
+.drflow-theme-option[aria-pressed="true"] :is(.drflow-theme-option-title, .drflow-theme-option-desc, svg),
+.drflow-theme-option[data-selected="true"] :is(.drflow-theme-option-title, .drflow-theme-option-desc, svg) {
+  color: var(--text-on-selected) !important;
+}
+
+/* Pale selected cards (light modes / pale tokens): hard-lock dark ink */
+html:not([data-clinical-dark="1"]) .drflow-theme-option[aria-pressed="true"],
+html:not([data-clinical-dark="1"]) .drflow-theme-option[data-selected="true"],
+html[data-ui-palette="cobalt"] .drflow-theme-option[aria-pressed="true"],
+html[data-ui-palette="cobalt"] .drflow-theme-option[data-selected="true"] {
+  --text-on-selected: #0f172a;
+  color: #0f172a !important;
+}
+
+html:not([data-clinical-dark="1"]) .drflow-theme-option[aria-pressed="true"] :is(.drflow-theme-option-title, .drflow-theme-option-desc, svg),
+html:not([data-clinical-dark="1"]) .drflow-theme-option[data-selected="true"] :is(.drflow-theme-option-title, .drflow-theme-option-desc, svg),
+html[data-ui-palette="cobalt"] .drflow-theme-option[aria-pressed="true"] :is(.drflow-theme-option-title, .drflow-theme-option-desc, svg),
+html[data-ui-palette="cobalt"] .drflow-theme-option[data-selected="true"] :is(.drflow-theme-option-title, .drflow-theme-option-desc, svg) {
+  color: #0f172a !important;
+}
+
+/* ——— Tabs ——— */
+.drflow-patient-workspace-tab-active {
+  color: #ffffff !important;
+}
+
+.drflow-patient-workspace-tab-active :is(span, svg) {
+  color: #ffffff !important;
+}
+
+/* Default gradient tabs: ensure white on teal/cyan */
+html:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"]) .drflow-patient-workspace-tab-active {
+  background: linear-gradient(135deg, #0f766e, #0d9488) !important;
+  border-color: #0f766e !important;
+  color: #ffffff !important;
+}
+
+html[data-ui-palette="azure"] .drflow-patient-workspace-tab-active {
+  color: #ffffff !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-patient-workspace-tab-active {
+  color: #f8fafc !important;
+}
+
+html[data-ui-palette="clinicsoft"] .drflow-patient-workspace-tab-active {
+  background: #0f766e !important;
+  background-image: none !important;
+  color: #ffffff !important;
+}
+
+/* ——— Pale utility selected chips / cards in mesh ——— */
+.drflow-mesh main :is(
+    .bg-blue-50,
+    .bg-blue-100,
+    .bg-sky-50,
+    .bg-sky-100,
+    .bg-cyan-50,
+    .bg-cyan-100,
+    .bg-teal-50,
+    .bg-teal-100,
+    .bg-emerald-50,
+    .bg-indigo-50
+  ):is([aria-selected="true"], [data-selected="true"], [aria-pressed="true"], .drflow-ui-card, button, a, [role="option"], [role="tab"]),
+.drflow-mesh main :is([aria-selected="true"], [data-selected="true"], [aria-pressed="true"]).bg-blue-50,
+.drflow-mesh main :is([aria-selected="true"], [data-selected="true"], [aria-pressed="true"]).bg-sky-50,
+.drflow-mesh main :is([aria-selected="true"], [data-selected="true"], [aria-pressed="true"]).bg-teal-50 {
+  color: #0f172a !important;
+}
+
+.drflow-mesh main :is(
+    .bg-blue-50,
+    .bg-blue-100,
+    .bg-sky-50,
+    .bg-sky-100,
+    .bg-teal-50,
+    .bg-cyan-50
+  )
+  :is(.text-white, .text-slate-50, .text-slate-100, .text-slate-200, .text-slate-300) {
+  color: #0f172a !important;
+}
+
+/* Generic selected attrs on pale surfaces */
+.drflow-mesh main [aria-selected="true"]:not(option):not(.drflow-ui-button):not(.drflow-agenda-date-btn),
+.drflow-mesh main [data-selected="true"]:not(option):not(.drflow-ui-button):not(.drflow-agenda-date-btn),
+.drflow-mesh main [aria-pressed="true"]:not(.drflow-ui-button):not(.drflow-theme-option):not(.drflow-btn-ghost) {
+  color: var(--text-on-selected);
+}
+
+/* Light mode: selected → dark ink unless explicitly saturated primary fill */
+html:not([data-clinical-dark="1"])
+  .drflow-mesh
+  main
+  :is([aria-selected="true"], [data-selected="true"], [aria-pressed="true"]):not(.drflow-ui-button):not(.drflow-agenda-date-btn):not(option):not(.drflow-theme-option) {
+  color: #0f172a !important;
+}
+
+html:not([data-clinical-dark="1"])
+  .drflow-mesh
+  main
+  :is([aria-selected="true"], [data-selected="true"], [aria-pressed="true"]):not(.drflow-ui-button):not(.drflow-agenda-date-btn)
+  :is(p, span, li, label, small, svg):not([class*="bg-"]) {
+  color: inherit !important;
+}
+
+/* ——— Highlighted / hover table rows ——— */
+.drflow-mesh main tr:hover > td,
+.drflow-mesh main .drflow-table-row-hover,
+.drflow-mesh main [data-highlighted="true"] {
+  background-color: var(--table-hover, var(--surface-hover));
+  color: var(--text-primary);
+}
+
+html:not([data-clinical-dark="1"]) .drflow-mesh main tr:hover > td,
+html:not([data-clinical-dark="1"]) .drflow-mesh main [data-highlighted="true"] {
+  color: #0f172a;
+}
+
+/* ——— EHR sidebar active (often pale cyan/blue) ——— */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-sidebar-active,
+html[data-ui-palette="cobalt"] .drflow-ehr-sidebar-active,
+html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-ehr-sidebar-active {
+  color: #0f172a !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-sidebar-active :is(span, p, svg),
+html[data-ui-palette="cobalt"] .drflow-ehr-sidebar-active :is(span, p, svg),
+html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-ehr-sidebar-active :is(span, p, svg) {
+  color: #0f172a !important;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"])
+  .drflow-ehr-shell
+  .drflow-ehr-sidebar-active {
+  color: var(--ehr-text, #f8fafc) !important;
+}
+
+/* ——— Dropdown selected ——— */
+.drflow-card-light .drflow-ui-dropdown-item[aria-selected="true"],
+.drflow-patient-picker-dropdown [aria-selected="true"] {
+  background-color: #ecfdf5 !important;
+  color: #0f172a !important;
+}
+
+.drflow-ui-dropdown-item[aria-selected="true"] {
+  color: #f8fafc !important;
+}
+
+.drflow-card-light .drflow-ui-dropdown-item[aria-selected="true"] {
+  color: #0f766e !important;
+}
+
+/* ——— Clinical filter chips (light) ——— */
+html:not([data-clinical-dark="1"]) .drflow-clinical-workspace-filter-btn[aria-pressed="true"],
+html[data-ui-palette="cobalt"] .drflow-clinical-workspace-filter-btn[aria-pressed="true"] {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border-color: #2563eb !important;
+}
+
+/* ——— Light sidebar panel blue selected ——— */
+.drflow-light-sidebar-panel button.bg-blue-100,
+.drflow-light-sidebar-panel [aria-selected="true"],
+.drflow-light-sidebar-panel [data-selected="true"] {
+  color: #1e3a8a !important;
+}
+
+.drflow-light-sidebar-panel button.bg-blue-100 .text-blue-800,
+.drflow-light-sidebar-panel button.bg-blue-100 :is(span, p) {
+  color: #1e3a8a !important;
+}

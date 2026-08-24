@@ -106,18 +106,22 @@ export function usePatientWorkspaceActions(
 
   const openRecord = useCallback(
     (recordId: string, mode?: "edit" | "view") => {
-      navigate({
-        tab: "soap",
-        record: recordId,
-        mode: mode ?? "view",
-      });
+      if (mode === "edit") {
+        navigate({
+          tab: "soap",
+          record: recordId,
+          mode: "edit",
+        });
+        return;
+      }
+      navigate({ tab: "soap", consulta: recordId });
     },
     [navigate]
   );
 
   const onConsultSaved = useCallback(
     (recordId: string) => {
-      navigate({ tab: "soap", record: recordId, mode: "view" });
+      navigate({ tab: "soap", consulta: recordId });
       router.refresh();
     },
     [navigate, router]

@@ -3,6 +3,11 @@
 import { resolveImportAccess } from "@/core/actions/action-response";
 import { logAudit } from "@/core/auth/session.actions";
 import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
+import { getPatientCreateHeadroom } from "@/core/entitlements/limits.server";
+import {
+  consumePatientCreateHeadroom,
+  shouldAllowPatientCreate,
+} from "@/core/entitlements/quota-display";
 import { withActionErrorBoundary } from "@/core/errors/action-boundary.server";
 import { requireClinicalImportAccess } from "@/core/services/import-access.service";
 import { createClient } from "@/core/supabase/server";
@@ -38,7 +43,8 @@ async function resolvePatientForRow(
   clinicId: string,
   row: HceExportRow,
   defaultInsurance: string | null,
-  importNote: string
+  importNote: string,
+  allowCreate: boolean
 ): Promise<{ patientId: string; created: boolean } | { error: string }> {
   const existingId = await findPatientByConsumerRef(supabase, clinicId, row.paciente_id);
   if (existingId) return { patientId: existingId, created: false };
@@ -58,7 +64,8 @@ async function resolvePatientForRow(
     clinicId,
     extract,
     defaultInsurance,
-    `${importNote}\nImport ${row.paciente_id}`
+    `${importNote}\nImport ${row.paciente_id}`,
+    { allowCreate }
   );
 
   if ("error" in result) return { error: result.error };
@@ -170,6 +177,7 @@ async function importTeamsJsonlBatchInner(
   let patientsCreated = 0;
   const parseErrors: string[] = [];
   const patientCache = new Map<string, string>();
+  let remaining = await getPatientCreateHeadroom({ clinicId: auth.clinicId, supabase });
 
   for (const row of batch) {
     const result = await processTeamsJsonlImportRow({
@@ -180,8 +188,19 @@ async function importTeamsJsonlBatchInner(
       row,
       patientCache,
       resolvePatient: (r) =>
-        resolvePatientForRow(supabase, auth.clinicId, r, defaultInsurance, `Import teams JSONL: ${fileName}`),
+        resolvePatientForRow(
+          supabase,
+          auth.clinicId,
+          r,
+          defaultInsurance,
+          `Import teams JSONL: ${fileName}`,
+          shouldAllowPatientCreate(remaining)
+        ),
     });
+
+    if (result.patientsCreated > 0) {
+      remaining = consumePatientCreateHeadroom(remaining, true);
+    }
 
     patientsCreated += result.patientsCreated;
     if (result.action === "skip") {

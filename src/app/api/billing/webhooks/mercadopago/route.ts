@@ -5,7 +5,14 @@ import {
   getMercadoPagoWebhookSecret,
   verifyMercadoPagoWebhookSignature,
 } from "@/core/billing/mercadopago";
-import { processApprovedMercadoPagoPayment } from "@/core/billing/subscription-service";
+import {
+  processApprovedMercadoPagoPayment,
+  processRefundOrChargebackMercadoPagoPayment,
+} from "@/core/billing/subscription-service";
+import {
+  isActivatingPaymentStatus,
+  isRefundOrChargebackStatus,
+} from "@/core/compliance/monetization-security";
 import { logServerError } from "@/core/errors/log-error.server";
 
 export const dynamic = "force-dynamic";
@@ -33,21 +40,37 @@ async function handlePaymentNotification(paymentId: string) {
     return NextResponse.json({ ok: false, error: "payment_not_found" }, { status: 404, headers: NO_STORE });
   }
 
-  if (payment.status !== "approved") {
+  if (isActivatingPaymentStatus(payment.status)) {
+    const result = await processApprovedMercadoPagoPayment(payment);
+    if (!result.ok) {
+      logServerError("api.billing.webhook.process", new Error(result.error));
+      return NextResponse.json({ ok: false, error: result.error }, { status: 500, headers: NO_STORE });
+    }
     return NextResponse.json(
-      { ok: true, skipped: true, status: payment.status },
+      { ok: true, clinicId: result.clinicId, alreadyProcessed: result.alreadyProcessed },
       { headers: NO_STORE }
     );
   }
 
-  const result = await processApprovedMercadoPagoPayment(payment);
-  if (!result.ok) {
-    logServerError("api.billing.webhook.process", new Error(result.error));
-    return NextResponse.json({ ok: false, error: result.error }, { status: 500, headers: NO_STORE });
+  if (isRefundOrChargebackStatus(payment.status)) {
+    const result = await processRefundOrChargebackMercadoPagoPayment(payment);
+    if (!result.ok) {
+      logServerError("api.billing.webhook.refund", new Error(result.error));
+      return NextResponse.json({ ok: false, error: result.error }, { status: 500, headers: NO_STORE });
+    }
+    return NextResponse.json(
+      {
+        ok: true,
+        refund: true,
+        clinicId: result.clinicId,
+        alreadyProcessed: result.alreadyProcessed,
+      },
+      { headers: NO_STORE }
+    );
   }
 
   return NextResponse.json(
-    { ok: true, clinicId: result.clinicId, alreadyProcessed: result.alreadyProcessed },
+    { ok: true, skipped: true, status: payment.status },
     { headers: NO_STORE }
   );
 }
@@ -77,6 +100,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Firma inválida." }, { status: 401, headers: NO_STORE });
   }
 
+  if (!getMercadoPagoWebhookSecret() && process.env.NODE_ENV === "production") {
+    logServerError(
+      "api.billing.webhook.missing_secret",
+      new Error("MP_WEBHOOK_SECRET no configurado en producción")
+    );
+    return NextResponse.json(
+      { error: "Webhook no configurado." },
+      { status: 503, headers: NO_STORE }
+    );
+  }
+
   try {
     return await handlePaymentNotification(paymentId);
   } catch (err) {
@@ -101,6 +135,17 @@ export async function GET(request: Request) {
 
   if (!signatureOk && getMercadoPagoWebhookSecret()) {
     return NextResponse.json({ error: "Firma inválida." }, { status: 401, headers: NO_STORE });
+  }
+
+  if (!getMercadoPagoWebhookSecret() && process.env.NODE_ENV === "production") {
+    logServerError(
+      "api.billing.webhook.missing_secret",
+      new Error("MP_WEBHOOK_SECRET no configurado en producción")
+    );
+    return NextResponse.json(
+      { error: "Webhook no configurado." },
+      { status: 503, headers: NO_STORE }
+    );
   }
 
   try {

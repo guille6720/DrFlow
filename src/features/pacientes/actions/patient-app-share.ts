@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { getActiveClinic } from "@/core/auth/session.server";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 import { appShareChannelSchema, parseEntityId } from "@/core/validations/params";
@@ -19,6 +21,9 @@ export async function recordPatientAppShare(
   if (!clinicId || !hasPermission(role, "managePatients", isSuperadmin)) {
     return { error: "Sin permisos" };
   }
+
+  const portal = await requireAddonFeatureAccess(FEATURES.PORTAL);
+  if (!portal.ok) return { error: portal.error };
 
   const idParsed = parseEntityId(patientId, "Paciente");
   if (!idParsed.ok) return { error: idParsed.error };

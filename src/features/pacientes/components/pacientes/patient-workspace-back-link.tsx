@@ -29,10 +29,12 @@ export function PatientWorkspaceBackLink({ patientId, initialFrom, returnPatient
     sheet: searchParams.get("sheet"),
     mode: searchParams.get("mode"),
     focus: searchParams.get("focus"),
+    appointment: searchParams.get("appointment"),
+    professional: searchParams.get("professional"),
   });
 
   return (
-    <Link href={href} className="drflow-link inline-flex items-center gap-1 text-sm">
+    <Link href={href} prefetch className="drflow-link inline-flex items-center gap-1 text-sm">
       <ArrowLeft className="h-4 w-4" aria-hidden />
       Volver
     </Link>

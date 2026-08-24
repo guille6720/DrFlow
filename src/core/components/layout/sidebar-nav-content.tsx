@@ -59,7 +59,7 @@ function SidebarNavLinkItem({
       )}
     >
       <item.icon
-        className={cn("h-5 w-5 shrink-0", active ? "text-slate-900" : "text-teal-400/90")}
+        className={cn("h-5 w-5 shrink-0", active ? "text-slate-900" : "text-teal-400")}
       />
       {item.label}
     </Link>
@@ -85,6 +85,13 @@ function SidebarNavGroupItem({
     setPrevChildActive(childActive);
     if (childActive) setOpen(true);
   }
+
+  useEffect(() => {
+    if (!open) return;
+    for (const child of group.children) {
+      onPrefetch(child.href);
+    }
+  }, [open, group.children, onPrefetch]);
 
   return (
     <div className="space-y-1">

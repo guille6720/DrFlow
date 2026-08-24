@@ -49,7 +49,7 @@ describe("printTextDocument", () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.method).toBe("popup");
-    expect(window.open).toHaveBeenCalledWith("about:blank", "_blank", "noopener,noreferrer");
+    expect(window.open).toHaveBeenCalledWith("about:blank", "_blank");
     vi.advanceTimersByTime(150);
     expect(mockPrint).toHaveBeenCalled();
   });

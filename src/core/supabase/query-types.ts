@@ -25,6 +25,7 @@ export type NestedRow<T extends Record<string, unknown>> = T | T[] | null;
 /** Professional row for lists, planillas and nueva consulta. */
 export type ProfessionalListRow = {
   id: string;
+  user_id?: string | null;
   display_name: string | null;
   license_number: string | null;
   license_national?: string | null;
@@ -51,6 +52,12 @@ export type ProfessionalAgendaRow = {
   specialties?: NestedRow<{ name: string }>;
 };
 
+/**
+ * DB contract (migration 104):
+ * CHECK (booking_source IN ('manual', 'online', 'api'))
+ */
+export type AppointmentBookingSource = "manual" | "online" | "api";
+
 /** Appointment row with agenda joins (matches APPOINTMENT_AGENDA_COLUMNS select). */
 export type AppointmentAgendaRow = {
   id: string;
@@ -63,7 +70,7 @@ export type AppointmentAgendaRow = {
   end_at: string;
   status: AppointmentStatus;
   notes: string | null;
-  booking_source?: "manual" | "online" | null;
+  booking_source?: AppointmentBookingSource | null;
   cancellation_reason: string | null;
   cancellation_category?: string | null;
   cancelled_at: string | null;
@@ -81,7 +88,14 @@ export type AppointmentAgendaRow = {
   waiting_room_entered_at?: string | null;
   is_overbooking?: boolean | null;
   rescheduled_at?: string | null;
-  patients?: NestedRow<{ first_name: string; last_name: string; document_number?: string; insurance_provider?: string | null; insurance_plan?: string | null }>;
+  patients?: NestedRow<{
+    first_name: string;
+    last_name: string;
+    document_number?: string;
+    phone?: string | null;
+    insurance_provider?: string | null;
+    insurance_plan?: string | null;
+  }>;
   professionals?: NestedRow<{ profiles?: NestedRow<{ full_name?: string }> }>;
   locations?: NestedRow<{ name: string }>;
   specialties?: NestedRow<{ name: string }>;

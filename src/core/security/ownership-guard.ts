@@ -160,6 +160,10 @@ export async function verifyAppointmentPatientMatch(
   return { ok: true };
 }
 
+function firstOwnershipFailure(...results: OwnershipResult[]): OwnershipResult {
+  return results.find((result) => !result.ok) ?? { ok: true };
+}
+
 export async function verifyClinicalRecordForeignKeys(
   db: DbClient,
   clinicId: string,
@@ -169,23 +173,14 @@ export async function verifyClinicalRecordForeignKeys(
     appointmentId?: string | null;
   }
 ): Promise<OwnershipResult> {
-  const patient = await verifyPatientInClinic(db, clinicId, keys.patientId);
-  if (!patient.ok) return patient;
-
-  const professional = await verifyProfessionalInClinic(db, clinicId, keys.professionalId);
-  if (!professional.ok) return professional;
-
-  if (keys.appointmentId) {
-    const appointment = await verifyAppointmentPatientMatch(
-      db,
-      clinicId,
-      keys.appointmentId,
-      keys.patientId
-    );
-    if (!appointment.ok) return appointment;
-  }
-
-  return { ok: true };
+  const [patient, professional, appointment] = await Promise.all([
+    verifyPatientInClinic(db, clinicId, keys.patientId),
+    verifyProfessionalInClinic(db, clinicId, keys.professionalId),
+    keys.appointmentId
+      ? verifyAppointmentPatientMatch(db, clinicId, keys.appointmentId, keys.patientId)
+      : Promise.resolve({ ok: true as const }),
+  ]);
+  return firstOwnershipFailure(patient, professional, appointment);
 }
 
 export async function verifyAppointmentForeignKeys(
@@ -198,19 +193,13 @@ export async function verifyAppointmentForeignKeys(
     specialtyId?: string | null;
   }
 ): Promise<OwnershipResult> {
-  const patient = await verifyPatientInClinic(db, clinicId, keys.patientId);
-  if (!patient.ok) return patient;
-
-  const professional = await verifyProfessionalInClinic(db, clinicId, keys.professionalId);
-  if (!professional.ok) return professional;
-
-  const location = await verifyOptionalLocationInClinic(db, clinicId, keys.locationId);
-  if (!location.ok) return location;
-
-  const specialty = await verifyOptionalSpecialtyInClinic(db, clinicId, keys.specialtyId);
-  if (!specialty.ok) return specialty;
-
-  return { ok: true };
+  const [patient, professional, location, specialty] = await Promise.all([
+    verifyPatientInClinic(db, clinicId, keys.patientId),
+    verifyProfessionalInClinic(db, clinicId, keys.professionalId),
+    verifyOptionalLocationInClinic(db, clinicId, keys.locationId),
+    verifyOptionalSpecialtyInClinic(db, clinicId, keys.specialtyId),
+  ]);
+  return firstOwnershipFailure(patient, professional, location, specialty);
 }
 
 export async function verifyCashChargeForeignKeys(
@@ -222,23 +211,14 @@ export async function verifyCashChargeForeignKeys(
     appointmentId?: string | null;
   }
 ): Promise<OwnershipResult> {
-  const patient = await verifyPatientInClinic(db, clinicId, keys.patientId);
-  if (!patient.ok) return patient;
-
-  const professional = await verifyOptionalProfessionalInClinic(db, clinicId, keys.professionalId);
-  if (!professional.ok) return professional;
-
-  if (keys.appointmentId) {
-    const appointment = await verifyAppointmentPatientMatch(
-      db,
-      clinicId,
-      keys.appointmentId,
-      keys.patientId
-    );
-    if (!appointment.ok) return appointment;
-  }
-
-  return { ok: true };
+  const [patient, professional, appointment] = await Promise.all([
+    verifyPatientInClinic(db, clinicId, keys.patientId),
+    verifyOptionalProfessionalInClinic(db, clinicId, keys.professionalId),
+    keys.appointmentId
+      ? verifyAppointmentPatientMatch(db, clinicId, keys.appointmentId, keys.patientId)
+      : Promise.resolve({ ok: true as const }),
+  ]);
+  return firstOwnershipFailure(patient, professional, appointment);
 }
 
 export async function verifyPrescriptionForeignKeys(
@@ -250,16 +230,12 @@ export async function verifyPrescriptionForeignKeys(
     clinicalRecordId?: string | null;
   }
 ): Promise<OwnershipResult> {
-  const patient = await verifyPatientInClinic(db, clinicId, keys.patientId);
-  if (!patient.ok) return patient;
-
-  const professional = await verifyProfessionalInClinic(db, clinicId, keys.professionalId);
-  if (!professional.ok) return professional;
-
-  const record = await verifyOptionalClinicalRecordInClinic(db, clinicId, keys.clinicalRecordId);
-  if (!record.ok) return record;
-
-  return { ok: true };
+  const [patient, professional, record] = await Promise.all([
+    verifyPatientInClinic(db, clinicId, keys.patientId),
+    verifyProfessionalInClinic(db, clinicId, keys.professionalId),
+    verifyOptionalClinicalRecordInClinic(db, clinicId, keys.clinicalRecordId),
+  ]);
+  return firstOwnershipFailure(patient, professional, record);
 }
 
 export async function verifyMedicalOrderForeignKeys(
@@ -282,18 +258,11 @@ export async function verifyPaymentForeignKeys(
     appointmentId?: string | null;
   }
 ): Promise<OwnershipResult> {
-  const patient = await verifyPatientInClinic(db, clinicId, keys.patientId);
-  if (!patient.ok) return patient;
-
-  if (keys.appointmentId) {
-    const appointment = await verifyAppointmentPatientMatch(
-      db,
-      clinicId,
-      keys.appointmentId,
-      keys.patientId
-    );
-    if (!appointment.ok) return appointment;
-  }
-
-  return { ok: true };
+  const [patient, appointment] = await Promise.all([
+    verifyPatientInClinic(db, clinicId, keys.patientId),
+    keys.appointmentId
+      ? verifyAppointmentPatientMatch(db, clinicId, keys.appointmentId, keys.patientId)
+      : Promise.resolve({ ok: true as const }),
+  ]);
+  return firstOwnershipFailure(patient, appointment);
 }

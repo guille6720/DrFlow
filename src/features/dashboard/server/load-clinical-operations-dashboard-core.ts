@@ -9,12 +9,15 @@ import {
   buildAllergiesByPatient,
   buildAppointmentNotifications,
   collectWaitingPatientIds,
+  type CriticalPatientProfileRow,
   fetchCriticalPatientProfiles,
   filterOverdueAppointments,
   filterWaitingAppointments,
   LIST_LIMIT,
   mapCriticalPatients,
-  sanitizeIsoTimestamp,
+  normalizeLiveAppointment,
+  rowsOf,
+  TODAY_APPOINTMENTS_LIMIT,
   UPCOMING_APPOINTMENT_STATUSES,
 } from "@/features/dashboard/server/load-clinical-operations-dashboard.helpers";
 import type { ClinicalOperationsDashboardCorePayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
@@ -45,25 +48,27 @@ async function fetchTodayAppointments(
   todayEnd: string
 ): Promise<LiveAppointment[]> {
   for (const select of [APPOINTMENT_SELECT, APPOINTMENT_SELECT_MINIMAL]) {
-    const { data, error } = await supabase
-      .from("appointments")
-      .select(select)
-      .eq("clinic_id", clinicId)
-      .gte("start_at", todayStart)
-      .lte("start_at", todayEnd)
-      .not("status", "eq", "cancelled")
-      .order("start_at");
+    try {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select(select)
+        .eq("clinic_id", clinicId)
+        .gte("start_at", todayStart)
+        .lte("start_at", todayEnd)
+        .not("status", "eq", "cancelled")
+        .order("start_at")
+        .limit(TODAY_APPOINTMENTS_LIMIT);
 
-    if (!error) {
-      return ((data ?? []) as unknown as LiveAppointment[]).map((row) => ({
-        ...row,
-        start_at: sanitizeIsoTimestamp(row.start_at),
-      }));
+      if (!error) {
+        return rowsOf(data as unknown as LiveAppointment[] | null).map(normalizeLiveAppointment);
+      }
+      console.error(
+        `[dashboard] today appointments (${select === APPOINTMENT_SELECT ? "full" : "minimal"}) failed:`,
+        error.message
+      );
+    } catch (err) {
+      console.error("[dashboard] today appointments threw:", err);
     }
-    console.error(
-      `[dashboard] today appointments (${select === APPOINTMENT_SELECT ? "full" : "minimal"}) failed:`,
-      error.message
-    );
   }
   return [];
 }
@@ -74,25 +79,26 @@ async function fetchUpcomingAppointments(
   nowIso: string
 ): Promise<LiveAppointment[]> {
   for (const select of [APPOINTMENT_SELECT, APPOINTMENT_SELECT_MINIMAL]) {
-    const { data, error } = await supabase
-      .from("appointments")
-      .select(select)
-      .eq("clinic_id", clinicId)
-      .gte("start_at", nowIso)
-      .in("status", [...UPCOMING_APPOINTMENT_STATUSES])
-      .order("start_at")
-      .limit(LIST_LIMIT);
+    try {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select(select)
+        .eq("clinic_id", clinicId)
+        .gte("start_at", nowIso)
+        .in("status", [...UPCOMING_APPOINTMENT_STATUSES])
+        .order("start_at")
+        .limit(LIST_LIMIT);
 
-    if (!error) {
-      return ((data ?? []) as unknown as LiveAppointment[]).map((row) => ({
-        ...row,
-        start_at: sanitizeIsoTimestamp(row.start_at),
-      }));
+      if (!error) {
+        return rowsOf(data as unknown as LiveAppointment[] | null).map(normalizeLiveAppointment);
+      }
+      console.error(
+        `[dashboard] upcoming appointments (${select === APPOINTMENT_SELECT ? "full" : "minimal"}) failed:`,
+        error.message
+      );
+    } catch (err) {
+      console.error("[dashboard] upcoming appointments threw:", err);
     }
-    console.error(
-      `[dashboard] upcoming appointments (${select === APPOINTMENT_SELECT ? "full" : "minimal"}) failed:`,
-      error.message
-    );
   }
   return [];
 }
@@ -106,53 +112,83 @@ async function loadCoreInner(
   const todayStart = startOfDay(now).toISOString();
   const todayEnd = endOfDay(now).toISOString();
 
-  const [todayAppointments, upcoming] = await Promise.all([
-    fetchTodayAppointments(supabase, clinicId, todayStart, todayEnd),
-    fetchUpcomingAppointments(supabase, clinicId, nowIso),
-  ]);
+  let todayAppointments: LiveAppointment[] = [];
+  let upcoming: LiveAppointment[] = [];
+  try {
+    [todayAppointments, upcoming] = await Promise.all([
+      fetchTodayAppointments(supabase, clinicId, todayStart, todayEnd),
+      fetchUpcomingAppointments(supabase, clinicId, nowIso),
+    ]);
+  } catch (err) {
+    console.error("[dashboard] appointment queries threw:", err);
+  }
 
   const waitingPatientIds = collectWaitingPatientIds(todayAppointments);
 
-  const criticalRows = await fetchCriticalPatientProfiles(supabase, clinicId, waitingPatientIds);
-  const allergiesByPatient = buildAllergiesByPatient(criticalRows.data ?? [], waitingPatientIds);
+  let criticalData: CriticalPatientProfileRow[] = [];
+  try {
+    const criticalRows = await fetchCriticalPatientProfiles(supabase, clinicId, waitingPatientIds);
+    criticalData = rowsOf(criticalRows.data);
+  } catch (err) {
+    console.error("[dashboard] critical profiles threw:", err);
+  }
 
-  const waiting = filterWaitingAppointments(todayAppointments);
-  const overdue = filterOverdueAppointments(todayAppointments, nowIso);
-  const notifications = buildAppointmentNotifications(todayAppointments, overdue);
-  const criticalPatients = mapCriticalPatients(criticalRows.data ?? []);
+  try {
+    const allergiesByPatient = buildAllergiesByPatient(criticalData, waitingPatientIds);
+    const waiting = filterWaitingAppointments(todayAppointments);
+    const overdue = filterOverdueAppointments(todayAppointments, nowIso);
+    const notifications = buildAppointmentNotifications(todayAppointments, overdue);
+    const criticalPatients = mapCriticalPatients(criticalData);
+    const enrichedWaiting = enrichWaitingRows({
+      waiting: waiting as LiveAppointment[],
+      allergiesByPatient,
+      now,
+    });
+    const activity = computeActivityMetrics({
+      todayAppointments,
+      waiting: waiting as LiveAppointment[],
+      now,
+    });
+    const actionableAlerts = buildActionableAlerts({
+      criticalPatients,
+      overdue: overdue as LiveAppointment[],
+      enrichedWaiting,
+    });
+    const urgentPatients = enrichedWaiting.filter(
+      (row) => row.priority === "urgent" || row.priority === "high"
+    );
 
-  const enrichedWaiting = enrichWaitingRows({
-    waiting: waiting as LiveAppointment[],
-    allergiesByPatient,
-    now,
-  });
-
-  const activity = computeActivityMetrics({
-    todayAppointments,
-    waiting: waiting as LiveAppointment[],
-    now,
-  });
-
-  const actionableAlerts = buildActionableAlerts({
-    criticalPatients,
-    overdue: overdue as LiveAppointment[],
-    enrichedWaiting,
-  });
-
-  const urgentPatients = enrichedWaiting.filter(
-    (row) => row.priority === "urgent" || row.priority === "high"
-  );
-
-  return {
-    waiting,
-    upcoming,
-    overdue,
-    criticalPatients,
-    notifications: notifications.slice(0, LIST_LIMIT),
-    todayAppointments,
-    activity,
-    enrichedWaiting,
-    actionableAlerts,
-    urgentPatients,
-  };
+    return {
+      waiting,
+      upcoming,
+      overdue,
+      criticalPatients,
+      notifications: notifications.slice(0, LIST_LIMIT),
+      todayAppointments,
+      activity,
+      enrichedWaiting,
+      actionableAlerts,
+      urgentPatients,
+    };
+  } catch (err) {
+    console.error("[dashboard] core payload mapping threw:", err);
+    return {
+      waiting: [],
+      upcoming,
+      overdue: [],
+      criticalPatients: [],
+      notifications: [],
+      todayAppointments,
+      activity: {
+        waitingCount: 0,
+        attendedCount: 0,
+        averageWaitingMinutes: null,
+        nextAppointment: null,
+        delayedCount: 0,
+      },
+      enrichedWaiting: [],
+      actionableAlerts: [],
+      urgentPatients: [],
+    };
+  }
 }

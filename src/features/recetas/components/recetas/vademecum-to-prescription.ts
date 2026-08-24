@@ -6,18 +6,50 @@ function parseConcentrationFromPresentation(presentation: string): string {
   return match?.[0]?.replace(/\s+/g, " ") ?? "";
 }
 
-/** Maps a national catalog row to a prescription medication line. */
-export function catalogToPrescription(item: MedicationCatalogResult): PrescriptionMedication {
+/** Extrae forma farmacéutica solo si ya figura en la presentación del catálogo. */
+export function parsePharmaceuticalFormFromPresentation(presentation: string): string {
+  const match = presentation.match(
+    /\b(comprimidos?|c[aá]psulas?|jarabe|suspensi[oó]n|gotas|crema|ung[uü]ento|inyectable|ampollas?|parche|aerosol|soluci[oó]n|polvo|sobres?|ovulos?|supositorios?|gel|spray)\b/i
+  );
+  return match?.[0]?.replace(/\s+/g, " ") ?? "";
+}
+
+/**
+ * Selección desde catálogo para MedicationAutocomplete / consulta.
+ * Solo identidad de producto: no inventa dosis, frecuencia, duración ni vía.
+ */
+export function catalogToMedicationSelection(item: MedicationCatalogResult): PrescriptionMedication {
+  const presentation = item.presentation.trim();
+  const concentration = parseConcentrationFromPresentation(presentation);
+  const pharmaceuticalForm = parsePharmaceuticalFormFromPresentation(presentation);
+  const active = item.active_ingredient.trim();
   return {
-    generic_name: item.active_ingredient.trim(),
-    brand_name: item.brand_name.trim(),
-    presentation: item.presentation.trim(),
-    concentration: parseConcentrationFromPresentation(item.presentation),
-    quantity: 1,
+    generic_name: active,
+    active_ingredient: active,
+    brand_name: item.brand_name.trim() || undefined,
+    presentation: presentation || undefined,
+    concentration: concentration || undefined,
+    pharmaceutical_form: pharmaceuticalForm || undefined,
+    quantity: 0,
     posology: "",
-    route: "oral",
+    dose: "",
+    frequency: "",
+    duration_days: undefined,
+    route: "",
+    instructions: "",
     vademecum_code: item.product_code?.trim() || undefined,
     search_source: "catalog",
+  };
+}
+
+/** Maps a national catalog row to a prescription medication line (módulo recetas). */
+export function catalogToPrescription(item: MedicationCatalogResult): PrescriptionMedication {
+  const selection = catalogToMedicationSelection(item);
+  return {
+    ...selection,
+    // En recetas se mantiene cantidad mínima operativa; la posología sigue vacía.
+    quantity: 1,
+    route: selection.route || "oral",
   };
 }
 

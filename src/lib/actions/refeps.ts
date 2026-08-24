@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireSettingsAccess } from "@/core/actions/clinic-guard";
+import { revalidatePrescriptionSurfaces } from "@/core/cache/revalidate-prescription-surfaces";
 import {
   getRefepsConfigurationHint,
   isRefepsApiConfigured,
@@ -19,7 +20,7 @@ import { parseEntityId } from "@/core/validations/params";
 
 import { PRESCRIPTION_ISSUE_COLUMNS } from "@/features/recetas/repositories/prescription-drafts.repository";
 
-import type { ElectronicPrescription } from "@/types/prescription";
+import { toElectronicPrescription } from "@/types/prescription";
 
 export type RefepsClinicSettingsView = {
   enabled: boolean;
@@ -108,15 +109,14 @@ export async function updateRefepsClinicSettings(formData: FormData): Promise<{
   });
 
   revalidatePath("/configuracion");
-  revalidatePath("/recetas");
 
   return {
     success: true,
     message: enabled
       ? autoSubmit
-        ? "REFEPS habilitado — las recetas se enviarán al emitir."
-        : "REFEPS habilitado — enviá manualmente desde cada receta emitida."
-      : "REFEPS deshabilitado — las recetas quedan en modo local.",
+        ? "REFEPS habilitado — envío al emitir vía adapter (sandbox o API). No implica homologación MSN automática."
+        : "REFEPS habilitado — envío manual desde cada receta emitida (adapter). No implica homologación MSN automática."
+      : "REFEPS deshabilitado — las recetas quedan en modo local / borrador.",
   };
 }
 
@@ -144,19 +144,28 @@ export async function submitPrescriptionToRefeps(prescriptionId: string) {
     return { error: "Esta receta ya fue registrada en REFEPS." };
   }
 
+  const mapped = toElectronicPrescription(prescription);
+  if (!mapped) {
+    return { error: "Receta emitida con formato inválido." };
+  }
+
   const result = await submitIssuedPrescriptionToRefeps(supabase, {
     clinicId: access.data.clinicId,
     userId: access.data.userId,
-    prescription: prescription as ElectronicPrescription,
+    prescription: mapped,
   });
 
   if (!result.ok) {
-    revalidatePath("/recetas");
-    revalidatePath(`/pacientes/${prescription.patient_id}`);
+    revalidatePrescriptionSurfaces({
+      patientId: prescription.patient_id,
+      clinicalRecordId: prescription.clinical_record_id,
+    });
     return { error: result.error, data: result.data ?? null };
   }
 
-  revalidatePath("/recetas");
-  revalidatePath(`/pacientes/${prescription.patient_id}`);
+  revalidatePrescriptionSurfaces({
+    patientId: prescription.patient_id,
+    clinicalRecordId: prescription.clinical_record_id,
+  });
   return { data: result.data };
 }

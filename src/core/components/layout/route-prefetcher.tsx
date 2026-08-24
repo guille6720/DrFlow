@@ -9,7 +9,6 @@ const CORE_DASHBOARD_ROUTES = [
   "/dashboard",
   "/pacientes",
   "/turnos/agenda",
-  "/historias",
   "/caja",
 ] as const;
 
@@ -20,7 +19,10 @@ function routesForRole(role: UserRole | null, isSuperadmin: boolean): readonly s
     return [...CORE_DASHBOARD_ROUTES, ...STAFF_EXTRA_ROUTES];
   }
   if (role === "secretary") {
-    return [...CORE_DASHBOARD_ROUTES, "/turnos/lista-espera", "/sala-espera"];
+    return [...CORE_DASHBOARD_ROUTES, "/sala-espera"];
+  }
+  if (role === "doctor") {
+    return [...CORE_DASHBOARD_ROUTES, "/consultas", "/sala-espera"];
   }
   return CORE_DASHBOARD_ROUTES;
 }

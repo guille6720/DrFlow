@@ -1,7 +1,11 @@
 /** Shared pagination helpers for Supabase list queries. */
 
-export const PACIENTES_PAGE_SIZE = 20;
+export const PACIENTES_PAGE_SIZE = 25;
 export const HISTORIAS_PAGE_SIZE = 25;
+/** Safety cap for `.in(id, …)` filters (pathology / intersect search). */
+export const PATIENT_LIST_ID_IN_LIMIT = 500;
+/** Fallback scan when pathology RPC is missing — records, not distinct patients. */
+export const PATHOLOGY_SEARCH_RECORD_SCAN_LIMIT = 2000;
 export const ATENCIONES_PAGE_SIZE = 50;
 export const PAMI_PATIENTS_PAGE_SIZE = 50;
 export const WAITING_LIST_PAGE_SIZE = 25;
@@ -12,8 +16,12 @@ export const PATIENT_EHR_RECORD_PAGE_SIZE = 80;
 export const CUENTA_CORRIENTE_LEDGER_PAGE_SIZE = 50;
 export const PATIENT_PICKER_INITIAL_LIMIT = 80;
 export const PATIENT_SEARCH_API_LIMIT = 20;
-export const APPOINTMENTS_AGENDA_MAX = 3000;
+export const APPOINTMENTS_AGENDA_MAX = 1200;
+export const SCHEDULE_BLOCKS_AGENDA_MAX = 400;
 export const PATIENT_ATTACHMENTS_LIMIT = 200;
+export const TURNOS_TODAY_SCAN_MAX = 200;
+export const TURNOS_REPORT_FALLBACK_MAX = 1500;
+export const AVAILABILITY_RULES_MAX = 400;
 
 export type PageMeta = {
   page: number;

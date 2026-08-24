@@ -1,33 +1,54 @@
-import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
-import { hasPermission } from "@/core/permissions/roles";
+import { requireAnyClinicPermission, requireClinicPermission } from "@/core/actions/clinic-guard";
 
 export type ImportAccessResult =
   | { error: null; clinicId: string; userId: string }
   | { error: "Sin permisos" | "Sesión requerida"; clinicId: null; userId: null };
 
-/** Gate for clinical CSV/HCE/JSONL/PDF import pipelines. */
-export async function requireClinicalImportAccess(): Promise<ImportAccessResult> {
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
-  const canImport =
-    hasPermission(role, "editClinicalRecords", isSuperadmin) ||
-    hasPermission(role, "managePatients", isSuperadmin);
-  if (!clinicId || !canImport) {
-    return { error: "Sin permisos", clinicId: null, userId: null };
+function toImportAccess(
+  access:
+    | { ok: true; clinicId: string; userId: string }
+    | { ok: false; error: string }
+): ImportAccessResult {
+  if (!access.ok) {
+    return {
+      error: access.error === "Sin sesión" ? "Sesión requerida" : "Sin permisos",
+      clinicId: null,
+      userId: null,
+    };
   }
-  const user = await getSession();
-  if (!user) return { error: "Sesión requerida", clinicId: null, userId: null };
-  return { error: null, clinicId, userId: user.id };
+  return { error: null, clinicId: access.clinicId, userId: access.userId };
 }
 
-/** Gate for spreadsheet patient roster imports (consumers). */
+/** Gate for clinical CSV/HCE/JSONL/PDF import pipelines. */
+export async function requireClinicalImportAccess(): Promise<ImportAccessResult> {
+  return toImportAccess(await requireClinicPermission("importClinicalRecords"));
+}
+
+/** Gate for spreadsheet patient roster imports. */
 export async function requirePatientImportAccess(): Promise<ImportAccessResult> {
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
-  if (!clinicId || !hasPermission(role, "managePatients", isSuperadmin)) {
-    return { error: "Sin permisos", clinicId: null, userId: null };
-  }
-  const user = await getSession();
-  if (!user) return { error: "Sesión requerida", clinicId: null, userId: null };
-  return { error: null, clinicId, userId: user.id };
+  return toImportAccess(await requireClinicPermission("importPatients"));
+}
+
+export async function requirePatientExportAccess(): Promise<ImportAccessResult> {
+  return toImportAccess(await requireClinicPermission("exportPatients"));
+}
+
+export async function requireClinicalExportAccess(): Promise<ImportAccessResult> {
+  return toImportAccess(await requireClinicPermission("exportClinicalRecords"));
+}
+
+export async function requireBulkExportAccess(): Promise<ImportAccessResult> {
+  return toImportAccess(await requireClinicPermission("bulkExportData"));
+}
+
+export async function requireImportExportHubAccess(): Promise<ImportAccessResult> {
+  return toImportAccess(
+    await requireAnyClinicPermission([
+      "importPatients",
+      "exportPatients",
+      "importClinicalRecords",
+      "exportClinicalRecords",
+      "bulkExportData",
+    ])
+  );
 }

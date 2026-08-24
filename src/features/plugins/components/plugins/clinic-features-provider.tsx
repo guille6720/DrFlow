@@ -2,8 +2,13 @@
 
 import { createContext, type ReactNode, useContext, useMemo } from "react";
 
-import type { FeatureFlagId } from "@/features/flags/lib/registry";
-import { getFeatureFlagDefinition } from "@/features/flags/lib/registry";
+import { useEntitlementsSnapshot } from "@/core/components/entitlements/entitlements-provider";
+import { isFlagEntitledBySnapshot } from "@/core/entitlements/flag-features";
+
+import {
+  type FeatureFlagId,
+  getFeatureFlagDefinition,
+} from "@/features/flags/lib/registry";
 import {
   buildClinicFeaturesContext,
   type ClinicFeaturesContext,
@@ -56,6 +61,8 @@ export function usePluginEnabled(pluginId: PluginId): boolean {
 
 export function useFeatureFlag(flagId: FeatureFlagId): boolean {
   const ctx = useContext(ClinicFeaturesContext);
-  if (!ctx) return getFeatureFlagDefinition(flagId).defaultEnabled;
-  return isFeatureFlagEnabled(ctx, flagId);
+  const snapshot = useEntitlementsSnapshot();
+  const flagOn = ctx ? isFeatureFlagEnabled(ctx, flagId) : getFeatureFlagDefinition(flagId).defaultEnabled;
+  if (!flagOn) return false;
+  return isFlagEntitledBySnapshot(flagId, snapshot);
 }

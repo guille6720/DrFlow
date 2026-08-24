@@ -30,7 +30,8 @@ describe("patient-workspace-tab-routing", () => {
       true
     );
     expect(shouldLoadWorkspaceSheets("recetas", params({ action: "nueva" }))).toBe(true);
-    expect(shouldLoadWorkspaceSheets("soap", params({ record: "abc" }))).toBe(true);
+    expect(shouldLoadWorkspaceSheets("soap", params({ record: "abc" }))).toBe(false);
+    expect(shouldLoadWorkspaceSheets("soap", params({ record: "abc", mode: "edit" }))).toBe(true);
     expect(shouldLoadWorkspaceSheets("resumen", params({ action: "certificado" }))).toBe(true);
     expect(shouldLoadWorkspaceSheets("resumen", params({ action: "copilot" }))).toBe(false);
   });

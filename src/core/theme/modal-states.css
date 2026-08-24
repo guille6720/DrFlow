@@ -1,0 +1,165 @@
+/**
+ * Modal / drawer / overlay panel readability.
+ * Light panels must keep dark ink even under dark palettes (Midnight [role=dialog] remaps).
+ */
+
+/* ——— Light panel surfaces (portals often sit outside .drflow-mesh) ——— */
+.drflow-modal-panel,
+.drflow-dialog-panel,
+.drflow-workspace-overlay-panel,
+.drflow-surface-light[role="dialog"],
+.drflow-card-light[role="dialog"],
+[role="dialog"].bg-white,
+[role="dialog"].drflow-card-light,
+[role="dialog"].drflow-surface-light,
+[role="dialog"].drflow-modal-panel {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #0f172a !important;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-on-card: #0f172a;
+  --text-on-selected: #0f172a;
+  --foreground: #0f172a;
+  --card-foreground: #0f172a;
+  --muted-foreground: #334155;
+  --placeholder: #64748b;
+  --border: #e2e8f0;
+  --border-default: #e2e8f0;
+  --surface-card: #ffffff;
+  --surface-input: #ffffff;
+  --surface-hover: #f1f5f9;
+  --surface-selected: #ecfdf5;
+}
+
+/* Title / subtitle / section / description hierarchy */
+.drflow-modal-panel :is(h1, h2, h3, h4),
+.drflow-dialog-panel :is(h1, h2, h3, h4),
+.drflow-workspace-overlay-panel :is(h1, h2, h3, h4),
+[role="dialog"].bg-white :is(h1, h2, h3, h4),
+[role="dialog"].drflow-card-light :is(h1, h2, h3, h4),
+[role="dialog"].drflow-modal-panel :is(h1, h2, h3, h4) {
+  color: #0f172a !important;
+}
+
+.drflow-modal-panel :is(.text-slate-900, .text-slate-800, .font-semibold, .font-bold),
+.drflow-workspace-overlay-panel :is(.text-slate-900, .text-slate-800),
+[role="dialog"].bg-white :is(.text-slate-900, .text-slate-800),
+[role="dialog"].drflow-card-light :is(.text-slate-900, .text-slate-800) {
+  color: #0f172a !important;
+}
+
+.drflow-modal-subtitle,
+.drflow-modal-panel :is(.text-slate-500, .text-slate-600, .text-slate-400),
+.drflow-dialog-panel :is(.text-slate-500, .text-slate-600, .text-slate-400),
+.drflow-workspace-overlay-panel :is(.text-slate-500, .text-slate-600, .text-slate-400),
+[role="dialog"].bg-white :is(.text-slate-500, .text-slate-600, .text-slate-400),
+[role="dialog"].drflow-card-light :is(.text-slate-500, .text-slate-600, .text-slate-400) {
+  color: #475569 !important;
+}
+
+.drflow-modal-panel :is(p, li, label, dd, dt, small, figcaption):not([class*="text-red"]):not([class*="text-amber"]):not([class*="text-violet"]):not([class*="text-teal"]):not([class*="text-emerald"]),
+.drflow-workspace-overlay-panel :is(p, li, label, dd, dt, small):not([class*="text-red"]):not([class*="text-amber"]):not([class*="text-violet"]):not([class*="text-teal"]),
+[role="dialog"].bg-white :is(p, li, label, small):not([class*="text-red"]):not([class*="text-violet"]):not([class*="text-teal"]) {
+  color: #334155;
+}
+
+/* Option / theme cards inside modals */
+.drflow-modal-panel .drflow-theme-option,
+.drflow-workspace-overlay-panel .drflow-theme-option,
+[role="dialog"] .drflow-theme-option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+.drflow-modal-panel .drflow-theme-option-title,
+[role="dialog"] .drflow-theme-option-title {
+  color: #0f172a !important;
+}
+
+.drflow-modal-panel .drflow-theme-option-desc,
+[role="dialog"] .drflow-theme-option-desc {
+  color: #475569 !important;
+}
+
+.drflow-modal-panel .drflow-theme-option[aria-pressed="true"],
+.drflow-modal-panel .drflow-theme-option[data-selected="true"],
+[role="dialog"] .drflow-theme-option[aria-pressed="true"],
+[role="dialog"] .drflow-theme-option[data-selected="true"] {
+  background: #ecfdf5 !important;
+  color: #0f172a !important;
+}
+
+.drflow-modal-panel .drflow-theme-option[aria-pressed="true"] :is(.drflow-theme-option-title, .drflow-theme-option-desc, svg),
+[role="dialog"] .drflow-theme-option[aria-pressed="true"] :is(.drflow-theme-option-title, .drflow-theme-option-desc, svg) {
+  color: #0f172a !important;
+}
+
+/* Close control */
+.drflow-modal-close,
+.drflow-modal-panel button[aria-label="Cerrar"],
+.drflow-workspace-overlay-panel button[aria-label="Cerrar"],
+[role="dialog"].bg-white button[aria-label="Cerrar"],
+[role="dialog"].drflow-card-light button[aria-label="Cerrar"] {
+  color: #334155 !important;
+}
+
+.drflow-modal-close:hover,
+.drflow-modal-panel button[aria-label="Cerrar"]:hover,
+.drflow-workspace-overlay-panel button[aria-label="Cerrar"]:hover,
+[role="dialog"] button[aria-label="Cerrar"]:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* Footnotes / helper lines in modals */
+.drflow-modal-footnote,
+.drflow-modal-panel .text-xs.text-slate-500,
+.drflow-dialog-panel .text-xs.text-slate-500,
+.drflow-workspace-overlay-panel .text-xs.text-slate-500,
+[role="dialog"].bg-white .text-xs.text-slate-500,
+[role="dialog"].drflow-card-light .text-xs.text-slate-500 {
+  color: #475569 !important;
+}
+
+/* Form controls inside light modals */
+.drflow-modal-panel .drflow-ui-label,
+.drflow-workspace-overlay-panel .drflow-ui-label,
+[role="dialog"].bg-white .drflow-ui-label,
+[role="dialog"].drflow-card-light .drflow-ui-label {
+  color: #334155 !important;
+}
+
+.drflow-modal-panel .drflow-ui-input,
+.drflow-modal-panel .drflow-ui-select,
+.drflow-workspace-overlay-panel .drflow-ui-input,
+.drflow-workspace-overlay-panel .drflow-ui-select,
+[role="dialog"].bg-white .drflow-ui-input,
+[role="dialog"].drflow-card-light .drflow-ui-input {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.drflow-modal-panel .drflow-ui-input::placeholder,
+.drflow-workspace-overlay-panel .drflow-ui-input::placeholder,
+[role="dialog"].bg-white .drflow-ui-input::placeholder {
+  color: #64748b !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #64748b;
+}
+
+/* Never let pale-on-pale utilities win inside light modals */
+.drflow-modal-panel :is(.text-white, .text-slate-50, .text-slate-100, .text-slate-200):not(button):not(.drflow-ui-button):not([class*="bg-"]),
+.drflow-workspace-overlay-panel :is(.text-white, .text-slate-50, .text-slate-100, .text-slate-200):not(button):not(.drflow-ui-button):not([class*="bg-"]),
+[role="dialog"].bg-white :is(.text-white, .text-slate-50, .text-slate-100):not(button):not(.drflow-ui-button):not([class*="bg-"]) {
+  color: #0f172a !important;
+}
+
+/* Backdrop stays dim; do not inherit panel text color onto the scrim host */
+.drflow-modal-root,
+.drflow-modal-backdrop {
+  color: transparent;
+}

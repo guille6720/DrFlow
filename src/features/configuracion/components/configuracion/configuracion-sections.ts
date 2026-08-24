@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Accessibility,
   Activity,
+  ArrowDownUp,
   BookOpen,
   Bot,
   BriefcaseMedical,
@@ -46,7 +47,9 @@ export type ConfiguracionSectionId =
   | "jobs"
   | "observabilidad"
   | "accesibilidad"
-  | "api-publica";
+  | "api-publica"
+  | "import-export"
+  | "import-export-audit";
 
 export type ConfiguracionGroupId = "consultorio" | "agenda" | "coberturas" | "sistema";
 
@@ -191,6 +194,19 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
     description: "Claves Bearer para integraciones externas (turnos, profesionales).",
     icon: KeyRound,
   },
+  {
+    id: "import-export",
+    title: "Importar / Exportar datos",
+    description: "Pacientes, historias, documentos y auditoría de cargas.",
+    icon: ArrowDownUp,
+  },
+  {
+    id: "import-export-audit",
+    title: "Auditoría importaciones y exportaciones",
+    description: "Historial de quién exportó o importó datos del consultorio.",
+    icon: Scale,
+    href: "/datos?flujo=historial",
+  },
 ];
 
 export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
@@ -230,6 +246,8 @@ export const CONFIGURACION_GROUPS: ConfiguracionGroupMeta[] = [
       "observabilidad",
       "accesibilidad",
       "api-publica",
+      "import-export",
+      "import-export-audit",
       "demo",
     ],
   },

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { getActiveClinic, getActiveClinicId } from "@/core/auth/session.server";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
@@ -38,6 +40,11 @@ export const GET = withObservabilityApiRoute("pharmacology", async (request, ctx
 
   if (!hasPermission(role, "viewPharmacology", isSuperadmin)) {
     return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
+  }
+
+  const addon = await requireAddonFeatureAccess(FEATURES.PHARMACOLOGY);
+  if (!addon.ok) {
+    return NextResponse.json({ error: addon.error }, { status: 403 });
   }
 
   if (pathologyId) {

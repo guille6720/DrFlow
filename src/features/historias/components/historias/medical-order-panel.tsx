@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -66,6 +66,7 @@ export function MedicalOrderPanel({
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
+  const [, startRefresh] = useTransition();
   const [previewOpen, setPreviewOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<HistoriaMedicalOrderSummary | null>(null);
@@ -93,13 +94,17 @@ export function MedicalOrderPanel({
 
     if (result.error) {
       if (isMedicalOrderConflictError(result.error)) {
-        router.refresh();
+        startRefresh(() => {
+          router.refresh();
+        });
       }
       alert(result.error);
       return;
     }
 
-    router.refresh();
+    startRefresh(() => {
+      router.refresh();
+    });
   }
 
   function openPreview(order: HistoriaMedicalOrderSummary & { order_type?: string }) {
@@ -125,7 +130,15 @@ export function MedicalOrderPanel({
             clinicalRecordId={clinicalRecordId}
             professionals={professionals}
             defaultProfessionalId={defaultProfessionalId}
-            onSuccess={() => setShowForm(false)}
+            onSuccess={(order) => {
+              setShowForm(false);
+              if (order) {
+                openPreview(order);
+              }
+              startRefresh(() => {
+                router.refresh();
+              });
+            }}
           />
         </div>
       )}

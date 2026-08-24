@@ -94,6 +94,9 @@ describe("file upload audit static checks", () => {
     "src/lib/actions/import-jobs.ts",
     "src/lib/actions/hce-import.ts",
     "src/lib/actions/patient-import.ts",
+    "src/features/integraciones/actions/patient-import-session.ts",
+    "src/features/integraciones/actions/historical-documents-import.ts",
+    "src/features/integraciones/actions/fhir-import-session.ts",
     "src/lib/actions/clinical-import.helpers.ts",
     "src/lib/server/process-clinical-pdf-import.ts",
   ];

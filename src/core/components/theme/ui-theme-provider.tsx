@@ -31,8 +31,8 @@ type UiThemeContextValue = {
 const UiThemeContext = createContext<UiThemeContextValue | null>(null);
 
 export function UiThemeProvider({ children }: { children: ReactNode }) {
-  const [style, setStyleState] = useState<UiStyleId>("1");
-  const [clinicalDark, setClinicalDarkState] = useState(false);
+  const [style, setStyleState] = useState<UiStyleId>("6");
+  const [clinicalDark, setClinicalDarkState] = useState(true);
 
   const persist = useCallback((nextStyle: UiStyleId, nextDark: boolean) => {
     applyUiThemeToDocument(nextStyle, nextDark);
@@ -49,8 +49,19 @@ export function UiThemeProvider({ children }: { children: ReactNode }) {
   const setStyle = useCallback(
     (next: UiStyleId) => {
       setStyleState(next);
+      // Midnight Navy: arrancar en oscuro (sistema de diseño principal).
+      if (next === "6") {
+        setClinicalDarkState(true);
+        persist(next, true);
+        return;
+      }
+      // Paletas claras: arrancar en claro para que se note el cambio de colores.
+      if (next === "2" || next === "5") {
+        setClinicalDarkState(false);
+        persist(next, false);
+        return;
+      }
       const dark = isBentoStyle(next) ? clinicalDark : false;
-      if (next === "1") setClinicalDarkState(false);
       persist(next, dark);
     },
     [clinicalDark, persist]
@@ -58,7 +69,7 @@ export function UiThemeProvider({ children }: { children: ReactNode }) {
 
   const setClinicalDark = useCallback(
     (on: boolean) => {
-      if (style !== "2" && style !== "3" && style !== "4") return;
+      if (!isBentoStyle(style)) return;
       setClinicalDarkState(on);
       persist(style, on);
     },

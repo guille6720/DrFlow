@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import { PatientEhrClinicalTables } from "@/features/historias/components/historias/patient-ehr-clinical-tables";
 import { PatientEhrEvolutionPanel } from "@/features/historias/components/historias/patient-ehr-evolution-panel";
@@ -15,17 +14,24 @@ import {
   filterClinicalRowsByConsultationDay,
   filterConsultationsByConsultationDay,
 } from "@/features/historias/components/historias/patient-ehr-utils";
+import { PatientProblemListPanel } from "@/features/historias/components/historias/patient-problem-list-panel";
+import type { PatientProblemListItem } from "@/features/pacientes/server/load-clinical-structure";
 import type {
   PatientEhrDiagnosisRow,
   PatientEhrPrescription,
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import {
+  buildPatientWorkspaceUrl,
+  replaceClientUrl,
+} from "@/features/pacientes/utils/patient-workspace-actions";
+import { DocumentSignatureBlock } from "@/features/recetas/components/recetas/document-signature-block";
 
 type Props = {
   patientId: string;
   diagnosisRows: PatientEhrDiagnosisRow[];
   treatmentRows: PatientEhrTreatmentRow[];
+  problemList?: PatientProblemListItem[];
   prescriptions: PatientEhrPrescription[];
   totalConsultations: number;
   usesHceExport?: boolean;
@@ -43,6 +49,7 @@ export function PatientEhrInteractiveBody({
   patientId,
   diagnosisRows: _diagnosisRows,
   treatmentRows: _treatmentRows,
+  problemList = [],
   prescriptions,
   totalConsultations,
   usesHceExport = false,
@@ -52,7 +59,6 @@ export function PatientEhrInteractiveBody({
   pendingSidebarConsultation = null,
   consultPanel,
 }: Props) {
-  const router = useRouter();
   const {
     evolutionList,
     sidebarList,
@@ -75,15 +81,25 @@ export function PatientEhrInteractiveBody({
     loadingMoreRecords,
     resolveConsultationSignature,
   } = usePatientEhrStateContext();
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   function handleSidebarSelect(id: string) {
     setSelectedId(id);
-    const url = buildPatientWorkspaceUrl(patientId, { tab: "soap", consulta: id });
+    if (editingId && editingId !== id) setEditingId(null);
     if (inlineConsultOpen) {
-      router.push(url, { scroll: false });
+      // Stay in the in-progress consult form; don't jump to a past evolution URL.
       return;
     }
-    router.replace(url, { scroll: false });
+    replaceClientUrl(buildPatientWorkspaceUrl(patientId, { tab: "soap", consulta: id }));
+  }
+
+  function handleStartEdit(id: string) {
+    if (id.startsWith("hce-")) return;
+    setSelectedId(id);
+    setEditingId(id);
+    if (!inlineConsultOpen) {
+      replaceClientUrl(buildPatientWorkspaceUrl(patientId, { tab: "soap", consulta: id }));
+    }
   }
 
   const screenDayConsultations =
@@ -120,6 +136,8 @@ export function PatientEhrInteractiveBody({
             selectedId={selectedId}
             pendingConsultation={pendingSidebarConsultation}
             onSelect={handleSidebarSelect}
+            onEdit={inlineConsultOpen ? undefined : handleStartEdit}
+            editingId={editingId}
             hasMoreRecords={clinicalRecordsPagination.hasMore}
             loadingMoreRecords={loadingMoreRecords}
             onLoadMoreRecords={loadMoreRecords}
@@ -143,6 +161,9 @@ export function PatientEhrInteractiveBody({
                       patientId={patientId}
                       selected={consultation}
                       canIssue={canIssue}
+                      editing={editingId === consultation.id}
+                      onStartEdit={() => handleStartEdit(consultation.id)}
+                      onStopEdit={() => setEditingId(null)}
                       documentAttachment={consultationAttachmentById.get(consultation.id) ?? null}
                       openingAttachmentId={openingAttachmentId}
                       attachmentError={attachmentError}
@@ -153,28 +174,35 @@ export function PatientEhrInteractiveBody({
 
                 <div className="drflow-ehr-print-only drflow-ehr-print-day-content mt-3 space-y-3">
                   {dayPrintConsultations.map((consultation) => (
-                    <PatientEhrPrintEvolutionBlock
-                      key={consultation.id}
-                      consultation={consultation}
-                      signature={resolveConsultationSignature(consultation)}
-                    />
+                    <PatientEhrPrintEvolutionBlock key={consultation.id} consultation={consultation} />
                   ))}
+                  {dayPrintConsultations[0] ? (
+                    <DocumentSignatureBlock
+                      signature={resolveConsultationSignature(dayPrintConsultations[0])}
+                      className="drflow-ehr-print-signature mt-4"
+                    />
+                  ) : null}
                 </div>
 
                 <div className="drflow-ehr-print-only drflow-ehr-print-all-content mt-3 space-y-3">
                   {evolutionList.map((consultation) => (
-                    <PatientEhrPrintEvolutionBlock
-                      key={consultation.id}
-                      consultation={consultation}
-                      signature={resolveConsultationSignature(consultation)}
-                    />
+                    <PatientEhrPrintEvolutionBlock key={consultation.id} consultation={consultation} />
                   ))}
+                  {evolutionList[0] ? (
+                    <DocumentSignatureBlock
+                      signature={resolveConsultationSignature(evolutionList[0])}
+                      className="drflow-ehr-print-signature mt-4"
+                    />
+                  ) : null}
                 </div>
               </>
             ) : null}
 
             <div className="drflow-ehr-print-supplemental">
               <div className="drflow-ehr-screen-only">
+                {filters.diagnostics ? (
+                  <PatientProblemListPanel patientId={patientId} problems={problemList} />
+                ) : null}
                 <PatientEhrClinicalTables
                   patientId={patientId}
                   diagnosisRows={screenDiagnosisRows}

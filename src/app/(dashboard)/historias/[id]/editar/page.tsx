@@ -1,11 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { hasPermission } from "@/core/permissions/roles";
 import {
   CLINICAL_RECORD_EDIT_COLUMNS,
@@ -29,10 +24,7 @@ export default async function EditarHistoriaPage({
 }) {
   const { id } = await params;
   const { from, patient: returnPatientId } = await searchParams;
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
 
   if (!hasPermission(role, "editClinicalRecords", isSuperadmin)) {
     redirect(`/historias/${id}`);

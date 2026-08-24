@@ -2,9 +2,12 @@
 
 import { ExternalLink, Loader2, Plus } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import { withClinicalHistoryReturn } from "@/shared/utils/clinical-navigation";
+import { toast } from "@/core/notifications/toast";
 
+import { updateClinicalRecordNotes } from "@/features/historias/actions/clinical-records";
 import { PatientEhrConsultationDateEditor } from "@/features/historias/components/historias/patient-ehr-consultation-date-editor";
 import {
   extractConsultationFileName,
@@ -14,6 +17,9 @@ import {
 import type { PatientEhrAttachment, PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+
 type Props = {
   patientId: string;
   selected: PatientEhrConsultation | null;
@@ -22,7 +28,69 @@ type Props = {
   attachmentError?: string | null;
   onOpenAttachment: (id: string) => void;
   canIssue?: boolean;
+  editing?: boolean;
+  onStartEdit?: () => void;
+  onStopEdit?: () => void;
 };
+
+type EditorProps = {
+  selected: PatientEhrConsultation;
+  onCancel: () => void;
+  onSaved: () => void;
+};
+
+function EvolutionNotesEditor({ selected, onCancel, onSaved }: EditorProps) {
+  const [chiefComplaint, setChiefComplaint] = useState(selected.chief_complaint ?? "");
+  const [evolution, setEvolution] = useState(
+    selected.evolution || patientEhrEvolutionBody(selected)
+  );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    const result = await updateClinicalRecordNotes(selected.id, {
+      chief_complaint: chiefComplaint,
+      evolution,
+      diagnosis: selected.diagnosis,
+      indications: selected.indications,
+    });
+    setSaving(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    toast.success("Evolución actualizada");
+    onSaved();
+  }
+
+  return (
+    <div className="space-y-3">
+      <Textarea
+        label="Motivo de consulta"
+        rows={2}
+        value={chiefComplaint}
+        onChange={(e) => setChiefComplaint(e.target.value)}
+      />
+      <Textarea
+        label="Evolución"
+        rows={10}
+        value={evolution}
+        onChange={(e) => setEvolution(e.target.value)}
+      />
+      {error ? <p className="text-xs text-red-600">{error}</p> : null}
+      <div className="flex justify-end gap-2">
+        <Button type="button" size="sm" variant="outline" disabled={saving} onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button type="button" size="sm" loading={saving} onClick={() => void handleSave()}>
+          Guardar
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export function PatientEhrEvolutionPanel({
   patientId,
@@ -32,8 +100,13 @@ export function PatientEhrEvolutionPanel({
   attachmentError = null,
   onOpenAttachment,
   canIssue = false,
+  editing = false,
+  onStartEdit,
+  onStopEdit,
 }: Props) {
+  const router = useRouter();
   const referencedFileName = selected ? extractConsultationFileName(selected) : null;
+  const canEdit = Boolean(selected && !selected.id.startsWith("hce-") && onStartEdit);
 
   return (
     <div className="drflow-ehr-evolution-box mt-3 min-h-[240px] rounded-sm border p-4">
@@ -49,6 +122,15 @@ export function PatientEhrEvolutionPanel({
               <span>{formatPatientEhrSidebarDate(selected.created_at)}</span>
             )}
             <span>· {selected.professional_name}</span>
+            {canEdit && !editing ? (
+              <button
+                type="button"
+                onClick={onStartEdit}
+                className="drflow-ehr-action-link font-semibold hover:underline"
+              >
+                Editar
+              </button>
+            ) : null}
             {canIssue && !selected.id.startsWith("hce-") ? (
               <Link
                 href={buildPatientWorkspaceUrl(patientId, {
@@ -63,13 +145,25 @@ export function PatientEhrEvolutionPanel({
               </Link>
             ) : null}
           </div>
-          <div className="min-h-[180px] whitespace-pre-wrap text-sm leading-relaxed drflow-ehr-evolution-text">
-            {selected.category === "document" && referencedFileName ? (
-              <p>{referencedFileName}</p>
-            ) : (
-              patientEhrEvolutionBody(selected)
-            )}
-          </div>
+          {editing ? (
+            <EvolutionNotesEditor
+              key={selected.id}
+              selected={selected}
+              onCancel={() => onStopEdit?.()}
+              onSaved={() => {
+                onStopEdit?.();
+                router.refresh();
+              }}
+            />
+          ) : (
+            <div className="min-h-[180px] whitespace-pre-wrap text-sm leading-relaxed drflow-ehr-evolution-text">
+              {selected.category === "document" && referencedFileName ? (
+                <p>{referencedFileName}</p>
+              ) : (
+                patientEhrEvolutionBody(selected)
+              )}
+            </div>
+          )}
           {documentAttachment ? (
             <button
               type="button"
@@ -91,14 +185,6 @@ export function PatientEhrEvolutionPanel({
           ) : null}
           {attachmentError ? (
             <p className="mt-2 text-xs text-red-600">{attachmentError}</p>
-          ) : null}
-          {!selected.id.startsWith("hce-") ? (
-            <Link
-              href={withClinicalHistoryReturn(`/historias/${selected.id}`, patientId)}
-              className="drflow-ehr-action-link mt-3 inline-block text-sm font-semibold hover:underline"
-            >
-              Abrir consulta completa →
-            </Link>
           ) : null}
         </>
       ) : (

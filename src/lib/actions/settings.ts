@@ -14,6 +14,9 @@ import {
   revalidateClinicSettingsCache,
   revalidateClinicSpecialtiesCache,
 } from "@/core/cache/revalidate-clinic-cache";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
+import { assertClinicSeatCapacity } from "@/core/entitlements/limits.server";
 import { hasPermission } from "@/core/permissions/roles";
 import { recordAuditChange } from "@/core/security/audit-service";
 import {
@@ -45,6 +48,13 @@ export async function updateClinicSettings(formData: FormData) {
   const parsed = clinicSettingsSchema.safeParse(parseClinicSettingsForm(formData));
 
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
+
+  if (parsed.data.voice_input_enabled) {
+    for (const featureKey of [FEATURES.VOICE, FEATURES.AI_TRANSCRIPTION] as const) {
+      const voice = await requireAddonFeatureAccess(featureKey);
+      if (!voice.ok) return { error: voice.error };
+    }
+  }
 
 
 
@@ -105,11 +115,7 @@ export async function updateClinicSettings(formData: FormData) {
 
   revalidateClinicSettingsCache(clinicId);
   revalidatePath("/configuracion");
-
-  revalidatePath("/agenda");
-
-  revalidatePath("/historias");
-
+  revalidatePath("/turnos/agenda");
   revalidatePath("/historias/nueva");
 
   return { success: true };
@@ -400,7 +406,11 @@ export async function createProfessional(formData: FormData) {
 
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
-
+  const seat = await assertClinicSeatCapacity({
+    clinicId,
+    featureKey: FEATURES.PROFESSIONALS_MAX,
+  });
+  if (!seat.ok) return { error: seat.error };
 
   const user = await getSession();
 
@@ -445,8 +455,7 @@ export async function createProfessional(formData: FormData) {
 
   revalidateClinicProfessionalsCache(clinicId);
   revalidatePath("/configuracion");
-
-  revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
 
   return { success: true };
 
@@ -460,7 +469,8 @@ export async function enablePublicBooking() {
 
   if (permErr || !clinicId) return { error: permErr ?? "Sin clínica" };
 
-
+  const entitlement = await requireAddonFeatureAccess(FEATURES.PORTAL);
+  if (!entitlement.ok) return { error: entitlement.error };
 
   const supabase = await createClient();
 
@@ -516,8 +526,7 @@ export async function enablePublicBooking() {
 
   revalidateClinicPortalCache(clinicId);
   revalidatePath("/configuracion");
-
-  revalidatePath("/agenda");
+  revalidatePath("/turnos/agenda");
 
   return { success: true, slug: clinic.slug };
 
@@ -568,7 +577,6 @@ export async function createScheduleBlock(formData: FormData) {
 
   if (error) return { error: error.message };
 
-  revalidatePath("/agenda");
   revalidatePath("/turnos/agenda");
   revalidatePath("/turnos/configuracion");
 
@@ -612,8 +620,6 @@ export async function createAvailabilityRule(formData: FormData) {
   if (error) return { error: error.message };
 
   revalidatePath("/configuracion");
-
-  revalidatePath("/agenda");
   revalidatePath("/turnos/agenda");
   revalidatePath("/turnos/configuracion");
 

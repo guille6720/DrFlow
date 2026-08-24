@@ -27,6 +27,7 @@ import {
   type FeatureNavEntry,
   type FeatureNavItem,
   isFeatureNavGroup,
+  SUPERADMIN_NAV_ENTRIES,
 } from "@/features/_shared/nav";
 
 export type SidebarNavLink = FeatureNavItem & {
@@ -58,6 +59,7 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
   "/caja": Banknote,
   "/secretaria/documentos": FolderOpen,
   "/ingreso-profesionales": Stethoscope,
+  "/consultas": HeartPulse,
   "/plantillas": ClipboardList,
   "/plantillas-recetas": Pill,
   "/firmas": PenLine,
@@ -72,11 +74,19 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
   "/reportes": BarChart3,
   "/ayuda": BookOpen,
   "/configuracion": Settings,
+  "/superadmin": Building2,
+  "/superadmin/clinics": Building2,
+  "/superadmin/plans": BarChart3,
+  "/superadmin/features": ClipboardList,
+  "/superadmin/usage": BarChart3,
+  "/superadmin/recommendations": Sparkles,
+  "/superadmin/manual": BookOpen,
 };
 
 const GROUP_ICONS: Record<string, typeof LayoutDashboard> = {
   administracion: Building2,
   medicos: Stethoscope,
+  superadmin: Building2,
 };
 
 function withNavIcon(item: FeatureNavItem): SidebarNavLink {
@@ -101,6 +111,9 @@ function mapNavEntry(entry: FeatureNavEntry): SidebarNavEntry {
 }
 
 export const SIDEBAR_NAV_ENTRIES: SidebarNavEntry[] = FEATURE_NAV_ENTRIES.map(mapNavEntry);
+
+export const SUPERADMIN_SIDEBAR_NAV_ENTRIES: SidebarNavEntry[] =
+  SUPERADMIN_NAV_ENTRIES.map(mapNavEntry);
 
 /** @deprecated Use SIDEBAR_NAV_ENTRIES */
 export const SIDEBAR_NAV_ITEMS: SidebarNavLink[] = SIDEBAR_NAV_ENTRIES.flatMap((entry) =>

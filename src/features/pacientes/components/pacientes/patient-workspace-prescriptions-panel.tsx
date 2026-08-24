@@ -1,7 +1,6 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -15,7 +14,7 @@ import { SharePrescriptionButtons } from "@/features/recetas/components/recetas/
 import type { CoverageRuleOverridesMap } from "@/features/recetas/utils/coverage-rules-admin";
 import { storePrescriptionReusePrefill } from "@/features/recetas/utils/prescription-reuse-prefill";
 
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { PrescriptionMedication } from "@/types/prescription";
 
@@ -90,12 +89,10 @@ export function PatientWorkspacePrescriptionsPanel({
       title="Recetas"
       action={
         canIssue ? (
-          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}>
-            <Button size="sm" type="button">
-              <Plus className="h-4 w-4" />
-              Nueva receta
-            </Button>
-          </Link>
+          <ButtonLink href={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })} size="sm">
+            <Plus className="h-4 w-4" />
+            Nueva receta
+          </ButtonLink>
         ) : null
       }
     >

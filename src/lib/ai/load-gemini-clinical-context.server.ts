@@ -4,15 +4,16 @@ import { createClient } from "@/core/supabase/server";
 
 import {
   ageYearsFromBirthDate,
-  anonymizeClinicalText,
 } from "@/lib/ai/anonymize-clinical-context";
+import { sanitizeClinicalContextBlock } from "@/lib/ai/external-clinical-ai-gateway.server";
 import type { GeminiClinicalContext } from "@/lib/ai/gemini-clinical-context";
+import { buildPatientKnownIdentifiers } from "@/lib/ai/patient-ai-identifiers.server";
 
 export type { GeminiClinicalContext, GeminiClinicalRecord } from "@/lib/ai/gemini-clinical-context";
 export { formatGeminiClinicalContext } from "@/lib/ai/gemini-clinical-context";
 
 function clean(value: string | null | undefined, identifiers: string[]): string {
-  return anonymizeClinicalText(value ?? "", identifiers);
+  return sanitizeClinicalContextBlock(value ?? "", identifiers);
 }
 
 /** Load clinic-scoped clinical history and strip identifiers before LLM use. */
@@ -31,15 +32,13 @@ export async function loadGeminiClinicalContext(
 
   if (!patient) return null;
 
-  const identifiers = [
-    patient.first_name,
-    patient.last_name,
-    `${patient.last_name}, ${patient.first_name}`,
-    `${patient.first_name} ${patient.last_name}`,
-    patient.document_number,
-    patient.phone,
-    patient.email,
-  ].filter((value): value is string => Boolean(value?.trim()));
+  const identifiers = buildPatientKnownIdentifiers({
+    firstName: patient.first_name,
+    lastName: patient.last_name,
+    documentNumber: patient.document_number,
+    phone: patient.phone,
+    email: patient.email,
+  });
 
   const { data: records } = await supabase
     .from("clinical_records")

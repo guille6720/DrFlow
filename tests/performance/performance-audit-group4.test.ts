@@ -9,7 +9,7 @@ describe("Grupo 4 architecture performance", () => {
       join(process.cwd(), "src/features/pacientes/hooks/use-patient-workspace-tab.ts"),
       "utf8"
     );
-    expect(source).toMatch(/history\.replaceState/);
+    expect(source).toMatch(/replaceClientUrl/);
     expect(source).toMatch(/workspaceSearchParams/);
     expect(source).toMatch(/navigateWorkspace/);
     expect(source).not.toMatch(/router\.push/);
@@ -42,6 +42,7 @@ describe("Grupo 4 architecture performance", () => {
     );
     expect(source).toMatch(/routesForRole/);
     expect(source).not.toMatch(/DASHBOARD_ROUTES = \[[\s\S]*\/ayuda/);
+    expect(source).not.toMatch(/"\/historias"/);
   });
 
   it("patient workspace actions use client navigation when wired", () => {

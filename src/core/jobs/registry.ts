@@ -6,7 +6,8 @@ export type ClinicJobType =
   | "import_hce_batch"
   | "import_patients_batch"
   | "import_clinical_pdf"
-  | "run_ai_task";
+  | "run_ai_task"
+  | "export_clinical_bulk";
 
 export type ClinicJobStatus =
   | "pending"
@@ -64,6 +65,12 @@ export const CLINIC_JOB_REGISTRY: ClinicJobDefinition[] = [
     label: "Tarea IA",
     description: "Procesamiento IA asíncrono (resúmenes, sugerencias).",
     defaultMaxAttempts: 2,
+  },
+  {
+    id: "export_clinical_bulk",
+    label: "Exportación masiva",
+    description: "Paquete clínico masivo (CSV, Excel, JSON, FHIR o ZIP).",
+    defaultMaxAttempts: 1,
   },
 ];
 

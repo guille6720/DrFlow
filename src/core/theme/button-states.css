@@ -1,0 +1,208 @@
+/**
+ * DrFlow button state readability — all variants × all interaction states.
+ * Label contrast is locked against the *actual* button background; never wash
+ * text away with opacity on hover/disabled/loading.
+ */
+
+/* ——— Shared focus / loading ——— */
+.drflow-ui-button {
+  --btn-focus-ring: var(--ring);
+  --btn-focus-offset: var(--surface-page, var(--background, #fff));
+}
+
+.drflow-ui-button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--btn-focus-offset),
+    0 0 0 4px var(--btn-focus-ring) !important;
+}
+
+.drflow-ui-button[aria-busy="true"] {
+  opacity: 1 !important;
+  cursor: wait;
+  pointer-events: none;
+}
+
+/* Spinner inherits label color */
+.drflow-ui-button[aria-busy="true"] > .drflow-btn-spinner,
+.drflow-ui-button[aria-busy="true"] > span.h-4.w-4.animate-spin {
+  border-color: currentColor;
+  border-top-color: transparent;
+  opacity: 1;
+}
+
+/* ——— Primary ——— */
+.drflow-ui-button.drflow-btn-primary {
+  background-color: var(--primary) !important;
+  color: var(--text-on-primary, var(--primary-foreground)) !important;
+}
+
+.drflow-ui-button.drflow-btn-primary:hover:not(:disabled):not([aria-busy="true"]),
+.drflow-ui-button.drflow-btn-primary:active:not(:disabled):not([aria-busy="true"]) {
+  background-color: var(--primary-dark, var(--primary)) !important;
+  color: var(--text-on-primary, var(--primary-foreground)) !important;
+}
+
+.drflow-ui-button.drflow-btn-primary:active:not(:disabled):not([aria-busy="true"]) {
+  filter: brightness(0.92);
+}
+
+.drflow-ui-button.drflow-btn-primary[aria-busy="true"] {
+  background-color: var(--primary) !important;
+  color: var(--text-on-primary, var(--primary-foreground)) !important;
+  filter: none;
+}
+
+.drflow-ui-button.drflow-btn-primary:disabled:not([aria-busy="true"]),
+.drflow-ui-button.drflow-btn-primary[aria-disabled="true"]:not([aria-busy="true"]) {
+  opacity: 1 !important;
+  filter: none !important;
+  background-color: color-mix(in srgb, var(--primary) 50%, var(--surface-card, var(--muted))) !important;
+  /* Keep on-primary ink readable — never fade the whole control */
+  color: var(--text-on-primary, var(--primary-foreground)) !important;
+  cursor: not-allowed;
+}
+
+/* ——— Secondary ——— */
+.drflow-ui-button.drflow-btn-secondary {
+  background-color: var(--secondary, var(--surface-card)) !important;
+  color: var(--text-on-secondary, var(--secondary-foreground)) !important;
+  border-color: var(--border-strong, var(--border)) !important;
+}
+
+.drflow-ui-button.drflow-btn-secondary:hover:not(:disabled):not([aria-busy="true"]),
+.drflow-ui-button.drflow-btn-secondary:active:not(:disabled):not([aria-busy="true"]) {
+  background-color: var(--surface-hover, var(--muted)) !important;
+  color: var(--text-on-secondary, var(--text-primary)) !important;
+}
+
+.drflow-ui-button.drflow-btn-secondary[aria-busy="true"] {
+  background-color: var(--secondary, var(--surface-card)) !important;
+  color: var(--text-on-secondary, var(--secondary-foreground)) !important;
+}
+
+.drflow-ui-button.drflow-btn-secondary:disabled:not([aria-busy="true"]),
+.drflow-ui-button.drflow-btn-secondary[aria-disabled="true"]:not([aria-busy="true"]) {
+  opacity: 1 !important;
+  background-color: var(--surface-hover, var(--muted)) !important;
+  color: var(--text-disabled, var(--muted-foreground)) !important;
+  border-color: var(--border-default, var(--border)) !important;
+  cursor: not-allowed;
+}
+
+/* ——— Outline ——— */
+.drflow-ui-button.drflow-btn-outline {
+  background-color: var(--surface-card, var(--card)) !important;
+  color: var(--text-on-card, var(--foreground)) !important;
+  border-color: var(--border-default, var(--border)) !important;
+}
+
+.drflow-ui-button.drflow-btn-outline:hover:not(:disabled):not([aria-busy="true"]),
+.drflow-ui-button.drflow-btn-outline:active:not(:disabled):not([aria-busy="true"]) {
+  background-color: var(--surface-hover, var(--muted)) !important;
+  color: var(--text-primary, var(--foreground)) !important;
+}
+
+.drflow-ui-button.drflow-btn-outline[aria-busy="true"] {
+  background-color: var(--surface-card, var(--card)) !important;
+  color: var(--text-on-card, var(--foreground)) !important;
+}
+
+.drflow-ui-button.drflow-btn-outline:disabled:not([aria-busy="true"]),
+.drflow-ui-button.drflow-btn-outline[aria-disabled="true"]:not([aria-busy="true"]) {
+  opacity: 1 !important;
+  background-color: var(--surface-hover, var(--muted)) !important;
+  color: var(--text-disabled, var(--muted-foreground)) !important;
+  border-color: var(--border-default, var(--border)) !important;
+  cursor: not-allowed;
+}
+
+/* ——— Ghost ——— */
+.drflow-ui-button.drflow-btn-ghost {
+  background-color: transparent !important;
+  color: var(--text-primary, var(--foreground)) !important;
+  box-shadow: none !important;
+}
+
+.drflow-ui-button.drflow-btn-ghost:hover:not(:disabled):not([aria-busy="true"]),
+.drflow-ui-button.drflow-btn-ghost:active:not(:disabled):not([aria-busy="true"]) {
+  background-color: var(--surface-hover, var(--muted)) !important;
+  color: var(--text-primary, var(--foreground)) !important;
+}
+
+.drflow-ui-button.drflow-btn-ghost[aria-busy="true"] {
+  color: var(--text-primary, var(--foreground)) !important;
+}
+
+.drflow-ui-button.drflow-btn-ghost:disabled:not([aria-busy="true"]),
+.drflow-ui-button.drflow-btn-ghost[aria-disabled="true"]:not([aria-busy="true"]) {
+  opacity: 1 !important;
+  background-color: transparent !important;
+  color: var(--text-disabled, var(--muted-foreground)) !important;
+  cursor: not-allowed;
+}
+
+/* ——— Danger ——— */
+.drflow-ui-button.drflow-btn-danger {
+  background-color: var(--destructive) !important;
+  color: var(--destructive-foreground) !important;
+}
+
+.drflow-ui-button.drflow-btn-danger:hover:not(:disabled):not([aria-busy="true"]) {
+  background-color: color-mix(in srgb, var(--destructive) 88%, #000) !important;
+  color: var(--destructive-foreground) !important;
+  filter: none;
+}
+
+.drflow-ui-button.drflow-btn-danger:active:not(:disabled):not([aria-busy="true"]) {
+  background-color: color-mix(in srgb, var(--destructive) 78%, #000) !important;
+  color: var(--destructive-foreground) !important;
+}
+
+.drflow-ui-button.drflow-btn-danger[aria-busy="true"] {
+  background-color: var(--destructive) !important;
+  color: var(--destructive-foreground) !important;
+}
+
+.drflow-ui-button.drflow-btn-danger:disabled:not([aria-busy="true"]),
+.drflow-ui-button.drflow-btn-danger[aria-disabled="true"]:not([aria-busy="true"]) {
+  opacity: 1 !important;
+  background-color: color-mix(in srgb, var(--destructive) 45%, var(--muted)) !important;
+  color: var(--destructive-foreground) !important;
+  cursor: not-allowed;
+}
+
+/* Cobalt: white primary CTAs — lock blue label on hover/active/disabled */
+html[data-ui-palette="cobalt"] .drflow-ui-button.drflow-btn-primary,
+html[data-ui-palette="cobalt"] .drflow-ui-button[class*="from-cyan"] {
+  background-color: #ffffff !important;
+  color: #1d4ed8 !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-button.drflow-btn-primary:hover:not(:disabled),
+html[data-ui-palette="cobalt"] .drflow-ui-button[class*="from-cyan"]:hover:not(:disabled),
+html[data-ui-palette="cobalt"] .drflow-ui-button.drflow-btn-primary:active:not(:disabled),
+html[data-ui-palette="cobalt"] .drflow-ui-button[class*="from-cyan"]:active:not(:disabled) {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-button.drflow-btn-primary[aria-busy="true"],
+html[data-ui-palette="cobalt"] .drflow-ui-button[class*="from-cyan"][aria-busy="true"] {
+  background-color: #ffffff !important;
+  color: #1d4ed8 !important;
+}
+
+html[data-ui-palette="cobalt"] .drflow-ui-button.drflow-btn-primary:disabled:not([aria-busy="true"]),
+html[data-ui-palette="cobalt"] .drflow-ui-button[class*="from-cyan"]:disabled:not([aria-busy="true"]) {
+  background-color: #e2e8f0 !important;
+  color: #1e40af !important;
+}
+
+/* Midnight / Soft Clinic / Clinical: hover must keep on-primary ink */
+html[data-ui-palette="midnight"] .drflow-ui-button.drflow-btn-primary:hover:not(:disabled),
+html[data-ui-palette="midnight"] .drflow-ui-button.drflow-btn-primary:active:not(:disabled),
+html[data-ui-palette="clinicsoft"] .drflow-ui-button.drflow-btn-primary:hover:not(:disabled),
+html[data-ui-style="2"] .drflow-ui-button.drflow-btn-primary:hover:not(:disabled) {
+  color: var(--text-on-primary, var(--primary-foreground)) !important;
+}

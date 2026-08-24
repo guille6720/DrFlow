@@ -2,7 +2,7 @@ import type { Clinic } from "@/types/database";
 
 export const TRIAL_REGISTRATION_COOKIE = "drflow_trial_days";
 /** Días corridos de prueba gratuita para consultorios nuevos. */
-export const TRIAL_PROMO_DAYS = 10;
+export const TRIAL_PROMO_DAYS = 14;
 
 /** Resuelve días de trial (máx. promo); sin valor explícito → promo por defecto. */
 export function resolveTrialDays(value: unknown): number {

@@ -2,6 +2,7 @@
 
 import { logAudit } from "@/core/auth/session.actions";
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
+import { buildExportAuditMetadata } from "@/core/compliance/data-export-security";
 import {
   buildPatientHabeasDataPayload,
   fetchClinicHabeasDataPayload,
@@ -82,12 +83,16 @@ export async function exportPatientArcoBundle(patientId: string) {
     entityType: "patient",
     entityId: patientParsed.data,
     action: "export",
-    metadata: {
-      reason: "habeas_data_patient_export",
-      export_type: payload.export_type,
-      export_version: payload.export_version,
-      summary: payload.summary,
-    },
+    metadata: buildExportAuditMetadata({
+      channel: "arco_habeas_json",
+      format: "json",
+      extra: {
+        reason: "habeas_data_patient_export",
+        export_type: payload.export_type,
+        export_version: payload.export_version,
+        summary: payload.summary,
+      },
+    }),
   });
 
   return { json: JSON.stringify(payload, null, 2) };
@@ -109,12 +114,16 @@ export async function exportClinicHabeasDataBundle() {
     entityType: "clinic",
     entityId: clinicId,
     action: "export",
-    metadata: {
-      reason: "habeas_data_clinic_export",
-      export_type: payload.export_type,
-      export_version: payload.export_version,
-      summary: payload.summary,
-    },
+    metadata: buildExportAuditMetadata({
+      channel: "arco_habeas_json",
+      format: "json",
+      extra: {
+        reason: "habeas_data_clinic_export",
+        export_type: payload.export_type,
+        export_version: payload.export_version,
+        summary: payload.summary,
+      },
+    }),
   });
 
   return { json: JSON.stringify(payload, null, 2) };

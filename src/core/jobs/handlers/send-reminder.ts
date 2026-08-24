@@ -1,5 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { canUseFeatureAsSystem } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
+import { consumeAddonUsageAsSystem } from "@/core/entitlements/metered.server";
 import type { ClinicJobRow, SendReminderJobPayload } from "@/core/jobs/types";
 
 import { deliverReminderEmail } from "@/lib/services/reminder-email";
@@ -40,6 +43,78 @@ export async function handleSendReminderJob(
   }
 
   if (payload.channel === "whatsapp") {
+    if (
+      !(await canUseFeatureAsSystem({
+        clinicId: job.clinic_id,
+        featureKey: FEATURES.WHATSAPP,
+      }))
+    ) {
+      if (payload.reminderLogId) {
+        await supabase
+          .from("reminder_logs")
+          .update({
+            status: "failed",
+            error_message: "WhatsApp no está incluido en el plan del consultorio.",
+          })
+          .eq("id", payload.reminderLogId)
+          .eq("clinic_id", job.clinic_id);
+      }
+      return {
+        channel: payload.channel,
+        status: "failed",
+        recipient: payload.recipient,
+        errorMessage: "WhatsApp no está incluido en el plan del consultorio.",
+      };
+    }
+
+    if (
+      !(await canUseFeatureAsSystem({
+        clinicId: job.clinic_id,
+        featureKey: FEATURES.WHATSAPP_REMINDERS,
+      }))
+    ) {
+      if (payload.reminderLogId) {
+        await supabase
+          .from("reminder_logs")
+          .update({
+            status: "failed",
+            error_message: "Los recordatorios WhatsApp no están incluidos en el plan del consultorio.",
+          })
+          .eq("id", payload.reminderLogId)
+          .eq("clinic_id", job.clinic_id);
+      }
+      return {
+        channel: payload.channel,
+        status: "failed",
+        recipient: payload.recipient,
+        errorMessage: "Los recordatorios WhatsApp no están incluidos en el plan del consultorio.",
+      };
+    }
+
+    const quota = await consumeAddonUsageAsSystem({
+      clinicId: job.clinic_id,
+      featureKey: FEATURES.WHATSAPP_MONTHLY_MESSAGES,
+    });
+    if (!quota.ok) {
+      if (payload.reminderLogId) {
+        await supabase
+          .from("reminder_logs")
+          .update({
+            status: "failed",
+            error_message: quota.error,
+          })
+          .eq("id", payload.reminderLogId)
+          .eq("clinic_id", job.clinic_id);
+      }
+
+      return {
+        channel: payload.channel,
+        status: "failed",
+        recipient: payload.recipient,
+        errorMessage: quota.error,
+      };
+    }
+
     const delivery = await deliverReminderWhatsApp({
       to: payload.recipient,
       message: payload.message,

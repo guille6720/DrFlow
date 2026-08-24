@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { useEntitlementsSnapshot } from "@/core/components/entitlements/entitlements-provider";
+
 import type { AdminOpsPageHint } from "@/features/dashboard/utils/admin-ops-types";
 import { useAdminOpsCopilot } from "@/features/ia/components/admin-ops/admin-ops-copilot-context";
 
@@ -22,6 +24,7 @@ export function AdminOpsAnalyticsBridge({
   canViewReports,
 }: Props) {
   const { setSession } = useAdminOpsCopilot();
+  const entitlementsSnapshot = useEntitlementsSnapshot();
 
   useEffect(() => {
     setSession({
@@ -29,8 +32,9 @@ export function AdminOpsAnalyticsBridge({
       analytics,
       canManageCash,
       canViewReports,
+      entitlementsSnapshot,
     });
-  }, [analytics, page, canManageCash, canViewReports, setSession]);
+  }, [analytics, page, canManageCash, canViewReports, entitlementsSnapshot, setSession]);
 
   return null;
 }

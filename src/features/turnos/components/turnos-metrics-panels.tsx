@@ -1,8 +1,6 @@
 import type { TurnosDashboardMetrics } from "@/features/turnos/utils/turnos-metrics";
 import { formatRatePercent } from "@/features/turnos/utils/turnos-metrics";
 
-import { Card } from "@/components/ui/card";
-
 export function MetricTile({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="drflow-card-light rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -44,11 +42,12 @@ export function TurnosByProfessionalCard({
   rows: Array<{ professionalId: string; professionalName: string; count: number }>;
 }) {
   return (
-    <Card title={title} className="drflow-card-light border-slate-200 bg-white">
+    <div className="drflow-card-light rounded-xl border border-slate-200 bg-white p-4 text-slate-900 shadow-sm">
+      <h3 className="font-semibold text-slate-900">{title}</h3>
       {rows.length === 0 ? (
-        <p className="text-sm text-slate-600">Sin profesionales activos.</p>
+        <p className="mt-2 text-sm text-slate-600">Sin profesionales activos.</p>
       ) : (
-        <ul className="divide-y divide-slate-200 text-sm">
+        <ul className="mt-2 divide-y divide-slate-200 text-sm">
           {rows.map((row) => (
             <li key={row.professionalId} className="flex items-center justify-between py-2">
               <span className="text-slate-800">{row.professionalName}</span>
@@ -57,7 +56,7 @@ export function TurnosByProfessionalCard({
           ))}
         </ul>
       )}
-    </Card>
+    </div>
   );
 }
 

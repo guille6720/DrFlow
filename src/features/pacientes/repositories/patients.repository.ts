@@ -60,7 +60,7 @@ export async function insertPatient(
   db: DbClient,
   row: PatientInsertRow
 ): Promise<RepoResult<Patient>> {
-  const { data, error } = await db.from("patients").insert(row).select().single();
+  const { data, error } = await db.from("patients").insert(row).select(PATIENT_DETAIL_COLUMNS).single();
   if (error) return repoErr(formatPatientDbError(error));
   return repoOk(data as Patient);
 }

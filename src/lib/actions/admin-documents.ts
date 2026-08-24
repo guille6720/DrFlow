@@ -6,15 +6,23 @@ import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
 import { getSession } from "@/core/auth/session.server";
 import {
+  assertClinicalStorageUrlAllowed,
+  CLINICAL_DOWNLOAD_SIGNED_URL_TTL_SECONDS,
+  CLINICAL_STORAGE_BUCKET,
+} from "@/core/compliance/storage-security";
+import { assertClinicStorageCapacity } from "@/core/entitlements/storage.server";
+import { recordAudit } from "@/core/security/audit-service";
+import {
   buildPatientFilePath,
   validateAdminDocumentUpload,
 } from "@/core/security/file-upload";
+import { assertStoragePathInClinic } from "@/core/security/tenant-scope";
 import { createClient } from "@/core/supabase/server";
 import { adminDocumentUploadSchema } from "@/core/validations/admin-documents";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
 
 const MAX_BYTES = 10 * 1024 * 1024;
-const BUCKET = "clinical-files";
+const BUCKET = CLINICAL_STORAGE_BUCKET;
 
 export async function uploadPatientAdminDocument(formData: FormData) {
   const access = await requireClinicPermission("manageAdminDocuments");
@@ -37,6 +45,12 @@ export async function uploadPatientAdminDocument(formData: FormData) {
   if (!validated.ok) return { error: validated.error };
 
   const supabase = await createClient();
+  const storage = await assertClinicStorageCapacity({
+    clinicId,
+    extraBytes: file.size,
+    supabase,
+  });
+  if (!storage.ok) return { error: storage.error };
   const { data: patient } = await supabase
     .from("patients")
     .select("id")
@@ -136,16 +150,43 @@ export async function getAdminDocumentUrl(id: string) {
   const supabase = await createClient();
   const { data: doc } = await supabase
     .from("patient_admin_documents")
-    .select("file_path")
+    .select("file_path, patient_id, title")
     .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
 
   if (!doc) return { error: "No encontrado" };
 
+  try {
+    assertStoragePathInClinic(clinicId, doc.file_path);
+  } catch {
+    return { error: "No encontrado" };
+  }
+
   const { data: signed } = await supabase.storage
-    .from("clinical-files")
-    .createSignedUrl(doc.file_path, 3600);
+    .from(BUCKET)
+    .createSignedUrl(doc.file_path, CLINICAL_DOWNLOAD_SIGNED_URL_TTL_SECONDS);
+
+  if (signed?.signedUrl) {
+    try {
+      assertClinicalStorageUrlAllowed(signed.signedUrl);
+    } catch {
+      return { error: "No encontrado" };
+    }
+    await recordAudit({
+      clinicId,
+      module: "admin_docs",
+      what: "Descarga — documento administrativo del paciente",
+      entityType: "patient_admin_document",
+      entityId: idParsed.data,
+      patientId: doc.patient_id,
+      action: "view",
+      metadata: {
+        access_kind: "sensitive_download",
+        title: doc.title ?? null,
+      },
+    });
+  }
 
   return { url: signed?.signedUrl ?? null };
 }

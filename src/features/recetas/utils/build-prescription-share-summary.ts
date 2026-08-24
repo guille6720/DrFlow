@@ -48,7 +48,7 @@ export function buildPrescriptionShareSummary(
       ? `Nº ${prescription.prescription_number}`
       : "Generada en DrFlow",
     "",
-    "Receta local DrFlow — verificar en farmacia.",
+    "Receta local / borrador DrFlow — no es homologación REFEPS. Verificar en farmacia.",
   ]
     .filter(Boolean)
     .join("\n");

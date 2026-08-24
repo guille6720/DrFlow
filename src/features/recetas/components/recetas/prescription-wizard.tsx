@@ -553,7 +553,7 @@ export function PrescriptionWizard({
                 disabled={!disclaimerAccepted}
                 onClick={() => void handleSubmit(false)}
               >
-                Guardar borrador
+                {loading ? "Guardando..." : "Guardar borrador"}
               </Button>
               <Button
                 type="button"
@@ -561,7 +561,7 @@ export function PrescriptionWizard({
                 disabled={!disclaimerAccepted || !confirmIssue}
                 onClick={() => void handleSubmit(true)}
               >
-                Emitir receta
+                {loading ? "Emitiendo..." : "Emitir receta"}
               </Button>
             </>
           )}

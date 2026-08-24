@@ -1,6 +1,7 @@
 import { logAudit } from "@/core/auth/session.actions";
 import { logServerError } from "@/core/errors/log-error.server";
 import {
+  CONSENT_TYPES,
   LEGAL_PRIVACY_VERSION,
   LEGAL_TERMS_VERSION,
 } from "@/core/legal/documents";
@@ -25,6 +26,31 @@ export async function applyClinicLegalAcceptanceInternal(clinicId: string) {
     return { error: error.message };
   }
 
+  // Phase 11: persist versioned consent history (clinic-level, patient_id null)
+  const { error: termsConsentError } = await supabase.rpc("record_clinic_legal_consent", {
+    p_clinic_id: clinicId,
+    p_consent_type: CONSENT_TYPES.clinicTermsSignup,
+    p_document_version: LEGAL_TERMS_VERSION,
+    p_purpose: "clinic_terms_acceptance",
+    p_source: "clinic_signup",
+  });
+
+  if (termsConsentError) {
+    logServerError("legal.consent-terms-record", termsConsentError, { clinicId });
+  }
+
+  const { error: privacyConsentError } = await supabase.rpc("record_clinic_legal_consent", {
+    p_clinic_id: clinicId,
+    p_consent_type: CONSENT_TYPES.clinicPrivacySignup,
+    p_document_version: LEGAL_PRIVACY_VERSION,
+    p_purpose: "clinic_privacy_acceptance",
+    p_source: "clinic_signup",
+  });
+
+  if (privacyConsentError) {
+    logServerError("legal.consent-privacy-record", privacyConsentError, { clinicId });
+  }
+
   await logAudit({
     clinicId,
     entityType: "legal",
@@ -32,6 +58,7 @@ export async function applyClinicLegalAcceptanceInternal(clinicId: string) {
     metadata: {
       terms_version: LEGAL_TERMS_VERSION,
       privacy_version: LEGAL_PRIVACY_VERSION,
+      consent_records_persisted: !termsConsentError && !privacyConsentError,
     },
   });
 

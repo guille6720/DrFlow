@@ -1,10 +1,11 @@
 import { CheckCircle2, MessageCircle } from "lucide-react";
 
+import { formatPromoCopyEs, isCommercialSkuId } from "@/core/billing/commercial-pricing";
 import {
   type BillingPlanId,
   buildPlanSalesMessage,
-  DRFLOW_BILLING_PLANS,
   formatPlanPriceArs,
+  getPublicBillingPlans,
   getSalesWhatsAppPhone,
   isPlanAvailableForPurchase,
   TRIAL_DAYS_INCLUDED,
@@ -37,6 +38,8 @@ export function PlansPricingSection({
   mercadoPagoEnabled = false,
   isAuthenticated = false,
 }: PlansPricingSectionProps) {
+  const plans = getPublicBillingPlans();
+
   return (
     <section id="planes" className={className}>
       {showHeading ? (
@@ -45,19 +48,19 @@ export function PlansPricingSection({
             Planes y precios
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Elegí el plan para tu consultorio
+            Essential y Pro para tu consultorio
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-slate-600">
-            Precios en pesos argentinos, facturación mensual o anual. Empezá con{" "}
+            Precios promocionales por 6 meses, luego precio regular. Empezá con{" "}
             {TRIAL_DAYS_INCLUDED} días gratis — sin tarjeta.
           </p>
         </div>
       ) : null}
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-3">
-        {DRFLOW_BILLING_PLANS.map((plan) => {
+      <div className="mt-10 grid gap-6 md:grid-cols-2 md:max-w-4xl md:mx-auto">
+        {plans.map((plan) => {
           const available = isPlanAvailableForPurchase(plan);
-          const inDevelopment = plan.status === "development";
+          const promoCopy = isCommercialSkuId(plan.id) ? formatPromoCopyEs(plan.id) : null;
 
           return (
             <article
@@ -65,19 +68,12 @@ export function PlansPricingSection({
               className={
                 plan.recommended
                   ? "relative rounded-2xl border-2 border-teal-500 bg-white p-6 shadow-xl shadow-teal-500/10 ring-1 ring-teal-500/20"
-                  : inDevelopment
-                    ? "relative rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 p-6"
-                    : "rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+                  : "rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
               }
             >
               {plan.recommended ? (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 px-3 py-0.5 text-xs font-semibold text-white shadow-sm">
                   Recomendado
-                </span>
-              ) : null}
-              {inDevelopment ? (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-slate-600 px-3 py-0.5 text-xs font-semibold text-white shadow-sm">
-                  En desarrollo
                 </span>
               ) : null}
               <h3 className="text-xl font-bold text-slate-900">{plan.name}</h3>
@@ -88,9 +84,12 @@ export function PlansPricingSection({
                     {formatPlanPriceArs(plan.priceArsMonthly)}
                     <span className="text-base font-normal text-slate-500"> / mes</span>
                   </p>
-                  {plan.priceArsAnnual != null ? (
-                    <p className="text-xs text-slate-500">
-                      Anual {formatPlanPriceArs(plan.priceArsAnnual)} (2 meses bonificados)
+                  {promoCopy ? (
+                    <p className="mt-1 text-sm text-teal-800">{promoCopy.currentPromoLine}</p>
+                  ) : null}
+                  {plan.priceArsRegular != null ? (
+                    <p className="text-sm text-slate-500">
+                      Luego {formatPlanPriceArs(plan.priceArsRegular)}/mes
                     </p>
                   ) : null}
                 </>
@@ -128,7 +127,7 @@ export function PlansPricingSection({
                   {available ? "Activar por WhatsApp" : "Consultar disponibilidad"}
                 </a>
                 {available ? (
-                  <ButtonLink href="/register?trial=10" variant="outline" className="w-full">
+                  <ButtonLink href="/register?trial=14" variant="outline" className="w-full">
                     Probar {TRIAL_DAYS_INCLUDED} días gratis
                   </ButtonLink>
                 ) : (

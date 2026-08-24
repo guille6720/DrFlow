@@ -105,6 +105,15 @@ describe("admin-ops-assistant", () => {
     expect(allowed.actions.some((a) => a.href === "/caja")).toBe(true);
   });
 
+  it("strips caja actions when the plan does not include cash_register", () => {
+    const ctx = { analytics: analyticsStub, canManageCash: false };
+    const revenue = buildAdminOpsResponse("revenue_today", ctx);
+    expect(revenue.actions.some((a) => a.href?.startsWith("/caja"))).toBe(false);
+    const missing = buildAdminOpsResponse("revenue_today", { canManageCash: false });
+    expect(missing.actions.some((a) => a.href?.startsWith("/caja"))).toBe(false);
+    expect(missing.body).toContain("plan");
+  });
+
   it("buildAdminOpsResponse covers ops intents", () => {
     const snap = buildAdminOpsSnapshotFromDashboard(opsStub);
     const ctx = { ops: snap };

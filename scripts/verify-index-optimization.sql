@@ -231,7 +231,63 @@ ORDER BY idx_scan DESC, relname
 LIMIT 40;
 
 -- =============================================================================
--- 7. Tables with high sequential scans (monitor weekly)
+-- 8. Fase 8 — indexes from 046 / 054 / 013 / 001 / 088 (must exist; do NOT recreate)
+-- =============================================================================
+SELECT indexname, tablename
+FROM pg_indexes
+WHERE schemaname = 'public'
+  AND indexname IN (
+    'idx_clinical_records_clinic_patient_created',
+    'idx_clinical_records_clinic_created',
+    'idx_patient_attachments_clinic_patient_created',
+    'idx_prescription_drafts_clinic_patient_status_issued',
+    'idx_prescription_drafts_clinic_status',
+    'idx_medical_orders_clinic_patient_issued',
+    'idx_appointments_clinic_patient_status_start',
+    'idx_appointments_status',
+    'idx_appointments_clinic_upcoming_active',
+    'idx_patients_clinic_active_lastname',
+    'idx_ppl_clinic_patient_status'
+  )
+ORDER BY tablename, indexname;
+
+-- 8a. Workspace SOAP — last N evolutions
+EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
+SELECT id, created_at
+FROM clinical_records
+WHERE clinic_id = (SELECT id FROM clinics LIMIT 1)
+  AND patient_id = (
+    SELECT id FROM patients
+    WHERE clinic_id = (SELECT id FROM clinics LIMIT 1) AND is_active = true
+    LIMIT 1
+  )
+ORDER BY created_at DESC
+LIMIT 20;
+
+-- 8b. Agenda / dashboard — clinic + status
+EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
+SELECT id, start_at, status
+FROM appointments
+WHERE clinic_id = (SELECT id FROM clinics LIMIT 1)
+  AND status IN ('pending', 'confirmed')
+ORDER BY start_at
+LIMIT 50;
+
+-- 8c. Recetas workspace — clinic + patient + status
+EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
+SELECT id, status, issued_at
+FROM prescription_drafts
+WHERE clinic_id = (SELECT id FROM clinics LIMIT 1)
+  AND patient_id = (
+    SELECT id FROM patients
+    WHERE clinic_id = (SELECT id FROM clinics LIMIT 1) AND is_active = true
+    LIMIT 1
+  )
+ORDER BY issued_at DESC NULLS LAST
+LIMIT 20;
+
+-- =============================================================================
+-- 9. Tables with high sequential scans (monitor weekly)
 -- =============================================================================
 SELECT
   relname AS table_name,

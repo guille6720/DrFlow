@@ -28,11 +28,16 @@ export function buildPatientFilePath(
   clinicId: string,
   patientId: string,
   fileName: string,
-  zone: "clinical" | "admin" = "clinical"
+  zone: "clinical" | "admin" = "clinical",
+  options?: { clinicalRecordId?: string | null }
 ): string {
   const safe = sanitizeStorageFileName(fileName);
   if (zone === "admin") {
     return `${clinicId}/${patientId}/admin/${randomUUID()}-${safe}`;
+  }
+  const consultationId = options?.clinicalRecordId?.trim();
+  if (consultationId) {
+    return `${clinicId}/patients/${patientId}/consultations/${consultationId}/${randomUUID()}-${safe}`;
   }
   return `${clinicId}/patients/${patientId}/${randomUUID()}-${safe}`;
 }
@@ -276,5 +281,32 @@ export function validateSpreadsheetImportUpload(
     contentType: isXls
       ? "application/vnd.ms-excel"
       : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  };
+}
+
+export function validateJsonImportUpload(
+  file: File,
+  buffer: Buffer,
+  maxBytes: number
+): UploadValidationResult {
+  if (file.size <= 0) return { ok: false, error: "Archivo vacío" };
+  if (file.size > maxBytes) return { ok: false, error: maxMbError(maxBytes) };
+
+  const lower = file.name.toLowerCase();
+  if (!lower.endsWith(".json") && !lower.endsWith(".fhir.json")) {
+    return { ok: false, error: "Solo se permiten archivos JSON FHIR (.json)" };
+  }
+  if (!looksLikeTextCsv(buffer)) {
+    return { ok: false, error: "El contenido no parece JSON de texto" };
+  }
+  const trimmed = buffer.toString("utf8").trim();
+  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
+    return { ok: false, error: "El JSON FHIR debe ser un objeto o un array" };
+  }
+
+  return {
+    ok: true,
+    sanitizedName: ensureExtension(sanitizeStorageFileName(file.name, "fhir.json"), ".json"),
+    contentType: "application/fhir+json",
   };
 }

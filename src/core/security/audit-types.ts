@@ -39,6 +39,8 @@ export function auditEntityLabel(entityType: string): string {
     patient_attachment: "Adjunto",
     cash_charge: "Cobro",
     clinic: "Consultorio",
+    clinic_entitlement_subscription: "Suscripción comercial",
+    clinic_feature_override: "Override comercial",
     user: "Usuario",
   };
   return labels[entityType] ?? entityType.replace(/_/g, " ");
@@ -61,6 +63,16 @@ export type PatientAuditEvent = {
   clinicalRecordId?: string | null;
 };
 
+function snapshotRecord(value: unknown): Record<string, unknown> | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== "object" || Array.isArray(value)) return null;
+  const out: Record<string, unknown> = {};
+  for (const [key, entry] of Object.entries(value)) {
+    out[key] = entry;
+  }
+  return out;
+}
+
 export function mergePatientAuditEvents(
   clinicLogs: Array<{
     id: string;
@@ -70,10 +82,10 @@ export function mergePatientAuditEvents(
     entity_type: string;
     entity_id: string | null;
     created_at: string;
-    ip_address: string | null;
+    ip_address: unknown;
     user_agent: string | null;
-    old_values: Record<string, unknown> | null;
-    new_values: Record<string, unknown> | null;
+    old_values: unknown;
+    new_values: unknown;
     profiles?: { full_name: string } | { full_name: string }[] | null;
   }>,
   recordLogs: Array<{
@@ -83,10 +95,10 @@ export function mergePatientAuditEvents(
     what?: string | null;
     clinical_record_id: string;
     changed_at: string;
-    ip_address: string | null;
+    ip_address: unknown;
     user_agent: string | null;
-    old_values: Record<string, unknown> | null;
-    new_values: Record<string, unknown> | null;
+    old_values: unknown;
+    new_values: unknown;
     profiles?: { full_name: string } | { full_name: string }[] | null;
   }>
 ): PatientAuditEvent[] {
@@ -102,10 +114,10 @@ export function mergePatientAuditEvents(
       entityId: row.entity_id,
       occurredAt: row.created_at,
       actorName: profile?.full_name ?? "Usuario",
-      ipAddress: row.ip_address,
+      ipAddress: typeof row.ip_address === "string" ? row.ip_address : null,
       userAgent: row.user_agent,
-      oldValues: row.old_values,
-      newValues: row.new_values,
+      oldValues: snapshotRecord(row.old_values),
+      newValues: snapshotRecord(row.new_values),
     };
   });
 
@@ -122,10 +134,10 @@ export function mergePatientAuditEvents(
       clinicalRecordId: row.clinical_record_id,
       occurredAt: row.changed_at,
       actorName: profile?.full_name ?? "Usuario",
-      ipAddress: row.ip_address,
+      ipAddress: typeof row.ip_address === "string" ? row.ip_address : null,
       userAgent: row.user_agent,
-      oldValues: row.old_values,
-      newValues: row.new_values,
+      oldValues: snapshotRecord(row.old_values),
+      newValues: snapshotRecord(row.new_values),
     };
   });
 

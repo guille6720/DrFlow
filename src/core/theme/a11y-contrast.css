@@ -1,0 +1,141 @@
+/* ——— Global text accessibility layer (all DrFlow palettes) ———
+   Semantic token VALUES live in semantic-tokens.css.
+   This file only remaps behavior (selected, forms, anti-opacity, islands). */
+
+/* Placeholders / disabled / selected / anti-patterns below.
+   Token definitions: ../semantic-tokens.css */
+
+/* ——— Appearance / selected option cards (any theme) ——— */
+.drflow-theme-option {
+  color: var(--text-on-card, var(--foreground));
+  background: var(--surface-card, var(--card));
+  border-color: var(--border-default, var(--border));
+}
+
+.drflow-theme-option-title {
+  color: var(--text-primary, var(--foreground));
+}
+
+.drflow-theme-option-desc {
+  color: var(--text-secondary, var(--muted-foreground));
+}
+
+.drflow-theme-option[aria-pressed="true"],
+.drflow-theme-option[data-selected="true"] {
+  background: var(--surface-selected) !important;
+  color: var(--text-on-selected) !important;
+  border-color: var(--ring) !important;
+}
+
+.drflow-theme-option[aria-pressed="true"] .drflow-theme-option-title,
+.drflow-theme-option[data-selected="true"] .drflow-theme-option-title,
+.drflow-theme-option[aria-pressed="true"] .drflow-theme-option-desc,
+.drflow-theme-option[data-selected="true"] .drflow-theme-option-desc {
+  color: var(--text-on-selected) !important;
+}
+
+.drflow-theme-option[aria-pressed="true"] .drflow-theme-option-desc,
+.drflow-theme-option[data-selected="true"] .drflow-theme-option-desc {
+  color: var(--text-on-selected) !important;
+}
+
+/* Form labels / helpers / errors / placeholders — see form-states.css */
+
+/* Disabled: variant-specific rules live in button-states.css.
+   Keep a safe no-opacity baseline here for any .drflow-ui-button without a variant class. */
+.drflow-ui-button:disabled:not([aria-busy="true"]),
+.drflow-ui-button[aria-disabled="true"]:not([aria-busy="true"]) {
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+
+.drflow-ui-button[aria-busy="true"] {
+  opacity: 1 !important;
+}
+
+/*
+ * Anti-patterns: parent/utility opacity must not wash clinical text.
+ * Prefer --text-muted / --text-disabled over opacity-* on copy.
+ */
+.drflow-mesh main :is(p, span, li, label, dd, dt, small, figcaption).opacity-40,
+.drflow-mesh main :is(p, span, li, label, dd, dt, small, figcaption).opacity-50,
+.drflow-mesh main :is(p, span, li, label, dd, dt, small, figcaption).opacity-60,
+.drflow-mesh main :is(p, span, li, label, dd, dt, small, figcaption).opacity-70,
+.drflow-mesh main :is(p, span, li, label, dd, dt, small, figcaption).opacity-80 {
+  opacity: 1 !important;
+  color: var(--text-muted, var(--muted-foreground)) !important;
+}
+
+.drflow-mesh main :is(.text-white\/20, .text-white\/30, .text-white\/40, .text-white\/50) {
+  color: var(--text-secondary, #cbd5e1) !important;
+}
+
+.drflow-mesh main :is(button, a, [role="button"]):disabled:not([aria-busy="true"]):not(.animate-ping),
+.drflow-mesh main :is(button, a, [role="button"])[aria-disabled="true"]:not([aria-busy="true"]) {
+  opacity: 1 !important;
+}
+
+.drflow-mesh main :is(button, a)[class*="text-"]:disabled:not(.drflow-ui-button):not([aria-busy="true"]),
+.drflow-mesh main :is(button, a)[class*="text-"][aria-disabled="true"]:not(.drflow-ui-button) {
+  color: var(--text-disabled, var(--muted-foreground)) !important;
+}
+
+.drflow-mesh main :is(button, a)[class*="bg-"]:disabled:not(.drflow-ui-button):not([aria-busy="true"]),
+.drflow-mesh main :is(button, a)[class*="bg-"][aria-disabled="true"]:not(.drflow-ui-button) {
+  background-color: var(--muted) !important;
+  color: var(--text-disabled, var(--muted-foreground)) !important;
+  border-color: var(--border) !important;
+}
+
+.drflow-mesh main :is(input, textarea)::placeholder {
+  opacity: 1 !important;
+  color: var(--placeholder, var(--text-muted)) !important;
+}
+
+/* (field disabled / checkbox / radio rules → form-states.css) */
+
+/* Selected rows / tabs: keep text readable */
+[aria-selected="true"],
+[data-selected="true"],
+[aria-pressed="true"]:not(.drflow-ui-button):not(.drflow-theme-option) {
+  color: inherit;
+}
+
+html[data-clinical-dark="1"] [aria-selected="true"]:not(option),
+html[data-clinical-dark="1"] [data-selected="true"]:not(option) {
+  color: var(--text-primary);
+}
+
+/* Light islands inside dark themes + Cobalt cards: never pale text on white */
+html[data-clinical-dark="1"] .drflow-card-light,
+html[data-clinical-dark="1"] .drflow-surface-light,
+html[data-ui-palette="cobalt"] .drflow-ui-card {
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --foreground: #0f172a;
+  --card-foreground: #0f172a;
+  --muted-foreground: #334155;
+}
+
+html[data-clinical-dark="1"] .drflow-card-light :is(.text-slate-50, .text-slate-100, .text-slate-200, .text-white),
+html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-50, .text-slate-100, .text-slate-200, .text-white):not(button):not(.drflow-ui-button) {
+  color: #0f172a !important;
+}
+
+/* Pale selected / hover chips in light themes keep dark ink */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-theme-option[aria-pressed="true"],
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-theme-option[data-selected="true"] {
+  color: var(--text-on-selected, #0f172a) !important;
+}
+
+/* Utility aliases */
+.drflow-text-primary {
+  color: var(--text-primary) !important;
+}
+.drflow-text-secondary {
+  color: var(--text-secondary) !important;
+}
+.drflow-text-muted {
+  color: var(--text-muted) !important;
+}

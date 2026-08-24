@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { requireStaffManagerWithUser } from "@/core/actions/guard-adapters";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import {
   computeOverrideOnToggle,
   isManageablePermissionKey,
@@ -99,6 +101,11 @@ export async function updateClinicMemberUsesSharedAi(
 ): Promise<{ error?: string }> {
   const access = await requireTeamAdmin();
   if (!access.ok) return { error: access.error };
+
+  if (usesSharedAi) {
+    const entitlement = await requireAddonFeatureAccess(FEATURES.AI);
+    if (!entitlement.ok) return { error: entitlement.error };
+  }
 
   const memberIdParsed = parseEntityId(memberIdRaw);
   if (!memberIdParsed.ok) return { error: memberIdParsed.error };

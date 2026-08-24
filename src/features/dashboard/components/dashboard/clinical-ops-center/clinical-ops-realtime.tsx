@@ -13,7 +13,13 @@ export function ClinicalOpsRealtime({ clinicId }: { clinicId: string }) {
   const lastRefreshRef = useRef(0);
 
   useEffect(() => {
-    const supabase = createClient();
+    let supabase: ReturnType<typeof createClient>;
+    try {
+      supabase = createClient();
+    } catch (err) {
+      console.error("[clinical-ops-realtime] supabase client failed", err);
+      return;
+    }
 
     const refresh = () => {
       const now = Date.now();

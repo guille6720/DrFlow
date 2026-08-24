@@ -54,15 +54,35 @@ export function buildPatientWorkspaceUrl(
   return qs ? `/pacientes/${patientId}?${qs}` : `/pacientes/${patientId}`;
 }
 
-/** Abre la HC con evolución inline (misma UX que Pacientes → HC → nueva consulta). */
+/** Sesión de evolución en Médicos → Consultas (ya no vive en Historias / HC del paciente). */
+export function buildConsultaSessionUrl(opts: {
+  appointment?: string;
+  patient?: string;
+  professional?: string;
+  sheet?: PatientWorkspaceSheet;
+  focus?: PatientWorkspaceFocus;
+  consulta?: string;
+}): string {
+  const params = new URLSearchParams();
+  if (opts.appointment) params.set("appointment", opts.appointment);
+  if (opts.patient) params.set("patient", opts.patient);
+  if (opts.professional) params.set("professional", opts.professional);
+  params.set("action", "nueva");
+  if (opts.sheet) params.set("sheet", opts.sheet);
+  if (opts.focus) params.set("focus", opts.focus);
+  if (opts.consulta) params.set("consulta", opts.consulta);
+  const qs = params.toString();
+  return qs ? `/consultas?${qs}` : "/consultas";
+}
+
+/** Abre la evolución del turno en Consultas (flujo sala de espera → médico). */
 export function buildAppointmentConsultationUrl(
   patientId: string,
   opts: { appointmentId: string; professionalId: string }
 ): string {
-  return buildPatientWorkspaceUrl(patientId, {
-    tab: "soap",
-    action: "nueva",
+  return buildConsultaSessionUrl({
     appointment: opts.appointmentId,
+    patient: patientId,
     professional: opts.professionalId,
   });
 }
@@ -121,11 +141,17 @@ export function parsePatientWorkspaceActions(
       (action === "nueva" && tab === "ordenes") ||
       (tab === "soap" && sheet === "orden"),
     archivoSheetOpen: inlineConsult && sheet === "archivo",
-    recordSheetOpen: Boolean(record && tab === "soap" && action !== "nueva"),
+    recordSheetOpen: Boolean(record && tab === "soap" && action !== "nueva" && mode === "edit"),
     dischargeSheetOpen: action === "alta",
     certificateSheetOpen: action === "certificado",
     closeEncounterSheetOpen: action === "cerrar",
     labInterpretSheetOpen: action === "estudio",
     copilotSheetOpen: action === "copilot",
   };
+}
+
+/** Same-page query update without an RSC reload (tabs, HC sidebar). */
+export function replaceClientUrl(url: string) {
+  if (typeof window === "undefined") return;
+  window.history.replaceState(window.history.state, "", url);
 }

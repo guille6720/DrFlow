@@ -2,6 +2,11 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { isSameOriginPost } from "@/core/security/csrf";
+import {
+  AUTH_LOGIN_RATE_LIMIT,
+  checkRateLimit,
+  getRequestClientIp,
+} from "@/core/security/rate-limit";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/core/supabase/env";
 import { firstZodIssue } from "@/core/validations/params";
 import { loginSchema } from "@/core/validations/schemas";
@@ -40,6 +45,11 @@ function redirectToLogin(request: NextRequest, error: string, email?: string) {
 export async function POST(request: NextRequest) {
   if (!isSameOriginPost(request)) {
     return redirectToLogin(request, "Solicitud no válida. Volvé a intentar desde la página de login.");
+  }
+
+  const clientIp = getRequestClientIp(request);
+  if (!checkRateLimit(`auth:login:${clientIp}`, AUTH_LOGIN_RATE_LIMIT)) {
+    return redirectToLogin(request, "Demasiados intentos. Esperá unos minutos.");
   }
 
   const formData = await request.formData();

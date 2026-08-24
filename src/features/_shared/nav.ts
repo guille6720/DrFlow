@@ -16,6 +16,11 @@ export type FeatureNavPermission =
   | "manageStaff"
   | "viewReports"
   | "manageSettings"
+  | "importPatients"
+  | "exportPatients"
+  | "importClinicalRecords"
+  | "exportClinicalRecords"
+  | "bulkExportData"
   | null;
 
 export type FeatureNavItem = {
@@ -61,6 +66,12 @@ export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
     featureId: "profesionales",
     children: [
       {
+        featureId: "historias",
+        href: "/consultas",
+        label: "Consultas",
+        permission: "editClinicalRecords",
+      },
+      {
         featureId: "profesionales",
         href: "/ingreso-profesionales",
         label: "Equipo",
@@ -94,7 +105,6 @@ export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
     children: [
       { featureId: "agenda", href: "/turnos/nuevo", label: "Nuevo turno", permission: "manageAppointments" },
       { featureId: "agenda", href: "/turnos/agenda", label: "Agenda", permission: null },
-      { featureId: "agenda", href: "/turnos/lista-espera", label: "Lista de espera", permission: "manageAppointments" },
       { featureId: "agenda", href: "/turnos/reportes", label: "Reportes", permission: "viewReports" },
       { featureId: "agenda", href: "/turnos/configuracion", label: "Config. agenda", permission: "manageSettings" },
       { featureId: "agenda", href: "/atenciones", label: "Atenciones", permission: null },
@@ -121,6 +131,35 @@ export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
     ],
   },
   { featureId: "pacientes", href: "/pacientes", label: "Pacientes", permission: "managePatients" },
+];
+
+/** Superadmin-only commercial control (sidebar append). */
+export const SUPERADMIN_NAV_ENTRIES: FeatureNavEntry[] = [
+  {
+    type: "group",
+    id: "superadmin",
+    label: "Superadmin",
+    featureId: "administracion",
+    children: [
+      { featureId: "administracion", href: "/superadmin", label: "Dashboard", permission: null },
+      { featureId: "administracion", href: "/superadmin/clinics", label: "Clínicas", permission: null },
+      { featureId: "administracion", href: "/superadmin/plans", label: "Planes", permission: null },
+      { featureId: "administracion", href: "/superadmin/features", label: "Features", permission: null },
+      { featureId: "administracion", href: "/superadmin/usage", label: "Consumo", permission: null },
+      {
+        featureId: "administracion",
+        href: "/superadmin/recommendations",
+        label: "Recomendaciones",
+        permission: null,
+      },
+      {
+        featureId: "administracion",
+        href: "/superadmin/manual",
+        label: "Manual de uso",
+        permission: null,
+      },
+    ],
+  },
 ];
 
 /** Flat list of all sidebar links (groups expanded). */

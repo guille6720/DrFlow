@@ -56,19 +56,19 @@ export function DeleteAccountPanel({
   }
 
   const modal = open && mounted ? (
-    <div
-      className="fixed inset-0 z-[9999] flex items-end justify-center p-4 sm:items-center"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="delete-account-title"
-    >
+    <div className="drflow-modal-root fixed inset-0 z-[9999] flex items-end justify-center p-4 sm:items-center">
       <button
         type="button"
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]"
+        className="drflow-modal-backdrop absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]"
         aria-label="Cerrar"
         onClick={handleClose}
       />
-      <div className="drflow-card-light relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-red-200 bg-white p-5 text-slate-900 shadow-2xl sm:p-6">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-account-title"
+        className="drflow-modal-panel drflow-card-light relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-red-200 bg-white p-5 text-slate-900 shadow-2xl sm:p-6"
+      >
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-700">
@@ -87,7 +87,7 @@ export function DeleteAccountPanel({
             type="button"
             onClick={handleClose}
             disabled={pending}
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-50"
+            className="drflow-modal-close rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-50"
             aria-label="Cerrar"
           >
             <X className="h-5 w-5" />

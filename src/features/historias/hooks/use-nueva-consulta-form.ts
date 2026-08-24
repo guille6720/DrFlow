@@ -7,7 +7,13 @@ import type { ConsultPatientPickerRow } from "@/core/supabase/query-types";
 
 import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation";
 
-import { createClinicalRecord } from "@/features/historias/actions/clinical-records";
+import { createClinicalRecord, updateClinicalRecord } from "@/features/historias/actions/clinical-records";
+import {
+  buildDiagnosisText,
+  type ClinicalDiagnosisEntry,
+  type ClinicalTreatmentEntry,
+  mergeTreatmentsForPersist,
+} from "@/features/historias/utils/clinical-structured-entries";
 import type { PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { buildConsultIndicationsText } from "@/features/recetas/utils/build-consult-indications-text";
@@ -24,8 +30,8 @@ import {
   buildRecetasHrefFromConsultation,
   clearConsultationEvolution,
   consultationDraftKey,
-  readConsultationEvolution,
-  saveConsultationEvolution,
+  readConsultationDraft,
+  saveConsultationDraft,
 } from "@/lib/utils/consultation-draft";
 import { buildProfessionalSignature } from "@/lib/utils/professional";
 import type { PrescriptionMedication } from "@/types/prescription";
@@ -88,7 +94,9 @@ type ConsultFormDraft = {
   evolution: string;
   chiefComplaint: string;
   diagnosis: string;
+  diagnoses: ClinicalDiagnosisEntry[];
   indications: string;
+  clinicalTreatments: ClinicalTreatmentEntry[];
   treatmentMedications: PrescriptionMedication[];
   vitals: string;
   isDirty: boolean;
@@ -124,19 +132,27 @@ export function useNuevaConsultaForm({
   const [evolution, setEvolution] = useState("");
   const [chiefComplaint, setChiefComplaint] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
+  const [diagnoses, setDiagnoses] = useState<ClinicalDiagnosisEntry[]>([]);
   const [indications, setIndications] = useState("");
+  const [clinicalTreatments, setClinicalTreatments] = useState<ClinicalTreatmentEntry[]>([]);
   const [treatmentMedications, setTreatmentMedications] = useState<PrescriptionMedication[]>([]);
   const [vitals, setVitals] = useState("");
   const [consultationAt, setConsultationAt] = useState(() => toDatetimeLocalValue(new Date()));
   const [templateBases, setTemplateBases] = useState<ClinicalTemplateFieldSet | null>(null);
   const [templateVariableValues, setTemplateVariableValues] = useState<Record<string, string>>({});
+  /** clinical_record id for autosave updates / in-session edit */
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const savingRef = useRef(false);
+  const editingRecordIdRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const formDraftRef = useRef<ConsultFormDraft>({
     evolution: "",
     chiefComplaint: "",
     diagnosis: "",
+    diagnoses: [],
     indications: "",
+    clinicalTreatments: [],
     treatmentMedications: [],
     vitals: "",
     isDirty: false,
@@ -180,6 +196,34 @@ export function useNuevaConsultaForm({
     setTemplateVariableValues({});
   }
 
+  function resetConsultFields() {
+    clearTemplateVariables();
+    setError(null);
+    setEvolution("");
+    setChiefComplaint("");
+    setDiagnosis("");
+    setDiagnoses([]);
+    setIndications("");
+    setClinicalTreatments([]);
+    setTreatmentMedications([]);
+    setVitals("");
+    setConsultationAt(toDatetimeLocalValue(new Date()));
+    setEditingRecordId(null);
+    editingRecordIdRef.current = null;
+    setAutoSaveStatus("idle");
+    formDraftRef.current = {
+      evolution: "",
+      chiefComplaint: "",
+      diagnosis: "",
+      diagnoses: [],
+      indications: "",
+      clinicalTreatments: [],
+      treatmentMedications: [],
+      vitals: "",
+      isDirty: false,
+    };
+  }
+
   function applyResolvedTemplateFields(fields: ClinicalTemplateFieldSet) {
     setChiefComplaint(fields.chief_complaint);
     setDiagnosis(fields.diagnosis);
@@ -209,36 +253,132 @@ export function useNuevaConsultaForm({
     setDiagnosis(value);
   }
 
+  function handleDiagnosesChange(next: ClinicalDiagnosisEntry[]) {
+    clearTemplateVariables();
+    setDiagnoses(next);
+    setDiagnosis(buildDiagnosisText(next, ""));
+  }
+
+  function handleClinicalTreatmentsChange(next: ClinicalTreatmentEntry[]) {
+    clearTemplateVariables();
+    setClinicalTreatments(next);
+  }
+
   function handleIndicationsChange(value: string) {
     clearTemplateVariables();
     setIndications(value);
   }
 
   function handlePatientChange(id: string, patient?: PatientSearchOption) {
+    if (id !== patientId) {
+      resetConsultFields();
+    }
     setPatientId(id);
     setPickedPatient(patient ?? null);
   }
+
+  // Soft-nav entre pacientes/turnos: el hook puede reutilizarse; vaciar evolución.
+  const workspaceIdentity = `${workspace?.patientId ?? ""}:${workspace?.appointmentId ?? ""}`;
+  const prevWorkspaceIdentityRef = useRef(workspaceIdentity);
+  useEffect(() => {
+    if (!workspace) return;
+    if (prevWorkspaceIdentityRef.current === workspaceIdentity) return;
+    prevWorkspaceIdentityRef.current = workspaceIdentity;
+    setPatientId(workspace.patientId);
+    setPickedPatient(null);
+    setTemplateBases(null);
+    setTemplateVariableValues({});
+    setError(null);
+    setEvolution("");
+    setChiefComplaint("");
+    setDiagnosis("");
+    setDiagnoses([]);
+    setIndications("");
+    setClinicalTreatments([]);
+    setTreatmentMedications([]);
+    setVitals("");
+    setConsultationAt(toDatetimeLocalValue(new Date()));
+    setEditingRecordId(null);
+    editingRecordIdRef.current = null;
+    setAutoSaveStatus("idle");
+    formDraftRef.current = {
+      evolution: "",
+      chiefComplaint: "",
+      diagnosis: "",
+      diagnoses: [],
+      indications: "",
+      clinicalTreatments: [],
+      treatmentMedications: [],
+      vitals: "",
+      isDirty: false,
+    };
+  }, [workspace, workspaceIdentity]);
+
+  useEffect(() => {
+    editingRecordIdRef.current = editingRecordId;
+  }, [editingRecordId]);
+
   const activeProfessionalId = fromAppointment ? defaultProfessional : professionalId;
   const activeProfessional = professionals.find((p) => p.id === activeProfessionalId);
-  const isDirty =
+
+  const contentFingerprint = useMemo(
+    () =>
+      JSON.stringify({
+        evolution,
+        chiefComplaint,
+        diagnosis,
+        diagnoses,
+        indications,
+        clinicalTreatments,
+        treatmentMedications,
+        vitals,
+      }),
+    [
+      evolution,
+      chiefComplaint,
+      diagnosis,
+      diagnoses,
+      indications,
+      clinicalTreatments,
+      treatmentMedications,
+      vitals,
+    ]
+  );
+  const [savedFingerprint, setSavedFingerprint] = useState(contentFingerprint);
+  const hasContent =
     evolution.trim().length > 0 ||
     chiefComplaint.trim().length > 0 ||
     diagnosis.trim().length > 0 ||
+    diagnoses.length > 0 ||
     indications.trim().length > 0 ||
+    clinicalTreatments.length > 0 ||
     treatmentMedications.length > 0 ||
     vitals.trim().length > 0;
+  const isDirty = hasContent && contentFingerprint !== savedFingerprint;
 
   useEffect(() => {
     formDraftRef.current = {
       evolution,
       chiefComplaint,
       diagnosis,
+      diagnoses,
       indications,
+      clinicalTreatments,
       treatmentMedications,
       vitals,
       isDirty,
     };
-  }, [evolution, chiefComplaint, diagnosis, indications, treatmentMedications, vitals, isDirty]);
+  }, [
+    evolution,
+    chiefComplaint,
+    diagnosis,
+    diagnoses,
+    indications,
+    clinicalTreatments,
+    treatmentMedications,
+    vitals,
+    isDirty,
+  ]);
 
   function signatureForProfessionalId(id: string): string {
     const pro = professionals.find((p) => p.id === id);
@@ -281,10 +421,54 @@ export function useNuevaConsultaForm({
 
   useEffect(() => {
     if (!draftKey) return;
-    const saved = readConsultationEvolution(draftKey);
-    if (!saved.trim()) return;
+    const saved = readConsultationDraft(draftKey);
+    if (!saved) return;
     queueMicrotask(() => {
-      setEvolution((prev) => (prev.trim().length === 0 ? saved : prev));
+      if (saved.evolution.trim()) {
+        setEvolution((prev) => (prev.trim().length === 0 ? saved.evolution : prev));
+      }
+      if (saved.chiefComplaint.trim()) {
+        setChiefComplaint((prev) => (prev.trim().length === 0 ? saved.chiefComplaint : prev));
+      }
+      if (saved.diagnosis.trim()) {
+        setDiagnosis((prev) => (prev.trim().length === 0 ? saved.diagnosis : prev));
+      }
+      if (saved.indications.trim()) {
+        setIndications((prev) => (prev.trim().length === 0 ? saved.indications : prev));
+      }
+      if (saved.vitals.trim()) {
+        setVitals((prev) => (prev.trim().length === 0 ? saved.vitals : prev));
+      }
+      if (saved.recordId) {
+        setEditingRecordId((prev) => prev ?? saved.recordId ?? null);
+        editingRecordIdRef.current = saved.recordId;
+        setSavedFingerprint(
+          JSON.stringify({
+            evolution: saved.evolution,
+            chiefComplaint: saved.chiefComplaint,
+            diagnosis: saved.diagnosis,
+            diagnoses: [],
+            indications: saved.indications,
+            clinicalTreatments: [],
+            treatmentMedications: [],
+            vitals: saved.vitals,
+          })
+        );
+      } else {
+        // Borrador local sin ID: marcar dirty para que el autoguardado cree el registro.
+        setSavedFingerprint(
+          JSON.stringify({
+            evolution: "",
+            chiefComplaint: "",
+            diagnosis: "",
+            diagnoses: [],
+            indications: "",
+            clinicalTreatments: [],
+            treatmentMedications: [],
+            vitals: "",
+          })
+        );
+      }
     });
   }, [draftKey]);
 
@@ -293,7 +477,17 @@ export function useNuevaConsultaForm({
     const storageKey: string = draftKey;
 
     function flushDraft() {
-      saveConsultationEvolution(storageKey, formDraftRef.current.evolution);
+      const draft = formDraftRef.current;
+      saveConsultationDraft(storageKey, {
+        v: 1,
+        evolution: draft.evolution,
+        chiefComplaint: draft.chiefComplaint,
+        diagnosis: draft.diagnosis,
+        indications: draft.indications,
+        vitals: draft.vitals,
+        recordId: editingRecordIdRef.current,
+        updatedAt: new Date().toISOString(),
+      });
     }
 
     const timer = window.setTimeout(flushDraft, 300);
@@ -308,54 +502,105 @@ export function useNuevaConsultaForm({
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       flushDraft();
     };
-  }, [evolution, draftKey]);
+  }, [evolution, chiefComplaint, diagnosis, indications, vitals, editingRecordId, draftKey]);
 
   const persistConsultation = useCallback(
     async (form: HTMLFormElement, options?: { silent?: boolean }) => {
       const draft = formDraftRef.current;
       if (savingRef.current) return { ok: false as const, error: "Guardando..." };
-      if (!draft.isDirty) return { ok: false as const, error: null };
+      if (!draft.isDirty && !editingRecordIdRef.current) {
+        return { ok: false as const, error: null };
+      }
+      // Autosave: allow update even if momentarily not dirty when we have a record
+      if (!draft.isDirty && options?.silent) {
+        return { ok: false as const, error: null };
+      }
 
       savingRef.current = true;
       setLoading(true);
+      if (options?.silent) setAutoSaveStatus("saving");
       setError(null);
 
       const formData = new FormData(form);
       if (appointmentId) formData.set("appointment_id", appointmentId);
+      const diagnosisText = buildDiagnosisText(draft.diagnoses, draft.diagnosis);
+      const primaryCie10 = draft.diagnoses.find((d) => d.cie10_code?.trim())?.cie10_code ?? "";
       formData.set("chief_complaint", draft.chiefComplaint);
-      formData.set("diagnosis", draft.diagnosis);
-      formData.set("indications", buildConsultIndicationsText(draft.treatmentMedications, draft.indications));
+      formData.set("diagnosis", diagnosisText);
+      formData.set("diagnosis_cie10", primaryCie10);
+      formData.set("diagnoses_json", JSON.stringify(draft.diagnoses));
+      const mergedTreatments = mergeTreatmentsForPersist(
+        draft.clinicalTreatments,
+        draft.treatmentMedications
+      );
+      formData.set("treatments_json", JSON.stringify(mergedTreatments));
+      formData.set(
+        "indications",
+        buildConsultIndicationsText(draft.treatmentMedications, draft.indications, draft.clinicalTreatments)
+      );
       formData.set("evolution", buildEvolutionWithVitals(draft.evolution, draft.vitals));
       formData.set("professional_signature", professionalSignature);
       formData.set("consultation_at", new Date(consultationAt).toISOString());
 
-      const result = await createClinicalRecord(formData);
+      const recordId = editingRecordIdRef.current;
+      const result = recordId
+        ? await updateClinicalRecord(recordId, formData)
+        : await createClinicalRecord(formData);
+
       savingRef.current = false;
       setLoading(false);
 
-      if (result.error) {
-        if (!options?.silent) setError(result.error);
-        return { ok: false as const, error: result.error };
+      const err =
+        result && "error" in result && result.error
+          ? result.error
+          : null;
+      if (err) {
+        setError(err);
+        if (options?.silent) setAutoSaveStatus("error");
+        return { ok: false as const, error: err };
       }
 
-      if (result.data) {
-        if (draftKey) clearConsultationEvolution(draftKey);
-        if (!options?.silent) {
-          setEvolution("");
-          setChiefComplaint("");
-          setDiagnosis("");
-          setIndications("");
-          setTreatmentMedications([]);
-          setVitals("");
+      const savedId =
+        recordId ??
+        (result && "data" in result && result.data ? String(result.data.id) : null);
+
+      if (savedId) {
+        setEditingRecordId(savedId);
+        editingRecordIdRef.current = savedId;
+        setSavedFingerprint(
+          JSON.stringify({
+            evolution: draft.evolution,
+            chiefComplaint: draft.chiefComplaint,
+            diagnosis: draft.diagnosis,
+            diagnoses: draft.diagnoses,
+            indications: draft.indications,
+            clinicalTreatments: draft.clinicalTreatments,
+            treatmentMedications: draft.treatmentMedications,
+            vitals: draft.vitals,
+          })
+        );
+        if (draftKey) {
+          saveConsultationDraft(draftKey, {
+            v: 1,
+            evolution: draft.evolution,
+            chiefComplaint: draft.chiefComplaint,
+            diagnosis: draft.diagnosis,
+            indications: draft.indications,
+            vitals: draft.vitals,
+            recordId: savedId,
+            updatedAt: new Date().toISOString(),
+          });
         }
+        if (options?.silent) setAutoSaveStatus("saved");
+        else setAutoSaveStatus("saved");
         if (workspace) {
-          workspace.onSaved(result.data.id, options?.silent);
-        } else if (!options?.silent) {
-          router.push(`/historias/${result.data.id}`);
+          workspace.onSaved(savedId, options?.silent);
+        } else if (!options?.silent && !recordId) {
+          router.push(`/historias/${savedId}`);
         }
       }
 
-      return { ok: true as const, recordId: result.data?.id };
+      return { ok: true as const, recordId: savedId ?? undefined };
     },
     [
       appointmentId,
@@ -380,6 +625,15 @@ export function useNuevaConsultaForm({
   useEffect(() => {
     saveIfDirtyRef.current = saveIfDirty;
   }, [saveIfDirty]);
+
+  // Autoguardado en DB (~1.5s) mientras hay cambios.
+  useEffect(() => {
+    if (!isDirty || !formRef.current) return;
+    const timer = window.setTimeout(() => {
+      void saveIfDirtyRef.current({ silent: true });
+    }, 1500);
+    return () => window.clearTimeout(timer);
+  }, [isDirty, contentFingerprint]);
 
   useEffect(() => {
     function handleBeforeUnload(event: BeforeUnloadEvent) {
@@ -406,7 +660,18 @@ export function useNuevaConsultaForm({
   }
 
   function flushEvolutionDraft() {
-    if (draftKey) saveConsultationEvolution(draftKey, evolution);
+    if (draftKey) {
+      saveConsultationDraft(draftKey, {
+        v: 1,
+        evolution,
+        chiefComplaint,
+        diagnosis,
+        indications,
+        vitals,
+        recordId: editingRecordIdRef.current,
+        updatedAt: new Date().toISOString(),
+      });
+    }
     if (patientId) {
       saveInlineConsultPrescriptionSnapshot({
         patientId,
@@ -419,6 +684,60 @@ export function useNuevaConsultaForm({
         savedAt: new Date().toISOString(),
       });
     }
+  }
+
+  function loadConsultationForEdit(record: {
+    id: string;
+    chief_complaint?: string | null;
+    diagnosis?: string | null;
+    evolution?: string | null;
+    indications?: string | null;
+    professional_signature?: string | null;
+  }) {
+    clearTemplateVariables();
+    setEditingRecordId(record.id);
+    editingRecordIdRef.current = record.id;
+    setChiefComplaint(record.chief_complaint?.trim() ?? "");
+    setDiagnosis(record.diagnosis?.trim() ?? "");
+    setDiagnoses([]);
+    setEvolution(record.evolution?.trim() ?? "");
+    setIndications(record.indications?.trim() ?? "");
+    setClinicalTreatments([]);
+    setTreatmentMedications([]);
+    setVitals("");
+    if (record.professional_signature?.trim()) {
+      setProfessionalSignature(record.professional_signature.trim());
+    }
+    const nextFp = JSON.stringify({
+      evolution: record.evolution?.trim() ?? "",
+      chiefComplaint: record.chief_complaint?.trim() ?? "",
+      diagnosis: record.diagnosis?.trim() ?? "",
+      diagnoses: [],
+      indications: record.indications?.trim() ?? "",
+      clinicalTreatments: [],
+      treatmentMedications: [],
+      vitals: "",
+    });
+    setSavedFingerprint(nextFp);
+    setAutoSaveStatus("saved");
+    setError(null);
+  }
+
+  function startNewConsultation() {
+    if (draftKey) clearConsultationEvolution(draftKey);
+    resetConsultFields();
+    setSavedFingerprint(
+      JSON.stringify({
+        evolution: "",
+        chiefComplaint: "",
+        diagnosis: "",
+        diagnoses: [],
+        indications: "",
+        clinicalTreatments: [],
+        treatmentMedications: [],
+        vitals: "",
+      })
+    );
   }
 
   function recetaHref(tab: "receta" | "orden" = "receta") {
@@ -473,6 +792,7 @@ export function useNuevaConsultaForm({
     setTemplateVariableValues({});
     applyResolvedTemplateFields(bases);
     setTreatmentMedications([]);
+    setClinicalTreatments([]);
   }
 
   return {
@@ -496,8 +816,12 @@ export function useNuevaConsultaForm({
     setChiefComplaint: handleChiefComplaintChange,
     diagnosis,
     setDiagnosis: handleDiagnosisChange,
+    diagnoses,
+    setDiagnoses: handleDiagnosesChange,
     indications,
     setIndications: handleIndicationsChange,
+    clinicalTreatments,
+    setClinicalTreatments: handleClinicalTreatmentsChange,
     treatmentMedications,
     setTreatmentMedications,
     vitals,
@@ -508,12 +832,16 @@ export function useNuevaConsultaForm({
     setProfessionalSignature,
     professionalSignatureImageUrl: activeProfessional?.signature_image_url ?? null,
     isDirty,
+    editingRecordId,
+    autoSaveStatus,
     formRef,
     saveIfDirty,
     requestSubmit,
     handleFormKeyDown,
     pharmacologyHref,
     flushEvolutionDraft,
+    loadConsultationForEdit,
+    startNewConsultation,
     recetaHref,
     handleSubmit,
     applyTemplate,

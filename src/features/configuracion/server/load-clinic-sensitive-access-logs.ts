@@ -2,6 +2,7 @@ import "server-only";
 
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { hasPermission } from "@/core/permissions/roles";
+import { ipAddressFromUnknown } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 
 export type ClinicSensitiveAccessLogRow = {
@@ -90,7 +91,7 @@ export async function loadClinicSensitiveAccessLogs(
       patientName: patientId ? (patientNames.get(patientId) ?? null) : null,
       actorName: (profile as { full_name?: string } | null)?.full_name ?? "Usuario",
       occurredAt: row.created_at,
-      ipAddress: row.ip_address,
+      ipAddress: ipAddressFromUnknown(row.ip_address),
       accessKind: typeof meta.access_kind === "string" ? meta.access_kind : null,
       tab: typeof meta.tab === "string" ? meta.tab : null,
     };

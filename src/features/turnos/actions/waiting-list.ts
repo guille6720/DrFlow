@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
-import { getSession } from "@/core/auth/session.server";
 import { verifyPatientInClinic, verifyProfessionalInClinic } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
@@ -12,28 +11,25 @@ import { sanitizeText } from "@/core/validations/schemas";
 import { waitingListEntrySchema } from "@/features/turnos/utils/turno-wizard-schema";
 
 export async function addToWaitingList(input: unknown) {
-  const access = await requireClinicPermission("manageAppointments");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageAppointments"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
-  const user = await getSession();
+  const { clinicId, userId } = access;
 
   const parsed = waitingListEntrySchema.safeParse(input);
   if (!parsed.success) return { error: firstZodIssue(parsed.error) };
 
   const data = parsed.data;
-  const supabase = await createClient();
-
-  const ownership = await verifyPatientInClinic(supabase, clinicId, data.patient_id);
+  const [ownership, professional] = await Promise.all([
+    verifyPatientInClinic(supabase, clinicId, data.patient_id),
+    data.professional_id
+      ? verifyProfessionalInClinic(supabase, clinicId, data.professional_id)
+      : Promise.resolve({ ok: true as const }),
+  ]);
   if (!ownership.ok) return { error: ownership.error };
-
-  if (data.professional_id) {
-    const professional = await verifyProfessionalInClinic(
-      supabase,
-      clinicId,
-      data.professional_id
-    );
-    if (!professional.ok) return { error: professional.error };
-  }
+  if (!professional.ok) return { error: professional.error };
 
   const { data: row, error } = await supabase
     .from("waiting_list")
@@ -49,7 +45,7 @@ export async function addToWaitingList(input: unknown) {
       preferred_time_to: data.preferred_time_to ?? null,
       consultation_modality: data.consultation_modality,
       notes: data.notes ? sanitizeText(data.notes) : null,
-      created_by: user?.id ?? null,
+      created_by: userId,
     })
     .select("id")
     .single();
@@ -61,11 +57,12 @@ export async function addToWaitingList(input: unknown) {
 }
 
 export async function updateWaitingListStatus(id: string, status: "active" | "contacted" | "scheduled" | "cancelled") {
-  const access = await requireClinicPermission("manageAppointments");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageAppointments"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
-
-  const supabase = await createClient();
   const { error } = await supabase
     .from("waiting_list")
     .update({ status, updated_at: new Date().toISOString() })

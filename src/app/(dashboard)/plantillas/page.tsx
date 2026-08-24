@@ -1,11 +1,6 @@
 import { redirect } from "next/navigation";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 
@@ -17,10 +12,7 @@ import {
 } from "@/lib/server/cached-clinic-queries";
 
 export default async function PlantillasPage() {
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
 
   if (!clinicId) {
     redirect("/login");
@@ -45,7 +37,7 @@ export default async function PlantillasPage() {
         userName={profile?.full_name}
       />
       <div className="p-4 sm:p-6">
-        <p className="mb-4 text-sm text-slate-700">
+        <p className="mb-4 text-sm font-medium text-slate-800">
           Textos reutilizables para evoluciones y consultas. Aparecen al escribir una evolución
           clínica.
         </p>

@@ -1,19 +1,42 @@
 "use server";
 
-import { requireSettingsAccess } from "@/core/actions/clinic-guard";
+import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+
+import { requireClinicPermission, requireSettingsAccess } from "@/core/actions/clinic-guard";
 import { getDashboardShell } from "@/core/auth/session.server";
+import {
+  loadSubscriptionPromoSnapshot,
+  resolveCheckoutAmountArs,
+} from "@/core/billing/checkout-amount";
 import { createCheckoutPreference, isMercadoPagoConfigured } from "@/core/billing/mercadopago";
+import {
+  classifyPlanChange,
+  evaluateDowngradeToEssential,
+} from "@/core/billing/plan-change";
 import {
   type BillingCycle,
   type BillingPlanId,
   getBillingPlan,
-  getPlanPriceArs,
   isPlanAvailableForPurchase,
 } from "@/core/billing/plans";
+import { cancelClinicSubscriptionSelfServe } from "@/core/billing/subscription-service";
+import { FEATURES } from "@/core/entitlements/features";
+import { countClinicSeatRows } from "@/core/entitlements/limits.server";
+import { createClient } from "@/core/supabase/server";
 
 export type StartMercadoPagoCheckoutResult =
   | { ok: true; initPoint: string }
   | { ok: false; error: string };
+
+/** Resolve public site URL from the active request (preview-safe on Vercel). */
+async function resolveCheckoutSiteOrigin(): Promise<string | undefined> {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  if (!host) return undefined;
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  return `${proto}://${host.split(",")[0]?.trim()}`;
+}
 
 export async function startMercadoPagoCheckout(
   planId: BillingPlanId,
@@ -36,8 +59,28 @@ export async function startMercadoPagoCheckout(
     return { ok: false, error: "Plan no disponible para compra online." };
   }
 
-  const price = getPlanPriceArs(planId, cycle);
-  if (price == null) {
+  const snapshot = await loadSubscriptionPromoSnapshot(access.clinicId);
+  const changeKind = classifyPlanChange(snapshot?.plan_id, planId);
+
+  if (changeKind === "downgrade") {
+    const supabase = await createClient();
+    const activeProfessionals = await countClinicSeatRows(
+      supabase,
+      FEATURES.PROFESSIONALS_MAX,
+      access.clinicId
+    );
+    const downgrade = evaluateDowngradeToEssential({ activeProfessionals });
+    if (!downgrade.ok) {
+      return { ok: false, error: downgrade.error };
+    }
+  }
+
+  const amountArs = resolveCheckoutAmountArs({
+    planId,
+    cycle,
+    snapshot,
+  });
+  if (amountArs == null) {
     return { ok: false, error: "Precio no disponible para el ciclo seleccionado." };
   }
 
@@ -50,6 +93,8 @@ export async function startMercadoPagoCheckout(
     planId,
     cycle,
     payerEmail: profile?.email,
+    amountArs,
+    siteUrlOverride: await resolveCheckoutSiteOrigin(),
   });
 
   if (!result.ok) {
@@ -61,4 +106,27 @@ export async function startMercadoPagoCheckout(
 
 export async function getMercadoPagoBillingStatus() {
   return { configured: isMercadoPagoConfigured() };
+}
+
+export type CancelClinicSubscriptionActionResult =
+  | { ok: true; alreadyCanceled: boolean; accessUntil: string | null }
+  | { ok: false; error: string };
+
+/** Self-serve cancel — settings ACL only; no retention obstacle. */
+export async function cancelClinicSubscriptionAction(): Promise<CancelClinicSubscriptionActionResult> {
+  const access = await requireClinicPermission("manageSettings");
+  if (!access.ok) {
+    return { ok: false, error: access.error ?? "Sin permisos para cancelar el plan." };
+  }
+
+  const result = await cancelClinicSubscriptionSelfServe({
+    clinicId: access.clinicId,
+    actorUserId: access.userId,
+  });
+
+  if (result.ok) {
+    revalidatePath("/configuracion");
+  }
+
+  return result;
 }

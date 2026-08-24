@@ -53,16 +53,15 @@ export async function loadPamiPlanillasPageData(
   page: number
 ): Promise<PamiPlanillasPageData> {
   const trimmedQ = q.trim();
-  const [professionals, catalogResult] = await Promise.all([
-    getCachedClinicProfessionalsList(clinicId),
-    getCachedPamiPlanillaCatalog(clinicId),
+  const professionalsPromise = getCachedClinicProfessionalsList(clinicId);
+  const catalogPromise = getCachedPamiPlanillaCatalog(clinicId);
+  const [professionals, catalogResult, defaultProfessionalId] = await Promise.all([
+    professionalsPromise,
+    catalogPromise,
+    professionalsPromise.then((pros) =>
+      resolveDefaultProfessionalId(supabase, clinicId, pros)
+    ),
   ]);
-
-  const defaultProfessionalId = await resolveDefaultProfessionalId(
-    supabase,
-    clinicId,
-    professionals
-  );
 
   if (trimmedQ) {
     const rpcResult = await searchPatientsForClinicListPage(supabase, {

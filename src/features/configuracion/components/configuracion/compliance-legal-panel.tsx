@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ClinicHabeasExportButton } from "@/core/components/legal/clinic-habeas-export-button";
 import { CLINICAL_RECORD_RETENTION_YEARS, LEGAL_PRIVACY_VERSION, LEGAL_TERMS_VERSION } from "@/core/legal/documents";
 
+import { PrivacyRightsPanel } from "@/features/configuracion/components/configuracion/privacy-rights-panel";
 import { RetentionPolicyPanel } from "@/features/configuracion/components/configuracion/retention-policy-panel";
 import { SensitiveAccessLogPanel } from "@/features/configuracion/components/configuracion/sensitive-access-log-panel";
 import { loadClinicRetentionSummary } from "@/features/configuracion/server/load-clinic-retention-summary";
@@ -12,6 +13,17 @@ import { loadClinicSensitiveAccessLogs } from "@/features/configuracion/server/l
 
 import { Card } from "@/components/ui/card";
 import { getClinicComplianceSummary } from "@/lib/actions/compliance";
+import { listPrivacyRightsRequests } from "@/lib/actions/privacy-rights";
+
+async function PrivacyRightsRequestsSection() {
+  const result = await listPrivacyRightsRequests();
+  return (
+    <PrivacyRightsPanel
+      initialRows={result.rows ?? []}
+      loadError={result.error ?? null}
+    />
+  );
+}
 
 export async function ComplianceLegalPanel() {
   const [summary, accessLogs, retentionSummary] = await Promise.all([
@@ -105,6 +117,8 @@ export async function ComplianceLegalPanel() {
 
         <ClinicHabeasExportButton clinicSlug={clinic?.name ?? null} />
 
+        <PrivacyRightsRequestsSection />
+
         {retentionSummary.data ? (
           <RetentionPolicyPanel summary={retentionSummary.data} error={retentionSummary.error} />
         ) : (
@@ -117,6 +131,12 @@ export async function ComplianceLegalPanel() {
               recordsWithinRetention: 0,
               oldestRecordAt: null,
               newestRecordAt: null,
+              historyRetentionUntilNewest: null,
+              meetsDefaultMinimum: true,
+              autoPurgeEnabled: false,
+              retentionNotes: [
+                "DrFlow no ejecuta jobs de destrucción automática de HC al vencer el plazo. La conservación es el comportamiento por defecto.",
+              ],
             }}
             error={retentionSummary.error}
           />

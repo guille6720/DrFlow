@@ -29,7 +29,6 @@ export function FinalizeConsultationButton({ appointmentId, returnHref }: Props)
     if (!result.error) {
       clearConsultationTimer(appointmentId);
       router.push(returnHref ?? "/agenda?view=day");
-      router.refresh();
     }
   }
 
@@ -47,7 +46,7 @@ export function FinalizeConsultationButton({ appointmentId, returnHref }: Props)
       />
       <Button type="button" loading={loading} onClick={handleFinalize}>
         <CheckCircle2 className="h-4 w-4" />
-        Finalizar consulta
+        {loading ? "Guardando..." : "Finalizar consulta"}
       </Button>
     </div>
   );

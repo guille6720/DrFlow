@@ -101,7 +101,9 @@ export function EditPatientForm({
             )}
             {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}
             <div className="flex flex-wrap gap-2 sm:col-span-2">
-              <Button type="submit" loading={loading}>Guardar cambios</Button>
+              <Button type="submit" loading={loading} pendingLabel="Guardando...">
+                Guardar cambios
+              </Button>
               <Link href={`/pacientes/${patient.id}`}>
                 <Button type="button" variant="outline">Cancelar</Button>
               </Link>

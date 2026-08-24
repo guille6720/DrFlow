@@ -11,13 +11,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
+import { FEATURES } from "@/core/entitlements/features";
+import { requireAddonFeatureOrRedirect } from "@/core/entitlements/guard.server";
 
 import { getPamiMessages } from "@/features/pami/i18n";
 
@@ -27,11 +24,9 @@ import { Card } from "@/components/ui/card";
 const dailyFlowIcons = [Calendar, Stethoscope, ClipboardList, ScrollText, Pill] as const;
 
 export default async function GuiaPamiPage() {
+  await requireAddonFeatureOrRedirect(FEATURES.PAMI);
   const t = getPamiMessages().guia;
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, clinic } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, clinic } = await getDashboardPageContext();
   const isPamiProfile = clinic?.practice_profile === "cabecera_pami";
 
   return (

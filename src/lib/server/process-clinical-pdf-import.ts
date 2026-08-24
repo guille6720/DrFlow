@@ -1,6 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { logAudit } from "@/core/auth/session.actions";
+import { getPatientCreateHeadroom } from "@/core/entitlements/limits.server";
+import { shouldAllowPatientCreate } from "@/core/entitlements/quota-display";
+import { assertClinicStorageCapacity } from "@/core/entitlements/storage.server";
 import {
   buildPatientFilePath,
   ensureExtension,
@@ -82,12 +85,14 @@ export async function processClinicalPdfImport(
     .eq("id", clinicId)
     .single();
 
+  const remaining = await getPatientCreateHeadroom({ clinicId, supabase });
   const patientResult = await findOrCreatePatientFromExtract(
     supabase,
     clinicId,
     extract,
     clinic?.default_insurance_provider ?? null,
-    `Historia importada desde PDF: ${originalName}`
+    `Historia importada desde PDF: ${originalName}`,
+    { allowCreate: shouldAllowPatientCreate(remaining) }
   );
 
   if ("error" in patientResult) {
@@ -99,6 +104,15 @@ export async function processClinicalPdfImport(
     ".pdf"
   );
   const filePath = buildPatientFilePath(clinicId, patientResult.patientId, fileName);
+
+  const storage = await assertClinicStorageCapacity({
+    clinicId,
+    extraBytes: fileSize,
+    supabase,
+  });
+  if (!storage.ok) {
+    return { success: false, fileName: originalName, error: storage.error };
+  }
 
   const { error: uploadError } = await supabase.storage.from(BUCKET).upload(filePath, buffer, {
     contentType: "application/pdf",

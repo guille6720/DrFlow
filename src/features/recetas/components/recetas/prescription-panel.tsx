@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import type { HistoriaPrescriptionSummary } from "@/features/historias/types/historia-clinical-summaries";
 import { issuePrescription, voidPrescription } from "@/features/recetas/actions/prescriptions";
@@ -36,6 +36,7 @@ interface Props {
   };
   clinicalRecordId: string;
   diagnosis?: string | null;
+  diagnosisCie10?: string | null;
   professionals: Professional[];
   clinic: { name: string; address?: string | null; phone?: string | null };
   canIssue: boolean;
@@ -46,6 +47,7 @@ export function PrescriptionPanel({
   patient,
   clinicalRecordId,
   diagnosis,
+  diagnosisCie10,
   professionals,
   clinic,
   canIssue,
@@ -53,25 +55,34 @@ export function PrescriptionPanel({
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
+  const [, startRefresh] = useTransition();
 
   async function handleIssue(id: string) {
     setActing(id);
-    await issuePrescription(id);
+    const result = await issuePrescription(id);
     setActing(null);
-    router.refresh();
+    if (!result.error) {
+      startRefresh(() => {
+        router.refresh();
+      });
+    }
   }
 
   async function handleVoid(id: string) {
     setActing(id);
-    await voidPrescription(id);
+    const result = await voidPrescription(id);
     setActing(null);
-    router.refresh();
+    if (!result.error) {
+      startRefresh(() => {
+        router.refresh();
+      });
+    }
   }
 
   const defaultPro = professionals[0];
 
   return (
-    <Card title="Receta electrónica (Argentina)">
+    <Card title="Receta local (Argentina — sin homologación REFEPS)">
       {canIssue && (
         <div className="mb-4">
           <Button type="button" size="sm" variant="outline" onClick={() => setShowForm(!showForm)}>
@@ -96,6 +107,7 @@ export function PrescriptionPanel({
             patientInsurance={patient.insurance_provider}
             clinicalRecordId={clinicalRecordId}
             diagnosisDefault={diagnosis ?? ""}
+            cie10Default={diagnosisCie10 ?? ""}
             professionals={professionals}
             defaultProfessionalId={defaultPro?.id}
             onSuccess={() => setShowForm(false)}
@@ -121,4 +133,4 @@ export function PrescriptionPanel({
     </Card>
   );
 }
-
+

@@ -60,7 +60,7 @@ export function FloatingAnchorPanel({
         left: box.left,
         width: box.width,
         maxHeight: box.maxHeight,
-        zIndex: 80,
+        zIndex: 200,
       }}
     >
       {children}

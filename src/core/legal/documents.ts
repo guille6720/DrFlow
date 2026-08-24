@@ -8,6 +8,7 @@ export const LEGAL_PATIENT_NOTICE_VERSION = "2026-07-27";
 export const CONSENT_TYPES = {
   patientDataProcessingBooking: "patient_data_processing_booking",
   clinicTermsSignup: "clinic_terms_signup",
+  clinicPrivacySignup: "clinic_privacy_signup",
   prescriptionLocalDisclaimer: "prescription_local_disclaimer",
   informedConsentClinicalAct: "informed_consent_clinical_act",
 } as const;

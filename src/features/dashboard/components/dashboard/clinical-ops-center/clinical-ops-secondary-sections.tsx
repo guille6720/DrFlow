@@ -6,7 +6,10 @@ import {
   PrescriptionsAndOrdersSections,
 } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-worklist-sections";
 import { safeLoadClinicalOperationsDashboardSecondary } from "@/features/dashboard/server/load-clinical-operations-dashboard-safe";
-import type { ClinicalOperationsDashboardCorePayload } from "@/features/dashboard/utils/clinical-operations-dashboard-types";
+import type {
+  ClinicalOperationsDashboardCorePayload,
+  ClinicalOperationsDashboardSecondaryPayload,
+} from "@/features/dashboard/utils/clinical-operations-dashboard-types";
 
 type Props = {
   clinicId: string;
@@ -14,8 +17,16 @@ type Props = {
 };
 
 export async function ClinicalOpsSecondarySections({ clinicId, core }: Props) {
-  const supabase = await createClient();
-  const secondary = await safeLoadClinicalOperationsDashboardSecondary(supabase, clinicId, core);
+  let secondary: ClinicalOperationsDashboardSecondaryPayload | null = null;
+  try {
+    const supabase = await createClient();
+    secondary = await safeLoadClinicalOperationsDashboardSecondary(supabase, clinicId, core);
+  } catch (err) {
+    console.error("[clinical-ops-dashboard] secondary render failed", err);
+    return null;
+  }
+
+  if (!secondary) return null;
 
   return (
     <>

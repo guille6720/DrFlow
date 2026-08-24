@@ -1,6 +1,9 @@
 import type { Appointment } from "@/types/database";
 
-export function isOnlineBooking(appointment: Pick<Appointment, "booking_source" | "notes">): boolean {
+export function isOnlineBooking(appointment: {
+  booking_source?: string | null;
+  notes?: string | null;
+}): boolean {
   if (appointment.booking_source === "online") return true;
   return (appointment.notes ?? "").toLowerCase().includes("solicitud online");
 }

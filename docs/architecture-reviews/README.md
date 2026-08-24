@@ -42,3 +42,6 @@ What problem / feature drove this change?
 |-----|-------|
 | 001 | Consultation journey + layer split (Phase I) — see commit `35f8fca` |
 | 002 | Embedded AI in journey finish + follow-up (Phase J) |
+| 005 | Import / export phase 2 (templates, historical docs, JSON/ZIP) |
+| 006 | FHIR R4 interoperability (import / export phase 3) |
+| 007 | Bulk clinical export (import / export phase 4) |

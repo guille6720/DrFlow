@@ -13,7 +13,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
 import { useCopilotFabVisible } from "@/core/components/layout/unified-copilot-fab";
+import { FEATURES } from "@/core/entitlements/features";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -45,7 +47,7 @@ const globalActions: FabAction[] = [
     color: "bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600",
   },
   {
-    href: "/historias/nueva",
+    href: "/consultas",
     label: "Nueva consulta",
     icon: Stethoscope,
     color: "bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700",
@@ -86,8 +88,14 @@ export function FloatingActions() {
   const [open, setOpen] = useState(false);
   const enabled = useFeatureFlag("floating_actions");
   const copilotFabVisible = useCopilotFabVisible();
+  const canUsePharmacology = useCanUseFeature(FEATURES.PHARMACOLOGY);
   const patientId = parsePatientIdFromPath(pathname);
-  const actions = patientId ? patientActions(patientId) : globalActions;
+  const actions = patientId
+    ? patientActions(patientId)
+    : globalActions.filter(
+        (action) =>
+          action.href !== "/herramientas/farmacologia" || canUsePharmacology
+      );
 
   if (!enabled || pathname === "/dashboard") {
     return null;
@@ -106,6 +114,7 @@ export function FloatingActions() {
             <Link
               key={action.href}
               href={action.href}
+              prefetch
               onClick={() => setOpen(false)}
               className={cn(
                 "animate-fab-in flex items-center gap-2 rounded-full py-2 pl-3 pr-4 text-sm font-medium text-white shadow-lg",

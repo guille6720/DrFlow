@@ -3,6 +3,7 @@
 import { Bot, Clock3, Loader2, Send, Sparkles, Trash2, Users } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { CLINICAL_RESEARCH_PROTOCOLS_FLAG } from "@/core/compliance/clinical-research-ai";
 import { SafeInternalLink } from "@/core/components/safe-link";
 
 import { useClinicalCopilotChat } from "@/features/ia/hooks/use-clinical-copilot-chat";
@@ -26,12 +27,15 @@ import { Textarea } from "@/components/ui/textarea";
 import type { GeminiStatsPatient } from "@/lib/ai/gemini-structured-response";
 import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
 
-const SUGGESTED_PROMPTS = [
+const STATS_SUGGESTED_PROMPTS = [
   "¿Cuántos pacientes con hipertensión hay en DrFlow?",
-  "Candidatos para MARITIME-CV",
-  "Criterios del estudio PRESTO (EPOC)",
   "Pacientes con asma o EPOC",
   "Diagnósticos más frecuentes este mes",
+];
+
+const RESEARCH_SUGGESTED_PROMPTS = [
+  "Candidatos para MARITIME-CV",
+  "Criterios del estudio PRESTO (EPOC)",
 ];
 
 function engineLabel(
@@ -103,6 +107,14 @@ function PatientResultsList({
 
 export function GeminiWorkspace() {
   const enabled = useFeatureFlag("consultation_assistant");
+  const researchEnabled = useFeatureFlag(CLINICAL_RESEARCH_PROTOCOLS_FLAG);
+  const suggestedPrompts = useMemo(
+    () =>
+      researchEnabled
+        ? [...STATS_SUGGESTED_PROMPTS, ...RESEARCH_SUGGESTED_PROMPTS]
+        : STATS_SUGGESTED_PROMPTS,
+    [researchEnabled]
+  );
   const [patient, setPatient] = useState<PatientSearchOption | null>(null);
   const snapshot = useMemo(() => loadGeminiWorkspaceSnapshot(), []);
   const [searchHistory, setSearchHistory] = useState<GeminiSearchHistoryEntry[]>(
@@ -329,11 +341,12 @@ export function GeminiWorkspace() {
           {turns.length === 0 ? (
             <div className="space-y-3">
               <p className="text-sm text-slate-600">
-                Preguntá estadísticas o candidatos a protocolos. Los resultados quedan guardados
-                acá y en el historial de la izquierda.
+                {researchEnabled
+                  ? "Preguntá estadísticas o candidatos a protocolos (flag de investigación activo). Los resultados quedan guardados acá y en el historial de la izquierda."
+                  : "Preguntá estadísticas del consultorio. El matching de candidatos a protocolos de investigación está desactivado hasta revisión legal/privacidad."}
               </p>
               <div className="flex flex-wrap gap-2">
-                {SUGGESTED_PROMPTS.map((prompt) => (
+                {suggestedPrompts.map((prompt) => (
                   <button
                     key={prompt}
                     type="button"

@@ -5,6 +5,7 @@ import {
   formatPrintHeaderDate,
   formatPrintTableDate,
   formatPrintTreatmentMetaDate,
+  getIndicationsSnapshot,
   parseInlineDiagnoses,
   parseInlineTreatments,
   professionalMetaLine,
@@ -34,7 +35,7 @@ describe("patient-ehr-print-utils", () => {
     expect(formatPrintTableDate("2022-11-10T12:04:12.000Z")).toBe("10-NOV");
   });
 
-  it("parses inline diagnoses and treatments", () => {
+  it("keeps diagnosis snapshot parsing and treats indications as plain snapshot", () => {
     const c = consultation({
       diagnosis: "Infarto transmural agudo del miocardio de la pared anterior",
       indications: "GASTEC\n20 mg caps.x 70\nFILTEN\n12.5 mg comp.ran.x 60",
@@ -43,10 +44,9 @@ describe("patient-ehr-print-utils", () => {
     expect(parseInlineDiagnoses(c)).toEqual([
       { text: "Infarto transmural agudo del miocardio de la pared anterior", code: null },
     ]);
-    expect(parseInlineTreatments(c)).toEqual([
-      { product: "GASTEC", lab: "", dose: "20 mg caps.x 70" },
-      { product: "FILTEN", lab: "", dose: "12.5 mg comp.ran.x 60" },
-    ]);
+    // Phase 3: no structured treatment invention from free text.
+    expect(parseInlineTreatments(c)).toEqual([]);
+    expect(getIndicationsSnapshot(c)).toContain("GASTEC");
   });
 
   it("extracts CIE code from diagnosis line", () => {
@@ -58,15 +58,6 @@ describe("patient-ehr-print-utils", () => {
         text: "Infarto transmural agudo del miocardio de la pared anterior",
         code: "I-210",
       },
-    ]);
-  });
-
-  it("splits product and laboratory name", () => {
-    const c = consultation({
-      indications: "GASTEC Laboratorios Be\n20 mg caps.x 70",
-    });
-    expect(parseInlineTreatments(c)).toEqual([
-      { product: "GASTEC", lab: "Laboratorios Be", dose: "20 mg caps.x 70" },
     ]);
   });
 

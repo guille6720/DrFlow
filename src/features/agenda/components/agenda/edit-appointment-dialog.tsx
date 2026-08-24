@@ -123,7 +123,7 @@ export function EditAppointmentDialog({
         aria-label="Cerrar"
         onClick={handleClose}
       />
-      <div className="drflow-card-light relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 text-slate-900 shadow-xl">
+      <div className="drflow-modal-panel drflow-card-light relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 text-slate-900 shadow-xl">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">Modificar turno</h2>

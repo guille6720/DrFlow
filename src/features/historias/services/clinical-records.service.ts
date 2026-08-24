@@ -1,10 +1,21 @@
 import type { z } from "zod";
 
-import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
+import {
+  insertClinicalRecordPatchAudit,
+} from "@/core/compliance/clinical-record-integrity";
+import {
+  isMissingRpcInSchemaCache,
+  resolvePostgresUserMessage,
+} from "@/core/errors/postgres-error";
 import type { DbClient } from "@/core/repositories/types";
 import type { ServiceResult } from "@/core/services/types";
 import { serviceErr, serviceOk } from "@/core/services/types";
 import { clinicalRecordSchema, sanitizeText } from "@/core/validations/schemas";
+
+import {
+  parseDiagnosesJson,
+  parseTreatmentsJson,
+} from "@/features/historias/utils/clinical-structured-entries";
 
 import { parseConsultationModality } from "@/lib/constants/consultation-modality";
 
@@ -17,10 +28,135 @@ function sanitizeClinicalRecordFields(data: ClinicalRecordInput) {
     diagnosis: sanitizeText(data.diagnosis ?? ""),
     evolution: sanitizeText(data.evolution ?? ""),
     indications: sanitizeText(data.indications ?? ""),
+    diagnosis_cie10: sanitizeText(data.diagnosis_cie10 ?? "") || null,
+  };
+}
+
+function parseStructuredPayloads(data: ClinicalRecordInput) {
+  let diagnosesJson: unknown = [];
+  let treatmentsJson: unknown = [];
+  if (data.diagnoses_json?.trim()) {
+    try {
+      diagnosesJson = JSON.parse(data.diagnoses_json);
+    } catch {
+      diagnosesJson = [];
+    }
+  }
+  if (data.treatments_json?.trim()) {
+    try {
+      treatmentsJson = JSON.parse(data.treatments_json);
+    } catch {
+      treatmentsJson = [];
+    }
+  }
+  return {
+    diagnoses: parseDiagnosesJson(diagnosesJson),
+    treatments: parseTreatmentsJson(treatmentsJson),
   };
 }
 
 export type ClinicalRecordRow = Record<string, unknown> & { id: string };
+
+type RpcArgs = Record<string, unknown>;
+
+function withoutStructuredPayload(args: RpcArgs): RpcArgs {
+  const next = { ...args };
+  delete next.p_diagnosis_cie10;
+  delete next.p_diagnoses_json;
+  delete next.p_treatments_json;
+  return next;
+}
+
+function withoutConsultationAt(args: RpcArgs): RpcArgs {
+  const next = withoutStructuredPayload(args);
+  delete next.p_consultation_at;
+  return next;
+}
+
+async function rpcWithLegacyFallback(
+  db: DbClient,
+  fn: "create_clinical_record_atomic" | "update_clinical_record_atomic",
+  args: RpcArgs
+) {
+  const attempts = [args, withoutStructuredPayload(args), withoutConsultationAt(args)];
+  let lastError: { message?: string; code?: string; details?: string; hint?: string } | null =
+    null;
+
+  for (const payload of attempts) {
+    const { data, error } = await db.rpc(fn, payload as never);
+    if (!error) return { data, error: null };
+    lastError = error;
+    if (!isMissingRpcInSchemaCache(error)) break;
+  }
+
+  return { data: null, error: lastError };
+}
+
+async function tryPersistStructuredColumns(
+  db: DbClient,
+  recordId: string,
+  clinicId: string,
+  userId: string,
+  auditContext: { ip_address: string | null; user_agent: string | null },
+  payload: {
+    diagnosis_cie10: string | null;
+    diagnoses: unknown;
+    treatments: unknown;
+  }
+) {
+  const { data: before } = await db
+    .from("clinical_records")
+    .select(
+      "id, patient_id, diagnosis_cie10, diagnoses_json, treatments_json, record_version"
+    )
+    .eq("id", recordId)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+
+  if (!before) return;
+
+  const { error } = await db
+    .from("clinical_records")
+    .update({
+      diagnosis_cie10: payload.diagnosis_cie10,
+      diagnoses_json: payload.diagnoses,
+      treatments_json: payload.treatments,
+      record_version: (before.record_version ?? 1) + 1,
+      updated_by: userId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", recordId)
+    .eq("clinic_id", clinicId);
+
+  if (error) return;
+
+  const beforeSnap = {
+    diagnosis_cie10: before.diagnosis_cie10,
+    diagnoses_json: before.diagnoses_json,
+    treatments_json: before.treatments_json,
+    record_version: before.record_version ?? 1,
+  };
+  const afterSnap = {
+    diagnosis_cie10: payload.diagnosis_cie10,
+    diagnoses_json: payload.diagnoses,
+    treatments_json: payload.treatments,
+    record_version: (before.record_version ?? 1) + 1,
+  };
+
+  if (JSON.stringify(beforeSnap) === JSON.stringify(afterSnap)) return;
+
+  await insertClinicalRecordPatchAudit(db, {
+    clinicalRecordId: recordId,
+    clinicId,
+    patientId: before.patient_id,
+    changedBy: userId,
+    what: "Actualizó diagnósticos/tratamientos estructurados (legacy RPC)",
+    oldValues: beforeSnap,
+    newValues: afterSnap,
+    ipAddress: auditContext.ip_address,
+    userAgent: auditContext.user_agent,
+  });
+}
 
 export async function createClinicalRecordEntry(
   db: DbClient,
@@ -33,10 +169,11 @@ export async function createClinicalRecordEntry(
   }
 ): Promise<ServiceResult<ClinicalRecordRow>> {
   const sanitized = sanitizeClinicalRecordFields(input.parsed);
+  const structured = parseStructuredPayloads(input.parsed);
   const modality = parseConsultationModality(input.consultationModalityRaw);
   const consultationAt = input.parsed.consultation_at?.trim() || null;
 
-  const { data, error } = await db.rpc("create_clinical_record_atomic", {
+  const { data, error } = await rpcWithLegacyFallback(db, "create_clinical_record_atomic", {
     p_clinic_id: input.clinicId,
     p_patient_id: sanitized.patient_id,
     p_professional_id: sanitized.professional_id,
@@ -51,10 +188,29 @@ export async function createClinicalRecordEntry(
     p_audit_what: "Creó consulta clínica (SOAP)",
     p_audit_ip: input.auditContext.ip_address,
     p_audit_user_agent: input.auditContext.user_agent,
+    p_diagnosis_cie10: sanitized.diagnosis_cie10,
+    p_diagnoses_json: structured.diagnoses,
+    p_treatments_json: structured.treatments,
   });
 
-  if (error) return serviceErr(error.message);
-  return serviceOk(data as ClinicalRecordRow);
+  if (error) {
+    return serviceErr(
+      resolvePostgresUserMessage(error, {
+        fallback: "No se pudo guardar la consulta. Intentá de nuevo.",
+      })
+    );
+  }
+
+  const row = data as ClinicalRecordRow;
+  if (row?.id) {
+    await tryPersistStructuredColumns(db, row.id, input.clinicId, input.userId, input.auditContext, {
+      diagnosis_cie10: sanitized.diagnosis_cie10,
+      diagnoses: structured.diagnoses,
+      treatments: structured.treatments,
+    });
+  }
+
+  return serviceOk(row);
 }
 
 export async function updateClinicalRecordEntry(
@@ -68,9 +224,10 @@ export async function updateClinicalRecordEntry(
   }
 ): Promise<ServiceResult<{ old: Record<string, unknown>; data: Record<string, unknown> }>> {
   const sanitized = sanitizeClinicalRecordFields(input.parsed);
+  const structured = parseStructuredPayloads(input.parsed);
   const consultationAt = input.parsed.consultation_at?.trim() || null;
 
-  const { data, error } = await db.rpc("update_clinical_record_atomic", {
+  const { data, error } = await rpcWithLegacyFallback(db, "update_clinical_record_atomic", {
     p_clinic_id: input.clinicId,
     p_record_id: input.recordId,
     p_patient_id: sanitized.patient_id,
@@ -85,11 +242,20 @@ export async function updateClinicalRecordEntry(
     p_audit_what: "Modificó consulta clínica (SOAP)",
     p_audit_ip: input.auditContext.ip_address,
     p_audit_user_agent: input.auditContext.user_agent,
+    p_diagnosis_cie10: sanitized.diagnosis_cie10,
+    p_diagnoses_json: structured.diagnoses,
+    p_treatments_json: structured.treatments,
   });
 
   if (error) {
     return serviceErr(resolvePostgresUserMessage(error, { fallback: error.message }));
   }
+
+  await tryPersistStructuredColumns(db, input.recordId, input.clinicId, input.userId, input.auditContext, {
+    diagnosis_cie10: sanitized.diagnosis_cie10,
+    diagnoses: structured.diagnoses,
+    treatments: structured.treatments,
+  });
 
   const payload = data as { old: Record<string, unknown>; data: Record<string, unknown> };
   return serviceOk(payload);

@@ -17,8 +17,8 @@ import {
   resolveAuthoritativeCoverageForIssue,
   validatePrescriptionDraft,
 } from "@/features/recetas/engine/prescription-engine";
-import type { CoverageRuleConfig, PrescriptionDraftInput } from "@/features/recetas/engine/types";
-import { loadActiveCoverageRulesForClinic } from "@/features/recetas/repositories/coverage-rules.repository";
+import type { CoverageKind, CoverageRuleConfig, PrescriptionDraftInput } from "@/features/recetas/engine/types";
+import { loadCoverageRuleForKind } from "@/features/recetas/repositories/coverage-rules.repository";
 import {
   findPrescriptionByIdempotencyKey,
   getPrescriptionDraftForIssue,
@@ -126,10 +126,9 @@ async function loadClinicRuleOverride(
   clinicId: string,
   coverageKind: string
 ): Promise<Partial<CoverageRuleConfig> | null> {
-  const rulesResult = await loadActiveCoverageRulesForClinic(db, clinicId);
-  if (!rulesResult.ok) return null;
-  const match = rulesResult.data.find((row) => row.coverage_kind === coverageKind);
-  return match?.rules ?? null;
+  const result = await loadCoverageRuleForKind(db, clinicId, coverageKind as CoverageKind);
+  if (!result.ok) return null;
+  return result.data?.rules ?? null;
 }
 
 function buildDraftRow(
@@ -187,26 +186,28 @@ export async function savePrescriptionDraftRecord(
     existingDraftId: string | null;
   }
 ): Promise<ServiceResult<ElectronicPrescription>> {
-  const patientResult = await loadPatientContext(db, input.clinicId, input.parsed.patient_id);
+  const coverageHint = (input.parsed.coverage_kind ?? "PARTICULAR") as CoverageKind;
+  const [patientResult, professionalResult, hintedRule] = await Promise.all([
+    loadPatientContext(db, input.clinicId, input.parsed.patient_id),
+    loadProfessionalContext(db, input.clinicId, input.parsed.professional_id),
+    loadClinicRuleOverride(db, input.clinicId, coverageHint),
+  ]);
   if (!patientResult.ok) return patientResult;
+  if (!professionalResult.ok) return professionalResult;
 
   const enriched = enrichDraftFromPatient(
     input.parsed as PrescriptionDraftInput,
     patientResult.data
   );
 
-  const professionalResult = await loadProfessionalContext(
-    db,
-    input.clinicId,
-    enriched.professional_id
-  );
-  if (!professionalResult.ok) return professionalResult;
-
-  const ruleOverride = await loadClinicRuleOverride(
-    db,
-    input.clinicId,
-    enriched.coverage_kind ?? "PARTICULAR"
-  );
+  const ruleOverride =
+    (enriched.coverage_kind ?? "PARTICULAR") === coverageHint
+      ? hintedRule
+      : await loadClinicRuleOverride(
+          db,
+          input.clinicId,
+          enriched.coverage_kind ?? "PARTICULAR"
+        );
 
   const ctx = buildPrescriptionContext({
     clinicId: input.clinicId,
@@ -283,10 +284,13 @@ export async function issuePrescriptionRecord(
     return { ok: false, error: "Solo se pueden emitir recetas en borrador." };
   }
 
-  const patientResult = await loadPatientContext(db, clinicId, draft.patient_id);
+  const coverageHint = (draft.coverage_kind ?? "PARTICULAR") as CoverageKind;
+  const [patientResult, professionalResult, hintedRule] = await Promise.all([
+    loadPatientContext(db, clinicId, draft.patient_id),
+    loadProfessionalContext(db, clinicId, draft.professional_id),
+    loadClinicRuleOverride(db, clinicId, coverageHint),
+  ]);
   if (!patientResult.ok) return { ok: false, error: patientResult.error };
-
-  const professionalResult = await loadProfessionalContext(db, clinicId, draft.professional_id);
   if (!professionalResult.ok) return { ok: false, error: professionalResult.error };
 
   const authoritative = resolveAuthoritativeCoverageForIssue(patientResult.data, {
@@ -295,11 +299,10 @@ export async function issuePrescriptionRecord(
     insurance_number: draft.insurance_number,
     insurance_plan: draft.insurance_plan,
   });
-  const ruleOverride = await loadClinicRuleOverride(
-    db,
-    clinicId,
-    authoritative.coverageKind
-  );
+  const ruleOverride =
+    authoritative.coverageKind === coverageHint
+      ? hintedRule
+      : await loadClinicRuleOverride(db, clinicId, authoritative.coverageKind);
 
   const ctx = buildPrescriptionContext({
     clinicId,

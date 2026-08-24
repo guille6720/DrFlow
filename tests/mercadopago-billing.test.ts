@@ -19,14 +19,18 @@ import {
 } from "@/core/billing/plans";
 
 describe("billing plans helpers", () => {
-  it("resolves monthly and annual prices", () => {
+  it("resolves commercial promo prices; historic solo still priced for webhooks", () => {
+    expect(getPlanPriceArs("essential", "monthly")).toBe(25_000);
+    expect(getPlanPriceArs("pro", "monthly")).toBe(40_000);
+    expect(getPlanPriceArs("essential", "annual")).toBeNull();
     expect(getPlanPriceArs("solo", "monthly")).toBe(24_900);
     expect(getPlanPriceArs("solo", "annual")).toBe(249_000);
     expect(getPlanPriceArs("clinica", "monthly")).toBeNull();
   });
 
   it("builds mercado pago sku per cycle", () => {
-    expect(getPlanMercadoPagoSku("consultorio", "monthly")).toBe("drflow-consultorio-mensual");
+    expect(getPlanMercadoPagoSku("pro", "monthly")).toBe("drflow-pro-mensual");
+    expect(getPlanMercadoPagoSku("essential", "monthly")).toBe("drflow-essential-mensual");
     expect(getPlanMercadoPagoSku("consultorio", "annual")).toBe("drflow-consultorio-anual");
     expect(billingCycleLabel("annual")).toBe("Anual");
   });
@@ -36,12 +40,16 @@ describe("mercadopago external reference", () => {
   const clinicId = "11111111-1111-1111-1111-111111111111";
 
   it("roundtrips clinic plan cycle", () => {
-    const ref = buildExternalReference({ clinicId, planId: "solo", cycle: "monthly" });
+    const ref = buildExternalReference({ clinicId, planId: "essential", cycle: "monthly" });
     expect(parseExternalReference(ref)).toEqual({
       clinicId,
-      planId: "solo",
+      planId: "essential",
       cycle: "monthly",
     });
+  });
+
+  it("still parses historic solo references", () => {
+    expect(parseExternalReference(`${clinicId}:solo:monthly`)?.planId).toBe("solo");
   });
 
   it("rejects malformed reference", () => {
@@ -103,6 +111,23 @@ describe("verifyMercadoPagoWebhookSignature", () => {
         secret: "secret",
       })
     ).toBe(false);
+  });
+});
+
+describe("formatMercadoPagoApiError", () => {
+  it("maps FA_UNAUTHORIZED to actionable Spanish copy", async () => {
+    const { formatMercadoPagoApiError } = await import("@/core/billing/mercadopago");
+    const msg = formatMercadoPagoApiError(
+      JSON.stringify({
+        message: "At least one policy returned UNAUTHORIZED",
+        blocked_by: "PolicyAgent",
+        status: 403,
+        code: "FA_UNAUTHORIZED_RESULT_FROM_POLICIES",
+      }),
+      403
+    );
+    expect(msg).toMatch(/credenciales no autorizadas/i);
+    expect(msg).toMatch(/MP_ACCESS_TOKEN/);
   });
 });
 

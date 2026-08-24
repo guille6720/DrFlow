@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { filterAvailabilityRulesByLocation } from "@/core/booking/location-filters";
 import { generateAvailableSlots } from "@/core/booking/slots";
-import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
+import { toAppointmentAgendaRows } from "@/core/supabase/appointment-agenda-map";
 import { APPOINTMENT_AGENDA_COLUMNS } from "@/core/supabase/select-columns";
 
 import { getAppointmentHorizonDaysAhead } from "@/lib/utils/appointment-booking-horizon";
@@ -50,7 +50,7 @@ export async function loadTurnosWizardSlots(
 
   const rules = filterAvailabilityRulesByLocation(rulesRaw ?? [], locationId);
 
-  const appointmentRows = (appointments ?? []) as AppointmentAgendaRow[];
+  const appointmentRows = toAppointmentAgendaRows(appointments ?? []);
   const blockRows = (blocks ?? []).map((block) => ({
     start_at: block.start_at,
     end_at: block.end_at,

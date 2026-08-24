@@ -34,6 +34,7 @@ export function PacientesSectionNav({ section, q = "", patologia = "", cobertura
           <Link
             key={tab.id}
             href={tab.href}
+            prefetch
             aria-current={active ? "page" : undefined}
             className={cn(
               "rounded-lg px-4 py-2 text-sm font-medium transition",

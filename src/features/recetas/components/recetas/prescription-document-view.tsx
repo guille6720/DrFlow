@@ -21,14 +21,14 @@ export function PrescriptionDocumentView({ data, className }: Props) {
 
   return (    <article
       className={className ? `drflow-medical-order-doc ${className}` : "drflow-medical-order-doc"}
-      aria-label="Receta electrónica"
+      aria-label="Receta local / borrador"
     >
       <header className="drflow-medical-order-doc-header border-b-2 border-teal-600 pb-3 text-center">
         <p className="drflow-medical-order-doc-kicker text-[11px] uppercase tracking-wide">
           República Argentina — DrFlow
         </p>
         <h2 className="drflow-medical-order-doc-heading mt-1 text-xl font-serif font-bold tracking-wide">
-          RECETA ELECTRÓNICA
+          RECETA LOCAL / BORRADOR
         </h2>
         <p className="drflow-medical-order-doc-meta mt-2 text-xs">
           N° {data.prescriptionNumber ?? "—"} ·{" "}

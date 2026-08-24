@@ -24,6 +24,7 @@ describe("clinic job registry", () => {
     expect(ids).toContain("import_hce_batch");
     expect(ids).toContain("import_patients_batch");
     expect(ids).toContain("run_ai_task");
+    expect(ids).toContain("export_clinical_bulk");
   });
 
   it("has status labels", () => {

@@ -2,7 +2,9 @@
 
 import { UserPlus } from "lucide-react";
 
+import { PlanCapHint } from "@/core/components/entitlements/plan-cap-hint";
 import { DoctorSetupFields } from "@/core/components/onboarding/doctor-setup-fields";
+import { FEATURES } from "@/core/entitlements/features";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -53,6 +55,7 @@ export function ProfessionalIntakeNewForm({
 
   return (
     <Card title="Alta de profesional" className="border-teal-100">
+      <PlanCapHint feature={FEATURES.PROFESSIONALS_MAX} />
       <div className="mb-6 flex flex-wrap gap-2 border-b border-slate-100 pb-4">
         {PROFESSIONAL_INTAKE_NEW_STEPS.map((s) => (
           <button

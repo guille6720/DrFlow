@@ -66,6 +66,7 @@ export function ClinicalOpsQuickActions() {
               <Link
                 key={action.href}
                 href={action.href}
+                prefetch
                 role="menuitem"
                 onClick={() => setOpen(false)}
                 className={cn(

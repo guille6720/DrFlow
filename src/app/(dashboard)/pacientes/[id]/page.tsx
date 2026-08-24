@@ -1,12 +1,7 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
@@ -36,10 +31,7 @@ export default async function PacienteDetailPage({
   const { id } = await params;
   const sp = await searchParams;
   const { from, patient: returnPatientId, tab: tabParam } = sp;
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin, clinic } = await getActiveClinic();
+  const { profile, clinics, clinicId, role, isSuperadmin, clinic } = await getDashboardPageContext();
   const supabase = await createClient();
 
   if (!clinicId) notFound();

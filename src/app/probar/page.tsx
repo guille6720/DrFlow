@@ -74,7 +74,7 @@ export default function ProbarPage() {
 
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <ButtonLink
-            href="/register?trial=10&utm_source=whatsapp&utm_medium=invite"
+            href="/register?trial=14&utm_source=whatsapp&utm_medium=invite"
             size="lg"
             className="w-full min-w-[240px] sm:w-auto"
           >

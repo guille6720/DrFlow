@@ -79,9 +79,10 @@ describe("prescription document Etapa 4", () => {
       professionals
     );
 
-    expect(data.qrTitle).toBe("Verificación REFEPS");
+    expect(data.qrTitle).toBe("Verificación REFEPS (sandbox / prueba)");
     expect(data.qrPayload).toContain("REFEPS-SBX-TEST123");
     expect(data.refepsId).toBe("REFEPS-SBX-TEST123");
+    expect(data.qrHint).toMatch(/No constituye aprobación gubernamental/i);
   });
 
   it("renders coverage and QR in print HTML", () => {
@@ -117,7 +118,7 @@ describe("prescription document Etapa 4", () => {
       professionals
     );
     const html = buildPrescriptionDocumentHtml(data);
-    expect(html).toContain("Cód. vademécum PAMI: 42415");
+    expect(html).toContain("Cód. Alfabeta: 42415");
   });
 
   it("includes coverage in WhatsApp share summary", () => {

@@ -68,8 +68,17 @@ export function MedicalOrderActionButtons({
           disabled={acting}
           className="drflow-medical-order-action-btn inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-800 hover:bg-red-100 disabled:opacity-60"
         >
-          <Trash2 className="h-4 w-4" aria-hidden />
-          Eliminar
+          {acting ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              Anulando...
+            </>
+          ) : (
+            <>
+              <Trash2 className="h-4 w-4" aria-hidden />
+              Eliminar
+            </>
+          )}
         </button>
       ) : null}
     </div>

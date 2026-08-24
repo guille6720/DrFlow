@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  catalogToMedicationSelection,
   formatVademecumPrescriptionLabel,
   vademecumToPrescription,
 } from "@/features/recetas/components/recetas/vademecum-to-prescription";
@@ -18,6 +19,22 @@ const sample = {
   affiliate_amount: 500,
   price_list_date: "2026-07-01",
 };
+
+describe("catalogToMedicationSelection", () => {
+  it("fills identity from catalog without inventing dose, frequency or duration", () => {
+    const med = catalogToMedicationSelection(sample);
+    expect(med.generic_name).toBe("Rosuvastatina");
+    expect(med.brand_name).toBe("ROSUVASTATINA VANNIER");
+    expect(med.presentation).toBe("40 mg comp.x 30");
+    expect(med.concentration).toBe("40 mg");
+    expect(med.dose).toBe("");
+    expect(med.frequency).toBe("");
+    expect(med.posology).toBe("");
+    expect(med.duration_days).toBeUndefined();
+    expect(med.route).toBe("");
+    expect(med.quantity).toBe(0);
+  });
+});
 
 describe("vademecumToPrescription", () => {
   it("maps vademécum row to prescription medication", () => {

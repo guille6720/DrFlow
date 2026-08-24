@@ -24,17 +24,17 @@ export function StatCard({
     <>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-semibold text-slate-600">{title}</p>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{value}</p>
+          <p className="text-sm font-semibold text-[var(--muted-foreground,#475569)]">{title}</p>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-[var(--foreground,#0f172a)]">{value}</p>
           {subtitle && (
-            <p className="mt-1 text-xs font-medium text-slate-600">{subtitle}</p>
+            <p className="mt-1 text-xs font-medium text-[var(--muted-foreground,#475569)]">{subtitle}</p>
           )}
           {onClick && (
-            <p className="mt-2 text-xs font-medium text-teal-700">Clic para ver detalle</p>
+            <p className="mt-2 text-xs font-medium text-[var(--primary)]">Clic para ver detalle</p>
           )}
         </div>
         {icon && (
-          <div className="rounded-xl bg-gradient-to-br from-teal-50 to-cyan-100 p-2.5 text-teal-700">
+          <div className="rounded-xl bg-[var(--accent-soft)] p-2.5 text-[var(--primary)]">
             {icon}
           </div>
         )}
@@ -43,11 +43,11 @@ export function StatCard({
   );
 
   const classes = cn(
-    "drflow-card-light rounded-2xl border border-slate-200 bg-white p-5 text-slate-900 shadow-md shadow-slate-200/40 transition-shadow drflow-card-accent drflow-ui-stat w-full text-left",
+    "drflow-card-light rounded-[10px] border border-[var(--border-default,var(--border))] bg-[var(--surface-card,var(--card))] p-5 text-[var(--text-on-card,var(--card-foreground))] shadow-[0_4px_14px_rgba(0,0,0,0.18)] transition-shadow drflow-card-accent drflow-ui-stat w-full text-left",
     onClick
-      ? "cursor-pointer hover:shadow-lg hover:shadow-teal-100/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40"
-      : "hover:shadow-lg hover:shadow-teal-100/40",
-    active && "ring-2 ring-teal-500/40 shadow-lg shadow-teal-100/50",
+      ? "cursor-pointer hover:bg-[var(--surface-hover,var(--muted))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]/40"
+      : "hover:bg-[var(--surface-hover,var(--muted))]",
+    active && "ring-2 ring-[var(--ring)]/40",
     className
   );
 

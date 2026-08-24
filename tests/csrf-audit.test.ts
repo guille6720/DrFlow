@@ -80,7 +80,9 @@ describe("CSRF audit static checks", () => {
       const hasCsrf =
         /isSameOrigin(Post|Request)|requireSameOriginMutation/.test(content);
       const hasCronAuth = /authorizeCronRequest/.test(content);
-      if (!hasCsrf && !hasCronAuth) {
+      // External payment webhooks authenticate via HMAC (not browser CSRF).
+      const hasMercadoPagoWebhookAuth = /verifyMercadoPagoWebhookSignature/.test(content);
+      if (!hasCsrf && !hasCronAuth && !hasMercadoPagoWebhookAuth) {
         unprotected.push(route);
       }
     }

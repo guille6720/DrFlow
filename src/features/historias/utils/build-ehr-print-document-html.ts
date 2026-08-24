@@ -3,19 +3,28 @@ import { escapeHtml } from "@/core/security/xss";
 import {
   formatPrintBirthDate,
   formatPrintDetailedAge,
-  formatPrintDiagnosisMetaDate,
   formatPrintDocumentNumber,
-  formatPrintHeaderDate,
-  formatPrintTime,
-  formatPrintTreatmentMetaDate,
-  parseInlineDiagnoses,
-  parseInlineTreatments,
-  professionalMetaLine,
+  getIndicationsSnapshot,
   splitTreatmentProductLab,
 } from "@/features/historias/components/historias/patient-ehr-print-utils";
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
 import { patientEhrEvolutionBody } from "@/features/historias/components/historias/patient-ehr-utils";
+import {
+  dedupeDiagnosisRows,
+  dedupeTreatmentRows,
+  diagnosesForConsultation,
+  evolutionBodyWithoutExtractedBlocks,
+  extractClinicalSection,
+  formatCompactMatricula,
+  formatPrintDateTime,
+  formatPrintGeneratedAt,
+  formatProfessionalLine,
+  isActiveTreatmentStatus,
+  parseVitalsFromText,
+  treatmentsForConsultation,
+} from "@/features/historias/utils/ehr-print-document-helpers";
 import type { EhrPrintScope } from "@/features/historias/utils/ehr-print-mode";
+import type { PatientProblemListItem } from "@/features/pacientes/server/load-clinical-structure";
 import type {
   PatientEhrConsultation,
   PatientEhrDiagnosisRow,
@@ -24,10 +33,17 @@ import type {
 
 import type { ProfessionalSignatureSource } from "@/lib/utils/professional";
 import {
-  buildDocumentSignatureHtml,
-  DOCUMENT_SIGNATURE_PRINT_STYLES,
+  type DocumentSignature,
   resolveClinicalRecordDocumentSignature,
 } from "@/lib/utils/professional-signature-document";
+
+export type EhrPrintClinicalContext = {
+  allergies?: string | null;
+  medicalHistory?: string | null;
+  regularMedication?: string | null;
+  sexLabel?: string | null;
+  problemList?: PatientProblemListItem[];
+};
 
 export type EhrPrintDocumentInput = {
   scope: EhrPrintScope;
@@ -37,222 +53,557 @@ export type EhrPrintDocumentInput = {
   diagnosisRows: PatientEhrDiagnosisRow[];
   treatmentRows: PatientEhrTreatmentRow[];
   professionals?: Array<ProfessionalSignatureSource & { id?: string }>;
+  clinicalContext?: EhrPrintClinicalContext;
+  generatedAt?: Date;
 };
-
-function tableDateLabel(dateLabel: string): string {
-  return dateLabel.split("-").slice(0, 2).join("-");
-}
 
 function evolutionText(consultation: PatientEhrConsultation): string {
   if (consultation.category === "document") {
     return consultation.diagnosis?.trim() || consultation.chief_complaint || "Documento adjunto";
   }
+  if (consultation.category === "vitals") {
+    return (
+      consultation.evolution?.trim() ||
+      consultation.chief_complaint?.trim() ||
+      consultation.diagnosis?.trim() ||
+      ""
+    );
+  }
   return patientEhrEvolutionBody(consultation);
 }
 
-function insuranceLabel(patient: PatientEhrPatientInfo): string {
-  if (patient.insurance_provider?.toUpperCase().includes("PAMI")) return "PAMI";
-  return patient.insurance_provider?.trim() || "Obra social";
-}
-
-function renderDemographics(patient: PatientEhrPatientInfo): string {
-  const name = `${patient.last_name}, ${patient.first_name}`.toLowerCase();
-  const birth = formatPrintBirthDate(patient.birth_date);
-  const age = formatPrintDetailedAge(patient.birth_date) ?? patient.age_label ?? "Sin definir";
-  const phone = patient.phone?.trim();
+function buildDocumentSignatureHtml(
+  consultation: PatientEhrConsultation,
+  signature: DocumentSignature
+): string {
+  const name = consultation.professional_name.trim() || "Profesional";
+  const titled = /^dr\.?\b|^dra\.?\b/i.test(name) ? name : `Dr/a. ${name}`;
+  const matricula = formatCompactMatricula(consultation);
+  const imageUrl = signature.signatureImageUrl?.trim();
+  const imageHtml = imageUrl
+    ? `<img class="sig-img" src="${escapeHtml(imageUrl)}" alt="" />`
+    : "";
 
   return `
-    <section class="demo">
-      <div class="demo-grid">
-        <div><p class="demo-label">Nombre</p><p class="demo-value demo-name">${escapeHtml(name)}</p></div>
-        <div><p class="demo-label">DNI</p><p class="demo-value">${escapeHtml(formatPrintDocumentNumber(patient.document_number))}</p></div>
-        <div><p class="demo-label">Edad</p><div class="demo-value">${birth ? `<p class="demo-birth">${escapeHtml(birth)}</p>` : ""}<p>${escapeHtml(age)}</p></div></div>
-        <div><p class="demo-label">${escapeHtml(insuranceLabel(patient))}</p><p class="demo-value">${patient.insurance_number ? `# ${escapeHtml(patient.insurance_number)}` : "Sin definir"}</p></div>
-        <div><p class="demo-label">Teléfono</p><p class="demo-value demo-phone">${phone ? escapeHtml(phone) : "Sin definir"}</p></div>
+    <footer class="doc-sign">
+      ${imageHtml}
+      <p class="sig-name">${escapeHtml(titled)}</p>
+      ${matricula ? `<p class="sig-mat">${escapeHtml(matricula)}</p>` : ""}
+    </footer>`;
+}
+
+function resolveDocumentEndSignature(
+  consultations: PatientEhrConsultation[],
+  professionals: Array<ProfessionalSignatureSource & { id?: string }>
+): string {
+  const latest = consultations[0];
+  if (!latest) return "";
+  const signature = resolveClinicalRecordDocumentSignature({
+    professionalId: latest.professional_id,
+    storedSignatureText: latest.professional_signature,
+    professionals,
+  });
+  return buildDocumentSignatureHtml(latest, signature);
+}
+
+function renderVitalsTable(vitals: Record<string, string>): string {
+  const entries = Object.entries(vitals);
+  if (entries.length === 0) return "";
+  const heads = entries.map(([key]) => `<th>${escapeHtml(key)}</th>`).join("");
+  const values = entries.map(([, value]) => `<td>${escapeHtml(value)}</td>`).join("");
+  return `
+    <section class="block keep-with">
+      <h3 class="block-title">Signos vitales</h3>
+      <table class="vitals"><thead><tr>${heads}</tr></thead><tbody><tr>${values}</tr></tbody></table>
+    </section>`;
+}
+
+function renderHeader(patient: PatientEhrPatientInfo, clinical: EhrPrintClinicalContext, generatedAt: string): string {
+  const name = `${patient.last_name}, ${patient.first_name}`;
+  const birth = formatPrintBirthDate(patient.birth_date);
+  const age = formatPrintDetailedAge(patient.birth_date) ?? patient.age_label ?? null;
+  const rows: Array<[string, string]> = [
+    ["Paciente", name],
+    ["DNI", formatPrintDocumentNumber(patient.document_number)],
+  ];
+  if (birth) rows.push(["Fecha de nacimiento", birth]);
+  if (age) rows.push(["Edad", age]);
+  if (clinical.sexLabel?.trim()) rows.push(["Sexo", clinical.sexLabel.trim()]);
+  if (patient.insurance_provider?.trim()) {
+    rows.push(["Cobertura", patient.insurance_provider.trim()]);
+  }
+  if (patient.insurance_number?.trim()) {
+    rows.push(["N° afiliado", patient.insurance_number.trim()]);
+  }
+  if (patient.phone?.trim()) rows.push(["Teléfono", patient.phone.trim()]);
+  if (patient.email?.trim()) rows.push(["Email", patient.email.trim()]);
+
+  const cells = rows
+    .map(
+      ([label, value]) =>
+        `<div class="meta-item"><span class="meta-label">${escapeHtml(label)}</span><span class="meta-value">${escapeHtml(value)}</span></div>`
+    )
+    .join("");
+
+  return `
+    <header class="doc-header">
+      <div class="brand">
+        <p class="brand-name">DRFLOW</p>
+        <h1>Historia Clínica Completa</h1>
       </div>
+      <p class="generated">Generado: ${escapeHtml(generatedAt)}</p>
+      <div class="meta-grid">${cells}</div>
+    </header>`;
+}
+
+function renderClinicalSummary(
+  clinical: EhrPrintClinicalContext,
+  diagnosisRows: PatientEhrDiagnosisRow[],
+  treatmentRows: PatientEhrTreatmentRow[]
+): string {
+  const problems = clinical.problemList ?? [];
+  const activeDx =
+    problems.length > 0
+      ? problems.map((item) => ({
+          name: item.name,
+          cie10: item.cie10_code,
+          type: /cron/i.test(item.status) ? "Crónico" : item.status || "Activo",
+          status: item.status,
+        }))
+      : dedupeDiagnosisRows(diagnosisRows)
+          .filter((row) => row.chronic)
+          .slice(0, 20)
+          .map((row) => ({
+            name: row.name,
+            cie10: null as string | null,
+            type: "Crónico",
+            status: "Activo",
+          }));
+
+  const allergies = clinical.allergies?.trim();
+  const history = clinical.medicalHistory?.trim();
+  const activeTx = dedupeTreatmentRows(treatmentRows).filter((row) =>
+    isActiveTreatmentStatus(row.status)
+  );
+
+  const dxRows =
+    activeDx.length > 0
+      ? activeDx
+          .map(
+            (item) => `<tr>
+              <td>${escapeHtml(item.name)}</td>
+              <td>${escapeHtml(item.cie10 ?? "—")}</td>
+              <td>${escapeHtml(item.type)}</td>
+              <td>${escapeHtml(item.status || "—")}</td>
+            </tr>`
+          )
+          .join("")
+      : `<tr><td colspan="4">Sin diagnósticos activos registrados</td></tr>`;
+
+  const medRows =
+    activeTx.length > 0
+      ? activeTx
+          .map((row) => {
+            const { product, lab } = splitTreatmentProductLab(row.product);
+            return `<tr>
+              <td>${escapeHtml(product)}</td>
+              <td>${escapeHtml(lab || "—")}</td>
+              <td>${escapeHtml(row.dose !== "—" ? row.dose : "—")}</td>
+              <td>${escapeHtml(row.frequency !== "—" ? row.frequency : "—")}</td>
+            </tr>`;
+          })
+          .join("")
+      : clinical.regularMedication?.trim()
+        ? `<tr><td colspan="4">${escapeHtml(clinical.regularMedication.trim())}</td></tr>`
+        : `<tr><td colspan="4">Sin medicación actual registrada</td></tr>`;
+
+  return `
+    <section class="summary keep-start">
+      <h2 class="section-heading">Resumen clínico</h2>
+
+      <h3 class="block-title">Diagnósticos activos</h3>
+      <table class="data">
+        <thead><tr><th>Diagnóstico</th><th>CIE-10</th><th>Tipo</th><th>Estado</th></tr></thead>
+        <tbody>${dxRows}</tbody>
+      </table>
+
+      <h3 class="block-title">Antecedentes</h3>
+      <p class="prose">${history ? escapeHtml(history) : "Sin antecedentes registrados"}</p>
+
+      <div class="allergies ${allergies ? "allergies-alert" : ""}">
+        <h3 class="block-title">Alergias</h3>
+        <p class="prose">${allergies ? escapeHtml(allergies) : "Sin alergias registradas"}</p>
+      </div>
+
+      <h3 class="block-title">Medicación actual</h3>
+      <table class="data">
+        <thead><tr><th>Medicamento</th><th>Principio activo / lab.</th><th>Dosis</th><th>Frecuencia</th></tr></thead>
+        <tbody>${medRows}</tbody>
+      </table>
     </section>`;
 }
 
 function renderEvolutionBlock(
   consultation: PatientEhrConsultation,
-  professionals: Array<ProfessionalSignatureSource & { id?: string }> = []
+  diagnosisRows: PatientEhrDiagnosisRow[],
+  treatmentRows: PatientEhrTreatmentRow[]
 ): string {
-  const diagnoses = parseInlineDiagnoses(consultation);
-  const treatments = parseInlineTreatments(consultation);
-  const body = escapeHtml(evolutionText(consultation));
+  const { date, time } = formatPrintDateTime(consultation.created_at);
+  const rawBody = evolutionText(consultation);
+  const vitals = parseVitalsFromText(
+    [consultation.evolution, consultation.chief_complaint, consultation.diagnosis, rawBody]
+      .filter(Boolean)
+      .join("\n")
+  );
+  const labText =
+    extractClinicalSection(rawBody, ["laboratorio"]) ||
+    extractClinicalSection(consultation.indications, ["laboratorio"]);
+  const studiesText =
+    extractClinicalSection(rawBody, ["estudios complementarios"]) ||
+    extractClinicalSection(consultation.indications, ["estudios complementarios"]);
 
-  const diagnosisHtml =
+  let body = evolutionBodyWithoutExtractedBlocks(rawBody);
+  if (consultation.chief_complaint?.trim() && consultation.category === "evolution") {
+    const cc = consultation.chief_complaint.trim();
+    if (!body.includes(cc)) {
+      body = `Motivo: ${cc}${body ? `\n\n${body}` : ""}`;
+    }
+  }
+
+  const diagnoses = diagnosesForConsultation(consultation, diagnosisRows);
+  const treatments = treatmentsForConsultation(consultation, treatmentRows);
+  const indications = treatments.length === 0 ? getIndicationsSnapshot(consultation) : null;
+
+  const dxHtml =
     diagnoses.length > 0
-      ? `<section class="section"><h3 class="section-title">Diagnósticos</h3><ul class="diag-list">${diagnoses
+      ? `<section class="block keep-with"><h3 class="block-title">Diagnósticos</h3><ul class="bullets">${diagnoses
           .map(
             (item) =>
-              `<li><span>${escapeHtml(item.text)}</span>${item.code ? `<span class="diag-code">${escapeHtml(item.code)}</span>` : ""}</li>`
+              `<li>${escapeHtml(item.name)}${item.cie10 ? ` — <span class="code">${escapeHtml(item.cie10)}</span>` : ""}${item.chronic ? ` <span class="tag">Crónico</span>` : ""}</li>`
           )
           .join("")}</ul></section>`
       : "";
 
-  const treatmentHtml =
+  const txHtml =
     treatments.length > 0
-      ? `<section class="section"><h3 class="section-title">Tratamientos</h3><ul class="treat-list">${treatments
+      ? `<section class="block keep-with"><h3 class="block-title">Tratamiento / conducta</h3><ul class="bullets">${treatments
           .map((item) => {
-            return `<li><p class="treat-line"><strong>${escapeHtml(item.product)}</strong>${item.lab ? `<span class="treat-lab">${escapeHtml(item.lab)}</span>` : ""}</p>${item.dose ? `<p class="treat-dose">${escapeHtml(item.dose)}</p>` : ""}</li>`;
+            const details = [item.dose, item.frequency, item.notes].filter(Boolean).join(" · ");
+            return `<li>${escapeHtml(item.product)}${details ? ` — ${escapeHtml(details)}` : ""}</li>`;
           })
           .join("")}</ul></section>`
-      : "";
+      : indications
+        ? `<section class="block keep-with"><h3 class="block-title">Tratamiento / conducta</h3><div class="prose">${escapeHtml(indications)}</div></section>`
+        : "";
 
-  const signature = resolveClinicalRecordDocumentSignature({
-    professionalId: consultation.professional_id,
-    storedSignatureText: consultation.professional_signature,
-    professionals,
-  });
+  const labHtml = labText
+    ? `<section class="block keep-with"><h3 class="block-title">Laboratorio</h3><div class="prose">${escapeHtml(labText)}</div></section>`
+    : "";
+  const studiesHtml = studiesText
+    ? `<section class="block keep-with"><h3 class="block-title">Estudios complementarios</h3><div class="prose">${escapeHtml(studiesText)}</div></section>`
+    : "";
+
+  const showBody = body.trim().length > 0 && consultation.category !== "vitals";
 
   return `
     <article class="evolution">
-      <h2 class="evolution-title">${escapeHtml(formatPrintHeaderDate(consultation.created_at))} ${escapeHtml(consultation.professional_name)}</h2>
-      <section class="section">
-        <h3 class="section-title">Evoluciones</h3>
-        <p class="meta">${escapeHtml(formatPrintTime(consultation.created_at))} ${escapeHtml(professionalMetaLine(consultation))}</p>
-        <div class="evolution-body">${body}</div>
-      </section>
-      ${diagnosisHtml}
-      ${treatmentHtml}
-      ${buildDocumentSignatureHtml(signature)}
+      <header class="evo-head keep-with">
+        <p class="evo-when">${escapeHtml(date)} — ${escapeHtml(time)}</p>
+        <p class="evo-pro">${escapeHtml(formatProfessionalLine(consultation))}</p>
+      </header>
+      ${
+        showBody
+          ? `<section class="block evo-body"><h3 class="block-title">Evolución</h3><div class="prose">${escapeHtml(body)}</div></section>`
+          : ""
+      }
+      ${dxHtml}
+      ${txHtml}
+      ${renderVitalsTable(vitals)}
+      ${labHtml}
+      ${studiesHtml}
     </article>`;
 }
 
-function consultationForRecord(
-  consultations: PatientEhrConsultation[],
-  recordId: string
-): PatientEhrConsultation | undefined {
-  return consultations.find((item) => item.id === recordId);
-}
-
-function renderDiagnosisTable(
-  rows: PatientEhrDiagnosisRow[],
-  consultations: PatientEhrConsultation[]
-): string {
-  if (rows.length === 0) return "";
-
-  const body = rows
+function renderHistoricalDiagnoses(rows: PatientEhrDiagnosisRow[]): string {
+  const deduped = dedupeDiagnosisRows(rows);
+  if (deduped.length === 0) return "";
+  const body = deduped
     .map((row) => {
-      const consultation = consultationForRecord(consultations, row.recordId);
+      const { date } = formatPrintDateTime(row.recordCreatedAt);
+      const parsed = splitDiagnosisName(row.name);
       return `<tr>
-        <td>${escapeHtml(tableDateLabel(row.dateLabel))}</td>
-        <td>
-          ${row.chronic ? `<p class="chronic">Crónico</p>` : ""}
-          <p class="muted">${escapeHtml(consultation ? formatPrintDiagnosisMetaDate(consultation.created_at) : "")}</p>
-          <p class="primary">${escapeHtml(row.name)}</p>
-          ${consultation ? `<p class="pro-meta">${escapeHtml(professionalMetaLine(consultation))}</p>` : ""}
-        </td>
+        <td>${escapeHtml(parsed.name)}</td>
+        <td>${escapeHtml(parsed.cie10 ?? "—")}</td>
+        <td>${row.chronic ? "Crónico" : "Agudo"}</td>
+        <td>${escapeHtml(date)}</td>
+        <td>${row.chronic ? "Activo" : "—"}</td>
       </tr>`;
     })
     .join("");
 
   return `
-    <section class="table-section">
-      <div class="table-caption">Diagnósticos</div>
-      <table><thead><tr><th>Fecha</th><th>Nombre</th></tr></thead><tbody>${body}</tbody></table>
+    <section class="appendix keep-start">
+      <h2 class="section-heading">Diagnósticos</h2>
+      <table class="data">
+        <thead><tr><th>Diagnóstico</th><th>CIE-10</th><th>Tipo</th><th>Fecha desde</th><th>Estado</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
     </section>`;
 }
 
-function renderTreatmentTable(
-  rows: PatientEhrTreatmentRow[],
-  consultations: PatientEhrConsultation[]
-): string {
-  if (rows.length === 0) return "";
+function splitDiagnosisName(name: string): { name: string; cie10: string | null } {
+  const match = name.match(/^(.+?)\s+(?:\(CIE-10:\s*)?([A-Z]\d{2}(?:\.\d+)?|[A-Z]-\d{2,3})\)?$/i);
+  if (match) {
+    return { name: match[1].trim(), cie10: match[2].toUpperCase() };
+  }
+  return { name, cie10: null };
+}
 
-  const body = rows
+function renderHistoricalTreatments(rows: PatientEhrTreatmentRow[]): string {
+  const deduped = dedupeTreatmentRows(rows);
+  if (deduped.length === 0) return "";
+  const body = deduped
     .map((row) => {
-      const consultation = consultationForRecord(consultations, row.recordId);
       const { product, lab } = splitTreatmentProductLab(row.product);
-      const presentation =
-        row.dose && row.dose !== "—" && !row.product.includes(row.dose) ? row.dose : "";
-      const notes = row.notes !== row.product && row.notes !== "—" ? row.notes : "";
-
+      const { date } = formatPrintDateTime(row.recordCreatedAt);
+      const dose = row.dose !== "—" ? row.dose : "";
+      const presentation = dose && /(caps|comp|ml|ui|jarabe|crema)/i.test(dose) ? dose : "—";
       return `<tr>
-        <td>${escapeHtml(tableDateLabel(row.dateLabel))}</td>
-        <td>
-          <p class="treat-line"><strong>${escapeHtml(product)}</strong>${lab ? `<span class="treat-lab">${escapeHtml(lab)}</span>` : ""}</p>
-          ${presentation ? `<p class="muted">${escapeHtml(presentation)}</p>` : ""}
-          ${consultation ? `<p class="pro-meta">${escapeHtml(professionalMetaLine(consultation))}</p>` : ""}
-        </td>
-        <td></td>
-        <td>${row.frequency !== "—" ? escapeHtml(row.frequency) : ""}</td>
-        <td>${notes ? escapeHtml(notes) : ""}</td>
-        <td>
-          <p class="status">${escapeHtml(row.status)}</p>
-          <p class="muted">${escapeHtml(consultation ? formatPrintTreatmentMetaDate(consultation.created_at) : `${row.dateLabel} · (n/a)`)}</p>
-        </td>
+        <td>${escapeHtml(product)}</td>
+        <td>${escapeHtml(lab || "—")}</td>
+        <td>${escapeHtml(presentation)}</td>
+        <td>${escapeHtml(dose || "—")}</td>
+        <td>${escapeHtml(row.frequency !== "—" ? row.frequency : "—")}</td>
+        <td>${escapeHtml(date)}</td>
+        <td>—</td>
+        <td>${escapeHtml(row.status || "—")}</td>
       </tr>`;
     })
     .join("");
 
   return `
-    <section class="table-section">
-      <div class="table-caption">Tratamientos</div>
-      <table><thead><tr><th>Fecha</th><th>Producto</th><th>Dosis</th><th>Frecuencia</th><th>Notas</th><th>Estado</th></tr></thead><tbody>${body}</tbody></table>
+    <section class="appendix keep-start">
+      <h2 class="section-heading">Tratamientos y medicación</h2>
+      <table class="data">
+        <thead>
+          <tr>
+            <th>Medicamento</th>
+            <th>Principio activo</th>
+            <th>Presentación</th>
+            <th>Dosis</th>
+            <th>Frecuencia</th>
+            <th>Fecha inicio</th>
+            <th>Fecha fin</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>${body}</tbody>
+      </table>
     </section>`;
+}
+
+function printStyles(patientLabel: string, generatedAt: string): string {
+  const safePatient = patientLabel.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  const safeGenerated = generatedAt.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return `
+    @page {
+      size: A4 portrait;
+      margin: 16mm 15mm 18mm 15mm;
+      @bottom-left {
+        content: "DrFlow — Historia Clínica · ${safePatient}";
+        font-size: 8pt;
+        color: #64748b;
+      }
+      @bottom-right {
+        content: "Página " counter(page) " · ${safeGenerated}";
+        font-size: 8pt;
+        color: #64748b;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      color: #0f172a;
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.4;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    h1, h2, h3, p, ul, table { margin: 0; }
+    .doc-header { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1.5px solid #0f172a; }
+    .brand-name {
+      font-size: 11pt;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #1d4f91;
+    }
+    .doc-header h1 {
+      margin-top: 2px;
+      font-size: 16pt;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .generated { margin-top: 4px; font-size: 9pt; color: #64748b; }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 4px 16px;
+      margin-top: 10px;
+    }
+    .meta-item { display: flex; gap: 6px; font-size: 9.5pt; }
+    .meta-label { min-width: 7.5rem; color: #64748b; font-weight: 600; }
+    .meta-value { color: #0f172a; font-weight: 600; }
+    .section-heading {
+      margin: 14px 0 8px;
+      font-size: 12.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 3px;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+    .block-title {
+      margin: 8px 0 4px;
+      font-size: 10pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #334155;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+    .prose { white-space: pre-wrap; font-size: 10.5pt; orphans: 3; widows: 3; }
+    .allergies { margin-top: 6px; padding: 6px 8px; border: 1px solid #e2e8f0; }
+    .allergies-alert { border-color: #b91c1c; background: #fff5f5; }
+    .allergies-alert .block-title { color: #991b1b; }
+    table.data, table.vitals {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5pt;
+      margin-top: 4px;
+    }
+    table.data th, table.data td, table.vitals th, table.vitals td {
+      border: 1px solid #cbd5e1;
+      padding: 4px 6px;
+      vertical-align: top;
+      text-align: left;
+    }
+    table.data th, table.vitals th { background: #f8fafc; font-weight: 700; }
+    /* Allow row/section splits so long notes are not clipped past the page edge. */
+    tr { break-inside: auto; page-break-inside: auto; }
+    .evolution {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #94a3b8;
+      break-inside: auto;
+      page-break-inside: auto;
+    }
+    .evo-head { margin-bottom: 6px; break-after: avoid; page-break-after: avoid; }
+    .evo-when { font-size: 11pt; font-weight: 700; }
+    .evo-pro { margin-top: 2px; font-size: 10pt; color: #1d4f91; font-weight: 600; }
+    .block { margin-top: 6px; break-inside: auto; page-break-inside: auto; }
+    .evo-body, .evo-body .prose, .prose {
+      break-inside: auto;
+      page-break-inside: auto;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .bullets { padding-left: 1.1rem; }
+    .bullets li { margin: 2px 0; }
+    .code { color: #475569; font-weight: 600; }
+    .tag {
+      display: inline-block;
+      margin-left: 4px;
+      padding: 0 4px;
+      border: 1px solid #94a3b8;
+      font-size: 8pt;
+      color: #334155;
+    }
+    .evo-sign,
+    .doc-sign {
+      margin-top: 8px;
+      padding-top: 6px;
+      max-width: 220px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .doc-sign {
+      margin-top: 18px;
+      margin-left: auto;
+      padding-top: 10px;
+      border-top: 1px solid #94a3b8;
+    }
+    .sig-img {
+      display: block;
+      max-width: 120px;
+      max-height: 50px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      margin-bottom: 2px;
+    }
+    .sig-name { font-size: 9.5pt; font-weight: 700; }
+    .sig-mat { font-size: 9pt; color: #475569; }
+    /* Keep small headers with following content; never lock long clinical blocks. */
+    .keep-with { break-inside: auto; page-break-inside: auto; }
+    .keep-start { break-before: auto; page-break-before: auto; }
+    .appendix { margin-top: 16px; }
+    @media print {
+      a[href]::after { content: none !important; }
+    }
+  `;
 }
 
 export function buildEhrPrintDocumentHtml(input: EhrPrintDocumentInput): string {
   const professionals = input.professionals ?? [];
+  const clinical = input.clinicalContext ?? {};
+  const generatedAtDate = input.generatedAt ?? new Date();
+  const generatedAt = formatPrintGeneratedAt(generatedAtDate);
   const list = input.scope === "day" ? input.dayConsultations : input.consultations;
-  const evolutions = list.map((consultation) => renderEvolutionBlock(consultation, professionals)).join("");
-  const tables =
+  const sorted = [...list].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
+  const patientLabel = `${input.patient.last_name}, ${input.patient.first_name} — DNI ${formatPrintDocumentNumber(input.patient.document_number)}`;
+  const summary =
     input.scope === "all"
-      ? renderDiagnosisTable(input.diagnosisRows, input.consultations) +
-        renderTreatmentTable(input.treatmentRows, input.consultations)
+      ? renderClinicalSummary(clinical, input.diagnosisRows, input.treatmentRows)
       : "";
+
+  const evolutions = sorted
+    .map((consultation) =>
+      renderEvolutionBlock(consultation, input.diagnosisRows, input.treatmentRows)
+    )
+    .join("");
+
+  const appendix =
+    input.scope === "all"
+      ? renderHistoricalDiagnoses(input.diagnosisRows) +
+        renderHistoricalTreatments(input.treatmentRows)
+      : "";
+
+  const documentSignature = resolveDocumentEndSignature(sorted, professionals);
 
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <title>Historia clínica — ${escapeHtml(`${input.patient.last_name}, ${input.patient.first_name}`)}</title>
-  <style>
-    @page { size: A4; margin: 12mm 14mm; }
-    * { box-sizing: border-box; }
-    body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #fff; font-size: 12px; }
-    .demo { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #cbd5e1; }
-    .demo-grid { display: grid; grid-template-columns: 1.6fr 0.9fr 1.1fr 1fr 1.2fr; gap: 8px 16px; }
-    .demo-label { margin: 0; font-size: 11px; font-weight: 700; }
-    .demo-value { margin: 2px 0 0; font-size: 12px; }
-    .demo-name { color: #2563eb; text-transform: lowercase; }
-    .demo-birth { margin: 0 0 2px; font-size: 10px; color: #64748b; }
-    .demo-phone { color: #16a34a; }
-    .evolution { padding: 10px 0; page-break-inside: avoid; }
-    .evolution + .evolution { border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 12px; }
-    .evolution-title { margin: 0 0 10px; font-size: 13px; font-weight: 700; }
-    .section { margin-top: 10px; }
-    .section-title { margin: 0 0 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-    .meta { margin: 0 0 4px; font-size: 10px; color: #475569; }
-    .evolution-body { white-space: pre-wrap; line-height: 1.45; font-size: 12px; }
-    .diag-list, .treat-list { margin: 4px 0 0; padding: 0; list-style: none; }
-    .diag-list li { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; padding-left: 12px; position: relative; }
-    .diag-list li::before, .treat-list li::before { content: "•"; position: absolute; left: 0; }
-    .diag-code { color: #64748b; white-space: nowrap; }
-    .treat-list li { margin-bottom: 6px; padding-left: 12px; position: relative; }
-    .treat-line { margin: 0; }
-    .treat-line strong { text-transform: uppercase; }
-    .treat-lab { margin-left: 4px; font-weight: 400; text-transform: none; }
-    .treat-dose { margin: 2px 0 0; font-size: 10px; color: #64748b; }
-    .table-section { margin-top: 20px; page-break-inside: avoid; }
-    .table-caption { border: 1px solid #cbd5e1; border-bottom: none; background: #f8fafc; padding: 6px 8px; font-weight: 700; }
-    table { width: 100%; border-collapse: collapse; font-size: 10px; }
-    th, td { border: 1px solid #cbd5e1; padding: 6px 8px; vertical-align: top; }
-    th { font-weight: 700; background: #fff; }
-    .muted { margin: 0 0 2px; color: #475569; }
-    .primary { margin: 0; font-weight: 600; }
-    .chronic { margin: 0 0 2px; color: #2563eb; font-weight: 600; }
-    .pro-meta { margin: 4px 0 0; color: #2563eb; }
-    .status { margin: 0; color: #16a34a; font-weight: 600; }
-    ${DOCUMENT_SIGNATURE_PRINT_STYLES}
-  </style>
+  <title>Historia_Clinica_${escapeHtml(input.patient.last_name)}_${escapeHtml(input.patient.first_name)}</title>
+  <style>${printStyles(patientLabel, generatedAt)}</style>
 </head>
 <body>
-  ${renderDemographics(input.patient)}
-  ${evolutions}
-  ${tables}
+  ${renderHeader(input.patient, clinical, generatedAt)}
+  ${summary}
+  <section class="evolutions">
+    <h2 class="section-heading">Evoluciones</h2>
+    ${evolutions || `<p class="prose">Sin evoluciones para el alcance seleccionado.</p>`}
+  </section>
+  ${appendix}
+  ${documentSignature}
 </body>
 </html>`;
 }

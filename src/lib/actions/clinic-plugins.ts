@@ -6,6 +6,8 @@ import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
 import { getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { revalidateClinicPluginsCache } from "@/core/cache/revalidate-clinic-cache";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { addonFeaturesForClinicPlugin } from "@/core/entitlements/plugin-features";
 import { createClient } from "@/core/supabase/server";
 
 import { getCachedClinicPlugins } from "@/lib/server/cached-clinic-queries";
@@ -25,6 +27,13 @@ export async function updateClinicPlugin(
   const def = getPluginDefinition(pluginId);
   if (def.tier === "planned") {
     return { error: "Este plugin aún no está disponible" };
+  }
+
+  if (enabled) {
+    for (const addon of addonFeaturesForClinicPlugin(pluginId)) {
+      const entitlement = await requireAddonFeatureAccess(addon);
+      if (!entitlement.ok) return { error: entitlement.error };
+    }
   }
 
   const user = await getSession();

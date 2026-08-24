@@ -53,6 +53,7 @@ export const COVERAGE_INCLUDE = [
   "src/shared/utils/stabilization-limits.ts",
   "src/features/dashboard/utils/clinical-ops-metrics.ts",
   "src/lib/utils/yearly-attended-patients.ts",
+  "src/core/entitlements/**",
 ];
 
 export const COVERAGE_EXCLUDE = ["**/*.server.ts", "node_modules/**"];

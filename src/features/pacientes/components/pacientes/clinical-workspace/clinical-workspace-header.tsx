@@ -7,7 +7,6 @@ import {
   Stethoscope,
   Upload,
 } from "lucide-react";
-import Link from "next/link";
 
 import { PrintPageButton } from "@/core/components/ui/print-page-button";
 
@@ -18,9 +17,12 @@ import type {
   PatientChartProfessional,
 } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import {
+  buildConsultaSessionUrl,
+  buildPatientWorkspaceUrl,
+} from "@/features/pacientes/utils/patient-workspace-actions";
 
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 import { insuranceNumberLabel } from "@/lib/constants/coverages";
 
 type Props = {
@@ -124,43 +126,45 @@ export function ClinicalWorkspaceHeader({
         aria-label="Acciones clínicas"
       >
         {canEditClinical ? (
-          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })}>
-            <Button size="sm" type="button">
-              <Stethoscope className="h-4 w-4" aria-hidden />
-              Iniciar consulta
-            </Button>
-          </Link>
+          <ButtonLink href={buildConsultaSessionUrl({ patient: patientId })} size="sm">
+            <Stethoscope className="h-4 w-4" aria-hidden />
+            Iniciar consulta
+          </ButtonLink>
         ) : null}
         {canEditClinical ? (
-          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" })}>
-            <Button size="sm" variant="outline" type="button">
-              Nueva SOAP
-            </Button>
-          </Link>
+          <ButtonLink href={buildConsultaSessionUrl({ patient: patientId })} size="sm" variant="outline">
+            Nueva SOAP
+          </ButtonLink>
         ) : null}
         {canIssue ? (
-          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}>
-            <Button size="sm" variant="outline" type="button">
-              <Pill className="h-4 w-4" aria-hidden />
-              Receta
-            </Button>
-          </Link>
+          <ButtonLink
+            href={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}
+            size="sm"
+            variant="outline"
+          >
+            <Pill className="h-4 w-4" aria-hidden />
+            Receta
+          </ButtonLink>
         ) : null}
         {canIssue ? (
-          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "ordenes", action: "nueva" })}>
-            <Button size="sm" variant="outline" type="button">
-              <ClipboardList className="h-4 w-4" aria-hidden />
-              Orden
-            </Button>
-          </Link>
+          <ButtonLink
+            href={buildPatientWorkspaceUrl(patientId, { tab: "ordenes", action: "nueva" })}
+            size="sm"
+            variant="outline"
+          >
+            <ClipboardList className="h-4 w-4" aria-hidden />
+            Orden
+          </ButtonLink>
         ) : null}
         {canEditClinical ? (
-          <Link href={buildPatientWorkspaceUrl(patientId, { tab: "estudios", action: "estudio" })}>
-            <Button size="sm" variant="outline" type="button">
-              <Upload className="h-4 w-4" aria-hidden />
-              Subir estudio
-            </Button>
-          </Link>
+          <ButtonLink
+            href={buildPatientWorkspaceUrl(patientId, { tab: "estudios", action: "estudio" })}
+            size="sm"
+            variant="outline"
+          >
+            <Upload className="h-4 w-4" aria-hidden />
+            Subir estudio
+          </ButtonLink>
         ) : null}
         <PrintPageButton
           printFilenamePatient={{
@@ -170,19 +174,19 @@ export function ClinicalWorkspaceHeader({
           }}
         />
         {canIssue ? (
-          <Link href={buildPatientWorkspaceUrl(patientId, { action: "certificado" })}>
-            <Button size="sm" variant="ghost" type="button">
-              <FileText className="h-4 w-4" aria-hidden />
-              Certificado
-            </Button>
-          </Link>
+          <ButtonLink
+            href={buildPatientWorkspaceUrl(patientId, { action: "certificado" })}
+            size="sm"
+            variant="ghost"
+          >
+            <FileText className="h-4 w-4" aria-hidden />
+            Certificado
+          </ButtonLink>
         ) : null}
-        <Link href={`/turnos/nuevo?patient=${patientId}`}>
-          <Button size="sm" variant="ghost" type="button">
-            <CalendarPlus className="h-4 w-4" aria-hidden />
-            Seguimiento
-          </Button>
-        </Link>
+        <ButtonLink href={`/turnos/nuevo?patient=${patientId}`} size="sm" variant="ghost">
+          <CalendarPlus className="h-4 w-4" aria-hidden />
+          Seguimiento
+        </ButtonLink>
       </div>
     </header>
   );

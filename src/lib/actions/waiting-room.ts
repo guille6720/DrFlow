@@ -1,9 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
+import { revalidateAppointmentSurfaces } from "@/core/cache/revalidate-appointment-surfaces";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { createClient } from "@/core/supabase/server";
 import { waitingRoomStatusSchema } from "@/core/validations/cash-schemas";
@@ -15,7 +14,10 @@ export async function updateWaitingRoomStatus(
   appointmentId: string,
   status: WaitingRoomStatus
 ) {
-  const access = await requireClinicPermission("manageWaitingRoom");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageWaitingRoom"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
 
@@ -24,8 +26,6 @@ export async function updateWaitingRoomStatus(
 
   const idParsed = parseEntityId(appointmentId, "Turno");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
   const { data, error } = await supabase.rpc("update_waiting_room_status_atomic", {
     p_clinic_id: clinicId,
     p_appointment_id: idParsed.data,
@@ -44,9 +44,10 @@ export async function updateWaitingRoomStatus(
     metadata: { waiting_room_status: parsed.data },
   });
 
-  revalidatePath("/sala-espera");
-  revalidatePath("/agenda");
-  revalidatePath("/turnos/agenda");
+  revalidateAppointmentSurfaces({
+    includeConsultasQueue: true,
+    includeWaitingRoom: true,
+  });
   return { data };
 }
 

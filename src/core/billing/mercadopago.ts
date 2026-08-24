@@ -1,12 +1,11 @@
 import "server-only";
 
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 
 import {
   type BillingCycle,
   type BillingPlanId,
   getPlanMercadoPagoSku,
-  getPlanPriceArs,
 } from "@/core/billing/plans";
 import { getPublicSiteUrl } from "@/core/supabase/env";
 
@@ -19,6 +18,51 @@ export function getMercadoPagoAccessToken(): string | null {
     process.env.MERCADOPAGO_ACCESS_TOKEN?.trim() ||
     "";
   return token || null;
+}
+
+export function isMercadoPagoTestToken(token?: string | null): boolean {
+  const value = token ?? getMercadoPagoAccessToken();
+  return Boolean(value?.startsWith("TEST-"));
+}
+
+/**
+ * Turn raw Mercado Pago API errors into actionable Spanish copy (no token leakage).
+ */
+export function formatMercadoPagoApiError(raw: string, httpStatus?: number): string {
+  let code: string | undefined;
+  let message: string | undefined;
+  try {
+    const parsed = JSON.parse(raw) as { code?: string; message?: string };
+    code = parsed.code;
+    message = parsed.message;
+  } catch {
+    // keep raw fallback below
+  }
+
+  const normalized = (code ?? message ?? raw).toUpperCase();
+
+  if (
+    normalized.includes("FA_UNAUTHORIZED") ||
+    normalized.includes("PA_UNAUTHORIZED") ||
+    normalized.includes("UNAUTHORIZED_RESULT_FROM_POLICIES") ||
+    httpStatus === 401 ||
+    httpStatus === 403
+  ) {
+    return (
+      "Mercado Pago rechazó la preferencia de pago (credenciales no autorizadas). " +
+      "Revisá en Vercel que MP_ACCESS_TOKEN o MERCADOPAGO_ACCESS_TOKEN sea el Access Token " +
+      "de producción o prueba (TEST-…) de tu app en developers.mercadopago.com — no la Public Key. " +
+      "Si la cuenta está bloqueada, contactá soporte de Mercado Pago."
+    );
+  }
+
+  if (normalized.includes("INVALID_AUTO_RETURN")) {
+    return "Mercado Pago no pudo validar la URL de retorno. Revisá NEXT_PUBLIC_SITE_URL o el dominio del deploy.";
+  }
+
+  if (message?.trim()) return message.trim();
+  if (raw.trim()) return raw.trim();
+  return `Mercado Pago respondió HTTP ${httpStatus ?? "error"}.`;
 }
 
 export function getMercadoPagoWebhookSecret(): string | null {
@@ -65,9 +109,16 @@ export function parseExternalReference(
   if (parts.length !== 3) return null;
   const [clinicId, planId, cycle] = parts;
   if (!clinicId || !planId) return null;
-  if (planId !== "solo" && planId !== "consultorio" && planId !== "clinica") return null;
+  const allowedPlans: BillingPlanId[] = [
+    "essential",
+    "pro",
+    "solo",
+    "consultorio",
+    "clinica",
+  ];
+  if (!allowedPlans.includes(planId as BillingPlanId)) return null;
   if (cycle !== "monthly" && cycle !== "annual") return null;
-  return { clinicId, planId, cycle };
+  return { clinicId, planId: planId as BillingPlanId, cycle };
 }
 
 export function verifyMercadoPagoWebhookSignature(input: {
@@ -108,6 +159,10 @@ export async function createCheckoutPreference(input: {
   planId: BillingPlanId;
   cycle: BillingCycle;
   payerEmail?: string | null;
+  /** Whole ARS from resolveCheckoutAmountArs (server). Required for promo snapshot. */
+  amountArs: number;
+  /** Prefer request host on Vercel previews so back_urls match the active deploy. */
+  siteUrlOverride?: string | null;
 }): Promise<CreatePreferenceResult> {
   const accessToken = getMercadoPagoAccessToken();
   if (!accessToken) {
@@ -117,12 +172,12 @@ export async function createCheckoutPreference(input: {
     };
   }
 
-  const amount = getPlanPriceArs(input.planId, input.cycle);
-  if (amount == null) {
+  const amount = input.amountArs;
+  if (!Number.isFinite(amount) || amount <= 0) {
     return { ok: false, error: "Plan no disponible para compra." };
   }
 
-  const siteUrl = getPublicSiteUrl();
+  const siteUrl = getPublicSiteUrl(input.siteUrlOverride ?? undefined);
   const externalReference = buildExternalReference({
     clinicId: input.clinicId,
     planId: input.planId,
@@ -149,7 +204,6 @@ export async function createCheckoutPreference(input: {
       failure: `${siteUrl}/configuracion?grupo=consultorio&seccion=plan&pago=error`,
       pending: `${siteUrl}/configuracion?grupo=consultorio&seccion=plan&pago=pending`,
     },
-    auto_return: "approved",
     statement_descriptor: "DRFLOW",
   };
 
@@ -157,11 +211,13 @@ export async function createCheckoutPreference(input: {
     body.payer = { email: input.payerEmail.trim() };
   }
 
+  const idempotencyKey = randomUUID();
   const response = await fetch(`${MP_API_BASE}/checkout/preferences`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
+      "X-Idempotency-Key": idempotencyKey,
     },
     body: JSON.stringify(body),
   });
@@ -170,7 +226,7 @@ export async function createCheckoutPreference(input: {
     const text = await response.text().catch(() => "");
     return {
       ok: false,
-      error: text || `Mercado Pago respondió HTTP ${response.status}`,
+      error: formatMercadoPagoApiError(text, response.status),
     };
   }
 
@@ -180,7 +236,10 @@ export async function createCheckoutPreference(input: {
     sandbox_init_point?: string;
   };
 
-  const initPoint = data.init_point ?? data.sandbox_init_point;
+  const useSandbox = isMercadoPagoTestToken(accessToken);
+  const initPoint = useSandbox
+    ? (data.sandbox_init_point ?? data.init_point)
+    : (data.init_point ?? data.sandbox_init_point);
   if (!data.id || !initPoint) {
     return { ok: false, error: "Respuesta inválida de Mercado Pago." };
   }

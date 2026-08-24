@@ -17,6 +17,7 @@ export const CLINIC_METADATA_TTL = {
   clinicalTemplates: 600,
   pamiPlanillas: 600,
   clinicSettings: 300,
+  coverageRules: 300,
 } as const;
 
 type ClinicMetadataCacheOpts = {

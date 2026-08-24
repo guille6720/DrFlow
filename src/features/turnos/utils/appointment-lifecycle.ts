@@ -196,3 +196,66 @@ export const BLOCK_REASON_OPTIONS = [
   { value: "manual", label: "Bloqueo manual" },
   { value: "other", label: "Otro" },
 ] as const;
+
+/** Day-agenda operational buckets (DrApp-style status strip). */
+export type AgendaDayFilterBucket =
+  | "all"
+  | "reserved"
+  | "waiting"
+  | "in_consultation"
+  | "attended"
+  | "absent"
+  | "cancelled";
+
+export const AGENDA_DAY_FILTER_OPTIONS: {
+  value: AgendaDayFilterBucket;
+  label: string;
+}[] = [
+  { value: "all", label: "Todos" },
+  { value: "reserved", label: "Reservados" },
+  { value: "waiting", label: "En Espera" },
+  { value: "in_consultation", label: "En consulta" },
+  { value: "attended", label: "Atendidos" },
+  { value: "absent", label: "Ausentes" },
+  { value: "cancelled", label: "Cancelados" },
+];
+
+export function resolveAgendaDayFilterBucket(input: {
+  status: AppointmentStatus;
+  waitingRoomStatus?: WaitingRoomStatus | null;
+  waitingRoomEnteredAt?: string | null;
+}): Exclude<AgendaDayFilterBucket, "all"> {
+  if (input.status === "cancelled" || input.waitingRoomStatus === "cancelled") {
+    return "cancelled";
+  }
+  if (input.status === "attended" || input.waitingRoomStatus === "finished") {
+    return "attended";
+  }
+  if (input.status === "no_show" || input.waitingRoomStatus === "absent") {
+    return "absent";
+  }
+  if (input.waitingRoomStatus === "in_consultation") {
+    return "in_consultation";
+  }
+  if (
+    input.waitingRoomStatus === "waiting" &&
+    hasArrivedToClinic(input.waitingRoomEnteredAt)
+  ) {
+    return "waiting";
+  }
+  if (input.waitingRoomStatus === "confirmed") {
+    return "waiting";
+  }
+  return "reserved";
+}
+
+/** Soft row tint for dense day agenda (competitor-style). */
+export const AGENDA_DAY_ROW_TINT: Record<Exclude<AgendaDayFilterBucket, "all">, string> = {
+  reserved: "bg-white",
+  waiting: "bg-amber-50",
+  in_consultation: "bg-yellow-50",
+  attended: "bg-emerald-50",
+  absent: "bg-rose-50",
+  cancelled: "bg-rose-50/80",
+};
+

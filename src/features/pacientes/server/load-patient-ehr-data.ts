@@ -4,8 +4,18 @@ import { encodeDescCursor, PATIENT_ATTACHMENTS_LIMIT, PATIENT_EHR_RECORD_PAGE_SI
 import { MEDICAL_ORDER_LIST_COLUMNS, PRESCRIPTION_LIST_COLUMNS } from "@/core/supabase/select-columns";
 
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
+import type {
+  ClinicalDiagnosisEntry,
+  ClinicalTreatmentEntry,
+} from "@/features/historias/utils/clinical-structured-entries";
+import {
+  attachStructuredChildrenToRecords,
+  loadClinicalRecordChildrenForPatient,
+  loadPatientProblemList,
+  type PatientProblemListItem,
+} from "@/features/pacientes/server/load-clinical-structure";
 import { formatAgeLabel } from "@/features/pacientes/utils/patient-age";
-import { countPatientConsultationsFromSources } from "@/features/pacientes/utils/patient-ehr-consultation-count";
+import { countEhrConsultations } from "@/features/pacientes/utils/patient-ehr-consultation-count";
 import {
   buildEhrPayloadFromHceRows,
   loadPatientHceSummaryRows,
@@ -22,13 +32,107 @@ import { buildEhrPayloadFromRecords } from "@/features/pacientes/utils/patient-e
 
 import type { PatientEhrAppointment } from "@/lib/utils/build-clinical-timeline";
 import type { HceExportRow } from "@/lib/utils/hce-export-parse";
-import { filterRecordsForEhrSupplement } from "@/lib/utils/hce-export-parse";
 import type { MedicalOrder } from "@/types/medical-order";
 
 export const PATIENT_EHR_RECORD_LIMIT = PATIENT_EHR_RECORD_PAGE_SIZE;
+/** First paint for resumen/SOAP/consulta — rest via “Ver anteriores”. */
+export const PATIENT_EHR_INITIAL_LIMIT = 20;
+/** Cap for full HC print (UI stays paginated; print fetches on demand). */
+export const PATIENT_EHR_PRINT_MAX_RECORDS = 2000;
 export const PATIENT_TIMELINE_APPOINTMENT_LIMIT = 80;
 export const PATIENT_CHART_APPOINTMENT_LIMIT = 10;
 export const PATIENT_RX_FETCH_LIMIT = 100;
+/** Satellite caps for resumen/timeline first paint (preview + last consult). */
+export const PATIENT_EHR_INITIAL_ATTACHMENT_LIMIT = 40;
+export const PATIENT_EHR_INITIAL_RX_LIMIT = 20;
+export const PATIENT_EHR_INITIAL_ORDER_LIMIT = 20;
+export const PATIENT_EHR_INITIAL_APPOINTMENT_LIMIT = 20;
+
+export const CLINICAL_RECORD_EHR_SELECT_FULL =
+  "id, created_at, chief_complaint, diagnosis, evolution, indications, diagnosis_cie10, diagnoses_json, treatments_json, professional_id, professional_signature, professionals(license_national, license_provincial, profiles(full_name, email))";
+
+export const CLINICAL_RECORD_EHR_SELECT_BASIC =
+  "id, created_at, chief_complaint, diagnosis, evolution, indications, professional_id, professional_signature, professionals(license_national, license_provincial, profiles(full_name, email))";
+
+export const CLINICAL_RECORD_EHR_SELECT_MINIMAL =
+  "id, created_at, chief_complaint, diagnosis, evolution, indications, professional_id, professional_signature";
+
+function isMissingStructuredColumnError(message: string | undefined): boolean {
+  if (!message) return false;
+  return /diagnoses_json|treatments_json|diagnosis_cie10/i.test(message);
+}
+
+function isProfessionalsEmbedError(message: string | undefined): boolean {
+  if (!message) return false;
+  return /professionals|profiles|foreign key|relationship|embed/i.test(message);
+}
+
+type ClinicalRecordEhrRow = {
+  id: string;
+  created_at: string;
+  chief_complaint: string | null;
+  diagnosis: string | null;
+  evolution: string | null;
+  indications: string | null;
+  diagnosis_cie10?: string | null;
+  diagnoses_json?: unknown;
+  treatments_json?: unknown;
+  professional_id?: string | null;
+  professional_signature?: string | null;
+  professionals?: unknown;
+};
+
+/** Loads clinical_records for HC with progressive fallbacks (columns / joins). */
+export async function fetchPatientClinicalRecordsForEhr(
+  supabase: SupabaseClient,
+  clinicId: string,
+  patientId: string,
+  options: { limit: number; withCount?: boolean }
+): Promise<{
+  data: ClinicalRecordEhrRow[] | null;
+  count: number | null;
+  error: { message: string } | null;
+}> {
+  const withCount = options.withCount === true;
+  const run = async (columns: string) => {
+    const result = await supabase
+      .from("clinical_records")
+      .select(columns, withCount ? { count: "exact" } : undefined)
+      .eq("clinic_id", clinicId)
+      .eq("patient_id", patientId)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(options.limit);
+    return {
+      data: (result.data as ClinicalRecordEhrRow[] | null) ?? null,
+      count: result.count ?? null,
+      error: result.error ? { message: result.error.message } : null,
+    };
+  };
+
+  const full = await run(CLINICAL_RECORD_EHR_SELECT_FULL);
+  if (!full.error) return full;
+
+  if (isMissingStructuredColumnError(full.error.message)) {
+    const basic = await run(CLINICAL_RECORD_EHR_SELECT_BASIC);
+    if (!basic.error) return basic;
+    if (isProfessionalsEmbedError(basic.error.message)) {
+      return run(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
+    }
+    return basic;
+  }
+
+  if (isProfessionalsEmbedError(full.error.message)) {
+    const minimal = await run(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
+    if (!minimal.error) return minimal;
+  }
+
+  // Last resort: plain columns without join (covers mixed schema issues).
+  const minimal = await run(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
+  if (!minimal.error) return minimal;
+
+  return full;
+}
 
 export type PatientEhrWorkspacePrescription = PatientEhrPrescription & {
   issued_at: string | null;
@@ -46,6 +150,7 @@ export type PatientEhrWorkspaceData = {
   consultations: PatientEhrConsultation[];
   diagnosisRows: PatientEhrDiagnosisRow[];
   treatmentRows: PatientEhrTreatmentRow[];
+  problemList: PatientProblemListItem[];
   attachments: PatientEhrAttachment[];
   prescriptions: PatientEhrWorkspacePrescription[];
   prescriptionRecords: RawPrescriptionRow[];
@@ -75,6 +180,11 @@ export type PatientEhrMappedRecord = {
   diagnosis: string | null;
   evolution: string | null;
   indications: string | null;
+  diagnosis_cie10?: string | null;
+  diagnoses_json?: unknown;
+  treatments_json?: unknown;
+  diagnoses_rows?: ClinicalDiagnosisEntry[];
+  treatments_rows?: ClinicalTreatmentEntry[];
   professional_id?: string | null;
   professional_signature?: string | null;
   professional_name: string;
@@ -121,9 +231,12 @@ export function mapClinicalRecordsForEhr(
     diagnosis: string | null;
     evolution: string | null;
     indications: string | null;
+    diagnosis_cie10?: string | null;
+    diagnoses_json?: unknown;
+    treatments_json?: unknown;
     professional_id?: string | null;
     professional_signature?: string | null;
-    professionals: unknown;
+    professionals?: unknown;
   }> | null
 ): PatientEhrMappedRecord[] {
   return (
@@ -144,6 +257,9 @@ export function mapClinicalRecordsForEhr(
         diagnosis: r.diagnosis,
         evolution: r.evolution,
         indications: r.indications,
+        diagnosis_cie10: r.diagnosis_cie10 ?? null,
+        diagnoses_json: r.diagnoses_json ?? [],
+        treatments_json: r.treatments_json ?? [],
         professional_id: r.professional_id ?? null,
         professional_signature: r.professional_signature ?? null,
         professional_name: profile?.full_name ?? "Profesional",
@@ -205,6 +321,7 @@ export function buildPatientEhrWorkspaceData(input: {
   timelineAppointments: PatientEhrAppointment[];
   hceRows: HceExportRow[] | null;
   clinicalRecordsPagination?: PatientEhrClinicalRecordsPagination;
+  problemList?: PatientProblemListItem[];
 }): PatientEhrWorkspaceData {
   const { patient, mappedRecords, attachments, rxList, orders, timelineAppointments, hceRows } =
     input;
@@ -218,14 +335,32 @@ export function buildPatientEhrWorkspaceData(input: {
   let treatmentRows: PatientEhrTreatmentRow[];
   let usesHceExport = false;
 
-  if (hceRows) {
+  // Always materialize every clinical_record so HC is never blank when BD has rows.
+  const fromRecords = buildEhrPayloadFromRecords(mappedRecords, {
+    includeHceStructural: true,
+  });
+
+  if (hceRows && hceRows.length > 0) {
     usesHceExport = true;
     const fromHce = buildEhrPayloadFromHceRows(hceRows, professionalFallback);
-    const supplement = buildEhrPayloadFromRecords(filterRecordsForEhrSupplement(mappedRecords));
-    ({ consultations, diagnosisRows, treatmentRows } = mergeEhrPayload(fromHce, supplement));
+    ({ consultations, diagnosisRows, treatmentRows } = mergeEhrPayload(fromHce, fromRecords));
+    // Safety net: if HCE had no evolutions and merge still empty, force BD rows.
+    if (consultations.length === 0 && fromRecords.consultations.length > 0) {
+      consultations = fromRecords.consultations;
+      diagnosisRows =
+        diagnosisRows.length > 0 ? diagnosisRows : fromRecords.diagnosisRows;
+      treatmentRows =
+        treatmentRows.length > 0 ? treatmentRows : fromRecords.treatmentRows;
+    }
   } else {
-    ({ consultations, diagnosisRows, treatmentRows } = buildEhrPayloadFromRecords(mappedRecords));
+    ({ consultations, diagnosisRows, treatmentRows } = fromRecords);
   }
+
+  const totalConsultations = Math.max(
+    countEhrConsultations(consultations),
+    input.clinicalRecordsPagination?.total ?? 0,
+    mappedRecords.length
+  );
 
   return {
     patientInfo: {
@@ -243,6 +378,7 @@ export function buildPatientEhrWorkspaceData(input: {
     consultations,
     diagnosisRows,
     treatmentRows,
+    problemList: input.problemList ?? [],
     attachments:
       attachments?.map((a) => ({
         id: a.id,
@@ -254,9 +390,7 @@ export function buildPatientEhrWorkspaceData(input: {
     prescriptionRecords: rxList ?? [],
     orders: orders ?? [],
     appointments: timelineAppointments,
-    totalConsultations: hceRows
-      ? countPatientConsultationsFromSources({ mappedRecords, hceRows })
-      : (input.clinicalRecordsPagination?.total ?? mappedRecords.length),
+    totalConsultations,
     usesHceExport,
     clinicalRecordsPagination: input.clinicalRecordsPagination ?? {
       total: input.totalRecords ?? mappedRecords.length,
@@ -275,7 +409,7 @@ export async function loadPatientEhrWorkspaceData(
 
   const [
     { count: totalRecords },
-    { data: records },
+    recordsResult,
     { data: attachments },
     { data: rxList },
     { data: orders },
@@ -287,16 +421,9 @@ export async function loadPatientEhrWorkspaceData(
       .select("id", { count: "exact", head: true })
       .eq("clinic_id", clinicId)
       .eq("patient_id", patientId),
-    supabase
-      .from("clinical_records")
-      .select(
-        "id, created_at, chief_complaint, diagnosis, evolution, indications, professional_id, professional_signature, professionals(license_national, license_provincial, profiles(full_name, email))"
-      )
-      .eq("clinic_id", clinicId)
-      .eq("patient_id", patientId)
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: false })
-      .limit(PATIENT_EHR_RECORD_PAGE_SIZE),
+    fetchPatientClinicalRecordsForEhr(supabase, clinicId, patientId, {
+      limit: PATIENT_EHR_INITIAL_LIMIT,
+    }),
     supabase
       .from("patient_attachments")
       .select("id, file_name, created_at, category")
@@ -329,7 +456,23 @@ export async function loadPatientEhrWorkspaceData(
     loadPatientHceSummaryRows(supabase, clinicId, patientId),
   ]);
 
-  const mappedRecords = mapClinicalRecordsForEhr(records);
+  const records = recordsResult.data;
+
+  const mappedBase = mapClinicalRecordsForEhr(records);
+  const [{ diagnosesByRecord, treatmentsByRecord }, problemList] = await Promise.all([
+    loadClinicalRecordChildrenForPatient(
+      supabase,
+      clinicId,
+      patientId,
+      mappedBase.map((r) => r.id)
+    ),
+    loadPatientProblemList(supabase, clinicId, patientId),
+  ]);
+  const mappedRecords = attachStructuredChildrenToRecords(
+    mappedBase,
+    diagnosesByRecord,
+    treatmentsByRecord
+  );
   const loadedRecords = mappedRecords.length;
   const totalRecordCount = totalRecords ?? loadedRecords;
   const oldestLoaded = records?.at(-1);
@@ -343,6 +486,7 @@ export async function loadPatientEhrWorkspaceData(
     orders: (orders ?? []) as (MedicalOrder & { order_type?: string })[],
     timelineAppointments: mapTimelineAppointments(appointments),
     hceRows,
+    problemList,
     clinicalRecordsPagination: {
       total: totalRecordCount,
       hasMore: loadedRecords < totalRecordCount,

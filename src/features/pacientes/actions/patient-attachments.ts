@@ -9,9 +9,18 @@ import {
 import { logAudit } from "@/core/auth/session.actions";
 import { revalidateClinicalSurfaces } from "@/core/cache/revalidate-clinical";
 import {
+  assertClinicalStorageUrlAllowed,
+  CLINICAL_DOWNLOAD_SIGNED_URL_TTL_SECONDS,
+  CLINICAL_STORAGE_BUCKET,
+} from "@/core/compliance/storage-security";
+import { assertClinicStorageCapacity } from "@/core/entitlements/storage.server";
+import { recordAudit } from "@/core/security/audit-service";
+import {
   buildPatientFilePath,
+  validateAdminDocumentUpload,
   validatePdfUpload,
 } from "@/core/security/file-upload";
+import { assertStoragePathInClinic } from "@/core/security/tenant-scope";
 import { requireClinicalRecordAccess } from "@/core/services/clinical-access.service";
 import { requireClinicalImportAccess } from "@/core/services/import-access.service";
 import { createClient } from "@/core/supabase/server";
@@ -22,8 +31,21 @@ import {
   type ClinicalDocumentCategory,
 } from "@/lib/constants/clinical-documents";
 import { processClinicalPdfImport } from "@/lib/server/process-clinical-pdf-import";
+import type { Database } from "@/types/supabase";
 
-const BUCKET = "clinical-files";
+const BUCKET = CLINICAL_STORAGE_BUCKET;
+
+type PatientAttachmentInsert = Database["public"]["Tables"]["patient_attachments"]["Insert"];
+
+function revalidatePatientDocumentSurfaces(
+  patientId: string,
+  clinicalRecordId?: string | null
+) {
+  revalidatePath(`/pacientes/${patientId}`, "page");
+  if (clinicalRecordId) {
+    revalidatePath(`/historias/${clinicalRecordId}`, "page");
+  }
+}
 
 const VALID_CATEGORIES = new Set<ClinicalDocumentCategory>([
   "historia_clinica",
@@ -45,26 +67,60 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
     : "otro";
   const file = formData.get("file");
   if (!(file instanceof File)) {
-    return { error: "Seleccioná un archivo PDF" };
+    return { error: "Seleccioná un archivo PDF, JPG o PNG" };
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const validated = validatePdfUpload(file, buffer, CLINICAL_DOCUMENT_MAX_BYTES);
+  const clinicalRecordRaw = String(formData.get("clinical_record_id") ?? "").trim();
+  const clinicalRecordParsed = clinicalRecordRaw
+    ? parseEntityId(clinicalRecordRaw, "Consulta")
+    : null;
+  if (clinicalRecordParsed && !clinicalRecordParsed.ok) {
+    return { error: clinicalRecordParsed.error };
+  }
+
+  const [supabase, arrayBuffer] = await Promise.all([createClient(), file.arrayBuffer()]);
+  const buffer = Buffer.from(arrayBuffer);
+  const validated = validateAdminDocumentUpload(file, buffer, CLINICAL_DOCUMENT_MAX_BYTES);
   if (!validated.ok) return { error: validated.error };
 
-  const supabase = await createClient();
+  const storage = await assertClinicStorageCapacity({
+    clinicId: auth.clinicId,
+    extraBytes: file.size,
+    supabase,
+  });
+  if (!storage.ok) return { error: storage.error };
 
-  const { data: patient } = await supabase
+  const patientPromise = supabase
     .from("patients")
     .select("id")
     .eq("id", patientParsed.data)
     .eq("clinic_id", auth.clinicId)
-    .single();
+    .maybeSingle();
+
+  const recordPromise = clinicalRecordParsed?.ok
+    ? supabase
+        .from("clinical_records")
+        .select("id")
+        .eq("id", clinicalRecordParsed.data)
+        .eq("clinic_id", auth.clinicId)
+        .eq("patient_id", patientParsed.data)
+        .maybeSingle()
+    : Promise.resolve({ data: null as { id: string } | null });
+
+  const [{ data: patient }, { data: record }] = await Promise.all([patientPromise, recordPromise]);
 
   if (!patient) return { error: "Paciente no encontrado" };
 
+  let clinicalRecordId: string | null = null;
+  if (clinicalRecordParsed?.ok) {
+    if (!record) return { error: "Consulta no encontrada para este paciente" };
+    clinicalRecordId = record.id;
+  }
+
   const fileName = validated.sanitizedName;
-  const filePath = buildPatientFilePath(auth.clinicId, patientParsed.data, fileName);
+  const filePath = buildPatientFilePath(auth.clinicId, patientParsed.data, fileName, "clinical", {
+    clinicalRecordId,
+  });
 
   const { error: uploadError } = await supabase.storage
     .from(BUCKET)
@@ -83,22 +139,53 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
     return { error: uploadError.message };
   }
 
+  const insertPayload: PatientAttachmentInsert = {
+    patient_id: patientParsed.data,
+    clinic_id: auth.clinicId,
+    file_name: fileName,
+    file_path: filePath,
+    file_type: validated.contentType,
+    file_size: file.size,
+    category,
+    uploaded_by: auth.userId,
+  };
+  if (clinicalRecordId) insertPayload.clinical_record_id = clinicalRecordId;
+
   const { data: attachment, error: insertError } = await supabase
     .from("patient_attachments")
-    .insert({
-      patient_id: patientParsed.data,
-      clinic_id: auth.clinicId,
-      file_name: fileName,
-      file_path: filePath,
-      file_type: "application/pdf",
-      file_size: file.size,
-      category,
-      uploaded_by: auth.userId,
-    })
+    .insert(insertPayload)
     .select("id")
     .single();
 
   if (insertError) {
+    // Retry without clinical_record_id if column missing (pre-migration).
+    if (clinicalRecordId && /clinical_record_id/i.test(insertError.message)) {
+      const { clinical_record_id: _removed, ...retryPayload } = insertPayload;
+      const retry = await supabase
+        .from("patient_attachments")
+        .insert(retryPayload)
+        .select("id")
+        .single();
+      if (retry.error) {
+        await supabase.storage.from(BUCKET).remove([filePath]);
+        return { error: retry.error.message };
+      }
+      await logAudit({
+        clinicId: auth.clinicId,
+        entityType: "patient",
+        entityId: patientParsed.data,
+        action: "create",
+        metadata: {
+          attachmentId: retry.data.id,
+          fileName,
+          category,
+          type: "clinical_document",
+          clinicalRecordId,
+        },
+      });
+      revalidatePatientDocumentSurfaces(patientParsed.data, clinicalRecordId);
+      return { success: true, id: retry.data.id };
+    }
     await supabase.storage.from(BUCKET).remove([filePath]);
     return { error: insertError.message };
   }
@@ -113,26 +200,27 @@ export async function uploadPatientClinicalDocument(formData: FormData) {
       fileName,
       category,
       type: "clinical_document",
+      clinicalRecordId,
     },
   });
 
-  revalidatePath("/historias");
-  revalidatePath(`/pacientes/${patientParsed.data}`);
+  revalidatePatientDocumentSurfaces(patientParsed.data, clinicalRecordId);
   return { success: true, id: attachment.id };
 }
 
 export async function deletePatientClinicalDocument(id: string) {
-  const access = await requireClinicalRecordAccess("edit");
+  const [access, supabase] = await Promise.all([
+    requireClinicalRecordAccess("edit"),
+    createClient(),
+  ]);
   const auth = resolveClinicalRecordAccess(access, { requireUserId: false });
   if (!auth.ok) return { error: auth.error };
 
   const idParsed = parseEntityId(id, "Documento");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
   const { data: attachment } = await supabase
     .from("patient_attachments")
-    .select("id, patient_id, file_path, file_name, category")
+    .select("id, patient_id, file_path, file_name, category, clinical_record_id")
     .eq("id", idParsed.data)
     .eq("clinic_id", auth.clinicId)
     .single();
@@ -161,36 +249,64 @@ export async function deletePatientClinicalDocument(id: string) {
     },
   });
 
-  revalidatePath("/historias");
-  revalidatePath(`/pacientes/${attachment.patient_id}`);
+  revalidatePatientDocumentSurfaces(
+    attachment.patient_id,
+    (attachment as { clinical_record_id?: string | null }).clinical_record_id
+  );
   return { success: true };
 }
 
 export async function getPatientClinicalDocumentUrl(id: string) {
-  const access = await requireClinicalRecordAccess("view");
+  const [access, supabase] = await Promise.all([
+    requireClinicalRecordAccess("view"),
+    createClient(),
+  ]);
   const auth = resolveClinicalRecordAccess(access, { requireUserId: false });
   if (!auth.ok) return { error: auth.error };
 
   const idParsed = parseEntityId(id, "Documento");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
   const { data: attachment } = await supabase
     .from("patient_attachments")
-    .select("file_path, file_name")
+    .select("file_path, file_name, patient_id")
     .eq("id", idParsed.data)
     .eq("clinic_id", auth.clinicId)
     .single();
 
   if (!attachment) return { error: "Documento no encontrado" };
 
+  try {
+    assertStoragePathInClinic(auth.clinicId, attachment.file_path);
+  } catch {
+    return { error: "Documento no encontrado" };
+  }
+
   const { data, error } = await supabase.storage
     .from(BUCKET)
-    .createSignedUrl(attachment.file_path, 3600);
+    .createSignedUrl(attachment.file_path, CLINICAL_DOWNLOAD_SIGNED_URL_TTL_SECONDS);
 
   if (error || !data?.signedUrl) {
     return { error: error?.message ?? "No se pudo abrir el documento" };
   }
+  try {
+    assertClinicalStorageUrlAllowed(data.signedUrl);
+  } catch {
+    return { error: "No se pudo abrir el documento" };
+  }
+
+  await recordAudit({
+    clinicId: auth.clinicId,
+    module: "attachments",
+    what: "Descarga — adjunto clínico del paciente",
+    entityType: "patient_attachment",
+    entityId: idParsed.data,
+    patientId: attachment.patient_id,
+    action: "view",
+    metadata: {
+      access_kind: "sensitive_download",
+      file_name: attachment.file_name,
+    },
+  });
 
   return { url: data.signedUrl, fileName: attachment.file_name };
 }
@@ -231,12 +347,14 @@ export async function importClinicalPdfDocument(
     return { success: false, fileName: originalName, error: "Archivo PDF inválido o mayor a 10 MB" };
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const [buffer, supabase] = await Promise.all([
+    file.arrayBuffer().then((bytes) => Buffer.from(bytes)),
+    createClient(),
+  ]);
   const validated = validatePdfUpload(file, buffer, CLINICAL_DOCUMENT_MAX_BYTES);
   if (!validated.ok) {
     return { success: false, fileName: originalName, error: validated.error };
   }
-  const supabase = await createClient();
   const result = await processClinicalPdfImport(supabase, {
     clinicId: auth.clinicId,
     userId: auth.userId,

@@ -1,12 +1,7 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
@@ -34,14 +29,17 @@ interface PageProps {
 }
 
 export default async function ConfiguracionPage({ searchParams }: PageProps) {
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { clinic, role, isSuperadmin } = await getActiveClinic();
+  const { profile, clinics, clinicId, clinic, role, isSuperadmin } = await getDashboardPageContext();
   const { seccion, grupo, pago } = await searchParams;
 
   if (seccion === "catalogo") {
     redirect("/ingreso-profesionales");
+  }
+  if (seccion === "import-export") {
+    redirect("/datos");
+  }
+  if (seccion === "import-export-audit") {
+    redirect("/datos?flujo=historial");
   }
 
   const activeSection = resolveConfiguracionSection(seccion);

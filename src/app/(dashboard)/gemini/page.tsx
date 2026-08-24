@@ -1,21 +1,17 @@
 import { redirect } from "next/navigation";
 
-import {
-  getActiveClinic,
-  getActiveClinicId,
-  getProfile,
-  getUserClinics,
-} from "@/core/auth/session.server";
+import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
+import { FEATURES } from "@/core/entitlements/features";
+import { requireAddonFeatureOrRedirect } from "@/core/entitlements/guard.server";
 import { hasPermission } from "@/core/permissions/roles";
 
+import { GeminiUsageHint } from "@/features/ia/components/clinical-workflow/gemini-usage-hint";
 import { GeminiWorkspaceClient } from "@/features/ia/components/clinical-workflow/gemini-workspace-client";
 
 export default async function GeminiPage() {
-  const profile = await getProfile();
-  const clinics = await getUserClinics();
-  const clinicId = await getActiveClinicId();
-  const { role, isSuperadmin } = await getActiveClinic();
+  await requireAddonFeatureOrRedirect(FEATURES.AI);
+  const { profile, clinics, clinicId, role, isSuperadmin } = await getDashboardPageContext();
 
   if (!clinicId) {
     redirect("/login");
@@ -37,9 +33,10 @@ export default async function GeminiPage() {
       />
       <div className="p-3 sm:p-4">
         <p className="mb-4 text-sm text-slate-700">
-          Preguntá estadísticas o candidatos a protocolos. Los resultados quedan en el historial
-          para que puedas abrir un paciente y volver sin buscar de nuevo.
+          Asistente clínico para estadísticas del consultorio. El matching de candidatos a protocolos
+          de investigación solo aparece si el flag está habilitado tras revisión legal/privacidad.
         </p>
+        <GeminiUsageHint />
         <GeminiWorkspaceClient />
       </div>
     </>

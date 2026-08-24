@@ -124,39 +124,19 @@ export function splitTreatmentProductLab(line: string): { product: string; lab: 
   return { product: first, lab: rest };
 }
 
-export function parseInlineTreatments(consultation: PatientEhrConsultation): PrintInlineTreatment[] {
+/**
+ * Phase 3: indications TEXT is a printable snapshot only.
+ * Do not invent structured treatment rows from free text.
+ * @deprecated Prefer getIndicationsSnapshot + structured treatmentRows.
+ */
+export function parseInlineTreatments(_consultation: PatientEhrConsultation): PrintInlineTreatment[] {
+  return [];
+}
+
+/** Snapshot imprimible de indicaciones (texto libre / Phase 3 dual-write). */
+export function getIndicationsSnapshot(consultation: PatientEhrConsultation): string | null {
   const raw = consultation.indications?.trim();
-  if (!raw) return [];
-
-  const lines = raw
-    .split(/\n+/)
-    .map((line) => line.trim())
-    .filter((line) => line && !/^estado\s*:/i.test(line));
-
-  const result: PrintInlineTreatment[] = [];
-
-  for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i];
-    const next = lines[i + 1];
-    if (next && looksLikeDoseLine(next)) {
-      const { product, lab } = splitTreatmentProductLab(line);
-      result.push({ product, lab, dose: next });
-      i += 1;
-      continue;
-    }
-
-    const split = line.match(/^(.+?)\s+(\d[\d.,]*\s*mg.*)$/i);
-    if (split) {
-      const { product, lab } = splitTreatmentProductLab(split[1].trim());
-      result.push({ product, lab, dose: split[2].trim() });
-      continue;
-    }
-
-    const { product, lab } = splitTreatmentProductLab(line);
-    result.push({ product, lab, dose: "" });
-  }
-
-  return result;
+  return raw || null;
 }
 
 export function professionalMetaLine(consultation: PatientEhrConsultation): string {

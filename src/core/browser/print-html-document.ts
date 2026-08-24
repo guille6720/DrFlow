@@ -9,13 +9,16 @@ export type PrintHtmlDocumentFailureReason =
   | "unknown";
 
 export type PrintHtmlDocumentResult =
-  | { ok: true; method: "iframe" }
+  | { ok: true; method: "popup" | "iframe" }
   | { ok: false; reason: PrintHtmlDocumentFailureReason; message: string };
 
 export type PrintHtmlDocumentOptions = {
   html: string;
   title?: string;
 };
+
+const POPUP_BLOCKED_MESSAGE =
+  "No pudimos abrir la ventana de impresión. Permití ventanas emergentes e intentá de nuevo.";
 
 const DOCUMENT_WRITE_FAILED_MESSAGE =
   "No se pudo preparar el documento para imprimir. Intentá de nuevo.";
@@ -26,6 +29,10 @@ const PRINT_UNAVAILABLE_MESSAGE =
 const UNKNOWN_MESSAGE = "No se pudo imprimir. Intentá de nuevo.";
 
 const PRINT_CLEANUP_FALLBACK_MS = 120_000;
+
+/** A4 at 96dpi — zero-size iframes clip multi-page prints in Chrome/Edge. */
+const PRINT_FRAME_WIDTH_PX = "794px";
+const PRINT_FRAME_HEIGHT_PX = "1123px";
 
 let sharedPrintFrame: HTMLIFrameElement | null = null;
 
@@ -58,6 +65,74 @@ function writeHtmlDocument(targetDoc: Document, html: string): boolean {
   }
 }
 
+function closePrintWindow(targetWindow: Window): void {
+  try {
+    if (!targetWindow.closed) {
+      targetWindow.close();
+    }
+  } catch {
+    /* cross-origin or already closed */
+  }
+}
+
+function restoreOpenerFocus(): void {
+  try {
+    window.focus();
+  } catch {
+    /* ignore */
+  }
+}
+
+function triggerPrintWithCleanup(targetWindow: Window, onCleanup: () => void): void {
+  let cleaned = false;
+  const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
+    restoreOpenerFocus();
+    onCleanup();
+  };
+
+  const print = () => {
+    try {
+      targetWindow.print();
+    } catch {
+      cleanup();
+    }
+  };
+
+  targetWindow.addEventListener("afterprint", cleanup, { once: true });
+  window.setTimeout(cleanup, PRINT_CLEANUP_FALLBACK_MS);
+
+  if (targetWindow.document.readyState === "complete") {
+    window.setTimeout(print, 150);
+  } else {
+    targetWindow.addEventListener("load", () => window.setTimeout(print, 150), { once: true });
+  }
+}
+
+function tryPrintViaPopup(html: string): PrintHtmlDocumentResult {
+  let printWindow: Window | null = null;
+  try {
+    // Do not use noopener/noreferrer: Chrome opens about:blank but returns null,
+    // leaving an empty tab and blocking document.write + print().
+    printWindow = window.open("about:blank", "_blank");
+  } catch {
+    return fail("popup_blocked", POPUP_BLOCKED_MESSAGE);
+  }
+
+  if (!printWindow || printWindow.closed) {
+    return fail("popup_blocked", POPUP_BLOCKED_MESSAGE);
+  }
+
+  if (!writeHtmlDocument(printWindow.document, html)) {
+    closePrintWindow(printWindow);
+    return fail("document_write_failed", DOCUMENT_WRITE_FAILED_MESSAGE);
+  }
+
+  triggerPrintWithCleanup(printWindow, () => closePrintWindow(printWindow!));
+  return { ok: true, method: "popup" };
+}
+
 function getSharedPrintFrame(): HTMLIFrameElement | null {
   if (typeof document === "undefined") return null;
 
@@ -69,13 +144,15 @@ function getSharedPrintFrame(): HTMLIFrameElement | null {
     const iframe = document.createElement("iframe");
     iframe.setAttribute("aria-hidden", "true");
     iframe.setAttribute("title", "Impresión");
+    iframe.tabIndex = -1;
     iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
+    iframe.style.left = "-10000px";
+    iframe.style.top = "0";
+    iframe.style.width = PRINT_FRAME_WIDTH_PX;
+    iframe.style.height = PRINT_FRAME_HEIGHT_PX;
     iframe.style.border = "0";
     iframe.style.opacity = "0";
+    iframe.style.visibility = "hidden";
     iframe.style.pointerEvents = "none";
     document.body.appendChild(iframe);
     sharedPrintFrame = iframe;
@@ -96,41 +173,6 @@ function loadHtmlInFrame(iframe: HTMLIFrameElement, html: string): boolean {
   }
 }
 
-function restoreOpenerFocus(): void {
-  try {
-    window.focus();
-  } catch {
-    /* ignore */
-  }
-}
-
-function triggerIframePrint(frameWindow: Window, onCleanup: () => void): void {
-  let cleaned = false;
-  const cleanup = () => {
-    if (cleaned) return;
-    cleaned = true;
-    restoreOpenerFocus();
-    onCleanup();
-  };
-
-  const print = () => {
-    try {
-      frameWindow.print();
-    } catch {
-      cleanup();
-    }
-  };
-
-  frameWindow.addEventListener("afterprint", cleanup, { once: true });
-  window.setTimeout(cleanup, PRINT_CLEANUP_FALLBACK_MS);
-
-  if (frameWindow.document.readyState === "complete") {
-    window.setTimeout(print, 150);
-  } else {
-    frameWindow.addEventListener("load", () => window.setTimeout(print, 150), { once: true });
-  }
-}
-
 function tryPrintViaIframe(html: string): PrintHtmlDocumentResult {
   const iframe = getSharedPrintFrame();
   if (!iframe) {
@@ -142,24 +184,34 @@ function tryPrintViaIframe(html: string): PrintHtmlDocumentResult {
     return fail("print_unavailable", PRINT_UNAVAILABLE_MESSAGE);
   }
 
+  let started = false;
+  const startPrint = () => {
+    if (started) return;
+    started = true;
+    triggerPrintWithCleanup(frameWindow, () => {
+      try {
+        iframe.srcdoc = "";
+      } catch {
+        /* ignore */
+      }
+    });
+  };
+
+  iframe.addEventListener("load", () => window.setTimeout(startPrint, 50), { once: true });
+
   if (!loadHtmlInFrame(iframe, html)) {
     return fail("document_write_failed", DOCUMENT_WRITE_FAILED_MESSAGE);
   }
 
-  triggerIframePrint(frameWindow, () => {
-    try {
-      iframe.srcdoc = "";
-    } catch {
-      /* ignore */
-    }
-  });
+  // Fallback if this engine does not fire load for an identical/empty-to-content srcdoc swap.
+  window.setTimeout(startPrint, 400);
 
   return { ok: true, method: "iframe" };
 }
 
 /**
- * Opens an isolated HTML document and triggers the browser print dialog.
- * Uses a hidden iframe on the current page — never opens a new browser tab.
+ * Triggers the browser print dialog for an isolated HTML document.
+ * Prefers a hidden off-screen A4 iframe so no extra tab/page opens; popup is fallback only.
  */
 export function printHtmlDocument(options: PrintHtmlDocumentOptions): PrintHtmlDocumentResult {
   const printTitle = options.title?.replace(/\.pdf$/i, "").trim();
@@ -173,7 +225,21 @@ export function printHtmlDocument(options: PrintHtmlDocumentOptions): PrintHtmlD
   }
 
   try {
-    const run = () => tryPrintViaIframe(html);
+    const run = (): PrintHtmlDocumentResult => {
+      const strategies: Array<() => PrintHtmlDocumentResult> = [
+        () => tryPrintViaIframe(html),
+        () => tryPrintViaPopup(html),
+      ];
+
+      let lastFailure: PrintHtmlDocumentResult = fail("unknown", UNKNOWN_MESSAGE);
+      for (const strategy of strategies) {
+        const result = strategy();
+        if (result.ok) return result;
+        lastFailure = result;
+      }
+      return lastFailure;
+    };
+
     if (printTitle) {
       let result: PrintHtmlDocumentResult = fail("unknown", UNKNOWN_MESSAGE);
       runBrowserPrintWithFilename(printTitle, () => {

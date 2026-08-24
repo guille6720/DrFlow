@@ -3,6 +3,10 @@
 import { Download } from "lucide-react";
 import { useState } from "react";
 
+import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
+import { FEATURES } from "@/core/entitlements/features";
+
 import { ImportConsumersPanel } from "@/features/pacientes/components/pacientes/import-consumers-panel";
 
 import { Button } from "@/components/ui/button";
@@ -39,6 +43,7 @@ export function PatientsImportExportHub({
 }: Props) {
   const [importKind, setImportKind] = useState("consumers");
   const [exportKind, setExportKind] = useState("");
+  const canExportPdf = useCanUseFeature(FEATURES.PDF_EXPORT);
 
   function handleExport() {
     if (!exportKind || exportPatients.length === 0) return;
@@ -78,11 +83,16 @@ export function PatientsImportExportHub({
             label="Descargar datos"
             value={exportKind}
             onChange={(e) => setExportKind(e.target.value)}
-            options={EXPORT_OPTIONS}
+            options={
+              canExportPdf
+                ? EXPORT_OPTIONS
+                : EXPORT_OPTIONS.filter((option) => option.value !== "patients-pdf")
+            }
           />
           <p className="text-xs text-slate-500">
             {exportPatients.length} paciente(s) · {exportLabel}
           </p>
+          {!canExportPdf ? <AddonUpgradeNotice feature={FEATURES.PDF_EXPORT} /> : null}
           <Button
             type="button"
             variant="outline"

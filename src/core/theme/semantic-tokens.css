@@ -1,0 +1,497 @@
+/**
+ * DrFlow semantic color tokens — source of truth per palette × mode.
+ *
+ * Components should consume these CSS variables (or .drflow-text-* utilities)
+ * instead of hard-coding slate/gray/white text colors.
+ *
+ * Contract (always defined):
+ *   Text: --text-primary | --text-secondary | --text-muted | --text-disabled
+ *         --text-on-primary | --text-on-secondary | --text-on-accent
+ *         --text-on-card | --text-on-sidebar | --text-on-selected
+ *   Surface: --surface-page | --surface-card | --surface-elevated
+ *            --surface-sidebar | --surface-input | --surface-hover | --surface-selected
+ *   Border:  --border-default | --border-strong
+ */
+
+:root {
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-disabled: #94a3b8;
+  --text-on-primary: #ffffff;
+  --text-on-secondary: #0f172a;
+  --text-on-accent: #ffffff;
+  --text-on-card: #0f172a;
+  --text-on-sidebar: #e2e8f0;
+  --text-on-selected: #0f172a;
+
+  --surface-page: #f8fafc;
+  --surface-card: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-sidebar: #0f172a;
+  --surface-input: #ffffff;
+  --surface-hover: #f1f5f9;
+  --surface-selected: #ecfdf5;
+
+  --border-default: #e2e8f0;
+  --border-strong: #cbd5e1;
+}
+
+/* ——— Style 2 Clinical Blue (no palette attr) ——— */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette]),
+html[data-ui-style="2"]:not([data-clinical-dark="1"])[data-ui-palette=""] {
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-disabled: #94a3b8;
+  --text-on-primary: #ffffff;
+  --text-on-secondary: #0f172a;
+  --text-on-accent: #ffffff;
+  --text-on-card: #0f172a;
+  --text-on-sidebar: #334155;
+  --text-on-selected: #0f172a;
+
+  --surface-page: #f8fafc;
+  --surface-card: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-sidebar: #ffffff;
+  --surface-input: #ffffff;
+  --surface-hover: #f1f5f9;
+  --surface-selected: #ecfdf5;
+
+  --border-default: #d7e0e8;
+  --border-strong: #cbd5e1;
+}
+
+html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette]),
+html[data-ui-style="2"][data-clinical-dark="1"][data-ui-palette=""] {
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-disabled: #64748b;
+  --text-on-primary: #0b1220;
+  --text-on-secondary: #f8fafc;
+  --text-on-accent: #0b1220;
+  --text-on-card: #f8fafc;
+  --text-on-sidebar: #e2e8f0;
+  --text-on-selected: #f8fafc;
+
+  /* Surface ladder (no pure black): page < card < elevated; input recessed; hover ≠ selected */
+  --surface-page: #0f172a;
+  --surface-card: #1e293b;
+  --surface-elevated: #334155;
+  --surface-sidebar: #111827;
+  --surface-input: #162032;
+  --surface-hover: #2a3a4f;
+  --surface-selected: #134e4a;
+
+  --border-default: #334155;
+  --border-strong: #64748b;
+}
+
+/* ——— Azure ——— */
+html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) {
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-disabled: #94a3b8;
+  --text-on-primary: #f8fafc;
+  --text-on-secondary: #0f172a;
+  --text-on-accent: #f8fafc;
+  --text-on-card: #0f172a;
+  --text-on-sidebar: #e0f2fe;
+  --text-on-selected: #0f172a;
+
+  --surface-page: #e8f2fc;
+  --surface-card: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-sidebar: #0c4a6e;
+  --surface-input: #ffffff;
+  --surface-hover: #e0f2fe;
+  --surface-selected: #e0f2fe;
+
+  --border-default: #c5dcf4;
+  --border-strong: #7dd3fc;
+}
+
+html[data-ui-palette="azure"][data-clinical-dark="1"] {
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-disabled: #64748b;
+  --text-on-primary: #082032;
+  --text-on-secondary: #f8fafc;
+  --text-on-accent: #082032;
+  --text-on-card: #f8fafc;
+  --text-on-sidebar: #e0f2fe;
+  --text-on-selected: #f8fafc;
+
+  --surface-page: #0a1628;
+  --surface-card: #102845;
+  --surface-elevated: #163556;
+  --surface-sidebar: #071422;
+  --surface-input: #0c1f38;
+  --surface-hover: #183858;
+  --surface-selected: #0c4a6e;
+
+  --border-default: #1e4a7a;
+  --border-strong: #64748b;
+}
+
+/* ——— Cobalt: page chrome is saturated blue; cards are light islands ——— */
+html[data-ui-palette="cobalt"] {
+  --text-primary: #ffffff;
+  --text-secondary: #f1f5f9;
+  --text-muted: #eff6ff;
+  --text-disabled: #bfdbfe;
+  --text-on-primary: #ffffff;
+  --text-on-secondary: #0f172a;
+  --text-on-accent: #ffffff;
+  --text-on-card: #0f172a;
+  --text-on-sidebar: #eff6ff;
+  --text-on-selected: #0f172a;
+
+  --surface-page: #2563eb;
+  --surface-card: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-sidebar: #1d4ed8;
+  --surface-input: #ffffff;
+  --surface-hover: #dbeafe;
+  --surface-selected: #dbeafe;
+
+  --border-default: #93c5fd;
+  --border-strong: #60a5fa;
+}
+
+html[data-ui-palette="cobalt"][data-clinical-dark="1"] {
+  --surface-page: #1e3a8a;
+  --surface-sidebar: #172554;
+  --surface-hover: #1e40af;
+  --surface-selected: #2563eb;
+  --border-default: #3b82f6;
+  --border-strong: #60a5fa;
+  --text-on-primary: #0f172a;
+  --text-primary: #f8fafc;
+  --text-secondary: #f1f5f9;
+  --text-muted: #e2e8f0;
+}
+
+/* Cobalt cards / light islands — dark text on white */
+html[data-ui-palette="cobalt"] .drflow-ui-card,
+html[data-ui-palette="cobalt"] .drflow-card-light,
+html[data-ui-palette="cobalt"] .drflow-patient-workspace-panel,
+html[data-ui-palette="cobalt"] .drflow-ehr-shell,
+html[data-ui-palette="cobalt"] .drflow-ehr-table-panel,
+html[data-ui-palette="cobalt"] .drflow-surface-light {
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-disabled: #94a3b8;
+  --text-on-card: #0f172a;
+  --text-on-selected: #0f172a;
+  --surface-card: #ffffff;
+  --surface-elevated: #f8fafc;
+  --surface-input: #ffffff;
+  --surface-hover: #f1f5f9;
+  --surface-selected: #dbeafe;
+  --border-default: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --foreground: #0f172a;
+  --card-foreground: #0f172a;
+  --muted-foreground: #334155;
+  --placeholder: #64748b;
+}
+
+/* ——— Soft Clinic ——— */
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) {
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-disabled: #94a3b8;
+  --text-on-primary: #ffffff;
+  --text-on-secondary: #0f172a;
+  --text-on-accent: #ffffff;
+  --text-on-card: #0f172a;
+  --text-on-sidebar: #0f172a;
+  --text-on-selected: #0f172a;
+
+  --surface-page: #f9fafb;
+  --surface-card: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-sidebar: #ffffff;
+  --surface-input: #ffffff;
+  --surface-hover: #f3f4f6;
+  --surface-selected: #ccfbf1;
+
+  --border-default: #e5e7eb;
+  --border-strong: #d1d5db;
+}
+
+html[data-ui-palette="clinicsoft"][data-clinical-dark="1"] {
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-disabled: #64748b;
+  --text-on-primary: #042f2e;
+  --text-on-secondary: #f8fafc;
+  --text-on-accent: #042f2e;
+  --text-on-card: #f8fafc;
+  --text-on-sidebar: #e2e8f0;
+  --text-on-selected: #f8fafc;
+
+  --surface-page: #0f1720;
+  --surface-card: #1a2430;
+  --surface-elevated: #243344;
+  --surface-sidebar: #121a24;
+  --surface-input: #15202b;
+  --surface-hover: #243344;
+  --surface-selected: #134e4a;
+
+  --border-default: #2a3747;
+  --border-strong: #64748b;
+}
+
+/* ——— Midnight Navy ——— */
+html[data-ui-palette="midnight"][data-clinical-dark="1"] {
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-disabled: #64748b;
+  --text-on-primary: #061426;
+  --text-on-secondary: #f4f7fc;
+  --text-on-accent: #061426;
+  --text-on-card: #f8fafc;
+  --text-on-sidebar: #e2e8f0;
+  --text-on-selected: #f8fafc;
+
+  --surface-page: #07182d;
+  --surface-card: #102845;
+  --surface-elevated: #142f50;
+  --surface-sidebar: #0a1d36;
+  --surface-input: #0a1d36;
+  --surface-hover: #183858;
+  --surface-selected: #1c4064;
+
+  --border-default: #203b59;
+  --border-strong: #64748b;
+}
+
+html[data-ui-palette="midnight"]:not([data-clinical-dark="1"]) {
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-disabled: #94a3b8;
+  --text-on-primary: #ffffff;
+  --text-on-secondary: #0f172a;
+  --text-on-accent: #061426;
+  --text-on-card: #0f172a;
+  --text-on-sidebar: #e2e8f0;
+  --text-on-selected: #0f172a;
+
+  --surface-page: #e8eef6;
+  --surface-card: #ffffff;
+  --surface-elevated: #f4f7fc;
+  --surface-sidebar: #0a1d36;
+  --surface-input: #ffffff;
+  --surface-hover: #e8eef6;
+  --surface-selected: #dbeafe;
+
+  --border-default: #c5d0de;
+  --border-strong: #b8c5d6;
+}
+
+/* Midnight light companion: sidebar stays navy */
+html[data-ui-palette="midnight"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar,
+html[data-ui-palette="midnight"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-on-sidebar: #e2e8f0;
+  --surface-sidebar: #0a1d36;
+  --surface-hover: #183858;
+  --foreground: #f8fafc;
+  --muted-foreground: #cbd5e1;
+}
+
+/*
+ * Soft text bridge only — do not alias --background/--muted/--card here;
+ * palette files own those hex values and must stay independent of surfaces.
+ */
+html {
+  --primary-foreground: var(--text-on-primary);
+  --secondary-foreground: var(--text-on-secondary);
+  --accent-foreground: var(--text-on-accent);
+}
+
+/* ——— Component utility classes ——— */
+.drflow-text-primary {
+  color: var(--text-primary) !important;
+}
+.drflow-text-secondary {
+  color: var(--text-secondary) !important;
+}
+.drflow-text-muted {
+  color: var(--text-muted) !important;
+}
+.drflow-text-disabled {
+  color: var(--text-disabled) !important;
+}
+.drflow-text-on-card {
+  color: var(--text-on-card) !important;
+}
+.drflow-text-on-sidebar {
+  color: var(--text-on-sidebar) !important;
+}
+
+.drflow-surface-page {
+  background-color: var(--surface-page);
+}
+.drflow-surface-card {
+  background-color: var(--surface-card);
+  color: var(--text-on-card);
+}
+.drflow-surface-elevated {
+  background-color: var(--surface-elevated);
+}
+.drflow-surface-input {
+  background-color: var(--surface-input);
+}
+.drflow-surface-hover:hover {
+  background-color: var(--surface-hover);
+}
+
+.drflow-border-default {
+  border-color: var(--border-default);
+}
+.drflow-border-strong {
+  border-color: var(--border-strong);
+}
+
+/* Card chrome defaults to semantic surfaces */
+.drflow-ui-card {
+  background-color: var(--surface-card);
+  color: var(--text-on-card);
+  border-color: var(--border-default);
+}
+
+.drflow-ui-card-title {
+  color: var(--text-primary);
+}
+
+.drflow-ui-card-desc {
+  color: var(--text-secondary);
+}
+
+.drflow-ui-sidebar {
+  background-color: var(--surface-sidebar);
+  color: var(--text-on-sidebar);
+}
+
+/*
+ * Light themes (Clinical Dark off, excluding Cobalt page chrome):
+ * dark ink on white / pale blue / gray / pastel. Never near-white text.
+ * Muted uses #475569 (not #64748B) so body copy stays ≥4.5:1 on pale page tints;
+ * placeholders on white inputs may use #64748B.
+ */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"]) {
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-disabled: #94a3b8;
+  --text-on-card: #0f172a;
+  --text-on-selected: #0f172a;
+  --foreground: #0f172a;
+  --card-foreground: #0f172a;
+  --muted-foreground: #334155;
+  --placeholder: #64748b;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"]) .drflow-mesh main,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"]) .drflow-ui-card,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"]) .drflow-card-light,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"]) .drflow-surface-light {
+  color: var(--text-primary);
+}
+
+/* Never leave near-white utility text on pale backgrounds in light mode */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"])
+  .drflow-mesh
+  main
+  :is(.text-white, .text-slate-50, .text-slate-100, .text-slate-200, .text-gray-50, .text-gray-100):not(button):not(.drflow-ui-button):not(a.bg-gradient-to-r):not([class*="bg-slate-8"]):not([class*="bg-slate-9"]):not([class*="bg-teal-"]):not([class*="bg-primary"]):not([class*="from-"]),
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"])
+  .drflow-ui-card
+  :is(.text-white, .text-slate-50, .text-slate-100, .text-slate-200):not(button):not(.drflow-ui-button) {
+  color: var(--text-primary) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"])
+  .drflow-mesh
+  main
+  :is(.text-slate-300, .text-slate-400, .text-gray-300, .text-gray-400):not(button):not(.drflow-ui-button) {
+  color: var(--text-muted) !important;
+}
+
+/* Soft Clinic / Clinical light sidebars that are white: dark nav labels */
+html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette]) .drflow-ui-sidebar {
+  --text-on-sidebar: #334155;
+  color: var(--text-on-sidebar);
+}
+
+/*
+ * Dark themes: comfortable text + clear surface separation.
+ * Ladder: page → card → elevated; input recessed; hover ≠ selected.
+ */
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) {
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-disabled: #64748b;
+  --text-on-card: #f8fafc;
+  --text-on-selected: #f8fafc;
+  --foreground: #f8fafc;
+  --card-foreground: #f8fafc;
+  --muted-foreground: #cbd5e1;
+  --placeholder: #94a3b8;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-mesh {
+  background-color: var(--surface-page) !important;
+  color: var(--text-primary);
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-card:not(.drflow-card-light),
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-stat:not(.drflow-card-light):not(.bg-white) {
+  background-color: var(--surface-card) !important;
+  color: var(--text-on-card);
+  border-color: var(--border-default) !important;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-input,
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-select,
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+  .drflow-mesh
+  main
+  :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(.drflow-card-light *):not(.drflow-surface-light *) {
+  background-color: var(--surface-input) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-strong) !important;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-sidebar a:hover,
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-mesh main [role="option"]:hover,
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-mesh main [role="menuitem"]:hover,
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-mesh main tr:hover {
+  background-color: var(--surface-hover);
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+  :is([aria-selected="true"], [data-selected="true"], [aria-pressed="true"]):not(.drflow-ui-button):not(.drflow-theme-option):not(option) {
+  background-color: var(--surface-selected) !important;
+  color: var(--text-on-selected) !important;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-sidebar {
+  background-color: var(--surface-sidebar) !important;
+  color: var(--text-on-sidebar);
+}

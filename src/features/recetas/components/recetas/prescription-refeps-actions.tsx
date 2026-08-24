@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, Loader2, Send } from "lucide-react";
+import { AlertCircle, CheckCircle2, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -86,8 +86,14 @@ export function PrescriptionRefepsActions({
       ) : null}
 
       {canSubmit ? (
-        <Button size="sm" variant="outline" loading={loading} onClick={handleSubmit}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+        <Button
+          size="sm"
+          variant="outline"
+          loading={loading}
+          pendingLabel="Enviando..."
+          onClick={handleSubmit}
+        >
+          <Send className="h-4 w-4" />
           Enviar a REFEPS
         </Button>
       ) : null}

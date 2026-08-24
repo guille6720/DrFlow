@@ -33,6 +33,13 @@ type Props = {
   };
 };
 
+function isImportPlaceholderChiefComplaint(value: string | null | undefined): boolean {
+  const text = sanitizeClinicalDisplayText(value);
+  return /^(Registro HCE\b|Signos vitales importados|Documento adjunto importado|(Tratamiento|Diagnóstico) importado)/i.test(
+    text
+  );
+}
+
 function soapSection(label: string, value: string | null | undefined) {
   const text = sanitizeClinicalDisplayText(value);
   if (!text) return null;
@@ -56,7 +63,9 @@ export function PatientRecordSheet({
 }: Props) {
   if (!record) return null;
 
-  const subjective = record.chief_complaint;
+  const subjective = isImportPlaceholderChiefComplaint(record.chief_complaint)
+    ? ""
+    : record.chief_complaint;
   const assessment = record.diagnosis;
   const plan = [record.indications, record.evolution].filter(Boolean).join("\n\n");
 

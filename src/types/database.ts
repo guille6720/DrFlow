@@ -135,7 +135,7 @@ export interface Appointment {
   end_at: string;
   status: AppointmentStatus;
   notes: string | null;
-  booking_source?: "manual" | "online" | null;
+  booking_source?: "manual" | "online" | "api" | null;
   cancellation_reason: string | null;
   cancelled_at: string | null;
   cancelled_by: string | null;
@@ -213,3 +213,22 @@ export interface DashboardStats {
   noShowRate: number;
   upcomingAppointments: Appointment[];
 }
+
+export type EntitlementSubscriptionStatus =
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "cancelled"
+  | "expired";
+
+export type EntitlementFeatureType = "boolean" | "limit";
+
+export type {
+  ClinicEntitlementSubscriptionRow as ClinicEntitlementSubscription,
+  ClinicFeatureOverrideRow as ClinicFeatureOverride,
+  FeaturesRow as CommercialFeature,
+  PlansRow as CommercialPlan,
+  FeatureUsageRow as FeatureUsage,
+  PlanFeaturesRow as PlanFeature,
+} from "@/types/supabase-entitlements";
+

@@ -1,64 +1,61 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { cancelAppointmentRequest } from "@/features/agenda/utils/cancel-appointment-request";
+import {
+  CANCELLATION_REASON_OPTIONS,
+  type CancellationCategory,
+} from "@/features/turnos/utils/appointment-lifecycle";
 
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
-const CANCEL_REASON_OPTIONS = [
-  { value: "patient", label: "Paciente" },
-  { value: "professional", label: "Profesional" },
-  { value: "clinic", label: "Clínica" },
-  { value: "data_error", label: "Error de carga" },
-  { value: "other", label: "Otro" },
-] as const;
-
-export type CancellationCategory = (typeof CANCEL_REASON_OPTIONS)[number]["value"];
+export type CancelAppointmentInput = {
+  category: CancellationCategory;
+  detail: string;
+};
 
 interface CancelAppointmentDialogProps {
   open: boolean;
-  appointmentId: string;
   onClose: () => void;
-  /** Called after a successful cancel (e.g. close parent dialog). */
-  onCancelled?: () => void;
+  onConfirm: (
+    input: CancelAppointmentInput
+  ) => Promise<void | { error?: string; success?: boolean }>;
   patientName?: string;
+  loading?: boolean;
 }
 
 export function CancelAppointmentDialog({
   open,
-  appointmentId,
   onClose,
-  onCancelled,
+  onConfirm,
   patientName,
+  loading = false,
 }: CancelAppointmentDialogProps) {
-  const router = useRouter();
   const [category, setCategory] = useState<CancellationCategory>("clinic");
+  const [detail, setDetail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   if (!open) return null;
 
   async function handleConfirm() {
+    const trimmed = detail.trim();
+    if (trimmed.length < 3) {
+      const message = "Indicá el motivo (mín. 3 caracteres)";
+      setError(message);
+      return;
+    }
+
     setError(null);
     setSubmitting(true);
     try {
-      const data = await cancelAppointmentRequest(appointmentId, category);
-      if ("error" in data) {
-        setError(data.error);
+      const result = await onConfirm({ category, detail: trimmed });
+      if (result?.error) {
+        setError(result.error);
         return;
-      }
-
-      setCategory("clinic");
-      onClose();
-      onCancelled?.();
-      try {
-        router.refresh();
-      } catch {
-        // Non-blocking
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo cancelar el turno");
@@ -68,11 +65,14 @@ export function CancelAppointmentDialog({
   }
 
   function handleClose() {
-    if (submitting) return;
+    if (submitting || loading) return;
+    setDetail("");
     setCategory("clinic");
     setError(null);
     onClose();
   }
+
+  const busy = submitting || loading;
 
   return (
     <div className="fixed inset-0 z-[300] flex items-end justify-center p-4 sm:items-center">
@@ -83,7 +83,7 @@ export function CancelAppointmentDialog({
         onClick={handleClose}
       />
       <div
-        className="drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl pointer-events-auto"
+        className="drflow-modal-panel drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl pointer-events-auto"
         role="dialog"
         aria-modal="true"
         aria-labelledby="cancel-appointment-title"
@@ -98,8 +98,9 @@ export function CancelAppointmentDialog({
           <button
             type="button"
             onClick={handleClose}
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
-            disabled={submitting}
+            className="drflow-modal-close rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+            disabled={busy}
+            aria-label="Cerrar"
           >
             <X className="h-5 w-5" />
           </button>
@@ -115,18 +116,26 @@ export function CancelAppointmentDialog({
           <Select
             label="Motivo de cancelación"
             value={category}
-            onChange={(e) => {
-              setCategory(e.target.value as CancellationCategory);
-              setError(null);
-            }}
-            options={CANCEL_REASON_OPTIONS.map((option) => ({
+            onChange={(e) => setCategory(e.target.value as CancellationCategory)}
+            options={CANCELLATION_REASON_OPTIONS.map((option) => ({
               value: option.value,
               label: option.label,
             }))}
+          />
+          <Textarea
+            label="Detalle"
+            value={detail}
+            onChange={(e) => {
+              setDetail(e.target.value);
+              setError(null);
+            }}
+            placeholder="Ej: El paciente avisó que no puede asistir"
+            rows={3}
             error={error ?? undefined}
           />
-          <p className="text-xs text-slate-500">
-            Quedará registrado en la agenda, historial y app del paciente.
+          <p className="drflow-modal-footnote text-xs text-slate-500">
+            Quedará registrado en la agenda, historial y app del paciente. Si el paciente tiene
+            teléfono, podés avisarle por WhatsApp al confirmar.
           </p>
           {error ? (
             <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -134,10 +143,10 @@ export function CancelAppointmentDialog({
             </p>
           ) : null}
           <div className="flex gap-2">
-            <Button type="submit" variant="danger" loading={submitting}>
+            <Button type="submit" variant="danger" loading={busy}>
               Confirmar cancelación
             </Button>
-            <Button type="button" variant="outline" onClick={handleClose} disabled={submitting}>
+            <Button type="button" variant="outline" onClick={handleClose} disabled={busy}>
               Volver
             </Button>
           </div>

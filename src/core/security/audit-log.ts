@@ -4,6 +4,9 @@ import {
   auditEntityLabel,
   sanitizeAuditSnapshot,
 } from "@/core/security/audit-types";
+import { toJson, toJsonObject } from "@/core/supabase/json";
+
+import type { Json } from "@/types/supabase";
 
 /** Functional modules for immutable audit trail grouping. */
 export const AUDIT_MODULES = [
@@ -22,6 +25,7 @@ export const AUDIT_MODULES = [
   "jobs",
   "plugins",
   "waiting_room",
+  "ia",
   "system",
 ] as const;
 
@@ -61,11 +65,14 @@ const ENTITY_MODULE_MAP: Record<string, AuditModule> = {
   user: "auth",
   consent: "compliance",
   clinic_job: "jobs",
+  data_import_session: "imports",
+  data_export: "imports",
   clinic_plugin: "plugins",
   clinic_feature_flag: "plugins",
   clinic_invitation: "settings",
   clinic_member: "settings",
   waiting_room: "waiting_room",
+  ai_request: "ia",
 };
 
 export function deriveAuditModule(entityType: string): AuditModule {
@@ -125,9 +132,17 @@ export function auditModuleLabel(module: string): string {
     jobs: "Trabajos",
     plugins: "Plugins",
     waiting_room: "Sala de espera",
+    ia: "IA / Asistente",
     system: "Sistema",
   };
   return labels[module] ?? module;
+}
+
+function snapshotToJson(
+  value: Record<string, unknown> | null | undefined
+): Json | null {
+  const snap = sanitizeAuditSnapshot(value);
+  return snap === null ? null : toJson(snap);
 }
 
 /** Row payload for audit_logs INSERT (immutable — no updates). */
@@ -147,9 +162,9 @@ export function buildAuditLogRow(params: ImmutableAuditParams) {
     entity_id: params.entityId ?? null,
     patient_id: patientId ?? null,
     action: params.action,
-    metadata: params.metadata ?? {},
-    old_values: sanitizeAuditSnapshot(params.oldValues ?? null),
-    new_values: sanitizeAuditSnapshot(params.newValues ?? null),
+    metadata: toJsonObject(params.metadata ?? {}),
+    old_values: snapshotToJson(params.oldValues),
+    new_values: snapshotToJson(params.newValues),
     ip_address: params.ipAddress ?? null,
     user_agent: params.userAgent ?? null,
   };

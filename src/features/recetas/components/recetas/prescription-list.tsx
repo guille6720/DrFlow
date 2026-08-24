@@ -268,6 +268,7 @@ export function PrescriptionList({
                       size="sm"
                       variant="outline"
                       loading={actingId === rx.id}
+                      pendingLabel="Marcando..."
                       onClick={() => onMarkDispensed(rx.id)}
                     >
                       <Pill className="h-4 w-4" />
@@ -276,7 +277,7 @@ export function PrescriptionList({
                   ) : null}
                   {canIssue && rx.status === "draft" && onIssue ? (
                     <Button size="sm" loading={actingId === rx.id} onClick={() => onIssue(rx.id)}>
-                      Emitir
+                      {actingId === rx.id ? "Emitiendo..." : "Emitir"}
                     </Button>
                   ) : null}
                   {canIssue && rx.status !== "void" && onVoid ? (
@@ -286,7 +287,7 @@ export function PrescriptionList({
                       loading={actingId === rx.id}
                       onClick={() => onVoid(rx.id)}
                     >
-                      Anular
+                      {actingId === rx.id ? "Anulando..." : "Anular"}
                     </Button>
                   ) : null}
                 </div>

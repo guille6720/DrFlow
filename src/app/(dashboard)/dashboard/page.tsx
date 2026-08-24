@@ -1,28 +1,24 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { Suspense } from "react";
 
 import { getDashboardShell, resolveClinicDisplayName } from "@/core/auth/session";
 import { Header } from "@/core/components/layout/header";
+import { canUseEnforcedFeature } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 import { hasPermission } from "@/core/permissions/roles";
-import { createClient } from "@/core/supabase/server";
 
-import { TurnosDashboardTodayView } from "@/features/turnos/components/turnos-dashboard-today-view";
-import { loadTurnosReportesPageData } from "@/features/turnos/server/load-turnos-config-page";
+import { ClinicalOpsDashboardAsync } from "@/features/dashboard/components/dashboard/clinical-ops-dashboard-async";
+
+import { PageSkeleton } from "@/components/ui/page-skeleton";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const shell = await getDashboardShell();
-  const { profile, clinics, clinicId, clinic, role, isSuperadmin } = shell;
+  const { profile, clinics, clinicId, clinic, role, isSuperadmin, permissionOverrides } = shell;
   const clinicDisplayName = resolveClinicDisplayName(clinicId, clinic, clinics) ?? "Consultorio";
   const now = new Date();
-
-  let todayMetrics = null;
-  if (clinicId) {
-    const supabase = await createClient();
-    const { metrics } = await loadTurnosReportesPageData(supabase, clinicId);
-    todayMetrics = metrics;
-  }
 
   return (
     <>
@@ -37,11 +33,40 @@ export default async function DashboardPage() {
       />
 
       <div className="p-3 sm:p-4">
-        {clinicId && todayMetrics ? (
-          <TurnosDashboardTodayView
-            metrics={todayMetrics}
-            canViewReports={hasPermission(role, "viewReports", isSuperadmin)}
-          />
+        {clinicId ? (
+          <Suspense fallback={<PageSkeleton title="Operaciones del día" />}>
+            <ClinicalOpsDashboardAsync
+              clinicId={clinicId}
+              clinicName={clinicDisplayName}
+              professionalName={profile?.full_name}
+              canManageAppointments={hasPermission(
+                role,
+                "manageAppointments",
+                isSuperadmin,
+                permissionOverrides
+              )}
+              canManageCash={
+                hasPermission(
+                  role,
+                  "manageCashRegister",
+                  isSuperadmin,
+                  permissionOverrides
+                ) && (await canUseEnforcedFeature(FEATURES.CASH_REGISTER))
+              }
+              canManageWaitingRoom={hasPermission(
+                role,
+                "manageWaitingRoom",
+                isSuperadmin,
+                permissionOverrides
+              )}
+              canManageSettings={hasPermission(
+                role,
+                "manageSettings",
+                isSuperadmin,
+                permissionOverrides
+              )}
+            />
+          </Suspense>
         ) : (
           <p className="text-sm text-slate-500">
             Seleccioná un consultorio para ver operaciones del día.

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
+import { PATIENT_LIST_ID_IN_LIMIT, PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
 
 import { validatePatientSearchQuery } from "@/features/pacientes/utils/patient-search-query";
 
@@ -26,7 +26,7 @@ type SearchPatientsOptions = {
   cobertura?: "pami";
 };
 
-const LIST_SEARCH_ID_LIMIT = 500;
+const LIST_SEARCH_ID_LIMIT = PATIENT_LIST_ID_IN_LIMIT;
 
 function pamiOnly(cobertura?: "pami"): boolean {
   return cobertura === "pami";

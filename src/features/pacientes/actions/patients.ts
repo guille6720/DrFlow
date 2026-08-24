@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
+import { FEATURES } from "@/core/entitlements/features";
+import { assertClinicSeatCapacity } from "@/core/entitlements/limits.server";
 import { createClient } from "@/core/supabase/server";
 import { patientAdminSchema } from "@/core/validations/cash-schemas";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
@@ -17,9 +19,18 @@ import {
 } from "@/features/pacientes/services/patients.service";
 
 export async function createPatient(formData: FormData) {
-  const access = await requireClinicPermission("managePatients");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("managePatients"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
   const { clinicId, role, isSuperadmin } = access;
+
+  const seat = await assertClinicSeatCapacity({
+    clinicId,
+    featureKey: FEATURES.PATIENTS_MAX,
+  });
+  if (!seat.ok) return { error: seat.error };
 
   const raw = Object.fromEntries(formData.entries());
   const adminOnly = isAdminOnlyPatientRole(role, isSuperadmin);
@@ -33,7 +44,6 @@ export async function createPatient(formData: FormData) {
   const sanitized = sanitizePatientFields(
     parsed.data as Parameters<typeof sanitizePatientFields>[0]
   ) as SanitizedPatient;
-  const supabase = await createClient();
 
   const result = await createPatientRecord(supabase, {
     clinicId,
@@ -60,7 +70,10 @@ export async function createPatient(formData: FormData) {
 }
 
 export async function updatePatient(id: string, formData: FormData) {
-  const access = await requireClinicPermission("managePatients");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("managePatients"),
+    createClient(),
+  ]);
   if (!access.ok) return { error: access.error };
   const { clinicId, role, isSuperadmin } = access;
 
@@ -77,7 +90,6 @@ export async function updatePatient(id: string, formData: FormData) {
   const sanitized = sanitizePatientFields(
     parsed.data as Parameters<typeof sanitizePatientFields>[0]
   ) as SanitizedPatient;
-  const supabase = await createClient();
 
   const result = await updatePatientRecord(supabase, {
     patientId: idParsed.data,

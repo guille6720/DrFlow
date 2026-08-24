@@ -3,11 +3,33 @@
  *
  * PowerShell:
  *   cd c:\dev\DrFlow
+ *   $env:ALLOW_PRODUCTION_DB="1"
+ *   $env:CONFIRM_PRODUCTION_DB="nipqdarduknydqptqzup"
  *   $env:DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.nipqdarduknydqptqzup.supabase.co:5432/postgres"
  *   npm run migrate:production-pending
+ *
+ * Entitlements / staging work must NOT use this script.
  */
 import { spawnSync } from "child_process";
 import { resolve } from "path";
+
+const PRODUCTION_REF = "nipqdarduknydqptqzup";
+
+if (process.env.ALLOW_PRODUCTION_DB !== "1") {
+  console.error(`
+ERROR: Refusing production migration script.
+Set ALLOW_PRODUCTION_DB=1 and CONFIRM_PRODUCTION_DB=${PRODUCTION_REF} explicitly.
+For staging entitlements use: npm run entitlements:db-push:dry-run
+`);
+  process.exit(1);
+}
+
+if (process.env.CONFIRM_PRODUCTION_DB !== PRODUCTION_REF) {
+  console.error(`
+ERROR: CONFIRM_PRODUCTION_DB must equal ${PRODUCTION_REF}.
+`);
+  process.exit(1);
+}
 
 const dbUrl = process.env.DATABASE_URL?.trim();
 if (!dbUrl) {
@@ -15,10 +37,20 @@ if (!dbUrl) {
 ❌ Falta DATABASE_URL
 
 PowerShell:
-  $env:DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.nipqdarduknydqptqzup.supabase.co:5432/postgres"
+  $env:ALLOW_PRODUCTION_DB="1"
+  $env:CONFIRM_PRODUCTION_DB="${PRODUCTION_REF}"
+  $env:DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.${PRODUCTION_REF}.supabase.co:5432/postgres"
   npm run migrate:production-pending
 
 Alternativa manual: Supabase → SQL Editor → ver docs/SUPABASE_PENDIENTE.md
+`);
+  process.exit(1);
+}
+
+if (!dbUrl.includes(PRODUCTION_REF)) {
+  console.error(`
+ERROR: DATABASE_URL host does not include production ref ${PRODUCTION_REF}.
+Refusing to run.
 `);
   process.exit(1);
 }

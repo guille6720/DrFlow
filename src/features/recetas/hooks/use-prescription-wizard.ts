@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { getPrescriptionCoverageRuleOverrides } from "@/features/recetas/actions/coverage-rules";
 import { savePrescriptionTemplateFromDraft } from "@/features/recetas/actions/prescription-templates";
@@ -117,6 +117,7 @@ export function usePrescriptionWizard({
   coverageRuleOverrides: initialCoverageRuleOverrides = null,
 }: Options) {
   const router = useRouter();
+  const [, startRefresh] = useTransition();
   const idempotencyRef = useRef<string | null>(null);
   const [coverageRuleOverrides, setCoverageRuleOverrides] = useState<CoverageRuleOverridesMap | null>(
     initialCoverageRuleOverrides
@@ -422,7 +423,9 @@ export function usePrescriptionWizard({
       }
 
       onSuccess?.();
-      router.refresh();
+      startRefresh(() => {
+        router.refresh();
+      });
     },
     [
       confirmIssue,
@@ -443,6 +446,7 @@ export function usePrescriptionWizard({
       medications,
       onSuccess,
       router,
+      startRefresh,
     ]
   );
 

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { resolveImportAccess } from "@/core/actions/action-response";
 import { logAudit } from "@/core/auth/session.actions";
+import { assertClinicJobEnqueueAllowed } from "@/core/entitlements/clinic-job-guard.server";
 import { scheduleAfterTask } from "@/core/errors/background.server";
 import { enqueueClinicJob } from "@/core/jobs/enqueue";
 import { processPendingClinicJobs } from "@/core/jobs/process";
@@ -227,13 +228,22 @@ export async function enqueuePatientAiSummaryJob(patientId: string): Promise<{
   const ownership = await verifyPatientInClinic(supabase, auth.clinicId, idParsed.data);
   if (!ownership.ok) return { error: ownership.error };
 
+  const payload = {
+    task: "clinical_summary",
+    patientId: idParsed.data,
+  };
+  const guard = await assertClinicJobEnqueueAllowed({
+    clinicId: auth.clinicId,
+    jobType: "run_ai_task",
+    payload,
+    supabase,
+  });
+  if (!guard.ok) return { error: guard.error };
+
   const { id } = await enqueueClinicJob(supabase, {
     clinicId: auth.clinicId,
     jobType: "run_ai_task",
-    payload: {
-      task: "clinical_summary",
-      patientId: idParsed.data,
-    },
+    payload,
     createdBy: auth.userId,
   });
 

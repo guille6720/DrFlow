@@ -1,0 +1,74 @@
+/**
+ * Clinical typography policy.
+ * Contrast is solved with color tokens — never by globally thickening type.
+ *
+ * Baseline (preserve component Tailwind weights unless noted):
+ *   body / paragraphs: 400–500
+ *   labels:            500
+ *   headings:          600–700
+ *   buttons:           500–600
+ */
+
+:root {
+  --font-weight-body: 400;
+  --font-weight-body-emphasis: 500;
+  --font-weight-label: 500;
+  --font-weight-heading: 600;
+  --font-weight-heading-strong: 700;
+  --font-weight-button: 500;
+  --font-weight-button-emphasis: 600;
+}
+
+/* Soft body default — do not cascade bold into clinical copy */
+body {
+  font-weight: var(--font-weight-body);
+}
+
+/* Labels stay medium; never jump to bold for contrast */
+.drflow-ui-label {
+  font-weight: var(--font-weight-label);
+}
+
+/* Required marker: slightly stronger than the label, not ultra-bold */
+.drflow-ui-required {
+  font-weight: var(--font-weight-heading);
+}
+
+/* Buttons default to medium; keep within 500–600 even if a utility asks for bold */
+.drflow-ui-button {
+  font-weight: var(--font-weight-button);
+}
+
+.drflow-ui-button.font-semibold {
+  font-weight: var(--font-weight-button-emphasis);
+}
+
+.drflow-ui-button.font-bold,
+.drflow-ui-button.font-extrabold,
+.drflow-ui-button.font-black {
+  font-weight: var(--font-weight-button-emphasis);
+}
+
+/* Headings already using utilities stay as-is (600–700). Cap ultra-bold. */
+.drflow-mesh main :is(h1, h2, h3, h4).font-extrabold,
+.drflow-mesh main :is(h1, h2, h3, h4).font-black,
+.drflow-modal-panel :is(h1, h2, h3, h4).font-extrabold,
+.drflow-modal-panel :is(h1, h2, h3, h4).font-black {
+  font-weight: var(--font-weight-heading-strong);
+}
+
+/* No fake-contrast glow / outline shadows on clinical text */
+.drflow-mesh,
+.drflow-modal-panel,
+.drflow-workspace-overlay-panel,
+.drflow-card-light,
+.drflow-ui-card,
+.drflow-ehr-shell {
+  text-shadow: none;
+}
+
+.drflow-mesh :is(p, span, li, label, h1, h2, h3, h4, h5, h6, a, button, td, th, dd, dt),
+.drflow-modal-panel :is(p, span, li, label, h1, h2, h3, h4, button),
+.drflow-workspace-overlay-panel :is(p, span, li, label, h1, h2, h3, h4, button) {
+  text-shadow: none;
+}

@@ -7,7 +7,10 @@ import { createClient } from "@/core/supabase/server";
 import { loadTurnosWizardSlots } from "@/features/turnos/server/load-turnos-wizard-slots";
 
 export async function fetchTurnosWizardSlots(professionalId: string, locationId?: string | null) {
-  const access = await requireClinicPermission("manageAppointments");
+  const [access, supabase] = await Promise.all([
+    requireClinicPermission("manageAppointments"),
+    createClient(),
+  ]);
   if (!access.ok) {
     return {
       error: access.error,
@@ -17,7 +20,6 @@ export async function fetchTurnosWizardSlots(professionalId: string, locationId?
     };
   }
 
-  const supabase = await createClient();
   const { slots, appointments, scheduleBlocks } = await loadTurnosWizardSlots(
     supabase,
     access.clinicId,

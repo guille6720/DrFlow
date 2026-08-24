@@ -6,6 +6,7 @@ import {
   Stethoscope,
 } from "lucide-react";
 
+import type { PatientProblemListItem } from "@/features/pacientes/server/load-clinical-structure";
 import type {
   PatientEhrAttachment,
   PatientEhrConsultation,
@@ -53,6 +54,7 @@ export type PatientEhrViewProps = {
   consultations: PatientEhrConsultation[];
   diagnosisRows: PatientEhrDiagnosisRow[];
   treatmentRows: PatientEhrTreatmentRow[];
+  problemList?: PatientProblemListItem[];
   attachments: PatientEhrAttachment[];
   prescriptions: PatientEhrPrescription[];
   totalConsultations: number;

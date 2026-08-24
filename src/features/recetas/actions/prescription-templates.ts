@@ -63,17 +63,13 @@ function parseTemplateForm(
 
 function revalidateTemplateViews() {
   revalidatePath("/plantillas-recetas");
-  revalidatePath("/pacientes", "layout");
-  revalidatePath("/recetas");
 }
 
 export async function listPrescriptionTemplates(
   professionalId?: string | null
 ): Promise<{ data?: PrescriptionTemplateRow[]; error?: string }> {
-  const access = await requireClinicalIssueAccess();
+  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
-
-  const supabase = await createClient();
   const result = await listPrescriptionTemplatesForClinic(supabase, access.data.clinicId, {
     professionalId: professionalId ?? undefined,
   });
@@ -83,13 +79,11 @@ export async function listPrescriptionTemplates(
 }
 
 export async function createPrescriptionTemplate(formData: FormData) {
-  const access = await requireClinicalIssueAccess();
+  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
 
   const parsed = parseTemplateForm(formData);
   if (!parsed.ok) return { error: parsed.error };
-
-  const supabase = await createClient();
   const result = await insertPrescriptionTemplate(supabase, {
     clinic_id: access.data.clinicId,
     professional_id: parsed.data.professional_id ?? null,
@@ -126,7 +120,7 @@ export async function createPrescriptionTemplate(formData: FormData) {
 }
 
 export async function updatePrescriptionTemplateAction(formData: FormData) {
-  const access = await requireClinicalIssueAccess();
+  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
 
   const idParsed = entityIdSchema.safeParse(String(formData.get("id") ?? ""));
@@ -134,8 +128,6 @@ export async function updatePrescriptionTemplateAction(formData: FormData) {
 
   const parsed = parseTemplateForm(formData);
   if (!parsed.ok) return { error: parsed.error };
-
-  const supabase = await createClient();
   const result = await updatePrescriptionTemplate(supabase, idParsed.data, access.data.clinicId, {
     professional_id: parsed.data.professional_id ?? null,
     name: parsed.data.name,
@@ -163,13 +155,11 @@ export async function updatePrescriptionTemplateAction(formData: FormData) {
 }
 
 export async function removePrescriptionTemplate(id: string) {
-  const access = await requireClinicalIssueAccess();
+  const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
 
   const idParsed = entityIdSchema.safeParse(id);
   if (!idParsed.success) return { error: "Plantilla inválida." };
-
-  const supabase = await createClient();
   const result = await deletePrescriptionTemplate(supabase, idParsed.data, access.data.clinicId);
   if (!result.ok) return { error: result.error };
 

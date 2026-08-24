@@ -1,5 +1,6 @@
 import {
   clinicClinicalTemplatesTag,
+  clinicCoverageRulesTag,
   clinicFeatureFlagsTag,
   clinicLocationsTag,
   clinicPamiPlanillasTag,
@@ -38,10 +39,11 @@ const CLINICAL_TEMPLATE_ADMIN_COLUMNS = `${CLINICAL_TEMPLATE_COLUMNS}, specialty
 
 /** Session client signs URLs after cross-request DB cache (URLs expire; paths are cached). */
 async function signProfessionalRows<T extends { signature_image_path?: string | null }>(
-  rows: T[]
+  rows: T[],
+  clinicId: string
 ): Promise<Array<T & { signature_image_url: string | null }>> {
   const supabase = await createClient();
-  return resolveProfessionalSignatureUrls(supabase, rows);
+  return resolveProfessionalSignatureUrls(supabase, rows, clinicId);
 }
 
 export async function loadClinicPluginsCached(clinicId: string) {
@@ -142,7 +144,7 @@ export async function loadClinicProfessionalsSettingsCached(clinicId: string): P
 export async function loadClinicProfessionalsListRowsCached(clinicId: string): Promise<ProfessionalListRow[]> {
   return withClinicMetadataCache(
     {
-      key: "professionals-list",
+      key: "professionals-list-v2",
       clinicId,
       tag: clinicProfessionalsTag(clinicId),
       revalidate: CLINIC_METADATA_TTL.professionals,
@@ -151,7 +153,7 @@ export async function loadClinicProfessionalsListRowsCached(clinicId: string): P
       const { data } = await supabase
         .from("professionals")
         .select(
-          "id, display_name, license_number, license_national, license_provincial, signature_text, signature_image_path, profiles(full_name)"
+          "id, user_id, display_name, license_number, license_national, license_provincial, signature_text, signature_image_path, profiles(full_name)"
         )
         .eq("clinic_id", clinicId)
         .eq("is_active", true)
@@ -163,7 +165,7 @@ export async function loadClinicProfessionalsListRowsCached(clinicId: string): P
 
 export async function loadClinicProfessionalsListCached(clinicId: string) {
   const rows = await loadClinicProfessionalsListRowsCached(clinicId);
-  return signProfessionalRows(rows);
+  return signProfessionalRows(rows, clinicId);
 }
 
 export async function loadClinicProfessionalsFullRowsCached(clinicId: string) {
@@ -187,7 +189,7 @@ export async function loadClinicProfessionalsFullRowsCached(clinicId: string) {
 
 export async function loadClinicProfessionalsFullCached(clinicId: string) {
   const rows = await loadClinicProfessionalsFullRowsCached(clinicId);
-  return signProfessionalRows(rows);
+  return signProfessionalRows(rows, clinicId);
 }
 
 export async function loadClinicLocationsCached(clinicId: string) {
@@ -280,6 +282,26 @@ export async function loadPamiPlanillaCatalogCached(clinicId: string) {
         "@/features/pami/services/pami-planilla-templates.service"
       );
       return loadPamiPlanillaCatalog(supabase, clinicId);
+    }
+  );
+}
+
+/** Clinic-level prescription coverage overrides — not PHI. */
+export async function loadClinicCoverageRulesCached(clinicId: string) {
+  return withClinicMetadataCache(
+    {
+      key: "coverage-rules",
+      clinicId,
+      tag: clinicCoverageRulesTag(clinicId),
+      revalidate: CLINIC_METADATA_TTL.coverageRules,
+    },
+    async (supabase) => {
+      const { data } = await supabase
+        .from("coverage_rules")
+        .select("id, coverage_kind, rules, active")
+        .eq("clinic_id", clinicId)
+        .eq("active", true);
+      return data ?? [];
     }
   );
 }

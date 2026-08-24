@@ -160,7 +160,7 @@ export function InstallStepWizard({ platform, onPlatformChange }: InstallStepWiz
           type="button"
           disabled={step === 0}
           onClick={() => setStep((s) => Math.max(0, s - 1))}
-          className="flex-1 rounded-xl border border-white/30 py-2.5 text-sm font-medium text-white disabled:opacity-40"
+          className="flex-1 rounded-xl border border-white/40 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:border-white/20 disabled:text-emerald-100 disabled:opacity-100"
         >
           Anterior
         </button>
@@ -168,7 +168,7 @@ export function InstallStepWizard({ platform, onPlatformChange }: InstallStepWiz
           type="button"
           disabled={step >= steps.length - 1}
           onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))}
-          className="flex-1 rounded-xl bg-white py-2.5 text-sm font-bold text-emerald-800 disabled:opacity-40"
+          className="flex-1 rounded-xl bg-white py-2.5 text-sm font-bold text-emerald-900 disabled:cursor-not-allowed disabled:bg-emerald-50 disabled:text-emerald-700 disabled:opacity-100"
         >
           Siguiente
         </button>

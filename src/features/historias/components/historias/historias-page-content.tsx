@@ -68,7 +68,7 @@ export function HistoriasPageContent({
               label="Asistente IA"
               className="border-violet-200 bg-white/90 text-violet-900 hover:bg-violet-50"
             />
-            <Link href="/historias/nueva">
+            <Link href="/consultas">
             <Button>
               <Plus className="h-4 w-4" />
               Nueva consulta
@@ -90,7 +90,7 @@ export function HistoriasPageContent({
           title="Sin registros clínicos"
           description="Las consultas que registres aparecerán acá."
           action={
-            <Link href="/historias/nueva">
+            <Link href="/consultas">
               <Button>
                 <Plus className="h-4 w-4" />
                 Registrar consulta

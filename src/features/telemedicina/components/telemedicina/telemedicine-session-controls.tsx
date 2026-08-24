@@ -27,7 +27,6 @@ export function TelemedicineSessionControls({ sessionId, status }: Props) {
       }
       toast.success("Videoconsulta finalizada");
       router.push("/telemedicina");
-      router.refresh();
     });
   }
 

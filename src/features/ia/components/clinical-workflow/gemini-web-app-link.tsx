@@ -3,7 +3,9 @@
 import { Sparkles } from "lucide-react";
 import { usePathname } from "next/navigation";
 
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
 import { SafeInternalLink } from "@/core/components/safe-link";
+import { FEATURES } from "@/core/entitlements/features";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -18,9 +20,10 @@ type Props = {
 /** Abre Gemini dentro de DrFlow. Nunca sale a gemini.google.com. */
 export function GeminiWebAppLink({ className, onNavigate }: Props) {
   const enabled = useFeatureFlag("consultation_assistant");
+  const entitled = useCanUseFeature(FEATURES.AI);
   const pathname = usePathname();
   const active = pathname === GEMINI_IN_APP_HREF || pathname.startsWith(`${GEMINI_IN_APP_HREF}/`);
-  if (!enabled) return null;
+  if (!enabled || !entitled) return null;
 
   return (
     <SafeInternalLink
@@ -48,8 +51,9 @@ export function GeminiWebAppLink({ className, onNavigate }: Props) {
 /** Botón flotante inferior derecho — Gemini dentro de DrFlow. */
 export function GeminiWebAppFab() {
   const enabled = useFeatureFlag("consultation_assistant");
+  const entitled = useCanUseFeature(FEATURES.AI);
   const pathname = usePathname();
-  if (!enabled || pathname === GEMINI_IN_APP_HREF) return null;
+  if (!enabled || !entitled || pathname === GEMINI_IN_APP_HREF) return null;
 
   return (
     <SafeInternalLink
@@ -68,5 +72,7 @@ export function GeminiWebAppFab() {
 }
 
 export function useGeminiFabVisible(): boolean {
-  return useFeatureFlag("consultation_assistant");
+  const enabled = useFeatureFlag("consultation_assistant");
+  const entitled = useCanUseFeature(FEATURES.AI);
+  return enabled && entitled;
 }

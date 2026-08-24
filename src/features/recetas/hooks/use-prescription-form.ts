@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import { issuePrescription, savePrescriptionDraft } from "@/features/recetas/actions/prescriptions";
 import { emptyPrescriptionMedication } from "@/features/recetas/components/recetas/prescription-form-utils";
@@ -26,6 +26,7 @@ export function usePrescriptionForm({
   onSuccess,
 }: Options) {
   const router = useRouter();
+  const [, startRefresh] = useTransition();
   const [diagnosisText, setDiagnosisText] = useState(diagnosisDefault);
   const [cie10, setCie10] = useState(cie10Default);
   const [medications, setMedications] = useState<PrescriptionMedication[]>(
@@ -76,7 +77,9 @@ export function usePrescriptionForm({
     }
 
     onSuccess?.();
-    router.refresh();
+    startRefresh(() => {
+      router.refresh();
+    });
   }
 
   return {

@@ -8,12 +8,15 @@ export type ButtonSize = "sm" | "md" | "lg";
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 focus-visible:ring-teal-500 shadow-md shadow-cyan-500/25",
-  secondary: "bg-teal-50 text-teal-900 hover:bg-teal-100 focus-visible:ring-teal-400",
+    "drflow-btn-primary bg-[var(--primary)] text-[var(--text-on-primary,var(--primary-foreground))] hover:bg-[var(--primary-dark)] active:brightness-95 focus-visible:ring-[var(--ring)] shadow-sm",
+  secondary:
+    "drflow-btn-secondary bg-[var(--secondary)] text-[var(--text-on-secondary,var(--secondary-foreground))] border border-[var(--border-strong,var(--border))] hover:bg-[var(--surface-hover,var(--muted))] active:bg-[var(--surface-hover,var(--muted))] focus-visible:ring-[var(--ring)]",
   outline:
-    "border border-slate-200 bg-white text-slate-800 hover:bg-teal-50 hover:border-teal-200",
-  ghost: "text-slate-700 hover:bg-teal-50 hover:text-teal-900",
-  danger: "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500",
+    "drflow-btn-outline border border-[var(--border-default,var(--border))] bg-[var(--surface-card,var(--card))] text-[var(--text-on-card,var(--foreground))] hover:bg-[var(--surface-hover,var(--muted))] active:bg-[var(--surface-hover,var(--muted))] focus-visible:ring-[var(--ring)]",
+  ghost:
+    "drflow-btn-ghost text-[var(--text-primary,var(--foreground))] hover:bg-[var(--surface-hover,var(--muted))] hover:text-[var(--text-primary,var(--foreground))] active:bg-[var(--surface-hover,var(--muted))] focus-visible:ring-[var(--ring)]",
+  danger:
+    "drflow-btn-danger bg-[var(--destructive)] text-[var(--destructive-foreground)] hover:brightness-95 active:brightness-90 focus-visible:ring-[var(--destructive)]",
 };
 
 const sizes: Record<ButtonSize, string> = {
@@ -40,6 +43,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
+  /** Replaces children while `loading` so the click feels instant (<100 ms). */
+  pendingLabel?: string;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -49,27 +54,34 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       variant = "primary",
       size = "md",
       loading,
+      pendingLabel,
       disabled,
       children,
       ...props
     },
     ref
   ) => {
+    const busy = Boolean(loading);
     return (
       <button
         ref={ref}
-        disabled={disabled || loading}
+        disabled={disabled || busy}
+        aria-busy={busy || undefined}
         className={cn(
           buttonSurfaceClassName(variant, size),
-          "disabled:opacity-50 disabled:cursor-not-allowed",
+          "disabled:cursor-not-allowed disabled:opacity-100",
+          busy && "drflow-btn-loading",
           className
         )}
         {...props}
       >
-        {loading && (
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        {busy && (
+          <span
+            className="drflow-btn-spinner h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent"
+            aria-hidden
+          />
         )}
-        {children}
+        {busy && pendingLabel ? pendingLabel : children}
       </button>
     );
   }
@@ -84,6 +96,7 @@ type ButtonLinkProps = {
   className?: string;
   children: React.ReactNode;
   prefetch?: boolean;
+  title?: string;
   "aria-label"?: string;
 };
 
@@ -94,13 +107,15 @@ export function ButtonLink({
   size = "md",
   className,
   children,
-  prefetch,
+  prefetch = true,
+  title,
   "aria-label": ariaLabel,
 }: ButtonLinkProps) {
   return (
     <Link
       href={href}
       prefetch={prefetch}
+      title={title}
       aria-label={ariaLabel}
       className={buttonSurfaceClassName(variant, size, className)}
     >

@@ -115,8 +115,8 @@ export function DeletePatientButton({ patientId, patientName }: DeletePatientBut
                     />
                     <span>
                       Confirmo que la baja es lógica y que los datos clínicos se conservarán al
-                      menos {policy?.retentionYears} años según la política del consultorio (Ley
-                      26.529).
+                      menos {policy?.retentionYears} años desde la última consulta, según la
+                      política del consultorio (Ley 26.529).
                     </span>
                   </label>
                 ) : null}
@@ -134,6 +134,7 @@ export function DeletePatientButton({ patientId, patientName }: DeletePatientBut
                 type="button"
                 variant="danger"
                 loading={loading}
+                pendingLabel="Dando de baja..."
                 disabled={loadingPolicy || !canConfirm}
                 onClick={handleDelete}
               >

@@ -3,6 +3,9 @@
 import { BellRing } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
+import { FEATURES } from "@/core/entitlements/features";
+
 import { cn } from "@/shared/utils/cn";
 
 import { ProactiveCareSheet } from "@/features/ia/components/clinical-workflow/proactive-care-sheet";
@@ -28,7 +31,9 @@ export function ProactiveCareAccessButton({
   lastConsultAt,
   className,
 }: Props) {
-  const enabled = useFeatureFlag("consultation_assistant");
+  const flagEnabled = useFeatureFlag("consultation_assistant");
+  const canAutomate = useCanUseFeature(FEATURES.AUTOMATION);
+  const canFollowUp = useCanUseFeature(FEATURES.AUTOMATION_FOLLOW_UP);
   const [open, setOpen] = useState(false);
 
   const items = useMemo(
@@ -38,7 +43,7 @@ export function ProactiveCareAccessButton({
 
   const counts = useMemo(() => countProactiveCareBySeverity(items), [items]);
 
-  if (!enabled || items.length === 0) return null;
+  if (!flagEnabled || !canAutomate || !canFollowUp || items.length === 0) return null;
 
   return (
     <>

@@ -4,6 +4,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { addDays, parseISO } from "date-fns";
 
 import { generateAvailableSlots } from "@/core/booking/slots";
+import {
+  AVAILABILITY_RULES_MAX,
+  SCHEDULE_BLOCKS_AGENDA_MAX,
+  TURNOS_REPORT_FALLBACK_MAX,
+  TURNOS_TODAY_SCAN_MAX,
+} from "@/core/supabase/pagination";
 
 import { startOfClinicDay } from "@/shared/utils/clinic-timezone";
 
@@ -61,7 +67,8 @@ export async function loadTurnosConfigPageData(supabase: SupabaseClient, clinicI
         )
         .eq("clinic_id", clinicId)
         .order("day_of_week")
-        .order("start_time"),
+        .order("start_time")
+        .limit(AVAILABILITY_RULES_MAX),
       supabase
         .from("schedule_blocks")
         .select(
@@ -69,7 +76,8 @@ export async function loadTurnosConfigPageData(supabase: SupabaseClient, clinicI
         )
         .eq("clinic_id", clinicId)
         .gte("start_at", blocksFrom)
-        .order("start_at"),
+        .order("start_at")
+        .limit(SCHEDULE_BLOCKS_AGENDA_MAX),
       getCachedClinicProfessionalsAgenda(clinicId),
       getCachedClinicSettings(clinicId),
       getCachedClinicLocations(clinicId),
@@ -147,7 +155,6 @@ export async function loadTurnosReportesPageData(supabase: SupabaseClient, clini
     clinic,
     { data: todayAppointments },
     { data: todayBlocks },
-    fallbackAppointments,
   ] = await Promise.all([
     supabase.rpc("summarize_appointments_for_turnos_reportes", {
       p_clinic_id: clinicId,
@@ -161,7 +168,8 @@ export async function loadTurnosReportesPageData(supabase: SupabaseClient, clini
       .from("availability_rules")
       .select("day_of_week, start_time, end_time, slot_duration, is_active, professional_id")
       .eq("clinic_id", clinicId)
-      .eq("is_active", true),
+      .eq("is_active", true)
+      .limit(AVAILABILITY_RULES_MAX),
     getCachedClinicProfessionalsAgenda(clinicId),
     getCachedClinicSettings(clinicId),
     supabase
@@ -170,19 +178,15 @@ export async function loadTurnosReportesPageData(supabase: SupabaseClient, clini
       .eq("clinic_id", clinicId)
       .neq("status", "cancelled")
       .gte("start_at", todayStart.toISOString())
-      .lt("start_at", todayEnd.toISOString()),
+      .lt("start_at", todayEnd.toISOString())
+      .limit(TURNOS_TODAY_SCAN_MAX),
     supabase
       .from("schedule_blocks")
       .select("start_at, end_at, professional_id")
       .eq("clinic_id", clinicId)
       .gte("start_at", todayStart.toISOString())
-      .lt("start_at", todayEnd.toISOString()),
-    supabase
-      .from("appointments")
-      .select("id, status, start_at, end_at, is_overbooking, professional_id")
-      .eq("clinic_id", clinicId)
-      .gte("start_at", rangeStart.toISOString())
-      .lt("start_at", rangeEnd.toISOString()),
+      .lt("start_at", todayEnd.toISOString())
+      .limit(TURNOS_TODAY_SCAN_MAX),
   ]);
 
   const defaultSlotDuration = clinic?.default_appointment_duration ?? 30;
@@ -276,7 +280,15 @@ export async function loadTurnosReportesPageData(supabase: SupabaseClient, clini
       })),
     };
   } else {
-    const appointments = (fallbackAppointments.data ?? []) as TurnosMetricAppointment[];
+    const { data: fallbackAppointments } = await supabase
+      .from("appointments")
+      .select("id, status, start_at, end_at, is_overbooking, professional_id")
+      .eq("clinic_id", clinicId)
+      .gte("start_at", rangeStart.toISOString())
+      .lt("start_at", rangeEnd.toISOString())
+      .limit(TURNOS_REPORT_FALLBACK_MAX);
+
+    const appointments = (fallbackAppointments ?? []) as TurnosMetricAppointment[];
     const professionalCounts = (professionals ?? []).map((professional) => {
       const count = appointments.filter(
         (row) =>
@@ -319,14 +331,16 @@ export async function loadTurnosPeriodReportData(
       .from("availability_rules")
       .select("day_of_week, start_time, end_time, slot_duration, is_active, professional_id")
       .eq("clinic_id", clinicId)
-      .eq("is_active", true),
+      .eq("is_active", true)
+      .limit(AVAILABILITY_RULES_MAX),
     getCachedClinicProfessionalsAgenda(clinicId),
     supabase
       .from("appointments")
       .select("id, status, start_at, end_at, is_overbooking, professional_id")
       .eq("clinic_id", clinicId)
       .gte("start_at", rangeStart.toISOString())
-      .lt("start_at", todayEnd.toISOString()),
+      .lt("start_at", todayEnd.toISOString())
+      .limit(TURNOS_REPORT_FALLBACK_MAX),
   ]);
 
   const mappedRules = (rules ?? []).map((rule) => ({

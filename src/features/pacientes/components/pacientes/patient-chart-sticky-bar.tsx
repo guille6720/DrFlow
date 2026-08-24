@@ -9,7 +9,10 @@ import {
 import Link from "next/link";
 
 import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
-import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import {
+  buildConsultaSessionUrl,
+  buildPatientWorkspaceUrl,
+} from "@/features/pacientes/utils/patient-workspace-actions";
 
 import { Button } from "@/components/ui/button";
 
@@ -20,7 +23,7 @@ type Props = {
 
 /** Sticky actions for legacy chart views (outside patient workspace tabs). */
 export function PatientChartStickyBar({ patientId, arcoExport }: Props) {
-  const nuevaConsultaHref = buildPatientWorkspaceUrl(patientId, { tab: "soap", action: "nueva" });
+  const nuevaConsultaHref = buildConsultaSessionUrl({ patient: patientId });
 
   return (
     <div className="drflow-patient-chart-sticky-bar">

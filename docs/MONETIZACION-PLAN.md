@@ -5,6 +5,10 @@
 **Estado actual:** Fase 1 (manual) — página `/planes` + activación comercial.  
 **Próximo:** Fase 2 — Mercado Pago Checkout + webhooks + desbloqueo automático.
 
+**Catálogo comercial (entitlements):** cerrado en fases 1–26; ops dry-run en 27/31. Ver [COMMERCIAL_ENTITLEMENTS.md](./COMMERCIAL_ENTITLEMENTS.md) y `npm run entitlements:dry-run:verify`.
+
+**Phase 33 scope freeze:** do **not** implement yet Stripe, Mercado Pago expansions, checkout, pricing-page rework, production gating, or new AI / WhatsApp / automation product work — those are later phases. Existing `/planes` + MP preference wiring stays; do not expand.
+
 ---
 
 ## 1. Planes sugeridos (precios orientativos)
@@ -46,7 +50,7 @@ Ajustá precios antes del primer cliente pago según:
 
 | Pieza | Ruta / archivo |
 |-------|----------------|
-| Landing precios | `/planes` — `src/app/planes/page.tsx` |
+| Landing precios | `/planes` — `src/app/(marketing)/planes/page.tsx` |
 | Definición planes | `src/core/billing/plans.ts` |
 | Trial | `src/core/trial/clinic-trial.ts` |
 | Bloqueo post-trial | `/trial-expirado` |
@@ -221,7 +225,7 @@ Texto sugerido para términos de venta (resumen):
 
 | Tema | Archivo |
 |------|---------|
-| Planes UI | `src/app/planes/page.tsx` |
+| Planes UI | `src/app/(marketing)/planes/page.tsx` |
 | Precios código | `src/core/billing/plans.ts` |
 | Trial | `src/core/trial/clinic-trial.ts` |
 | Mock pagos paciente | `src/lib/services/payments.ts` (no confundir con SaaS) |

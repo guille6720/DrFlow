@@ -1,9 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { PATIENT_PICKER_INITIAL_LIMIT, PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
+import { PATIENT_PICKER_INITIAL_LIMIT } from "@/core/supabase/pagination";
 import type { ConsultPatientPickerRow, PatientPickerRow } from "@/core/supabase/query-types";
 
-import { searchPatientsForClinic } from "@/features/pacientes/server/search-patients";
+import {
+  countPatientsForClinicSearch,
+  searchPatientsForClinic,
+} from "@/features/pacientes/server/search-patients";
 
 type PickerListResult<T extends PatientPickerRow> = {
   patients: T[];
@@ -12,7 +15,21 @@ type PickerListResult<T extends PatientPickerRow> = {
   pageSize: number;
 };
 
-/** Paginated patient list for form pickers (search + offset). */
+function mapSearchRow(patient: {
+  id: string;
+  first_name: string;
+  last_name: string;
+  document_number: string;
+}): PatientPickerRow {
+  return {
+    id: patient.id,
+    first_name: patient.first_name,
+    last_name: patient.last_name,
+    document_number: patient.document_number,
+  };
+}
+
+/** Paginated patient list for form pickers (search + offset in PostgreSQL). */
 export async function loadPatientPickerList(
   supabase: SupabaseClient,
   clinicId: string,
@@ -33,34 +50,34 @@ export async function loadPatientPickerList(
   const from = (page - 1) * pageSize;
 
   if (options?.q?.trim()) {
-    const { patients, error } = await searchPatientsForClinic(supabase, {
-      clinicId,
-      q: options.q,
-      limit: Math.max(pageSize, PATIENT_SEARCH_API_LIMIT),
-    });
+    const [searchResult, countResult] = await Promise.all([
+      searchPatientsForClinic(supabase, {
+        clinicId,
+        q: options.q,
+        limit: pageSize,
+        offset: from,
+      }),
+      countPatientsForClinicSearch(supabase, clinicId, options.q),
+    ]);
 
-    if (error) {
+    if (searchResult.error) {
       return { patients: [], total: 0, page, pageSize };
     }
 
-    const slice = patients.slice(from, from + pageSize);
+    const total = countResult.error ? searchResult.patients.length : countResult.count;
+
     if (options.includeClinicalFields) {
       return {
-        patients: slice as ConsultPatientPickerRow[],
-        total: patients.length,
+        patients: searchResult.patients as ConsultPatientPickerRow[],
+        total,
         page,
         pageSize,
       };
     }
 
     return {
-      patients: slice.map((patient) => ({
-        id: patient.id,
-        first_name: patient.first_name,
-        last_name: patient.last_name,
-        document_number: patient.document_number,
-      })),
-      total: patients.length,
+      patients: searchResult.patients.map(mapSearchRow),
+      total,
       page,
       pageSize,
     };

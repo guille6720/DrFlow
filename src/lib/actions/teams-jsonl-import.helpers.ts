@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { insertClinicalRecordCreationAudit } from "@/core/compliance/clinical-record-integrity";
 import { sanitizeText } from "@/core/validations/schemas";
 
 import { type HceExportRow, hceRowToClinicalRecord } from "@/lib/utils/hce-export-parse";
@@ -42,7 +43,7 @@ export async function insertTeamsJsonlClinicalRecord(input: {
     ? `${input.clinical.consultation_date}T12:00:00.000Z`
     : new Date().toISOString();
 
-  const { error: insertError } = await input.supabase.from("clinical_records").insert({
+  const { data: record, error: insertError } = await input.supabase.from("clinical_records").insert({
     clinic_id: input.clinicId,
     patient_id: input.patientId,
     professional_id: input.professionalId,
@@ -53,9 +54,21 @@ export async function insertTeamsJsonlClinicalRecord(input: {
     created_by: input.userId,
     created_at: createdAt,
     updated_at: createdAt,
-  });
+  }).select("id").single();
 
   if (insertError) return { ok: false, error: insertError.message };
+
+  if (record?.id) {
+    await insertClinicalRecordCreationAudit(input.supabase, {
+      clinicalRecordId: record.id,
+      clinicId: input.clinicId,
+      patientId: input.patientId,
+      changedBy: input.userId,
+      source: "teams_jsonl_import",
+      marker: input.clinical.marker,
+    });
+  }
+
   return { ok: true };
 }
 

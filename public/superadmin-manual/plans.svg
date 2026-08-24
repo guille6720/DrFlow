@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="320" viewBox="0 0 960 320" role="img">
+  <rect width="960" height="320" fill="#0f172a"/>
+  <rect x="24" y="24" width="912" height="272" rx="12" fill="#1e293b" stroke="#334155"/>
+  <text x="48" y="60" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="20" font-weight="700">Planes comerciales</text>
+  <g font-family="system-ui,sans-serif" font-size="12">
+    <rect x="48" y="88" width="140" height="160" rx="10" fill="#0f172a" stroke="#334155"/>
+    <text x="64" y="116" fill="#5eead4" font-weight="700">trial</text>
+    <text x="64" y="144" fill="#94a3b8">Orden: 10</text>
+    <text x="64" y="168" fill="#94a3b8">Activo</text>
+    <text x="64" y="192" fill="#64748b">Evaluacion</text>
+    <rect x="204" y="88" width="140" height="160" rx="10" fill="#0f172a" stroke="#334155"/>
+    <text x="220" y="116" fill="#e2e8f0" font-weight="700">basic</text>
+    <text x="220" y="144" fill="#94a3b8">Orden: 20</text>
+    <text x="220" y="168" fill="#94a3b8">Activo</text>
+    <rect x="360" y="88" width="140" height="160" rx="10" fill="#0f172a" stroke="#334155"/>
+    <text x="376" y="116" fill="#5eead4" font-weight="700">pro</text>
+    <text x="376" y="144" fill="#94a3b8">Orden: 30</text>
+    <text x="376" y="168" fill="#94a3b8">Activo</text>
+    <rect x="516" y="88" width="140" height="160" rx="10" fill="#0f172a" stroke="#334155"/>
+    <text x="532" y="116" fill="#a78bfa" font-weight="700">premium</text>
+    <text x="532" y="144" fill="#94a3b8">Orden: 40</text>
+    <rect x="672" y="88" width="140" height="160" rx="10" fill="#0f172a" stroke="#7f1d1d"/>
+    <text x="688" y="116" fill="#fca5a5" font-weight="700">legacy</text>
+    <text x="688" y="144" fill="#f87171">Interno</text>
+    <text x="688" y="168" fill="#f87171">No publico</text>
+    <text x="688" y="200" fill="#fecaca">Migracion</text>
+  </g>
+</svg>

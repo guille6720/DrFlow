@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { requireStaffManagerWithUser } from "@/core/actions/guard-adapters";
+import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
 
 import {
   deleteClinicSharedAiConnection,
@@ -26,6 +28,9 @@ export async function saveClinicSharedAiConnectionAction(input: {
 }) {
   const access = await requireStaffManagerWithUser();
   if (!access.ok) return { error: access.error };
+
+  const entitlement = await requireAddonFeatureAccess(FEATURES.AI);
+  if (!entitlement.ok) return { error: entitlement.error };
 
   const result = await saveClinicSharedAiConnection(input);
   if (!result.error) {

@@ -1,3 +1,5 @@
+import { isHrefEntitledBySnapshot } from "@/core/entitlements/nav-features";
+import type { ClientEntitlementsSnapshot } from "@/core/entitlements/types";
 import { unwrapJoin } from "@/core/supabase/unwrap-join";
 
 import { isUnattendedAppointment, LIST_LIMIT } from "@/features/dashboard/server/load-clinical-operations-dashboard.helpers";
@@ -122,6 +124,7 @@ export function buildTasks(input: {
     appointment_id: string | null;
     appointments?: { start_at: string; patients?: { first_name: string; last_name: string } | null } | null;
   }>;
+  entitlements?: ClientEntitlementsSnapshot | null;
 }): ClinicalOpsTask[] {
   const tasks: ClinicalOpsTask[] = [];
   buildAppointmentTasks(input.todayAppointments, input.nowIso, tasks);
@@ -129,7 +132,10 @@ export function buildTasks(input: {
   buildStudyTasks(input.pendingStudies, tasks);
   buildReminderTasks(input.queuedReminders, tasks);
 
+  const snapshot = input.entitlements ?? null;
+
   return tasks
+    .filter((task) => isHrefEntitledBySnapshot(task.href, snapshot))
     .sort((a, b) => {
       if (a.priority !== b.priority) return a.priority === "high" ? -1 : 1;
       return new Date(a.at).getTime() - new Date(b.at).getTime();

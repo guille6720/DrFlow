@@ -202,7 +202,7 @@ export function PatientIndicatorsCalculator({ patientId, ageYears, extras, canEd
           {error && <p className="text-xs text-red-400">{error}</p>}
           {saved && <p className="text-xs text-teal-300">Indicadores guardados.</p>}
 
-          <Button type="submit" size="sm" loading={loading} className="w-full">
+          <Button type="submit" size="sm" loading={loading} pendingLabel="Guardando..." className="w-full">
             Guardar indicadores
           </Button>
         </form>

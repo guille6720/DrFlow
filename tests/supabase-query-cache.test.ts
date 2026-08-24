@@ -43,6 +43,7 @@ describe("cache tags", () => {
     const tags = await import("@/core/cache/cache-tags");
     expect(tags.clinicPluginsTag("abc")).toBe("clinic-abc-plugins");
     expect(tags.clinicMetadataTags("abc")).toContain("clinic-abc-locations");
+    expect(tags.clinicMetadataTags("abc")).toContain("clinic-abc-coverage-rules");
     expect(tags.pathologyDrugsTag("p1")).toBe("pathology-drugs-p1");
   });
 });

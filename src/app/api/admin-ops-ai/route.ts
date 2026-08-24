@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 
-import { getActiveClinic, getActiveClinicId } from "@/core/auth/session.server";
+import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
+import { recordAiAuditEvent } from "@/core/compliance/ai-audit";
+import {
+  canUseEnforcedFeature,
+  getClinicEntitlements,
+  requireAddonFeatureAccess,
+} from "@/core/entitlements/entitlements.server";
+import { FEATURES } from "@/core/entitlements/features";
+import { toClientEntitlementsSnapshot } from "@/core/entitlements/resolve";
 import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { hasPermission } from "@/core/permissions/roles";
 import { requireSameOriginMutation } from "@/core/security/csrf";
@@ -34,6 +42,11 @@ export const POST = withObservabilityApiRoute("admin_ops_ai", async (request, ct
     return NextResponse.json({ error: "Sin permisos operativos" }, { status: 403 });
   }
 
+  const entitlement = await requireAddonFeatureAccess(FEATURES.AI);
+  if (!entitlement.ok) {
+    return NextResponse.json({ error: entitlement.error }, { status: 403 });
+  }
+
   let json: unknown;
   try {
     json = await request.json();
@@ -47,10 +60,28 @@ export const POST = withObservabilityApiRoute("admin_ops_ai", async (request, ct
   }
 
   const payload = parsed.data;
+  const cashEntitled = await canUseEnforcedFeature(FEATURES.CASH_REGISTER);
+  const entitlementsSnapshot = toClientEntitlementsSnapshot(await getClinicEntitlements());
   const result = runAdminOpsOrchestrator({
     task: payload.task,
     message: payload.message,
-    context: payload.context,
+    context: {
+      ...payload.context,
+      canManageCash:
+        hasPermission(role, "manageCashRegister", isSuperadmin) && cashEntitled,
+      entitlementsSnapshot,
+    },
+  });
+
+  const session = await getSession();
+  await recordAiAuditEvent({
+    clinicId,
+    userId: session?.id,
+    feature: "admin_ops_ai",
+    provider: "rule_based",
+    task: payload.task,
+    success: true,
+    sanitizationStatus: "not_applicable",
   });
 
   return NextResponse.json({ result });
@@ -68,6 +99,11 @@ export const GET = withObservabilityApiRoute("admin_ops_ai_meta", async (_reques
 
   if (!canUse) {
     return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
+  }
+
+  const entitlement = await requireAddonFeatureAccess(FEATURES.AI);
+  if (!entitlement.ok) {
+    return NextResponse.json({ error: entitlement.error }, { status: 403 });
   }
 
   return NextResponse.json({

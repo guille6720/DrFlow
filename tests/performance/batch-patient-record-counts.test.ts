@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   batchPatientConsultationCounts,
+  batchPatientConsultationCountsDetailed,
   batchPatientRecordCounts,
 } from "@/lib/utils/batch-patient-record-counts";
 
@@ -92,6 +93,33 @@ describe("batchPatientRecordCounts", () => {
 });
 
 describe("batchPatientConsultationCounts", () => {
+  it("uses fast RPC path for list badges (no clinical_records scan)", async () => {
+    const supabase = {
+      rpc: async () => ({
+        data: [
+          { patient_id: "p1", count: 3 },
+          { patient_id: "p2", count: 1 },
+        ],
+        error: null,
+      }),
+      from: () => {
+        throw new Error("list counts must not scan clinical_records when RPC works");
+      },
+    };
+
+    const counts = await batchPatientConsultationCounts(createSupabaseTestDouble(supabase), "clinic-1", [
+      "p1",
+      "p2",
+      "p3",
+    ]);
+
+    expect(counts.get("p1")).toBe(3);
+    expect(counts.get("p2")).toBe(1);
+    expect(counts.get("p3")).toBe(0);
+  });
+});
+
+describe("batchPatientConsultationCountsDetailed", () => {
   function mockClinicalRecordsFrom(tableHandlers: Record<string, unknown>) {
     return (table: string) => {
       const handler = tableHandlers[table];
@@ -142,9 +170,11 @@ describe("batchPatientConsultationCounts", () => {
       },
     };
 
-    const counts = await batchPatientConsultationCounts(createSupabaseTestDouble(supabase), "clinic-1", [
-      "p1",
-    ]);
+    const counts = await batchPatientConsultationCountsDetailed(
+      createSupabaseTestDouble(supabase),
+      "clinic-1",
+      ["p1"]
+    );
 
     expect(counts.get("p1")).toBe(2);
   });
@@ -200,7 +230,7 @@ describe("batchPatientConsultationCounts", () => {
       }),
     };
 
-    const consultationCounts = await batchPatientConsultationCounts(
+    const consultationCounts = await batchPatientConsultationCountsDetailed(
       createSupabaseTestDouble(supabase),
       "clinic-1",
       ["p1"]
@@ -260,9 +290,11 @@ describe("batchPatientConsultationCounts", () => {
       }),
     };
 
-    const counts = await batchPatientConsultationCounts(createSupabaseTestDouble(supabase), "clinic-1", [
-      "p1",
-    ]);
+    const counts = await batchPatientConsultationCountsDetailed(
+      createSupabaseTestDouble(supabase),
+      "clinic-1",
+      ["p1"]
+    );
 
     expect(counts.get("p1")).toBe(2);
   });

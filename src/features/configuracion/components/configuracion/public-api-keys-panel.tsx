@@ -4,6 +4,9 @@ import { Key, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
+import { FEATURES } from "@/core/entitlements/features";
 import { PUBLIC_API_SCOPES } from "@/core/public-api/types";
 
 import { Button } from "@/components/ui/button";
@@ -27,6 +30,7 @@ const SCOPE_LABELS: Record<string, string> = {
 
 export function PublicApiKeysPanel({ keys }: Props) {
   const router = useRouter();
+  const canUseApi = useCanUseFeature(FEATURES.API);
   const [loading, setLoading] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [newSecret, setNewSecret] = useState<string | null>(null);
@@ -115,6 +119,7 @@ export function PublicApiKeysPanel({ keys }: Props) {
         </div>
       ) : null}
 
+      {canUseApi ? (
       <form onSubmit={handleCreate} className="grid gap-3 border-t border-slate-200 pt-4">
         <Input name="name" label="Nombre de la integración" placeholder="Ej. Bot WhatsApp" required />
         <fieldset>
@@ -133,6 +138,11 @@ export function PublicApiKeysPanel({ keys }: Props) {
           Generar clave
         </Button>
       </form>
+      ) : (
+        <div className="border-t border-slate-200 pt-4">
+          <AddonUpgradeNotice feature={FEATURES.API} />
+        </div>
+      )}
 
       {err ? <p className="mt-3 text-sm text-red-700">{err}</p> : null}
     </Card>

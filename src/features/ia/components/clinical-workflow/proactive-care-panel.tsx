@@ -3,6 +3,10 @@
 import { BellRing, ChevronDown } from "lucide-react";
 import { useMemo } from "react";
 
+import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
+import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
+import { FEATURES } from "@/core/entitlements/features";
+
 import { ProactiveCareContent } from "@/features/ia/components/clinical-workflow/proactive-care-content";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
 import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
@@ -21,7 +25,9 @@ type Props = {
 
 /** Proactive follow-up alerts for patient workspace (Phase E). */
 export function ProactiveCarePanel({ patientId, chart, lastConsultAt, className = "" }: Props) {
-  const enabled = useFeatureFlag("consultation_assistant");
+  const flagEnabled = useFeatureFlag("consultation_assistant");
+  const canAutomate = useCanUseFeature(FEATURES.AUTOMATION);
+  const canFollowUp = useCanUseFeature(FEATURES.AUTOMATION_FOLLOW_UP);
 
   const items = useMemo(
     () => buildProactiveCareItems({ patientId, chart, lastConsultAt }),
@@ -30,7 +36,17 @@ export function ProactiveCarePanel({ patientId, chart, lastConsultAt, className 
 
   const counts = useMemo(() => countProactiveCareBySeverity(items), [items]);
 
-  if (!enabled || items.length === 0) return null;
+  if (!flagEnabled || items.length === 0) return null;
+
+  if (!canAutomate || !canFollowUp) {
+    return (
+      <div className={`rounded-xl border border-amber-100 bg-amber-50/50 p-4 ${className}`}>
+        <AddonUpgradeNotice
+          feature={!canAutomate ? FEATURES.AUTOMATION : FEATURES.AUTOMATION_FOLLOW_UP}
+        />
+      </div>
+    );
+  }
 
   return (
     <details

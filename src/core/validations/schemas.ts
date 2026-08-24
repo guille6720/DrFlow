@@ -105,6 +105,9 @@ export const clinicalRecordSchema = z.object({
   indications: z.string().optional(),
   professional_signature: z.string().optional(),
   consultation_at: z.string().optional().nullable(),
+  diagnosis_cie10: z.string().optional().nullable(),
+  diagnoses_json: z.string().optional().nullable(),
+  treatments_json: z.string().optional().nullable(),
 });
 
 export const prescriptionMedicationSchema = z.object({

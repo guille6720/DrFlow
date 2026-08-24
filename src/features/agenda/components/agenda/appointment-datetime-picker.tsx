@@ -85,7 +85,7 @@ export function AppointmentDatetimePicker({
             type="button"
             onClick={() => setMonth(subMonths(month, 1))}
             disabled={!canPrevMonth}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg p-1.5 text-slate-300 hover:bg-slate-700 disabled:cursor-not-allowed disabled:text-slate-500 disabled:opacity-100"
             aria-label="Mes anterior"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -114,7 +114,7 @@ export function AppointmentDatetimePicker({
             type="button"
             onClick={() => setMonth(addMonths(month, 1))}
             disabled={!canNextMonth}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg p-1.5 text-slate-300 hover:bg-slate-700 disabled:cursor-not-allowed disabled:text-slate-500 disabled:opacity-100"
             aria-label="Mes siguiente"
           >
             <ChevronRight className="h-4 w-4" />
