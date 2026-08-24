@@ -35,21 +35,33 @@ Lo que **sí** cambia para todos (solo UI/marketing):
 
 Supabase Production → **Database → Backups** (snapshot manual si está disponible).
 
-### Paso 1 — PRE-FLIGHT SQL (producción)
+### Paso 1 — Inventario esquema (producción)
 
-Ejecutar en SQL Editor **Production**:
+Ejecutar primero:
+
+`supabase/migrations/rollback/VERIFY_PRODUCTION_SCHEMA_INVENTORY.sql`
+
+| Resultado | Significado |
+|-----------|-------------|
+| `has_entitlement_subs = false` | Prod **no tiene 121** — **no** ejecutar solo 138 |
+| `has_entitlement_subs = true` | Prod ya tiene entitlements — puede continuar con PRE-FLIGHT |
+
+### Paso 1b — PRE-FLIGHT SQL
 
 `supabase/migrations/rollback/VERIFY_PRODUCTION_BEFORE_138.sql`
 
-Guardar conteos y distribución de planes.
+- Si la query **2a** falla con `clinic_entitlement_subscriptions does not exist`, es normal: guardá resultados de **1**, **2b** y **3**.
+- Guardar conteos y distribución de planes (`clinic_subscriptions` + trial en `clinics`).
 
-### Paso 2 — Migración 138 (solo esta, si prod ya tiene 100–137)
+### Paso 2 — Migraciones en orden (121 → 138)
 
-En SQL Editor Production, pegar y ejecutar **solo**:
+La app del PR **requiere** el esquema de entitlements. En producción actual hay que aplicar **en orden numérico**:
 
-`supabase/migrations/138_commercial_essential_pro.sql`
+`121` … `122` … `123` … `124` … `125` … `126` … `127` … `128` … `129` … `130` … `131` … `132` … `133` … `134` … `135` … `136` … `137` → **`138`**
 
-> Si producción está muy atrás en migraciones, resolver primero el backlog con el equipo — no mezclar sin inventario.
+**Usuario activo existente:** la migración **121** hace backfill idempotente de **todas** las clínicas ya creadas a plan **`legacy` + `active`** (acceso completo preservado). **138 no reasigna** esas filas.
+
+> Ejecutar **un archivo por vez** en SQL Editor. Si alguno falla, **detener** y revisar el error antes de continuar.
 
 ### Paso 3 — POST-FLIGHT SQL
 
