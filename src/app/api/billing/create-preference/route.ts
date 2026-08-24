@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -87,6 +88,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Plan no disponible." }, { status: 400, headers: NO_STORE });
     }
 
+    const h = await headers();
+    const host = h.get("x-forwarded-host") ?? h.get("host");
+    const proto = h.get("x-forwarded-proto") ?? "https";
+    const siteUrlOverride = host ? `${proto}://${host.split(",")[0]?.trim()}` : undefined;
+
     const { clinic, profile } = await getDashboardShell();
     const result = await createCheckoutPreference({
       clinicId: access.clinicId,
@@ -95,6 +101,7 @@ export async function POST(request: Request) {
       cycle,
       payerEmail: profile?.email,
       amountArs,
+      siteUrlOverride,
     });
 
     if (!result.ok) {

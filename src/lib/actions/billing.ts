@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 import { requireClinicPermission, requireSettingsAccess } from "@/core/actions/clinic-guard";
 import { getDashboardShell } from "@/core/auth/session.server";
@@ -27,6 +28,15 @@ import { createClient } from "@/core/supabase/server";
 export type StartMercadoPagoCheckoutResult =
   | { ok: true; initPoint: string }
   | { ok: false; error: string };
+
+/** Resolve public site URL from the active request (preview-safe on Vercel). */
+async function resolveCheckoutSiteOrigin(): Promise<string | undefined> {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  if (!host) return undefined;
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  return `${proto}://${host.split(",")[0]?.trim()}`;
+}
 
 export async function startMercadoPagoCheckout(
   planId: BillingPlanId,
@@ -84,6 +94,7 @@ export async function startMercadoPagoCheckout(
     cycle,
     payerEmail: profile?.email,
     amountArs,
+    siteUrlOverride: await resolveCheckoutSiteOrigin(),
   });
 
   if (!result.ok) {

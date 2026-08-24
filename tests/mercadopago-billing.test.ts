@@ -114,6 +114,23 @@ describe("verifyMercadoPagoWebhookSignature", () => {
   });
 });
 
+describe("formatMercadoPagoApiError", () => {
+  it("maps FA_UNAUTHORIZED to actionable Spanish copy", async () => {
+    const { formatMercadoPagoApiError } = await import("@/core/billing/mercadopago");
+    const msg = formatMercadoPagoApiError(
+      JSON.stringify({
+        message: "At least one policy returned UNAUTHORIZED",
+        blocked_by: "PolicyAgent",
+        status: 403,
+        code: "FA_UNAUTHORIZED_RESULT_FROM_POLICIES",
+      }),
+      403
+    );
+    expect(msg).toMatch(/credenciales no autorizadas/i);
+    expect(msg).toMatch(/MP_ACCESS_TOKEN/);
+  });
+});
+
 describe("paymentAmountToCents", () => {
   it("converts ARS decimal to cents", () => {
     expect(paymentAmountToCents(24900)).toBe(2_490_000);
