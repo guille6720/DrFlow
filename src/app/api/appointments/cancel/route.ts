@@ -3,7 +3,11 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { createClient } from "@/core/supabase/server";
 
+import type { Database } from "@/types/supabase";
+
 export const dynamic = "force-dynamic";
+
+type AppointmentUpdate = Database["public"]["Tables"]["appointments"]["Update"];
 
 const CLINIC_COOKIE = "drflow_clinic_id";
   const UUID_RE =
@@ -161,7 +165,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const updatePayload: Record<string, unknown> = {
+    const updatePayload: AppointmentUpdate = {
       status: "cancelled",
       cancellation_reason: reason,
       cancellation_category: category,
@@ -178,7 +182,13 @@ export async function POST(request: NextRequest) {
       .eq("clinic_id", clinicId);
 
     if (updateError && /cancellation_category|waiting_room_status/i.test(updateError.message ?? "")) {
-      const { cancellation_category: _c, waiting_room_status: _w, ...fallback } = updatePayload;
+      const fallback: AppointmentUpdate = {
+        status: "cancelled",
+        cancellation_reason: reason,
+        cancelled_at: new Date().toISOString(),
+        cancelled_by: user.id,
+        cancelled_by_type: "clinic",
+      };
       ({ error: updateError } = await supabase
         .from("appointments")
         .update(fallback)
