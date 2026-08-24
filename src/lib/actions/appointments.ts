@@ -265,6 +265,7 @@ async function updateAppointmentStatusInternal(
     updatePayload.cancelled_at = new Date().toISOString();
     updatePayload.cancelled_by = userId;
     updatePayload.cancelled_by_type = "clinic";
+    updatePayload.waiting_room_status = "cancelled";
     if (cancellationCategory?.trim()) {
       updatePayload.cancellation_category = cancellationCategory.trim();
     }

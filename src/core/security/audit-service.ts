@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getSession } from "@/core/auth/session.server";
+import { getSession } from "@/core/auth/session";
 import { logServerError } from "@/core/errors/log-error.server";
 import { getAuditRequestContext } from "@/core/security/audit-context";
 import {

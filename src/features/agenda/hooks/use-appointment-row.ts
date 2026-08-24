@@ -7,15 +7,12 @@ import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 
-import type { CancelAppointmentInput } from "@/features/agenda/components/agenda/cancel-appointment-dialog";
+import { cancelAppointmentRequest } from "@/features/agenda/utils/cancel-appointment-request";
 import { buildAppointmentConsultationUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { formatCancellationReason } from "@/features/turnos/utils/appointment-lifecycle";
 
 import { updateAppointmentStatus } from "@/lib/actions/appointments";
-import {
-  buildAppointmentCancellationByClinicMessage,
-  buildAppointmentConfirmationMessage,
-} from "@/lib/utils/appointment-messages";
+import { buildAppointmentConfirmationMessage } from "@/lib/utils/appointment-messages";
 
 export function useAppointmentRow(appointment: AppointmentAgendaRow) {
   const router = useRouter();
@@ -47,21 +44,12 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
         }
 
         if (status === "confirmed" && result.whatsapp?.phone) {
-          const message = buildAppointmentConfirmationMessage(result.whatsapp.startAt);
-          const url = buildWhatsAppUrl(result.whatsapp.phone, message);
-          if (url) window.open(url, "_blank", "noopener,noreferrer");
-        }
-
-        if (status === "cancelled" && cancellationReason && patient?.phone) {
           try {
-            const message = buildAppointmentCancellationByClinicMessage(
-              appointment.start_at,
-              cancellationReason
-            );
-            const url = buildWhatsAppUrl(patient.phone, message);
+            const message = buildAppointmentConfirmationMessage(result.whatsapp.startAt);
+            const url = buildWhatsAppUrl(result.whatsapp.phone, message);
             if (url) window.open(url, "_blank", "noopener,noreferrer");
           } catch {
-            // Non-blocking — cancellation already persisted.
+            // Non-blocking
           }
         }
 
@@ -75,25 +63,33 @@ export function useAppointmentRow(appointment: AppointmentAgendaRow) {
         setActing(false);
       }
     },
-    [appointment.id, appointment.start_at, patient, router]
+    [appointment.id, router]
   );
 
+  /** Used by turnos wizard cancel panel (same API as the dialog). */
   const handleCancelConfirm = useCallback(
-    async (input: CancelAppointmentInput) => {
-      const formatted = formatCancellationReason(input.category, input.detail);
+    async (input: { category: string }) => {
+      setActing(true);
       try {
-        const result = await setStatus("cancelled", formatted, input.category);
-        if (result?.error) {
-          return { error: result.error };
+        const data = await cancelAppointmentRequest(appointment.id, input.category);
+        if ("error" in data) {
+          return { error: data.error };
         }
         return { success: true as const };
       } catch (err) {
         return {
           error: err instanceof Error ? err.message : "No se pudo cancelar el turno",
         };
+      } finally {
+        setActing(false);
+        try {
+          router.refresh();
+        } catch {
+          // Non-blocking
+        }
       }
     },
-    [setStatus]
+    [appointment.id, router]
   );
 
   const openCancelDialog = useCallback(() => setCancelOpen(true), []);

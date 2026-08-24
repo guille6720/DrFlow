@@ -68,6 +68,16 @@ WHERE NOT EXISTS (
 );
 
 -- ─── Consultas demo (para probar recetas sin crear desde cero) ───────────────
+-- Solo inserta si hay un created_by real (clinic_members/profiles). Sin usuario, se omite.
+WITH creator AS (
+  SELECT COALESCE(
+    (SELECT cm.user_id FROM clinic_members cm
+     WHERE cm.clinic_id = 'a0000000-0000-4000-8000-000000000001'
+       AND cm.role IN ('doctor', 'clinic_admin') AND cm.is_active = true
+     LIMIT 1),
+    (SELECT id FROM profiles LIMIT 1)
+  ) AS user_id
+)
 INSERT INTO clinical_records (
   clinic_id, patient_id, professional_id, chief_complaint, diagnosis, evolution,
   indications, created_by
@@ -80,22 +90,27 @@ SELECT
   'Migraña sin aura (G43.0)',
   'Paciente refiere fotofobia y náuseas. Sin signos de alarma neurológica.',
   'Reposo en ambiente oscuro. Hidratación. Control si empeora.',
-  COALESCE(
-    (SELECT cm.user_id FROM clinic_members cm
-     WHERE cm.clinic_id = 'a0000000-0000-4000-8000-000000000001'
-       AND cm.role IN ('doctor', 'clinic_admin') AND cm.is_active = true
-     LIMIT 1),
-    (SELECT id FROM profiles LIMIT 1)
-  )
+  creator.user_id
 FROM patients pat
+CROSS JOIN creator
 WHERE pat.clinic_id = 'a0000000-0000-4000-8000-000000000001'
   AND pat.document_number = '29876543'
+  AND creator.user_id IS NOT NULL
   AND NOT EXISTS (
     SELECT 1 FROM clinical_records cr
     WHERE cr.patient_id = pat.id
       AND cr.diagnosis ILIKE '%Migraña%'
   );
 
+WITH creator AS (
+  SELECT COALESCE(
+    (SELECT cm.user_id FROM clinic_members cm
+     WHERE cm.clinic_id = 'a0000000-0000-4000-8000-000000000001'
+       AND cm.role IN ('doctor', 'clinic_admin') AND cm.is_active = true
+     LIMIT 1),
+    (SELECT id FROM profiles LIMIT 1)
+  ) AS user_id
+)
 INSERT INTO clinical_records (
   clinic_id, patient_id, professional_id, chief_complaint, diagnosis, evolution,
   indications, created_by
@@ -108,16 +123,12 @@ SELECT
   'Hipertensión arterial esencial (I10)',
   'PA 135/85 en consultorio. Adherencia al tratamiento.',
   'Continuar Losartán. Dieta hiposódica. Control en 3 meses.',
-  COALESCE(
-    (SELECT cm.user_id FROM clinic_members cm
-     WHERE cm.clinic_id = 'a0000000-0000-4000-8000-000000000001'
-       AND cm.role IN ('doctor', 'clinic_admin') AND cm.is_active = true
-     LIMIT 1),
-    (SELECT id FROM profiles LIMIT 1)
-  )
+  creator.user_id
 FROM patients pat
+CROSS JOIN creator
 WHERE pat.clinic_id = 'a0000000-0000-4000-8000-000000000001'
   AND pat.document_number = '30123456'
+  AND creator.user_id IS NOT NULL
   AND NOT EXISTS (
     SELECT 1 FROM clinical_records cr
     WHERE cr.patient_id = pat.id

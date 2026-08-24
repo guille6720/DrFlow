@@ -3,7 +3,6 @@
 import { CalendarClock, Play, Trash2, X } from "lucide-react";
 import Link from "next/link";
 
-import { toast } from "@/core/notifications/toast";
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
@@ -53,18 +52,6 @@ function CalendarAppointmentDialogContent({
     canManage &&
     appointment.status !== "cancelled" &&
     appointment.status !== "attended";
-
-  async function handleCancelConfirm(input: Parameters<typeof row.handleCancelConfirm>[0]) {
-    const result = await row.handleCancelConfirm(input);
-    if (result?.error) {
-      toast.error(result.error);
-      return { error: result.error };
-    }
-    toast.success("Turno cancelado");
-    row.closeCancelDialog();
-    onClose();
-    return { success: true as const };
-  }
 
   function handleReschedule() {
     onReschedule?.(appointment);
@@ -171,10 +158,10 @@ function CalendarAppointmentDialogContent({
         <CancelAppointmentDialog
           key={`cancel-${appointment.id}`}
           open
+          appointmentId={appointment.id}
           onClose={row.closeCancelDialog}
-          onConfirm={handleCancelConfirm}
+          onCancelled={onClose}
           patientName={patientName}
-          loading={row.acting}
         />
       ) : null}
     </>
