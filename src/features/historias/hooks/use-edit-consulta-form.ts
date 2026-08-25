@@ -28,6 +28,7 @@ interface RecordData {
   evolution: string | null;
   indications: string | null;
   professional_signature: string | null;
+  created_at?: string;
 }
 
 type Template = {
@@ -169,7 +170,7 @@ export function useEditConsultaForm({ record, templates = [] }: Options) {
         evolution,
         indications: "",
         professional_signature: professionalSignature,
-        consultation_at: record.created_at,
+        consultation_at: record.created_at ?? new Date().toISOString(),
       });
       if ("error" in result) {
         setError(result.error);
