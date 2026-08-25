@@ -11,6 +11,8 @@ export type ClinicalContextMenuItem = {
   id: string;
   label: string;
   href?: string;
+  /** Opens href in a new browser tab/window (keeps the current list, e.g. pathology search). */
+  openInNewTab?: boolean;
   onSelect?: () => void;
   destructive?: boolean;
   disabled?: boolean;
@@ -73,7 +75,13 @@ export function ClinicalContextMenuHost() {
             item.destructive ? "text-red-700 hover:bg-red-50" : "text-slate-800"
           )}
           onClick={() => {
-            if (item.href) router.push(item.href);
+            if (item.href) {
+              if (item.openInNewTab) {
+                window.open(item.href, "_blank", "noopener,noreferrer");
+              } else {
+                router.push(item.href);
+              }
+            }
             item.onSelect?.();
             close();
           }}
@@ -101,8 +109,15 @@ export function buildPatientContextMenuItems(
   patientId: string,
   opts?: { canIssue?: boolean; canEditClinical?: boolean }
 ): ClinicalContextMenuItem[] {
+  const chartHref = patientWorkflowHref(patientId, "chart");
   const items: ClinicalContextMenuItem[] = [
-    { id: "chart", label: "Abrir ficha", href: patientWorkflowHref(patientId, "chart") },
+    { id: "chart", label: "Abrir ficha", href: chartHref },
+    {
+      id: "chart-new-tab",
+      label: "Abrir en ventana nueva",
+      href: chartHref,
+      openInNewTab: true,
+    },
   ];
   if (opts?.canEditClinical !== false) {
     items.push({ id: "soap", label: "Nueva SOAP", href: patientWorkflowHref(patientId, "soap") });
