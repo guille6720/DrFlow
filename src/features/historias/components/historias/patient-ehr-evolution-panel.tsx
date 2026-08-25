@@ -70,12 +70,14 @@ function EvolutionNotesEditor({ selected, onCancel, onSaved }: EditorProps) {
       <Textarea
         label="Motivo de consulta"
         rows={2}
+        preservePasteFormat
         value={chiefComplaint}
         onChange={(e) => setChiefComplaint(e.target.value)}
       />
       <Textarea
         label="Evolución"
         rows={10}
+        preservePasteFormat
         value={evolution}
         onChange={(e) => setEvolution(e.target.value)}
       />

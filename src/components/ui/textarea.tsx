@@ -15,6 +15,8 @@ import { useVoiceInputOptional } from "@/features/voice/components/voice/voice-i
 import { useSpeechToText } from "@/features/voice/hooks/use-speech-to-text";
 import { appendSpeechToTextarea } from "@/features/voice/lib/voice-input";
 
+import { clipboardEventToFormattedText } from "@/lib/utils/clipboard-html-to-formatted-text";
+
 interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
@@ -23,6 +25,11 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   voiceInput?: boolean;
   /** Expande verticalmente dentro de un contenedor flex. */
   grow?: boolean;
+  /**
+   * Al pegar desde Word/Docs/browser, conserva párrafos, listas y marcas
+   * tipográficas simples (**negrita**, _cursiva_) en texto plano.
+   */
+  preservePasteFormat?: boolean;
   /** Called after speech-to-text appends a final transcript. */
   onVoiceAppend?: (appendedText: string, fullValue: string) => void;
 }
@@ -38,8 +45,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       required,
       voiceInput = false,
       grow = false,
+      preservePasteFormat = false,
       onVoiceAppend,
       onKeyDown,
+      onPaste,
       onChange,
       ...props
     },
@@ -93,6 +102,35 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         }
       }
       onKeyDown?.(event);
+    }
+
+    function handlePaste(event: React.ClipboardEvent<HTMLTextAreaElement>) {
+      if (!preservePasteFormat || props.readOnly || props.disabled) {
+        onPaste?.(event);
+        return;
+      }
+
+      const formatted = clipboardEventToFormattedText(event);
+      if (formatted == null) {
+        onPaste?.(event);
+        return;
+      }
+
+      event.preventDefault();
+      const el = innerRef.current;
+      if (!el) {
+        onPaste?.(event);
+        return;
+      }
+
+      const start = el.selectionStart ?? el.value.length;
+      const end = el.selectionEnd ?? el.value.length;
+      const next = `${el.value.slice(0, start)}${formatted}${el.value.slice(end)}`;
+      el.value = next;
+      const caret = start + formatted.length;
+      el.setSelectionRange(caret, caret);
+      syncControlledValue(el);
+      onPaste?.(event);
     }
 
     return (
@@ -184,6 +222,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           {...props}
           onChange={onChange}
           onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
         />
         {speechError && showVoice ? (
           <p className="text-xs text-amber-700">{speechError}</p>

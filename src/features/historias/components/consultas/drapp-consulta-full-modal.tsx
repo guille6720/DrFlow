@@ -127,18 +127,21 @@ function FullConsultaForm({
         <Textarea
           label="Motivo de consulta"
           rows={2}
+          preservePasteFormat
           value={values.chiefComplaint}
           onChange={(e) => setValues((v) => ({ ...v, chiefComplaint: e.target.value }))}
         />
         <Textarea
           label="Evolución"
           rows={5}
+          preservePasteFormat
           value={values.evolution}
           onChange={(e) => setValues((v) => ({ ...v, evolution: e.target.value }))}
         />
         <Textarea
           label="Examen físico"
           rows={3}
+          preservePasteFormat
           value={values.physicalExam}
           onChange={(e) => setValues((v) => ({ ...v, physicalExam: e.target.value }))}
         />

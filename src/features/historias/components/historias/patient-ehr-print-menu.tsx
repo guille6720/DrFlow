@@ -104,7 +104,7 @@ export function PatientEhrPrintMenu({
             onClick={(event) => void handlePrint("day", event)}
             className="block w-full px-3 py-2 text-left text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Imprimir historia del día
+            Historia del día
           </button>
           <button
             type="button"
@@ -113,7 +113,7 @@ export function PatientEhrPrintMenu({
             onClick={(event) => void handlePrint("all", event)}
             className="block w-full px-3 py-2 text-left text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Exportar historia clínica (PDF)
+            Historia completa
           </button>
           <button
             type="button"
