@@ -566,11 +566,10 @@ export function useNuevaConsultaForm({
           treatments_json: String(formData.get("treatments_json") ?? "") || null,
         });
 
-        const err = "error" in apiResult ? apiResult.error : null;
-        if (err) {
-          setError(err);
+        if ("error" in apiResult) {
+          setError(apiResult.error);
           if (options?.silent) setAutoSaveStatus("error");
-          return { ok: false as const, error: err };
+          return { ok: false as const, error: apiResult.error };
         }
 
         const savedId = recordId ?? apiResult.data.id;
