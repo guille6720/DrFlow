@@ -83,7 +83,18 @@ async function rpcWithLegacyFallback(
     const { data, error } = await db.rpc(fn, payload as never);
     if (!error) return { data, error: null };
     lastError = error;
-    if (!isMissingRpcInSchemaCache(error)) break;
+    // Keep retrying when PostgREST cannot resolve the overload, or when the
+    // newer structured tables/columns are missing in an older DB.
+    const message = `${error.message ?? ""} ${error.details ?? ""} ${error.hint ?? ""}`.toLowerCase();
+    const schemaDrift =
+      isMissingRpcInSchemaCache(error) ||
+      message.includes("diagnoses_json") ||
+      message.includes("treatments_json") ||
+      message.includes("diagnosis_cie10") ||
+      message.includes("clinical_record_diagnoses") ||
+      message.includes("clinical_record_treatments") ||
+      message.includes("sync_clinical_record_children");
+    if (!schemaDrift) break;
   }
 
   return { data: null, error: lastError };
@@ -109,6 +120,66 @@ async function tryPersistStructuredColumns(
     .eq("id", recordId)
     .eq("clinic_id", clinicId);
   void error;
+}
+
+async function insertClinicalRecordDirect(
+  db: DbClient,
+  input: {
+    clinicId: string;
+    userId: string;
+    sanitized: ReturnType<typeof sanitizeClinicalRecordFields>;
+    modality: string | null;
+    consultationAt: string | null;
+  }
+): Promise<ServiceResult<ClinicalRecordRow>> {
+  const baseRow = {
+    clinic_id: input.clinicId,
+    patient_id: input.sanitized.patient_id,
+    professional_id: input.sanitized.professional_id,
+    appointment_id: input.sanitized.appointment_id ?? null,
+    chief_complaint: input.sanitized.chief_complaint,
+    diagnosis: input.sanitized.diagnosis,
+    evolution: input.sanitized.evolution,
+    indications: input.sanitized.indications,
+    created_by: input.userId,
+    created_at: input.consultationAt ?? new Date().toISOString(),
+  };
+
+  const withStructured = {
+    ...baseRow,
+    diagnosis_cie10: input.sanitized.diagnosis_cie10,
+  };
+
+  let result = await db.from("clinical_records").insert(withStructured).select("*").single();
+  if (result.error) {
+    const message = (result.error.message ?? "").toLowerCase();
+    if (message.includes("diagnosis_cie10") || message.includes("diagnoses_json")) {
+      result = await db.from("clinical_records").insert(baseRow).select("*").single();
+    }
+  }
+
+  if (result.error) {
+    return serviceErr(
+      resolvePostgresUserMessage(result.error, {
+        fallback: "No se pudo guardar la consulta. Intentá de nuevo.",
+      })
+    );
+  }
+
+  const row = result.data as ClinicalRecordRow;
+  if (input.sanitized.appointment_id) {
+    await db
+      .from("appointments")
+      .update({
+        status: "attended",
+        ...(input.modality ? { consultation_modality: input.modality } : {}),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", input.sanitized.appointment_id)
+      .eq("clinic_id", input.clinicId);
+  }
+
+  return serviceOk(row);
 }
 
 export async function createClinicalRecordEntry(
@@ -147,6 +218,33 @@ export async function createClinicalRecordEntry(
   });
 
   if (error) {
+    const message = `${error.message ?? ""} ${error.details ?? ""}`.toLowerCase();
+    const canFallback =
+      isMissingRpcInSchemaCache(error) ||
+      message.includes("sync_clinical_record_children") ||
+      message.includes("clinical_record_diagnoses") ||
+      message.includes("clinical_record_treatments") ||
+      message.includes("diagnoses_json") ||
+      message.includes("treatments_json");
+
+    if (canFallback) {
+      const fallback = await insertClinicalRecordDirect(db, {
+        clinicId: input.clinicId,
+        userId: input.userId,
+        sanitized,
+        modality,
+        consultationAt,
+      });
+      if (fallback.ok && fallback.data?.id) {
+        await tryPersistStructuredColumns(db, fallback.data.id, input.clinicId, {
+          diagnosis_cie10: sanitized.diagnosis_cie10,
+          diagnoses: structured.diagnoses,
+          treatments: structured.treatments,
+        });
+      }
+      return fallback;
+    }
+
     return serviceErr(
       resolvePostgresUserMessage(error, {
         fallback: "No se pudo guardar la consulta. Intentá de nuevo.",

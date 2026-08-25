@@ -623,31 +623,39 @@ export function TurnosNuevoWizard({
     setSubmitting(true);
     setError(null);
 
-    const result = await createTurnoWizard({
-      patient_id: patientId,
-      professional_id: professionalId,
-      specialty_id: specialtyId || null,
-      location_id: locationId || null,
-      start_at: selectedSlot.start_at,
-      end_at: resolveAppointmentEndAt(selectedSlot.start_at, appointmentDuration),
-      notes: notes || undefined,
-      consultation_modality: modality,
-      is_overbooking: isOverbooking,
-      overbooking_reason: isOverbooking ? overbookingReason : null,
-      priority,
-      insurance_provider: insuranceProvider || null,
-      insurance_plan: insurancePlan || null,
-    });
+    try {
+      const result = await createTurnoWizard({
+        patient_id: patientId,
+        professional_id: professionalId,
+        specialty_id: specialtyId || null,
+        location_id: locationId || null,
+        start_at: selectedSlot.start_at,
+        end_at: resolveAppointmentEndAt(selectedSlot.start_at, appointmentDuration),
+        notes: notes || undefined,
+        consultation_modality: modality,
+        is_overbooking: isOverbooking,
+        overbooking_reason: isOverbooking ? overbookingReason : null,
+        priority,
+        insurance_provider: insuranceProvider || null,
+        insurance_plan: insurancePlan || null,
+      });
 
-    setSubmitting(false);
-    if (result.error) {
-      setError(result.error);
-      toast.error(result.error);
-      return;
+      if (result.error) {
+        setError(result.error);
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success(isOverbooking ? "Sobreturno confirmado" : "Turno confirmado");
+      router.push("/turnos/agenda");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "No se pudo confirmar el turno. Intentá de nuevo.";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setSubmitting(false);
     }
-
-    toast.success(isOverbooking ? "Sobreturno confirmado" : "Turno confirmado");
-    router.push("/turnos/agenda");
   }, [
     selectedSlot,
     patientId,
