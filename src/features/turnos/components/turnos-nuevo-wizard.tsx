@@ -614,6 +614,19 @@ export function TurnosNuevoWizard({
     setSubmitting(true);
     setError(null);
 
+    const toConfirmErrorMessage = (raw: string | undefined) => {
+      const message = (raw ?? "").trim();
+      if (
+        !message ||
+        message.includes("Server Components render") ||
+        message.includes("omitted in production") ||
+        message.includes("digest property")
+      ) {
+        return "No se pudo confirmar el turno. Recargá la página e intentá de nuevo.";
+      }
+      return message;
+    };
+
     try {
       const result = await createTurnoWizard({
         patient_id: patientId,
@@ -632,16 +645,18 @@ export function TurnosNuevoWizard({
       });
 
       if (result.error) {
-        setError(result.error);
-        toast.error(result.error);
+        const message = toConfirmErrorMessage(result.error);
+        setError(message);
+        toast.error(message);
         return;
       }
 
       toast.success(isOverbooking ? "Sobreturno confirmado" : "Turno confirmado");
       router.push("/turnos/agenda");
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "No se pudo confirmar el turno. Intentá de nuevo.";
+      const message = toConfirmErrorMessage(
+        err instanceof Error ? err.message : undefined
+      );
       setError(message);
       toast.error(message);
     } finally {
