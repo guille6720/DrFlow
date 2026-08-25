@@ -17,6 +17,26 @@ import {
   resolveDefaultProfessionalId,
   resolveSessionProfessionalId,
 } from "@/lib/server/resolve-default-professional";
+import type { Patient } from "@/types/database";
+
+type TurnoWizardPatient = Pick<
+  Patient,
+  "id" | "first_name" | "last_name" | "document_number" | "insurance_provider" | "insurance_plan"
+>;
+
+function toTurnoWizardPatient(row: {
+  id: string;
+  first_name: string;
+  last_name: string;
+  document_number: string | null;
+  insurance_provider: string | null;
+  insurance_plan: string | null;
+}): TurnoWizardPatient {
+  return {
+    ...row,
+    document_number: row.document_number ?? "",
+  };
+}
 
 export default async function TurnosNuevoPage({
   searchParams,
@@ -45,14 +65,7 @@ export default async function TurnosNuevoPage({
   let clinicSettings: Awaited<ReturnType<typeof getCachedClinicSettings>> = null;
   let sessionProfessionalId: string | undefined;
   let defaultProfessionalId: string | undefined;
-  let initialPatient: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    document_number: string | null;
-    insurance_provider: string | null;
-    insurance_plan: string | null;
-  } | null = null;
+  let initialPatient: TurnoWizardPatient | null = null;
   let initialWizardSlots: Awaited<ReturnType<typeof loadTurnosWizardSlots>> | null = null;
 
   try {
@@ -88,7 +101,7 @@ export default async function TurnosNuevoPage({
         .eq("id", patientParam)
         .eq("is_active", true)
         .maybeSingle();
-      initialPatient = patientResult.data;
+      initialPatient = patientResult.data ? toTurnoWizardPatient(patientResult.data) : null;
     }
 
     if (clinicId && defaultProfessionalId) {
