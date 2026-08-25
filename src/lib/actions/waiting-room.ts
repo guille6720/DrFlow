@@ -44,10 +44,14 @@ export async function updateWaitingRoomStatus(
     metadata: { waiting_room_status: parsed.data },
   });
 
-  revalidateAppointmentSurfaces({
-    includeConsultasQueue: true,
-    includeWaitingRoom: true,
-  });
+  try {
+    revalidateAppointmentSurfaces({
+      includeConsultasQueue: true,
+      includeWaitingRoom: true,
+    });
+  } catch (revalidateErr) {
+    console.error("[waiting-room] revalidate failed:", revalidateErr);
+  }
   return { data };
 }
 
