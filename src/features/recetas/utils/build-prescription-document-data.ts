@@ -18,6 +18,11 @@ type PatientInfo = {
   last_name: string;
   document_number: string;
   birth_date?: string | null;
+  sex?: string | null;
+  cuil?: string | null;
+  alt_identifier_type?: string | null;
+  alt_identifier_value?: string | null;
+  address?: string | null;
   insurance_provider?: string | null;
   insurance_number?: string | null;
 };
@@ -28,6 +33,8 @@ type ProfessionalInfo = {
   license_number?: string | null;
   license_national?: string | null;
   license_provincial?: string | null;
+  licensing_jurisdiction?: string | null;
+  refeps_identifier?: string | null;
   signature_text?: string | null;
   signature_image_url?: string | null;
   profiles?: { full_name?: string | null } | null;
@@ -87,6 +94,9 @@ export function buildPrescriptionDocumentData(
     issuedAt,
     coverageKind: coverage.kind,
     clinicRuleOverride: ruleOverride,
+    nationalRxStatus: prescription.national_rx_status,
+    cuirStatus: prescription.cuir_status,
+    cuirFormatted: prescription.cuir_formatted,
   });
 
   return {
@@ -108,18 +118,29 @@ export function buildPrescriptionDocumentData(
     qrHint: qr.qrHint,
     refepsStatus: prescription.refeps_status ?? null,
     refepsId: prescription.refeps_id ?? null,
+    nationalRxStatus: prescription.national_rx_status ?? null,
+    cuirStatus: prescription.cuir_status ?? null,
+    cuirFormatted: prescription.cuir_formatted ?? null,
     patient: {
       first_name: patient.first_name,
       last_name: patient.last_name,
       document_number: patient.document_number,
       birth_date: patient.birth_date,
+      sex: patient.sex,
+      cuil: patient.cuil,
+      alt_identifier_type: patient.alt_identifier_type,
+      alt_identifier_value: patient.alt_identifier_value,
+      address: patient.address,
       insurance_provider: patient.insurance_provider,
       insurance_number: patient.insurance_number,
     },
     professional: {
       full_name: pro ? getProfessionalDisplayName(pro) : "Profesional",
-      license_number: pro?.license_number ?? null,
+      license_number: pro?.license_number ?? pro?.license_national ?? null,
       specialty: professionalSpecialtyName(pro?.specialties),
+      profession: "Médico/a",
+      jurisdiction: pro?.licensing_jurisdiction ?? null,
+      refeps_identifier: pro?.refeps_identifier ?? null,
       ...resolveProfessionalDocumentSignature(pro),
     },
     clinic,

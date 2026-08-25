@@ -25,6 +25,11 @@ type PatientInfo = {
   last_name: string;
   document_number: string;
   birth_date?: string | null;
+  sex?: string | null;
+  cuil?: string | null;
+  alt_identifier_type?: string | null;
+  alt_identifier_value?: string | null;
+  address?: string | null;
   insurance_provider?: string | null;
   insurance_number?: string | null;
 };
@@ -35,6 +40,8 @@ type ProfessionalInfo = {
   license_number?: string | null;
   license_national?: string | null;
   license_provincial?: string | null;
+  licensing_jurisdiction?: string | null;
+  refeps_identifier?: string | null;
   signature_text?: string | null;
   signature_image_url?: string | null;
   profiles?: { full_name?: string | null } | null;

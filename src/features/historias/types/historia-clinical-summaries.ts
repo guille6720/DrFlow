@@ -31,6 +31,9 @@ export type HistoriaPrescriptionSummary = {
   refeps_submitted_at?: string | null;
   refeps_error?: string | null;
   digital_signature_hash?: string | null;
+  national_rx_status?: string | null;
+  cuir_status?: string | null;
+  cuir_formatted?: string | null;
 };
 
 /** Medical order row loaded on historia detail (partial select). */

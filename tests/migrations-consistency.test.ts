@@ -9,15 +9,16 @@ describe("migrations consistency", () => {
     .filter((f) => f.endsWith(".sql"))
     .sort();
 
-  it("has migration files through develop commercial pack and ReNaPDiS Phase 1", () => {
+  it("has migration files through develop commercial pack and ReNaPDiS Phase 1–2", () => {
     expect(files.length).toBeGreaterThanOrEqual(129);
     expect(files[0]).toBe("001_schema.sql");
     expect(files).toContain("129_superadmin_commercial_control.sql");
     expect(files).toContain("140_renapdis_phase1_professionals.sql");
-    expect(files[files.length - 1]).toBe("140_renapdis_phase1_professionals.sql");
+    expect(files).toContain("141_renapdis_phase2_patient_cuir.sql");
+    expect(files[files.length - 1]).toBe("141_renapdis_phase2_patient_cuir.sql");
   });
 
-  it("uses numeric prefix without gaps through 129; Phase 1 ships as 140 on develop", () => {
+  it("uses numeric prefix without gaps through 129; Phase 1=140 Phase 2=141 on develop", () => {
     const numeric = files
       .map((f) => f.match(/^(\d+)/)?.[1])
       .filter(Boolean)
@@ -29,7 +30,8 @@ describe("migrations consistency", () => {
     }
     // 130–139 reserved for compliance pack not merged to develop yet.
     expect(unique).toContain(140);
-    expect(unique[unique.length - 1]).toBe(140);
+    expect(unique).toContain(141);
+    expect(unique[unique.length - 1]).toBe(141);
   });
 
   it("034 caja migration is idempotent", () => {

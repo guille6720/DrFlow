@@ -22,6 +22,11 @@ export type HistoriaDetailPatient = {
   last_name: string;
   document_number: string;
   birth_date: string | null;
+  sex?: string | null;
+  cuil?: string | null;
+  alt_identifier_type?: string | null;
+  alt_identifier_value?: string | null;
+  address?: string | null;
   insurance_provider: string | null;
   insurance_number: string | null;
   phone: string | null;
@@ -99,7 +104,7 @@ export async function loadHistoriaDetailPageData(
     supabase
       .from("clinical_records")
       .select(
-        "id, created_at, updated_at, chief_complaint, diagnosis, evolution, indications, diagnosis_cie10, diagnoses_json, treatments_json, professional_id, professional_signature, appointment_id, patient_id, clinic_id, consultation_modality, patients(id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, email, allergies, regular_medication, emergency_contact_name, emergency_contact_phone), professionals(license_national, license_provincial, license_number, profiles(full_name, email))"
+        "id, created_at, updated_at, chief_complaint, diagnosis, evolution, indications, diagnosis_cie10, diagnoses_json, treatments_json, professional_id, professional_signature, appointment_id, patient_id, clinic_id, consultation_modality, patients(id, first_name, last_name, document_number, birth_date, sex, cuil, alt_identifier_type, alt_identifier_value, address, insurance_provider, insurance_number, phone, email, allergies, regular_medication, emergency_contact_name, emergency_contact_phone), professionals(license_national, license_provincial, license_number, profiles(full_name, email))"
       )
       .eq("id", id)
       .eq("clinic_id", clinicId)
@@ -128,7 +133,9 @@ export async function loadHistoriaDetailPageData(
       .limit(40),
     supabase
       .from("prescription_drafts")
-      .select("id, created_at, medications, status, diagnosis_text, issued_at, prescription_number")
+      .select(
+        "id, created_at, medications, status, diagnosis_text, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, coverage_kind, insurance_number, insurance_plan, notes, professional_id, refeps_status, refeps_id, digital_signature_hash, national_rx_status, cuir_status, cuir_formatted"
+      )
       .eq("clinical_record_id", id)
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false })

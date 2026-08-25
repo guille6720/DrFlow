@@ -3883,12 +3883,16 @@ export type Database = {
         Row: {
           address: string | null
           allergies: string | null
+          alt_identifier_type: string | null
+          alt_identifier_value: string | null
           birth_date: string | null
           clinic_id: string
           created_at: string
+          cuil: string | null
           deactivated_at: string | null
           deactivated_by: string | null
           document_number: string
+          document_type: string
           email: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
@@ -3903,18 +3907,23 @@ export type Database = {
           notes: string | null
           phone: string | null
           regular_medication: string | null
+          sex: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           address?: string | null
           allergies?: string | null
+          alt_identifier_type?: string | null
+          alt_identifier_value?: string | null
           birth_date?: string | null
           clinic_id: string
           created_at?: string
+          cuil?: string | null
           deactivated_at?: string | null
           deactivated_by?: string | null
           document_number: string
+          document_type?: string
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
@@ -3929,18 +3938,23 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           regular_medication?: string | null
+          sex?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           address?: string | null
           allergies?: string | null
+          alt_identifier_type?: string | null
+          alt_identifier_value?: string | null
           birth_date?: string | null
           clinic_id?: string
           created_at?: string
+          cuil?: string | null
           deactivated_at?: string | null
           deactivated_by?: string | null
           document_number?: string
+          document_type?: string
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
@@ -3955,6 +3969,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           regular_medication?: string | null
+          sex?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -4141,22 +4156,35 @@ export type Database = {
           created_at: string
           created_by: string
           diagnosis_cie10: string | null
+          diagnosis_coding: Json | null
           diagnosis_text: string | null
           digital_signature_hash: string | null
           disclaimer_accepted: boolean
           dispensed_at: string | null
+          fhir_bundle_meta: Json | null
           id: string
           idempotency_key: string | null
           insurance_number: string | null
           insurance_plan: string | null
           issued_at: string | null
           medications: Json
+          national_rx_status: string
           notes: string | null
           patient_id: string
           patient_insurance: string | null
+          prescription_category: string
           prescription_number: string | null
+          prescription_subtype: string | null
           prescription_type: string
           professional_id: string
+          cuir_formatted: string | null
+          cuir_group_id: string | null
+          cuir_item_number: string | null
+          cuir_jurisdiction: string | null
+          cuir_platform_id: string | null
+          cuir_repository_id: string | null
+          cuir_status: string
+          cuir_type_subtype: string | null
           refeps_error: string | null
           refeps_id: string | null
           refeps_payload: Json | null
@@ -4165,6 +4193,7 @@ export type Database = {
           status: string
           updated_at: string
           validity_days: number
+          validity_starts_at: string | null
           version: number
         }
         Insert: {
@@ -4174,22 +4203,35 @@ export type Database = {
           created_at?: string
           created_by: string
           diagnosis_cie10?: string | null
+          diagnosis_coding?: Json | null
           diagnosis_text?: string | null
           digital_signature_hash?: string | null
           disclaimer_accepted?: boolean
           dispensed_at?: string | null
+          fhir_bundle_meta?: Json | null
           id?: string
           idempotency_key?: string | null
           insurance_number?: string | null
           insurance_plan?: string | null
           issued_at?: string | null
           medications?: Json
+          national_rx_status?: string
           notes?: string | null
           patient_id: string
           patient_insurance?: string | null
+          prescription_category?: string
           prescription_number?: string | null
+          prescription_subtype?: string | null
           prescription_type?: string
           professional_id: string
+          cuir_formatted?: string | null
+          cuir_group_id?: string | null
+          cuir_item_number?: string | null
+          cuir_jurisdiction?: string | null
+          cuir_platform_id?: string | null
+          cuir_repository_id?: string | null
+          cuir_status?: string
+          cuir_type_subtype?: string | null
           refeps_error?: string | null
           refeps_id?: string | null
           refeps_payload?: Json | null
@@ -4198,6 +4240,7 @@ export type Database = {
           status?: string
           updated_at?: string
           validity_days?: number
+          validity_starts_at?: string | null
           version?: number
         }
         Update: {
@@ -4207,22 +4250,35 @@ export type Database = {
           created_at?: string
           created_by?: string
           diagnosis_cie10?: string | null
+          diagnosis_coding?: Json | null
           diagnosis_text?: string | null
           digital_signature_hash?: string | null
           disclaimer_accepted?: boolean
           dispensed_at?: string | null
+          fhir_bundle_meta?: Json | null
           id?: string
           idempotency_key?: string | null
           insurance_number?: string | null
           insurance_plan?: string | null
           issued_at?: string | null
           medications?: Json
+          national_rx_status?: string
           notes?: string | null
           patient_id?: string
           patient_insurance?: string | null
+          prescription_category?: string
           prescription_number?: string | null
+          prescription_subtype?: string | null
           prescription_type?: string
           professional_id?: string
+          cuir_formatted?: string | null
+          cuir_group_id?: string | null
+          cuir_item_number?: string | null
+          cuir_jurisdiction?: string | null
+          cuir_platform_id?: string | null
+          cuir_repository_id?: string | null
+          cuir_status?: string
+          cuir_type_subtype?: string | null
           refeps_error?: string | null
           refeps_id?: string | null
           refeps_payload?: Json | null
@@ -4231,6 +4287,7 @@ export type Database = {
           status?: string
           updated_at?: string
           validity_days?: number
+          validity_starts_at?: string | null
           version?: number
         }
         Relationships: [
