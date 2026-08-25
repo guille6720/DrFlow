@@ -1,7 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
-
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { revalidateAppointmentSurfaces } from "@/core/cache/revalidate-appointment-surfaces";
 import { toErrorMessage } from "@/core/errors/error-utils";
@@ -20,26 +18,21 @@ import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
 import { sanitizeText } from "@/core/validations/schemas";
 
+import { recordAppointmentStatusHistory } from "@/features/turnos/server/record-appointment-status-history";
 import { turnoWizardSchema, type TurnoWizardInput } from "@/features/turnos/utils/turno-wizard-schema";
 
 import type { Database } from "@/types/supabase";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-const OPTIONAL_APPOINTMENT_INSERT_COLUMNS = [
+const OPTIONAL_APPOINTMENT_PATCH_COLUMNS = [
+  "consultation_modality",
   "is_overbooking",
   "overbooking_reason",
   "priority",
   "insurance_provider_snapshot",
   "insurance_plan_snapshot",
   "booking_source",
-  "consultation_modality",
 ] as const;
-
-function isNextNavigationError(err: unknown): boolean {
-  if (typeof err !== "object" || err === null || !("digest" in err)) return false;
-  const digest = String((err as { digest: string }).digest);
-  return digest.startsWith("NEXT_REDIRECT") || digest.startsWith("NEXT_NOT_FOUND");
-}
 
 function isMissingColumnError(
   error: PostgresErrorLike | null | undefined,
@@ -55,6 +48,21 @@ function isMissingColumnError(
   );
 }
 
+function formatTurnoError(error: PostgresErrorLike | null | undefined, fallback: string): string {
+  const message = resolvePostgresUserMessage(error, { fallback });
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes("ya tiene un turno")) {
+    return "El horario ya no está disponible.";
+  }
+  if (normalized.includes("permission denied") || normalized.includes("row-level security")) {
+    return "No tenés permiso para crear turnos en este consultorio.";
+  }
+
+  const code = error?.code?.trim();
+  return code && code !== message ? `${message} (ref: ${code})` : message;
+}
+
 function mapCreateTurnoRpcError(message: string | null | undefined): string | null {
   const code = (message ?? "").trim();
   if (code === "SLOT_NOT_AVAILABLE" || code === "APPOINTMENT_SLOT_CONFLICT") {
@@ -64,6 +72,8 @@ function mapCreateTurnoRpcError(message: string | null | undefined): string | nu
   if (code === "FORBIDDEN") return "No tenés permiso para crear turnos.";
   if (code === "PATIENT_NOT_FOUND") return "Paciente no encontrado en el consultorio activo.";
   if (code === "PROFESSIONAL_NOT_FOUND") return "Profesional no encontrado o inactivo.";
+  if (code === "LOCATION_NOT_FOUND") return "Consultorio no encontrado en el consultorio activo.";
+  if (code === "SPECIALTY_NOT_FOUND") return "Especialidad no encontrada en el consultorio activo.";
   if (code === "INVALID_TIME_RANGE") return "Horario inválido.";
   if (code === "OVERBOOKING_REASON_REQUIRED") return "Indicá el motivo del sobreturno.";
   if (code === "INVALID_MODALITY") return "Tipo de atención inválido.";
@@ -77,12 +87,19 @@ function resolveCreateTurnoRpcError(error: PostgresErrorLike): string {
     mapCreateTurnoRpcError(error.hint);
   if (mapped) return mapped;
 
-  return resolvePostgresUserMessage(error, {
-    fallback: error.message || "No se pudo confirmar el turno. Intentá de nuevo.",
-  });
+  return formatTurnoError(error, error.message || "No se pudo confirmar el turno. Intentá de nuevo.");
+}
+
+function isCreateTurnoBusinessError(error: PostgresErrorLike): boolean {
+  return Boolean(
+    mapCreateTurnoRpcError(error.message) ||
+      mapCreateTurnoRpcError(error.details) ||
+      mapCreateTurnoRpcError(error.hint)
+  );
 }
 
 function shouldTryDirectInsertFallback(error: PostgresErrorLike): boolean {
+  if (isCreateTurnoBusinessError(error)) return false;
   if (isMissingRpcInSchemaCache(error)) return true;
 
   const parsed = parsePostgresError(error);
@@ -115,11 +132,11 @@ function extractAppointmentId(rpcResult: unknown): string | null {
   return null;
 }
 
-function buildAppointmentInsertPayload(
+function buildMinimalAppointmentInsert(
   clinicId: string,
   userId: string,
   data: TurnoWizardInput
-): Record<string, unknown> {
+): Database["public"]["Tables"]["appointments"]["Insert"] {
   return {
     clinic_id: clinicId,
     patient_id: data.patient_id,
@@ -131,6 +148,11 @@ function buildAppointmentInsertPayload(
     status: "pending",
     notes: data.notes ? sanitizeText(data.notes) : null,
     created_by: userId,
+  };
+}
+
+function buildOptionalAppointmentPatch(data: TurnoWizardInput): Record<string, unknown> {
+  return {
     booking_source: "manual",
     consultation_modality: data.consultation_modality,
     is_overbooking: data.is_overbooking,
@@ -143,60 +165,80 @@ function buildAppointmentInsertPayload(
   };
 }
 
+async function patchOptionalAppointmentFields(
+  supabase: SupabaseClient<Database>,
+  clinicId: string,
+  appointmentId: string,
+  data: TurnoWizardInput
+): Promise<void> {
+  let patch = buildOptionalAppointmentPatch(data);
+
+  for (let attempt = 0; attempt < OPTIONAL_APPOINTMENT_PATCH_COLUMNS.length + 1; attempt += 1) {
+    const { error } = await supabase
+      .from("appointments")
+      .update(patch as Database["public"]["Tables"]["appointments"]["Update"])
+      .eq("id", appointmentId)
+      .eq("clinic_id", clinicId);
+
+    if (!error) return;
+
+    const missingOptional = OPTIONAL_APPOINTMENT_PATCH_COLUMNS.find((column) =>
+      isMissingColumnError(error, column)
+    );
+    if (missingOptional && missingOptional in patch) {
+      const nextPatch = { ...patch };
+      delete nextPatch[missingOptional];
+      patch = nextPatch;
+      continue;
+    }
+
+    logServerError("createTurnoWizard.patchOptional", error, { clinicId, persist: false });
+    return;
+  }
+}
+
 async function insertStaffAppointmentDirect(
   supabase: SupabaseClient<Database>,
   clinicId: string,
   userId: string,
   data: TurnoWizardInput
 ): Promise<{ ok: true; appointmentId: string } | { ok: false; error: string }> {
-  if (!data.is_overbooking) {
-    const { data: conflict } = await supabase
-      .from("appointments")
-      .select("id")
-      .eq("clinic_id", clinicId)
-      .eq("professional_id", data.professional_id)
-      .neq("status", "cancelled")
-      .lt("start_at", data.end_at)
-      .gt("end_at", data.start_at)
-      .limit(1)
-      .maybeSingle();
-    if (conflict?.id) {
-      return { ok: false, error: "El horario ya no está disponible." };
-    }
-  }
+  const { data: row, error } = await supabase
+    .from("appointments")
+    .insert(buildMinimalAppointmentInsert(clinicId, userId, data))
+    .select("id")
+    .single();
 
-  let payload = buildAppointmentInsertPayload(clinicId, userId, data);
-
-  for (let attempt = 0; attempt < OPTIONAL_APPOINTMENT_INSERT_COLUMNS.length + 2; attempt += 1) {
-    const { data: row, error } = await supabase
-      .from("appointments")
-      .insert(payload as Database["public"]["Tables"]["appointments"]["Insert"])
-      .select("id")
-      .single();
-
-    if (!error && row?.id) {
-      return { ok: true, appointmentId: row.id };
-    }
-
-    const missingOptional = OPTIONAL_APPOINTMENT_INSERT_COLUMNS.find((column) =>
-      isMissingColumnError(error, column)
-    );
-    if (missingOptional && missingOptional in payload) {
-      const nextPayload = { ...payload };
-      delete nextPayload[missingOptional];
-      payload = nextPayload;
-      continue;
-    }
-
+  if (error || !row?.id) {
     return {
       ok: false,
-      error: resolvePostgresUserMessage(error, {
-        fallback: error?.message || "No se pudo confirmar el turno. Intentá de nuevo.",
-      }),
+      error: formatTurnoError(
+        error,
+        error?.message || "No se pudo confirmar el turno. Intentá de nuevo."
+      ),
     };
   }
 
-  return { ok: false, error: "No se pudo confirmar el turno. Intentá de nuevo." };
+  await patchOptionalAppointmentFields(supabase, clinicId, row.id, data);
+
+  try {
+    await recordAppointmentStatusHistory(supabase, {
+      clinicId,
+      appointmentId: row.id,
+      fromStatus: null,
+      toStatus: "pending",
+      changedBy: userId,
+      reason: data.is_overbooking ? data.overbooking_reason ?? "Sobreturno" : "Turno creado",
+      metadata: {
+        is_overbooking: data.is_overbooking,
+        priority: data.priority,
+      },
+    });
+  } catch (historyErr) {
+    logServerError("createTurnoWizard.statusHistory", historyErr, { clinicId, persist: false });
+  }
+
+  return { ok: true, appointmentId: row.id };
 }
 
 export async function createTurnoWizard(input: unknown) {
@@ -254,7 +296,14 @@ export async function createTurnoWizard(input: unknown) {
     } else {
       appointmentId = extractAppointmentId(rpcResult);
       if (!appointmentId) {
-        return { error: "El turno se creó pero no se pudo leer el identificador. Revisá la agenda." };
+        const fallback = await insertStaffAppointmentDirect(supabase, clinicId, userId, data);
+        if (!fallback.ok) {
+          return {
+            error:
+              "El turno pudo haberse creado, pero no se pudo confirmar. Revisá la agenda e intentá de nuevo.",
+          };
+        }
+        appointmentId = fallback.appointmentId;
       }
     }
 
@@ -283,9 +332,8 @@ export async function createTurnoWizard(input: unknown) {
       logServerError("createTurnoWizard.revalidate", revalidateErr, { clinicId });
     }
 
-    redirect("/turnos/agenda");
+    return { ok: true as const, appointmentId };
   } catch (err) {
-    if (isNextNavigationError(err)) throw err;
     logServerError("createTurnoWizard", err, { persist: true });
     return {
       error: toErrorMessage(err) || "No se pudo confirmar el turno. Intentá de nuevo.",

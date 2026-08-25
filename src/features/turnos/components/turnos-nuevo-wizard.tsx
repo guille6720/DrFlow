@@ -653,6 +653,12 @@ export function TurnosNuevoWizard({
         toast.error(message);
         return;
       }
+
+      if (result?.ok) {
+        toast.success(isOverbooking ? "Sobreturno confirmado" : "Turno confirmado");
+        window.location.assign("/turnos/agenda");
+        return;
+      }
     } catch (err) {
       if (isNextNavigationError(err)) return;
       const message = toConfirmErrorMessage(err instanceof Error ? err.message : undefined);
