@@ -8,8 +8,11 @@ import {
   buildSandboxCuirComponents,
   type CuirComponents,
   type CuirStatus,
-  formatCuir,
+  formatOfficialCuir,
+  formatSandboxCuirDebug,
   resolveCuirEnvironment,
+  resolveIndecJurisdictionCode,
+  resolveOfficialTypeSubtypeCode,
   validateCuirComponents,
 } from "@/core/renapdis/cuir";
 import type { NationalReadyGateInput, NationalRxStatus } from "@/core/renapdis/national-ready-gate";
@@ -86,7 +89,9 @@ export async function prepareNationalRxArtifacts(
 
   const category = mapLegacyPrescriptionTypeToCategory(input.prescriptionType);
   const subtype = mapLegacyPrescriptionTypeToSubtype(input.prescriptionType);
-  const typeSubtype = `${category}:${subtype}`;
+  const typeSubtypeKey = `${category}:${subtype}`;
+  const sandboxGroupId = input.prescriptionId.replace(/-/g, "").slice(0, 16).toUpperCase();
+  const officialGroupId = input.prescriptionId.replace(/\D/g, "").slice(0, 25) || "1";
 
   let components: Partial<CuirComponents>;
   let cuirStatus: CuirStatus = env;
@@ -97,19 +102,24 @@ export async function prepareNationalRxArtifacts(
         input.professional?.licensingJurisdiction?.trim() ||
         input.cuir.components.jurisdiction ||
         "XX",
-      typeSubtype,
-      groupId: input.prescriptionId.replace(/-/g, "").slice(0, 16).toUpperCase(),
+      typeSubtype: typeSubtypeKey,
+      groupId: sandboxGroupId,
       itemNumber: "1",
     });
     cuirStatus = "sandbox";
     auditEvents.push("cuir_preparation");
   } else if (env === "official") {
+    const jurisdictionCode =
+      resolveIndecJurisdictionCode(
+        input.cuir.components.jurisdiction || input.professional?.licensingJurisdiction
+      ) ?? undefined;
+    const m4 = resolveOfficialTypeSubtypeCode(typeSubtypeKey) ?? undefined;
     components = {
       platformId: input.officialIds?.platformId?.trim() || undefined,
       repositoryId: input.officialIds?.repositoryId?.trim() || undefined,
-      jurisdiction: input.professional?.licensingJurisdiction?.trim() || undefined,
-      typeSubtype,
-      groupId: input.prescriptionId.replace(/-/g, "").slice(0, 16).toUpperCase(),
+      jurisdiction: jurisdictionCode,
+      typeSubtype: m4,
+      groupId: officialGroupId,
       itemNumber: "1",
     };
     cuirStatus = "official";
@@ -117,8 +127,8 @@ export async function prepareNationalRxArtifacts(
   } else {
     components = {
       jurisdiction: input.professional?.licensingJurisdiction?.trim() || undefined,
-      typeSubtype,
-      groupId: input.prescriptionId.replace(/-/g, "").slice(0, 16).toUpperCase(),
+      typeSubtype: typeSubtypeKey,
+      groupId: sandboxGroupId,
       itemNumber: "1",
     };
     cuirStatus = "pending_official_ids";
@@ -190,7 +200,10 @@ export async function prepareNationalRxArtifacts(
     nationalRxStatus: gate.nationalRxStatus,
     cuirStatus: cuirValidated.status,
     cuirComponents: cuirValidated.components,
-    cuirFormatted: cuirValidated.formatted || formatCuir(cuirValidated.components),
+    cuirFormatted:
+      cuirValidated.status === "official"
+        ? formatOfficialCuir(cuirValidated.components)
+        : formatSandboxCuirDebug(cuirValidated.components),
     prescriptionCategory: category,
     prescriptionSubtype: subtype,
     diagnosisCoding,

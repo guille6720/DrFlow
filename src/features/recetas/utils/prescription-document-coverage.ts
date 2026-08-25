@@ -1,5 +1,7 @@
 import qrcode from "qrcode-generator";
 
+import { isOfficialCuirString } from "@/core/renapdis/cuir";
+
 import type { CoverageRuleConfig } from "@/features/recetas/engine/types";
 import {
   getEffectiveCoverageRule,
@@ -137,9 +139,23 @@ export function resolvePrescriptionDocumentQr(input: {
         cuirFormatted: input.cuirFormatted,
         prescriptionNumber: input.prescriptionNumber,
       }),
-      qrTitle: "CUIR SANDBOX (sin validez legal)",
+      qrTitle: "CUIR SANDBOX — SIN VALIDEZ LEGAL",
       qrHint:
         "Identificador de prueba DrFlow. No implica validación del Ministerio ni homologación ReNaPDiS.",
+    };
+  }
+
+  if (
+    input.cuirStatus === "official" &&
+    input.cuirFormatted?.trim() &&
+    isOfficialCuirString(input.cuirFormatted) &&
+    input.nationalRxStatus === "national_ready"
+  ) {
+    return {
+      showQr: true,
+      qrPayload: input.cuirFormatted.trim(),
+      qrTitle: "CUIR",
+      qrHint: "CUIR oficial (concatenación numérica Anexo IV) tras validación estricta.",
     };
   }
 
