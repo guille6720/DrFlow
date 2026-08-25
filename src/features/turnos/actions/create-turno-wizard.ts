@@ -2,6 +2,7 @@
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { revalidateAppointmentSurfaces } from "@/core/cache/revalidate-appointment-surfaces";
+import { toErrorMessage } from "@/core/errors/error-utils";
 import { logServerError } from "@/core/errors/log-error.server";
 import {
   isMissingRpcInSchemaCache,
@@ -14,10 +15,27 @@ import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
 import { sanitizeText } from "@/core/validations/schemas";
 
-import { turnoWizardSchema } from "@/features/turnos/utils/turno-wizard-schema";
+import { turnoWizardSchema, type TurnoWizardInput } from "@/features/turnos/utils/turno-wizard-schema";
 
-function revalidateTurnoPaths(patientId?: string) {
-  revalidateAppointmentSurfaces({ patientId });
+import type { Database } from "@/types/supabase";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+function isNextNavigationError(err: unknown): boolean {
+  if (typeof err !== "object" || err === null || !("digest" in err)) return false;
+  const digest = String((err as { digest: string }).digest);
+  return digest.startsWith("NEXT_REDIRECT") || digest.startsWith("NEXT_NOT_FOUND");
+}
+
+function toCreateTurnoUserMessage(err: unknown): string {
+  const message = toErrorMessage(err);
+  if (
+    message.includes("Server Components render") ||
+    message.includes("omitted in production") ||
+    message.includes("digest property")
+  ) {
+    return "No se pudo confirmar el turno. Recargá la página e intentá de nuevo.";
+  }
+  return message || "No se pudo confirmar el turno. Intentá de nuevo.";
 }
 
 function mapCreateTurnoRpcError(message: string | null | undefined): string | null {
@@ -33,6 +51,80 @@ function mapCreateTurnoRpcError(message: string | null | undefined): string | nu
   if (code === "OVERBOOKING_REASON_REQUIRED") return "Indicá el motivo del sobreturno.";
   if (code === "INVALID_MODALITY") return "Tipo de atención inválido.";
   return null;
+}
+
+function extractAppointmentId(rpcResult: unknown): string | null {
+  if (typeof rpcResult === "object" && rpcResult !== null && "appointment_id" in rpcResult) {
+    return String((rpcResult as { appointment_id: string }).appointment_id);
+  }
+  if (typeof rpcResult === "string") {
+    try {
+      return extractAppointmentId(JSON.parse(rpcResult) as unknown);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+async function insertStaffAppointmentDirect(
+  supabase: SupabaseClient<Database>,
+  clinicId: string,
+  userId: string,
+  data: TurnoWizardInput
+): Promise<{ ok: true; appointmentId: string } | { ok: false; error: string }> {
+  if (!data.is_overbooking) {
+    const { data: conflict } = await supabase
+      .from("appointments")
+      .select("id")
+      .eq("clinic_id", clinicId)
+      .eq("professional_id", data.professional_id)
+      .neq("status", "cancelled")
+      .lt("start_at", data.end_at)
+      .gt("end_at", data.start_at)
+      .limit(1)
+      .maybeSingle();
+    if (conflict?.id) {
+      return { ok: false, error: "El horario ya no está disponible." };
+    }
+  }
+
+  const { data: row, error } = await supabase
+    .from("appointments")
+    .insert({
+      clinic_id: clinicId,
+      patient_id: data.patient_id,
+      professional_id: data.professional_id,
+      location_id: data.location_id ?? null,
+      specialty_id: data.specialty_id ?? null,
+      start_at: data.start_at,
+      end_at: data.end_at,
+      status: "pending",
+      notes: data.notes ? sanitizeText(data.notes) : null,
+      booking_source: "manual",
+      consultation_modality: data.consultation_modality,
+      is_overbooking: data.is_overbooking,
+      overbooking_reason: data.overbooking_reason
+        ? sanitizeText(data.overbooking_reason)
+        : null,
+      priority: data.priority,
+      insurance_provider_snapshot: data.insurance_provider ?? null,
+      insurance_plan_snapshot: data.insurance_plan ?? null,
+      created_by: userId,
+    })
+    .select("id")
+    .single();
+
+  if (error || !row?.id) {
+    return {
+      ok: false,
+      error: resolvePostgresUserMessage(error, {
+        fallback: error?.message || "No se pudo confirmar el turno. Intentá de nuevo.",
+      }),
+    };
+  }
+
+  return { ok: true, appointmentId: row.id };
 }
 
 export async function createTurnoWizard(input: unknown) {
@@ -57,6 +149,8 @@ export async function createTurnoWizard(input: unknown) {
     });
     if (!ownership.ok) return { error: ownership.error };
 
+    let appointmentId: string | null = null;
+
     const { data: rpcResult, error } = await supabase.rpc("create_staff_appointment_atomic", {
       p_clinic_id: clinicId,
       p_patient_id: data.patient_id,
@@ -79,54 +173,55 @@ export async function createTurnoWizard(input: unknown) {
 
     if (error) {
       if (isMissingRpcInSchemaCache(error)) {
+        const fallback = await insertStaffAppointmentDirect(supabase, clinicId, userId, data);
+        if (!fallback.ok) return { error: fallback.error };
+        appointmentId = fallback.appointmentId;
+      } else {
+        const mapped =
+          mapCreateTurnoRpcError(error.message) ||
+          mapCreateTurnoRpcError(error.details) ||
+          mapCreateTurnoRpcError(error.hint);
         return {
           error:
-            "No se pudo crear el turno: falta o está desactualizada la función en Supabase. Ejecutá la migración 084 y después: NOTIFY pgrst, 'reload schema';",
+            mapped ??
+            resolvePostgresUserMessage(error, {
+              fallback: error.message || "No se pudo confirmar el turno. Intentá de nuevo.",
+            }),
         };
       }
-      const mapped =
-        mapCreateTurnoRpcError(error.message) ||
-        mapCreateTurnoRpcError(error.details) ||
-        mapCreateTurnoRpcError(error.hint);
-      return {
-        error:
-          mapped ??
-          resolvePostgresUserMessage(error, {
-            fallback: error.message || "No se pudo confirmar el turno. Intentá de nuevo.",
-          }),
-      };
+    } else {
+      appointmentId = extractAppointmentId(rpcResult);
+      if (!appointmentId) {
+        return { error: "El turno se creó pero no se pudo leer el identificador. Revisá la agenda." };
+      }
     }
 
-    const appointmentId =
-      typeof rpcResult === "object" &&
-      rpcResult !== null &&
-      "appointment_id" in rpcResult
-        ? String((rpcResult as { appointment_id: string }).appointment_id)
-        : null;
+    await recordAudit({
+      clinicId,
+      module: "appointments",
+      what: data.is_overbooking ? "Sobreturno creado" : "Turno creado",
+      entityType: "appointment",
+      entityId: appointmentId,
+      patientId: data.patient_id,
+      action: "create",
+      metadata: {
+        is_overbooking: data.is_overbooking,
+        priority: data.priority,
+        consultation_modality: data.consultation_modality,
+      },
+    });
 
-    if (appointmentId) {
-      await recordAudit({
-        clinicId,
-        module: "appointments",
-        what: data.is_overbooking ? "Sobreturno creado" : "Turno creado",
-        entityType: "appointment",
-        entityId: appointmentId,
-        patientId: data.patient_id,
-        action: "create",
-        metadata: {
-          is_overbooking: data.is_overbooking,
-          priority: data.priority,
-          consultation_modality: data.consultation_modality,
-        },
-      });
+    // Best-effort only: never fail confirm if RSC revalidation throws.
+    try {
+      revalidateAppointmentSurfaces({ patientId: data.patient_id });
+    } catch (revalidateErr) {
+      logServerError("createTurnoWizard.revalidate", revalidateErr);
     }
 
-    revalidateTurnoPaths(data.patient_id);
-    return { data: rpcResult };
+    return { ok: true as const, appointmentId };
   } catch (err) {
+    if (isNextNavigationError(err)) throw err;
     logServerError("createTurnoWizard", err);
-    return {
-      error: err instanceof Error ? err.message : "No se pudo confirmar el turno. Intentá de nuevo.",
-    };
+    return { error: toCreateTurnoUserMessage(err) };
   }
 }
