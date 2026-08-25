@@ -7,7 +7,7 @@ import type { ConsultPatientPickerRow } from "@/core/supabase/query-types";
 
 import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation";
 
-import { createClinicalRecord, updateClinicalRecord } from "@/features/historias/actions/clinical-records";
+import { persistClinicalRecordRequest } from "@/features/historias/utils/persist-clinical-record-request";
 import {
   buildDiagnosisText,
   type ClinicalDiagnosisEntry,
@@ -521,86 +521,106 @@ export function useNuevaConsultaForm({
       if (options?.silent) setAutoSaveStatus("saving");
       setError(null);
 
-      const formData = new FormData(form);
-      if (appointmentId) formData.set("appointment_id", appointmentId);
-      const diagnosisText = buildDiagnosisText(draft.diagnoses, draft.diagnosis);
-      const primaryCie10 = draft.diagnoses.find((d) => d.cie10_code?.trim())?.cie10_code ?? "";
-      formData.set("chief_complaint", draft.chiefComplaint);
-      formData.set("diagnosis", diagnosisText);
-      formData.set("diagnosis_cie10", primaryCie10);
-      formData.set("diagnoses_json", JSON.stringify(draft.diagnoses));
-      const mergedTreatments = mergeTreatmentsForPersist(
-        draft.clinicalTreatments,
-        draft.treatmentMedications
-      );
-      formData.set("treatments_json", JSON.stringify(mergedTreatments));
-      formData.set(
-        "indications",
-        buildConsultIndicationsText(draft.treatmentMedications, draft.indications, draft.clinicalTreatments)
-      );
-      formData.set("evolution", buildEvolutionWithVitals(draft.evolution, draft.vitals));
-      formData.set("professional_signature", professionalSignature);
-      formData.set("consultation_at", new Date(consultationAt).toISOString());
-
-      const recordId = editingRecordIdRef.current;
-      const result = recordId
-        ? await updateClinicalRecord(recordId, formData)
-        : await createClinicalRecord(formData);
-
-      savingRef.current = false;
-      setLoading(false);
-
-      const err =
-        result && "error" in result && result.error
-          ? result.error
-          : null;
-      if (err) {
-        setError(err);
-        if (options?.silent) setAutoSaveStatus("error");
-        return { ok: false as const, error: err };
-      }
-
-      const savedId =
-        recordId ??
-        (result && "data" in result && result.data ? String(result.data.id) : null);
-
-      if (savedId) {
-        setEditingRecordId(savedId);
-        editingRecordIdRef.current = savedId;
-        setSavedFingerprint(
-          JSON.stringify({
-            evolution: draft.evolution,
-            chiefComplaint: draft.chiefComplaint,
-            diagnosis: draft.diagnosis,
-            diagnoses: draft.diagnoses,
-            indications: draft.indications,
-            clinicalTreatments: draft.clinicalTreatments,
-            treatmentMedications: draft.treatmentMedications,
-            vitals: draft.vitals,
-          })
+      try {
+        const formData = new FormData(form);
+        if (appointmentId) formData.set("appointment_id", appointmentId);
+        const diagnosisText = buildDiagnosisText(draft.diagnoses, draft.diagnosis);
+        const primaryCie10 = draft.diagnoses.find((d) => d.cie10_code?.trim())?.cie10_code ?? "";
+        formData.set("chief_complaint", draft.chiefComplaint);
+        formData.set("diagnosis", diagnosisText);
+        formData.set("diagnosis_cie10", primaryCie10);
+        formData.set("diagnoses_json", JSON.stringify(draft.diagnoses));
+        const mergedTreatments = mergeTreatmentsForPersist(
+          draft.clinicalTreatments,
+          draft.treatmentMedications
         );
-        if (draftKey) {
-          saveConsultationDraft(draftKey, {
-            v: 1,
-            evolution: draft.evolution,
-            chiefComplaint: draft.chiefComplaint,
-            diagnosis: draft.diagnosis,
-            indications: draft.indications,
-            vitals: draft.vitals,
-            recordId: savedId,
-            updatedAt: new Date().toISOString(),
-          });
-        }
-        if (options?.silent) setAutoSaveStatus("saved");
-        else setAutoSaveStatus("saved");
-        if (workspace) {
-          workspace.onSaved(savedId, options?.silent);
-        } else if (!options?.silent && !recordId) {
-          router.push(`/historias/${savedId}`);
-        }
-      }
+        formData.set("treatments_json", JSON.stringify(mergedTreatments));
+        formData.set(
+          "indications",
+          buildConsultIndicationsText(draft.treatmentMedications, draft.indications, draft.clinicalTreatments)
+        );
+        formData.set("evolution", buildEvolutionWithVitals(draft.evolution, draft.vitals));
+        formData.set("professional_signature", professionalSignature);
+        formData.set("consultation_at", new Date(consultationAt).toISOString());
 
-      return { ok: true as const, recordId: savedId ?? undefined };
+        const recordId = editingRecordIdRef.current;
+        const appointmentRaw = formData.get("appointment_id");
+        const apiResult = await persistClinicalRecordRequest({
+          recordId: recordId ?? undefined,
+          consultation_modality:
+            typeof formData.get("consultation_modality") === "string"
+              ? String(formData.get("consultation_modality"))
+              : undefined,
+          patient_id: String(formData.get("patient_id") ?? ""),
+          appointment_id:
+            typeof appointmentRaw === "string" && appointmentRaw.trim() ? appointmentRaw : null,
+          professional_id: String(formData.get("professional_id") ?? ""),
+          chief_complaint: String(formData.get("chief_complaint") ?? ""),
+          diagnosis: String(formData.get("diagnosis") ?? ""),
+          evolution: String(formData.get("evolution") ?? ""),
+          indications: String(formData.get("indications") ?? ""),
+          professional_signature: String(formData.get("professional_signature") ?? ""),
+          consultation_at: String(formData.get("consultation_at") ?? "") || null,
+          diagnosis_cie10: String(formData.get("diagnosis_cie10") ?? "") || null,
+          diagnoses_json: String(formData.get("diagnoses_json") ?? "") || null,
+          treatments_json: String(formData.get("treatments_json") ?? "") || null,
+        });
+
+        const err = "error" in apiResult ? apiResult.error : null;
+        if (err) {
+          setError(err);
+          if (options?.silent) setAutoSaveStatus("error");
+          return { ok: false as const, error: err };
+        }
+
+        const savedId = recordId ?? apiResult.data.id;
+
+        if (savedId) {
+          setEditingRecordId(savedId);
+          editingRecordIdRef.current = savedId;
+          setSavedFingerprint(
+            JSON.stringify({
+              evolution: draft.evolution,
+              chiefComplaint: draft.chiefComplaint,
+              diagnosis: draft.diagnosis,
+              diagnoses: draft.diagnoses,
+              indications: draft.indications,
+              clinicalTreatments: draft.clinicalTreatments,
+              treatmentMedications: draft.treatmentMedications,
+              vitals: draft.vitals,
+            })
+          );
+          if (draftKey) {
+            saveConsultationDraft(draftKey, {
+              v: 1,
+              evolution: draft.evolution,
+              chiefComplaint: draft.chiefComplaint,
+              diagnosis: draft.diagnosis,
+              indications: draft.indications,
+              vitals: draft.vitals,
+              recordId: savedId,
+              updatedAt: new Date().toISOString(),
+            });
+          }
+          if (options?.silent) setAutoSaveStatus("saved");
+          else setAutoSaveStatus("saved");
+          if (workspace) {
+            workspace.onSaved(savedId, options?.silent);
+          } else if (!options?.silent && !recordId) {
+            router.push(`/historias/${savedId}`);
+          }
+        }
+
+        return { ok: true as const, recordId: savedId ?? undefined };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "No se pudo guardar la consulta";
+        setError(message);
+        if (options?.silent) setAutoSaveStatus("error");
+        return { ok: false as const, error: message };
+      } finally {
+        savingRef.current = false;
+        setLoading(false);
+      }
     },
     [
       appointmentId,
