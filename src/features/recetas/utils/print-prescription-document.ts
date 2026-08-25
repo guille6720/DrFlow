@@ -125,7 +125,7 @@ function buildQrHtml(data: PrescriptionDocumentData): string {
           ${
             data.cuirFormatted
               ? `<p class="order-doc-qr-code"><strong>CUIR:</strong> ${escapeHtml(data.cuirFormatted)}${
-                  data.cuirStatus === "sandbox" ? " — SANDBOX (sin validez legal)" : ""
+                  data.cuirStatus === "sandbox" ? " — SANDBOX — SIN VALIDEZ LEGAL" : ""
                 }</p>`
               : ""
           }
@@ -139,14 +139,16 @@ function buildQrHtml(data: PrescriptionDocumentData): string {
 function buildCuirBlockHtml(data: PrescriptionDocumentData): string {
   if (!data.cuirFormatted?.trim()) return "";
   const sandbox = data.cuirStatus === "sandbox";
+  const official = data.cuirStatus === "official";
+  if (!sandbox && !official) return "";
   return `
     <section class="order-doc-block">
-      <h2>CUIR${sandbox ? " — SANDBOX" : ""}</h2>
+      <h2>${sandbox ? "CUIR SANDBOX — SIN VALIDEZ LEGAL" : "CUIR"}</h2>
       <p class="order-doc-qr-code">${escapeHtml(data.cuirFormatted)}</p>
       <p class="order-doc-qr-hint">${
         sandbox
-          ? "Identificador de prueba. No implica validación del Ministerio ni homologación ReNaPDiS."
-          : "Identificador de receta (pendiente de IDs oficiales DNSISA si aplica)."
+          ? "Representación interna de prueba. No es el CUIR oficial numérico ni implica validación del Ministerio."
+          : "CUIR oficial (concatenación numérica Anexo IV) tras validación estricta."
       }</p>
     </section>
   `;

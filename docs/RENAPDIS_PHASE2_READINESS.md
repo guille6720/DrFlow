@@ -62,21 +62,34 @@ Local patient CRUD stays permissive when national identity fields are incomplete
 
 ## CUIR model
 
-Six components:
+Six modules (Resolución 2214/2025, Anexo IV):
 
-1. Platform identifier (DNSISA-assigned)
-2. Repository identifier (DNSISA-assigned)
-3. Professional-license jurisdiction
-4. Prescription type/subtype
-5. Unique prescription group identifier
-6. Item number
+| Module | Meaning | Official rule |
+|--------|---------|---------------|
+| M1 | Platform identifier | numeric, exactly 4 digits, DNSISA-assigned |
+| M2 | Repository identifier | numeric, exactly 4 digits, DNSISA-assigned |
+| M3 | Jurisdiction | numeric, exactly 2 digits (INDEC code) |
+| M4 | Prescription type/subtype | numeric, exactly 4 digits (regulatory mapping) |
+| M5 | Unique prescription group id | numeric, max 25 digits |
+| M6 | Item number | numeric, exactly 2 digits (`1` → `01`) |
 
-Components are stored separately on the prescription row and formatted with `|` separators for display/QR (avoids ambiguity when platform/repository codes contain hyphens).
+**Official CUIR** = direct concatenation of the six modules with **no separators**.
+
+Example shape (regulation): `10250042020101000012345678901234567890101`
+
+Components remain stored separately in DB (`cuir_platform_id`, …). `cuir_formatted` holds:
+
+- **official:** concatenated numeric CUIR after `validateOfficialCuirComponents()` succeeds
+- **sandbox:** internal debug string from `formatSandboxCuirDebug()` (`|`-delimited) — **never** the official format and **never** legally valid
+
+UI may show human jurisdiction labels (e.g. “CABA”); official serialization uses the INDEC code (`02`).
+
+**M4 mapping:** registry is intentionally empty until mappings from the published regulation are confidently implemented. Unmapped types keep the prescription pending / not officially ready.
 
 **DrFlow does not currently have official DNSISA platform/repository identifiers.**  
-Sandbox placeholders (`SBX-PLATFORM` / `SBX-REPO`) are for staging QA only and **must never be presented as legally valid**.
+Official mode cannot unlock without real 4-digit M1/M2. Sandbox placeholders (`SBX-PLATFORM` / `SBX-REPO`) are staging QA only.
 
-Official legal CUIR generation is blocked until DNSISA assigns real identifiers.
+Official document/QR shows a CUIR **only** after strict official validation. Sandbox shows **CUIR SANDBOX — SIN VALIDEZ LEGAL**.
 
 ## Patient identity model
 
@@ -119,26 +132,43 @@ Local prescriptions remain functional without national prerequisites.
 ## Tests
 
 - `tests/renapdis-phase1.test.ts` (unchanged Phase 1)
-- `tests/renapdis-phase2.test.ts` (identity, CUIR, types, gate, FHIR, SNOMED, audit tags)
+- `tests/renapdis-phase2.test.ts` (identity, official CUIR Anexo IV, sandbox debug, types, gate, FHIR, SNOMED, audit tags)
 - Migration consistency expects **141** as latest on this branch
 
-## Remaining external dependencies / blockers for homologation
+### Full-suite BASE vs HEAD (Phase 2 merge)
 
-1. **Official DNSISA platform identifier** — not assigned.
-2. **Official DNSISA repository identifier** — not assigned.
-3. Official REFEPS / ReNaPDiS Ministry API credentials and endpoints (not invented here).
-4. Official FHIR Implementation Guide validation / Argentine profile (if/when published).
-5. Licensed SNOMED CT terminology service configuration.
-6. Production MFA enrollment and professional validation rollout.
-7. Legal/compliance review of sandbox vs official labeling on printed documents.
+Compared develop **before** Phase 2 (`320bfe9c`) vs Phase 2 merge (`423da232`) with the same `npx vitest run`:
 
-**Until DNSISA assigns platform and repository identifiers, DrFlow cannot produce an official legal CUIR.**
+| | Failed tests |
+|--|--|
+| BASE `320bfe9c` | **8** |
+| HEAD `423da232` | **8** (same set) |
+
+Phase 2 did **not** introduce full-suite regressions. The earlier “9 failures” report was incorrect relative to this BASE comparison (same eight unrelated failures remain on both commits).
+
+## Remaining external dependencies / blockers (non-exhaustive)
+
+This list is **not** an exhaustive homologation checklist and does **not** claim ReNaPDiS approval.
+
+Known external blockers for official legal CUIR / national submission include (among others):
+
+1. **Official DNSISA platform identifier (M1)** — not assigned.
+2. **Official DNSISA repository identifier (M2)** — not assigned.
+3. Complete official **M4 type/subtype** mapping from the published regulation (not invented here).
+4. Official REFEPS / ReNaPDiS Ministry API credentials and endpoints (not invented here).
+5. Official FHIR Implementation Guide validation / Argentine profile (if/when published).
+6. Licensed SNOMED CT terminology service configuration.
+7. Production MFA enrollment and professional validation rollout.
+8. Legal/compliance review of sandbox vs official labeling on printed documents.
+9. Any additional DNSISA/MSAL technical annexes, certificates, or operational requirements not yet wired in DrFlow.
+
+**Until DNSISA assigns platform and repository identifiers (and M4 mappings are implemented from the regulation), DrFlow cannot produce an official legal CUIR.**
 
 ## Manual QA (staging)
 
 1. Open a patient → confirm **Identidad para receta electrónica** fields save (CUIL / sex / alt ID).
 2. Issue a **local** prescription without CUIL → succeeds.
 3. Attempt REFEPS national submit without patient CUIL/alt → blocked + audit `national_prescription_blocked`.
-4. With valid patient identity + sandbox REFEPS professional → prepare path stores sandbox CUIR; print/preview shows **CUIR SANDBOX (sin validez legal)** and QR hint without Ministry validation claim.
+4. With valid patient identity + sandbox REFEPS professional → prepare path stores sandbox debug CUIR; print/preview shows **CUIR SANDBOX — SIN VALIDEZ LEGAL** and QR hint without Ministry validation claim. Official numeric CUIR must not appear.
 5. Confirm Phase 1 MFA still required for issue/submit.
 6. Confirm another clinic cannot see the patient/prescription (RLS).
