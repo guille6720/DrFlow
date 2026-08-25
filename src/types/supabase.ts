@@ -2165,6 +2165,7 @@ export type Database = {
           email: string | null
           id: string
           is_active: boolean
+          is_fiscalization: boolean
           legal_name: string | null
           legal_privacy_version: string | null
           legal_terms_accepted_at: string | null
@@ -2194,6 +2195,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          is_fiscalization?: boolean
           legal_name?: string | null
           legal_privacy_version?: string | null
           legal_terms_accepted_at?: string | null
@@ -2223,6 +2225,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          is_fiscalization?: boolean
           legal_name?: string | null
           legal_privacy_version?: string | null
           legal_terms_accepted_at?: string | null

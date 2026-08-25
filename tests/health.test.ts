@@ -56,6 +56,14 @@ describe("getHealthStatus", () => {
     expect(status.checks.supabase.ok).toBe(false);
     expect(status.checks.supabase.error).toBe("Network down");
   });
+
+  it("readiness public probe can include schema check without leaking serviceRole", async () => {
+    const status = await getPublicHealthStatus({ includeSchema: true });
+    expect(status.checks).toHaveProperty("schema");
+    expect(status.checks).not.toHaveProperty("serviceRole");
+    const serialized = JSON.stringify(status);
+    expect(serialized).not.toMatch(/SERVICE_ROLE|eyJhbGciOi|postgres(ql)?:\/\//i);
+  });
 });
 
 describe("createTraceId", () => {
