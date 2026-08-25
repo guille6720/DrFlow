@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { updateClinicalRecord } from "@/features/historias/actions/clinical-records";
+import { persistClinicalRecordRequest } from "@/features/historias/utils/persist-clinical-record-request";
 
 import {
   applyTemplateVariableValues,
@@ -152,19 +152,35 @@ export function useEditConsultaForm({ record, templates = [] }: Options) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const formData = new FormData(e.currentTarget);
-    formData.set("chief_complaint", "");
-    formData.set("diagnosis", "");
-    formData.set("indications", "");
-    formData.set("evolution", evolution);
-    formData.set("professional_signature", professionalSignature);
-    const result = await updateClinicalRecord(record.id, formData);
-    setLoading(false);
-    if (result.error) {
-      setError(result.error);
-    } else {
-      clearConsultationEvolution(draftKey);
-      router.push(`/historias/${record.id}`);
+    try {
+      const formData = new FormData(e.currentTarget);
+      formData.set("chief_complaint", "");
+      formData.set("diagnosis", "");
+      formData.set("indications", "");
+      formData.set("evolution", evolution);
+      formData.set("professional_signature", professionalSignature);
+      const result = await persistClinicalRecordRequest({
+        recordId: record.id,
+        patient_id: String(formData.get("patient_id") ?? record.patient_id),
+        professional_id: String(formData.get("professional_id") ?? record.professional_id),
+        appointment_id: record.appointment_id,
+        chief_complaint: "",
+        diagnosis: "",
+        evolution,
+        indications: "",
+        professional_signature: professionalSignature,
+        consultation_at: record.created_at,
+      });
+      if ("error" in result) {
+        setError(result.error);
+      } else {
+        clearConsultationEvolution(draftKey);
+        router.push(`/historias/${record.id}`);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo guardar la consulta");
+    } finally {
+      setLoading(false);
     }
   }
 

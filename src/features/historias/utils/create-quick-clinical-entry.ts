@@ -1,4 +1,4 @@
-import { createClinicalRecord } from "@/features/historias/actions/clinical-records";
+import { persistClinicalRecordRequest } from "@/features/historias/utils/persist-clinical-record-request";
 import {
   buildDiagnosisText,
   type ClinicalDiagnosisEntry,
@@ -95,12 +95,28 @@ async function submitQuick(
   mapped: Parameters<typeof payloadFromResult>[1],
   ctx: QuickClinicalSaveContext
 ): Promise<QuickClinicalSaveResult> {
-  const result = await createClinicalRecord(formData);
-  if (result.error || !result.data?.id) {
+  const result = await persistClinicalRecordRequest({
+    patient_id: String(formData.get("patient_id") ?? ctx.patientId),
+    professional_id: String(formData.get("professional_id") ?? ctx.professionalId),
+    appointment_id:
+      typeof formData.get("appointment_id") === "string"
+        ? String(formData.get("appointment_id"))
+        : ctx.appointmentId ?? null,
+    chief_complaint: String(formData.get("chief_complaint") ?? ""),
+    diagnosis: String(formData.get("diagnosis") ?? ""),
+    evolution: String(formData.get("evolution") ?? ""),
+    indications: String(formData.get("indications") ?? ""),
+    professional_signature: String(formData.get("professional_signature") ?? ""),
+    consultation_at: String(formData.get("consultation_at") ?? "") || null,
+    diagnosis_cie10: String(formData.get("diagnosis_cie10") ?? "") || null,
+    diagnoses_json: String(formData.get("diagnoses_json") ?? "") || null,
+    treatments_json: String(formData.get("treatments_json") ?? "") || null,
+  });
+  if ("error" in result) {
     return { ok: false, error: result.error ?? "No se pudo guardar" };
   }
   return payloadFromResult(
-    result.data as { id: string; created_at?: string },
+    { id: result.data.id, created_at: ctx.consultationAtIso },
     mapped,
     ctx
   );
