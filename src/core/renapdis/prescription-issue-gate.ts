@@ -1,4 +1,4 @@
-import type { PrescriberMfaStatus } from "@/core/auth/prescriber-mfa.server";
+import type { PrescriberMfaStatus } from "@/core/auth/prescriber-mfa.types";
 import type {
   PrescriberIdentityInput,
   PrescriberValidationIssue,

@@ -44,7 +44,24 @@ export const patientSchema = z.object({
   first_name: z.string().min(1, "Nombre requerido"),
   last_name: z.string().min(1, "Apellido requerido"),
   document_number: z.string().min(6, "DNI inválido"),
+  document_type: z.preprocess(
+    (v) => (v === "" || v == null ? "dni" : v),
+    z.enum(["dni", "passport", "cuit", "cdi", "other"])
+  ),
+  cuil: z.preprocess((v) => (v === "" || v == null ? null : v), z.string().nullable().optional()),
+  alt_identifier_type: z.preprocess(
+    (v) => (v === "" || v == null ? null : v),
+    z.enum(["cuit", "cdi", "passport", "other"]).nullable().optional()
+  ),
+  alt_identifier_value: z.preprocess(
+    (v) => (v === "" || v == null ? null : v),
+    z.string().nullable().optional()
+  ),
   birth_date: z.string().optional(),
+  sex: z.preprocess(
+    (v) => (v === "" || v == null ? null : v),
+    z.enum(["F", "M", "X"]).nullable().optional()
+  ),
   phone: z.string().optional(),
   email: z.string().email("Email inválido").optional().or(z.literal("")),
   address: z.string().optional(),
@@ -264,6 +281,8 @@ const PATIENT_SANITIZE_KEYS = [
   "first_name",
   "last_name",
   "address",
+  "cuil",
+  "alt_identifier_value",
   "insurance_provider",
   "insurance_number",
   "emergency_contact_name",

@@ -68,6 +68,16 @@ export function buildPrescriptionQrPayload(input: {
   return parts.join("|");
 }
 
+/** Sandbox CUIR QR — explicitly non-legal; never implies Ministry validation. */
+export function buildSandboxCuirQrPayload(input: {
+  cuirFormatted: string;
+  prescriptionNumber: string | null;
+}): string {
+  return ["DRFLOW", "CUIR-SANDBOX", input.cuirFormatted.trim(), input.prescriptionNumber?.trim() || ""].join(
+    "|"
+  );
+}
+
 /** REFEPS verification payload when prescription was submitted. */
 export function buildRefepsQrPayload(input: {
   refepsId: string;
@@ -93,6 +103,9 @@ export function resolvePrescriptionDocumentQr(input: {
   issuedAt: string;
   coverageKind?: PrescriptionCoverageKind | null;
   clinicRuleOverride?: Partial<CoverageRuleConfig> | null;
+  nationalRxStatus?: string | null;
+  cuirStatus?: string | null;
+  cuirFormatted?: string | null;
 }): {
   showQr: boolean;
   qrPayload: string | null;
@@ -110,6 +123,23 @@ export function resolvePrescriptionDocumentQr(input: {
       qrTitle: "Verificación REFEPS",
       qrHint:
         "Receta registrada en REFEPS/RENaPDiS. Verificá el identificador en farmacia según homologación del consultorio.",
+    };
+  }
+
+  if (
+    input.cuirStatus === "sandbox" &&
+    input.cuirFormatted?.trim() &&
+    (input.nationalRxStatus === "sandbox" || input.nationalRxStatus === "national_ready")
+  ) {
+    return {
+      showQr: true,
+      qrPayload: buildSandboxCuirQrPayload({
+        cuirFormatted: input.cuirFormatted,
+        prescriptionNumber: input.prescriptionNumber,
+      }),
+      qrTitle: "CUIR SANDBOX (sin validez legal)",
+      qrHint:
+        "Identificador de prueba DrFlow. No implica validación del Ministerio ni homologación ReNaPDiS.",
     };
   }
 
