@@ -61,7 +61,7 @@ export function AppointmentAttendanceSelector({
     setOverride(value);
     startTransition(async () => {
       const result = await updateWaitingRoomRequest(appointmentId, value);
-      if (result.error) {
+      if ("error" in result) {
         setOverride(null);
         toast.error(result.error);
         return;
