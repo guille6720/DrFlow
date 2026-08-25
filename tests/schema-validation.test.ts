@@ -80,15 +80,18 @@ describe("schema expectations vs migrations", () => {
     }
   });
 
-  it("migration sequence has no numeric gaps through 057", () => {
+  it("migration sequence has no numeric gaps through 057 (allow reserved 130-139 before Phase 1 140)", () => {
     const files = readdirSync(migrationsDir).filter((f) => /^\d{3}_/.test(f));
     const nums = files.map((f) => parseInt(f.slice(0, 3), 10)).sort((a, b) => a - b);
     expect(nums[nums.length - 1]).toBeGreaterThanOrEqual(57);
     for (let i = 1; i < nums.length; i++) {
-      if (nums[i] - nums[i - 1] > 1) {
-        const gap = nums[i - 1] + 1;
-        expect.fail(`Missing migration number ${String(gap).padStart(3, "0")}`);
-      }
+      const prev = nums[i - 1];
+      const curr = nums[i];
+      if (curr - prev <= 1) continue;
+      // Reserved band for compliance pack not yet on develop; Phase 1 is 140.
+      if (prev === 129 && curr === 140) continue;
+      const gap = prev + 1;
+      expect.fail(`Missing migration number ${String(gap).padStart(3, "0")}`);
     }
   });
 });

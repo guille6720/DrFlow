@@ -4401,6 +4401,7 @@ export type Database = {
           bio: string | null
           clinic_id: string
           created_at: string
+          cuil: string | null
           display_name: string
           document_number: string | null
           email: string | null
@@ -4408,14 +4409,22 @@ export type Database = {
           intake_completed_at: string | null
           intake_notes: string | null
           is_active: boolean
+          issuing_authority: string | null
           iva_status: string | null
           license_national: string | null
           license_number: string | null
           license_provincial: string | null
+          licensing_jurisdiction: string | null
           location_id: string | null
           office_address: string | null
           office_phone: string | null
           phone: string | null
+          refeps_identifier: string | null
+          refeps_specialty: string | null
+          refeps_validated_at: string | null
+          refeps_validation_details: Json | null
+          refeps_validation_error: string | null
+          refeps_validation_status: string
           signature_image_path: string | null
           signature_text: string | null
           specialty_id: string | null
@@ -4433,6 +4442,7 @@ export type Database = {
           bio?: string | null
           clinic_id: string
           created_at?: string
+          cuil?: string | null
           display_name: string
           document_number?: string | null
           email?: string | null
@@ -4440,14 +4450,22 @@ export type Database = {
           intake_completed_at?: string | null
           intake_notes?: string | null
           is_active?: boolean
+          issuing_authority?: string | null
           iva_status?: string | null
           license_national?: string | null
           license_number?: string | null
           license_provincial?: string | null
+          licensing_jurisdiction?: string | null
           location_id?: string | null
           office_address?: string | null
           office_phone?: string | null
           phone?: string | null
+          refeps_identifier?: string | null
+          refeps_specialty?: string | null
+          refeps_validated_at?: string | null
+          refeps_validation_details?: Json | null
+          refeps_validation_error?: string | null
+          refeps_validation_status?: string
           signature_image_path?: string | null
           signature_text?: string | null
           specialty_id?: string | null
@@ -4465,6 +4483,7 @@ export type Database = {
           bio?: string | null
           clinic_id?: string
           created_at?: string
+          cuil?: string | null
           display_name?: string
           document_number?: string | null
           email?: string | null
@@ -4472,14 +4491,22 @@ export type Database = {
           intake_completed_at?: string | null
           intake_notes?: string | null
           is_active?: boolean
+          issuing_authority?: string | null
           iva_status?: string | null
           license_national?: string | null
           license_number?: string | null
           license_provincial?: string | null
+          licensing_jurisdiction?: string | null
           location_id?: string | null
           office_address?: string | null
           office_phone?: string | null
           phone?: string | null
+          refeps_identifier?: string | null
+          refeps_specialty?: string | null
+          refeps_validated_at?: string | null
+          refeps_validation_details?: Json | null
+          refeps_validation_error?: string | null
+          refeps_validation_status?: string
           signature_image_path?: string | null
           signature_text?: string | null
           specialty_id?: string | null
