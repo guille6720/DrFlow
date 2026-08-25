@@ -257,7 +257,7 @@ export function sanitizeText(input: string): string {
     .replace(/javascript:/gi, "")
     .replace(/data:text\/html/gi, "")
     .trim()
-    .slice(0, 10000);
+    .slice(0, 50_000);
 }
 
 const PATIENT_SANITIZE_KEYS = [
