@@ -10,6 +10,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "@/core/notifications/toast";
@@ -21,7 +22,6 @@ import { RescheduleAppointmentDialog } from "@/features/agenda/components/agenda
 import { cancelAppointmentRequest } from "@/features/agenda/utils/cancel-appointment-request";
 import { PatientSearchCombobox, type PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { buildCreatePatientHref } from "@/features/pacientes/utils/create-patient-from-search";
-import { createTurnoWizard } from "@/features/turnos/actions/create-turno-wizard";
 import { fetchTurnosWizardSlots } from "@/features/turnos/actions/fetch-turnos-wizard-slots";
 import {
   APPOINTMENT_DURATION_OPTIONS,
@@ -281,6 +281,7 @@ export function TurnosNuevoWizard({
   initialStartAt,
   initialWizardSlots,
 }: Props) {
+  const router = useRouter();
   const patientOptions = useMemo(() => {
     if (!initialPatient) return patients;
     if (patients.some((patient) => patient.id === initialPatient.id)) return patients;
@@ -612,56 +613,52 @@ export function TurnosNuevoWizard({
     setSubmitting(true);
     setError(null);
 
-    const toConfirmErrorMessage = (raw: string | undefined) => {
-      const message = (raw ?? "").trim();
-      if (
-        message.includes("Server Components render") ||
-        message.includes("omitted in production") ||
-        message.includes("digest property")
-      ) {
-        return "No se pudo confirmar el turno. Recargá la página e intentá de nuevo.";
-      }
-      return message || "No se pudo confirmar el turno. Intentá de nuevo.";
-    };
-
-    const isNextNavigationError = (err: unknown) => {
-      if (typeof err !== "object" || err === null || !("digest" in err)) return false;
-      const digest = String((err as { digest: string }).digest);
-      return digest.startsWith("NEXT_REDIRECT") || digest.startsWith("NEXT_NOT_FOUND");
-    };
-
     try {
-      const result = await createTurnoWizard({
-        patient_id: patientId,
-        professional_id: professionalId,
-        specialty_id: specialtyId || null,
-        location_id: locationId || null,
-        start_at: selectedSlot.start_at,
-        end_at: resolveAppointmentEndAt(selectedSlot.start_at, appointmentDuration),
-        notes: notes || undefined,
-        consultation_modality: modality,
-        is_overbooking: isOverbooking,
-        overbooking_reason: isOverbooking ? overbookingReason : null,
-        priority,
-        insurance_provider: insuranceProvider || null,
-        insurance_plan: insurancePlan || null,
+      const response = await fetch("/api/turnos/wizard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patient_id: patientId,
+          professional_id: professionalId,
+          specialty_id: specialtyId || null,
+          location_id: locationId || null,
+          start_at: selectedSlot.start_at,
+          end_at: resolveAppointmentEndAt(selectedSlot.start_at, appointmentDuration),
+          notes: notes || undefined,
+          consultation_modality: modality,
+          is_overbooking: isOverbooking,
+          overbooking_reason: isOverbooking ? overbookingReason : null,
+          priority,
+          insurance_provider: insuranceProvider || null,
+          insurance_plan: insurancePlan || null,
+        }),
       });
 
-      if (result?.error) {
-        const message = toConfirmErrorMessage(result.error);
+      let payload: { ok?: boolean; appointmentId?: string; error?: string } | null = null;
+      try {
+        payload = (await response.json()) as { ok?: boolean; appointmentId?: string; error?: string };
+      } catch {
+        payload = null;
+      }
+
+      if (!response.ok || payload?.error) {
+        const message =
+          payload?.error?.trim() ||
+          (response.status === 401
+            ? "Sesión expirada. Volvé a iniciar sesión."
+            : "No se pudo confirmar el turno. Intentá de nuevo.");
         setError(message);
         toast.error(message);
         return;
       }
 
-      if (result?.ok) {
-        toast.success(isOverbooking ? "Sobreturno confirmado" : "Turno confirmado");
-        window.location.assign("/turnos/agenda");
-        return;
-      }
+      toast.success(isOverbooking ? "Sobreturno confirmado" : "Turno confirmado");
+      router.replace("/turnos/agenda");
     } catch (err) {
-      if (isNextNavigationError(err)) return;
-      const message = toConfirmErrorMessage(err instanceof Error ? err.message : undefined);
+      const message =
+        err instanceof Error && err.message.trim()
+          ? err.message
+          : "No se pudo confirmar el turno. Revisá tu conexión e intentá de nuevo.";
       setError(message);
       toast.error(message);
     } finally {
@@ -681,6 +678,7 @@ export function TurnosNuevoWizard({
     insuranceProvider,
     insurancePlan,
     appointmentDuration,
+    router,
   ]);
 
   const professional = professionals.find((p) => p.id === professionalId);
