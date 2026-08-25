@@ -2,7 +2,13 @@ import "server-only";
 
 import { submitPrescriptionToRefepsProvider } from "@/core/refeps/provider";
 import type { RefepsClinicSettings } from "@/core/refeps/types";
+import {
+  evaluateNationalPrescriptionEligibility,
+  loadProfessionalForValidation,
+  mapProfessionalToIdentityInput,
+} from "@/core/renapdis/validate-prescriber";
 import type { DbClient } from "@/core/repositories/types";
+import { recordAudit } from "@/core/security/audit-service";
 
 import { updatePrescriptionRefepsState } from "@/features/recetas/repositories/prescription-drafts.repository";
 import { insertPrescriptionEvent } from "@/features/recetas/repositories/prescription-events.repository";
@@ -75,6 +81,52 @@ export async function submitIssuedPrescriptionToRefeps(
 
   if (!patient) return { ok: false, error: "Paciente no encontrado." };
   if (!professional) return { ok: false, error: "Profesional no encontrado." };
+
+  const validationRow = await loadProfessionalForValidation(
+    db,
+    input.clinicId,
+    input.prescription.professional_id
+  );
+  if (!validationRow.ok) {
+    await recordAudit({
+      clinicId: input.clinicId,
+      module: "compliance",
+      entityType: "prescription",
+      entityId: input.prescription.id,
+      patientId: input.prescription.patient_id,
+      action: "view",
+      what: "Receta nacional bloqueada: profesional inválido para REFEPS",
+      userId: input.userId,
+      metadata: {
+        event: "prescription_blocked",
+        reason: "invalid_professional",
+        channel: "national_electronic",
+      },
+    });
+    return { ok: false, error: validationRow.error };
+  }
+
+  const identity = mapProfessionalToIdentityInput(validationRow.data);
+  const eligibility = evaluateNationalPrescriptionEligibility(identity);
+  if (!eligibility.ok) {
+    await recordAudit({
+      clinicId: input.clinicId,
+      module: "compliance",
+      entityType: "prescription",
+      entityId: input.prescription.id,
+      patientId: input.prescription.patient_id,
+      action: "view",
+      what: `Receta nacional bloqueada: ${eligibility.error}`,
+      userId: input.userId,
+      metadata: {
+        event: "prescription_blocked",
+        reason: eligibility.issues[0]?.code ?? "refeps_validation_failure",
+        channel: "national_electronic",
+        refeps_validation_status: eligibility.status,
+      },
+    });
+    return { ok: false, error: eligibility.error };
+  }
 
   const specialty = professional.specialties as { name?: string } | { name?: string }[] | null;
   const specialtyName = Array.isArray(specialty) ? specialty[0]?.name : specialty?.name;

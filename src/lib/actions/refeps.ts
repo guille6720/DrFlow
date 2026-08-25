@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireSettingsAccess } from "@/core/actions/clinic-guard";
+import { requireElevatedPrescriberSession } from "@/core/auth/prescriber-mfa.server";
 import { revalidatePrescriptionSurfaces } from "@/core/cache/revalidate-prescription-surfaces";
 import {
   getRefepsConfigurationHint,
@@ -114,15 +115,21 @@ export async function updateRefepsClinicSettings(formData: FormData): Promise<{
     success: true,
     message: enabled
       ? autoSubmit
-        ? "REFEPS habilitado — las recetas se enviarán al emitir."
-        : "REFEPS habilitado — enviá manualmente desde cada receta emitida."
-      : "REFEPS deshabilitado — las recetas quedan en modo local.",
+        ? "REFEPS habilitado — envío al emitir vía adapter (sandbox o API). No implica homologación MSN automática."
+        : "REFEPS habilitado — envío manual desde cada receta emitida (adapter). No implica homologación MSN automática."
+      : "REFEPS deshabilitado — las recetas quedan en modo local / borrador.",
   };
 }
 
 export async function submitPrescriptionToRefeps(prescriptionId: string) {
   const access = await requireClinicalIssueAccess();
   if (!access.ok) return { error: access.error };
+
+  const mfa = await requireElevatedPrescriberSession({
+    clinicId: access.data.clinicId,
+    userId: access.data.userId,
+  });
+  if (!mfa.ok) return { error: mfa.error };
 
   const idParsed = parseEntityId(prescriptionId, "Receta");
   if (!idParsed.ok) return { error: idParsed.error };

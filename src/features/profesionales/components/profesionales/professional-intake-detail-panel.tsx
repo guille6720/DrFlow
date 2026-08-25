@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import type { PrescriberMfaStatus } from "@/core/auth/prescriber-mfa.types";
 import { DoctorSetupFields } from "@/core/components/onboarding/doctor-setup-fields";
 
 import { ProfessionalIntakeBankFields } from "@/features/profesionales/components/profesionales/professional-intake-bank-fields";
@@ -13,6 +14,7 @@ import type {
   ProfessionalIntakeLocation,
 } from "@/features/profesionales/components/profesionales/professional-intake-types";
 import { getProfessionalSpecialtyDefaults } from "@/features/profesionales/components/profesionales/professional-intake-utils";
+import { ProfessionalRenapdisSection } from "@/features/profesionales/components/profesionales/professional-renapdis-section";
 import {
   ProfessionalScheduleEditor,
 } from "@/features/profesionales/components/profesionales/professional-schedule-editor";
@@ -36,6 +38,8 @@ type Props = {
   onUpdateProfile: (e: React.FormEvent<HTMLFormElement>) => void;
   onUpdateBankDetails: (e: React.FormEvent<HTMLFormElement>) => void;
   onSaveSchedule: () => void;
+  mfaStatus: PrescriberMfaStatus;
+  canPrescribe: boolean;
 };
 
 export function ProfessionalIntakeDetailPanel({
@@ -52,6 +56,8 @@ export function ProfessionalIntakeDetailPanel({
   onUpdateProfile,
   onUpdateBankDetails,
   onSaveSchedule,
+  mfaStatus,
+  canPrescribe,
 }: Props) {
   const { parsedName, specialtySelect, specialtyCustom } = getProfessionalSpecialtyDefaults(selected);
 
@@ -91,55 +97,66 @@ export function ProfessionalIntakeDetailPanel({
   }
 
   return (
-    <Card title={detailTab === "perfil" ? "Perfil del profesional" : "Consultorio y coberturas"}>
-      <form onSubmit={onUpdateProfile} className="space-y-4">
-        {detailTab === "perfil" ? (
-          <>
-            <DoctorSetupFields
-              fieldErrors={fieldErrors}
-              onClearError={onClearError}
-              showSectionTitle={false}
-              defaultValues={{
-                doctorFirstName: parsedName.first,
-                doctorLastName: parsedName.last,
-                documentNumber: selected.document_number ?? "",
-                phone: selected.phone ?? "",
-                specialtySelect,
-                specialtyCustom,
-                licenseNational: selected.license_national ?? "",
-                licenseProvincial: selected.license_provincial ?? "",
-              }}
-            />
-            <Input
-              name="email"
-              label="Email profesional"
-              type="email"
-              defaultValue={selected.email ?? ""}
-              placeholder="medico@consultorio.com"
-            />
-          </>
-        ) : (
-          <ProfessionalIntakeOfficeFields locations={locations} selected={selected} />
-        )}
+    <div className="space-y-4">
+      <Card title={detailTab === "perfil" ? "Perfil del profesional" : "Consultorio y coberturas"}>
+        <form onSubmit={onUpdateProfile} className="space-y-4">
+          {detailTab === "perfil" ? (
+            <>
+              <DoctorSetupFields
+                fieldErrors={fieldErrors}
+                onClearError={onClearError}
+                showSectionTitle={false}
+                defaultValues={{
+                  doctorFirstName: parsedName.first,
+                  doctorLastName: parsedName.last,
+                  documentNumber: selected.document_number ?? "",
+                  phone: selected.phone ?? "",
+                  specialtySelect,
+                  specialtyCustom,
+                  licenseNational: selected.license_national ?? "",
+                  licenseProvincial: selected.license_provincial ?? "",
+                }}
+              />
+              <Input
+                name="email"
+                label="Email profesional"
+                type="email"
+                defaultValue={selected.email ?? ""}
+                placeholder="medico@consultorio.com"
+              />
+            </>
+          ) : (
+            <ProfessionalIntakeOfficeFields locations={locations} selected={selected} />
+          )}
 
-        <ProfessionalIntakeFormMessages error={error} success={success} />
+          <ProfessionalIntakeFormMessages error={error} success={success} />
 
-        <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-          <Button type="submit" loading={loading}>
-            Guardar cambios
-          </Button>
-          <Link href="/configuracion?grupo=consultorio&seccion=equipo#permisos-equipo">
-            <Button type="button" variant="outline">
-              Equipo, permisos y credenciales
+          <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+            <Button type="submit" loading={loading}>
+              Guardar cambios
             </Button>
-          </Link>
-          <Link href="/configuracion?grupo=consultorio&seccion=equipo">
-            <Button type="button" variant="outline">
-              Invitar al equipo
-            </Button>
-          </Link>
-        </div>
-      </form>
-    </Card>
+            <Link href="/configuracion?grupo=consultorio&seccion=equipo#permisos-equipo">
+              <Button type="button" variant="outline">
+                Equipo, permisos y credenciales
+              </Button>
+            </Link>
+            <Link href="/configuracion?grupo=consultorio&seccion=equipo">
+              <Button type="button" variant="outline">
+                Invitar al equipo
+              </Button>
+            </Link>
+          </div>
+        </form>
+      </Card>
+
+      {detailTab === "perfil" ? (
+        <ProfessionalRenapdisSection
+          selected={selected}
+          mfa={mfaStatus}
+          canManage
+          canPrescribe={canPrescribe}
+        />
+      ) : null}
+    </div>
   );
 }
