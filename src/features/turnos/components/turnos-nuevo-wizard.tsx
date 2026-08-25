@@ -22,6 +22,7 @@ import { RescheduleAppointmentDialog } from "@/features/agenda/components/agenda
 import { cancelAppointmentRequest } from "@/features/agenda/utils/cancel-appointment-request";
 import { PatientSearchCombobox, type PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { buildCreatePatientHref } from "@/features/pacientes/utils/create-patient-from-search";
+import { createTurnoWizard } from "@/features/turnos/actions/create-turno-wizard";
 import { fetchTurnosWizardSlots } from "@/features/turnos/actions/fetch-turnos-wizard-slots";
 import {
   APPOINTMENT_DURATION_OPTIONS,
@@ -613,57 +614,31 @@ export function TurnosNuevoWizard({
     setSubmitting(true);
     setError(null);
 
-    try {
-      const response = await fetch("/api/turnos/wizard", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          patient_id: patientId,
-          professional_id: professionalId,
-          specialty_id: specialtyId || null,
-          location_id: locationId || null,
-          start_at: selectedSlot.start_at,
-          end_at: resolveAppointmentEndAt(selectedSlot.start_at, appointmentDuration),
-          notes: notes || undefined,
-          consultation_modality: modality,
-          is_overbooking: isOverbooking,
-          overbooking_reason: isOverbooking ? overbookingReason : null,
-          priority,
-          insurance_provider: insuranceProvider || null,
-          insurance_plan: insurancePlan || null,
-        }),
-      });
+    const result = await createTurnoWizard({
+      patient_id: patientId,
+      professional_id: professionalId,
+      specialty_id: specialtyId || null,
+      location_id: locationId || null,
+      start_at: selectedSlot.start_at,
+      end_at: resolveAppointmentEndAt(selectedSlot.start_at, appointmentDuration),
+      notes: notes || undefined,
+      consultation_modality: modality,
+      is_overbooking: isOverbooking,
+      overbooking_reason: isOverbooking ? overbookingReason : null,
+      priority,
+      insurance_provider: insuranceProvider || null,
+      insurance_plan: insurancePlan || null,
+    });
 
-      let payload: { ok?: boolean; appointmentId?: string; error?: string } | null = null;
-      try {
-        payload = (await response.json()) as { ok?: boolean; appointmentId?: string; error?: string };
-      } catch {
-        payload = null;
-      }
-
-      if (!response.ok || payload?.error) {
-        const message =
-          payload?.error?.trim() ||
-          (response.status === 401
-            ? "Sesión expirada. Volvé a iniciar sesión."
-            : "No se pudo confirmar el turno. Intentá de nuevo.");
-        setError(message);
-        toast.error(message);
-        return;
-      }
-
-      toast.success(isOverbooking ? "Sobreturno confirmado" : "Turno confirmado");
-      router.replace("/turnos/agenda");
-    } catch (err) {
-      const message =
-        err instanceof Error && err.message.trim()
-          ? err.message
-          : "No se pudo confirmar el turno. Revisá tu conexión e intentá de nuevo.";
-      setError(message);
-      toast.error(message);
-    } finally {
-      setSubmitting(false);
+    setSubmitting(false);
+    if (result.error) {
+      setError(result.error);
+      toast.error(result.error);
+      return;
     }
+
+    toast.success(isOverbooking ? "Sobreturno confirmado" : "Turno confirmado");
+    router.push("/turnos/agenda");
   }, [
     selectedSlot,
     patientId,

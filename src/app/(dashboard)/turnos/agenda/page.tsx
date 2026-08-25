@@ -2,9 +2,10 @@ import { subDays } from "date-fns";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
-import { selectAppointmentAgendaRows } from "@/core/supabase/appointment-agenda-select";
+import { toAppointmentAgendaRows } from "@/core/supabase/appointment-agenda-map";
 import { APPOINTMENTS_AGENDA_MAX, SCHEDULE_BLOCKS_AGENDA_MAX } from "@/core/supabase/pagination";
 import type { ProfessionalAgendaRow } from "@/core/supabase/query-types";
+import { APPOINTMENT_AGENDA_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
 import { AgendaView } from "@/features/agenda";
@@ -31,17 +32,19 @@ export default async function TurnosAgendaPage() {
     ? getCachedClinicProfessionalsAgenda(clinicId)
     : Promise.resolve([] as ProfessionalAgendaRow[]);
 
-  const [agendaResult, professionals, locations, specialties, blocks, bookingSlug, defaultProfessionalId] =
+  const [appointments, professionals, locations, specialties, blocks, bookingSlug, defaultProfessionalId] =
     clinicId
       ? await Promise.all([
-          selectAppointmentAgendaRows(supabase, {
-            clinicId,
-            rangeStart,
-            rangeEnd,
-            embedPatients: true,
-            embedRelations: true,
-            limit: APPOINTMENTS_AGENDA_MAX,
-          }),
+          supabase
+            .from("appointments")
+            .select(
+              `${APPOINTMENT_AGENDA_COLUMNS}, patients(first_name, last_name, document_number, phone, insurance_provider, insurance_plan), professionals(profiles(full_name)), locations(name), specialties(name)`
+            )
+            .eq("clinic_id", clinicId)
+            .gte("start_at", rangeStart)
+            .lte("start_at", rangeEnd)
+            .order("start_at")
+            .limit(APPOINTMENTS_AGENDA_MAX),
           professionalsPromise,
           getCachedClinicLocations(clinicId),
           getCachedClinicSpecialties(clinicId),
@@ -57,11 +60,11 @@ export default async function TurnosAgendaPage() {
             resolveDefaultProfessionalId(supabase, clinicId, pros as ProfessionalAgendaRow[])
           ),
         ])
-      : [{ rows: [], error: null }, [], [], [], { data: [] }, null, undefined];
+      : [{ data: [] }, [], [], [], { data: [] }, null, undefined];
 
   const professionalRows: ProfessionalAgendaRow[] = professionals as ProfessionalAgendaRow[];
 
-  const appointmentRows = agendaResult.rows;
+  const appointmentRows = toAppointmentAgendaRows(appointments.data ?? []);
 
   return (
     <>

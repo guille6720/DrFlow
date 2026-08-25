@@ -51,8 +51,6 @@ const FUNCTION_MIGRATION_HINTS: Record<string, string> = {
     "Falta ejecutar la migración 024 en Supabase SQL Editor (supabase/migrations/024_doctor_onboarding_fields.sql).",
   create_clinical_record_atomic:
     "No se pudo guardar la consulta: la función en Supabase está desactualizada. Ejecutá las migraciones 110 y 111 en el SQL Editor y después: NOTIFY pgrst, 'reload schema';",
-  create_staff_appointment_atomic:
-    "No se pudo crear el turno: falta o está desactualizada la función en Supabase. Ejecutá la migración 084 en el SQL Editor y después: NOTIFY pgrst, 'reload schema';",
   update_clinical_record_atomic:
     "No se pudo actualizar la consulta: la función en Supabase está desactualizada. Ejecutá las migraciones 110 y 111 en el SQL Editor y después: NOTIFY pgrst, 'reload schema';",
   get_clinic_entitlements:

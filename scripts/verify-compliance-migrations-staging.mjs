@@ -12,15 +12,15 @@
  *
  * If neither is available, exits 0 with SKIP (documented) unless --strict.
  */
-import { spawnSync } from "child_process";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
+import { spawnSync } from "child_process";
 
 import {
-  assertLinkedStagingOrExit,
   PRODUCTION_REF,
-  readLinkedProjectRef,
   STAGING_REF,
+  assertLinkedStagingOrExit,
+  readLinkedProjectRef,
 } from "./supabase-project-refs.mjs";
 
 const ROOT = process.cwd();
