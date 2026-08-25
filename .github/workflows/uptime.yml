@@ -35,3 +35,12 @@ jobs:
               console.log('✓ /api/version v' + body.version);
             }).catch((e) => { console.error(e); process.exit(1); });
           "
+
+  staging-health:
+    if: ${{ vars.STAGING_URL != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe staging readiness (optional)
+        run: node scripts/check-health.mjs --url="${{ vars.STAGING_URL }}" --strict

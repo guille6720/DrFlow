@@ -23,12 +23,25 @@ export {
   validateCuirComponents,
   validateOfficialCuirComponents,
 } from "@/core/renapdis/cuir";
+export {
+  externalOutageUserMessage,
+  getRefepsDependencyStatus,
+  isRefepsForcedOutage,
+  nationalSubmitBlockedByOutage,
+} from "@/core/renapdis/external-outage";
 export type {
   NationalReadyGateInput,
   NationalReadyGateResult,
   NationalRxStatus,
 } from "@/core/renapdis/national-ready-gate";
 export { evaluateNationalReadyGate } from "@/core/renapdis/national-ready-gate";
+export type { ReadinessItem, ReadinessState } from "@/core/renapdis/operational-readiness";
+export {
+  getRenapdisOperationalReadiness,
+  isReadinessState,
+  OPS_ALERT_THRESHOLDS,
+  READINESS_STATES,
+} from "@/core/renapdis/operational-readiness";
 export type {
   PatientIdentityInput,
   PatientIdentityIssue,
