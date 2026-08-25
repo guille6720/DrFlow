@@ -2,7 +2,6 @@
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
-import { revalidateAppointmentSurfaces } from "@/core/cache/revalidate-appointment-surfaces";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { createClient } from "@/core/supabase/server";
 import { waitingRoomStatusSchema } from "@/core/validations/cash-schemas";
@@ -36,22 +35,18 @@ export async function updateWaitingRoomStatus(
     return { error: resolvePostgresUserMessage(error, { fallback: error.message }) };
   }
 
-  await logAudit({
-    clinicId,
-    entityType: "appointment",
-    entityId: idParsed.data,
-    action: "update",
-    metadata: { waiting_room_status: parsed.data },
-  });
-
   try {
-    revalidateAppointmentSurfaces({
-      includeConsultasQueue: true,
-      includeWaitingRoom: true,
+    await logAudit({
+      clinicId,
+      entityType: "appointment",
+      entityId: idParsed.data,
+      action: "update",
+      metadata: { waiting_room_status: parsed.data },
     });
-  } catch (revalidateErr) {
-    console.error("[waiting-room] revalidate failed:", revalidateErr);
+  } catch (auditErr) {
+    console.error("[waiting-room] audit failed:", auditErr);
   }
+
   return { data };
 }
 

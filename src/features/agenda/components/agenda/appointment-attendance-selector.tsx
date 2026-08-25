@@ -14,7 +14,7 @@ import {
   type WaitingRoomStatus,
 } from "@/features/turnos/utils/appointment-lifecycle";
 
-import { updateWaitingRoomStatus } from "@/lib/actions/waiting-room";
+import { updateWaitingRoomRequest } from "@/features/agenda/utils/update-waiting-room-request";
 import type { AppointmentStatus } from "@/types/database";
 
 const SELECTED_CLASS: Record<AgendaAttendanceValue, string> = {
@@ -60,7 +60,7 @@ export function AppointmentAttendanceSelector({
     if (value === selected && (waitingRoomEnteredAt || !enteringQueue)) return;
     setOverride(value);
     startTransition(async () => {
-      const result = await updateWaitingRoomStatus(appointmentId, value);
+      const result = await updateWaitingRoomRequest(appointmentId, value);
       if (result.error) {
         setOverride(null);
         toast.error(result.error);
