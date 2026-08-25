@@ -10,7 +10,6 @@ import {
   RotateCcw,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "@/core/notifications/toast";
@@ -282,7 +281,6 @@ export function TurnosNuevoWizard({
   initialStartAt,
   initialWizardSlots,
 }: Props) {
-  const router = useRouter();
   const patientOptions = useMemo(() => {
     if (!initialPatient) return patients;
     if (patients.some((patient) => patient.id === initialPatient.id)) return patients;
@@ -617,14 +615,19 @@ export function TurnosNuevoWizard({
     const toConfirmErrorMessage = (raw: string | undefined) => {
       const message = (raw ?? "").trim();
       if (
-        !message ||
         message.includes("Server Components render") ||
         message.includes("omitted in production") ||
         message.includes("digest property")
       ) {
         return "No se pudo confirmar el turno. Recargá la página e intentá de nuevo.";
       }
-      return message;
+      return message || "No se pudo confirmar el turno. Intentá de nuevo.";
+    };
+
+    const isNextNavigationError = (err: unknown) => {
+      if (typeof err !== "object" || err === null || !("digest" in err)) return false;
+      const digest = String((err as { digest: string }).digest);
+      return digest.startsWith("NEXT_REDIRECT") || digest.startsWith("NEXT_NOT_FOUND");
     };
 
     try {
@@ -644,19 +647,15 @@ export function TurnosNuevoWizard({
         insurance_plan: insurancePlan || null,
       });
 
-      if (result.error) {
+      if (result?.error) {
         const message = toConfirmErrorMessage(result.error);
         setError(message);
         toast.error(message);
         return;
       }
-
-      toast.success(isOverbooking ? "Sobreturno confirmado" : "Turno confirmado");
-      router.push("/turnos/agenda");
     } catch (err) {
-      const message = toConfirmErrorMessage(
-        err instanceof Error ? err.message : undefined
-      );
+      if (isNextNavigationError(err)) return;
+      const message = toConfirmErrorMessage(err instanceof Error ? err.message : undefined);
       setError(message);
       toast.error(message);
     } finally {
@@ -676,7 +675,6 @@ export function TurnosNuevoWizard({
     insuranceProvider,
     insurancePlan,
     appointmentDuration,
-    router,
   ]);
 
   const professional = professionals.find((p) => p.id === professionalId);
