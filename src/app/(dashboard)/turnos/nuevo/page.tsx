@@ -17,26 +17,6 @@ import {
   resolveDefaultProfessionalId,
   resolveSessionProfessionalId,
 } from "@/lib/server/resolve-default-professional";
-import type { Patient } from "@/types/database";
-
-type TurnoWizardPatient = Pick<
-  Patient,
-  "id" | "first_name" | "last_name" | "document_number" | "insurance_provider" | "insurance_plan"
->;
-
-function toTurnoWizardPatient(row: {
-  id: string;
-  first_name: string;
-  last_name: string;
-  document_number: string | null;
-  insurance_provider: string | null;
-  insurance_plan: string | null;
-}): TurnoWizardPatient {
-  return {
-    ...row,
-    document_number: row.document_number ?? "",
-  };
-}
 
 export default async function TurnosNuevoPage({
   searchParams,
@@ -59,65 +39,49 @@ export default async function TurnosNuevoPage({
 
   const supabase = await createClient();
 
-  let professionals: Awaited<ReturnType<typeof getCachedClinicProfessionalsAgenda>> = [];
-  let locations: Awaited<ReturnType<typeof getCachedClinicLocations>> = [];
-  let specialties: Awaited<ReturnType<typeof getCachedClinicSpecialties>> = [];
-  let clinicSettings: Awaited<ReturnType<typeof getCachedClinicSettings>> = null;
-  let sessionProfessionalId: string | undefined;
-  let defaultProfessionalId: string | undefined;
-  let initialPatient: TurnoWizardPatient | null = null;
-  let initialWizardSlots: Awaited<ReturnType<typeof loadTurnosWizardSlots>> | null = null;
-
-  try {
-    if (clinicId) {
-      [professionals, locations, specialties, clinicSettings] = await Promise.all([
+  const [professionals, locations, specialties, clinicSettings] = clinicId
+    ? await Promise.all([
         getCachedClinicProfessionalsAgenda(clinicId),
         getCachedClinicLocations(clinicId),
         getCachedClinicSpecialties(clinicId),
         getCachedClinicSettings(clinicId),
-      ]);
-    }
-
-    const user = await getSession();
-    sessionProfessionalId =
-      user && clinicId
-        ? await resolveSessionProfessionalId(supabase, clinicId, user.id)
-        : undefined;
-
-    defaultProfessionalId = clinicId
-      ? await resolveDefaultProfessionalId(
-          supabase,
-          clinicId,
-          professionals,
-          professionalParam ?? sessionProfessionalId
-        )
-      : undefined;
-
-    if (clinicId && patientParam) {
-      const patientResult = await supabase
-        .from("patients")
-        .select("id, first_name, last_name, document_number, insurance_provider, insurance_plan")
-        .eq("clinic_id", clinicId)
-        .eq("id", patientParam)
-        .eq("is_active", true)
-        .maybeSingle();
-      initialPatient = patientResult.data ? toTurnoWizardPatient(patientResult.data) : null;
-    }
-
-    if (clinicId && defaultProfessionalId) {
-      initialWizardSlots = await loadTurnosWizardSlots(
-        supabase,
-        clinicId,
-        defaultProfessionalId
-      );
-    }
-  } catch (err) {
-    console.error("[turnos/nuevo] page data load failed:", err);
-  }
+      ])
+    : [[], [], [], null];
 
   const canOverbook =
     hasPermission(role, "manageClinic", isSuperadmin, permissionOverrides) ||
     hasPermission(role, "manageAppointments", isSuperadmin, permissionOverrides);
+
+  const user = await getSession();
+  const sessionProfessionalId =
+    user && clinicId ? await resolveSessionProfessionalId(supabase, clinicId, user.id) : undefined;
+
+  const defaultProfessionalId = clinicId
+    ? await resolveDefaultProfessionalId(
+        supabase,
+        clinicId,
+        professionals,
+        professionalParam ?? sessionProfessionalId
+      )
+    : undefined;
+
+  const initialPatient =
+    clinicId && patientParam
+      ? (
+          await supabase
+            .from("patients")
+            .select("id, first_name, last_name, document_number, insurance_provider, insurance_plan")
+            .eq("clinic_id", clinicId)
+            .eq("id", patientParam)
+            .eq("is_active", true)
+            .maybeSingle()
+        ).data
+      : null;
+
+  const initialWizardSlots =
+    clinicId && defaultProfessionalId
+      ? await loadTurnosWizardSlots(supabase, clinicId, defaultProfessionalId)
+      : null;
 
   return (
     <>
