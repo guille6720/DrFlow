@@ -283,11 +283,18 @@ export async function createClinicalRecordEntry(
         consultationAt,
       });
       if (fallback.ok && fallback.data?.id) {
-        await tryPersistStructuredColumns(db, fallback.data.id, input.clinicId, {
-          diagnosis_cie10: sanitized.diagnosis_cie10,
-          diagnoses: structured.diagnoses,
-          treatments: structured.treatments,
-        });
+        await tryPersistStructuredColumns(
+          db,
+          fallback.data.id,
+          input.clinicId,
+          input.userId,
+          input.auditContext,
+          {
+            diagnosis_cie10: sanitized.diagnosis_cie10,
+            diagnoses: structured.diagnoses,
+            treatments: structured.treatments,
+          }
+        );
       }
       return fallback;
     }
