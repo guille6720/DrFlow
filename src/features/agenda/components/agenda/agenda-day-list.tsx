@@ -108,7 +108,7 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
       status={appointment.status}
       waitingRoomStatus={appointment.waiting_room_status}
       waitingRoomEnteredAt={enteredAt}
-      openConsultaOnPresent={Boolean(canStartClinical)}
+      openConsultaOnPresent={false}
       onAttendanceSaved={(value) => {
         const previous = localWaiting ?? appointment.waiting_room_status;
         const wasInQueue =

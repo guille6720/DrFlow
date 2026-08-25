@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { toast } from "@/core/notifications/toast";
@@ -29,7 +28,7 @@ type Props = {
   status: AppointmentStatus;
   waitingRoomStatus?: WaitingRoomStatus | null;
   waitingRoomEnteredAt?: string | null;
-  /** Si true, al marcar Presente abre la sesión de Consultas. */
+  /** Reservado: no redirigir automáticamente a Consultas al marcar Presente (evita crash RSC en prod). */
   openConsultaOnPresent?: boolean;
   onAttendanceSaved?: (value: AgendaAttendanceValue) => void;
 };
@@ -39,10 +38,9 @@ export function AppointmentAttendanceSelector({
   status,
   waitingRoomStatus,
   waitingRoomEnteredAt,
-  openConsultaOnPresent = false,
+  openConsultaOnPresent: _openConsultaOnPresent = false,
   onAttendanceSaved,
 }: Props) {
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [override, setOverride] = useState<AgendaAttendanceValue | null>(null);
   const serverSelected = resolveAgendaAttendanceValue({
@@ -69,11 +67,13 @@ export function AppointmentAttendanceSelector({
         return;
       }
       onAttendanceSaved?.(value);
-      if (openConsultaOnPresent && value === "confirmed") {
-        router.push(`/consultas?appointment=${appointmentId}&action=nueva`);
-        return;
-      }
-      router.refresh();
+      toast.success(
+        value === "confirmed"
+          ? "Paciente marcado presente"
+          : value === "absent"
+            ? "Paciente marcado ausente"
+            : "Paciente en espera"
+      );
     });
   }
 
