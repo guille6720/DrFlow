@@ -75,6 +75,7 @@
     "parse:diagnoses": "node scripts/parse-cie10es-diagnoses.mjs",
     "import:diagnoses": "node scripts/import-diagnoses.mjs",
     "import:diagnoses:apply": "node scripts/import-diagnoses.mjs --apply",
+    "apply:clinical-diagnoses:production": "node scripts/apply-clinical-diagnoses-production.mjs",
     "deploy:checklist": "node scripts/print-supabase-redirects.mjs",
     "analyze:bundle": "node scripts/analyze-bundle.mjs",
     "lighthouse:audit": "node scripts/lighthouse-audit.mjs",
