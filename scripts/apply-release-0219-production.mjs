@@ -28,6 +28,8 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
+import { runSqlFile } from "./lib/exec-sql-file.mjs";
+
 import { PRODUCTION_REF } from "./supabase-project-refs.mjs";
 
 const ROOT = process.cwd();
@@ -140,6 +142,13 @@ const RELEASE_MIGRATIONS = [
     label: "Fix clinical_diagnoses SELECT RLS (post-hardening)",
     optional: true,
   },
+  {
+    file: "145_clinical_diagnoses_search_grants.sql",
+    version: "145",
+    block: "diagnoses",
+    label: "Fix diagnosis search RPC grants + RLS (no is_superadmin in policy)",
+    optional: true,
+  },
 ];
 
 const args = process.argv.slice(2);
@@ -231,23 +240,6 @@ function registerMigration(dbUrl, version) {
      VALUES ('${version.replace(/'/g, "''")}')
      ON CONFLICT (version) DO NOTHING;`
   );
-}
-
-function runSqlFile(dbUrl, relativePath) {
-  const abs = resolve(ROOT, "supabase/migrations", relativePath);
-  if (!existsSync(abs)) fail(`Missing migration file: ${relativePath}`);
-  console.log(`Applying ${relativePath} ...`);
-  const result = spawnSync(
-    "npx",
-    ["supabase", "db", "query", "--db-url", dbUrl, "-f", abs],
-    { encoding: "utf8", shell: true, stdio: "pipe" }
-  );
-  const text = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
-  if (result.status !== 0 || /LegacyDbQueryUnexpectedStatusError|ERROR:/i.test(text)) {
-    console.error(text);
-    fail(`Failed applying ${relativePath}`);
-  }
-  console.log(`OK ${relativePath}`);
 }
 
 function filterMigrations() {
@@ -352,6 +344,7 @@ if (DRY_RUN) {
 const appliedNow = [];
 const skipped = [];
 
+(async () => {
 for (const mig of migrations) {
   if (!FORCE && applied?.has(mig.version)) {
     console.log(`Skip ${mig.file} (version ${mig.version} already registered)`);
@@ -359,7 +352,11 @@ for (const mig of migrations) {
     continue;
   }
 
-  runSqlFile(dbUrl, mig.file);
+  try {
+    await runSqlFile(dbUrl, `supabase/migrations/${mig.file}`);
+  } catch (err) {
+    fail(err.message ?? String(err));
+  }
   registerMigration(dbUrl, mig.version);
   appliedNow.push(mig.version);
 }
@@ -391,3 +388,4 @@ if (INCLUDE_CIE10) {
 }
 
 console.log("\nRELEASE_0219_PRODUCTION_MIGRATIONS_OK");
+})().catch((err) => fail(err.message ?? String(err)));

@@ -10,23 +10,50 @@
  *
  * Dry-run (no SQL/import):
  *   node scripts/apply-clinical-diagnoses-production.mjs --dry-run
+ *
+ * Check schema readiness:
+ *   node scripts/apply-clinical-diagnoses-production.mjs --diagnose
+ *
+ * Migrations-only (112 + 143 + 144, single pg connection):
+ *   node scripts/apply-clinical-diagnoses-production.mjs --migrations-only
+ *
+ * Resume partial 112 (statements 25–26 after connection timeout):
+ *   node scripts/apply-clinical-diagnoses-production.mjs --migrations-only --from-file=112 --from-statement=25
+ *
+ * Import only (requires --diagnose OK first):
+ *   node scripts/apply-clinical-diagnoses-production.mjs --import-only
+ *
+ * Verify only (after import):
+ *   node scripts/apply-clinical-diagnoses-production.mjs --verify-only
  */
-import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { PRODUCTION_REF } from "./supabase-project-refs.mjs";
+import { queryJson, runSqlFile } from "./lib/exec-sql-file.mjs";
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const IMPORT_ONLY = process.argv.includes("--import-only");
+const VERIFY_ONLY = process.argv.includes("--verify-only");
+const MIGRATIONS_ONLY = process.argv.includes("--migrations-only");
+const DIAGNOSE = process.argv.includes("--diagnose");
 const MIGRATIONS = [
   "supabase/migrations/112_clinical_diagnoses_catalog.sql",
   "supabase/migrations/143_clinical_diagnoses_cie10_import.sql",
   "supabase/migrations/144_clinical_diagnoses_rls_select_authenticated.sql",
+  "supabase/migrations/145_clinical_diagnoses_search_grants.sql",
 ];
 const JSON_PATH = resolve(process.cwd(), "data/lista-tabular-enfermedades.normalized.json");
 const SOURCE = "cie10-es-lista-tabular-enfermedades-pdf";
 const BATCH = 80;
+
+function parseArg(name) {
+  const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
+  return hit ? hit.split("=").slice(1).join("=") : null;
+}
+
+const FROM_FILE = parseArg("from-file");
+const FROM_STATEMENT = Math.max(1, Number(parseArg("from-statement")) || 1);
 
 function fail(msg) {
   console.error(`\nERROR: ${msg}\n`);
@@ -62,46 +89,6 @@ function assertProductionEnv() {
     fail(`DATABASE_URL must target production ref ${PRODUCTION_REF}.`);
   }
   return dbUrl;
-}
-
-function runSqlFile(dbUrl, relativePath) {
-  const abs = resolve(process.cwd(), relativePath);
-  if (!existsSync(abs)) fail(`Missing migration file: ${relativePath}`);
-  console.log(`Applying ${relativePath} ...`);
-  const result = spawnSync(
-    "npx",
-    ["supabase", "db", "query", "--db-url", dbUrl, "-f", abs],
-    { encoding: "utf8", shell: true, stdio: "pipe" }
-  );
-  const text = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
-  if (result.status !== 0 || /LegacyDbQueryUnexpectedStatusError|ERROR:/i.test(text)) {
-    console.error(text);
-    fail(`Failed applying ${relativePath}`);
-  }
-  console.log(`OK ${relativePath}`);
-}
-
-function dbQuery(dbUrl, sql) {
-  const tmp = resolve(process.cwd(), `.tmp-prod-dx-${Date.now()}.sql`);
-  writeFileSync(tmp, sql, "utf8");
-  try {
-    const result = spawnSync(
-      "npx",
-      ["supabase", "db", "query", "--db-url", dbUrl, "-f", tmp, "--output-format", "json"],
-      { encoding: "utf8", shell: true }
-    );
-    const text = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
-    if (result.status !== 0 || /LegacyDbQueryUnexpectedStatusError/i.test(text)) {
-      throw new Error(text || "db query failed");
-    }
-    return text;
-  } finally {
-    try {
-      unlinkSync(tmp);
-    } catch {
-      /* ignore */
-    }
-  }
 }
 
 function buildUpsertBatch(batch) {
@@ -148,9 +135,110 @@ inserted AS (
   RETURNING cie10_code
 )
 SELECT
-  (SELECT count(*) FROM updated) AS updated_count,
-  (SELECT count(*) FROM inserted) AS inserted_count;
+  (SELECT count(*)::int FROM updated) AS updated_count,
+  (SELECT count(*)::int FROM inserted) AS inserted_count;
 `;
+}
+
+async function collectDiagnose(dbUrl) {
+  const [row] = await queryJson(
+    dbUrl,
+    `SELECT
+       to_regclass('public.clinical_diagnoses') IS NOT NULL AS table_ok,
+       EXISTS (
+         SELECT 1 FROM information_schema.columns
+         WHERE table_schema = 'public' AND table_name = 'clinical_diagnoses' AND column_name = 'source'
+       ) AS source_col_ok,
+       EXISTS (
+         SELECT 1 FROM pg_proc p
+         JOIN pg_namespace n ON n.oid = p.pronamespace
+         WHERE n.nspname = 'public' AND p.proname = 'search_clinical_diagnoses'
+       ) AS rpc_ok,
+       EXISTS (
+         SELECT 1 FROM pg_indexes
+         WHERE schemaname = 'public'
+           AND tablename = 'clinical_diagnoses'
+           AND indexname = 'clinical_diagnoses_cie10_import_uidx'
+       ) AS import_index_ok;`
+  );
+
+  let cie10 = 0;
+  let seedRows = 0;
+  if (row?.table_ok) {
+    if (row.source_col_ok) {
+      const [cnt] = await queryJson(
+        dbUrl,
+        `SELECT count(*)::int AS n FROM clinical_diagnoses WHERE source = ${sqlText(SOURCE)};`
+      );
+      cie10 = cnt?.n ?? 0;
+    }
+    const [seed] = await queryJson(
+      dbUrl,
+      `SELECT count(*)::int AS n FROM clinical_diagnoses WHERE source IS NULL;`
+    );
+    seedRows = seed?.n ?? 0;
+  }
+
+  const applied = await queryJson(
+    dbUrl,
+    `SELECT version FROM supabase_migrations.schema_migrations
+     WHERE version IN ('112', '143', '144', '145')
+     ORDER BY version;`
+  );
+
+  return {
+    target: PRODUCTION_REF,
+    clinical_diagnoses_table: Boolean(row?.table_ok),
+    source_column: Boolean(row?.source_col_ok),
+    import_unique_index: Boolean(row?.import_index_ok),
+    search_rpc: Boolean(row?.rpc_ok),
+    cie10_rows: cie10,
+    seed_rows: seedRows,
+    schema_migrations: applied.map((r) => String(r.version)),
+    ready_for_import: Boolean(row?.table_ok && row?.source_col_ok && row?.import_index_ok && row?.rpc_ok),
+  };
+}
+
+async function assertReadyForImport(dbUrl) {
+  const report = await collectDiagnose(dbUrl);
+  if (!report.ready_for_import) {
+    console.error(JSON.stringify(report, null, 2));
+    fail(
+      "Production DB is not ready for CIE-10 import. Run migrations first:\n" +
+        "  node scripts/apply-clinical-diagnoses-production.mjs --migrations-only\n" +
+        "If 112 stopped mid-file:\n" +
+        "  node scripts/apply-clinical-diagnoses-production.mjs --migrations-only --from-file=112 --from-statement=25"
+    );
+  }
+  return report;
+}
+
+async function explainImportFailure(dbUrl, chunk) {
+  const report = await collectDiagnose(dbUrl);
+  console.error("\nSchema snapshot:");
+  console.error(JSON.stringify(report, null, 2));
+  const sample = chunk[0];
+  if (!sample) return;
+  try {
+    const testSql = `
+INSERT INTO clinical_diagnoses (
+  name, cie10_code, category, synonyms, active, source, source_version, parent_code, level
+) VALUES (
+  ${sqlText(sample.name)}, ${sqlText(sample.code)}, ${sqlText(sample.category)}, ${sqlTextArray(sample.synonyms)},
+  true, ${sqlText(SOURCE)}, ${sqlText(sample.source_version)}, ${sqlText(sample.parent_code)},
+  ${sample.level == null ? "NULL" : Number(sample.level)}
+)
+RETURNING id;`;
+    const rows = await queryJson(dbUrl, testSql);
+    console.error("\nSingle-row test insert succeeded:", rows[0]?.id);
+    await queryJson(
+      dbUrl,
+      `DELETE FROM clinical_diagnoses
+       WHERE source = ${sqlText(SOURCE)} AND cie10_code = ${sqlText(sample.code)};`
+    );
+  } catch (err) {
+    console.error("\nSingle-row test insert failed:", err.message);
+  }
 }
 
 if (DRY_RUN) {
@@ -172,50 +260,104 @@ if (DRY_RUN) {
 
 const dbUrl = assertProductionEnv();
 
-if (!IMPORT_ONLY) {
-  for (const mig of MIGRATIONS) {
-    runSqlFile(dbUrl, mig);
+(async () => {
+  if (DIAGNOSE) {
+    console.log(JSON.stringify(await collectDiagnose(dbUrl), null, 2));
+    process.exit(0);
   }
-}
 
-if (!existsSync(JSON_PATH)) {
-  fail(`Missing ${JSON_PATH}. Run npm run parse:diagnoses first.`);
-}
+  if (VERIFY_ONLY) {
+    const report = await collectDiagnose(dbUrl);
+    console.log(
+      JSON.stringify(
+        {
+          target: PRODUCTION_REF,
+          imported_source_rows: report.cie10_rows,
+          rpc_present: report.search_rpc,
+          ready_for_import: report.ready_for_import,
+          schema_migrations: report.schema_migrations,
+        },
+        null,
+        2
+      )
+    );
+    process.exit(report.cie10_rows >= 600 && report.search_rpc ? 0 : 1);
+  }
 
-const diagnoses = JSON.parse(readFileSync(JSON_PATH, "utf8")).diagnoses ?? [];
-console.log(`Importing ${diagnoses.length} diagnoses to production ...`);
+  if (!IMPORT_ONLY) {
+    for (const mig of MIGRATIONS) {
+      const fileNum = mig.match(/(\d{3})_/)?.[1];
+      const fromStatement = FROM_FILE && fileNum === FROM_FILE ? FROM_STATEMENT : 1;
+      try {
+        await runSqlFile(dbUrl, mig, { fromStatement });
+      } catch (err) {
+        fail(err.message ?? String(err));
+      }
+    }
+    for (const mig of MIGRATIONS) {
+      const version = mig.match(/^(\d{3})_/)?.[1] ?? mig.match(/^(20\d{12})_/)?.[1];
+      if (version) {
+        await queryJson(
+          dbUrl,
+          `INSERT INTO supabase_migrations.schema_migrations (version) VALUES ('${version}') ON CONFLICT DO NOTHING;`
+        );
+      }
+    }
+  }
 
-let inserted = 0;
-let updated = 0;
-for (let i = 0; i < diagnoses.length; i += BATCH) {
-  const chunk = diagnoses.slice(i, i + BATCH);
-  const out = dbQuery(dbUrl, buildUpsertBatch(chunk));
-  const mUp = out.match(/"updated_count"\s*:\s*(\d+)/);
-  const mIn = out.match(/"inserted_count"\s*:\s*(\d+)/);
-  if (mUp) updated += Number(mUp[1]);
-  if (mIn) inserted += Number(mIn[1]);
-  console.log(`  batch ${i / BATCH + 1}: ${chunk.length} rows`);
-}
+  if (MIGRATIONS_ONLY) {
+    const report = await collectDiagnose(dbUrl);
+    console.log(JSON.stringify(report, null, 2));
+    if (!report.ready_for_import) {
+      fail("Migrations finished but schema is still incomplete. Check errors above and re-run if needed.");
+    }
+    console.log("\nMigrations OK. Next step:");
+    console.log("  node scripts/apply-clinical-diagnoses-production.mjs --import-only\n");
+    process.exit(0);
+  }
 
-const verify = dbQuery(
-  dbUrl,
-  `SELECT count(*)::int AS n FROM clinical_diagnoses WHERE source = '${SOURCE}';
-   SELECT proname FROM pg_proc JOIN pg_namespace n ON n.oid = pg_proc.pronamespace
-   WHERE n.nspname = 'public' AND proname = 'search_clinical_diagnoses';`
-);
+  await assertReadyForImport(dbUrl);
 
-console.log(
-  JSON.stringify(
-    {
-      target: PRODUCTION_REF,
-      imported_source_rows: verify.match(/"n"\s*:\s*(\d+)/)?.[1] ?? null,
-      inserted,
-      updated,
-      rpc_present: /search_clinical_diagnoses/.test(verify),
-      finished_at: new Date().toISOString(),
-    },
-    null,
-    2
-  )
-);
-console.log("PRODUCTION_CLINICAL_DIAGNOSES_OK");
+  if (!existsSync(JSON_PATH)) {
+    fail(`Missing ${JSON_PATH}. Run npm run parse:diagnoses first.`);
+  }
+
+  const diagnoses = JSON.parse(readFileSync(JSON_PATH, "utf8")).diagnoses ?? [];
+  console.log(`Importing ${diagnoses.length} diagnoses to production ...`);
+
+  let inserted = 0;
+  let updated = 0;
+  for (let i = 0; i < diagnoses.length; i += BATCH) {
+    const chunk = diagnoses.slice(i, i + BATCH);
+    const [counts] = await queryJson(dbUrl, buildUpsertBatch(chunk));
+    const batchInserted = Number(counts?.inserted_count ?? 0);
+    const batchUpdated = Number(counts?.updated_count ?? 0);
+    updated += batchUpdated;
+    inserted += batchInserted;
+    console.log(
+      `  batch ${i / BATCH + 1}: ${chunk.length} rows (inserted ${batchInserted}, updated ${batchUpdated})`
+    );
+    if (batchInserted === 0 && batchUpdated === 0 && i === 0) {
+      await explainImportFailure(dbUrl, chunk);
+      fail("First batch inserted/updated 0 rows — see schema snapshot and test insert above.");
+    }
+  }
+
+  const report = await collectDiagnose(dbUrl);
+
+  console.log(
+    JSON.stringify(
+      {
+        target: PRODUCTION_REF,
+        imported_source_rows: report.cie10_rows,
+        inserted,
+        updated,
+        rpc_present: report.search_rpc,
+        finished_at: new Date().toISOString(),
+      },
+      null,
+      2
+    )
+  );
+  console.log("PRODUCTION_CLINICAL_DIAGNOSES_OK");
+})().catch((err) => fail(err.message ?? String(err)));
