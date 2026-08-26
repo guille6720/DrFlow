@@ -7,7 +7,7 @@
  * Or paste scripts/sql/VERIFY_RELEASE_0219_PRODUCTION.sql in Supabase SQL Editor.
  */
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, unlinkSync,writeFileSync } from "node:fs";
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { PRODUCTION_REF } from "./supabase-project-refs.mjs";

@@ -13,7 +13,7 @@
  *   node scripts/import-diagnoses.mjs --apply
  */
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync,readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import {
