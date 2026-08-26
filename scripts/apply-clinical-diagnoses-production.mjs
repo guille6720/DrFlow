@@ -18,9 +18,11 @@ import { resolve } from "node:path";
 import { PRODUCTION_REF } from "./supabase-project-refs.mjs";
 
 const DRY_RUN = process.argv.includes("--dry-run");
+const IMPORT_ONLY = process.argv.includes("--import-only");
 const MIGRATIONS = [
   "supabase/migrations/112_clinical_diagnoses_catalog.sql",
   "supabase/migrations/143_clinical_diagnoses_cie10_import.sql",
+  "supabase/migrations/144_clinical_diagnoses_rls_select_authenticated.sql",
 ];
 const JSON_PATH = resolve(process.cwd(), "data/lista-tabular-enfermedades.normalized.json");
 const SOURCE = "cie10-es-lista-tabular-enfermedades-pdf";
@@ -170,8 +172,10 @@ if (DRY_RUN) {
 
 const dbUrl = assertProductionEnv();
 
-for (const mig of MIGRATIONS) {
-  runSqlFile(dbUrl, mig);
+if (!IMPORT_ONLY) {
+  for (const mig of MIGRATIONS) {
+    runSqlFile(dbUrl, mig);
+  }
 }
 
 if (!existsSync(JSON_PATH)) {
