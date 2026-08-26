@@ -29,15 +29,16 @@ export function GeminiWebAppLink({ className, onNavigate }: Props) {
       title="Abrir Gemini en DrFlow"
       onClick={() => onNavigate?.()}
       className={cn(
-        "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all",
+        "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all",
         active
           ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900 shadow-md shadow-teal-500/20"
-          : "text-slate-300 hover:bg-slate-800/90 hover:text-white",
+          : "text-slate-200 hover:bg-slate-800/90 hover:text-white",
         className
       )}
     >
       <Sparkles
         className={cn("h-5 w-5 shrink-0", active ? "text-slate-900" : "text-violet-400")}
+        strokeWidth={2.25}
         aria-hidden
       />
       Gemini

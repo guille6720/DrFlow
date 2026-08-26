@@ -68,19 +68,20 @@ export function ClinicalOpsSectionNav({ items, counts }: Props) {
               onClick={() => handleNavigate(id)}
               aria-current={isActive ? "true" : undefined}
               className={cn(
-                "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50",
+                "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50",
                 isActive
-                  ? "bg-teal-950/50 text-teal-100"
-                  : "text-slate-300 hover:bg-slate-800 hover:text-teal-200"
+                  ? "bg-teal-950/50 text-teal-50"
+                  : "text-slate-200 hover:bg-slate-800 hover:text-white"
               )}
             >
               <Icon
-                className={cn("h-4 w-4 shrink-0", isActive ? "text-teal-300" : "text-slate-500")}
+                className={cn("h-4 w-4 shrink-0", isActive ? "text-teal-200" : "text-slate-300")}
+                strokeWidth={2.25}
                 aria-hidden
               />
               <span className="min-w-0 flex-1 truncate">{label}</span>
               {count > 0 ? (
-                <span className="rounded-full bg-slate-800 px-1.5 text-xs font-bold text-teal-300">
+                <span className="inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-slate-700 px-1.5 text-xs font-bold text-teal-100 ring-1 ring-slate-500">
                   {count}
                 </span>
               ) : null}

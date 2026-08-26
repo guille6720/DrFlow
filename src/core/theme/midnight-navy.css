@@ -175,7 +175,7 @@ html[data-ui-palette="midnight"] .drflow-ui-sidebar a.bg-gradient-to-r svg {
 }
 
 html[data-ui-palette="midnight"] .drflow-ui-sidebar a:not(.bg-gradient-to-r) {
-  color: var(--text-secondary) !important;
+  color: var(--text-primary) !important;
   border-left: 3px solid transparent;
   transition:
     background-color 150ms ease,
@@ -188,8 +188,8 @@ html[data-ui-palette="midnight"] .drflow-ui-sidebar a:not(.bg-gradient-to-r):hov
   color: var(--text-primary) !important;
 }
 
-html[data-ui-palette="midnight"] .drflow-ui-sidebar :is(.text-slate-300, .text-slate-400, .text-slate-500) {
-  color: var(--text-secondary) !important;
+html[data-ui-palette="midnight"] .drflow-ui-sidebar :is(.text-slate-200, .text-slate-300, .text-slate-400, .text-slate-500) {
+  color: #e2e8f0 !important;
 }
 
 html[data-ui-palette="midnight"] .drflow-ui-sidebar :is(.text-white, .text-slate-50, .text-slate-100) {

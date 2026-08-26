@@ -51,15 +51,16 @@ function SidebarNavLinkItem({
       onFocus={() => onPrefetch(item.href)}
       onClick={onNavigate}
       className={cn(
-        "flex items-center gap-3 rounded-2xl py-2.5 text-sm font-medium transition-all",
+        "flex items-center gap-3 rounded-2xl py-2.5 text-sm font-semibold transition-all",
         nested ? "px-3 pl-9" : "px-3",
         active
           ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900 shadow-md shadow-teal-500/20"
-          : "text-slate-300 hover:bg-slate-800/90 hover:text-white"
+          : "text-slate-200 hover:bg-slate-800/90 hover:text-white"
       )}
     >
       <item.icon
         className={cn("h-5 w-5 shrink-0", active ? "text-slate-900" : "text-teal-400")}
+        strokeWidth={2.25}
       />
       {item.label}
     </Link>
@@ -100,16 +101,17 @@ function SidebarNavGroupItem({
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         className={cn(
-          "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all",
+          "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all",
           childActive
             ? "bg-slate-800/90 text-white"
-            : "text-slate-300 hover:bg-slate-800/90 hover:text-white"
+            : "text-slate-200 hover:bg-slate-800/90 hover:text-white"
         )}
       >
-        <group.icon className="h-5 w-5 shrink-0 text-teal-400/90" />
+        <group.icon className="h-5 w-5 shrink-0 text-teal-400" strokeWidth={2.25} />
         <span className="flex-1 text-left">{group.label}</span>
         <ChevronDown
-          className={cn("h-4 w-4 shrink-0 text-slate-400 transition-transform", open && "rotate-180")}
+          className={cn("h-4 w-4 shrink-0 text-slate-200 transition-transform", open && "rotate-180")}
+          strokeWidth={2.25}
           aria-hidden
         />
       </button>
@@ -167,7 +169,7 @@ export function SidebarNavContent({
     <>
       <div className="border-b border-slate-700/80 px-4 py-5">
         <DrFlowLogo size="lg" href="/dashboard" centered />
-        <p className="mt-2 truncate text-center text-xs font-medium text-slate-400">
+        <p className="mt-2 truncate text-center text-xs font-semibold tracking-normal text-slate-200">
           {clinicName?.trim() || (clinicId ? "Mi clínica" : "Sin clínica")}
         </p>
         {isInvitedMember ? (
@@ -215,16 +217,16 @@ export function SidebarNavContent({
           <button
             type="button"
             onClick={() => setAppearanceOpen(true)}
-            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 hover:text-white"
           >
-            <Palette className="h-5 w-5 text-teal-400" />
+            <Palette className="h-5 w-5 text-teal-400" strokeWidth={2.25} />
             Cambiar estilo
           </button>
         ) : null}
         <button
           type="button"
           onClick={onToggleSidebarHidden}
-          className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-slate-100"
+          className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 hover:text-slate-100"
         >
           {sidebarHidden ? (
             <PanelLeftOpen className="h-5 w-5 text-teal-400" />
@@ -236,9 +238,9 @@ export function SidebarNavContent({
         <form action="/api/auth/signout" method="post">
           <button
             type="submit"
-            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-red-950/50 hover:text-red-300"
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-300 hover:bg-red-950/50 hover:text-red-300"
           >
-            <LogOut className="h-5 w-5" />
+            <LogOut className="h-5 w-5" strokeWidth={2.25} />
             Cerrar sesión
           </button>
         </form>

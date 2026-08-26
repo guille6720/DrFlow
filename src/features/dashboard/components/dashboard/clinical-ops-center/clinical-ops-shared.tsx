@@ -69,11 +69,11 @@ export function OpsSection({
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2
           id={id ? `${id}-title` : undefined}
-          className="text-sm font-semibold uppercase tracking-wide text-slate-200"
+          className="text-sm font-bold uppercase tracking-wide text-slate-800"
         >
           {title}
           {count != null ? (
-            <span className="ml-2 rounded-full bg-slate-800 px-2 py-0.5 text-xs font-bold text-teal-300">
+            <span className="ml-2 inline-flex min-w-[1.5rem] items-center justify-center rounded-full bg-slate-200 px-2 py-0.5 text-xs font-bold text-slate-800 ring-1 ring-slate-300">
               {count}
             </span>
           ) : null}
