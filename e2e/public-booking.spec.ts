@@ -2,7 +2,11 @@ import { expect, test } from "@playwright/test";
 import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
 
-import { loadPublicBooking, PHASE6_CLINIC_A_SLUG } from "./helpers/phase6-portal";
+import {
+  loadPublicBooking,
+  PHASE6_CLINIC_A_SLUG,
+  pickFutureBookingSlot,
+} from "./helpers/phase6-portal";
 
 function loadPhase6Env() {
   const path = resolve(process.cwd(), "e2e/.phase6-env.local");
@@ -23,6 +27,8 @@ loadPhase6Env();
 const hasSlug = Boolean(process.env.E2E_BOOKING_SLUG?.trim() || PHASE6_CLINIC_A_SLUG);
 
 test.describe("Phase 6 public booking live E2E", () => {
+  test.describe.configure({ mode: "serial" });
+  test.setTimeout(90_000);
   test.skip(!hasSlug, "Set E2E_BOOKING_SLUG or run phase6 seed");
 
   const slug = () => process.env.E2E_BOOKING_SLUG?.trim() || PHASE6_CLINIC_A_SLUG;
@@ -45,10 +51,7 @@ test.describe("Phase 6 public booking live E2E", () => {
   test("new patient can submit booking without portal login", async ({ page }) => {
     await loadPublicBooking(page, slug());
     await page.getByLabel("Profesional").selectOption({ index: 1 });
-
-    const slot = page.locator("button").filter({ hasText: /\d{1,2}:\d{2}/ }).first();
-    await expect(slot).toBeVisible({ timeout: 60_000 });
-    await slot.click();
+    await pickFutureBookingSlot(page);
 
     const doc = `9${Date.now().toString().slice(-7)}`;
     await page.locator('input[name="first_name"]').fill("E2ENew");
@@ -73,9 +76,7 @@ test.describe("Phase 6 public booking live E2E", () => {
 
     await loadPublicBooking(page, slug());
     await page.getByLabel("Profesional").selectOption({ index: 1 });
-    const slot = page.locator("button").filter({ hasText: /\d{1,2}:\d{2}/ }).first();
-    await expect(slot).toBeVisible({ timeout: 60_000 });
-    await slot.click();
+    await pickFutureBookingSlot(page);
 
     await page.locator('input[name="first_name"]').fill("OverwriteFirst");
     await page.locator('input[name="last_name"]').fill("OverwriteLast");

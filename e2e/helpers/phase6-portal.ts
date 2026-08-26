@@ -68,10 +68,19 @@ export async function openSecurePortalAccess(page: Page, slug: string, token: st
 }
 
 export async function goToMisTurnos(page: Page) {
-  await page.getByRole("button", { name: "Mis turnos" }).click();
+  await page.getByRole("button", { name: "Mis turnos", exact: true }).click();
   await expect(page.getByText(/Acceso protegido al Portal del Paciente|Mis turnos/i).first()).toBeVisible({
     timeout: 30_000,
   });
+}
+
+/** Prefer a non-immediate slot so staging clocks / TZ do not reject "ya pasó". */
+export async function pickFutureBookingSlot(page: Page) {
+  const slots = page.locator("button").filter({ hasText: /\d{1,2}:\d{2}/ });
+  await expect(slots.first()).toBeVisible({ timeout: 60_000 });
+  const count = await slots.count();
+  const idx = count > 4 ? Math.min(count - 1, 12) : Math.max(0, count - 1);
+  await slots.nth(idx).click();
 }
 
 /** Public booking anonymous smoke via page. */

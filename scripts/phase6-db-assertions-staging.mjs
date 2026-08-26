@@ -54,10 +54,18 @@ function dbFile(sql) {
       throw new Error(text);
     }
     const jsonStart = text.lastIndexOf('{"boundary"');
-    if (jsonStart < 0) return { rows: [] };
+    const alt = text.lastIndexOf('{\n  "boundary"');
+    const idx = Math.max(jsonStart, alt);
+    if (idx < 0) {
+      if (result.status === 0 || /Initialising login role/.test(text)) {
+        return { rows: [] };
+      }
+      throw new Error(text || "db query failed");
+    }
     let depth = 0;
     let end = -1;
-    for (let i = jsonStart; i < text.length; i++) {
+    const startBrace = text.indexOf("{", idx);
+    for (let i = startBrace; i < text.length; i++) {
       if (text[i] === "{") depth++;
       if (text[i] === "}") {
         depth--;
@@ -67,7 +75,7 @@ function dbFile(sql) {
         }
       }
     }
-    return JSON.parse(text.slice(jsonStart, end));
+    return JSON.parse(text.slice(startBrace, end));
   } finally {
     try {
       unlinkSync(tmp);
@@ -130,6 +138,8 @@ console.log("OK: cross-patient cancel denied");
 console.log("Assert invalid professional/clinic rejected…");
 dbFile(`
 DO $$
+DECLARE
+  v_detail text;
 BEGIN
   BEGIN
     PERFORM public.submit_public_booking(
@@ -141,7 +151,10 @@ BEGIN
     );
     RAISE EXCEPTION 'EXPECTED_REJECT';
   EXCEPTION WHEN OTHERS THEN
-    IF SQLERRM LIKE '%INVALID_PROFESSIONAL%' THEN
+    GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+    IF coalesce(v_detail, '') LIKE '%INVALID_PROFESSIONAL%'
+       OR SQLERRM LIKE '%INVALID_PROFESSIONAL%'
+       OR SQLERRM LIKE '%Profesional no v%' THEN
       NULL;
     ELSIF SQLERRM = 'EXPECTED_REJECT' THEN
       RAISE;

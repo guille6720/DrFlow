@@ -34,6 +34,7 @@ const REQUIRED_REMOTE_VERSIONS = [
   "20260826123459",
   "20260826123700",
   "20260826140000",
+  "20260826151000",
 ];
 
 /** Local numbered migrations intentionally not on staging schema_migrations. */
