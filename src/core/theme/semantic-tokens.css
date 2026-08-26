@@ -16,7 +16,7 @@
 :root {
   --text-primary: #0f172a;
   --text-secondary: #334155;
-  --text-muted: #64748b;
+  --text-muted: #475569;
   --text-disabled: #94a3b8;
   --text-on-primary: #ffffff;
   --text-on-secondary: #0f172a;
@@ -24,6 +24,7 @@
   --text-on-card: #0f172a;
   --text-on-sidebar: #e2e8f0;
   --text-on-selected: #0f172a;
+  --placeholder: #64748b;
 
   --surface-page: #f8fafc;
   --surface-card: #ffffff;
@@ -67,7 +68,7 @@ html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette]),
 html[data-ui-style="2"][data-clinical-dark="1"][data-ui-palette=""] {
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-muted: #a8b6c8;
   --text-disabled: #64748b;
   --text-on-primary: #0b1220;
   --text-on-secondary: #f8fafc;
@@ -75,6 +76,7 @@ html[data-ui-style="2"][data-clinical-dark="1"][data-ui-palette=""] {
   --text-on-card: #f8fafc;
   --text-on-sidebar: #e2e8f0;
   --text-on-selected: #f8fafc;
+  --placeholder: #a8b6c8;
 
   /* Surface ladder (no pure black): page < card < elevated; input recessed; hover ≠ selected */
   --surface-page: #0f172a;
@@ -101,6 +103,7 @@ html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) {
   --text-on-card: #0f172a;
   --text-on-sidebar: #e0f2fe;
   --text-on-selected: #0f172a;
+  --placeholder: #64748b;
 
   --surface-page: #e8f2fc;
   --surface-card: #ffffff;
@@ -117,7 +120,7 @@ html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) {
 html[data-ui-palette="azure"][data-clinical-dark="1"] {
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-muted: #a8b6c8;
   --text-disabled: #64748b;
   --text-on-primary: #082032;
   --text-on-secondary: #f8fafc;
@@ -125,6 +128,7 @@ html[data-ui-palette="azure"][data-clinical-dark="1"] {
   --text-on-card: #f8fafc;
   --text-on-sidebar: #e0f2fe;
   --text-on-selected: #f8fafc;
+  --placeholder: #a8b6c8;
 
   --surface-page: #0a1628;
   --surface-card: #102845;
@@ -230,7 +234,7 @@ html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) {
 html[data-ui-palette="clinicsoft"][data-clinical-dark="1"] {
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-muted: #a8b6c8;
   --text-disabled: #64748b;
   --text-on-primary: #042f2e;
   --text-on-secondary: #f8fafc;
@@ -238,6 +242,7 @@ html[data-ui-palette="clinicsoft"][data-clinical-dark="1"] {
   --text-on-card: #f8fafc;
   --text-on-sidebar: #e2e8f0;
   --text-on-selected: #f8fafc;
+  --placeholder: #a8b6c8;
 
   --surface-page: #0f1720;
   --surface-card: #1a2430;
@@ -255,7 +260,7 @@ html[data-ui-palette="clinicsoft"][data-clinical-dark="1"] {
 html[data-ui-palette="midnight"][data-clinical-dark="1"] {
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-muted: #a8b6c8;
   --text-disabled: #64748b;
   --text-on-primary: #061426;
   --text-on-secondary: #f4f7fc;
@@ -263,6 +268,7 @@ html[data-ui-palette="midnight"][data-clinical-dark="1"] {
   --text-on-card: #f8fafc;
   --text-on-sidebar: #e2e8f0;
   --text-on-selected: #f8fafc;
+  --placeholder: #a8b6c8;
 
   --surface-page: #07182d;
   --surface-card: #102845;
@@ -305,7 +311,7 @@ html[data-ui-palette="midnight"]:not([data-clinical-dark="1"]) .drflow-ui-sideba
 html[data-ui-palette="midnight"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-muted: #a8b6c8;
   --text-on-sidebar: #e2e8f0;
   --surface-sidebar: #0a1d36;
   --surface-hover: #183858;
@@ -445,14 +451,14 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette]) .dr
 html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) {
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-muted: #a8b6c8;
   --text-disabled: #64748b;
   --text-on-card: #f8fafc;
   --text-on-selected: #f8fafc;
   --foreground: #f8fafc;
   --card-foreground: #f8fafc;
   --muted-foreground: #cbd5e1;
-  --placeholder: #94a3b8;
+  --placeholder: #a8b6c8;
 }
 
 html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-mesh {
