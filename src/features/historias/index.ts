@@ -4,5 +4,8 @@ export { searchClinicalTreatments } from "@/features/historias/actions/clinical-
 export { ClinicalRecordsGroupedList } from "@/features/historias/components/historias/clinical-records-grouped-list";
 export { ClinicalTreatmentAutocomplete } from "@/features/historias/components/historias/clinical-treatment-autocomplete";
 export { ConsultationAssistantPanel } from "@/features/historias/components/historias/consultation-assistant-panel";
-export { DiagnosisAutocomplete } from "@/features/historias/components/historias/diagnosis-autocomplete";
+export {
+  DiagnosisAutocomplete,
+  DiagnosisSearch,
+} from "@/features/historias/components/historias/diagnosis-autocomplete";
 export { EditConsultaForm } from "@/features/historias/components/historias/edit-consulta-form";

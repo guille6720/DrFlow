@@ -82,11 +82,19 @@ function selectableIndex(items: PrioritizedDiagnosisHit[], from: number, directi
   return from;
 }
 
+/**
+ * Server-backed diagnosis search (CIE-10 / synonyms / free-text).
+ * Alias kept for product wording in the import prompt (`DiagnosisSearch`).
+ */
+export function DiagnosisSearch(props: Props) {
+  return <DiagnosisAutocomplete {...props} />;
+}
+
 export function DiagnosisAutocomplete({
   value,
   onValueChange,
   onSelect,
-  placeholder = "Escribí diagnóstico (ej: hiper…)",
+  placeholder = "Buscar por nombre o código CIE-10…",
   label = "Diagnóstico",
   className,
   inputClassName,
@@ -94,7 +102,7 @@ export function DiagnosisAutocomplete({
   allowFreeText = true,
   debounceMs = 280,
   minChars = 2,
-  maxResults = 10,
+  maxResults = 15,
   disabled = false,
   inputRef,
   addButtonLabel,
@@ -238,29 +246,47 @@ export function DiagnosisAutocomplete({
           {label}
         </label>
       ) : null}
-      <input
-        ref={assignInputRef}
-        id={listId}
-        type="text"
-        role="combobox"
-        aria-expanded={open}
-        aria-autocomplete="list"
-        aria-controls={`${listId}-listbox`}
-        placeholder={placeholder}
-        value={query}
-        disabled={disabled}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        onKeyDown={handleKeyDown}
-        className={cn(
-          "drflow-clinical-combobox-input w-full rounded-md py-2.5 px-3 focus:ring-2 focus:ring-sky-400/50",
-          highlighted && "ring-2 ring-sky-400/50",
-          inputClassName
-        )}
-      />
+      <div className="relative">
+        <input
+          ref={assignInputRef}
+          id={listId}
+          type="text"
+          role="combobox"
+          aria-expanded={open}
+          aria-autocomplete="list"
+          aria-controls={`${listId}-listbox`}
+          placeholder={placeholder}
+          value={query}
+          disabled={disabled}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={handleKeyDown}
+          className={cn(
+            "drflow-clinical-combobox-input w-full rounded-md py-2.5 px-3 pr-9 focus:ring-2 focus:ring-sky-400/50",
+            highlighted && "ring-2 ring-sky-400/50",
+            inputClassName
+          )}
+        />
+        {query.trim() ? (
+          <button
+            type="button"
+            aria-label="Limpiar búsqueda"
+            disabled={disabled}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+            onClick={() => {
+              setQuery("");
+              setResults([]);
+              setOpen(false);
+              localInputRef.current?.focus();
+            }}
+          >
+            ×
+          </button>
+        ) : null}
+      </div>
 
       {allowFreeText && addButtonLabel ? (
         <div className="flex justify-end">

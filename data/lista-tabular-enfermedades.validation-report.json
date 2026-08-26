@@ -1,0 +1,161 @@
+{
+  "source_file": "lista de enfermedades.pdf",
+  "source_title": "CIE-10-ES. Clasificación Internacional de Enfermedades - 10.ª Revisión - Modificación Clínica. Sexta edición- enero 2026. Tomo I: Diagnósticos.pdf",
+  "note": "El PDF adjunto es un EXTRACTO tabular (23 páginas), no el Tomo I completo. Solo se importan diagnósticos presentes en este archivo.",
+  "pages": 23,
+  "raw_chars": 101473,
+  "detected_before_dedupe": 675,
+  "valid_diagnoses": 675,
+  "duplicates": 0,
+  "duplicate_samples": [],
+  "empty_descriptions": 0,
+  "empty_codes": 0,
+  "ambiguous": 2,
+  "ambiguous_samples": [
+    {
+      "reason": "orphan_text",
+      "line": "C",
+      "index": 1606
+    },
+    {
+      "reason": "orphan_text",
+      "line": "APÍTULO 14. ENFERMEDADES DEL APARATO",
+      "index": 1608
+    }
+  ],
+  "name_too_long": 0,
+  "skipped_count": 1147,
+  "quality_flags": {
+    "truncated": [
+      {
+        "code": "Z00.1",
+        "name": "Contacto para reconocimiento de salud del recién nacido, lactante y niño"
+      }
+    ],
+    "truncated_count": 1,
+    "instructionBleed": [],
+    "longNames": [
+      {
+        "code": "F01.50",
+        "name": "Demencia vascular, gravedad no especificada, sin alteración del comportamiento, alteración psicótica, alteración del estado de ánimo ni ansiedad"
+      }
+    ],
+    "longNames_count": 1,
+    "nestedInSyn": []
+  },
+  "sample_validation": [
+    {
+      "label": "first20",
+      "count": 20,
+      "fail": 0,
+      "failures": [],
+      "sample": [
+        {
+          "code": "A00",
+          "name": "Cólera"
+        },
+        {
+          "code": "A00.0",
+          "name": "Cólera debido a Vibrio cholerae 01, biotipo cholerae"
+        },
+        {
+          "code": "A00.1",
+          "name": "Cólera debido a Vibrio cholerae 01, biotipo El Tor"
+        },
+        {
+          "code": "A00.9",
+          "name": "Cólera, no especificado"
+        },
+        {
+          "code": "A01",
+          "name": "Fiebres tifoidea y paratifoidea"
+        }
+      ]
+    },
+    {
+      "label": "middle20",
+      "count": 20,
+      "fail": 0,
+      "failures": [],
+      "sample": [
+        {
+          "code": "I07",
+          "name": "Enfermedades reumáticas de válvula tricúspide"
+        },
+        {
+          "code": "I07.0",
+          "name": "Estenosis tricuspídea reumática"
+        },
+        {
+          "code": "I07.1",
+          "name": "Insuficiencia tricuspídea reumática"
+        },
+        {
+          "code": "I07.2",
+          "name": "Estenosis e insuficiencia tricuspídeas reumáticas"
+        },
+        {
+          "code": "I07.8",
+          "name": "Otras enfermedades reumáticas de válvula tricúspide"
+        }
+      ]
+    },
+    {
+      "label": "last20",
+      "count": 20,
+      "fail": 0,
+      "failures": [],
+      "sample": [
+        {
+          "code": "Z00.1",
+          "name": "Contacto para reconocimiento de salud del recién nacido, lactante y niño"
+        },
+        {
+          "code": "Z00.11",
+          "name": "Reconocimiento de salud del recién nacido"
+        },
+        {
+          "code": "Z00.110",
+          "name": "Reconocimiento de salud del recién nacido menor de 8 días de edad"
+        },
+        {
+          "code": "Z00.111",
+          "name": "Reconocimiento de salud del recién nacido de 8 a 28 días de edad"
+        },
+        {
+          "code": "Z00.12",
+          "name": "Contacto para reconocimiento de salud rutinario infantil"
+        }
+      ]
+    },
+    {
+      "label": "random50",
+      "count": 50,
+      "fail": 0,
+      "failures": [],
+      "sample": [
+        {
+          "code": "G04",
+          "name": "Encefalitis, mielitis y encefalomielitis"
+        },
+        {
+          "code": "C00.2",
+          "name": "Neoplasia maligna de labio no especificado, cara externa"
+        },
+        {
+          "code": "K03",
+          "name": "Otras enfermedades de los tejidos duros de los dientes"
+        },
+        {
+          "code": "F01.52",
+          "name": "Demencia vascular, gravedad no especificada, con alteración psicótica"
+        },
+        {
+          "code": "H60.321",
+          "name": "Otitis externa hemorrágica, oído derecho"
+        }
+      ]
+    }
+  ],
+  "content_hash": "a9f44a8f95a190bd01134db7b7169e419693fa760fe9abb2e2d5d372b70a0b6b"
+}
