@@ -49,7 +49,7 @@ export default async function PatientPortalPage({
   const { data: link } = await supabase
     .from("public_booking_links")
     .select(
-      "slug, clinic_id, clinics(id, name, phone, address, slug, accepted_coverages, practice_profile), professionals(display_name, license_number, license_national, license_provincial, specialties(name), profiles(full_name, phone))"
+      "slug, clinic_id, clinics(id, name, phone, address, slug, accepted_coverages, practice_profile), professionals(display_name, license_number, license_national, license_provincial, specialties(name))"
     )
     .eq("slug", slug)
     .eq("is_active", true)
