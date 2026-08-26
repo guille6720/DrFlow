@@ -38,6 +38,7 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+e2e/.phase6-env.local
 
 # vercel
 .vercel

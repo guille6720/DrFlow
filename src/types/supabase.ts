@@ -3882,6 +3882,60 @@ export type Database = {
           },
         ]
       }
+      patient_portal_sessions: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          last_used_at: string | null
+          patient_id: string
+          revoked_at: string | null
+          scopes: string[]
+          token_hash: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          last_used_at?: string | null
+          patient_id: string
+          revoked_at?: string | null
+          scopes?: string[]
+          token_hash: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          last_used_at?: string | null
+          patient_id?: string
+          revoked_at?: string | null
+          scopes?: string[]
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_portal_sessions_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_portal_sessions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           address: string | null
@@ -5267,6 +5321,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      cancel_patient_appointment_v2: {
+        Args: {
+          p_appointment_id: string
+          p_reason: string
+          p_token: string
+        }
+        Returns: undefined
+      }
       cancel_pending_appointment_reminders: {
         Args: { p_appointment_id: string }
         Returns: undefined
@@ -5474,6 +5536,19 @@ export type Database = {
         Args: { p_clinic_id: string; p_patient: Json; p_profile?: Json }
         Returns: Json
       }
+      create_patient_portal_session: {
+        Args: {
+          p_clinic_id: string
+          p_expires_minutes?: number
+          p_patient_id: string
+          p_scopes?: string[]
+        }
+        Returns: {
+          expires_at: string
+          session_id: string
+          token: string
+        }[]
+      }
       create_staff_appointment_atomic: {
         Args: {
           p_clinic_id: string
@@ -5571,8 +5646,36 @@ export type Database = {
           status: Database["public"]["Enums"]["appointment_status"]
         }[]
       }
+      get_patient_appointment_statuses_v2: {
+        Args: { p_appointment_ids: string[]; p_token: string }
+        Returns: {
+          appointment_id: string
+          booking_source: string
+          cancellation_reason: string
+          cancelled_at: string
+          cancelled_by_type: string
+          start_at: string
+          status: Database["public"]["Enums"]["appointment_status"]
+        }[]
+      }
       get_patient_portal_appointments: {
         Args: { p_document_number: string; p_slug: string }
+        Returns: {
+          appointment_id: string
+          booking_source: string
+          cancellation_reason: string
+          cancelled_at: string
+          cancelled_by_type: string
+          created_at: string
+          end_at: string
+          patient_name: string
+          professional_name: string
+          start_at: string
+          status: Database["public"]["Enums"]["appointment_status"]
+        }[]
+      }
+      get_patient_portal_appointments_v2: {
+        Args: { p_token: string }
         Returns: {
           appointment_id: string
           booking_source: string
@@ -5679,6 +5782,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      record_patient_data_consent_v2: {
+        Args: {
+          p_consent_type: string
+          p_document_version: string
+          p_granted?: boolean
+          p_token: string
+        }
+        Returns: undefined
+      }
       remove_clinic_member_user: {
         Args: { p_clinic_id: string; p_user_id: string }
         Returns: undefined
@@ -5715,6 +5827,10 @@ export type Database = {
         Returns: number
       }
       resolve_portal_clinic_id: { Args: { p_slug: string }; Returns: string }
+      revoke_patient_portal_session: {
+        Args: { p_session_id: string }
+        Returns: undefined
+      }
       revoke_user_device_session: {
         Args: { p_session_id: string }
         Returns: Json
@@ -5889,6 +6005,13 @@ export type Database = {
           p_start_at: string
         }
         Returns: Json
+      }
+      validate_patient_portal_session_v2: {
+        Args: { p_slug: string; p_token: string }
+        Returns: {
+          expires_at: string
+          valid: boolean
+        }[]
       }
       sum_collected_cash_charges: {
         Args: { p_clinic_id: string; p_from: string; p_to: string }

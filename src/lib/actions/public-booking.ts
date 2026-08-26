@@ -5,6 +5,11 @@ import {
   CONSENT_TYPES,
   LEGAL_PATIENT_NOTICE_VERSION,
 } from "@/core/legal/documents";
+import {
+  getPortalAuthErrorMessage,
+  getPortalSessionRequiredMessage,
+  readPatientPortalToken,
+} from "@/core/portal/patient-portal-cookie";
 import { nullToUndefined } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
@@ -16,6 +21,30 @@ import {
   publicBookingStatusesSchema,
 } from "@/core/validations/public-booking";
 import { sanitizeText } from "@/core/validations/schemas";
+
+async function requireValidPortalToken(slug: string): Promise<
+  | { ok: true; token: string }
+  | { ok: false; error: string }
+> {
+  const token = await readPatientPortalToken();
+  if (!token) {
+    return { ok: false, error: getPortalSessionRequiredMessage() };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("validate_patient_portal_session_v2", {
+    p_token: token,
+    p_slug: slug,
+  });
+
+  const row = Array.isArray(data) ? data[0] : data;
+  const valid = Boolean(row && (row as { valid?: boolean }).valid === true);
+  if (error || !valid) {
+    return { ok: false, error: getPortalAuthErrorMessage() };
+  }
+
+  return { ok: true, token };
+}
 
 export async function submitPublicBooking(formData: FormData) {
   const parsed = publicBookingSchema.safeParse({
@@ -76,12 +105,10 @@ export async function submitPublicBooking(formData: FormData) {
 
 export async function fetchPatientAppointmentStatuses(
   slug: string,
-  documentNumber: string,
   appointmentIds: string[]
 ) {
   const parsed = publicBookingStatusesSchema.safeParse({
     slug,
-    document_number: documentNumber.trim(),
     appointment_ids: appointmentIds,
   });
   if (!parsed.success) {
@@ -91,10 +118,14 @@ export async function fetchPatientAppointmentStatuses(
     return { statuses: [] };
   }
 
+  const auth = await requireValidPortalToken(parsed.data.slug);
+  if (!auth.ok) {
+    return { error: auth.error, statuses: [] };
+  }
+
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_patient_appointment_statuses", {
-    p_slug: parsed.data.slug,
-    p_document_number: parsed.data.document_number,
+  const { data, error } = await supabase.rpc("get_patient_appointment_statuses_v2", {
+    p_token: auth.token,
     p_appointment_ids: parsed.data.appointment_ids,
   });
 
@@ -125,13 +156,11 @@ export async function fetchPatientAppointmentStatuses(
 
 export async function cancelPatientAppointment(
   slug: string,
-  documentNumber: string,
   appointmentId: string,
   reason: string
 ) {
   const parsed = publicBookingCancelSchema.safeParse({
     slug,
-    document_number: documentNumber.trim(),
     appointment_id: appointmentId,
     reason: reason.trim(),
   });
@@ -139,10 +168,14 @@ export async function cancelPatientAppointment(
     return { error: firstZodIssue(parsed.error) };
   }
 
+  const auth = await requireValidPortalToken(parsed.data.slug);
+  if (!auth.ok) {
+    return { error: auth.error };
+  }
+
   const supabase = await createClient();
-  const { error } = await supabase.rpc("cancel_patient_appointment", {
-    p_slug: parsed.data.slug,
-    p_document_number: parsed.data.document_number,
+  const { error } = await supabase.rpc("cancel_patient_appointment_v2", {
+    p_token: auth.token,
     p_appointment_id: parsed.data.appointment_id,
     p_reason: parsed.data.reason,
   });
@@ -152,6 +185,7 @@ export async function cancelPatientAppointment(
       error: resolvePostgresUserMessage(error, {
         rpcMessages: {
           APPOINTMENT_NOT_FOUND: "No encontramos ese turno o ya no se puede cancelar",
+          INVALID_PORTAL_SESSION: getPortalAuthErrorMessage(),
         },
         fallback: "No pudimos cancelar el turno. Intentá de nuevo.",
       }),
@@ -161,23 +195,30 @@ export async function cancelPatientAppointment(
   return { success: true };
 }
 
-export async function fetchPatientPortalAppointments(slug: string, documentNumber: string) {
-  const parsed = publicBookingPortalAppointmentsSchema.safeParse({
-    slug,
-    document_number: documentNumber.trim(),
-  });
+export async function fetchPatientPortalAppointments(slug: string) {
+  const parsed = publicBookingPortalAppointmentsSchema.safeParse({ slug });
   if (!parsed.success) {
-    return { error: firstZodIssue(parsed.error), appointments: [] };
+    return { error: firstZodIssue(parsed.error), appointments: [], authenticated: false };
+  }
+
+  const token = await readPatientPortalToken();
+  if (!token) {
+    // No session yet — UI shows the secure-link prompt (not a hard error).
+    return { appointments: [], authenticated: false };
+  }
+
+  const auth = await requireValidPortalToken(parsed.data.slug);
+  if (!auth.ok) {
+    return { error: auth.error, appointments: [], authenticated: false };
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_patient_portal_appointments", {
-    p_slug: parsed.data.slug,
-    p_document_number: parsed.data.document_number,
+  const { data, error } = await supabase.rpc("get_patient_portal_appointments_v2", {
+    p_token: auth.token,
   });
 
   if (error) {
-    return { error: "No pudimos consultar tus turnos", appointments: [] };
+    return { error: "No pudimos consultar tus turnos", appointments: [], authenticated: true };
   }
 
   const appointments = (data ?? []).map(
@@ -208,7 +249,7 @@ export async function fetchPatientPortalAppointments(slug: string, documentNumbe
     })
   );
 
-  return { appointments };
+  return { appointments, authenticated: true };
 }
 
 export async function loadPublicBookingSlots(

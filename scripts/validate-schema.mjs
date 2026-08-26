@@ -32,7 +32,7 @@ function checkMigrationOrder(files) {
   const issues = [];
   const expectedSet = new Set(MIGRATION_SEQUENCE);
   for (const f of files) {
-    if (!expectedSet.has(f) && !f.match(/^\d{3}[a-z]?_/)) {
+    if (!expectedSet.has(f) && !f.match(/^\d{3}[a-z]?_/) && !f.match(/^\d{14}_/)) {
       issues.push(`Unexpected migration filename: ${f}`);
     }
   }
@@ -53,8 +53,11 @@ function checkMigrationOrder(files) {
 function checkTables(sql) {
   const missing = [];
   for (const table of EXPECTED_TABLES) {
-    const create = new RegExp(`CREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?${table}\\b`, "i");
-    const alter = new RegExp(`ALTER\\s+TABLE\\s+${table}\\b`, "i");
+    const create = new RegExp(
+      `CREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:public\\.)?${table}\\b`,
+      "i"
+    );
+    const alter = new RegExp(`ALTER\\s+TABLE\\s+(?:public\\.)?${table}\\b`, "i");
     if (!create.test(sql) && !alter.test(sql)) {
       missing.push(table);
     }
@@ -102,8 +105,14 @@ function checkIndexes(sql) {
 function checkRls(sql) {
   const missing = [];
   for (const table of EXPECTED_TABLES) {
-    const enable = new RegExp(`ALTER\\s+TABLE\\s+${table}\\s+ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY`, "i");
-    const policy = new RegExp(`CREATE\\s+POLICY\\s+\\w+\\s+ON\\s+${table}\\s+`, "i");
+    const enable = new RegExp(
+      `ALTER\\s+TABLE\\s+(?:public\\.)?${table}\\s+ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY`,
+      "i"
+    );
+    const policy = new RegExp(
+      `CREATE\\s+POLICY\\s+\\w+\\s+ON\\s+(?:public\\.)?${table}\\s+`,
+      "i"
+    );
     if (!enable.test(sql) && !policy.test(sql)) {
       missing.push(table);
     }

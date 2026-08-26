@@ -36,10 +36,14 @@ async function loadClinicPamiFlags(clinicId: string) {
 
 export default async function PatientPortalPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug } = await params;
+  const query = await searchParams;
+  const portalError = query.portal_error === "1";
   const supabase = await createClient();
 
   const { data: link } = await supabase
@@ -85,6 +89,7 @@ export default async function PatientPortalPage({
         professionals={professionals ?? []}
         doctor={doctor}
         offersPami={offersPami}
+        portalError={portalError}
       />
     );
   }
@@ -119,6 +124,7 @@ export default async function PatientPortalPage({
       professionals={professionals ?? []}
       doctor={doctor}
       offersPami={offersPami}
+      portalError={portalError}
     />
   );
 }

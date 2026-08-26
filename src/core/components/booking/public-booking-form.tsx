@@ -86,8 +86,8 @@ export function PublicBookingForm({ slug, clinicName, professionals, onRequestSa
           <CheckCircle2 className="h-14 w-14 text-emerald-600" />
           <h2 className="mt-4 text-xl font-bold text-slate-900">¡Solicitud enviada!</h2>
           <p className="mt-2 max-w-sm text-sm text-slate-600">
-            {clinicName} recibió tu pedido por <strong>web</strong>. Ingresá tu DNI en{" "}
-            <strong>Mis turnos</strong> para ver el estado desde cualquier dispositivo.
+            {clinicName} recibió tu pedido por <strong>web</strong>. Para ver el estado necesitás el
+            enlace seguro enviado por el consultorio (Mis turnos).
           </p>
         </div>
       </Card>

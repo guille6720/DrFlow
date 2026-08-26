@@ -16,6 +16,7 @@ import { isPamiPatient } from "@/features/pacientes/utils/patient-age";
 import { formatPatientConsultationCountShort } from "@/features/pacientes/utils/patient-consultation-count";
 import { buildPatientContactMessage } from "@/features/pacientes/utils/patient-messages";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { GeneratePatientPortalAccessControl } from "@/features/portal/components/generate-patient-portal-access-control";
 
 import { Badge } from "@/components/ui/badge";
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
@@ -102,6 +103,7 @@ const PatientListCard = memo(function PatientListCard({
               compact
             />
           ) : null}
+          <GeneratePatientPortalAccessControl patientId={p.id} compact />
           <PatientWhatsAppButton phone={p.phone} message={contactMessage} size="icon" />
           <Link
             href={patientClinicalHistoryPath(p.id)}
