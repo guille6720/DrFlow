@@ -14,7 +14,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const status = persist ? await recordHealthCheckEvent() : await getPublicHealthStatus();
+  const status = persist
+    ? await recordHealthCheckEvent()
+    : await getPublicHealthStatus({ includeSchema: url.searchParams.get("schema") === "1" });
 
   return NextResponse.json(status, {
     status: status.ok ? 200 : 503,

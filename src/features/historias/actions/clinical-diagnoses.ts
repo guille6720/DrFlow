@@ -80,7 +80,9 @@ async function searchClinicalDiagnosesViaTable(
     console.error(
       "[searchClinicalDiagnoses] table query failed:",
       firstError.message,
-      firstError.code
+      firstError.code,
+      firstError.details,
+      firstError.hint
     );
     return { error: "No se pudo buscar en el catálogo de diagnósticos." };
   }
@@ -110,7 +112,8 @@ async function searchClinicalDiagnosesViaRpc(
       "[searchClinicalDiagnoses] RPC failed:",
       error.message,
       error.code,
-      error.details
+      error.details,
+      error.hint
     );
     return { rpcFailed: true, error: "No se pudo buscar en el catálogo de diagnósticos." };
   }
@@ -141,15 +144,24 @@ export async function searchClinicalDiagnoses(
 
     const boundedLimit = Math.min(Math.max(limit, 1), 25);
 
-    // Global catalog read after staff auth: service_role bypasses RLS/EXECUTE regressions.
+    // Preferred path: service_role table read (global catalog, staff already authorized).
     if (hasAdminClient()) {
       const admin = createAdminClient();
+      const tableResult = await searchClinicalDiagnosesViaTable(
+        admin,
+        queryParsed.data,
+        boundedLimit
+      );
+      if (tableResult.data) return tableResult;
+      console.error("[searchClinicalDiagnoses] admin table search failed; trying RPC");
       const rpcResult = await searchClinicalDiagnosesViaRpc(admin, queryParsed.data, boundedLimit);
       if (rpcResult.data) return { data: rpcResult.data };
-      const tableResult = await searchClinicalDiagnosesViaTable(admin, queryParsed.data, boundedLimit);
-      if (tableResult.data) return tableResult;
-      return tableResult;
+      return tableResult.error ? tableResult : rpcResult;
     }
+
+    console.error(
+      "[searchClinicalDiagnoses] SUPABASE_SERVICE_ROLE_KEY missing — using session client"
+    );
 
     const rpcResult = await searchClinicalDiagnosesViaRpc(supabase, queryParsed.data, boundedLimit);
     if (rpcResult.data) return { data: rpcResult.data };

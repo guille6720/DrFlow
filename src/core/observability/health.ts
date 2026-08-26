@@ -12,6 +12,10 @@ export type PublicHealthStatus = {
     supabase: { ok: boolean; latencyMs?: number; error?: string };
     memory: { ok: boolean };
     schema?: { ok: boolean; error?: string };
+    env?: {
+      publishableKeyConfigured: boolean;
+      serviceRoleConfigured: boolean;
+    };
   };
 };
 
@@ -26,18 +30,25 @@ export type InternalHealthStatus = PublicHealthStatus & {
 export type HealthStatus = InternalHealthStatus;
 
 async function probeSupabase(): Promise<PublicHealthStatus["checks"]["supabase"]> {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    return { ok: false, error: "Not configured" };
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const publishableKey = (
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    ""
+  ).trim();
+
+  if (!url) {
+    return { ok: false, error: "NEXT_PUBLIC_SUPABASE_URL missing" };
+  }
+  if (!publishableKey || publishableKey.includes("placeholder")) {
+    return { ok: false, error: "Supabase publishable/anon key missing or placeholder" };
   }
 
   const start = performance.now();
   try {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/$/, "");
-    const res = await fetch(`${url}/rest/v1/`, {
+    const res = await fetch(`${url.replace(/\/$/, "")}/rest/v1/`, {
       method: "HEAD",
-      headers: {
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "",
-      },
+      headers: { apikey: publishableKey },
       cache: "no-store",
     });
     return {
@@ -53,6 +64,18 @@ async function probeSupabase(): Promise<PublicHealthStatus["checks"]["supabase"]
   }
 }
 
+function probePublicEnv(): NonNullable<PublicHealthStatus["checks"]["env"]> {
+  const publishableKey = (
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    ""
+  ).trim();
+  return {
+    publishableKeyConfigured: Boolean(publishableKey && !publishableKey.includes("placeholder")),
+    serviceRoleConfigured: hasAdminClient(),
+  };
+}
+
 /**
  * Lightweight schema compatibility probe (Phase 3 fiscalization marker).
  * Uses service role only when configured; otherwise skips as ok=true.
@@ -63,9 +86,22 @@ async function probeSchemaCompatibility(): Promise<{ ok: boolean; error?: string
   }
   try {
     const supabase = createAdminClient();
-    const { error } = await supabase.from("clinics").select("id, is_fiscalization").limit(1);
-    if (error) {
+    const { error: clinicsError } = await supabase
+      .from("clinics")
+      .select("id, is_fiscalization")
+      .limit(1);
+    if (clinicsError) {
       return { ok: false, error: "schema_probe_failed" };
+    }
+    const { count, error: dxError } = await supabase
+      .from("clinical_diagnoses")
+      .select("id", { count: "exact", head: true })
+      .eq("active", true);
+    if (dxError) {
+      return { ok: false, error: "clinical_diagnoses_unavailable" };
+    }
+    if ((count ?? 0) < 1) {
+      return { ok: false, error: "clinical_diagnoses_empty" };
     }
     return { ok: true };
   } catch {
@@ -82,8 +118,12 @@ export async function getPublicHealthStatus(options?: {
   const heapUsedMb = Math.round(mem.heapUsed / 1024 / 1024);
   const supabaseCheck = await probeSupabase();
   const schemaCheck = options?.includeSchema ? await probeSchemaCompatibility() : undefined;
+  const envCheck = probePublicEnv();
   const ok =
-    supabaseCheck.ok && heapUsedMb < 512 && (schemaCheck ? schemaCheck.ok : true);
+    supabaseCheck.ok &&
+    envCheck.publishableKeyConfigured &&
+    heapUsedMb < 512 &&
+    (schemaCheck ? schemaCheck.ok : true);
 
   return {
     ok,
@@ -93,6 +133,7 @@ export async function getPublicHealthStatus(options?: {
     checks: {
       supabase: supabaseCheck,
       memory: { ok: heapUsedMb < 512 },
+      env: envCheck,
       ...(schemaCheck ? { schema: schemaCheck } : {}),
     },
   };
