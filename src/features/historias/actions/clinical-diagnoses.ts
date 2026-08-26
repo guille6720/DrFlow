@@ -1,6 +1,6 @@
 "use server";
 
-import { getActiveClinic, getSession } from "@/core/auth/session.server";
+import { getActiveClinic } from "@/core/auth/session.server";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 import { searchQuerySchema } from "@/core/validations/params";
@@ -94,13 +94,14 @@ export async function searchClinicalDiagnoses(
   limit = 10
 ): Promise<{ data?: ClinicalDiagnosisCatalogHit[]; error?: string }> {
   try {
-    const [user, active, supabase] = await Promise.all([
-      getSession(),
-      getActiveClinic(),
-      createClient(),
-    ]);
-    if (!user) return { error: "Sesión requerida" };
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return { error: "Sesión requerida" };
 
+    const active = await getActiveClinic();
     const { role, isSuperadmin } = active;
     if (!hasPermission(role, "viewClinicalRecords", isSuperadmin)) {
       return { error: "Sin permisos para buscar diagnósticos" };

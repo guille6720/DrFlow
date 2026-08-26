@@ -18,6 +18,7 @@ describe("migrations consistency", () => {
     expect(files).toContain("141_renapdis_phase2_patient_cuir.sql");
     expect(files).toContain("142_renapdis_phase3_fiscalization_marker.sql");
     expect(files).toContain("143_clinical_diagnoses_cie10_import.sql");
+    expect(files).toContain("144_clinical_diagnoses_rls_select_authenticated.sql");
     expect(files).toContain("20260826151000_rls_staff_policies_authenticated_only.sql");
   });
 
@@ -35,6 +36,7 @@ describe("migrations consistency", () => {
     expect(unique).toContain(141);
     expect(unique).toContain(142);
     expect(unique).toContain(143);
+    expect(unique).toContain(144);
   });
 
   it("034 caja migration is idempotent", () => {
