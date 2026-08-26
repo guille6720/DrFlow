@@ -40,16 +40,20 @@ async function loadClinicPamiFlags(clinicId: string) {
 
 export default async function PatientPortalPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug } = await params;
+  const query = await searchParams;
+  const portalError = query.portal_error === "1";
   const supabase = await createClient();
 
   const { data: link } = await supabase
     .from("public_booking_links")
     .select(
-      "slug, clinic_id, clinics(id, name, phone, address, slug, accepted_coverages, practice_profile), professionals(display_name, license_number, license_national, license_provincial, specialties(name), profiles(full_name, phone))"
+      "slug, clinic_id, clinics(id, name, phone, address, slug, accepted_coverages, practice_profile), professionals(display_name, license_number, license_national, license_provincial, specialties(name))"
     )
     .eq("slug", slug)
     .eq("is_active", true)
@@ -96,6 +100,7 @@ export default async function PatientPortalPage({
         professionals={professionals ?? []}
         doctor={doctor}
         offersPami={offersPami}
+        portalError={portalError}
       />
     );
   }
@@ -130,6 +135,7 @@ export default async function PatientPortalPage({
       professionals={professionals ?? []}
       doctor={doctor}
       offersPami={offersPami}
+      portalError={portalError}
     />
   );
 }

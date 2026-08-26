@@ -103,6 +103,7 @@ function ConsultEvolutionStructuredFieldsInner({
           label="Plan / indicaciones"
           rows={3}
           voiceInput
+          preservePasteFormat
           value={indications}
           onChange={(e) => onIndicationsChange(e.target.value)}
           placeholder="Indicaciones generales del plan (opcional)…"

@@ -22,6 +22,16 @@
 /* Soft body default — do not cascade bold into clinical copy */
 body {
   font-weight: var(--font-weight-body);
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+}
+
+/* Clinical mesh prefers auto smoothing so small text stays sharp on Windows */
+.drflow-mesh,
+.drflow-ui-sidebar,
+.drflow-modal-panel {
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
 }
 
 /* Labels stay medium; never jump to bold for contrast */

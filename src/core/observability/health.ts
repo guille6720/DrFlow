@@ -1,5 +1,7 @@
 import { getReleasePayload } from "@/core/app-release";
+import { sanitizeMonitoringPayload } from "@/core/observability/sanitize-monitoring-payload";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
+import { toJson } from "@/core/supabase/json";
 
 export type PublicHealthStatus = {
   ok: boolean;
@@ -9,6 +11,7 @@ export type PublicHealthStatus = {
   checks: {
     supabase: { ok: boolean; latencyMs?: number; error?: string };
     memory: { ok: boolean };
+    schema?: { ok: boolean; error?: string };
   };
 };
 
@@ -50,13 +53,37 @@ async function probeSupabase(): Promise<PublicHealthStatus["checks"]["supabase"]
   }
 }
 
+/**
+ * Lightweight schema compatibility probe (Phase 3 fiscalization marker).
+ * Uses service role only when configured; otherwise skips as ok=true.
+ */
+async function probeSchemaCompatibility(): Promise<{ ok: boolean; error?: string }> {
+  if (!hasAdminClient()) {
+    return { ok: true };
+  }
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase.from("clinics").select("id, is_fiscalization").limit(1);
+    if (error) {
+      return { ok: false, error: "schema_probe_failed" };
+    }
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "schema_probe_failed" };
+  }
+}
+
 /** Public probe — no infra secrets or heap details. */
-export async function getPublicHealthStatus(): Promise<PublicHealthStatus> {
+export async function getPublicHealthStatus(options?: {
+  includeSchema?: boolean;
+}): Promise<PublicHealthStatus> {
   const release = getReleasePayload();
   const mem = process.memoryUsage();
   const heapUsedMb = Math.round(mem.heapUsed / 1024 / 1024);
   const supabaseCheck = await probeSupabase();
-  const ok = supabaseCheck.ok && heapUsedMb < 512;
+  const schemaCheck = options?.includeSchema ? await probeSchemaCompatibility() : undefined;
+  const ok =
+    supabaseCheck.ok && heapUsedMb < 512 && (schemaCheck ? schemaCheck.ok : true);
 
   return {
     ok,
@@ -66,6 +93,7 @@ export async function getPublicHealthStatus(): Promise<PublicHealthStatus> {
     checks: {
       supabase: supabaseCheck,
       memory: { ok: heapUsedMb < 512 },
+      ...(schemaCheck ? { schema: schemaCheck } : {}),
     },
   };
 }
@@ -77,7 +105,8 @@ export async function getHealthStatus(): Promise<InternalHealthStatus> {
   const heapUsedMb = Math.round(mem.heapUsed / 1024 / 1024);
   const heapTotalMb = Math.round(mem.heapTotal / 1024 / 1024);
   const supabaseCheck = await probeSupabase();
-  const ok = supabaseCheck.ok && heapUsedMb < 512;
+  const schemaCheck = await probeSchemaCompatibility();
+  const ok = supabaseCheck.ok && heapUsedMb < 512 && schemaCheck.ok;
 
   return {
     ok,
@@ -88,6 +117,7 @@ export async function getHealthStatus(): Promise<InternalHealthStatus> {
       supabase: supabaseCheck,
       memory: { ok: heapUsedMb < 512, heapUsedMb, heapTotalMb },
       serviceRole: { configured: hasAdminClient() },
+      schema: schemaCheck,
     },
   };
 }
@@ -104,11 +134,14 @@ export async function recordHealthCheckEvent(): Promise<InternalHealthStatus> {
       status: status.ok ? "ok" : "warn",
       path: "/api/health",
       duration_ms: status.checks.supabase.latencyMs ?? null,
-      metadata: {
-        version: status.version,
-        heapUsedMb: status.checks.memory.heapUsedMb,
-        serviceRole: status.checks.serviceRole.configured,
-      },
+      metadata: toJson(
+        sanitizeMonitoringPayload({
+          version: status.version,
+          heapUsedMb: status.checks.memory.heapUsedMb,
+          serviceRoleConfigured: status.checks.serviceRole.configured,
+          schemaOk: status.checks.schema?.ok ?? null,
+        })
+      ),
     });
   }
 

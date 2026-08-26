@@ -31,7 +31,7 @@ export default async function TurnosAgendaPage() {
     ? getCachedClinicProfessionalsAgenda(clinicId)
     : Promise.resolve([] as ProfessionalAgendaRow[]);
 
-  const [appointmentRows, professionals, locations, specialties, blocks, bookingSlug, defaultProfessionalId] =
+  const [agendaResult, professionals, locations, specialties, blocks, bookingSlug, defaultProfessionalId] =
     clinicId
       ? await Promise.all([
           selectAppointmentAgendaRows(supabase, {
@@ -41,7 +41,7 @@ export default async function TurnosAgendaPage() {
             embedPatients: true,
             embedRelations: true,
             limit: APPOINTMENTS_AGENDA_MAX,
-          }).then((result) => result.rows),
+          }),
           professionalsPromise,
           getCachedClinicLocations(clinicId),
           getCachedClinicSpecialties(clinicId),
@@ -57,9 +57,11 @@ export default async function TurnosAgendaPage() {
             resolveDefaultProfessionalId(supabase, clinicId, pros as ProfessionalAgendaRow[])
           ),
         ])
-      : [[], [], [], [], { data: [] }, null, undefined];
+      : [{ rows: [], error: null }, [], [], [], { data: [] }, null, undefined];
 
   const professionalRows: ProfessionalAgendaRow[] = professionals as ProfessionalAgendaRow[];
+
+  const appointmentRows = agendaResult.rows;
 
   return (
     <>

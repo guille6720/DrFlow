@@ -139,3 +139,168 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-theme-option[data-
 .drflow-text-muted {
   color: var(--text-muted) !important;
 }
+
+/* =============================================================================
+ * Universal sharpness + contrast remaps (all Styles × light/dark)
+ * Prefer tokens; do not flatten palette identity.
+ * ============================================================================= */
+
+.drflow-mesh,
+.drflow-modal-panel,
+.drflow-workspace-overlay-panel,
+.drflow-ui-sidebar,
+.drflow-ui-header,
+.drflow-ehr-shell,
+.drflow-ui-card,
+.drflow-card-light {
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
+}
+
+/* Ultra-light weights look soft/blurry on Windows LCD — raise to medium */
+.drflow-mesh :is(.font-thin, .font-extralight, .font-light),
+.drflow-ui-sidebar :is(.font-thin, .font-extralight, .font-light),
+.drflow-modal-panel :is(.font-thin, .font-extralight, .font-light),
+.drflow-workspace-overlay-panel :is(.font-thin, .font-extralight, .font-light) {
+  font-weight: 500 !important;
+}
+
+/* Clinical / financial numbers stay crisp */
+.drflow-mesh main :is(
+  .drflow-ui-stat,
+  .tabular-nums,
+  [class*="tabular-nums"],
+  td.font-mono,
+  .font-mono,
+  [data-currency],
+  [data-amount]
+) {
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: auto;
+}
+
+.drflow-mesh main .drflow-ui-stat :is(.text-2xl, .text-3xl, .text-4xl, .text-xl) {
+  font-weight: 600;
+  color: var(--text-primary, var(--foreground));
+  letter-spacing: -0.01em;
+}
+
+/* Tables: body primary, headers secondary, never washed */
+.drflow-mesh main table :is(td, th),
+.drflow-modal-panel table :is(td, th),
+.drflow-ehr-table :is(td, th) {
+  -webkit-font-smoothing: auto;
+}
+
+.drflow-mesh main table td:not([class*="text-teal"]):not([class*="text-red"]):not([class*="text-amber"]):not([class*="text-emerald"]),
+.drflow-ehr-table td:not([class*="text-teal"]):not([class*="text-red"]):not([class*="text-amber"]):not([class*="text-emerald"]) {
+  color: var(--text-primary, var(--foreground));
+}
+
+.drflow-mesh main table th:not([class*="text-white"]),
+.drflow-ehr-table th:not([class*="text-white"]) {
+  color: var(--text-secondary, var(--muted-foreground));
+  font-weight: 600;
+}
+
+/* Dark themes: faded slate utilities → readable secondary (not near-disabled gray) */
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+  .drflow-mesh
+  main
+  :is(.text-slate-400, .text-slate-500, .text-gray-400, .text-gray-500, .text-zinc-400, .text-zinc-500):not(button):not(.drflow-ui-button):not(a.bg-gradient-to-r) {
+  color: var(--text-secondary) !important;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+  .drflow-mesh
+  main
+  :is(.text-slate-300, .text-gray-300, .text-zinc-300):not(button):not(.drflow-ui-button):not(a.bg-gradient-to-r) {
+  color: var(--text-primary) !important;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+  .drflow-mesh
+  main
+  :is(.text-slate-600, .text-slate-700, .text-gray-600, .text-gray-700):not(button):not(.drflow-ui-button) {
+  color: var(--text-secondary) !important;
+}
+
+/* Light themes: pale slate utilities → muted/secondary dark ink */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"])
+  .drflow-mesh
+  main
+  :is(.text-slate-400, .text-slate-500, .text-gray-400, .text-gray-500):not(button):not(.drflow-ui-button) {
+  color: var(--text-muted) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"])
+  .drflow-mesh
+  main
+  :is(.text-slate-600, .text-slate-700):not(button):not(.drflow-ui-button) {
+  color: var(--text-secondary) !important;
+}
+
+/* Sidebar nav: never look “disabled” when active/selectable */
+.drflow-ui-sidebar :is(a, button):not(:disabled):not([aria-disabled="true"]) {
+  opacity: 1 !important;
+}
+
+.drflow-ui-sidebar :is(.text-slate-300, .text-slate-400, .text-slate-500) {
+  color: var(--text-on-sidebar, var(--text-secondary)) !important;
+}
+
+/* Badges / chips / toasts — keep ink ≥ token contrast */
+.drflow-mesh main :is([class*="badge"], .rounded-full)[class*="text-slate-400"],
+.drflow-mesh main :is([class*="badge"], .rounded-full)[class*="text-slate-500"] {
+  color: var(--text-secondary) !important;
+}
+
+/* Empty / helper copy */
+.drflow-mesh main :is(.text-muted-foreground, [class*="muted-foreground"]) {
+  color: var(--text-muted) !important;
+  opacity: 1 !important;
+}
+
+/* Borders that vanish in dark mode */
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+  .drflow-mesh
+  main
+  :is(.border-slate-100, .border-slate-200, .border-gray-100, .border-gray-200) {
+  border-color: var(--border-default) !important;
+}
+
+html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+  .drflow-mesh
+  main
+  :is(.divide-slate-100, .divide-slate-200)
+  > :not([hidden])
+  ~ :not([hidden]) {
+  border-color: var(--border-default) !important;
+}
+
+/* Modals / dialogs inherit sharp text */
+.drflow-modal-panel,
+[role="dialog"],
+[role="alertdialog"] {
+  color: var(--text-primary, var(--foreground));
+  -webkit-font-smoothing: auto;
+}
+
+.drflow-modal-panel :is(.text-slate-400, .text-slate-500, .text-muted-foreground) {
+  color: var(--text-muted) !important;
+  opacity: 1 !important;
+}
+
+/* Tooltips / menus */
+[role="menu"],
+[role="listbox"],
+[role="tooltip"] {
+  color: var(--text-primary, var(--foreground));
+}
+
+[role="menuitem"][data-disabled],
+[role="option"][aria-disabled="true"] {
+  color: var(--text-disabled) !important;
+  opacity: 1 !important;
+}

@@ -11,6 +11,7 @@ export type ProfessionalIntakeDetail = {
   phone?: string | null;
   license_national?: string | null;
   license_provincial?: string | null;
+  license_number?: string | null;
   office_phone?: string | null;
   office_address?: string | null;
   accepted_insurances?: string | null;
@@ -18,6 +19,14 @@ export type ProfessionalIntakeDetail = {
   intake_completed_at?: string | null;
   location_id?: string | null;
   tax_id?: string | null;
+  cuil?: string | null;
+  licensing_jurisdiction?: string | null;
+  issuing_authority?: string | null;
+  refeps_identifier?: string | null;
+  refeps_specialty?: string | null;
+  refeps_validation_status?: import("@/core/renapdis/types").RefepsValidationStatus;
+  refeps_validated_at?: string | null;
+  refeps_validation_error?: string | null;
   iva_status?: string | null;
   bank_name?: string | null;
   bank_account_type?: string | null;
@@ -53,6 +62,8 @@ export type ProfessionalIntakeViewProps = {
   initialScheduleRules: AvailabilityRuleRow[];
   teamMembers: EnrichedTeamMember[];
   invitedMembers: EnrichedTeamMember[];
+  mfaStatus: import("@/core/auth/prescriber-mfa.types").PrescriberMfaStatus;
+  canPrescribe: boolean;
 };
 
 export type ProfessionalIntakeDetailTab = "perfil" | "consultorio" | "horarios" | "datos_bancarios";

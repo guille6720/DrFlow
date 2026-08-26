@@ -4,13 +4,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { filterAvailabilityRulesByLocation } from "@/core/booking/location-filters";
 import { generateAvailableSlots } from "@/core/booking/slots";
-import { toAppointmentAgendaRows } from "@/core/supabase/appointment-agenda-map";
-import { APPOINTMENT_AGENDA_COLUMNS } from "@/core/supabase/select-columns";
+import { selectAppointmentAgendaRows } from "@/core/supabase/appointment-agenda-select";
 
 import { getAppointmentHorizonDaysAhead } from "@/lib/utils/appointment-booking-horizon";
+import type { Database } from "@/types/supabase";
 
 export async function loadTurnosWizardSlots(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   clinicId: string,
   professionalId: string,
   options?: { daysAhead?: number; fromDate?: Date; locationId?: string | null }
@@ -28,17 +28,16 @@ export async function loadTurnosWizardSlots(
     .eq("professional_id", professionalId)
     .eq("is_active", true);
 
-  const [{ data: rulesRaw }, { data: appointments }, { data: blocks }] = await Promise.all([
+  const [{ data: rulesRaw }, agendaResult, { data: blocks }] = await Promise.all([
     rulesQuery,
-    supabase
-      .from("appointments")
-      .select(`${APPOINTMENT_AGENDA_COLUMNS}, patients(first_name, last_name, document_number, insurance_provider, insurance_plan)`)
-      .eq("clinic_id", clinicId)
-      .eq("professional_id", professionalId)
-      .neq("status", "cancelled")
-      .gte("start_at", rangeStart)
-      .lte("start_at", rangeEnd)
-      .order("start_at"),
+    selectAppointmentAgendaRows(supabase, {
+      clinicId,
+      professionalId,
+      rangeStart,
+      rangeEnd,
+      embedPatients: true,
+      excludeCancelled: true,
+    }),
     supabase
       .from("schedule_blocks")
       .select("start_at, end_at, reason")
@@ -50,7 +49,7 @@ export async function loadTurnosWizardSlots(
 
   const rules = filterAvailabilityRulesByLocation(rulesRaw ?? [], locationId);
 
-  const appointmentRows = toAppointmentAgendaRows(appointments ?? []);
+  const appointmentRows = agendaResult.rows;
   const blockRows = (blocks ?? []).map((block) => ({
     start_at: block.start_at,
     end_at: block.end_at,

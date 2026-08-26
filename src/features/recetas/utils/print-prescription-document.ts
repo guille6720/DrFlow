@@ -33,18 +33,29 @@ export type PrescriptionDocumentData = {
   qrHint?: string;
   refepsStatus?: string | null;
   refepsId?: string | null;
+  nationalRxStatus?: string | null;
+  cuirStatus?: string | null;
+  cuirFormatted?: string | null;
   patient: {
     first_name: string;
     last_name: string;
     document_number: string;
     birth_date?: string | null;
+    sex?: string | null;
+    cuil?: string | null;
+    alt_identifier_type?: string | null;
+    alt_identifier_value?: string | null;
     insurance_provider?: string | null;
     insurance_number?: string | null;
+    address?: string | null;
   };
   professional: {
     full_name: string;
     license_number?: string | null;
     specialty?: string | null;
+    profession?: string | null;
+    jurisdiction?: string | null;
+    refeps_identifier?: string | null;
     signatureText?: string | null;
     signatureImageUrl?: string | null;
   };
@@ -111,9 +122,34 @@ function buildQrHtml(data: PrescriptionDocumentData): string {
         <div>
           <p class="order-doc-qr-code">${escapeHtml(data.qrPayload)}</p>
           ${data.refepsId ? `<p class="order-doc-qr-code"><strong>ID REFEPS:</strong> ${escapeHtml(data.refepsId)}</p>` : ""}
+          ${
+            data.cuirFormatted
+              ? `<p class="order-doc-qr-code"><strong>CUIR:</strong> ${escapeHtml(data.cuirFormatted)}${
+                  data.cuirStatus === "sandbox" ? " — SANDBOX — SIN VALIDEZ LEGAL" : ""
+                }</p>`
+              : ""
+          }
           <p class="order-doc-qr-hint">${escapeHtml(hint)}</p>
         </div>
       </div>
+    </section>
+  `;
+}
+
+function buildCuirBlockHtml(data: PrescriptionDocumentData): string {
+  if (!data.cuirFormatted?.trim()) return "";
+  const sandbox = data.cuirStatus === "sandbox";
+  const official = data.cuirStatus === "official";
+  if (!sandbox && !official) return "";
+  return `
+    <section class="order-doc-block">
+      <h2>${sandbox ? "CUIR SANDBOX — SIN VALIDEZ LEGAL" : "CUIR"}</h2>
+      <p class="order-doc-qr-code">${escapeHtml(data.cuirFormatted)}</p>
+      <p class="order-doc-qr-hint">${
+        sandbox
+          ? "Representación interna de prueba. No es el CUIR oficial numérico ni implica validación del Ministerio."
+          : "CUIR oficial (concatenación numérica Anexo IV) tras validación estricta."
+      }</p>
     </section>
   `;
 }
@@ -152,7 +188,15 @@ export function buildPrescriptionDocumentHtml(data: PrescriptionDocumentData): s
         <h2>Paciente</h2>
         <p><strong>${escapeHtml(data.patient.last_name)}, ${escapeHtml(data.patient.first_name)}</strong></p>
         <p>DNI: ${escapeHtml(data.patient.document_number)}</p>
+        ${data.patient.cuil ? `<p>CUIL: ${escapeHtml(data.patient.cuil)}</p>` : ""}
+        ${
+          !data.patient.cuil && data.patient.alt_identifier_value
+            ? `<p>ID alternativo (${escapeHtml(data.patient.alt_identifier_type ?? "—")}): ${escapeHtml(data.patient.alt_identifier_value)}</p>`
+            : ""
+        }
         ${birth ? `<p>F. nac.: ${escapeHtml(birth)}</p>` : ""}
+        ${data.patient.sex ? `<p>Sexo: ${escapeHtml(data.patient.sex)}</p>` : ""}
+        ${data.patient.address ? `<p>Domicilio: ${escapeHtml(data.patient.address)}</p>` : ""}
         ${legacyInsurance ? `<p>Cobertura: ${escapeHtml(String(legacyInsurance))}</p>` : ""}
       </section>
 
@@ -161,7 +205,10 @@ export function buildPrescriptionDocumentHtml(data: PrescriptionDocumentData): s
       <section class="order-doc-block">
         <h2>Prescriptor</h2>
         <p>Dr/a. ${escapeHtml(data.professional.full_name)}</p>
+        ${data.professional.profession ? `<p>Profesión: ${escapeHtml(data.professional.profession)}</p>` : ""}
         ${data.professional.license_number ? `<p>Matrícula: ${escapeHtml(data.professional.license_number)}</p>` : ""}
+        ${data.professional.jurisdiction ? `<p>Jurisdicción: ${escapeHtml(data.professional.jurisdiction)}</p>` : ""}
+        ${data.professional.refeps_identifier ? `<p>REFEPS: ${escapeHtml(data.professional.refeps_identifier)}</p>` : ""}
         ${data.professional.specialty ? `<p>Especialidad: ${escapeHtml(data.professional.specialty)}</p>` : ""}
       </section>
 
@@ -181,6 +228,8 @@ export function buildPrescriptionDocumentHtml(data: PrescriptionDocumentData): s
           ? `<section class="order-doc-block"><h2>Observaciones</h2><pre>${escapeHtml(data.notes.trim())}</pre></section>`
           : ""
       }
+
+      ${buildCuirBlockHtml(data)}
 
       ${buildDocumentSignatureHtml({
         signatureText: data.professional.signatureText,

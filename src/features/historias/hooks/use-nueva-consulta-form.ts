@@ -3,17 +3,18 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { toast } from "@/core/notifications/toast";
 import type { ConsultPatientPickerRow } from "@/core/supabase/query-types";
 
 import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation";
 
-import { persistClinicalRecordRequest } from "@/features/historias/utils/persist-clinical-record-request";
 import {
   buildDiagnosisText,
   type ClinicalDiagnosisEntry,
   type ClinicalTreatmentEntry,
   mergeTreatmentsForPersist,
 } from "@/features/historias/utils/clinical-structured-entries";
+import { persistClinicalRecordRequest } from "@/features/historias/utils/persist-clinical-record-request";
 import type { PatientSearchOption } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { buildConsultIndicationsText } from "@/features/recetas/utils/build-consult-indications-text";
@@ -537,7 +538,11 @@ export function useNuevaConsultaForm({
         formData.set("treatments_json", JSON.stringify(mergedTreatments));
         formData.set(
           "indications",
-          buildConsultIndicationsText(draft.treatmentMedications, draft.indications, draft.clinicalTreatments)
+          buildConsultIndicationsText(
+            draft.treatmentMedications,
+            draft.indications,
+            draft.clinicalTreatments
+          )
         );
         formData.set("evolution", buildEvolutionWithVitals(draft.evolution, draft.vitals));
         formData.set("professional_signature", professionalSignature);
@@ -569,6 +574,7 @@ export function useNuevaConsultaForm({
         if ("error" in apiResult) {
           setError(apiResult.error);
           if (options?.silent) setAutoSaveStatus("error");
+          else toast.error(apiResult.error);
           return { ok: false as const, error: apiResult.error };
         }
 
@@ -601,8 +607,7 @@ export function useNuevaConsultaForm({
               updatedAt: new Date().toISOString(),
             });
           }
-          if (options?.silent) setAutoSaveStatus("saved");
-          else setAutoSaveStatus("saved");
+          setAutoSaveStatus("saved");
           if (workspace) {
             workspace.onSaved(savedId, options?.silent);
           } else if (!options?.silent && !recordId) {
@@ -612,9 +617,11 @@ export function useNuevaConsultaForm({
 
         return { ok: true as const, recordId: savedId ?? undefined };
       } catch (err) {
-        const message = err instanceof Error ? err.message : "No se pudo guardar la consulta";
+        const message =
+          err instanceof Error ? err.message : "No se pudo guardar la evolución. Intentá de nuevo.";
         setError(message);
         if (options?.silent) setAutoSaveStatus("error");
+        else toast.error(message);
         return { ok: false as const, error: message };
       } finally {
         savingRef.current = false;

@@ -9,23 +9,32 @@ describe("migrations consistency", () => {
     .filter((f) => f.endsWith(".sql"))
     .sort();
 
-  it("has migration files in lexicographic order through latest commercial essential/pro", () => {
-    expect(files.length).toBeGreaterThanOrEqual(138);
+  it("has production compliance pack, ReNaPDiS phases, and staging security migrations", () => {
+    expect(files.length).toBeGreaterThanOrEqual(143);
     expect(files[0]).toBe("001_schema.sql");
-    expect(files[files.length - 1]).toBe("138_commercial_essential_pro.sql");
+    expect(files).toContain("129_superadmin_commercial_control.sql");
+    expect(files).toContain("138_commercial_essential_pro.sql");
+    expect(files).toContain("140_renapdis_phase1_professionals.sql");
+    expect(files).toContain("141_renapdis_phase2_patient_cuir.sql");
+    expect(files).toContain("142_renapdis_phase3_fiscalization_marker.sql");
+    expect(files).toContain("143_clinical_diagnoses_cie10_import.sql");
+    expect(files).toContain("20260826151000_rls_staff_policies_authenticated_only.sql");
   });
 
-  it("uses numeric prefix pattern without gaps through 138 (except b-suffix repairs)", () => {
+  it("uses numeric prefix without gaps through 138; ReNaPDiS at 140–142", () => {
     const numeric = files
       .map((f) => f.match(/^(\d+)/)?.[1])
       .filter(Boolean)
       .map(Number);
     const unique = [...new Set(numeric)].sort((a, b) => a - b);
     expect(unique[0]).toBe(1);
-    expect(unique[unique.length - 1]).toBe(138);
     for (let i = 1; i <= 138; i++) {
       expect(unique).toContain(i);
     }
+    expect(unique).toContain(140);
+    expect(unique).toContain(141);
+    expect(unique).toContain(142);
+    expect(unique).toContain(143);
   });
 
   it("034 caja migration is idempotent", () => {

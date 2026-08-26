@@ -2165,6 +2165,7 @@ export type Database = {
           email: string | null
           id: string
           is_active: boolean
+          is_fiscalization: boolean
           legal_name: string | null
           legal_privacy_version: string | null
           legal_terms_accepted_at: string | null
@@ -2194,6 +2195,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          is_fiscalization?: boolean
           legal_name?: string | null
           legal_privacy_version?: string | null
           legal_terms_accepted_at?: string | null
@@ -2223,6 +2225,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          is_fiscalization?: boolean
           legal_name?: string | null
           legal_privacy_version?: string | null
           legal_terms_accepted_at?: string | null
@@ -3894,16 +3897,74 @@ export type Database = {
           },
         ]
       }
+      patient_portal_sessions: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          last_used_at: string | null
+          patient_id: string
+          revoked_at: string | null
+          scopes: string[]
+          token_hash: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          last_used_at?: string | null
+          patient_id: string
+          revoked_at?: string | null
+          scopes?: string[]
+          token_hash: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          last_used_at?: string | null
+          patient_id?: string
+          revoked_at?: string | null
+          scopes?: string[]
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_portal_sessions_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_portal_sessions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           address: string | null
           allergies: string | null
+          alt_identifier_type: string | null
+          alt_identifier_value: string | null
           birth_date: string | null
           clinic_id: string
           created_at: string
+          cuil: string | null
           deactivated_at: string | null
           deactivated_by: string | null
           document_number: string
+          document_type: string
           email: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
@@ -3918,18 +3979,23 @@ export type Database = {
           notes: string | null
           phone: string | null
           regular_medication: string | null
+          sex: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           address?: string | null
           allergies?: string | null
+          alt_identifier_type?: string | null
+          alt_identifier_value?: string | null
           birth_date?: string | null
           clinic_id: string
           created_at?: string
+          cuil?: string | null
           deactivated_at?: string | null
           deactivated_by?: string | null
           document_number: string
+          document_type?: string
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
@@ -3944,18 +4010,23 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           regular_medication?: string | null
+          sex?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           address?: string | null
           allergies?: string | null
+          alt_identifier_type?: string | null
+          alt_identifier_value?: string | null
           birth_date?: string | null
           clinic_id?: string
           created_at?: string
+          cuil?: string | null
           deactivated_at?: string | null
           deactivated_by?: string | null
           document_number?: string
+          document_type?: string
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
@@ -3970,6 +4041,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           regular_medication?: string | null
+          sex?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -4210,22 +4282,35 @@ export type Database = {
           created_at: string
           created_by: string
           diagnosis_cie10: string | null
+          diagnosis_coding: Json | null
           diagnosis_text: string | null
           digital_signature_hash: string | null
           disclaimer_accepted: boolean
           dispensed_at: string | null
+          fhir_bundle_meta: Json | null
           id: string
           idempotency_key: string | null
           insurance_number: string | null
           insurance_plan: string | null
           issued_at: string | null
           medications: Json
+          national_rx_status: string
           notes: string | null
           patient_id: string
           patient_insurance: string | null
+          prescription_category: string
           prescription_number: string | null
+          prescription_subtype: string | null
           prescription_type: string
           professional_id: string
+          cuir_formatted: string | null
+          cuir_group_id: string | null
+          cuir_item_number: string | null
+          cuir_jurisdiction: string | null
+          cuir_platform_id: string | null
+          cuir_repository_id: string | null
+          cuir_status: string
+          cuir_type_subtype: string | null
           refeps_error: string | null
           refeps_id: string | null
           refeps_payload: Json | null
@@ -4234,6 +4319,7 @@ export type Database = {
           status: string
           updated_at: string
           validity_days: number
+          validity_starts_at: string | null
           version: number
         }
         Insert: {
@@ -4243,22 +4329,35 @@ export type Database = {
           created_at?: string
           created_by: string
           diagnosis_cie10?: string | null
+          diagnosis_coding?: Json | null
           diagnosis_text?: string | null
           digital_signature_hash?: string | null
           disclaimer_accepted?: boolean
           dispensed_at?: string | null
+          fhir_bundle_meta?: Json | null
           id?: string
           idempotency_key?: string | null
           insurance_number?: string | null
           insurance_plan?: string | null
           issued_at?: string | null
           medications?: Json
+          national_rx_status?: string
           notes?: string | null
           patient_id: string
           patient_insurance?: string | null
+          prescription_category?: string
           prescription_number?: string | null
+          prescription_subtype?: string | null
           prescription_type?: string
           professional_id: string
+          cuir_formatted?: string | null
+          cuir_group_id?: string | null
+          cuir_item_number?: string | null
+          cuir_jurisdiction?: string | null
+          cuir_platform_id?: string | null
+          cuir_repository_id?: string | null
+          cuir_status?: string
+          cuir_type_subtype?: string | null
           refeps_error?: string | null
           refeps_id?: string | null
           refeps_payload?: Json | null
@@ -4267,6 +4366,7 @@ export type Database = {
           status?: string
           updated_at?: string
           validity_days?: number
+          validity_starts_at?: string | null
           version?: number
         }
         Update: {
@@ -4276,22 +4376,35 @@ export type Database = {
           created_at?: string
           created_by?: string
           diagnosis_cie10?: string | null
+          diagnosis_coding?: Json | null
           diagnosis_text?: string | null
           digital_signature_hash?: string | null
           disclaimer_accepted?: boolean
           dispensed_at?: string | null
+          fhir_bundle_meta?: Json | null
           id?: string
           idempotency_key?: string | null
           insurance_number?: string | null
           insurance_plan?: string | null
           issued_at?: string | null
           medications?: Json
+          national_rx_status?: string
           notes?: string | null
           patient_id?: string
           patient_insurance?: string | null
+          prescription_category?: string
           prescription_number?: string | null
+          prescription_subtype?: string | null
           prescription_type?: string
           professional_id?: string
+          cuir_formatted?: string | null
+          cuir_group_id?: string | null
+          cuir_item_number?: string | null
+          cuir_jurisdiction?: string | null
+          cuir_platform_id?: string | null
+          cuir_repository_id?: string | null
+          cuir_status?: string
+          cuir_type_subtype?: string | null
           refeps_error?: string | null
           refeps_id?: string | null
           refeps_payload?: Json | null
@@ -4300,6 +4413,7 @@ export type Database = {
           status?: string
           updated_at?: string
           validity_days?: number
+          validity_starts_at?: string | null
           version?: number
         }
         Relationships: [
@@ -4470,6 +4584,7 @@ export type Database = {
           bio: string | null
           clinic_id: string
           created_at: string
+          cuil: string | null
           display_name: string
           document_number: string | null
           email: string | null
@@ -4477,14 +4592,22 @@ export type Database = {
           intake_completed_at: string | null
           intake_notes: string | null
           is_active: boolean
+          issuing_authority: string | null
           iva_status: string | null
           license_national: string | null
           license_number: string | null
           license_provincial: string | null
+          licensing_jurisdiction: string | null
           location_id: string | null
           office_address: string | null
           office_phone: string | null
           phone: string | null
+          refeps_identifier: string | null
+          refeps_specialty: string | null
+          refeps_validated_at: string | null
+          refeps_validation_details: Json | null
+          refeps_validation_error: string | null
+          refeps_validation_status: string
           signature_image_path: string | null
           signature_text: string | null
           specialty_id: string | null
@@ -4502,6 +4625,7 @@ export type Database = {
           bio?: string | null
           clinic_id: string
           created_at?: string
+          cuil?: string | null
           display_name: string
           document_number?: string | null
           email?: string | null
@@ -4509,14 +4633,22 @@ export type Database = {
           intake_completed_at?: string | null
           intake_notes?: string | null
           is_active?: boolean
+          issuing_authority?: string | null
           iva_status?: string | null
           license_national?: string | null
           license_number?: string | null
           license_provincial?: string | null
+          licensing_jurisdiction?: string | null
           location_id?: string | null
           office_address?: string | null
           office_phone?: string | null
           phone?: string | null
+          refeps_identifier?: string | null
+          refeps_specialty?: string | null
+          refeps_validated_at?: string | null
+          refeps_validation_details?: Json | null
+          refeps_validation_error?: string | null
+          refeps_validation_status?: string
           signature_image_path?: string | null
           signature_text?: string | null
           specialty_id?: string | null
@@ -4534,6 +4666,7 @@ export type Database = {
           bio?: string | null
           clinic_id?: string
           created_at?: string
+          cuil?: string | null
           display_name?: string
           document_number?: string | null
           email?: string | null
@@ -4541,14 +4674,22 @@ export type Database = {
           intake_completed_at?: string | null
           intake_notes?: string | null
           is_active?: boolean
+          issuing_authority?: string | null
           iva_status?: string | null
           license_national?: string | null
           license_number?: string | null
           license_provincial?: string | null
+          licensing_jurisdiction?: string | null
           location_id?: string | null
           office_address?: string | null
           office_phone?: string | null
           phone?: string | null
+          refeps_identifier?: string | null
+          refeps_specialty?: string | null
+          refeps_validated_at?: string | null
+          refeps_validation_details?: Json | null
+          refeps_validation_error?: string | null
+          refeps_validation_status?: string
           signature_image_path?: string | null
           signature_text?: string | null
           specialty_id?: string | null
@@ -5249,6 +5390,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      cancel_patient_appointment_v2: {
+        Args: {
+          p_appointment_id: string
+          p_reason: string
+          p_token: string
+        }
+        Returns: undefined
+      }
       cancel_pending_appointment_reminders: {
         Args: { p_appointment_id: string }
         Returns: undefined
@@ -5456,6 +5605,19 @@ export type Database = {
         Args: { p_clinic_id: string; p_patient: Json; p_profile?: Json }
         Returns: Json
       }
+      create_patient_portal_session: {
+        Args: {
+          p_clinic_id: string
+          p_expires_minutes?: number
+          p_patient_id: string
+          p_scopes?: string[]
+        }
+        Returns: {
+          expires_at: string
+          session_id: string
+          token: string
+        }[]
+      }
       create_staff_appointment_atomic: {
         Args: {
           p_clinic_id: string
@@ -5553,8 +5715,36 @@ export type Database = {
           status: Database["public"]["Enums"]["appointment_status"]
         }[]
       }
+      get_patient_appointment_statuses_v2: {
+        Args: { p_appointment_ids: string[]; p_token: string }
+        Returns: {
+          appointment_id: string
+          booking_source: string
+          cancellation_reason: string
+          cancelled_at: string
+          cancelled_by_type: string
+          start_at: string
+          status: Database["public"]["Enums"]["appointment_status"]
+        }[]
+      }
       get_patient_portal_appointments: {
         Args: { p_document_number: string; p_slug: string }
+        Returns: {
+          appointment_id: string
+          booking_source: string
+          cancellation_reason: string
+          cancelled_at: string
+          cancelled_by_type: string
+          created_at: string
+          end_at: string
+          patient_name: string
+          professional_name: string
+          start_at: string
+          status: Database["public"]["Enums"]["appointment_status"]
+        }[]
+      }
+      get_patient_portal_appointments_v2: {
+        Args: { p_token: string }
         Returns: {
           appointment_id: string
           booking_source: string
@@ -5679,6 +5869,15 @@ export type Database = {
         }
         Returns: string
       }
+      record_patient_data_consent_v2: {
+        Args: {
+          p_consent_type: string
+          p_document_version: string
+          p_granted?: boolean
+          p_token: string
+        }
+        Returns: undefined
+      }
       remove_clinic_member_user: {
         Args: { p_clinic_id: string; p_user_id: string }
         Returns: undefined
@@ -5715,6 +5914,10 @@ export type Database = {
         Returns: number
       }
       resolve_portal_clinic_id: { Args: { p_slug: string }; Returns: string }
+      revoke_patient_portal_session: {
+        Args: { p_session_id: string }
+        Returns: undefined
+      }
       revoke_user_device_session: {
         Args: { p_session_id: string }
         Returns: Json
@@ -5889,6 +6092,13 @@ export type Database = {
           p_start_at: string
         }
         Returns: Json
+      }
+      validate_patient_portal_session_v2: {
+        Args: { p_slug: string; p_token: string }
+        Returns: {
+          expires_at: string
+          valid: boolean
+        }[]
       }
       sum_collected_cash_charges: {
         Args: { p_clinic_id: string; p_from: string; p_to: string }

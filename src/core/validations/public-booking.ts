@@ -19,13 +19,11 @@ export const publicBookingSchema = z.object({
 
 export const publicBookingStatusesSchema = z.object({
   slug: bookingSlugSchema,
-  document_number: documentNumberSchema,
   appointment_ids: entityIdArraySchema,
 });
 
 export const publicBookingCancelSchema = z.object({
   slug: bookingSlugSchema,
-  document_number: documentNumberSchema,
   appointment_id: entityIdSchema,
   reason: boundedReasonSchema,
 });
@@ -37,5 +35,4 @@ export const publicBookingSlotsSchema = z.object({
 
 export const publicBookingPortalAppointmentsSchema = z.object({
   slug: bookingSlugSchema,
-  document_number: documentNumberSchema,
 });

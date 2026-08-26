@@ -30,6 +30,7 @@ interface Props {
   professionals: Professional[];
   doctor?: DoctorShareInfo | null;
   offersPami?: boolean;
+  portalError?: boolean;
 }
 
 /** App pacientes estilo Crontu: inicio con accesos grandes + navegación inferior. */
@@ -41,6 +42,7 @@ export function PatientPortalView({
   professionals,
   doctor,
   offersPami = false,
+  portalError = false,
 }: Props) {
   const portal = usePatientPortal({ slug, clinicName, doctor, offersPami });
 
@@ -49,6 +51,12 @@ export function PatientPortalView({
       <PatientPortalHeader doctorName={portal.doctorName} doctor={doctor} />
 
       <main className="mx-auto w-full max-w-lg flex-1 px-4 pt-4">
+        {portalError ? (
+          <p className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            El enlace de acceso no es válido o venció.
+          </p>
+        ) : null}
+
         {portal.screen === "inicio" && (
           <PatientPortalHomeScreen
             slug={slug}

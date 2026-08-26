@@ -12,6 +12,7 @@ export const TABLES_REQUIRING_RLS = [
   "patients",
   "patient_clinical_profiles",
   "patient_attachments",
+  "patient_portal_sessions",
   "pami_vademecum",
   "national_medications",
   "availability_rules",

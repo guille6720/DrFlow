@@ -75,7 +75,12 @@ export interface Patient {
   first_name: string;
   last_name: string;
   document_number: string;
+  document_type?: string | null;
+  cuil?: string | null;
+  alt_identifier_type?: string | null;
+  alt_identifier_value?: string | null;
   birth_date: string | null;
+  sex?: string | null;
   phone: string | null;
   email: string | null;
   address: string | null;

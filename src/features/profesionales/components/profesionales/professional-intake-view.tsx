@@ -30,6 +30,8 @@ export function ProfessionalIntakeView({
   initialScheduleRules,
   teamMembers,
   invitedMembers,
+  mfaStatus,
+  canPrescribe,
 }: ProfessionalIntakeViewProps) {
   const {
     selectedId,
@@ -144,6 +146,8 @@ export function ProfessionalIntakeView({
                 onUpdateProfile={handleUpdateProfile}
                 onUpdateBankDetails={handleUpdateBankDetails}
                 onSaveSchedule={handleSaveSchedule}
+                mfaStatus={mfaStatus}
+                canPrescribe={canPrescribe}
               />
             </>
           ) : (

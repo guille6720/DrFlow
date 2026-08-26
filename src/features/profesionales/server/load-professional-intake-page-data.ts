@@ -1,5 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import type { RefepsValidationStatus } from "@/core/renapdis/types";
+import { isRefepsValidationStatus } from "@/core/renapdis/types";
+
 import type { ProfessionalListItem } from "@/features/profesionales/components/profesionales/professional-intake-sidebar";
 import type {
   AvailabilityRuleRow,
@@ -7,7 +10,7 @@ import type {
 } from "@/features/profesionales/components/profesionales/professional-intake-types";
 
 const PROFESSIONAL_DETAIL_COLUMNS =
-  "id, display_name, document_number, email, phone, license_national, license_provincial, office_phone, office_address, accepted_insurances, intake_notes, intake_completed_at, location_id, tax_id, iva_status, bank_name, bank_account_type, bank_account_number, bank_cbu, bank_alias, specialties(name)";
+  "id, display_name, document_number, email, phone, license_national, license_provincial, license_number, office_phone, office_address, accepted_insurances, intake_notes, intake_completed_at, location_id, tax_id, cuil, licensing_jurisdiction, issuing_authority, refeps_identifier, refeps_specialty, refeps_validation_status, refeps_validated_at, refeps_validation_error, iva_status, bank_name, bank_account_type, bank_account_number, bank_cbu, bank_alias, specialties(name)";
 
 function mapSpecialty(row: Record<string, unknown>) {
   const spec = row.specialties;
@@ -21,6 +24,11 @@ function mapSpecialty(row: Record<string, unknown>) {
 }
 
 function mapProfessionalDetail(row: Record<string, unknown>): ProfessionalIntakeDetail {
+  const statusRaw = row.refeps_validation_status;
+  const refepsStatus: RefepsValidationStatus = isRefepsValidationStatus(statusRaw)
+    ? statusRaw
+    : "not_configured";
+
   return {
     id: String(row.id),
     display_name: (row.display_name as string | null) ?? null,
@@ -29,6 +37,7 @@ function mapProfessionalDetail(row: Record<string, unknown>): ProfessionalIntake
     phone: row.phone as string | null | undefined,
     license_national: row.license_national as string | null | undefined,
     license_provincial: row.license_provincial as string | null | undefined,
+    license_number: row.license_number as string | null | undefined,
     office_phone: row.office_phone as string | null | undefined,
     office_address: row.office_address as string | null | undefined,
     accepted_insurances: row.accepted_insurances as string | null | undefined,
@@ -36,6 +45,14 @@ function mapProfessionalDetail(row: Record<string, unknown>): ProfessionalIntake
     intake_completed_at: row.intake_completed_at as string | null | undefined,
     location_id: row.location_id as string | null | undefined,
     tax_id: row.tax_id as string | null | undefined,
+    cuil: row.cuil as string | null | undefined,
+    licensing_jurisdiction: row.licensing_jurisdiction as string | null | undefined,
+    issuing_authority: row.issuing_authority as string | null | undefined,
+    refeps_identifier: row.refeps_identifier as string | null | undefined,
+    refeps_specialty: row.refeps_specialty as string | null | undefined,
+    refeps_validation_status: refepsStatus,
+    refeps_validated_at: row.refeps_validated_at as string | null | undefined,
+    refeps_validation_error: row.refeps_validation_error as string | null | undefined,
     iva_status: row.iva_status as string | null | undefined,
     bank_name: row.bank_name as string | null | undefined,
     bank_account_type: row.bank_account_type as string | null | undefined,

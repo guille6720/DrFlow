@@ -14,7 +14,7 @@ export const CLINIC_SHELL_COLUMNS =
 export const CLINIC_MINIMAL_COLUMNS = "id, name, slug, timezone, is_active, trial_ends_at";
 
 export const PATIENT_LIST_COLUMNS =
-  "id, first_name, last_name, document_number, birth_date, insurance_provider, insurance_number, phone, email, address, allergies, regular_medication, emergency_contact_name, emergency_contact_phone, medical_history, insurance_plan, notes, clinic_id, created_at";
+  "id, first_name, last_name, document_number, document_type, cuil, alt_identifier_type, alt_identifier_value, birth_date, sex, insurance_provider, insurance_number, phone, email, address, allergies, regular_medication, emergency_contact_name, emergency_contact_phone, medical_history, insurance_plan, notes, clinic_id, created_at";
 
 /** Workspace, edit form, and compliance export. */
 export const PATIENT_DETAIL_COLUMNS = `${PATIENT_LIST_COLUMNS}, is_active`;
@@ -41,7 +41,7 @@ export const PROFESSIONAL_AGENDA_COLUMNS =
   "id, clinic_id, user_id, specialty_id, location_id, license_number, license_national, license_provincial, display_name, is_active";
 
 export const PROFESSIONAL_PRESCRIBER_COLUMNS =
-  "id, display_name, license_number, license_national, license_provincial, signature_text, signature_image_path, profiles(full_name), specialties(name)";
+  "id, display_name, license_number, license_national, license_provincial, licensing_jurisdiction, refeps_identifier, signature_text, signature_image_path, profiles(full_name), specialties(name)";
 
 export const CLINICAL_TEMPLATE_COLUMNS =
   "id, name, chief_complaint_template, diagnosis_template, evolution_template, indications_template";
@@ -55,10 +55,10 @@ export const MEDICAL_ORDER_LIST_COLUMNS =
 export const MEDICAL_ORDER_IDEMPOTENCY_COLUMNS = `${MEDICAL_ORDER_LIST_COLUMNS}, idempotency_key, created_by`;
 
 export const PRESCRIPTION_RECENT_LIST_COLUMNS =
-  "id, patient_id, professional_id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, notes, refeps_status, refeps_id, refeps_submitted_at, refeps_error, digital_signature_hash";
+  "id, patient_id, professional_id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, notes, refeps_status, refeps_id, refeps_submitted_at, refeps_error, digital_signature_hash, national_rx_status, cuir_status, cuir_formatted";
 
 export const PRESCRIPTION_LIST_COLUMNS =
-  "id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, coverage_kind, insurance_number, insurance_plan, dispensed_at, notes, professional_id, refeps_status, refeps_id, refeps_submitted_at, refeps_error, digital_signature_hash";
+  "id, created_at, medications, status, diagnosis_text, diagnosis_cie10, issued_at, prescription_number, prescription_type, validity_days, patient_insurance, coverage_kind, insurance_number, insurance_plan, dispensed_at, notes, professional_id, refeps_status, refeps_id, refeps_submitted_at, refeps_error, digital_signature_hash, national_rx_status, cuir_status, cuir_formatted";
 
 export const PUBLIC_BOOKING_LINK_COLUMNS = "id, clinic_id, slug, is_active";
 

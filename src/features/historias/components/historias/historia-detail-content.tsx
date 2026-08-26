@@ -22,6 +22,7 @@ import { PamiPatientBanner } from "@/features/pacientes/components/pacientes/pam
 import { PatientAppShareControl } from "@/features/pacientes/components/pacientes/patient-app-share-control";
 import { PatientWhatsAppButton } from "@/features/pacientes/components/pacientes/patient-whatsapp-button";
 import { buildPatientContactMessage } from "@/features/pacientes/utils/patient-messages";
+import { GeneratePatientPortalAccessControl } from "@/features/portal/components/generate-patient-portal-access-control";
 import { PrescriptionPanel } from "@/features/recetas/components/recetas/prescription-panel";
 
 import { Button } from "@/components/ui/button";
@@ -86,6 +87,10 @@ export function HistoriaDetailContent({
           />
         </Card>
       )}
+
+      <Card title="Portal del paciente (acceso seguro)">
+        <GeneratePatientPortalAccessControl patientId={patient.id} />
+      </Card>
 
       <div className="flex flex-wrap items-center gap-3">
         <Link href={backHref} className="drflow-link inline-flex items-center gap-1 text-sm">

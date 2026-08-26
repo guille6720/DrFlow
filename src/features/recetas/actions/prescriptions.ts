@@ -1,5 +1,6 @@
 "use server";
 
+import { requireElevatedPrescriberSession } from "@/core/auth/prescriber-mfa.server";
 import { logAudit } from "@/core/auth/session.actions";
 import { revalidatePrescriptionSurfaces } from "@/core/cache/revalidate-prescription-surfaces";
 import { recordAudit } from "@/core/security/audit-service";
@@ -70,6 +71,12 @@ export async function issuePrescription(id: string, idempotencyKey?: string | nu
   const [access, supabase] = await Promise.all([requireClinicalIssueAccess(), createClient()]);
   if (!access.ok) return { error: access.error };
 
+  const mfa = await requireElevatedPrescriberSession({
+    clinicId: access.data.clinicId,
+    userId: access.data.userId,
+  });
+  if (!mfa.ok) return { error: mfa.error };
+
   const idParsed = parseEntityId(id, "Receta");
   if (!idParsed.ok) return { error: idParsed.error };
   const result = await issuePrescriptionRecord(
@@ -95,6 +102,7 @@ export async function issuePrescription(id: string, idempotencyKey?: string | nu
         coverage_kind: result.data.coverage_kind,
         prescription_number: result.data.prescription_number,
         legal_validity: "local_draft_only",
+        mfa_elevated: true,
       },
     });
   }
