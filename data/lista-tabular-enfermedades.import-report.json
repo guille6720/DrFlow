@@ -1,0 +1,56 @@
+{
+  "mode": "apply",
+  "target": "gprmsufvhabntbrytwyi",
+  "source": "cie10-es-lista-tabular-enfermedades-pdf",
+  "total": 675,
+  "sample_first": [
+    {
+      "code": "A00",
+      "name": "Cólera"
+    },
+    {
+      "code": "A00.0",
+      "name": "Cólera debido a Vibrio cholerae 01, biotipo cholerae"
+    },
+    {
+      "code": "A00.1",
+      "name": "Cólera debido a Vibrio cholerae 01, biotipo El Tor"
+    },
+    {
+      "code": "A00.9",
+      "name": "Cólera, no especificado"
+    },
+    {
+      "code": "A01",
+      "name": "Fiebres tifoidea y paratifoidea"
+    }
+  ],
+  "sample_last": [
+    {
+      "code": "U07",
+      "name": "Utilización de emergencia del U07"
+    },
+    {
+      "code": "U07.0",
+      "name": "Trastorno relacionado con el vapeo"
+    },
+    {
+      "code": "U07.1",
+      "name": "COVID-19"
+    },
+    {
+      "code": "U09",
+      "name": "Afección pos-COVID-19"
+    },
+    {
+      "code": "U09.9",
+      "name": "Afección pos-COVID-19, no especificada"
+    }
+  ],
+  "note": "Does not delete existing diagnoses. Upserts only rows with this source. Seed/manual rows untouched.",
+  "updated": 0,
+  "inserted": 675,
+  "db_count_for_source": 675,
+  "batch_errors": [],
+  "finished_at": "2026-08-26T16:14:26.908Z"
+}

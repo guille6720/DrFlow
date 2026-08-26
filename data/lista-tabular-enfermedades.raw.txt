@@ -1,0 +1,2736 @@
+LISTA 	TABULAR 	ENFERMEDADES
+
+-- 1 of 23 --
+
+673 	CIERTAS 	ENFERMEDADES 	INFECCIOSAS 	Y 	PARASITARIAS
+CAPÍTULO 	1. 	CIERTAS 	ENFERMEDADES 	INFECCIOSAS 	Y
+PARASITARIAS 	(A00-B99)
+Incluye:enfermedades generalmente reconocidas como
+contagiosas o transmisibles
+Utilice código adicional 	para identificar resistencia a
+antibióticos (Z16.-)
+Este capítulo contiene las siguientes secciones:
+A00-A09 Enfermedades infecciosas intestinales
+A15-A19 Tuberculosis
+A20-A28 Ciertas zoonosis bacterianas
+A30-A49 Otras enfermedades bacterianas
+A50-A64 Infecciones con modo de transmisión
+predominantemente sexual
+A65-A69 Otras enfermedades debidas a espiroquetas
+A70-A74 Otras enfermedades causadas por clamidias
+A75-A79 Rickettsiosis
+A80-A89 Infecciones virales y por priones del sistema
+nervioso central
+A90-A99 Fiebres virales transmitidas por artrópodos y fiebres
+virales hemorrágicas
+B00-B09 Infecciones virales caracterizadas por lesiones de
+piel y de las membranas mucosas
+B10 Otros herpesvirus humanos
+B15-B19 Hepatitis viral
+B20 Enfermedad por virus de inmunodeficiencia humana
+[VIH]
+B25-B34 Otras enfermedades virales
+B35-B49 Micosis
+B50-B64 Enfermedades debidas a protozoos
+B65-B83 Helmintiasis
+B85-B89 Pediculosis, acariasis y otras infestaciones
+B90-B94 Secuelas de enfermedades infecciosas y parasitarias
+B95-B97 Agentes infecciosos bacterianos y virales
+B99 Otras enfermedades infecciosas
+ENFERMEDADES 	INFECCIOSAS 	INTESTINALES 	(A00-A09)
+2020
+2020
+4º 	A00 	Cólera
+A00.0 	Cólera 	debido 	a 	Vibrio 	cholerae 	01, 	biotipo 	cholerae
+Cólera clásico
+A00.1 	Cólera 	debido 	a 	Vibrio 	cholerae 	01, 	biotipo 	El 	Tor
+Cólera El Tor
+A00.9 	Cólera, 	no 	especificado
+4º 	A01 	Fiebres 	tifoidea 	y 	paratifoidea
+5º 	A01.0 	Fiebre 	tifoidea
+Infección debida a Salmonella typhi
+A01.00 	Fiebre 	tifoidea, 	no 	especificada
+A01.01 	Meningitis 	tifoidea
+A01.02 	Fiebre 	tifoidea 	con 	afectación 	cardiaca
+Endocarditis tifoidea
+Miocarditis tifoidea
+A01.03 	Neumonía 	tifoidea
+A01.04 	Artritis 	tifoidea
+A01.05 	Osteomielitis 	tifoidea
+A01.09 	Fiebre 	tifoidea 	con 	otras 	complicaciones
+A01.1 	Fiebre 	paratifoidea 	A
+A01.2 	Fiebre 	paratifoidea 	B
+A01.3 	Fiebre 	paratifoidea 	C
+A01.4 	Fiebre 	paratifoidea, 	no 	especificada
+Infección debida a Salmonella paratyphi NEOM
+4º 	A02 	Otras 	infecciones 	debidas 	a 	Salmonella
+Incluye:infección o intoxicación alimentaria debida a
+cualquier especie de Salmonella, excepto S.
+typhi y S. paratyphi
+A02.0 	Enteritis 	debida 	a 	Salmonella
+Salmonelosis
+A02.1 	Sepsis 	debida 	a 	Salmonella
+5º 	A02.2 	Infecciones 	localizadas 	debidas 	a 	Salmonella
+A02.20 	Infecciones 	localizadas 	debidas 	a 	Salmonella,
+no 	especificadas
+A02.21 	Meningitis 	por 	Salmonella
+A02.22 	Neumonía 	por 	Salmonella
+A02.23 	Artritis 	por 	Salmonella
+A02.24 	Osteomielitis 	por 	Salmonella
+A02.25 	Pielonefritis 	por 	Salmonella
+Nefropatía túbulo-intersticial por Salmonella
+A02.29 	Salmonella 	con 	otra 	infección 	localizada
+A02.8 	Otras 	infecciones 	especificadas 	debidas 	a
+Salmonella
+A02.9 	Infección 	debida 	a 	Salmonella, 	no 	especificada
+4º 	A03 	Shigelosis
+A03.0 	Shigelosis 	debida 	a 	Shigella 	dysenteriae
+Shigelosis grupo A [disentería de Shiga-Kruse]
+A03.1 	Shigelosis 	debida 	a 	Shigella 	flexneri
+Shigelosis grupo B
+A03.2 	Shigelosis 	debida 	a 	Shigella 	boydii
+Shigelosis grupo C
+A03.3 	Shigelosis 	debida 	a 	Shigella 	sonnei
+Shigelosis grupo D
+A03.8 	Otras 	shigelosis
+A03.9 	Shigelosis 	de 	tipo 	no 	especificado
+Disentería bacilar NEOM
+4º 	A04 	Otras 	infecciones 	intestinales 	bacterianas
+A04.0 	Infección 	debida 	a 	Escherichia 	coli 	enteropatógena
+A04.1 	Infección 	debida 	a 	Escherichia 	coli 	enterotoxígena
+A04.2 	Infección 	debida 	a 	Escherichia 	coli 	enteroinvasiva
+A04.3 	Infección 	debida 	a 	Escherichia 	coli
+enterohemorrágica
+A04.4 	Otras 	infecciones 	intestinales 	debidas 	a 	Escherichia
+coli
+Enteritis debida a Escherichia coli NEOM
+A04.5 	Enteritis 	debida 	a 	Campylobacter
+A04.6 	Enteritis 	debida 	a 	Yersinia 	enterocolítica
+5º 	+ 	A04.7 	Enterocolitis 	debida 	a 	Clostridium 	difficile
+Colitis por Clostridioides difficile
+Colitis seudomembranosa
+Intoxicación alimentaria por Clostridium difficile
+A04.71 	Enterocolitis 	debida 	a 	Clostridium 	difficile,
+recurrente
+A04.72 	Enterocolitis 	debida 	a 	Clostridium 	difficile, 	no
+especificada 	como 	recurrente
+A04.8 	Otras 	infecciones 	intestinales 	bacterianas
+especificadas
+A04.9 	Infección 	intestinal 	bacteriana, 	no 	especificada
+Enteritis bacteriana NEOM
+4º 	A05 	Otras 	intoxicaciones 	alimentarias 	bacterianas, 	no
+clasificadas 	bajo 	otro 	concepto
+A05.0 	Intoxicación 	alimentaria 	estafilocócica
+A05.1 	Intoxicación 	alimentaria 	debida 	a 	botulismo
+Botulismo NEOM
+Intoxicación alimentaria clásica debida a
+Clostridium botulinum
+A05.2 	Intoxicación 	alimentaria 	debida 	a 	Clostridium
+perfringens 	[Clostridium 	welchii]
+Enteritis necrotizante
+Pig-bel
+A05.3 	Intoxicación 	alimentaria 	debida 	a 	Vibrio
+parahaemolyticus
+A05.4 	Intoxicación 	alimentaria 	debida 	a 	Bacillus 	cereus
+Lista 	Tabular 	Enfermedades
+
+-- 2 of 23 --
+
+693 	NEOPLASIAS
+CAPÍTULO 	2. 	NEOPLASIAS 	(C00-D49)
+Notas:
+Actividad funcional
+Todas las neoplasias se clasifican en este capítulo, sean
+funcionalmente activas o no.
+Se puede utilizar un código adicional del capítulo 4 para
+identificar la actividad funcional que se asocie a cualquier
+neoplasia.
+Morfología [Histología]
+El capítulo 2 clasifica las neoplasias principalmente por
+localización (topografía), con grandes grupos por
+comportamiento, malignos, in situ, benignos, etc.
+La tabla de Neoplasias debe utilizarse para identificar el
+código de topografía correcto.
+En algunos casos, como melanoma maligno y ciertos
+tumores neuroendocrinos, la morfología (tipo histológico)
+está incluida en la categoría y los códigos.
+Neoplasias malignas primarias que afectan a dos o más
+localizaciones en contigüidad
+Una neoplasia maligna primaria que afecta a dos o más
+sitios contiguos (uno al lado de otro) deberá clasificarse en la
+subcategoría/código .8 (lesión "solapada"), a menos que la
+combinación esté específicamente representada bajo otro
+concepto.
+Para neoplasias múltiples de la misma localización que
+no sean contiguas, como los tumores en diferentes
+cuadrantes de una misma mama, se deben asignar códigos
+para cada localización.
+Neoplasia maligna de tejido ectópico
+Las neoplasias malignas de tejido ectópico se codificarán
+por la localización mencionada, por ejemplo, los tumores
+malignos de páncreas ectópico se codifican como páncreas,
+sin especificar (C25.9).
+Este capítulo contiene las siguientes secciones:
+C00-C14 Neoplasias malignas de labio, cavidad oral y faringe
+C15-C26 Neoplasias malignas de órganos digestivos
+C30-C39 Neoplasias malignas de órganos respiratorios e
+intratorácicos
+C40-C41 Neoplasias malignas de hueso y cartílago articular
+C43-C44 Melanoma y otras neoplasias malignas de piel
+C45-C49 Neoplasias malignas de tejidos mesoteliales y tejidos
+blandos
+C50 Neoplasias malignas de mama
+C51-C58 Neoplasias malignas de órganos genitales femeninos
+C60-C63 Neoplasias malignas de órganos genitales
+masculinos
+C64-C68 Neoplasias malignas de tracto urinario
+C69-C72 Neoplasias malignas de ojo, cerebro y otras partes
+del sistema nervioso central
+C73-C75 Neoplasias malignas de tiroides y otras glándulas
+endocrinas
+C7A Tumores neuroendocrinos malignos
+C7B Tumores neuroendocrinos secundarios
+C76-C80 Neoplasias malignas de localizaciones mal definidas,
+otras localizaciones secundarias y localizaciones no
+especificadas
+C81-C96 Neoplasias malignas de tejido linfoide,
+hemopoyético y relacionados
+D00-D09 Neoplasias in situ
+D10-D36 Neoplasias benignas, excepto tumores benignos
+neuroendocrinos
+D3A Tumores benignos neuroendocrinos
+D37-D48 Neoplasias de comportamiento incierto, policitemia
+vera y síndromes mielodisplásicos
+D49 Neoplasias de comportamiento no especificado
+NEOPLASIAS 	MALIGNAS 	(C00-C96)
+Neoplasias malignas declaradas como primarias o con
+sospecha de serlo (de localizaciones especificadas) y
+determinadas histologías especificadas, excepto las
+neuroendocrinas y de tejidos linfoide, hematopoyético y
+relacionados.
+NEOPLASIAS 	MALIGNAS 	DE 	LABIO, 	CAVIDAD 	ORAL 	Y 	FARINGE
+(C00-C14)
+4º 	C00 	Neoplasia 	maligna 	de 	labio
+Utilice código adicional 	para identificar:
+abuso y dependencia de alcohol (F10. -)
+consumo de tabaco (Z72.0)
+dependencia de tabaco (F17. -)
+historia de dependencia de tabaco (Z87.891)
+C00.0 	Neoplasia 	maligna 	de 	labio 	superior, 	cara
+externa
+Neoplasia maligna de borde bermellón de
+labio superior
+Neoplasia maligna de labio superior NEOM
+Neoplasia maligna de superficie labial de labio
+superior
+C00.1 	Neoplasia 	maligna 	de 	labio 	inferior, 	cara
+externa
+Neoplasia maligna de borde bermellón de
+labio inferior
+Neoplasia maligna de labio inferior NEOM
+Neoplasia maligna de superficie labial de labio
+inferior
+C00.2 	Neoplasia 	maligna 	de 	labio 	no 	especificado,
+cara 	externa
+Neoplasia maligna de borde bermellón de
+labio NEOM
+C00.3 	Neoplasia 	maligna 	de 	labio 	superior, 	cara
+interna
+Neoplasia maligna de cara bucal de labio
+superior
+Neoplasia maligna de cara vestibular de labio
+superior
+Neoplasia maligna de frenillo de labio superior
+Neoplasia maligna de mucosa de labio
+superior
+C00.4 	Neoplasia 	maligna 	de 	labio 	inferior, 	cara
+interna
+Neoplasia maligna de cara bucal de labio
+inferior
+Neoplasia maligna de cara vestibular de labio
+inferior
+Neoplasia maligna de frenillo de labio inferior
+Neoplasia maligna de mucosa de labio inferior
+C00.5 	Neoplasia 	maligna 	de 	labio 	no 	especificado,
+cara 	interior
+Neoplasia maligna de cara bucal de labio, no
+especificado
+Neoplasia maligna de cara vestibular de labio,
+no especificado
+Neoplasia maligna de frenillo de labio, no
+especificado
+Neoplasia maligna de mucosa de labio, no
+especificado
+C00.6 	Neoplasia 	maligna 	de 	comisura 	de 	labio, 	no
+especificada
+C00.8 	Neoplasia 	maligna 	de 	localizaciones 	contiguas
+de 	labio
+C00.9 	Neoplasia 	maligna 	de 	labio, 	no 	especificada
+C01 	Neoplasia 	maligna 	de 	base 	de 	la 	lengua
+Neoplasia maligna de parte fija de la lengua NEOM
+Neoplasia maligna de superficie dorsal de base de la
+lengua
+Neoplasia maligna de tercio posterior de la lengua
+Utilice código adicional 	para identificar:
+abuso y dependencia de alcohol (F10.-)
+consumo de tabaco (Z72.0)
+dependencia de tabaco (F17.-)
+historia de dependencia de tabaco (Z87.891)
+Lista 	Tabular 	Enfermedades
+
+-- 3 of 23 --
+
+737 	ENFERMEDADES 	DE 	LA 	SANGRE 	Y 	ÓRGANOS 	HEMATOPOYÉTICOS 	Y 	CIERTOS 	TRASTORNOS 	QUE 	AFECTAN 	AL 	MECANISMO 	INMUNOLÓGICO
+CAPÍTULO 	3. 	ENFERMEDADES 	DE 	LA 	SANGRE 	Y 	ÓRGANOS
+HEMATOPOYÉTICOS 	Y 	CIERTOS 	TRASTORNOS 	QUE 	AFECTAN 	AL
+MECANISMO 	INMUNOLÓGICO 	(D50-D89)
+Este capítulo contiene las siguientes secciones:
+D50-D53 Anemias carenciales
+D55-D59 Anemias hemolíticas
+D60-D64 Anemia aplásica y otras anemias y síndromes de
+insuficiencia medular
+D65-D69 Alteraciones de la coagulación, púrpura y otras
+afecciones hemorrágicas
+D70-D77 Otros trastornos de la sangre y órganos
+hematopoyéticos
+D78 Complicaciones intraoperatorias y posprocedimiento del
+bazo
+D80-D89 Ciertos trastornos que afectan al mecanismo
+inmunitario
+ANEMIAS 	CARENCIALES 	(D50-D53)
+2024
+2024
+Lista 	Tabular 	Enfermedades
+4º 	D50 	Anemia 	por 	carencia 	de 	hierro
+Incluye:anemia ferropénica
+anemia hipocrómica
+D50.0 	Anemia 	ferropénica 	secundaria 	a 	pérdida 	de 	sangre
+(crónica)
+Anemia posthemorrágica (crónica)
+D50.1 	Disfagia 	sideropénica
+Síndrome de Paterson-Kelly
+Síndrome de Plummer-Vinson
+D50.8 	Otras 	anemias 	por 	carencia 	de 	hierro
+Anemia ferropénica debida a ingesta inadecuada de
+hierro en la dieta
+D50.9 	Anemia 	ferropénica, 	no 	especificada
+4º 	D51 	Anemia 	por 	carencia 	de 	vitamina 	B12
+D51.0 	Anemia 	por 	carencia 	de 	vitamina 	B12 	debida 	a
+carencia 	de 	factor 	intrínseco
+Anemia de Addison
+Anemia de Biermer
+Anemia perniciosa (congénita)
+Carencia congénita de factor intrínseco
+D51.1 	Anemia 	por 	carencia 	de 	vitamina 	B12 	debida 	a
+malabsorción 	selectiva 	de 	vitamina 	B12 	con
+proteinuria
+Anemia megaloblástica hereditaria
+Síndrome de Imerslund (-Gräsbeck)
+D51.2 	Carencia 	de 	transcobalamina 	II
+D51.3 	Otras 	anemias 	por 	carencia 	dietética 	de 	vitamina
+B12
+Anemia de los veganos
+D51.8 	Otras 	anemias 	por 	carencia 	de 	vitamina 	B12
+D51.9 	Anemia 	por 	carencia 	de 	vitamina 	B12, 	no
+especificada
+4º 	D52 	Anemia 	por 	carencia 	de 	ácido 	fólico
+D52.0 	Anemia 	por 	carencia 	dietética 	de 	ácido 	fólico
+Anemia megaloblástica carencial
+D52.1 	Anemia 	por 	carencia 	de 	ácido 	fólico 	inducida 	por
+fármacos
+Utilice código adicional 	de efecto adverso, si
+procede, para identificar el fármaco (T36-T50 con
+quinto o sexto carácter 5)
+D52.8 	Otras 	anemias 	por 	carencia 	de 	ácido 	fólico
+D52.9 	Anemia 	por 	carencia 	de 	ácido 	fólico, 	no
+especificada
+Anemia por carencia de ácido fólico NEOM
+4º 	D53 	Otras 	anemias 	carenciales
+Incluye:anemia megaloblástica resistente al tratamiento
+con vitamina B12 o ácido fólico
+D53.0 	Anemia 	por 	carencia 	de 	proteínas
+Anemia de oroticoaciduria
+Anemia por carencia de aminoácidos
+D53.1 	Otras 	anemias 	megaloblásticas, 	no 	clasificadas 	bajo
+otro 	concepto
+Anemia megaloblástica NEOM
+D53.2 	Anemia 	por 	escorbuto
+D53.8 	Otras 	anemias 	carenciales 	especificadas
+Anemia asociada a carencia de cobre
+Anemia asociada a carencia de molibdeno
+Anemia asociada a carencia de zinc
+D53.9 	Anemia 	nutricional, 	no 	especificada
+Anemia crónica simple
+ANEMIAS 	HEMOLÍTICAS 	(D55-D59)
+4º 	D55 	Anemia 	debida 	a 	trastornos 	enzimáticos
+D55.0 	Anemia 	debida 	a 	deficiencia 	de 	glucosa-6-fosfato
+deshidrogenasa 	[G6PD]
+Anemia por carencia de G6PD
+Favismo
+D55.1 	Anemia 	debida 	a 	otros 	trastornos 	del 	metabolismo
+del 	glutatión
+Anemia debida a déficit enzimático, con excepción
+de G6PD, en relación con vía de derivación de
+hexosa monofosfato [HMP]
+Anemia hemolítica no esferocítica (hereditaria),
+tipo I
+5º 	D55.2 	Anemia 	debida 	a 	trastornos 	de 	enzimas 	glucolíticas
+D55.21 	Anemia 	por 	déficit 	de 	piruvato 	quinasa
+Anemia por carencia de piruvato quinasa
+Anemia por déficit de PK
+D55.29 	Anemia 	debida 	a 	otros 	trastornos 	de 	enzimas
+glucolíticas
+Anemia por déficit de hexoquinasa
+Anemia por déficit de triosa-fosfato isomerasa
+D55.3 	Anemia 	debida 	a 	trastornos 	del 	metabolismo 	de
+nucleótidos
+D55.8 	Otras 	anemias 	por 	trastornos 	enzimáticos
+D55.9 	Anemia 	por 	trastorno 	enzimático, 	no 	especificada
+4º 	D56 	Talasemia
+D56.0 	Alfa 	talasemia
+Alfa talasemia mayor
+Alfa talasemia severa
+Enfermedad por hemoglobina H
+Hemoglobina H Constant Spring
+Hidropesía fetal debido a talasemia alfa
+Triple defecto del gen alfa talasemia
+Utilice código adicional, si procede, para hidrops
+
+-- 4 of 23 --
+
+749 	ENFERMEDADES 	ENDOCRINAS, 	NUTRICIONALES 	Y 	METABÓLICAS
+CAPÍTULO 	4. 	ENFERMEDADES 	ENDOCRINAS, 	NUTRICIONALES 	Y
+METABÓLICAS 	(E00-E89)
+Nota:
+Todas las neoplasias, ya sean funcionalmente activas o no,
+están clasificados en el Capítulo 2.
+Se pueden utilizar los códigos adecuados de este capítulo (es
+decir, E05.8, E07.0, E16-E31, E34.-) como códigos adicionales
+para indicar tanto la actividad funcional de tumores y tejidos
+endocrinos ectópicos como la hiperfunción o hipofunción de
+glándulas endocrinas asociadas a neoplasias y otras
+afecciones clasificadas bajo otro concepto.
+Este capítulo contiene las siguientes secciones:
+E00-E07 Trastornos de glándula tiroides
+E08-E13 Diabetes mellitus
+E15-E16 Otros trastornos de regulación de glucosa y
+secreción interna del páncreas
+E20-E35 Trastornos de otras glándulas endocrinas
+E36 Complicaciones intraoperatorias del sistema endocrino
+E40-E46 Desnutrición
+E50-E64 Otras deficiencias nutricionales
+E65-E68 Sobrepeso, obesidad y otros tipos de
+hiperalimentación
+E70-E88 Trastornos metabólicos
+E89 Complicaciones y trastornos endocrinos y metabólicos
+posprocedimiento, no clasificados bajo otro concepto
+TRASTORNOS 	DE 	GLÁNDULA 	TIROIDES 	(E00-E07)
+4º 	E00 	Síndrome 	congénito 	por 	carencia 	de 	yodo
+Utilice código adicional 	(F70-F79) para identificar
+discapacidad intelectual asociada.
+E00.0 	Síndrome 	congénito 	de 	carencia 	de 	yodo, 	tipo
+neurológico
+Cretinismo endémico, tipo neurológico
+E00.1 	Síndrome 	congénito 	de 	carencia 	de 	yodo, 	tipo
+mixedematoso
+Cretinismo endémico, tipo mixedematoso
+Cretinismo hipotiroideo endémico
+E00.2 	Síndrome 	congénito 	de 	carencia 	de 	yodo, 	tipo
+mixto
+Cretinismo endémico, tipo mixto
+E00.9 	Síndrome 	congénito 	de 	carencia 	de 	yodo, 	no
+especificado
+Cretinismo endémico NEOM
+Hipotiroidismo por carencia congénito de yodo
+NEOM
+4º 	E01 	Trastornos 	tiroideos 	relacionados 	con 	carencia 	de 	yodo
+y 	afecciones 	afines
+E01.0 	Bocio 	(endémico) 	difuso 	relacionado 	con 	carencia
+de 	yodo
+E01.1 	Bocio 	(endémico) 	multinodular 	relacionado 	con
+carencia 	de 	yodo
+Bocio nodular relacionado con carencia de yodo
+E01.2 	Bocio 	(endémico) 	relacionado 	con 	carencia 	de
+yodo, 	no 	especificado
+Bocio endémico NEOM
+E01.8 	Otros 	tipos 	de 	trastornos 	tiroideos 	relacionados 	con
+carencia 	de 	yodo 	y 	afecciones 	afines
+Hipotiroidismo adquirido por carencia de yodo
+NEOM
+E02 	Hipotiroidismo 	subclínico 	por 	carencia 	de 	yodo
+4º 	E03 	Otros 	tipos 	de 	hipotiroidismo
+E03.0 	Hipotiroidismo 	congénito 	con 	bocio 	difuso
+Bocio congénito (no tóxico) NEOM
+Bocio parenquimatoso congénito (no tóxico)
+E03.1 	Hipotiroidismo 	congénito 	sin 	bocio
+Aplasia de tiroides (con mixedema)
+Atrofia congénita de tiroides
+Hipotiroidismo congénito NEOM
++ 	E03.2 	Hipotiroidismo 	debido 	a 	medicamentos 	y 	otras
+sustancias 	exógenas
+Codifique primero envenenamiento debido a
+fármaco o sustancia tóxica, si procede (T36-T65 con
+quinto o sexto carácter 1-4)
+Utilice código adicional 	de efecto adverso, si
+procede, para identificar el fármaco (T36-T50 con
+quinto o sexto carácter 5)
++ 	E03.3 	Hipotiroidismo 	posinfeccioso
+E03.4 	Atrofia 	de 	tiroides 	(adquirida)
+E03.5 	Coma 	mixedematoso
+E03.8 	Otros 	tipos 	de 	hipotiroidismo 	especificados
+E03.9 	Hipotiroidismo, 	no 	especificado
+Mixedema NEOM
+4º 	E04 	Otros 	tipos 	de 	bocio 	no 	tóxico
+E04.0 	Bocio 	difuso 	no 	tóxico
+Bocio difuso (coloide) no tóxico
+Bocio simple no tóxico
+E04.1 	Nódulo 	tiroideo 	único 	no 	tóxico
+Bocio uninodular no tóxico
+Nódulo coloide (quístico) (tiroideo)
+Nódulo (quístico) de tiroides NEOM
+E04.2 	Bocio 	multinodular 	no 	tóxico
+Bocio multinodular (quístico) NEOM
+Bocio quístico NEOM
+E04.8 	Otros 	tipos 	de 	bocio 	no 	tóxico 	especificados
+E04.9 	Bocio 	no 	tóxico, 	no 	especificado
+Bocio NEOM
+Bocio nodular (no tóxico) NEOM
+4º 	E05 	Tirotoxicosis 	[hipertiroidismo]
+5º 	E05.0 	Tirotoxicosis 	con 	bocio 	difuso
+Bocio difuso tóxico
+Bocio exoftálmico o bocio tóxico NEOM
+Enfermedad de Graves
+E05.00 	Tirotoxicosis 	con 	bocio 	difuso 	sin 	crisis
+tirotóxica 	ni 	tormenta 	tiroidea
+E05.01 	Tirotoxicosis 	con 	bocio 	difuso 	con 	crisis
+tirotóxica 	o 	tormenta 	tiroidea
+Lista 	Tabular 	Enfermedades
+5º 	E05.1 	Tirotoxicosis 	con 	nódulo 	tiroideo 	tóxico 	único
+Tirotoxicosis con bocio uninodular tóxico
+E05.10 	Tirotoxicosis 	con 	nódulo 	tiroideo 	tóxico 	único
+sin 	crisis 	tirotóxica 	ni 	tormenta 	tiroidea
+E05.11 	Tirotoxicosis 	con 	nódulo 	tiroideo 	tóxico 	único
+con 	crisis 	tirotóxica 	o 	tormenta 	tiroidea
+5º 	E05.2 	Tirotoxicosis 	con 	bocio 	multinodular 	tóxico
+Bocio nodular tóxico NEOM
+E05.20 	Tirotoxicosis 	con 	bocio 	multinodular 	tóxico 	sin
+crisis 	tirotóxica 	ni 	tormenta 	tiroidea
+E05.21 	Tirotoxicosis 	con 	bocio 	multinodular 	tóxico
+con 	crisis 	tirotóxica 	o 	tormenta 	tiroidea
+5º 	E05.3 	Tirotoxicosis 	por 	tejido 	tiroideo 	ectópico
+E05.30 	Tirotoxicosis 	por 	tejido 	tiroideo 	ectópico 	sin
+crisis 	tirotóxica 	ni 	tormenta 	tiroidea
+E05.31 	Tirotoxicosis 	por 	tejido 	tiroideo 	ectópico 	con
+crisis 	tirotóxica 	o 	tormenta 	tiroidea
+5º 	E05.4 	Tirotoxicosis 	facticia
+E05.40 	Tirotoxicosis 	facticia 	sin 	crisis 	tirotóxica 	ni
+tormenta 	tiroidea
+E05.41 	Tirotoxicosis 	facticia 	con 	crisis 	tirotóxica 	o
+tormenta 	tiroidea
+5º 	E05.8 	Otras 	tirotoxicosis
+Sobreproducción de hormona estimulante del
+tiroides
+
+-- 5 of 23 --
+
+771 	TRANSTORNOS 	MENTALES 	Y 	DE 	COMPORTAMIENTO
+CAPÍTULO 	5. 	TRASTORNOS 	MENTALES, 	DEL
+COMPORTAMIENTO 	Y 	DEL 	DESARROLLO 	NEUROLÓGICO
+(F01-F99)
+Incluye:trastornos del desarrollo psicológico
+Este capítulo contiene las siguientes secciones:
+F01-F09 Trastornos mentales debidos a afecciones fisiológicas
+conocidas
+F10-F19 Trastornos mentales y del comportamiento debidos
+al consumo de sustancias psicoactivas
+F20-F29 Esquizofrenia, trastorno esquizotípico, delirante y
+otros trastornos psicóticos no relacionados con el estado de
+ánimo
+F30-F39 Trastornos del estado de ánimo [afectivos]
+F40-F48 Trastornos de ansiedad, disociativos, relacionados
+con estrés, somatomorfos y otros trastornos mentales no
+psicóticos
+F50-F59 Síndromes de comportamiento asociados a
+trastornos fisiológicos y factores físicos
+F60-F69 Trastornos de personalidad y comportamiento del
+adulto
+F70-F79 Discapacidad intelectual
+F80-F89 Trastornos generalizados y específicos del desarrollo
+F90-F98 Trastornos del comportamiento y trastornos
+emocionales cuyo inicio se presenta habitualmente en
+infancia y adolescencia
+F99 Trastorno mental no especificado
+TRASTORNOS 	MENTALES 	DEBIDOS 	A 	AFECCIONES 	FISIOLÓGICAS
+CONOCIDAS 	(F01-F09)
+Nota:
+Este grupo comprende una serie de trastornos mentales
+agrupados sobre la base de tener en común una etiología
+demostrable en una enfermedad, lesión cerebral u otro tipo
+de afección que causa una disfunción cerebral.
+La disfunción puede ser primaria, como en enfermedades,
+lesiones o daños que afectan al cerebro directa y
+selectivamente, o secundaria, como en enfermedades
+sistémicas y los trastornos que atacan al cerebro sólo como
+uno de los múltiples órganos o sistemas orgánicos que están
+involucrados.
+2024
+2024
+2024
+2024
+2024
+2024
+2024
+4º 	+ 	F01 	Demencia 	vascular
+Demencia vascular como consecuencia de un infarto
+cerebral debido a enfermedad vascular, incluida la
+enfermedad cerebrovascular hipertensiva.
+Incluye:demencia arteriosclerótica
+demencia multiinfarto
+trastorno neurocognitivo mayor debido a
+enfermedad vascular
+Codifique primero, si procede, cualquier afección causal
+5º 	F01.5 	Demencia 	vascular, 	gravedad 	no 	especificada
+F01.50 	Demencia 	vascular, 	gravedad 	no 	especificada,
+sin 	alteración 	del 	comportamiento, 	alteración
+psicótica, 	alteración 	del 	estado 	de 	ánimo 	ni
+ansiedad
+Demencia vascular NEOM
+Trastorno neurocognitivo mayor debido a
+enfermedad vascular NEOM
+6º 	F01.51 	Demencia 	vascular, 	gravedad 	no 	especificada,
+con 	alteración 	del 	comportamiento
+F01.511 	Demencia 	vascular, 	gravedad 	no
+especificada, 	con 	agitación
+Demencia vascular, gravedad no
+especificada, con comportamiento
+motor aberrante como inquietud,
+balanceo, caminar de un lado a otro o
+búsqueda de salida
+Demencia vascular, gravedad no
+especificada, con comportamientos
+verbales o físicos como blasfemias,
+gritos, amenazas, ira, agresión,
+combatividad o violencia
+Trastorno neurocognitivo mayor debido
+a enfermedad vascular, gravedad no
+especificada, con comportamiento
+motor aberrante como inquietud,
+balanceo, caminar de un lado a otro o
+búsqueda de salida
+Trastorno neurocognitivo mayor debido
+a enfermedad vascular, gravedad no
+especificada, con comportamientos
+verbales o físicos como blasfemias,
+gritos, amenazas, ira, agresión,
+combatividad o violencia
+F01.518 	Demencia 	vascular, 	gravedad 	no
+especificada, 	con 	otro 	tipo 	de 	alteración
+del 	comportamiento
+Demencia vascular, gravedad no
+especificada, con alteraciones del
+comportamiento como alteración del
+sueño, desinhibición social o
+desinhibición sexual
+Trastorno neurocognitivo mayor debido
+a enfermedad vascular, gravedad no
+especificada, con alteraciones del
+comportamiento como alteración del
+sueño, desinhibición social o
+desinhibición sexual
+Utilice código adicional, si procede, para
+identificar vagabundeo en demencia
+vascular (Z91.83)
+F01.52 	Demencia 	vascular, 	gravedad 	no 	especificada,
+con 	alteración 	psicótica
+Demencia vascular, gravedad no especificada,
+con trastornos psicóticos como alucinaciones,
+paranoia, suspicacia o estado delirante
+Trastorno neurocognitivo mayor debido a
+enfermedad vascular, gravedad no
+especificada, con trastornos psicóticos como
+alucinaciones, paranoia, suspicacia o estado
+delirante
+F01.53 	Demencia 	vascular, 	gravedad 	no 	especificada,
+con 	alteración 	del 	estado 	de 	ánimo
+Demencia vascular, gravedad no especificada,
+con alteración del estado de ánimo como
+depresión, apatía o anhedonia
+Trastorno neurocognitivo mayor debido a
+enfermedad vascular, gravedad no
+especificada, con alteración del estado de
+ánimo como depresión, apatía o anhedonia
+F01.54 	Demencia 	vascular, 	gravedad 	no 	especificada,
+con 	ansiedad
+Trastorno neurocognitivo mayor debido a
+enfermedad vascular, gravedad no
+especificada, con ansiedad
+5º 	F01.A 	Demencia 	vascular, 	leve
+F01.A0 	Demencia 	vascular, 	leve, 	sin 	alteración 	del
+comportamiento, 	alteración 	psicótica,
+alteración 	del 	estado 	de 	ánimo 	ni 	ansiedad
+Demencia vascular, leve, NEOM
+Trastorno neurocognitivo mayor debido a
+enfermedad vascular leve, NEOM
+2024
+2024
+6º 	F01.A1 	Demencia 	vascular, 	leve, 	con 	alteración 	del
+comportamiento
+F01.A11 	Demencia 	vascular, 	leve, 	con 	agitación
+Demencia vascular, leve, con
+comportamiento motor aberrante como
+inquietud, balanceo, caminar de un lado
+a otro o búsqueda de salida
+Demencia vascular, leve, con
+comportamientos verbales o físicos
+como blasfemias, gritos, amenazas, ira,
+agresión, combatividad o violencia
+Trastorno neurocognitivo mayor debido
+a enfermedad vascular, leve, con
+comportamiento motor aberrante como
+inquietud, balanceo, caminar de un lado
+a otro o búsqueda de salida
+Lista 	Tabular 	Enfermedades
+
+-- 6 of 23 --
+
+805 	ENFERMEDADES 	DEL 	SISTEMA 	NERVIOSO
+CAPÍTULO 	6. 	ENFERMEDADES 	DEL 	SISTEMA 	NERVIOSO
+(G00-G99)
+Este capítulo contiene las siguientes secciones:
+G00-G09 Enfermedades inflamatorias del sistema nervioso
+central
+G10-G14 Atrofias sistémicas que afectan principalmente al
+sistema nervioso central
+G20-G26 Trastornos extrapiramidales y del movimiento
+G30-G32 Otras enfermedades degenerativas del sistema
+nervioso
+G35-G37 Enfermedades desmielinizantes del sistema
+nervioso central
+G40-G47 Trastornos episódicos y paroxísticos
+G50-G59 Trastornos de los nervios, de las raíces y de los
+plexos nerviosos
+G60-G65 Polineuropatías y otros trastornos del sistema
+nervioso periférico
+G70-G73 Enfermedades musculares y de la unión
+neuromuscular
+G80-G83 Parálisis cerebral y otros síndromes paralíticos
+G89-G99 Otros trastornos del sistema nervioso
+ENFERMEDADES 	INFLAMATORIAS 	DEL 	SISTEMA 	NERVIOSO 	CENTRAL
+(G00-G09)
+Lista 	Tabular 	Enfermedades
+4º 	G00 	Meningitis 	bacteriana, 	no 	clasificada 	bajo 	otro 	concepto
+Incluye:aracnoiditis bacteriana
+leptomeningitis bacteriana
+meningitis bacteriana
+paquimeningitis bacteriana
+G00.0 	Meningitis 	por 	Haemophilus
+Meningitis debida a Haemophilus influenzae
+G00.1 	Meningitis 	neumocócica
+Meningitis debida a Streptococcus pneumoniae
+G00.2 	Meningitis 	estreptocócica
+Utilice código adicional 	para identificar mejor el
+microorganismo (B95.0-B95.5)
+G00.3 	Meningitis 	estafilocócica
+Utilice código adicional 	para identificar mejor el
+microorganismo (B95.61-B95.8)
+G00.8 	Otras 	meningitis 	bacterianas
+Meningitis por bacilo de Friedländer
+Meningitis por Escherichia coli
+Meningitis por Klebsiella
+Utilice código adicional 	para identificar otros
+microorganismos (B96.-)
+G00.9 	Meningitis 	bacteriana, 	no 	especificada
+Meningitis debida a bacterias gram-negativas, no
+especificada
+Meningitis piógena NEOM
+Meningitis purulenta NEOM
+Meningitis supurativa NEOM
+Codifique primero enfermedad subyacente
+Codifique primero enfermedad de base, tal como:
+- 	infección por poliovirus (A80.-)
+- tripanosomiasis africana (B56.-)
+4º 	G03 	Meningitis 	debida 	a 	otras 	causas 	y 	a 	las 	no 	especificadas
+Incluye:aracnoiditis NEOM
+leptomeningitis NEOM
+meningitis NEOM
+paquimeningitis NEOM
+G03.0 	Meningitis 	no 	piógena
+Meningitis aséptica
+Meningitis no bacteriana
+G03.1 	Meningitis 	crónica
+G03.2 	Meningitis 	recurrente 	benigna 	[Mollaret]
+G03.8 	Meningitis 	debidas 	a 	otras 	causas 	especificadas
+G03.9 	Meningitis, 	no 	especificada
+Aracnoiditis (espinal) NEOM
+4º 	+ 	G04 	Encefalitis, 	mielitis 	y 	encefalomielitis
+Incluye:meningoencefalitis
+meningomielitis
+mielitis ascendente aguda
+5º 	G04.0 	Encefalitis 	y 	encefalomielitis 	(EMAD) 	aguda
+diseminada
+G04.00 	Encefalitis 	y 	encefalomielitis 	aguda
+diseminada, 	no 	especificada
+G04.01 	Encefalitis 	y 	encefalomielitis 	aguda
+diseminada 	posinfecciosa 	(EMAD
+posinfecciosa)
+G04.02 	Encefalitis, 	mielitis 	y 	encefalomielitis 	aguda
+diseminada 	posinmunización
+Encefalitis posinmunización
+Encefalomielitis posinmunización
+Utilice código adicional 	para identificar vacuna
+(T50.A-, T50.B-, T50.Z-)
+G04.1 	Paraplejia 	espástica 	tropical
+
+-- 7 of 23 --
+
+827 	ENFERMEDADES 	DEL 	OJO 	Y 	SUS 	ANEXOS
+CAPÍTULO 	7. 	ENFERMEDADES 	DEL 	OJO 	Y 	SUS 	ANEXOS
+(H00-H59)
+Nota:
+Utilice un código de causa externa después del código de la
+afección ocular, si procede, para identificar la causa de la
+afección ocular
+Este capítulo contiene las siguientes secciones:
+H00-H05 Trastornos de párpado, aparato lacrimal y órbita
+H10-H11 Trastornos de conjuntiva
+H15-H22 Trastornos de esclerótica, córnea, iris y cuerpo ciliar
+H25-H28 Trastornos de cristalino
+H30-H36 Trastornos de coroides y retina
+H40-H42 Glaucoma
+H43-H44 Trastornos de cuerpo vítreo y globo ocular
+H46-H47 Trastornos de nervio óptico y vías visuales
+H49-H52 Trastornos de músculos oculares, movimiento
+binocular, acomodación y refracción
+H53-H54 Alteraciones visuales y ceguera
+H55-H57 Otros trastornos del ojo y sus anexos
+H59 Complicaciones y trastornos intraoperatorios y
+posprocedimiento y trastornos de ojo y sus anexos, no
+clasificados bajo otro concepto
+TRASTORNOS 	DE 	PÁRPADO, 	APARATO 	LACRIMAL 	Y 	ÓRBITA 	(H00-H05)
+2020
+2020
+4º 	H00 	Orzuelo 	y 	chalazión
+5º 	H00.0 	Orzuelo 	(externo) 	(interno) 	del 	párpado
+6º 	H00.01 	Orzuelo 	externo
+Orzuelo NEOM
+Orzuelo
+H00.011 	Orzuelo 	externo, 	ojo 	derecho, 	párpado
+superior
+H00.012 	Orzuelo 	externo, 	ojo 	derecho, 	párpado
+inferior
+H00.013 	Orzuelo 	externo, 	ojo 	derecho, 	párpado
+no 	especificado
+H00.014 	Orzuelo 	externo, 	ojo 	izquierdo, 	párpado
+superior
+H00.015 	Orzuelo 	externo, 	ojo 	izquierdo, 	párpado
+inferior
+H00.016 	Orzuelo 	externo, 	ojo 	izquierdo, 	párpado
+no 	especificado
+H00.019 	Orzuelo 	externo, 	ojo 	no 	especificado,
+párpado 	no 	especificado
+6º 	H00.02 	Orzuelo 	interno
+Infección de glándula de Meibomio
+H00.021 	Orzuelo 	interno, 	ojo 	derecho, 	párpado
+superior
+H00.022 	Orzuelo 	interno, 	ojo 	derecho, 	párpado
+inferior
+H00.023 	Orzuelo 	interno, 	ojo 	derecho, 	párpado
+no 	especificado
+H00.024 	Orzuelo 	interno, 	ojo 	izquierdo, 	párpado
+superior
+H00.025 	Orzuelo 	interno, 	ojo 	izquierdo, 	párpado
+inferior
+H00.026 	Orzuelo 	interno, 	ojo 	izquierdo, 	párpado
+no 	especificado
+H00.029 	Orzuelo 	interno, 	ojo 	no 	especificado,
+párpado 	no 	especificado
+6º 	H00.03 	Absceso 	de 	párpado
+Forúnculo de párpado
+H00.031 	Absceso 	de 	párpado, 	ojo 	derecho,
+párpado 	superior
+H00.032 	Absceso 	de 	párpado, 	ojo 	derecho,
+párpado 	inferior
+H00.033 	Absceso 	de 	párpado, 	ojo 	derecho,
+párpado 	no 	especificado
+H00.034 	Absceso 	de 	párpado, 	ojo 	izquierdo,
+párpado 	superior
+H00.035 	Absceso 	de 	párpado, 	ojo 	izquierdo,
+párpado 	inferior
+H00.036 	Absceso 	de 	párpado, 	ojo 	izquierdo,
+párpado 	no 	especificado
+H00.039 	Absceso 	de 	párpado, 	ojo 	no
+especificado, 	párpado 	no 	especificado
+5º 	H00.1 	Chalazión
+Quiste de (glándula de) Meibomio
+H00.11 	Chalazión, 	ojo 	derecho, 	párpado 	superior
+H00.12 	Chalazión, 	ojo 	derecho, 	párpado 	inferior
+H00.13 	Chalazión, 	ojo 	derecho, 	párpado 	no
+especificado
+H00.14 	Chalazión, 	ojo 	izquierdo, 	párpado 	superior
+H00.15 	Chalazión, 	ojo 	izquierdo, 	párpado 	inferior
+H00.16 	Chalazión, 	ojo 	izquierdo, 	párpado 	no
+especificado
+H00.19 	Chalazión, 	ojo 	no 	especificado, 	párpado 	no
+especificado
+4º 	H01 	Otros 	tipos 	de 	inflamación 	de 	párpado
+5º 	H01.0 	Blefaritis
+6º 	H01.00 	Blefaritis 	no 	especificada
+H01.001 	Blefaritis 	no 	especificada, 	ojo 	derecho,
+párpado 	superior
+H01.002 	Blefaritis 	no 	especificada, 	ojo 	derecho,
+párpado 	inferior
+H01.003 	Blefaritis 	no 	especificada, 	ojo 	derecho,
+párpado 	no 	especificado
+H01.004 	Blefaritis 	no 	especificada, 	ojo 	izquierdo,
+párpado 	superior
+H01.005 	Blefaritis 	no 	especificada, 	ojo 	izquierdo,
+párpado 	inferior
+H01.006 	Blefaritis 	no 	especificada, 	ojo 	izquierdo,
+párpado 	no 	especificado
+H01.009 	Blefaritis 	no 	especificada, 	ojo 	no
+especificado, 	párpado 	no 	especificado
+H01.00A 	Blefaritis 	no 	especificada, 	ojo 	derecho,
+párpados 	superior 	e 	inferior
+H01.00B 	Blefaritis 	no 	especificada, 	ojo 	izquierdo,
+párpados 	superior 	e 	inferior
+Lista 	Tabular 	Enfermedades
+6º 	H01.01 	Blefaritis 	ulcerativa
+H01.011 	Blefaritis 	ulcerativa, 	ojo 	derecho,
+párpado 	superior
+H01.012 	Blefaritis 	ulcerativa, 	ojo 	derecho,
+párpado 	inferior
+H01.013 	Blefaritis 	ulcerativa, 	ojo 	derecho,
+párpado 	no 	especificado
+H01.014 	Blefaritis 	ulcerativa, 	ojo 	izquierdo,
+párpado 	superior
+H01.015 	Blefaritis 	ulcerativa, 	ojo 	izquierdo,
+párpado 	inferior
+H01.016 	Blefaritis 	ulcerativa, 	ojo 	izquierdo,
+párpado 	no 	especificado
+H01.019 	Blefaritis 	ulcerativa, 	ojo 	no 	especificado,
+párpado 	no 	especificado
+
+-- 8 of 23 --
+
+867 	ENFERMEDADES 	DEL 	OÍDO 	Y 	DE 	LA 	APÓFISIS 	MASTOIDES
+CAPÍTULO 	8. 	ENFERMEDADES 	DEL 	OÍDO 	Y 	DE 	LA 	APÓFISIS
+MASTOIDES 	(H60-H95)
+Nota:
+Utilice un código de causa externa tras el código de afección
+del oído, si procede, para identificar causa de dicha afección.
+Este capítulo contiene las siguientes secciones:
+H60-H62 Enfermedades del oído externo
+H65-H75 Enfermedades del oído medio y mastoides
+H80-H83 Enfermedades del oído interno
+H90-H94 Otros trastornos del oído
+H95 Complicaciones intraoperatorias y posprocedimiento, y
+trastornos del oído y de la apófisis mastoides no clasificados
+bajo otro concepto
+ENFERMEDADES 	DEL 	OÍDO 	EXTERNO 	(H60-H62)
+4º 	H60 	Otitis 	externa
+5º 	H60.0 	Absceso 	del 	oído 	externo
+Divieso del oído externo
+Forúnculo de oreja o conducto auditivo externo
+Forúnculo del oído externo
+H60.00 	Absceso 	del 	oído 	externo, 	oído 	no
+especificado
+H60.01 	Absceso 	de 	oído 	externo 	derecho
+H60.02 	Absceso 	del 	oído 	externo 	izquierdo
+H60.03 	Absceso 	del 	oído 	externo, 	bilateral
+5º 	H60.1 	Celulitis 	del 	oído 	externo
+Celulitis de la oreja
+Celulitis del conducto auditivo externo
+H60.10 	Celulitis 	del 	oído 	externo, 	oído 	no
+especificado
+H60.11 	Celulitis 	del 	oído 	externo 	derecho
+H60.12 	Celulitis 	del 	oído 	externo 	izquierdo
+H60.13 	Celulitis 	del 	oído 	externo, 	bilateral
+5º 	H60.2 	Otitis 	externa 	maligna
+H60.20 	Otitis 	externa 	maligna, 	oído 	no 	especificado
+H60.21 	Otitis 	externa 	maligna, 	oído 	derecho
+H60.22 	Otitis 	externa 	maligna, 	oído 	izquierdo
+H60.23 	Otitis 	externa 	maligna, 	bilateral
+5º 	H60.3 	Otros 	tipos 	de 	otitis 	externa 	infecciosa
+6º 	H60.31 	Otitis 	externa 	difusa
+H60.311 	Otitis 	externa 	difusa, 	oído 	derecho
+H60.312 	Otitis 	externa 	difusa, 	oído 	izquierdo
+H60.313 	Otitis 	externa 	difusa, 	bilateral
+H60.319 	Otitis 	externa 	difusa, 	oído 	no
+especificado
+6º 	H60.32 	Otitis 	externa 	hemorrágica
+H60.321 	Otitis 	externa 	hemorrágica, 	oído
+derecho
+H60.322 	Otitis 	externa 	hemorrágica, 	oído
+izquierdo
+H60.323 	Otitis 	externa 	hemorrágica, 	bilateral
+H60.329 	Otitis 	externa 	hemorrágica, 	oído 	no
+especificado
+6º 	H60.33 	Oído 	de 	nadador
+H60.331 	Oído 	de 	nadador, 	oído 	derecho
+H60.332 	Oído 	de 	nadador, 	oído 	izquierdo
+H60.333 	Oído 	de 	nadador, 	bilateral
+H60.339 	Oído 	de 	nadador, 	oído 	no 	especificado
+6º 	H60.39 	Otros 	tipos 	de 	otitis 	externa 	infecciosa
+H60.391 	Otros 	tipos 	de 	otitis 	externa 	infecciosa,
+oído 	derecho
+H60.392 	Otros 	tipos 	de 	otitis 	externa 	infecciosa,
+oído 	izquierdo
+H60.393 	Otros 	tipos 	de 	otitis 	externa 	infecciosa,
+bilateral
+H60.399 	Otros 	tipos 	de 	otitis 	externa 	infecciosa,
+oído 	no 	especificado
+5º 	H60.4 	Colesteatoma 	del 	oído 	externo
+Queratosis obturante del oído externo (conducto)
+H60.40 	Colesteatoma 	del 	oído 	externo, 	oído 	no
+especificado
+H60.41 	Colesteatoma 	del 	oído 	externo 	derecho
+H60.42 	Colesteatoma 	del 	oído 	externo 	izquierdo
+H60.43 	Colesteatoma 	del 	oído 	externo, 	bilateral
+5º 	H60.5 	Otitis 	externa 	aguda 	no 	infecciosa
+Lista 	Tabular 	Enfermedades
+6º 	H60.50 	Otitis 	externa 	aguda 	no 	infecciosa 	no
+especificada
+Otitis externa aguda NEOM
+H60.501 	Otitis 	externa 	aguda 	no 	infecciosa 	no
+especificada, 	oído 	derecho
+H60.502 	Otitis 	externa 	aguda 	no 	infecciosa 	no
+especificada, 	oído 	izquierdo
+H60.503 	Otitis 	externa 	aguda 	no 	infecciosa 	no
+especificada, 	bilateral
+H60.509 	Otitis 	externa 	aguda 	no 	infecciosa 	no
+especificada, 	oído 	no 	especificado
+6º 	H60.51 	Otitis 	externa 	aguda 	actínica
+H60.511 	Otitis 	externa 	aguda 	actínica, 	oído
+derecho
+H60.512 	Otitis 	externa 	aguda 	actínica, 	oído
+izquierdo
+H60.513 	Otitis 	externa 	aguda 	actínica, 	bilateral
+H60.519 	Otitis 	externa 	aguda 	actínica, 	oído 	no
+especificado
+6º 	H60.52 	Otitis 	externa 	aguda 	química
+H60.521 	Otitis 	externa 	aguda 	química, 	oído
+derecho
+H60.522 	Otitis 	externa 	aguda 	química, 	oído
+izquierdo
+H60.523 	Otitis 	externa 	aguda 	química, 	bilateral
+H60.529 	Otitis 	externa 	aguda 	química, 	oído 	no
+especificado
+6º 	H60.53 	Otitis 	externa 	aguda 	de 	contacto
+H60.531 	Otitis 	externa 	aguda 	de 	contacto, 	oído
+derecho
+H60.532 	Otitis 	externa 	aguda 	de 	contacto, 	oído
+izquierdo
+H60.533 	Otitis 	externa 	aguda 	de 	contacto,
+bilateral
+H60.539 	Otitis 	externa 	aguda 	de 	contacto, 	oído
+no 	especificado
+6º 	H60.54 	Otitis 	externa 	aguda 	eccematoide
+H60.541 	Otitis 	externa 	aguda 	eccematoide, 	oído
+derecho
+H60.542 	Otitis 	externa 	aguda 	eccematoide, 	oído
+izquierdo
+H60.543 	Otitis 	externa 	aguda 	eccematoide,
+bilateral
+H60.549 	Otitis 	externa 	aguda 	eccematoide, 	oído
+no 	especificado
+6º 	H60.55 	Otitis 	externa 	aguda 	reactiva
+H60.551 	Otitis 	externa 	aguda 	reactiva, 	oído
+derecho
+H60.552 	Otitis 	externa 	aguda 	reactiva, 	oído
+izquierdo
+H60.553 	Otitis 	externa 	aguda 	reactiva, 	bilateral
+H60.559 	Otitis 	externa 	aguda 	reactiva, 	oído 	no
+especificado
+6º 	H60.59 	Otras 	otitis 	externas 	agudas 	no 	infecciosas
+H60.591 	Otras 	otitis 	externas 	agudas 	no
+infecciosas, 	oído 	derecho
+
+-- 9 of 23 --
+
+879 	ENFERMEDADES 	DEL 	APARATO 	CIRCULATORIO
+Lista 	Tabular 	Enfermedades
++ 	CAPÍTULO 	9. 	ENFERMEDADES 	DEL 	APARATO 	CIRCULATORIO
+(I00-I99)
+Este capítulo contiene las siguientes secciones:
+I00-I02 Fiebre reumática aguda
+I05-I09 Enfermedades reumáticas crónicas cardiacas
+I10-I1A Enfermedades hipertensivas
+I20-I25 Enfermedades isquémicas cardiacas
+I26-I28 Enfermedad cardiaca pulmonar y enfermedades de la
+circulación pulmonar
+I30-I5A Otras formas de enfermedad cardiaca
+I60-I69 Enfermedades cerebrovasculares
+I70- I79 Enfermedades de las arterias, arteriolas y capilares
+I80-I89 Enfermedades de venas, vasos y ganglios linfáticos no
+clasificadas bajo otro concepto
+I95-I99 Otros trastornos del aparato circulatorio y los no
+especificados
+FIEBRE 	REUMÁTICA 	AGUDA 	(I00-I02)
+I00 	Fiebre 	reumática 	sin 	afectación 	cardiaca
+Incluye:artritis reumática, aguda o subaguda
+4º 	I01 	Fiebre 	reumática 	con 	afectación 	cardiaca
+I01.0 	Pericarditis 	reumática 	aguda
+Cualquier afección clasificada en I00 con pericarditis
+Pericarditis reumática (aguda)
+I01.1 	Endocarditis 	reumática 	aguda
+Cualquier afección clasificada en I00 con
+endocarditis o valvulitis
+Valvulitis reumática aguda
+I01.2 	Miocarditis 	reumática 	aguda
+Cualquier afección clasificada en I00 con miocarditis
+I01.8 	Otra 	enfermedad 	cardiaca 	reumática 	aguda
+Cualquier afección clasificada en I00 con otros tipos
+o 	múltiples tipos de afectación cardiaca
+Pancarditis reumática aguda
+I01.9 	Cardiopatía 	reumática 	aguda, 	no 	especificada
+Cualquier afección clasificada en I00 con tipo de
+afectación cardiaca no especificada
+Carditis reumática, aguda
+Cardiopatía reumática, activa o aguda
+4º 	I02 	Corea 	reumática
+Incluye:corea de Sydenham
+I02.0 	Corea 	reumática 	con 	afectación 	cardiaca
+Corea NEOM con compromiso cardiaco
+Corea reumática con afectación cardiaca de
+cualquier tipo clasificable bajo I01.-
+I02.9 	Corea 	reumática 	sin 	afectación 	cardiaca
+Corea reumática NEOM
+ENFERMEDADES 	REUMÁTICAS 	CRÓNICAS 	CARDIACAS 	(I05-I09)
+4º 	I05 	Enfermedades 	reumáticas 	de 	válvula 	mitral
+Incluye:afecciones clasificables tanto en I05.0 como en
+I05.2-I05.9, tanto si se especifican como
+reumáticas como si no
+I05.0 	Estenosis 	mitral 	reumática
+Obstrucción (de válvula) mitral (reumática)
+I05.1 	Insuficiencia 	mitral 	reumática
+Incompetencia mitral reumática
+Regurgitación mitral reumática
+I05.2 	Estenosis 	mitral 	reumática 	con 	insuficiencia
+Estenosis mitral reumática con incompetencia o
+regurgitación
+I05.8 	Otras 	enfermedades 	reumáticas 	de 	la 	válvula 	mitral
+Fallo (de válvula) mitral reumático
+I05.9 	Enfermedad 	reumática 	de 	la 	válvula 	mitral, 	no
+especificada
+Trastorno reumático (valvular) mitral (crónico)
+NEOM
+4º 	I06 	Enfermedades 	reumáticas 	de 	válvula 	aórtica
+I06.0 	Estenosis 	aórtica 	reumática
+Obstrucción (valvular) aórtica reumática
+I06.1 	Insuficiencia 	aórtica 	reumática
+Incompetencia aórtica reumática
+Regurgitación aórtica reumática
+I06.2 	Estenosis 	aórtica 	reumática 	con 	insuficiencia
+Estenosis aórtica reumática con incompetencia o
+regurgitación
+I06.8 	Otras 	enfermedades 	reumáticas 	de 	la 	válvula
+aórtica
+I06.9 	Enfermedad 	reumática 	de 	la 	válvula 	aórtica, 	no
+especificada
+Enfermedad (valvular) aórtica reumática NEOM
+4º 	I07 	Enfermedades 	reumáticas 	de 	válvula 	tricúspide
+Incluye:enfermedades de la válvula tricúspide
+especificadas como reumáticas o no
+especificadas
+I07.0 	Estenosis 	tricuspídea 	reumática
+Estenosis (valvular) tricuspídea (reumática)
+I07.1 	Insuficiencia 	tricuspídea 	reumática
+Insuficiencia (valvular) tricuspídea (reumática)
+I07.2 	Estenosis 	e 	insuficiencia 	tricuspídeas 	reumáticas
+I07.8 	Otras 	enfermedades 	reumáticas 	de 	válvula
+tricúspide
+I07.9 	Enfermedad 	reumática 	de 	la 	válvula 	tricúspide, 	no
+especificada
+Trastorno de válvula tricúspide reumático NEOM
+4º 	+ 	I08 	Enfermedades 	valvulares 	múltiples
+Incluye:enfermedad valvular múltiple especificada
+como reumática o no especificada
+I08.0 	Trastornos 	reumáticos 	tanto 	de 	la 	válvula 	mitral
+como 	de 	la 	aórtica
+Afectación tanto de la válvula mitral como de la
+aórtica especificada como reumática o no
+especificada
+
+-- 10 of 23 --
+
+925 	ENFERMEDADES 	DEL 	APARATO 	RESPIRATORIO
+5º 	J01.9 	Sinusitis 	aguda, 	no 	especificada
+J01.90 	Sinusitis 	aguda, 	no 	especificada
+J01.91 	Sinusitis 	aguda 	recurrente, 	no 	especificada
+4º 	J01 	Sinusitis 	aguda
+Incluye:absceso agudo de seno
+empiema agudo de seno
+infección aguda de seno
+inflamación aguda de seno
+supuración aguda de seno
+Utilice código adicional (B95-B97) para identificar
+agente infeccioso
+5º 	J01.0 	Sinusitis 	maxilar 	aguda
+Antritis aguda
+J01.00 	Sinusitis 	maxilar 	aguda, 	no 	especificada
+J01.01 	Sinusitis 	maxilar 	aguda 	recurrente
+5º 	J01.1 	Sinusitis 	frontal 	aguda
+J01.10 	Sinusitis 	frontal 	aguda, 	no 	especificada
+J01.11 	Sinusitis 	frontal 	aguda 	recurrente
+5º 	J01.2 	Sinusitis 	etmoidal 	aguda
+J01.20 	Sinusitis 	etmoidal 	aguda, 	no 	especificada
+J01.21 	Sinusitis 	etmoidal 	aguda 	recurrente
+5º 	J01.3 	Sinusitis 	esfenoidal 	aguda
+J01.30 	Sinusitis 	esfenoidal 	aguda, 	no 	especificada
+J01.31 	Sinusitis 	esfenoidal 	aguda 	recurrente
+5º 	J01.4 	Pansinusitis 	aguda
+J01.40 	Pansinusitis 	aguda, 	no 	especificada
+J01.41 	Pansinusitis 	aguda 	recurrente
+5º 	J01.8 	Otros 	tipos 	de 	sinusitis 	aguda
+J01.80 	Otros 	tipos 	de 	sinusitis 	aguda
+Sinusitis aguda con afectación de más de un
+seno, pero sin pansinusitis
+J01.81 	Otros 	tipos 	de 	sinusitis 	aguda 	recurrente
+Sinusitis aguda recurrente con afectación de
+más de un seno, pero sin pansinusitis
+4º 	J02 	Faringitis 	aguda
+Incluye:dolor de garganta agudo
+J02.0 	Faringitis 	estreptocócica
+Dolor de garganta por estreptococo
+Faringitis séptica
+J02.8 	Faringitis 	aguda 	debida 	a 	otros 	microorganismos
+especificados
+Utilice código adicional (B95-B97) para identificar
+agente infeccioso
+J02.9 	Faringitis 	aguda, 	no 	especificada
+Dolor de garganta (agudo) NEOM
+Faringitis gangrenosa (aguda)
+Faringitis infecciosa (aguda) NEOM
+Faringitis (aguda) NEOM
+Faringitis supurativa (aguda)
+Faringitis ulcerativa (aguda)
+4º 	J03 	Amigdalitis 	aguda
+5º 	J03.0 	Amigdalitis 	estreptocócica
++ 	CAPÍTULO 	10. 	ENFERMEDADES 	DEL 	APARATO 	RESPIRATORIO
+(J00-J99)
+Nota:
+Cuando un problema respiratorio se describe como algo que
+ocurre en más de un sitio y no está específicamente
+representado, deberá clasificarse en la localización anatómica
+más baja (por ejemplo, traqueobronquitis a bronquitis se
+clasifica bajo J40).
+Utilice código adicional, si procede, para identificar:
+dependencia del tabaco (F17.-)
+exposición a humo ambiental de tabaco (Z77.22)
+exposición al humo de tabaco en período perinatal (P96.81)
+exposición ocupacional al humo de tabaco ambiental (Z57.31)
+historia personal de dependencia del tabaco (Z87.891)
+tabaquismo activo (Z72.0)
+Este capítulo contiene las siguientes secciones:
+J00-J06 Infecciones agudas del tracto respiratorio superior
+J09-J18 Gripe y neumonía
+J20-J22 Otras infecciones agudas del tracto respiratorio
+inferior
+J30-J39 Otras enfermedades del tracto respiratorio superior
+J40-J4A Enfermedades crónicas del tracto respiratorio inferior
+J60-J70 Enfermedades pulmonares debidas a agentes
+externos
+J80-J84 Otras enfermedades respiratorias que afectan
+principalmente al intersticio
+J85-J86 Trastornos supurativos y necróticos de vías
+respiratorias inferiores
+J90-J94 Otras enfermedades de la pleura
+J95 Complicaciones y trastornos intraoperatorios y
+posprocedimiento del aparato respiratorio, no clasificados
+bajo otro concepto
+J96-J99 Otras enfermedades del aparato respiratorio
+INFECCIONES 	AGUDAS 	DEL 	TRACTO 	RESPIRATORIO 	SUPERIOR
+(J00-J06)
+J00 	Nasofaringitis 	aguda 	[resfriado 	común]
+Catarro nasal, agudo
+Coriza (aguda)
+Nasofaringitis infecciosa NEOM
+Nasofaringitis NEOM
+Rinitis aguda
+Rinitis infecciosa
+Lista 	Tabular 	Enfermedades
+
+-- 11 of 23 --
+
+939 	ENFERMEDADES 	DEL 	APARATO 	DIGESTIVO
+CAPÍTULO 	11. 	ENFERMEDADES 	DEL 	APARATO 	DIGESTIVO
+(K00-K95)
+Este capítulo contiene las siguientes secciones:
+K00-K14 Enfermedades de la cavidad oral y glándulas salivales
+K20-K31 Enfermedades del esófago, estómago y duodeno
+K35-K38 Enfermedades del apéndice
+K40-K46 Hernia
+K50-K52 Enteritis y colitis no infecciosas
+K55-K64 Otras enfermedades de los intestinos
+K65-K68 Enfermedades del peritoneo y retroperitoneo
+K70-K77 Enfermedades del hígado
+K80-K87 Enfermedades de la vesícula biliar, vías biliares y
+páncreas
+K90-K95 Otras enfermedades del aparato digestivo
+ENFERMEDADES 	DE 	LA 	CAVIDAD 	ORAL 	Y 	GLÁNDULAS 	SALIVALES
+(K00-K14)	
+Lista 	Tabular 	Enfermedades
+4º 	K00 	Trastornos 	de 	desarrollo 	y 	erupción 	de 	diente
+K00.0 	Anodoncia
+Hipodoncia
+Oligodoncia
+K00.1 	Dientes 	supernumerarios
+Cuarto molar
+Dientes complementarios
+Distomolar
+Mesiodens
+Paramolar
+K00.2 	Anomalías 	de 	tamaño 	y 	de 	forma 	de 	los 	dientes
+Concrescencia de dientes
+Dens in dente
+Diente evaginado
+Dientes en clavija [cónicos]
+Diente invaginado
+Fusión de dientes
+Geminación de dientes
+Macrodoncia
+Microdoncia
+Perlas de esmalte
+Raíces supernumerarias
+Taurodontismo
+Tubérculo paramolar
+K00.3 	Dientes 	manchados
+Fluorosis dental
+Manchas en el esmalte
+Opacidades del esmalte no debidas a fluoruros
+K00.4 	Alteraciones 	en 	la 	formación 	de 	los 	dientes
+Aplasia e hipoplasia de cemento
+Diente de Turner
+Dislaceración de diente
+Hipoplasia de esmalte (neonatal) (posnatal)
+(prenatal)
+Odontodisplasia regional
+K00.5 	Alteraciones 	hereditarias 	en 	la 	estructura 	dental, 	no
+clasificadas 	bajo 	otro 	concepto
+Amelogénesis imperfecta
+Dentinogénesis imperfecta
+Dientes en concha
+Displasia de la dentina
+Odontogénesis imperfecta
+K00.6 	Alteraciones 	en 	erupción 	de 	diente
+Caída precoz de dientes primarios [dientes caducos]
+Dentia praecox
+Diente natal
+Diente neonatal
+Diente primario retenido [persistente]
+Dientes prenatales
+Erupción prematura de diente
+K00.7 	Síndrome 	de 	la 	erupción 	dentaria
+K00.8 	Otros 	trastornos 	del 	desarrollo 	de 	los 	dientes
+Cambios de color durante la formación de los
+dientes
+Tinción intrínseca de dientes NEOM
+K00.9 	Trastorno 	del 	desarrollo 	del 	diente, 	no 	especificado
+Trastorno de odontogénesis NEOM
+4º 	K01 	Dientes 	incluidos 	e 	impactados
+K01.0 	Dientes 	incluidos
+K01.1 	Dientes 	impactados
+4º 	K02 	Caries 	dental
+Incluye:caries de la dentina
+caries de la primera infancia
+caries preeruptiva
+caries recurrente (esmalte) (hacia la pulpa)
+(unión dentina-esmalte)
+cavidades dentales
+K02.3 	Caries 	dentaria 	detenida
+Caries coronal y radicular detenida
+5º 	K02.5 	Caries 	dental 	en 	superficie 	de 	fosas 	y 	fisuras
+Caries dental en superficie de masticación de los
+dientes
+K02.51 	Caries 	dental 	en 	superficie 	de 	fosas 	y 	fisuras
+limitada 	al 	esmalte
+Lesiones blancas in situ [caries inicial] en fosas
+y fisuras de la superficie de diente
+K02.52 	Caries 	dental 	en 	superficie 	de 	fosas 	y 	fisuras
+que 	penetra 	en 	la 	dentina
+Caries dental primaria, origen cervical
+K02.53 	Caries 	dental 	en 	superficie 	de 	fosas 	y 	fisuras
+que 	penetra 	en 	pulpa
+5º 	K02.6 	Caries 	dental 	en 	superficie 	lisa
+K02.61 	Caries 	dental 	en 	superficie 	lisa 	limitada 	al
+esmalte
+Lesiones de moteado blanco [caries inicial] en
+superficie lisa de diente
+K02.62 	Caries 	dental 	en 	superficie 	lisa 	que 	penetra 	en
+dentina
+K02.63 	Caries 	dental 	en 	superficie 	lisa 	que 	penetra 	en
+pulpa
+K02.7 	Caries 	de 	raíz 	dental
+K02.9 	Caries 	dental, 	no 	especificada
+4º 	K03 	Otras 	enfermedades 	de 	los 	tejidos 	duros 	de 	los 	dientes
+K03.0 	Atrición 	excesiva 	de 	los 	dientes
+Desgaste aproximal de dientes
+Desgaste oclusal de dientes
+K03.1 	Abrasión 	de 	los 	dientes
+Abrasión de dientes de tipo ritual
+Abrasión de dientes ocupacional
+Abrasión de dientes por dentífrico
+Abrasión de dientes tradicional
+Abrasión de los dientes por hábitos
+
+-- 12 of 23 --
+
+963 	ENFERMEDADES 	DE 	LA 	PIEL 	Y 	DEL 	TEJIDO 	SUBCUTÁNEO
+CAPÍTULO 	12. 	ENFERMEDADES 	DE 	LA 	PIEL 	Y 	DEL 	TEJIDO
+SUBCUTÁNEO 	(L00-L99)
+Este capítulo contiene las siguientes secciones:
+L00-L08 Infecciones de la piel y del tejido subcutáneo
+L10-L14 Trastornos ampollosos
+L20-L30 Dermatitis y eccema
+L40-L45 Trastornos papuloescamosos
+L49-L54 Urticaria y eritema
+L55-L59 Trastornos de la piel y del tejido subcutáneo
+relacionados con la radiación
+L60-L75 Trastornos de los anejos cutáneos
+L76 Complicaciones intraoperatorias y posprocedimiento de
+la piel y del tejido subcutáneo
+L80-L99 Otros trastornos de la piel y del tejido subcutáneo
+INFECCIONES 	DE 	LA 	PIEL 	Y 	DEL 	TEJIDO 	SUBCUTÁNEO 	(L00-L08)
+Utilice código adicional 	(B95-B97) para identificar agente
+infeccioso
+L00 	Síndrome 	de 	la 	piel 	escaldada 	estafilocócica
+Enfermedad de Ritter
+Utilice código adicional 	para identificar el grado de
+exfoliación de la piel (L49.-)
+4º 	L01 	Impétigo
+5º 	L01.0 	Impétigo
+Impétigo contagioso
+Impétigo vulgar
+L01.00 	Impétigo, 	no 	especificado
+Impétigo NEOM
+L01.01 	Impétigo 	no 	ampolloso
+L01.02 	Impétigo 	de 	Bockhart
+Impétigo folicular
+Perifoliculitis NEOM
+Perifoliculitis pustulosa superficial
+L01.03 	Impétigo 	ampolloso
+Impétigo neonatal
+Pénfigo neonatorum
+L01.09 	Otros 	tipos 	de 	impétigo
+Impétigo ulceroso
+L01.1 	Impetiginización 	de 	otras 	dermatosis
+4º 	L02 	Absceso 	cutáneo, 	forúnculo 	y 	ántrax
+Utilice código adicional 	para identificar el
+microorganismo (B95-B96)
+5º 	L02.0 	Absceso 	cutáneo, 	forúnculo 	y 	ántrax 	en 	la 	cara
+L02.01 	Absceso 	cutáneo 	en 	la 	cara
+L02.02 	Forúnculo 	en 	la 	cara
+Foliculitis en la cara
+Divieso en la cara
+L02.03 	Ántrax 	en 	la 	cara
+5º 	L02.1 	Absceso 	cutáneo, 	forúnculo 	y 	ántrax 	en 	el 	cuello
+L02.11 	Absceso 	cutáneo 	en 	el 	cuello
+L02.12 	Forúnculo 	en 	el 	cuello
+Foliculitis en el cuello
+Divieso en el cuello
+L02.13 	Ántrax 	en 	el 	cuello
+5º 	L02.2 	Absceso 	cutáneo, 	forúnculo 	y 	ántrax 	en 	el 	tronco
+6º 	L02.21 	Absceso 	cutáneo 	en 	tronco
+L02.211 	Absceso 	cutáneo 	en 	pared 	abdominal
+L02.212 	Absceso 	cutáneo 	en 	la 	espalda
+[cualquier 	parte, 	excepto 	la 	nalga]
+L02.213 	Absceso 	cutáneo 	en 	pared 	torácica
+L02.214 	Absceso 	cutáneo 	en 	la 	ingle
+L02.215 	Absceso 	cutáneo 	en 	periné 	o 	perineo
+L02.216 	Absceso 	cutáneo 	en 	ombligo
+L02.219 	Absceso 	cutáneo 	en 	tronco, 	sitio 	no
+especificado
+6º 	L02.22 	Forúnculo 	en 	tronco
+Foliculitis en tronco
+Divieso en tronco
+L02.221 	Forúnculo 	en 	pared 	abdominal
+L02.222 	Forúnculo 	en 	la 	espalda 	[cualquier 	parte,
+excepto 	la 	nalga]
+L02.223 	Forúnculo 	de 	pared 	torácica
+L02.224 	Forúnculo 	de 	ingle
+L02.225 	Forúnculo 	de 	periné 	o 	perineo
+L02.226 	Forúnculo 	de 	ombligo
+L02.229 	Forúnculo 	de 	tronco, 	no 	especificado
+Lista 	Tabular 	Enfermedades
+6º 	L02.23 	Ántrax 	de 	tronco
+L02.231 	Ántrax 	de 	pared 	abdominal
+L02.232 	Ántrax 	de 	espalda 	[cualquier 	parte,
+excepto 	la 	nalga]
+L02.233 	Ántrax 	de 	pared 	torácica
+L02.234 	Ántrax 	de 	ingle
+L02.235 	Ántrax 	de 	periné
+L02.236 	Ántrax 	de 	ombligo
+L02.239 	Ántrax 	de 	tronco, 	no 	especificado
+5º 	L02.3 	Absceso 	cutáneo, 	forúnculo 	y 	ántrax 	de 	la 	nalga
+L02.31 	Absceso 	cutáneo 	de 	nalga
+Absceso cutáneo de región glútea
+L02.32 	Forúnculo 	de 	nalga
+Foliculitis de nalga
+Forúnculo en nalga
+Forúnculo de región glútea
+
+-- 13 of 23 --
+
+987 	ENFERMEDADES 	DEL 	APARATO 	MUSCULOESQUELÉTICO 	Y 	DEL 	TEJIDO 	CONECTIVO
+CAPÍTULO 	13. 	ENFERMEDADES 	DEL 	APARATO
+MUSCULOESQUELÉTICO 	Y 	DEL 	TEJIDO 	CONECTIVO 	(M00-M99)
+Nota:
+Utilice un código de causa externa tras el código de afección
+musculoesquelética, si procede, para identificar la causa de
+dicha afección musculoesquelética
+Este capítulo contiene las siguientes secciones:
+M00-M25 Artropatías
+M00-M02 Artropatías infecciosas
+M04 Síndromes autoinflamatorios
+M05-M14 Poliartropatías inflamatorias
+M15-M19 Artrosis
+M20-M25 Otros trastornos de articulación
+M26-M27 Anomalías dentofaciales [incluida maloclusión] y
+otros trastornos mandibulares
+M30-M36 Trastornos sistémicos del tejido conectivo
+M40-M54 Dorsopatías
+M40-M43 Dorsopatías deformantes
+M45-M49 Espondilopatías
+M50-M54 Otras dorsopatías
+M60-M79 Trastornos de partes blandas
+M60-M63 Trastornos de los músculos
+M65-M67 Trastornos de membrana sinovial y tendón
+M70-M79 Otros trastornos de partes blandas
+M80-M94 Osteopatías y condropatías
+M80- M85 Trastornos de densidad y estructura óseas
+M86-M90 Otras osteopatías
+M91-M94 Condropatías
+M95 Otros trastornos musculoesqueléticos y de tejido
+conectivo
+M96 Complicaciones y trastornos intraoperatorios y
+posprocedimiento del aparato musculoesquelético, no
+clasificados bajo otro concepto
+M97 Fractura periprotésica en torno a prótesis articular
+interna
+M99 Lesiones biomecánicas, no clasificadas bajo otro
+concepto
+ARTROPATÍAS 	(M00-M25)
+Incluye:trastornos que afectan predominantemente a
+articulaciones periféricas (de extremidades)
+ARTROPATÍAS 	INFECCIOSAS 	(M00-M02)
+Nota:
+Esta categoría comprende artropatías por agentes
+microbiológicos.
+Se distingue entre los siguientes tipos de relación
+etiológica:
+a) 	infección directa de articulación, en la cual los
+microorganismos invaden el tejido sinovial y existe
+antígeno microbiano dentro de la articulación;
+b) 	infección indirecta, que puede ser de dos tipos: una
+artropatía reactiva, en la cual se diagnostica una
+infección microbiana del organismo, pero no se
+identifican microorganismos ni antígenos dentro de la
+articulación, y una artropatía postinfecciosa, en la cual
+está presente antígeno microbiano, pero el hallazgo del
+microorganismo es inconstante y se carece de pruebas
+de multiplicación local.
+Lista 	Tabular 	Enfermedades
+4º 	M00 	Artritis 	piógena 	(séptica) 	(L)
+5º 	M00.0 	Artritis 	y 	poliartritis 	estafilocócica
+Utilice código adicional 	(B95.61-B95.8) para
+identificar agente bacteriano
+M00.00 	Artritis 	estafilocócica, 	articulación 	no
+especificada
+6º 	M00.01 	Artritis 	estafilocócica, 	hombro
+M00.011 	Artritis 	estafilocócica, 	hombro
+derecho
+M00.012 	Artritis 	estafilocócica, 	hombro
+izquierdo
+M00.019 	Artritis 	estafilocócica, 	hombro 	no
+especificado
+6º 	M00.02 	Artritis 	estafilocócica, 	codo
+M00.021 	Artritis 	estafilocócica, 	codo
+derecho
+M00.022 	Artritis 	estafilocócica, 	codo
+izquierdo
+M00.029 	Artritis 	estafilocócica, 	codo 	no
+especificado
+6º 	M00.03 	Artritis 	estafilocócica, 	muñeca
+Artritis estafilocócica de huesos del
+carpo
+M00.031 	Artritis 	estafilocócica, 	muñeca
+derecha
+M00.032 	Artritis 	estafilocócica, 	muñeca
+izquierda
+M00.039 	Artritis 	estafilocócica, 	muñeca 	no
+especificada
+6º 	M00.04 	Artritis 	estafilocócica, 	mano
+Artritis estafilocócica de metacarpo y
+falanges
+M00.041 	Artritis 	estafilocócica, 	mano
+derecha
+M00.042 	Artritis 	estafilocócica, 	mano
+izquierda
+M00.049 	Artritis 	estafilocócica, 	mano 	no
+especificada
+6º 	M00.05 	Artritis 	estafilocócica, 	cadera
+M00.051 	Artritis 	estafilocócica, 	cadera
+derecha
+M00.052 	Artritis 	estafilocócica, 	cadera
+izquierda
+M00.059 	Artritis 	estafilocócica, 	cadera 	no
+especificada
+6º 	M00.06 	Artritis 	estafilocócica, 	rodilla
+M00.061 	Artritis 	estafilocócica, 	rodilla
+derecha
+M00.062 	Artritis 	estafilocócica, 	rodilla
+izquierda
+M00.069 	Artritis 	estafilocócica, 	rodilla 	no
+especificada
+6º 	M00.07 	Artritis 	estafilocócica, 	tobillo 	y 	pie
+Artritis estafilocócica, tarso, metatarso y
+falanges
+M00.071 	Artritis 	estafilocócica, 	tobillo 	y 	pie
+derechos
+M00.072 	Artritis 	estafilocócica, 	tobillo 	y 	pie
+izquierdo
+M00.079 	Artritis 	estafilocócica, 	tobillo 	y 	pie
+no 	especificado
+M00.08 	Artritis 	estafilocócica, 	vértebras
+M00.09 	Poliartritis 	estafilocócica
+5º 	M00.1 	Artritis 	y 	poliartritis 	neumocócica
+M00.10 	Artritis 	neumocócica, 	articulación 	no
+especificada
+6º 	M00.11 	Artritis 	neumocócica, 	hombro
+M00.111 	Artritis 	neumocócica, 	hombro
+derecho
+M00.112 	Artritis 	neumocócica, 	hombro
+izquierdo
+
+-- 14 of 23 --
+
+C
+1095 	ENFERMEDADES 	DEL 	APARATO 	GENITOURINARIO
+APÍTULO 	14. 	ENFERMEDADES 	DEL 	APARATO
+GENITOURINARIO 	(N00-N99)
+Este capítulo contiene las siguientes secciones:
+N00-N08 Enfermedades glomerulares
+N10-N16 Enfermedades renales túbulo-intersticiales
+N17-N19 Insuficiencia renal aguda y enfermedad renal
+crónica
+N20-N23 Litiasis urinaria
+N25-N29 Otros trastornos de riñón y uréter
+N30-N39 Otras enfermedades del aparato urinario
+N40-N53 Enfermedades de los órganos genitales masculinos
+N60-N65 Trastornos de la mama
+N70-N77 Enfermedades inflamatorias de los órganos pélvicos
+femeninos
+N80-N98 Trastornos no inflamatorios de tracto genital
+femenino
+N99 Complicaciones y trastornos intraoperatorios y
+posprocedimiento de aparato genitourinario, no clasificados
+bajo otro concepto
+ENFERMEDADES 	GLOMERULARES 	(N00-N08)
+Codifique además 	cualquier insuficiencia renal asociada
+(N17-N19).
+2022
+2022
+Lista 	Tabular 	Enfermedades
+4º 	N00 	Síndrome 	nefrítico 	agudo
+Incluye:enfermedad glomerular aguda
+glomerulonefritis aguda
+nefritis aguda
+N00.0 	Síndrome 	nefrítico 	agudo 	con 	anomalía 	glomerular
+mínima
+Síndrome nefrítico agudo con lesión de cambios
+mínimos
+N00.1 	Síndrome 	nefrítico 	agudo 	con 	lesiones 	glomerulares
+focales 	y 	segmentarios
+Síndrome nefrítico agudo con esclerosis focal y
+segmentaria
+Síndrome nefrítico agudo con glomerulonefritis
+focal
+Síndrome nefrítico agudo con hialinosis focal y
+segmentaria
+N00.2 	Síndrome 	nefrítico 	agudo 	con 	glomerulonefritis
+membranosa 	difusa
+N00.3 	Síndrome 	nefrítico 	agudo 	con 	glomerulonefritis
+proliferativa 	mesangial 	difusa
+N00.4 	Síndrome 	nefrítico 	agudo 	con 	glomerulonefritis
+proliferativa 	endocapilar 	difusa
+N00.5 	Síndrome 	nefrítico 	agudo 	con 	glomerulonefritis
+mesangiocapilar 	difusa
+Síndrome nefrítico agudo con glomerulonefritis
+membranoproliferativa, tipos 1 y 3, o NEOM
+N00.6 	Síndrome 	nefrítico 	agudo 	con 	enfermedad 	por
+depósitos 	densos
+Síndrome nefrítico agudo con glomerulonefritis
+membranoproliferativa tipo 2
+Síndrome nefrítico agudo con glomerulopatía C3
+con enfermedad por depósitos densos
+N00.7 	Síndrome 	nefrítico 	agudo 	con 	glomerulonefritis
+semilunar 	difusa
+Síndrome nefrítico agudo con glomerulonefritis
+extracapilar
+N00.8 	Síndrome 	nefrítico 	agudo 	con 	otros 	cambios
+morfológicos
+Síndrome nefrítico agudo con glomerulonefritis
+proliferativa NEOM
+N00.9 	Síndrome 	nefrítico 	agudo 	con 	cambios 	morfológicos
+no 	especificados
+N00.A 	Síndrome 	nefrítico 	agudo 	con 	glomerulonefritis 	C3
+Síndrome nefrítico agudo con glomerulopatía C3,
+NEOM
+4º 	N01 	Síndrome 	nefrítico 	rápidamente 	progresivo
+Incluye:enfermedad glomerular rápidamente progresiva
+glomerulonefritis rápidamente progresiva
+nefritis rápidamente progresiva
+N01.0 	Síndrome 	nefrítico 	rápidamente 	progresivo 	con
+anomalía 	glomerular 	mínima
+Síndrome nefrítico rápidamente progresivo con
+lesión de cambios mínimos
+N01.1 	Síndrome 	nefrítico 	rápidamente 	progresivo 	con
+lesiones 	glomerulares 	focales 	y 	segmentarias
+Síndrome nefrítico rápidamente progresivo con
+esclerosis focal y segmentaria
+Síndrome nefrítico rápidamente progresivo con
+glomerulonefritis focal
+Síndrome nefrítico rápidamente progresivo con
+hialinosis focal y segmentaria
+N01.2 	Síndrome 	nefrítico 	rápidamente 	progresivo 	con
+glomerulonefritis 	membranosa 	difusa
+N01.3 	Síndrome 	nefrítico 	rápidamente 	progresivo 	con
+glomerulonefritis 	proliferativa 	mesangial 	difusa
+N01.4 	Síndrome 	nefrítico 	rápidamente 	progresivo 	con
+glomerulonefritis 	proliferativa 	endocapilar 	difusa
+N01.5 	Síndrome 	nefrítico 	rápidamente 	progresivo 	con
+glomerulonefritis 	mesangiocapilar 	difusa
+Síndrome nefrítico rápidamente progresivo con
+glomerulonefritis membranoproliferativa, tipos 1 y
+3, o NEOM
+N01.6 	Síndrome 	nefrítico 	rápidamente 	progresivo 	con
+enfermedad 	por 	depósitos 	densos
+Síndrome nefrítico rápidamente progresivo con
+glomerulonefritis membranoproliferativa tipo 2
+Síndrome nefrítico rápidamente progresivo con
+glomerulopatía C3 con enfermedad por depósitos
+densos
+N01.7 	Síndrome 	nefrítico 	rápidamente 	progresivo 	con
+glomerulonefritis 	semilunar 	difusa
+Síndrome nefrítico rápidamente progresivo con
+glomerulonefritis extracapilar
+N01.8 	Síndrome 	nefrítico 	rápidamente 	progresivo 	con
+otros 	cambios 	morfológicos
+Síndrome nefrítico rápidamente progresivo con
+glomerulonefritis proliferativa NEOM
+N01.9 	Síndrome 	nefrítico 	rápidamente 	progresivo 	con
+cambios 	morfológicos 	no 	especificados
+N01.A 	Síndrome 	nefrítico 	rápidamente 	progresivo 	con
+glomerulonefritis 	C3
+Síndrome nefrítico rápidamente progresivo con
+glomerulopatía C3, NEOM
+4º 	N02 	Hematuria 	recurrente 	y 	persistente
+
+-- 15 of 23 --
+
+1115 	EMBARAZO, 	PARTO 	Y 	PUERPERIO
+2018
+2018
+2018
+2020
+2020
+2020
+2018
++ 	CAPÍTULO 	15. 	EMBARAZO, 	PARTO 	Y 	PUERPERIO 	(O00-O9A)
+Nota:
+Los códigos de este capítulo son para uso exclusivo en la
+codificación del episodio de la madre, nunca en el del recién
+nacido
+Los códigos de este capítulo se utilizan para circunstancias y
+enfermedades relacionadas, o que complican o se agravan
+por el embarazo, parto o puerperio (causas maternas u
+obstétricas)
+Los trimestres se calculan contando desde el primer día del
+último período menstrual.
+Estos se definen de la siguiente manera:
+1º trimestre - menos de las 14 semanas y 0 días
+2º trimestre - desde las 14 semanas y 0 días hasta antes
+de 28 semanas y 0 días
+3º trimestre - desde las 28 semanas y 0 días hasta el
+parto
+Utilice código adicional, si procede, de la categoría Z3A,
+Semanas de gestación, para determinar la semana concreta
+del embarazo, si se conoce
+Este capítulo contiene las siguientes secciones:
+O00-O08 Embarazo con resultado abortivo
+O09- Supervisión de embarazo de alto riesgo
+O10-O16 Edema, proteinuria y trastornos hipertensivos en el
+embarazo, parto y puerperio
+O20-O29 Otros trastornos maternos relacionados
+principalmente con el embarazo
+O30-O48 Atención materna relacionada con el feto y cavidad
+amniótica y posibles problemas en el parto
+O60-O77 Complicaciones del trabajo de parto y del parto
+O80-O82 Contacto para el parto
+O85-O92 Complicaciones principalmente relacionadas con el
+puerperio
+O94-O9A Otras afecciones obstétricas no clasificadas bajo
+otro concepto
+EMBARAZO 	CON 	RESULTADO 	ABORTIVO 	(O00-O08)
+4º 	O00 	Embarazo 	ectópico
+Incluye:embarazo ectópico roto
+Utilice código adicional de la categoría O08 para
+identificar cualquier complicación asociada
+5º 	O00.0 	Embarazo 	abdominal
+O00.00 	Embarazo 	abdominal 	sin 	embarazo
+intrauterino
+Embarazo abdominal NEOM
+O00.01 	Embarazo 	abdominal 	con 	embarazo
+intrauterino
+5º 	O00.1 	Embarazo 	tubárico
+Aborto tubárico
+Embarazo en trompa de Falopio
+Rotura de la trompa de Falopio debida a embarazo
+6º 	O00.10 	Embarazo 	tubárico 	sin 	embarazo 	intrauterino
+Embarazo tubárico NEOM
+O00.101 	Embarazo 	tubárico 	derecho 	sin
+embarazo 	intrauterino
+O00.102 	Embarazo 	tubárico 	izquierdo 	sin
+embarazo 	intrauterino
+O00.109 	Embarazo 	tubárico 	no 	especificado 	sin
+embarazo 	intrauterino
+6º 	O00.11 	Embarazo 	tubárico 	con 	embarazo 	intrauterino
+O00.111 	Embarazo 	tubárico 	derecho 	con
+embarazo 	intrauterino
+O00.112 	Embarazo 	tubárico 	izquierdo 	con
+embarazo 	intrauterino
+2020
+2020
+O00.119 	Embarazo 	tubárico 	no 	especificado 	con
+embarazo 	intrauterino 	2020
+5º 	O00.2 	Embarazo 	ovárico
+6º 	O00.20 	Embarazo 	ovárico 	sin 	embarazo 	intrauterino
+Embarazo ovárico NEOM
+O00.201 	Embarazo 	ovárico 	derecho 	sin 	embarazo
+intrauterino
+O00.202 	Embarazo 	ovárico 	izquierdo 	sin
+embarazo 	intrauterino
+O00.209 	Embarazo 	ovárico 	no 	especificado 	sin
+embarazo 	intrauterino
+6º 	O00.21 	Embarazo 	ovárico 	con 	embarazo 	intrauterino
+O00.211 	Embarazo 	ovárico 	derecho 	con
+embarazo 	intrauterino
+O00.212 	Embarazo 	ovárico 	izquierdo 	con
+embarazo 	intrauterino
+O00.219 	Embarazo 	ovárico 	no 	especificado 	con
+embarazo 	intrauterino
+5º 	O00.8 	Otro 	embarazo 	ectópico
+Embarazo cervical
+Embarazo cornual
+Embarazo intraligamentoso
+Embarazo mural
+O00.80 	Otro 	embarazo 	ectópico 	sin 	embarazo
+intrauterino
+Otro embarazo ectópico NEOM
+O00.81 	Otro 	embarazo 	ectópico 	con 	embarazo
+intrauterino
+5º 	O00.9 	Embarazo 	ectópico, 	no 	especificado
+O00.90 	Embarazo 	ectópico 	no 	especificado, 	sin
+embarazo 	intrauterino
+Embarazo ectópico NEOM
+O00.91 	Embarazo 	ectópico 	no 	especificado, 	con
+embarazo 	intrauterino
+4º 	O01 	Mola 	hidatiforme
+Utilice código adicional de la categoría O08 para
+identificar cualquier complicación asociada.
+O01.0 	Mola 	hidatiforme 	clásica
+Mola hidatiforme completa
+O01.1 	Mola 	hidatiforme 	incompleta 	o 	parcial
+O01.9 	Mola 	hidatiforme, 	no 	especificada
+Enfermedad trofoblástica NEOM
+Mola vesicular NEOM
+4º 	O02 	Otros 	productos 	anormales 	de 	la 	concepción
+Utilice código adicional de la categoría O08 para
+identificar cualquier complicación asociada.
+O02.0 	Huevo 	huero 	y 	mola 	no 	hidatidiforme
+Embarazo molar NCOC
+Huevo patológico (huevo huero) (L)
+Mola carnosa
+Mola intrauterina NEOM
+O02.1 	Aborto 	retenido
+Muerte fetal temprana, antes de las 20 semanas
+completas de gestación, con retención de feto
+muerto
+2018
+2020
+2020
+2020
+2018
+2020
+2020
+2020
+2018
+2018
+2018
+2018
+Lista 	Tabular 	Enfermedades
+
+-- 16 of 23 --
+
+1153 	CIERTAS 	AFECCIONES 	ORIGINADAS 	EN 	EL 	PERÍODO 	PERINATAL
+CAPÍTULO 	16. 	CIERTAS 	AFECCIONES 	ORIGINADAS 	EN 	EL
+PERÍODO 	PERINATAL 	(P00-P96)
+Nota:
+Los códigos de este capítulo se deben aplicar a la historia del
+recién nacido, nunca a la historia de la madre
+Incluye:patologías que tienen su origen en el periodo fetal o
+perinatal (antes del nacimiento y hasta los primeros
+28 días después del nacimiento), aunque la
+morbilidad ocurra más tarde
+Este capítulo contiene las siguientes secciones:
+P00-P04 Recién nacido afectado por factores maternos y por
+complicaciones del embarazo, trabajo de parto y parto
+P05-P08 Trastornos del recién nacido relacionados con la
+duración de la gestación y el crecimiento fetal
+P09 Hallazgos anormales en el cribado neonatal
+P10-P15 Traumatismo al nacimiento
+P19-P29 Trastornos respiratorios y cardiovasculares
+específicos del periodo perinatal
+P35-P39 Infecciones específicas del periodo perinatal
+P50-P61 Trastornos hemorrágicos y hematológicos del recién
+nacido
+P70-P74 Trastornos endocrinos y metabólicos transitorios
+específicos del recién nacido
+P76-P78 Trastornos del aparato digestivo del recién nacido
+P80-P83 Patologías que afectan a la piel y los anejos, así como
+a la regulación de la temperatura del recién nacido
+P84 Otros problemas del recién nacido
+P90-P96 Otros trastornos originados en el periodo neonatal
+RECIÉN 	NACIDO 	AFECTADO 	POR 	FACTORES 	MATERNOS 	Y 	POR
+COMPLICACIONES 	DEL 	EMBARAZO, 	TRABAJO 	DE 	PARTO 	Y 	PARTO
+(P00-P04)
+Nota:
+Estos códigos han de utilizarse cuando las patologías
+maternas enumeradas se especifiquen como causa de
+morbilidad confirmada o potencial con origen en el período
+perinatal (desde antes del nacimiento hasta los primeros 28
+días después del nacimiento).
+2024
+Lista 	Tabular 	Enfermedades
+4º 	P00 	Recién 	nacido 	afectado 	por 	patologías 	maternas 	que
+pueden 	no 	estar 	relacionadas 	con 	el 	embarazo 	actual
+Codifique primero 	cualquier patología actual en el
+recién nacido
+P00.0 	Recién 	nacido 	afectado 	por 	trastornos
+hipertensivos 	maternos
+Recién nacido afectado por enfermedades
+maternas clasificables bajo O10-O11, O13-O16
+P00.1 	Recién 	nacido 	afectado 	por 	enfermedades
+maternas 	renales 	y 	del 	tracto 	urinario
+Recién nacido afectado por enfermedades
+maternas clasificables bajo N00-N39
+P00.2 	Recién 	nacido 	afectado 	por 	enfermedades
+infecciosas 	y 	parasitarias 	de 	la 	madre
+Recién nacido afectado por enfermedad infecciosa
+materna clasificable bajo A00-B99, J09 y J10
+P00.3 	Recién 	nacido 	afectado 	por 	otras 	enfermedades
+circulatorias 	y 	respiratorias 	de 	la 	madre
+Recién nacido afectado por enfermedades de la
+madre clasificables bajo I00-I99, J00-J99, Q20-Q34 y
+no comprendidas en P00.0, P00.2
+P00.4 	Recién 	nacido 	afectado 	por 	trastornos 	nutricionales
+maternos
+Malnutrición materna NEOM
+Recién nacido afectado por trastornos de la madre
+clasificables bajo E40-E64
+P00.5 	Recién 	nacido 	afectado 	por 	traumatismo 	materno
+Recién nacido afectado por enfermedades de la
+madre clasificables bajo O9A.2-
+P00.6 	Recién 	nacido 	afectado 	por 	procedimiento
+quirúrgico 	realizado 	a 	la 	madre
+Recién nacido afectado por amniocentesis
+P00.7 	Recién 	nacido 	afectado 	por 	otros 	procedimientos
+médicos 	de 	la 	madre, 	no 	clasificados 	bajo 	otro
+concepto
+Recién nacido afectado por radiación a la madre
+5º 	P00.8 	Recién 	nacido 	afectado 	por 	otras 	patologías
+maternas
+P00.81 	Recién 	nacido 	afectado 	por 	enfermedad
+periodontal 	de 	la 	madre
++ 	P00.82 	Recién 	nacido 	afectado 	por 	colonización 	por
+estreptococo 	B 	materno 	(positivo) 	(EGB)
+Contacto con estreptococo B materno
+(positivo)
+P00.89 	Recién 	nacido 	afectado 	por 	otras 	patologías
+maternas
+Recién nacido afectado por infecciones del
+tracto genital materno u otras infecciones
+localizadas de la madre
+Recién nacido afectado por lupus eritematoso
+sistémico materno
+Recién nacido afectado por patologías
+clasificables bajo T80-T88
+Utilice código adicional 	para identificar el
+agente infeccioso, si se conoce
+P00.9 	Recién 	nacido 	afectado 	por 	patologías 	maternas 	no
+especificadas
+4º 	P01 	Recién 	nacido 	afectado 	por 	complicaciones 	maternas
+del 	embarazo
+Codifique primero 	cualquier afección actual en recién
+nacido
+P01.0 	Recién 	nacido 	afectado 	por 	incompetencia 	del
+cuello 	uterino
+P01.1 	Recién 	nacido 	afectado 	por 	rotura 	prematura 	de
+membranas
+P01.2 	Recién 	nacido 	afectado 	por 	oligoamnios
+
+-- 17 of 23 --
+
+1165 	MALFORMACIONES 	CONGÉNITAS, 	DEFORMIDADES 	Y 	ANOMALÍAS 	CROMOSÓMICAS
+CAPÍTULO 	17. 	MALFORMACIONES 	CONGÉNITAS,
+DEFORMIDADES 	Y 	ANOMALÍAS 	CROMOSÓMICAS 	(Q00-Q99)
+Nota:
+Los códigos de este capítulo no se deben utilizar en registros
+de la madre ni del feto
+Este capítulo contiene las siguientes secciones:
+Q00-Q07 Malformaciones congénitas de sistema nervioso
+Q10-Q18 Malformaciones congénitas de los ojos, oído, cara y
+cuello
+Q20-Q28 Malformaciones congénitas del aparato circulatorio
+Q30-Q34 Malformaciones congénitas del aparato respiratorio
+Q35-Q37 Labio y paladar hendidos
+Q38-Q45 Otras malformaciones congénitas del aparato
+digestivo
+Q50-Q56 Malformaciones congénitas de los órganos genitales
+Q60-Q64 Malformaciones congénitas del aparato urinario
+Q65-Q79 Malformaciones y deformidades congénitas del
+sistema osteomuscular
+Q80-Q89 Otras malformaciones congénitas
+Q90-Q99 Anomalías cromosómicas, no clasificadas bajo otro
+concepto
+MALFORMACIONES 	CONGÉNITAS 	DEL 	SISTEMA 	NERVIOSO 	(Q00-Q07)
+Lista 	Tabular 	Enfermedades
+4º 	Q00 	Anencefalia 	y 	malformaciones 	similares
+Q00.0 	Anencefalia
+Acefalia
+Acrania
+Amielencefalia
+Hemianencefalia
+Hemicefalia
+Q00.1 	Craneorraquisquisis
+Q00.2 	Iniencefalia
+4º 	Q01 	Encefalocele
+Incluye:encefalocistocele
+encefalomielocele
+hidroencefalocele
+hidromeningocele craneal
+meningocele cerebral
+meningoencefalocele
+síndrome de Arnold-Chiari, tipo III
+Q01.0 	Encefalocele 	frontal
+Q01.1 	Encefalocele 	nasofrontal
+Q01.2 	Encefalocele 	occipital
+Q01.8 	Encefalocele 	de 	otras 	localizaciones
+Q01.9 	Encefalocele, 	no 	especificado
+Q02 	Microcefalia
+Incluye:hidromicrocefalia
+microencéfalo
+Codifique primero, si procede, la enfermedad congénita
+por virus del Zika
+4º 	Q03 	Hidrocefalia 	congénita
+Incluye:hidrocefalia en el recién nacido
+Q03.0 	Malformaciones 	del 	acueducto 	de 	Silvio
+Anomalía del acueducto de Silvio
+Estenosis del acueducto de Silvio
+Obstrucción congénita del acueducto de Silvio
+Q03.1 	Atresia 	de 	los 	agujeros 	de 	Magendie 	y 	de 	Luschka
+Síndrome de Dandy-Walker
+Q03.8 	Otra 	hidrocefalia 	congénita
+Q03.9 	Hidrocefalia 	congénita, 	no 	especificada
+4º 	Q04 	Otras 	malformaciones 	congénitas 	del 	cerebro
+Q04.0 	Malformaciones 	congénitas 	del 	cuerpo 	calloso
+Agenesia del cuerpo calloso
+Q04.1 	Arrinencefalia
+Q04.2 	Holoprosencefalia
+Q04.3 	Otras 	deformidades 	por 	reducción 	del 	cerebro
+Agenesia de parte del cerebro
+Agiria
+Aplasia de parte del cerebro
+Ausencia de parte del cerebro
+Hidranencefalia
+Hipoplasia de parte del cerebro
+Lisencefalia
+Microgiria
+Paquigiria
+Q04.4 	Displasia 	del 	septo 	óptico 	del 	cerebro
+Q04.5 	Megalencefalia
+Q04.6 	Quistes 	cerebrales 	congénitos
+Esquizencefalia
+Porencefalia
+Q04.8 	Otras 	malformaciones 	congénitas 	especificadas 	del
+cerebro
+Macrogiria
+Síndrome de Arnold-Chiari, tipo IV
+Q04.9 	Malformación 	congénita 	del 	cerebro, 	no
+especificada
+Anomalía congénita del cerebro NEOM
+Anomalías congénitas múltiples del cerebro NEOM
+Deformidad congénita del cerebro NEOM
+Enfermedad o lesión congénita del cerebro NEOM
+4º 	Q05 	Espina 	bífida
+Incluye:espina bífida (abierta) (quística)
+hidromeningocele (columna vertebral)
+meningocele (espinal)
+meningomielocele
+mielocele
+mielomeningocele
+raquisquisis
+siringomielocele
+Utilice código adicional 	para cualquier paraplejia
+(paraparesia) asociada (G82.2-)
+Q05.0 	Espina 	bífida 	cervical 	con 	hidrocefalia
+Q05.1 	Espina 	bífida 	torácica 	con 	hidrocefalia
+Espina bífida dorsal con hidrocefalia
+Espina bífida toracolumbar con hidrocefalia
+Q05.2 	Espina 	bífida 	lumbar 	con 	hidrocefalia
+Espina bífida lumbosacra con hidrocefalia
+Q05.3 	Espina 	bífida 	sacra 	con 	hidrocefalia
+Q05.4 	Espina 	bífida 	no 	especificada 	con 	hidrocefalia
+Q05.5 	Espina 	bífida 	cervical 	sin 	hidrocefalia
+Q05.6 	Espina 	bífida 	torácica 	sin 	hidrocefalia
+Espina bífida dorsal NEOM
+Espina bífida toracolumbar NEOM
+Q05.7 	Espina 	bífida 	lumbar 	sin 	hidrocefalia
+Espina bífida lumbosacra NEOM
+Q05.8 	Espina 	bífida 	sacra 	sin 	hidrocefalia
+Q05.9 	Espina 	bífida, 	no 	especificada
+4º 	Q06 	Otras 	malformaciones 	congénitas 	de 	la 	médula 	espinal
+Q06.0 	Amielia
+Q06.1 	Hipoplasia 	y 	displasia 	de 	la 	médula 	espinal
+Atelomielia
+Mielatelia
+Mielodisplasia de la médula espinal
+Q06.2 	Diastematomielia
+Q06.3 	Otras 	malformaciones 	congénitas 	de 	la 	cola 	de
+caballo
+Q06.4 	Hidromielia
+Hidrorraquis
+Q06.8 	Otras 	malformaciones 	congénitas 	especificadas 	de
+la 	médula 	espinal
+Q06.9 	Malformación 	congénita 	de 	la 	médula 	espinal, 	no
+especificada
+Anomalía congénita de la médula espinal NEOM
+Deformidad congénita de la médula espinal NEOM
+Enfermedad o lesión congénita de la médula espinal
+NEOM
+4º 	Q07 	Otras 	malformaciones 	congénitas 	del 	sistema 	nervioso
+
+-- 18 of 23 --
+
+1183 	SÍNTOMAS, 	SIGNOS 	Y 	RESULTADOS 	ANORMALES 	DE 	PRUEBAS 	COMPLEMENTARIAS, 	NO 	CLASIFICADOS 	BAJO 	OTRO 	CONCEPTO
+CAPÍTULO 	18. 	SÍNTOMAS, 	SIGNOS 	Y 	RESULTADOS 	ANORMALES
+DE 	PRUEBAS 	COMPLEMENTARIAS, 	NO 	CLASIFICADOS 	BAJO
+OTRO 	CONCEPTO 	(R00-R99)
+Nota:
+Este capítulo incluye síntomas, signos, resultados anormales
+de análisis y otras exploraciones complementarias, así como
+afecciones mal definidas para las que no se ha registrado un
+diagnóstico que pueda clasificarse bajo otro concepto.
+Los signos y síntomas que indican de forma bien definida un
+diagnóstico determinado se han asignado a una categoría de
+otros capítulos de la clasificación.
+En general, las categorías de este capítulo incluyen las
+afecciones menos definidas y los síntomas que, sin que el
+caso haya sido estudiado lo suficiente para llegar a establecer
+un diagnóstico final, hacen sospechar, por igual, dos o más
+enfermedades o bien apuntan a dos o más sistemas
+orgánicos.
+Prácticamente todas las categorías del capítulo podrían
+calificarse como "no especificadas de otra manera", "de causa
+desconocida" o "transitorias".
+Se debe consultar el Índice Alfabético para determinar qué
+síntomas y signos se deben asignar a este capítulo y cuáles a
+otros capítulos.
+Las subcategorías residuales, con dígitos .8, están disponibles
+en general para otros síntomas relevantes que no pueden ser
+asignados a otros conceptos de la clasificación.
+Las afecciones y los signos o síntomas incluidos en las
+categorías R00-R94 consisten en:
+(a) 	casos en los que no se puede llegar a un diagnóstico más
+específico, a pesar de haber estudiado todos los datos
+pertinentes;
+(b) 	signos o síntomas que estando presentes en el momento
+de la visita inicial, desaparecen posteriormente sin poder
+determinar su causa;
+(c) 	diagnóstico provisional en un paciente que no regresó
+para continuar su estudio o su asistencia;
+(d) casos derivados a otro centro para estudio o tratamiento,
+antes de realizar el diagnóstico;
+(e) 	casos en los que no se disponía de un diagnóstico más
+preciso, por cualquier otro motivo;
+(f) 	ciertos síntomas, para los cuales se proporciona
+información complementaria, que representan por sí mismos
+problemas importantes en la atención médica.
+Este capítulo contiene las siguientes secciones:
+R00-R09 Síntomas y signos que afectan a los aparatos
+circulatorio y respiratorio
+R10-R19 Síntomas y signos que afectan al aparato digestivo y
+el abdomen
+R20-R23 Síntomas y signos que afectan a piel y tejido celular
+subcutáneo
+R25-R29 Síntomas y signos que afectan al sistema nervioso y
+el aparato locomotor
+R30-R39 Síntomas y signos que afectan al aparato
+genitourinario
+R40-R46 Síntomas y signos que afectan a las funciones
+cognitivas, la percepción, el estado emocional y la conducta
+R47-R49 Síntomas y signos que afectan al habla y la voz
+R50-R69 Síntomas y signos generales
+R70-R79 Resultados anormales de análisis de sangre, sin
+diagnóstico
+R80-R82 Resultados anormales de análisis de orina, sin
+diagnóstico
+R83-R89 Resultados anormales del análisis de otros líquidos
+corporales, sustancias y tejidos, sin diagnóstico
+R90-R94 Hallazgos anormales de pruebas de imagen y
+pruebas funcionales, sin diagnóstico
+R97 Marcadores tumorales alterados
+R99 Causas de mortalidad mal definidas y desconocidas
+SÍNTOMAS 	Y 	SIGNOS 	QUE 	AFECTAN 	A 	LOS 	APARATOS 	CIRCULATORIO
+Y 	RESPIRATORIO 	(R00-R09)
+Lista 	Tabular 	Enfermedades
+4º 	R00 	Alteraciones 	del 	latido 	cardíaco
++ 	R00.0 	Taquicardia, 	no 	especificada
+Latidos cardíacos rápidos
+Taquicardia sinoauricular NEOM
+Taquicardia sinusal NEOM
+R00.1 	Bradicardia, 	no 	especificada
+Bradicardia sinoauricular
+Bradicardia sinusal
+Bradicardia vagal
+Latidos cardíacos lentos
+Utilice código adicional 	de efecto adverso, si
+procede, para identificar el fármaco (T36-T50 con
+quinto o sexto carácter 5)
+R00.2 	Palpitaciones
+Conciencia de los latidos cardíacos
+R00.8 	Otras 	alteraciones 	de 	los 	latidos 	cardíacos
+R00.9 	Alteraciones 	del 	latido 	cardíaco 	no 	especificadas
+4º 	R01 	Soplos 	y 	otros 	ruidos 	cardíacos
+R01.0 	Soplos 	cardíacos 	benignos 	o 	inocentes
+Soplo cardíaco funcional
+R01.1 	Soplo 	cardíaco, 	no 	especificado
+Soplo cardíaco NEOM
+Soplo en el corazón NEOM
+Soplo sistólico NEOM
+R01.2 	Otros 	ruidos 	cardíacos
+Aumento o disminución de matidez cardíaca
+Roce precordial
+4º 	R03 	Medida 	de 	presión 	arterial 	anormal, 	sin 	diagnóstico
+R03.0 	Medida 	de 	presión 	arterial 	elevada, 	sin 	diagnóstico
+de 	hipertensión
+Nota:
+Esta categoría debe utilizarse para registrar un
+episodio de elevación de la presión arterial en un
+paciente en el que no se ha hecho un diagnóstico
+formal de hipertensión o que aparece como
+hallazgo incidental aislado.
+R03.1 	Medida 	de 	presión 	arterial 	baja 	inespecífica
+4º 	R04 	Hemorragia 	de 	las 	vías 	respiratorias
+R04.0 	Epistaxis
+Hemorragia de la nariz
+R04.1 	Hemorragia 	de 	garganta
+R04.2 	Hemoptisis
+Esputo manchado de sangre
+Tos con hemorragia
+5º 	R04.8 	Hemorragia 	de 	otras 	localizaciones 	de 	las 	vías
+respiratorias
+R04.81 	Hemorragia 	pulmonar 	idiopática 	aguda 	en
+lactantes
+Hemorragia idiopática aguda en lactantes
+mayores de 28 días
+R04.89 	Hemorragia 	de 	otras 	localizaciones 	de 	las 	vías
+respiratorias
+Hemorragia pulmonar NEOM
+
+-- 19 of 23 --
+
+1203 	LESIONES 	TRAUMÁTICAS, 	ENVENENAMIENTOS 	Y 	OTRAS 	CONSECUENCIAS 	DE 	CAUSAS 	EXTERNAS
+CAPÍTULO 	19. 	LESIONES 	TRAUMÁTICAS, 	ENVENENAMIENTOS 	Y
+OTRAS 	CONSECUENCIAS 	DE 	CAUSAS 	EXTERNAS 	(S00-T88)
+Nota:
+Utilice código(s) secundario(s) del Capítulo 20, Causas
+externas de morbilidad, para indicar la causa de la lesión.
+Los códigos de la sección T que incluyan la causa externa no
+requieren código adicional para dicha causa externa
+Utilice código adicional para identificar cualquier cuerpo
+extraño, si procede (Z18.-)
+Nota:
+El capítulo utiliza la sección S para codificar diferentes tipos
+de lesiones relacionadas con regiones corporales individuales
+y la sección T para cubrir las lesiones de regiones anatómicas
+no especificadas, así como los envenenamientos y ciertas
+consecuencias de las causas externas.
+Este capítulo contiene las siguientes secciones:
+S00-S09 Traumatismos en la cabeza
+S10-S19 Traumatismos en el cuello
+S20-S29 Traumatismos en el tórax
+S30-S39 Traumatismos en abdomen, parte inferior de la
+espalda, columna lumbar, pelvis y genitales externos
+S40-S49 Traumatismos en hombro y parte superior del brazo
+S50-S59 Traumatismos en codo y antebrazo
+S60-S69 Traumatismos en muñeca, mano y dedos
+S70-S79 Traumatismos en cadera y muslo
+S80-S89 Traumatismos en rodilla y pierna
+S90-S99 Traumatismos en tobillo y pie
+T07 Traumatismos que afectan a múltiples regiones
+corporales
+T14 Traumatismo de región anatómica no especificada
+T15-T19 Efectos de cuerpo extraño que penetra a través de
+orificio natural
+T20-T25 Quemaduras y corrosiones de la superficie externa
+del cuerpo, especificadas por localización
+T26-T28 Quemaduras y corrosiones limitadas a ojo y órganos
+internos
+T30-T32 Quemaduras y corrosiones de regiones corporales
+múltiples y las no especificadas
+T33-T34 Congelación
+T36-T50 Envenenamiento por, efectos adversos e
+infradosificación de fármacos, medicamentos y sustancias
+biológicas
+T51-T65 Efectos tóxicos de sustancias de procedencia
+principalmente no medicamentosa
+T66-T78 Otros efectos y los no especificados de causas
+externas
+T79 Ciertas complicaciones precoces de traumatismos
+T80-T88 Complicaciones de atención quirúrgica y médica, no
+clasificadas bajo otro concepto
+TRAUMATISMOS 	EN 	LA 	CABEZA 	(S00-S09)
+Incluye:traumatismos de la cara [cualquier parte]
+traumatismos de la cavidad oral
+traumatismos de la encía
+traumatismos de la lengua
+traumatismos del área de la articulación
+temporomandibular
+traumatismos del área periocular
+traumatismos del cuero cabelludo
+traumatismos del diente
+traumatismos del maxilar
+traumatismos del oído
+traumatismos del ojo
+traumatismos del paladar
+Codifique además cualquier infección asociada
+4º 	S00 	Traumatismo 	superficial 	de 	la 	cabeza
+Se debe añadir el 7º carácter apropiado a cada código
+de la categoría S00
+A contacto inicial
+D contacto sucesivo
+S secuela
+5º 	S00.0 	Traumatismo 	superficial 	de 	cuero 	cabelludo
+S00.00 	Traumatismo 	superficial 	no 	especificado 	de
+cuero 	cabelludo
+S00.01 	Abrasión 	de 	cuero 	cabelludo
+S00.02 	Ampolla 	(no 	térmica) 	de 	cuero 	cabelludo
+S00.03 	Contusión 	de 	cuero 	cabelludo
+Hematoma de cuero cabelludo
+Moratón de cuero cabelludo
+S00.04 	Constricción 	externa 	de 	parte 	de 	cuero
+cabelludo
+S00.05 	Cuerpo 	extraño 	superficial 	de 	cuero 	cabelludo
+Astilla en cuero cabelludo
+S00.06 	Picadura 	de 	insecto 	(no 	venenoso) 	en 	cuero
+cabelludo
+S00.07 	Otra 	mordedura 	superficial 	de 	cuero
+cabelludo
+5º 	S00.1 	Contusión 	de 	párpado 	y 	área 	periocular
+Ojo morado
+S00.10 	Contusión 	de 	párpado 	y 	área 	periocular 	no
+especificada
+S00.11 	Contusión 	de 	párpado 	y 	área 	periocular
+derechos
+S00.12 	Contusión 	de 	párpado 	y 	área 	periocular
+izquierdos
+5º 	S00.2 	Otros 	tipos 	de 	traumatismos 	superficiales 	y 	los 	no
+especificados 	de 	párpado 	y 	área 	periocular
+6º 	S00.20 	Traumatismo 	superficial 	no 	especificado 	de
+párpado 	y 	área 	periocular
+7º 	S00.201 	Traumatismo 	superficial 	no 	especificado
+de 	párpado 	y 	área 	periocular 	derechos
+7º 	S00.202 	Traumatismo 	superficial 	no 	especificado
+de 	párpado 	y 	área 	periocular 	izquierdos
+7º 	S00.209 	Traumatismo 	superficial 	no 	especificado
+de 	párpado 	y 	área 	periocular 	no
+especificados
+6º 	S00.21 	Abrasión 	de 	párpado 	y 	área 	periocular
+7º 	S00.211 	Abrasión 	de 	párpado 	y 	área 	periocular
+derechos
+7º 	S00.212 	Abrasión 	de 	párpado 	y 	área 	periocular
+izquierdos
+7º 	S00.219 	Abrasión 	de 	párpado 	y 	área 	periocular
+no 	especificados
+x 	7º
+x 	7º
+x 	7º
+x 	7º
+x 	7º
+x 	7º
+x 	7º
+x 	7º
+x 	7º
+x 	7º
+x 	7º
+Lista 	Tabular 	Enfermedades
+6º 	S00.22 	Ampolla 	(no 	térmica) 	de 	párpado 	y 	área
+periocular
+7º 	S00.221 	Ampolla 	(no 	térmica) 	de 	párpado 	y 	área
+periocular 	derechos
+7º 	S00.222 	Ampolla 	(no 	térmica) 	de 	párpado 	y 	área
+periocular 	izquierdos
+7º 	S00.229 	Ampolla 	(no 	térmica) 	de 	párpado 	y 	área
+periocular 	no 	especificados
+6º 	S00.24 	Constricción 	externa 	de 	párpado 	y 	área
+periocular
+7º 	S00.241 	Constricción 	externa 	de 	párpado 	y 	área
+periocular 	derechos
+7º 	S00.242 	Constricción 	externa 	de 	párpado 	y 	área
+periocular 	izquierdos
+7º 	S00.249 	Constricción 	externa 	de 	párpado 	y 	área
+periocular 	no 	especificados
+
+-- 20 of 23 --
+
+1447 	CAUSAS 	EXTERNAS 	DE 	MORBILIDAD
+CAPÍTULO 	20. 	CAUSAS 	EXTERNAS 	DE 	MORBILIDAD 	(V00-Y99)
+Nota:
+Este capítulo permite la clasificación de eventos ambientales
+y circunstancias como las causas de las lesiones, y otros
+efectos adversos.
+Cuando sea aplicable un código de esta sección, éste será
+utilizado como secundario a un código de otro capítulo de la
+Clasificación que indique la naturaleza de la afección
+Frecuentemente, la condición se clasificará en el capítulo 19:
+Lesiones, envenenamientos y algunas otras consecuencias de
+causas externas (S00-T88).
+Las afecciones que pueden derivarse de las causas externas
+se clasifican en los capítulos I al XVIII.
+Para estas afecciones, los códigos del Capítulo 20 pueden
+usarse para proporcionar información adicional sobre la
+causa de la afección.
+Este capítulo contiene las siguientes secciones:
+V00-V09 Peatón lesionado en accidente de transporte
+V10-V19 Ciclista lesionado en accidente de transporte
+V20-V29 Motociclista lesionado en accidente de transporte
+V30-V39 Ocupante de vehículo motorizado de tres ruedas
+lesionado en accidente de transporte
+V40-V49 Ocupante de coche lesionado en accidente de
+transporte
+V50-V59 Ocupante de camioneta o furgoneta lesionado en
+accidente de transporte
+V60-V69 Ocupante de vehículo de transporte pesado
+lesionado en accidente de transporte
+V70-V79 Ocupante de autobús lesionado en accidente de
+transporte
+V80-V89 Otros tipos de accidentes de transporte terrestre
+V90-V94 Accidentes de transporte acuático
+V95-V97 Accidentes de transporte aéreo y espacial
+V98-V99 Otros tipos de accidentes de transporte y los no
+especificados
+W00-X58 Otras causas externas de lesiones accidentales
+W00-W19 Resbalón, tropiezo, traspié y caída
+W20-W49 Exposición a fuerzas mecánicas inanimadas
+W50-W64 Exposición a fuerzas mecánicas animadas
+W65-W74 Ahogamiento e inmersión accidental no
+debida a transporte
+W85-W99 Exposición a corriente eléctrica, radiación y
+temperatura o presión ambiental extrema
+X00-X08 Exposición al humo, fuego y llamas
+X10-X19 Contacto con calor y sustancias calientes
+X30-X39 Exposición a fuerzas de la naturaleza
+X50-X50 Sobreesfuerzo y movimientos extenuantes o
+repetitivos
+X52-X58 Exposición accidental a otros factores
+especificados
+X71-X83 Lesiones autoinfligidas intencionalmente
+X92-Y09 Agresión
+Y21-Y33 Eventos de intención no determinada
+Y35-Y38 Intervención legal, operaciones de guerra,
+operaciones militares y terrorismo
+Y62-Y84 Complicaciones de la atención médica y quirúrgica
+Y62-Y69 Accidentes en pacientes durante atención
+quirúrgica y médica
+Y70-Y82 Dispositivos sanitarios utilizados para el
+diagnóstico y tratamiento asociados con eventos adversos
+Y83-Y84 Cirugía y otros procedimientos médicos como
+causa de reacción anómala o complicación posterior en el
+paciente, sin mención a efecto adverso en el momento del
+procedimiento
+Y90-Y99 Factores suplementarios relacionados a causas de
+morbilidad clasificadas bajo otro concepto
+ACCIDENTES 	(V00-X58)
+ACCIDENTES 	DE 	TRANSPORTE 	(V00-V99)
+Nota:
+Esta sección se estructura en 12 grupos. Los que responden a
+accidentes de transporte terrestre (V00-V89) reflejan el modo
+de transporte de la víctima y se subdividen para identificar a
+la víctima o el tipo de evento. El vehículo en el que la persona
+lesionada es un ocupante se identifica en los primeros dos
+caracteres, ya que es visto como el factor más importante
+para identificar con fines de prevención. Un accidente de
+transporte es un tipo de accidente en el que el vehículo
+implicado debe estar en movimiento o corriendo o en uso a
+efectos de transporte en el momento del accidente
+Utilice código adicional 	para identificar:
+lesión por bolsa de aire (airbag) (W22.1)
+tipo de calle o carretera (Y92.4-)
+uso de teléfono móvil y otros equipos electrónicos en el
+momento del accidente de transporte (Y93.C-)
+Nota:
+Definiciones relacionadas con accidentes de transporte:
+(a) Un accidente de transporte (V00-V99) es cualquier
+accidente en un dispositivo diseñado o utilizado
+principalmente para el transporte de personas o bienes de un
+lugar a otro.
+(b) 	Una vía pública (vía de tráfico) o una calle es el ancho
+total entre las líneas propias (o de contorno) de la tierra
+abierta al público, como derecho o costumbre, para el
+traslado de personas o bienes de un lugar a otro. Una
+carretera es aquella parte de la vía pública diseñada,
+mejorada y utilizada habitualmente para tráfico de vehículos.
+(c) 	Un accidente de tráfico es cualquier accidente que
+ocurre en una carretera pública (por ejemplo, que se origina
+en, termina en, o en el que participe un vehículo que esté
+parcialmente en la carretera). Se supone que un accidente
+vehicular se ha producido en la vía pública a menos que se
+especifique otro lugar, con excepción de los casos de
+accidentes con vehículos motorizados a campo traviesa que
+se clasifican como accidentes no de tráfico al menos que se
+indique lo contrario.
+(d) 	Un accidente no de tráfico es cualquier accidente
+que se produce en su totalidad en cualquier lugar que no sea
+una vía pública.
+(e) 	Un peatón es cualquier persona implicada en un
+accidente que en el momento del accidente no iba montado
+en, o dentro de, un vehículo motorizado, tren ferroviario,
+tranvía, vehículo tirado por animal o vehículo de cualquier
+otro tipo, o encima de una bicicleta o un animal. Esto incluye,
+a la persona que cambia un neumático o que trabaja dentro
+de un coche estacionado. También incluye al que utiliza un
+medio de transporte peatonal como un coche de niño,
+patines de hielo, patines de ruedas, monopatín, silla de
+ruedas no eléctrica, patinete motorizado o un patinete no
+motorizado.
+(f) 	Un conductor es el ocupante de un vehículo de
+transporte que lo conduce o pretende conducirlo.
+(g) 	Un pasajero es cualquier ocupante de un vehículo de
+transporte distinto al conductor, con excepción de aquella
+persona que viaja en la parte exterior del vehículo.
+(h) 	Una persona en el exterior de un vehículo es
+cualquier persona que está siendo transportada por un
+vehículo pero que no ocupa el espacio reservado
+normalmente para el conductor o los pasajeros, o el espacio
+destinado para transportar bienes. Incluye a la persona que
+viaja sobre la carrocería, parachoques, guardabarros, techo,
+estribos o el paso para subir a un vehículo, así como colgando
+o 	agarrado fuera del vehículo.
+(i) 	Un vehículo a pedales es cualquier vehículo de
+transporte terrestre utilizado exclusivamente con pedales, no
+motorizado, e incluye la bicicleta o el triciclo.
+(j) Un ciclista es cualquier persona que maneja un
+vehículo a pedales o está a bordo de un sidecar o un
+remolque unido a un vehículo a pedales.
+(k) 	Una motocicleta es un vehículo motorizado de dos
+ruedas con una o dos sillas de montar y a veces con una
+Lista 	Tabular 	Enfermedades
+
+-- 21 of 23 --
+
+1539 	FACTORES 	QUE 	INFLUYEN 	EN 	EL 	ESTADO 	DE 	SALUD 	Y 	CONTACTO 	CON 	LOS 	SERVICIOS 	SANITARIOS
+Lista 	Tabular 	Enfermedades
++ 	CAPÍTULO 	21. 	FACTORES 	QUE 	INFLUYEN 	EN 	EL 	ESTADO 	DE
+SALUD 	Y 	CONTACTO 	CON 	LOS 	SERVICIOS 	SANITARIOS
+(Z00-Z99)
+Nota:
+Los códigos Z representan los motivos del contacto.
+Si se realiza un procedimiento, el código del procedimiento
+correspondiente debe acompañar al código Z.
+Las categorías Z00-Z99 se proporcionan para ocasiones en las
+que se registran como "diagnósticos" o problemas,
+circunstancias distintas a enfermedades, traumatismos o
+causas externas clasificables en las categorías A00-Y89
+Esto se puede producir principalmente de dos maneras:
+(a) Cuando una persona, que puede estar o no enferma en la
+actualidad, contacta con los servicios sanitarios para un
+propósito específico como recibir atención o un servicio
+limitado por su afección actual, donación de un órgano o
+tejido, recibir vacunación profiláctica, o para tratar un
+problema que no es en sí una enfermedad o lesión.
+(b) Cuando alguna circunstancia o problema presente influye
+en el estado de salud de la persona pero no es en sí mismo
+una enfermedad o una lesión en la actualidad.
+Este capítulo contiene las siguientes secciones:
+Z00-Z13 Personas que contactan con los servicios sanitarios
+para reconocimiento médico
+Z14-Z15 Portador genético y susceptibilidad genética a
+enfermedad
+Z16 Resistencia a fármacos antimicrobianos
+Z17 Estado de receptor de estrógeno y otras hormonas y
+factores
+Z18 Retención de fragmentos de cuerpo extraño
+Z19 Estado de neoplasia hormonosensible
+Z20-Z29 Personas con riesgos potenciales de salud
+relacionados con enfermedades transmisibles
+Z30-Z39 Personas que entran en contacto con los servicios
+sanitarios por circunstancias relacionadas con la reproducción
+Z40-Z53 Contactos para otra atención sanitaria específica
+Z55-Z65 Personas con riesgos potenciales de salud
+relacionados con su situación socioeconómica y psicosocial
+Z66 Estado de no reanimación
+Z67 Grupo sanguíneo
+Z68 Índice de masa corporal [IMC]
+Z69-Z76 Personas que entran en contacto con los servicios
+sanitarios en otras circunstancias
+Z77-Z99 Personas con riesgos potenciales de salud
+relacionados con historia familiar y personal y determinadas
+afecciones que influyen en el estado de salud
+PERSONAS 	EN 	CONTACTO 	CON 	LOS 	SERVICIOS 	SANITARIOS 	PARA
+RECONOCIMIENTO 	MÉDICO 	(Z00-Z13)
+Nota:
+Los resultados anómalos inespecíficos descubiertos en el
+momento de estos reconocimientos médicos se clasifican en
+las categorías R70-R94.
+4º 	Z00 	Contacto 	para 	reconocimiento 	médico 	general 	sin
+síntomas, 	ni 	diagnostico 	de 	sospecha 	o 	declarado
+5º 	Z00.0 	Contacto 	para 	reconocimiento 	médico 	general 	del
+adulto
+Contacto para reconocimiento médico periódico del
+adulto (anual) (físico) y cualquier examen de
+laboratorio y radiológico asociado
+Z00.00 	Contacto 	para 	reconocimiento 	médico 	general
+del 	adulto 	sin 	resultados 	anómalos
+Contacto para chequeo de salud del adulto
+NEOM
+Z00.01 	Contacto 	para 	reconocimiento 	médico 	general
+del 	adulto 	con 	resultados 	anómalos
+Utilice código adicional 	para identificar
+resultados anómalos
+5º 	Z00.1 	Contacto 	para 	reconocimiento 	de 	salud 	del 	recién
+nacido, 	lactante 	y 	niño
+6º 	Z00.11 	Reconocimiento 	de 	salud 	del 	recién 	nacido
+Chequeo médico para niños menores de 29
+días de edad
+Utilice código adicional 	para identificar
+cualquier resultado anómalo
+Z00.110 	Reconocimiento 	de 	salud 	del 	recién
+nacido 	menor 	de 	8 	días 	de 	edad
+Chequeo médico para recién nacido
+menor de 8 días de edad
+Z00.111 	Reconocimiento 	de 	salud 	del 	recién
+nacido 	de 	8 	a 	28 	días 	de 	edad
+Chequeo médico para recién nacidos de
+8 a 28 días de edad
+Control de peso del recién nacido
+6º 	Z00.12 	Contacto 	para 	reconocimiento 	de 	salud
+rutinario 	infantil
+Chequeo médico (de rutina) para niños de
+más de 28 días de edad
+Cribado rutinario del desarrollo del lactante o
+del niño
+Evaluación rutinaria de la visión y audición
+Vacunaciones apropiadas a la edad
+Z00.121 	Contacto 	para 	reconocimiento 	de 	salud
+rutinario 	de 	salud 	infantil 	con 	resultados
+anómalos
+Utilice código adicional 	para identificar
+resultados anómalos
+Z00.129 	Contacto 	para 	reconocimiento 	médico
+rutinario 	de 	salud 	infantil 	sin 	resultados
+anómalos
+Contacto para reconocimiento médico
+rutinario de salud infantil NEOM
+Z00.2 	Contacto 	para 	reconocimiento 	durante 	un 	periodo
+de 	crecimiento 	rápido 	en 	la 	infancia
+Z00.3 	Contacto 	para 	reconocimiento 	del 	estado 	del
+desarrollo 	del 	adolescente
+Contacto por el estado del desarrollo en la
+pubertad
+Z00.5 	Contacto 	para 	reconocimiento 	de 	donante
+potencial 	de 	órganos 	y 	tejidos
+Z00.6 	Contacto 	para 	reconocimiento 	de 	comparación
+normal 	y 	control 	en 	programa 	de 	investigación
+clínica
+Exploración de participante o control en programa
+de investigación clínica
+5º 	Z00.7 	Contacto 	para 	reconocimiento 	por 	periodo 	de
+retraso 	del 	crecimiento 	en 	la 	infancia
+Z00.70 	Contacto 	para 	reconocimiento 	por 	periodo 	de
+retraso 	del 	crecimiento 	en 	la 	infancia 	sin
+resultados 	anómalos
+Z00.71 	Contacto 	para 	reconocimiento 	por 	periodo 	de
+retraso 	del 	crecimiento 	en 	la 	infancia 	con
+resultados 	anómalos
+Utilice código adicional 	para identificar
+resultados anómalos
+Z00.8 	Contacto 	para 	otro 	reconocimiento 	médico 	general
+Contacto para reconocimiento médico de salud en
+un estudio poblacional
+
+-- 22 of 23 --
+
+1577 	CÓDIGOS 	PARA 	PROPÓSITOS 	ESPECIALES
+CAPÍTULO 	22. 	CÓDIGOS 	PARA 	PROPÓSITOS 	ESPECIALES
+(U00-U85)
+Este capítulo contiene las siguientes secciones:
+U00-U49 Asignación provisional de nuevas enfermedades de
+etiología incierta o de uso de emergencia
+ASIGNACIÓN 	PROVISIONAL 	DE 	NUEVAS 	ENFERMEDADES 	DE
+ETIOLOGÍA 	INCIERTA 	O 	DE 	USO 	DE 	EMERGENCIA 	(U00-U49)
+2022
+2022
+2022
+Lista 	Tabular 	Enfermedades
+4º 	U07 	Utilización 	de 	emergencia 	del 	U07
+U07.0 	Trastorno 	relacionado 	con 	el 	vapeo
+Daño pulmonar relacionado con el cigarrillo electrónico
+Daño pulmonar relacionado con el dabbing
+Lesión pulmonar asociada al uso de productos de
+cigarrillos electrónicos o vapeo [EVALI]
+Lesión pulmonar relacionada con el cigarrillo
+electrónico
+Lesión pulmonar relacionada con el dabbing
+Utilice código adicional, para identificar manifestaciones
+tales como:
+diarrea (R19.7)
+dolor abdominal (R10.84)
+neumonía lipoidea (J69.1)
+pérdida de peso (R63.4)
+síndrome de dificultad respiratoria [distrés respiratorio]
+(J80)
+trastorno pulmonar intersticial inducido por fármacos
+(J70.4)
++ 	U07.1 	COVID-19
+Utilice código adicional para identificar neumonía u
+otras manifestaciones, tales como:
+neumonía debida a COVID-19 (J12.82)
+Utilice código adicional, si procede, para patologías
+asociadas como:
+coagulación intravascular diseminada (D65)
+coagulopatía asociada a COVID-19 (D68.8)
+estados de hipercoagulabilidad (D68.69)
+trombofilia (D68.69)
+4º 	U09 	Afección 	pos-COVID-19
+U09.9 	Afección 	pos-COVID-19, 	no 	especificada
+Secuela posaguda de COVID-19
+Codifique primero 	la afección específica relacionada con
+la COVID-19 si se conoce, tal como:
+- embolia pulmonar (I26.-)
+- fibrosis pulmonar (J84.10)
+- 	insuficiencia respiratoria crónica (J96.1-)
+- 	pérdida del gusto (R43.8)
+- 	pérdida del olfato (R43.8)
+- 	síndrome inflamatorio multisistémico (M35.81)
+Nota:
+Este código permite establecer una relación con la
+COVID-19.
+Este código no debe utilizarse cuando la enfermedad
+por COVID-19 aún esté activa. Sin embargo, se hace una
+excepción en los casos de reinfección por COVID-19,
+que ocurren con una afección relacionada con COVID-19
+anterior.
+
+-- 23 of 23 --
+
