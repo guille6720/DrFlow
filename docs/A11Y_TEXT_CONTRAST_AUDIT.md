@@ -1,6 +1,8 @@
 # Text readability audit — all themes (staging)
 
 **Scope:** staging only (`fix/a11y-text-contrast-all-themes` → `develop`).  
+**Feature commit:** `3494b49a`  
+**Develop merge:** `89de1c40`  
 **Production:** not modified.
 
 ## 1. Files modified
