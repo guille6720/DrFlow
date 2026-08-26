@@ -94,7 +94,7 @@ export function DiagnosisAutocomplete({
   value,
   onValueChange,
   onSelect,
-  placeholder = "Buscar por nombre o código CIE-10…",
+  placeholder = "Escribí diagnóstico (ej: hiper…)",
   label = "Diagnóstico",
   className,
   inputClassName,
@@ -102,7 +102,7 @@ export function DiagnosisAutocomplete({
   allowFreeText = true,
   debounceMs = 280,
   minChars = 2,
-  maxResults = 15,
+  maxResults = 10,
   disabled = false,
   inputRef,
   addButtonLabel,
@@ -141,22 +141,30 @@ export function DiagnosisAutocomplete({
 
   const search = useCallback(
     async (q: string) => {
-      if (q.trim().length < minChars) {
+      const trimmed = q.trim();
+      if (trimmed.length < minChars) {
+        setLoading(false);
         setResults([]);
         setError(null);
         return;
       }
       setLoading(true);
       setError(null);
-      const res = await searchClinicalDiagnoses(q, maxResults);
-      setLoading(false);
-      if (res.error) {
-        setError(res.error);
+      try {
+        const res = await searchClinicalDiagnoses(trimmed, maxResults);
+        if (res.error) {
+          setError(res.error);
+          setResults([]);
+          return;
+        }
+        setResults(res.data ?? []);
+        setHighlight(0);
+      } catch {
+        setError("No se pudo buscar en el catálogo de diagnósticos.");
         setResults([]);
-        return;
+      } finally {
+        setLoading(false);
       }
-      setResults(res.data ?? []);
-      setHighlight(0);
     },
     [maxResults, minChars]
   );
@@ -404,15 +412,17 @@ export function DiagnosisAutocomplete({
         </ul>
       ) : null}
 
-      {open && !loading && query.trim().length >= minChars && listItems.length === 0 && allowFreeText ? (
-        <p className="drflow-clinical-combobox-hint text-xs">
-          Sin coincidencias. Enter agrega “{query.trim()}” como diagnóstico libre.
-        </p>
-      ) : (
-        <p className="drflow-clinical-combobox-hint text-xs">
-          Prioridad: ⭐ favoritos · 🕘 recientes · catálogo
-        </p>
-      )}
+      {!loading ? (
+        open && query.trim().length >= minChars && listItems.length === 0 && allowFreeText ? (
+          <p className="drflow-clinical-combobox-hint text-xs">
+            Sin coincidencias. Enter agrega “{query.trim()}” como diagnóstico libre.
+          </p>
+        ) : (
+          <p className="drflow-clinical-combobox-hint text-xs">
+            Prioridad: ⭐ favoritos · 🕘 recientes · catálogo
+          </p>
+        )
+      ) : null}
     </div>
   );
 }
