@@ -1,11 +1,12 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { firstZodIssue } from "@/core/validations/params";
-import { clinicalRecordSchema } from "@/core/validations/schemas";
 import { getAuditRequestContext } from "@/core/security/audit-context";
 import { verifyClinicalRecordForeignKeys } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
+import { firstZodIssue } from "@/core/validations/params";
+import { clinicalRecordSchema } from "@/core/validations/schemas";
+
 import {
   createClinicalRecordEntry,
   updateClinicalRecordEntry,

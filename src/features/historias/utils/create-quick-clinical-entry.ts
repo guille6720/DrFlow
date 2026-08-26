@@ -1,10 +1,10 @@
-import { persistClinicalRecordRequest } from "@/features/historias/utils/persist-clinical-record-request";
 import {
   buildDiagnosisText,
   type ClinicalDiagnosisEntry,
   type ClinicalTreatmentEntry,
   mergeTreatmentsForPersist,
 } from "@/features/historias/utils/clinical-structured-entries";
+import { persistClinicalRecordRequest } from "@/features/historias/utils/persist-clinical-record-request";
 import { buildEhrPayloadFromRecords } from "@/features/pacientes/utils/patient-ehr-model";
 import { buildConsultIndicationsText } from "@/features/recetas/utils/build-consult-indications-text";
 

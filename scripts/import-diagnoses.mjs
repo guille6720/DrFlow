@@ -13,7 +13,7 @@
  *   node scripts/import-diagnoses.mjs --apply
  */
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, unlinkSync, writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync,readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import {
@@ -47,7 +47,6 @@ function sqlText(value) {
 
 function sqlTextArray(arr) {
   if (!Array.isArray(arr) || arr.length === 0) return "'{}'::text[]";
-  const inner = arr.map((s) => `"${String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`).join(",");
   return `ARRAY[${arr.map((s) => sqlText(s)).join(", ")}]::text[]`;
 }
 

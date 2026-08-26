@@ -6,6 +6,7 @@ import { toast } from "@/core/notifications/toast";
 
 import { cn } from "@/shared/utils/cn";
 
+import { updateWaitingRoomRequest } from "@/features/agenda/utils/update-waiting-room-request";
 import {
   AGENDA_ATTENDANCE_OPTIONS,
   type AgendaAttendanceValue,
@@ -14,7 +15,6 @@ import {
   type WaitingRoomStatus,
 } from "@/features/turnos/utils/appointment-lifecycle";
 
-import { updateWaitingRoomRequest } from "@/features/agenda/utils/update-waiting-room-request";
 import type { AppointmentStatus } from "@/types/database";
 
 const SELECTED_CLASS: Record<AgendaAttendanceValue, string> = {

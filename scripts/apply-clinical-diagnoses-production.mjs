@@ -29,8 +29,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { PRODUCTION_REF } from "./supabase-project-refs.mjs";
 import { queryJson, runSqlFile } from "./lib/exec-sql-file.mjs";
+import { PRODUCTION_REF } from "./supabase-project-refs.mjs";
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const IMPORT_ONLY = process.argv.includes("--import-only");

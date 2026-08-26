@@ -3,6 +3,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+
 import { PDFParse } from "pdf-parse";
 
 const pdfPath = path.join(process.cwd(), "data/lista-tabular-enfermedades.pdf");

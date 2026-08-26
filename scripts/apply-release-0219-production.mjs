@@ -29,7 +29,6 @@ import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "
 import { dirname, resolve } from "node:path";
 
 import { runSqlFile } from "./lib/exec-sql-file.mjs";
-
 import { PRODUCTION_REF } from "./supabase-project-refs.mjs";
 
 const ROOT = process.cwd();
@@ -164,16 +163,6 @@ const BLOCK_FILTER = blockIdx >= 0 ? args[blockIdx + 1] : null;
 function fail(msg) {
   console.error(`\nERROR: ${msg}\n`);
   process.exit(1);
-}
-
-function migrationVersionFromFile(file) {
-  const entry = RELEASE_MIGRATIONS.find((m) => m.file === file);
-  if (entry) return entry.version;
-  const m = file.match(/^(\d{3})_/);
-  if (m) return m[1];
-  const ts = file.match(/^(20\d{12})_/);
-  if (ts) return ts[1];
-  return file.replace(/\.sql$/, "");
 }
 
 function assertProductionEnv() {

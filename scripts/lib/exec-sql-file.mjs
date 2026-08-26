@@ -3,9 +3,9 @@
  * Uses a single pg connection (avoids Supabase CLI multi-connect timeouts).
  * Falls back to `supabase db query` when pg is unavailable.
  */
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { spawnSync } from "node:child_process";
 
 function stripLeadingLineComments(sql) {
   return sql.replace(/^(\s*--[^\n]*(\r?\n|$))+/u, "").trim();

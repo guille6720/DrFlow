@@ -6,8 +6,8 @@
  *   $env:DATABASE_URL="postgresql://postgres:...@db.nipqdarduknydqptqzup.supabase.co:5432/postgres"
  *   node scripts/verify-clinical-diagnoses-search-production.mjs
  */
-import { PRODUCTION_REF } from "./supabase-project-refs.mjs";
 import { queryJson } from "./lib/exec-sql-file.mjs";
+import { PRODUCTION_REF } from "./supabase-project-refs.mjs";
 
 function fail(msg) {
   console.error(`\nERROR: ${msg}\n`);
