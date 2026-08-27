@@ -20,7 +20,10 @@ import {
   CLINICAL_EXPORT_SECTIONS,
   type ClinicalExportSection,
 } from "@/features/integraciones/lib/clinical-export-sections";
-import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
+import {
+  PatientSearchCombobox,
+  type PatientSearchOption,
+} from "@/features/pacientes/components/pacientes/patient-search-combobox";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +35,7 @@ export function ClinicalRecordExportPanel({ canExport }: Props) {
   const canExportPdf = useCanUseFeature(FEATURES.PDF_EXPORT);
   const canExportFhir = useCanUseFeature(FEATURES.INTEGRATIONS);
   const [patientId, setPatientId] = useState("");
+  const [patientLabel, setPatientLabel] = useState<string | null>(null);
   const [format, setFormat] = useState<ClinicalExportFormat>("json");
   const [rangeMode, setRangeMode] = useState<"all" | "custom">("all");
   const [dateFrom, setDateFrom] = useState("");
@@ -44,27 +48,51 @@ export function ClinicalRecordExportPanel({ canExport }: Props) {
     return <p className="text-sm text-slate-600">No tenés permiso para exportar historias clínicas.</p>;
   }
 
-  async function runExport() {
-    setBusy(true);
+  function handlePatientChange(id: string, patient?: PatientSearchOption) {
+    setPatientId(id);
+    setPatientLabel(
+      id && patient ? `${patient.last_name}, ${patient.first_name} · DNI ${patient.document_number}` : null
+    );
     setError(null);
-    const result = await exportPatientClinicalPackage({
-      patientId,
-      format,
-      sections,
-      dateFrom: rangeMode === "custom" ? dateFrom : null,
-      dateTo: rangeMode === "custom" ? dateTo : null,
-    });
-    setBusy(false);
-    if (result.error || !result.fileName) {
-      setError(result.error ?? "No se pudo generar la exportación.");
+  }
+
+  async function runExport() {
+    setError(null);
+    if (!patientId) {
+      setError("Buscá y seleccioná un paciente de la lista antes de exportar.");
       return;
     }
-    if (result.url) {
-      await downloadFromUrl(result.fileName, result.url);
+    if (sections.length === 0) {
+      setError("Elegí al menos una sección para exportar.");
       return;
     }
-    if (result.base64 && result.mime) {
-      downloadBase64File(result.fileName, result.mime, result.base64);
+
+    setBusy(true);
+    try {
+      const result = await exportPatientClinicalPackage({
+        patientId,
+        format,
+        sections,
+        dateFrom: rangeMode === "custom" ? dateFrom : null,
+        dateTo: rangeMode === "custom" ? dateTo : null,
+      });
+      if (result.error || !result.fileName) {
+        setError(result.error ?? "No se pudo generar la exportación.");
+        return;
+      }
+      if (result.url) {
+        await downloadFromUrl(result.fileName, result.url);
+        return;
+      }
+      if (result.base64 && result.mime) {
+        downloadBase64File(result.fileName, result.mime, result.base64);
+        return;
+      }
+      setError("La exportación no devolvió un archivo descargable.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo descargar el archivo.");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -73,7 +101,9 @@ export function ClinicalRecordExportPanel({ canExport }: Props) {
       {!canExportPdf ? <AddonUpgradeNotice feature={FEATURES.PDF_EXPORT} /> : null}
       {!canExportFhir ? <AddonUpgradeNotice feature={FEATURES.INTEGRATIONS} /> : null}
       <p className="text-sm text-slate-600">
-        JSON estructurado, FHIR R4, PDF resumido o ZIP con HC, datos, adjuntos y carpeta FHIR/.
+        Exportá la historia de <strong className="font-semibold text-slate-800">un paciente</strong>{" "}
+        en JSON estructurado, FHIR R4, PDF resumido o ZIP con adjuntos. Escribí nombre o DNI, elegí el
+        resultado de la lista y después tocá Exportar.
       </p>
       <PatientSearchCombobox
         patients={[]}
@@ -81,8 +111,17 @@ export function ClinicalRecordExportPanel({ canExport }: Props) {
         required
         searchMode="remote"
         displayMode="detailed"
-        onPatientChange={(id) => setPatientId(id)}
+        onPatientChange={handlePatientChange}
       />
+      {patientLabel ? (
+        <p className="rounded-md border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-900">
+          Paciente seleccionado: <span className="font-semibold">{patientLabel}</span>
+        </p>
+      ) : (
+        <p className="text-xs text-amber-800">
+          El botón Exportar se habilita cuando seleccionás un paciente de los resultados de búsqueda.
+        </p>
+      )}
       <Select
         label="Formato"
         value={format}
@@ -130,10 +169,27 @@ export function ClinicalRecordExportPanel({ canExport }: Props) {
           ))}
         </div>
       </fieldset>
-      <Button type="button" loading={busy} disabled={!patientId || sections.length === 0} onClick={() => void runExport()}>
-        <Download className="h-4 w-4" />
-        Exportar
-      </Button>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          type="button"
+          loading={busy}
+          disabled={sections.length === 0}
+          onClick={() => void runExport()}
+        >
+          <Download className="h-4 w-4" />
+          Exportar
+        </Button>
+        {!patientId ? (
+          <span className="text-xs text-slate-600">Falta seleccionar paciente</span>
+        ) : null}
+      </div>
+      <p className="text-xs text-slate-500">
+        ¿Querés exportar muchos pacientes a la vez? Usá{" "}
+        <a href="/datos?flujo=export-masivo" className="font-medium text-teal-800 underline">
+          Exportación masiva
+        </a>
+        .
+      </p>
       {error ? (
         <p className="text-sm text-red-700" role="alert">
           {error}
