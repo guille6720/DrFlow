@@ -376,6 +376,40 @@ export async function updateClinicalRecordEntry(
     treatments: structured.treatments,
   });
 
+  // Guarantee SOAP text + consultation date persist even if an older RPC overload
+  // ignored some parameters (PostgREST overload / schema drift).
+  const soapPatch: Record<string, unknown> = {
+    chief_complaint: sanitized.chief_complaint,
+    diagnosis: sanitized.diagnosis,
+    evolution: sanitized.evolution,
+    indications: sanitized.indications,
+    updated_by: input.userId,
+    updated_at: new Date().toISOString(),
+  };
+  if (consultationAt) {
+    soapPatch.created_at = consultationAt;
+  }
+  const { error: soapError } = await db
+    .from("clinical_records")
+    .update(soapPatch)
+    .eq("id", input.recordId)
+    .eq("clinic_id", input.clinicId);
+  if (soapError) {
+    return serviceErr(
+      resolvePostgresUserMessage(soapError, {
+        fallback: "No se pudo guardar el contenido de la consulta.",
+      })
+    );
+  }
+
   const payload = data as { old: Record<string, unknown>; data: Record<string, unknown> };
-  return serviceOk(payload);
+  return serviceOk({
+    old: payload?.old ?? {},
+    data: {
+      ...(payload?.data ?? {}),
+      ...soapPatch,
+      id: input.recordId,
+      patient_id: sanitized.patient_id,
+    },
+  });
 }

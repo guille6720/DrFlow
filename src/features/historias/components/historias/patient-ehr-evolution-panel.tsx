@@ -9,6 +9,7 @@ import { toast } from "@/core/notifications/toast";
 
 import { updateClinicalRecordNotes } from "@/features/historias/actions/clinical-records";
 import { PatientEhrConsultationDateEditor } from "@/features/historias/components/historias/patient-ehr-consultation-date-editor";
+import { usePatientEhrStateContext } from "@/features/historias/components/historias/patient-ehr-state-context";
 import {
   extractConsultationFileName,
   formatPatientEhrSidebarDate,
@@ -40,6 +41,7 @@ type EditorProps = {
 };
 
 function EvolutionNotesEditor({ selected, onCancel, onSaved }: EditorProps) {
+  const { patchClinicalRecord } = usePatientEhrStateContext();
   const [chiefComplaint, setChiefComplaint] = useState(selected.chief_complaint ?? "");
   const [evolution, setEvolution] = useState(
     selected.evolution || patientEhrEvolutionBody(selected)
@@ -61,6 +63,11 @@ function EvolutionNotesEditor({ selected, onCancel, onSaved }: EditorProps) {
         setError(result.error);
         return;
       }
+      // Keep local EHR state in sync — router.refresh alone can remount with stale RSC props.
+      patchClinicalRecord(selected.id, {
+        chief_complaint: chiefComplaint,
+        evolution,
+      });
       toast.success("Evolución actualizada");
       onSaved();
     } catch (err) {

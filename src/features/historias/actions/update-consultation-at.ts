@@ -160,7 +160,32 @@ export async function updateClinicalRecordConsultationAt(
       parsed: parsed.data,
       auditContext: ctx,
     });
-    if (!result.ok) return { error: result.error };
+
+    // Atomic RPC may succeed without applying consultation_at on older overloads.
+    // Always force created_at via direct update so the date actually persists.
+    const { data: forced, error: forceError } = await supabase
+      .from("clinical_records")
+      .update({
+        created_at: consultationAt,
+        updated_by: userId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", idParsed.data)
+      .eq("clinic_id", clinicId)
+      .select("id, created_at, patient_id")
+      .maybeSingle();
+
+    if (forceError) {
+      if (!result.ok) return { error: result.error };
+      return {
+        error: resolvePostgresUserMessage(forceError, {
+          fallback: "No se pudo actualizar la fecha de la consulta.",
+        }),
+      };
+    }
+    if (!forced) {
+      return { error: result.ok ? "No se pudo actualizar la fecha de la consulta." : result.error };
+    }
 
     await Promise.all([
       supabase
@@ -186,15 +211,15 @@ export async function updateClinicalRecordConsultationAt(
       what: "Modificó fecha de consulta clínica",
       entityType: "clinical_record",
       entityId: idParsed.data,
-      patientId: record.patient_id,
+      patientId: forced.patient_id,
       action: "update",
       oldValues: { created_at: null },
       newValues: { created_at: consultationAt },
     });
 
-    revalidatePath(`/pacientes/${record.patient_id}`, "page");
+    revalidatePath(`/pacientes/${forced.patient_id}`, "page");
     revalidatePath("/consultas");
-    return { success: true, patientId: record.patient_id };
+    return { success: true, patientId: forced.patient_id };
   } catch (err) {
     return {
       error:

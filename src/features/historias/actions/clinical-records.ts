@@ -10,6 +10,10 @@ import {
   isArchivableLifecycle,
 } from "@/core/compliance/clinical-deletion-protection";
 import {
+  isMissingRpcInSchemaCache,
+  resolvePostgresUserMessage,
+} from "@/core/errors/postgres-error";
+import {
   type AuditRequestContext,
   getAuditRequestContext,
 } from "@/core/security/audit-context";
@@ -219,23 +223,69 @@ export async function archiveClinicalRecord(
     return { error: "Estado de ciclo de vida inválido." };
   }
 
+  const reason = options?.reason?.trim() || null;
   const { data, error } = await supabase.rpc(
     "archive_clinical_record" as never,
     {
       p_clinic_id: clinicId,
       p_record_id: idParsed.data,
-      p_reason: options?.reason?.trim() || null,
+      p_reason: reason,
       p_lifecycle: lifecycle,
     } as never
   );
 
-  if (error) return { error: error.message };
-  if (!data) return { error: "No se pudo archivar la consulta." };
-
-  const patientId =
+  let patientId: string | null =
     typeof data === "object" && data && "patient_id" in data
       ? String((data as { patient_id: string }).patient_id)
       : null;
+
+  if (error || !data) {
+    if (error && !isMissingRpcInSchemaCache(error)) {
+      return {
+        error: resolvePostgresUserMessage(error, {
+          fallback: "No se pudo archivar la consulta.",
+        }),
+      };
+    }
+
+    // Fallback when migration 131/151 RPC is missing from PostgREST cache.
+    const { data: existing, error: fetchError } = await supabase
+      .from("clinical_records")
+      .select("id, patient_id, record_version")
+      .eq("id", idParsed.data)
+      .eq("clinic_id", clinicId)
+      .maybeSingle();
+
+    if (fetchError) return { error: fetchError.message };
+    if (!existing) return { error: "Consulta no encontrada." };
+
+    const { data: updated, error: updateError } = await supabase
+      .from("clinical_records")
+      .update({
+        lifecycle_status: lifecycle,
+        archived_at: new Date().toISOString(),
+        archived_by: gate.access.userId,
+        archive_reason: reason,
+        record_version: (existing.record_version ?? 1) + 1,
+        updated_by: gate.access.userId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", idParsed.data)
+      .eq("clinic_id", clinicId)
+      .select("id, patient_id")
+      .maybeSingle();
+
+    if (updateError) {
+      return {
+        error: resolvePostgresUserMessage(updateError, {
+          fallback:
+            "No se pudo archivar la consulta. Ejecutá la migración 151 en Supabase SQL Editor y después: NOTIFY pgrst, 'reload schema';",
+        }),
+      };
+    }
+    if (!updated) return { error: "No se pudo archivar la consulta." };
+    patientId = updated.patient_id;
+  }
 
   await logAudit({
     clinicId,
@@ -247,7 +297,7 @@ export async function archiveClinicalRecord(
     action: "update",
     newValues: {
       lifecycle_status: lifecycle,
-      archive_reason: options?.reason?.trim() || null,
+      archive_reason: reason,
     },
   });
 
