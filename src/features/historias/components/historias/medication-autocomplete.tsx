@@ -29,7 +29,6 @@ import { formatPrescriptionMedicationLabel } from "@/features/recetas/utils/form
 import { medicationCatalogSearchLabel } from "@/features/recetas/utils/medication-catalog-utils";
 
 import { Button } from "@/components/ui/button";
-import { searchMedicationCatalog } from "@/lib/actions/pharmacology";
 import type { MedicationCatalogResult } from "@/types/pharmacology";
 import type { PrescriptionMedication } from "@/types/prescription";
 
@@ -258,32 +257,49 @@ export function MedicationAutocomplete({
     }
     setLoading(true);
     setError(null);
-    const res = await searchMedicationCatalog(q);
-    if (res.error) {
-      setLoading(false);
-      setError(res.error);
+    try {
+      const params = new URLSearchParams({ q: q.trim(), limit: "24" });
+      const response = await fetch(`/api/medications/search?${params.toString()}`, {
+        method: "GET",
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+      const payload = (await response.json().catch(() => null)) as {
+        data?: MedicationCatalogResult[];
+        error?: string;
+      } | null;
+
+      if (!response.ok) {
+        setError(payload?.error ?? "No se pudo buscar el vademécum.");
+        setResults([]);
+        setClinicalResults([]);
+        setCatalogEmpty(false);
+        return;
+      }
+
+      const meds = payload?.data ?? [];
+      setResults(meds);
+      setCatalogEmpty(meds.length === 0);
+
+      if (meds.length === 0) {
+        const clinical = await searchClinicalTreatments(q, { limit: 12, kind: "pharmacologic" });
+        setClinicalResults(clinical.data ?? []);
+        if (clinical.error && !meds.length) {
+          setError(clinical.error);
+        }
+      } else {
+        setClinicalResults([]);
+      }
+
+      setHighlight(0);
+    } catch {
+      setError("No se pudo buscar el vademécum.");
       setResults([]);
       setClinicalResults([]);
       setCatalogEmpty(false);
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    const meds = res.data ?? [];
-    setResults(meds);
-    setCatalogEmpty(meds.length === 0);
-
-    if (meds.length === 0) {
-      const clinical = await searchClinicalTreatments(q, { limit: 12, kind: "pharmacologic" });
-      setClinicalResults(clinical.data ?? []);
-      if (clinical.error && !meds.length) {
-        setError(clinical.error);
-      }
-    } else {
-      setClinicalResults([]);
-    }
-
-    setHighlight(0);
-    setLoading(false);
   }, []);
 
   useEffect(() => {
