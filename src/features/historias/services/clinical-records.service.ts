@@ -73,12 +73,25 @@ function withoutConsultationAt(args: RpcArgs): RpcArgs {
   return next;
 }
 
+function isRpcOverloadAmbiguity(error: {
+  message?: string;
+  details?: string;
+  hint?: string;
+}): boolean {
+  const message = `${error.message ?? ""} ${error.details ?? ""} ${error.hint ?? ""}`.toLowerCase();
+  return message.includes("could not choose the best candidate function");
+}
+
 async function rpcWithLegacyFallback(
   db: DbClient,
   fn: "create_clinical_record_atomic" | "update_clinical_record_atomic",
   args: RpcArgs
 ) {
-  const attempts = [args, withoutStructuredPayload(args), withoutConsultationAt(args)];
+  const withChangeReason =
+    fn === "update_clinical_record_atomic"
+      ? { ...args, p_change_reason: args.p_change_reason ?? null }
+      : args;
+  const attempts = [withChangeReason, args, withoutStructuredPayload(args), withoutConsultationAt(args)];
   let lastError: { message?: string; code?: string; details?: string; hint?: string } | null =
     null;
 
@@ -91,6 +104,7 @@ async function rpcWithLegacyFallback(
     const message = `${error.message ?? ""} ${error.details ?? ""} ${error.hint ?? ""}`.toLowerCase();
     const schemaDrift =
       isMissingRpcInSchemaCache(error) ||
+      isRpcOverloadAmbiguity(error) ||
       message.includes("diagnoses_json") ||
       message.includes("treatments_json") ||
       message.includes("diagnosis_cie10") ||

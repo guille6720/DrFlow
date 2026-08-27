@@ -148,6 +148,19 @@ const RELEASE_MIGRATIONS = [
     label: "Fix diagnosis search RPC grants + RLS (no is_superadmin in policy)",
     optional: true,
   },
+  {
+    file: "146_medication_catalog_execute_grants.sql",
+    version: "146",
+    block: "clinical",
+    label: "Medication catalog search RPC grants",
+    optional: true,
+  },
+  {
+    file: "147_clinical_record_atomic_overload_cleanup.sql",
+    version: "147",
+    block: "clinical",
+    label: "Fix ambiguous update_clinical_record_atomic overloads (save/delete HC)",
+  },
 ];
 
 const args = process.argv.slice(2);
@@ -236,7 +249,7 @@ function filterMigrations() {
   if (BLOCK_FILTER) {
     list = list.filter((m) => m.block === BLOCK_FILTER);
     if (list.length === 0) {
-      fail(`Unknown or empty block "${BLOCK_FILTER}". Use: diagnoses | renapdis | security`);
+      fail(`Unknown or empty block "${BLOCK_FILTER}". Use: diagnoses | renapdis | security | clinical`);
     }
   }
   return list;

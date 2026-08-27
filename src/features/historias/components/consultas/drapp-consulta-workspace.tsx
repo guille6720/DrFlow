@@ -8,6 +8,7 @@ import { toast } from "@/core/notifications/toast";
 
 import { cn } from "@/shared/utils/cn";
 
+import { archiveClinicalRecord } from "@/features/historias/actions/clinical-records";
 import { DrappConsultaFullModal } from "@/features/historias/components/consultas/drapp-consulta-full-modal";
 import { DrappDiagnosisQuickForm } from "@/features/historias/components/consultas/drapp-diagnosis-quick-form";
 import { DrappProtocolsQuickPanel } from "@/features/historias/components/consultas/drapp-protocols-quick-panel";
@@ -109,9 +110,12 @@ function DrappHistorySidebar({
   search,
   onSearchChange,
   pendingLabel,
+  pendingDateIso,
   editingRecordId,
+  archiving,
   onEditConsultation,
   onStartNew,
+  onCancelEdit,
 }: {
   sidebarList: PatientEhrConsultation[];
   diagnosisRows: PatientEhrDiagnosisRow[];
@@ -119,9 +123,12 @@ function DrappHistorySidebar({
   search: string;
   onSearchChange: (value: string) => void;
   pendingLabel: string;
+  pendingDateIso: string;
   editingRecordId: string | null;
+  archiving?: boolean;
   onEditConsultation: (consultation: PatientEhrConsultation) => void;
   onStartNew: () => void;
+  onCancelEdit: () => void;
 }) {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -150,21 +157,33 @@ function DrappHistorySidebar({
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-[13px] font-semibold text-[var(--primary)]">
-                {formatPatientEhrSidebarDate(new Date().toISOString())} {pendingLabel}
+                {formatPatientEhrSidebarDate(pendingDateIso)} {pendingLabel}
               </p>
               <p className="mt-0.5 text-[11px] font-medium text-[var(--warning)]">
                 {editingRecordId ? "Editando evolución" : "Consulta en curso"}
               </p>
             </div>
-            {editingRecordId ? (
-              <button
-                type="button"
-                onClick={onStartNew}
-                      className="shrink-0 text-[11px] font-semibold text-[var(--accent)] hover:underline"
-              >
-                Nueva
-              </button>
-            ) : null}
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              {editingRecordId ? (
+                <>
+                  <button
+                    type="button"
+                    disabled={archiving}
+                    onClick={onCancelEdit}
+                    className="text-[11px] font-semibold text-[var(--destructive,#b91c1c)] hover:underline disabled:opacity-60"
+                  >
+                    {archiving ? "Eliminando…" : "Cancelar"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onStartNew}
+                    className="text-[11px] font-semibold text-[var(--accent)] hover:underline"
+                  >
+                    Nueva
+                  </button>
+                </>
+              ) : null}
+            </div>
           </div>
         </div>
         {filtered.length === 0 ? (
@@ -313,10 +332,13 @@ function DrappConsultaWorkspaceInner({
     diagnosisRows,
     treatmentRows,
     appendClinicalHistory,
+    patchClinicalRecord,
+    removeClinicalRecord,
   } = usePatientEhrStateContext();
 
   const [sidebarSearch, setSidebarSearch] = useState("");
   const [quickSaving, setQuickSaving] = useState(false);
+  const [archivingRecord, setArchivingRecord] = useState(false);
   const [fullModalOpen, setFullModalOpen] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [lastSavedRecordId, setLastSavedRecordId] = useState<string | null>(null);
@@ -376,13 +398,23 @@ function DrappConsultaWorkspaceInner({
       patientId: patient.id,
       appointmentId: appointmentId ?? undefined,
       professionalId: professionalId ?? defaultProfessionalId ?? undefined,
-      onSaved: (recordId, silent) => {
+      onSaved: (recordId, silent, meta) => {
         const snap = historySnapshotRef.current;
+        const createdAt = meta?.consultationAtIso ?? new Date().toISOString();
+        patchClinicalRecord(recordId, {
+          created_at: createdAt,
+          chief_complaint: snap.chiefComplaint,
+          evolution: snap.evolution,
+          indications: snap.indications,
+          professional_id: snap.professionalId || null,
+          professional_name: snap.professionalName,
+          professional_signature: snap.professionalSignature || null,
+        });
         appendClinicalHistory({
           consultations: [
             {
               id: recordId,
-              created_at: new Date().toISOString(),
+              created_at: createdAt,
               professional_id: snap.professionalId || null,
               professional_signature: snap.professionalSignature || null,
               professional_name: snap.professionalName,
@@ -408,6 +440,42 @@ function DrappConsultaWorkspaceInner({
     const pro = professionals.find((p) => p.id === activeProfessionalId);
     return pro ? getProfessionalDisplayName(pro) : "Consulta en curso";
   }, [activeProfessionalId, professionals]);
+
+  const pendingDateIso = useMemo(
+    () => new Date(consultationAt).toISOString(),
+    [consultationAt]
+  );
+
+  const handleCancelEdit = useCallback(async () => {
+    if (!editingRecordId) return;
+    const confirmed = window.confirm(
+      "¿Eliminar esta evolución?\n\nSe archivará y dejará de mostrarse en la historia clínica."
+    );
+    if (!confirmed) return;
+
+    setArchivingRecord(true);
+    try {
+      const result = await archiveClinicalRecord(editingRecordId);
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+      removeClinicalRecord(editingRecordId);
+      startNewConsultation();
+      setLastSavedRecordId(null);
+      setComposerDiagnosisRows([]);
+      setComposerTreatmentRows([]);
+      requestOpen("evolucion");
+      toast.success("Evolución eliminada");
+    } finally {
+      setArchivingRecord(false);
+    }
+  }, [
+    editingRecordId,
+    removeClinicalRecord,
+    requestOpen,
+    startNewConsultation,
+  ]);
 
   useEffect(() => {
     historySnapshotRef.current = {
@@ -605,7 +673,9 @@ function DrappConsultaWorkspaceInner({
           search={sidebarSearch}
           onSearchChange={setSidebarSearch}
           pendingLabel={pendingLabel}
+          pendingDateIso={pendingDateIso}
           editingRecordId={editingRecordId}
+          archiving={archivingRecord}
           onEditConsultation={(c) => {
             loadConsultationForEdit(c);
             setComposerDiagnosisRows(diagnosisRows.filter((row) => row.recordId === c.id));
@@ -622,6 +692,7 @@ function DrappConsultaWorkspaceInner({
             setComposerTreatmentRows([]);
             requestOpen("evolucion");
           }}
+          onCancelEdit={() => void handleCancelEdit()}
         />
 
         <main className="drapp-consulta-main flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--card,#fff)] p-3 text-[var(--foreground,#0f172a)] sm:p-4">

@@ -50,7 +50,11 @@ export type NuevaConsultaWorkspaceConfig = {
   patientId: string;
   appointmentId?: string;
   professionalId?: string;
-  onSaved: (recordId: string, silent?: boolean) => void;
+  onSaved: (
+    recordId: string,
+    silent?: boolean,
+    meta?: { consultationAtIso?: string }
+  ) => void;
   onClose: () => void;
 };
 
@@ -333,6 +337,7 @@ export function useNuevaConsultaForm({
         clinicalTreatments,
         treatmentMedications,
         vitals,
+        ...(editingRecordId ? { consultationAt } : {}),
       }),
     [
       evolution,
@@ -343,6 +348,8 @@ export function useNuevaConsultaForm({
       clinicalTreatments,
       treatmentMedications,
       vitals,
+      editingRecordId,
+      consultationAt,
     ]
   );
   const [savedFingerprint, setSavedFingerprint] = useState(contentFingerprint);
@@ -355,7 +362,9 @@ export function useNuevaConsultaForm({
     clinicalTreatments.length > 0 ||
     treatmentMedications.length > 0 ||
     vitals.trim().length > 0;
-  const isDirty = hasContent && contentFingerprint !== savedFingerprint;
+  const isDirty = editingRecordId
+    ? contentFingerprint !== savedFingerprint
+    : hasContent && contentFingerprint !== savedFingerprint;
 
   useEffect(() => {
     formDraftRef.current = {
@@ -593,6 +602,7 @@ export function useNuevaConsultaForm({
               clinicalTreatments: draft.clinicalTreatments,
               treatmentMedications: draft.treatmentMedications,
               vitals: draft.vitals,
+              ...(savedId ? { consultationAt } : {}),
             })
           );
           if (draftKey) {
@@ -609,7 +619,9 @@ export function useNuevaConsultaForm({
           }
           setAutoSaveStatus("saved");
           if (workspace) {
-            workspace.onSaved(savedId, options?.silent);
+            workspace.onSaved(savedId, options?.silent, {
+              consultationAtIso: new Date(consultationAt).toISOString(),
+            });
           } else if (!options?.silent && !recordId) {
             router.push(`/historias/${savedId}`);
           }
@@ -714,6 +726,7 @@ export function useNuevaConsultaForm({
 
   function loadConsultationForEdit(record: {
     id: string;
+    created_at?: string | null;
     chief_complaint?: string | null;
     diagnosis?: string | null;
     evolution?: string | null;
@@ -723,6 +736,10 @@ export function useNuevaConsultaForm({
     clearTemplateVariables();
     setEditingRecordId(record.id);
     editingRecordIdRef.current = record.id;
+    const nextConsultationAt = record.created_at
+      ? toDatetimeLocalValue(new Date(record.created_at))
+      : toDatetimeLocalValue(new Date());
+    setConsultationAt(nextConsultationAt);
     setChiefComplaint(record.chief_complaint?.trim() ?? "");
     setDiagnosis(record.diagnosis?.trim() ?? "");
     setDiagnoses([]);
@@ -743,6 +760,7 @@ export function useNuevaConsultaForm({
       clinicalTreatments: [],
       treatmentMedications: [],
       vitals: "",
+      consultationAt: nextConsultationAt,
     });
     setSavedFingerprint(nextFp);
     setAutoSaveStatus("saved");

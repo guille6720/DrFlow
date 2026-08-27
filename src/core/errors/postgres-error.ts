@@ -52,7 +52,7 @@ const FUNCTION_MIGRATION_HINTS: Record<string, string> = {
   create_clinical_record_atomic:
     "No se pudo guardar la consulta: la función en Supabase está desactualizada. Ejecutá las migraciones 110 y 111 en el SQL Editor y después: NOTIFY pgrst, 'reload schema';",
   update_clinical_record_atomic:
-    "No se pudo actualizar la consulta: la función en Supabase está desactualizada. Ejecutá las migraciones 110 y 111 en el SQL Editor y después: NOTIFY pgrst, 'reload schema';",
+    "No se pudo actualizar la consulta: hay funciones duplicadas en Supabase. Ejecutá la migración 147 (147_clinical_record_atomic_overload_cleanup.sql) en el SQL Editor.",
   get_clinic_entitlements:
     "Falta la migración 121 en Supabase (entitlements comerciales).",
   increment_feature_usage:
