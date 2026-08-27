@@ -9,16 +9,18 @@ import {
   resolvePostgresUserMessage,
 } from "@/core/errors/postgres-error";
 import { getAuditRequestContext } from "@/core/security/audit-context";
-import { verifyClinicalRecordForeignKeys } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
-import { firstZodIssue, parseEntityId } from "@/core/validations/params";
-import { clinicalRecordSchema } from "@/core/validations/schemas";
+import { parseEntityId } from "@/core/validations/params";
 
-import { updateClinicalRecordEntry } from "@/features/historias/services/clinical-records.service";
+type RpcOutcome = {
+  data: unknown;
+  error: { message?: string; code?: string; details?: string } | null;
+};
 
 /**
- * Date-only clinical record update.
- * Isolated "use server" module — Next.js rejects mixed non-async exports in action files.
+ * Move an existing clinical record to a new consultation datetime.
+ * Same HC identity — only timestamps change (record + diagnoses + treatments + Rx/orders).
+ * Never recreates the record or re-syncs children from JSON (that wiped treatments).
  */
 export async function updateClinicalRecordConsultationAt(
   recordId: string,
@@ -41,11 +43,6 @@ export async function updateClinicalRecordConsultationAt(
     }
     const consultationAt = parsedDate.toISOString();
     const { clinicId, userId } = access;
-
-    type RpcOutcome = {
-      data: unknown;
-      error: { message?: string; code?: string; details?: string } | null;
-    };
 
     const rpcCall = Promise.resolve(
       supabase.rpc("update_clinical_record_consultation_at" as never, {
@@ -87,7 +84,7 @@ export async function updateClinicalRecordConsultationAt(
 
       if (patientId) revalidatePath(`/pacientes/${patientId}`, "page");
       revalidatePath("/consultas");
-      return { success: true, patientId: patientId || null };
+      return { success: true, patientId: patientId || null, consultationAt };
     }
 
     const rpcError = raced.timedOut
@@ -110,59 +107,7 @@ export async function updateClinicalRecordConsultationAt(
       };
     }
 
-    const { data: record, error: fetchError } = await supabase
-      .from("clinical_records")
-      .select(
-        "id, patient_id, professional_id, appointment_id, chief_complaint, diagnosis, evolution, indications, diagnosis_cie10, diagnoses_json, treatments_json"
-      )
-      .eq("id", idParsed.data)
-      .eq("clinic_id", clinicId)
-      .maybeSingle();
-
-    if (fetchError) return { error: fetchError.message };
-    if (!record) return { error: "Consulta no encontrada." };
-    if (!record.professional_id) {
-      return { error: "Esta evolución no tiene profesional asignado y no se puede editar." };
-    }
-
-    const parsed = clinicalRecordSchema.safeParse({
-      patient_id: record.patient_id,
-      professional_id: record.professional_id,
-      appointment_id: record.appointment_id,
-      chief_complaint: record.chief_complaint ?? "",
-      diagnosis: record.diagnosis ?? "",
-      evolution: record.evolution ?? "",
-      indications: record.indications ?? "",
-      consultation_at: consultationAt,
-      diagnosis_cie10: record.diagnosis_cie10 ?? null,
-      diagnoses_json:
-        typeof record.diagnoses_json === "string"
-          ? record.diagnoses_json
-          : JSON.stringify(record.diagnoses_json ?? []),
-      treatments_json:
-        typeof record.treatments_json === "string"
-          ? record.treatments_json
-          : JSON.stringify(record.treatments_json ?? []),
-    });
-    if (!parsed.success) return { error: firstZodIssue(parsed.error) };
-
-    const ownership = await verifyClinicalRecordForeignKeys(supabase, clinicId, {
-      patientId: parsed.data.patient_id,
-      professionalId: parsed.data.professional_id,
-      appointmentId: parsed.data.appointment_id,
-    });
-    if (!ownership.ok) return { error: ownership.error };
-
-    const result = await updateClinicalRecordEntry(supabase, {
-      recordId: idParsed.data,
-      clinicId,
-      userId,
-      parsed: parsed.data,
-      auditContext: ctx,
-    });
-
-    // Atomic RPC may succeed without applying consultation_at on older overloads.
-    // Always force created_at via direct update so the date actually persists.
+    // Direct cascade — same HC, new timestamps only (no child wipe via atomic JSON sync).
     const { data: forced, error: forceError } = await supabase
       .from("clinical_records")
       .update({
@@ -176,34 +121,50 @@ export async function updateClinicalRecordConsultationAt(
       .maybeSingle();
 
     if (forceError) {
-      if (!result.ok) return { error: result.error };
       return {
         error: resolvePostgresUserMessage(forceError, {
           fallback: "No se pudo actualizar la fecha de la consulta.",
         }),
       };
     }
-    if (!forced) {
-      return { error: result.ok ? "No se pudo actualizar la fecha de la consulta." : result.error };
-    }
+    if (!forced) return { error: "Consulta no encontrada." };
 
+    const stamp = { created_at: consultationAt, updated_at: new Date().toISOString() };
     await Promise.all([
       supabase
         .from("clinical_record_diagnoses")
-        .update({ created_at: consultationAt, updated_at: new Date().toISOString() })
+        .update(stamp)
         .eq("clinical_record_id", idParsed.data)
         .eq("clinic_id", clinicId),
       supabase
         .from("clinical_record_treatments")
-        .update({ created_at: consultationAt, updated_at: new Date().toISOString() })
+        .update(stamp)
         .eq("clinical_record_id", idParsed.data)
         .eq("clinic_id", clinicId),
       supabase
         .from("prescription_drafts")
-        .update({ created_at: consultationAt, updated_at: new Date().toISOString() })
+        .update(stamp)
         .eq("clinical_record_id", idParsed.data)
         .eq("clinic_id", clinicId),
     ]);
+
+    // Align issued_at only when the prescription was already issued.
+    await supabase
+      .from("prescription_drafts")
+      .update({ issued_at: consultationAt, updated_at: stamp.updated_at })
+      .eq("clinical_record_id", idParsed.data)
+      .eq("clinic_id", clinicId)
+      .not("issued_at", "is", null);
+
+    await supabase
+      .from("medical_orders")
+      .update({
+        created_at: consultationAt,
+        issued_at: consultationAt,
+        updated_at: stamp.updated_at,
+      })
+      .eq("clinical_record_id", idParsed.data)
+      .eq("clinic_id", clinicId);
 
     void logAudit({
       clinicId,
@@ -219,7 +180,7 @@ export async function updateClinicalRecordConsultationAt(
 
     revalidatePath(`/pacientes/${forced.patient_id}`, "page");
     revalidatePath("/consultas");
-    return { success: true, patientId: forced.patient_id };
+    return { success: true, patientId: forced.patient_id, consultationAt };
   } catch (err) {
     return {
       error:

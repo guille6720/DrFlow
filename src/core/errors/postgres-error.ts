@@ -54,9 +54,11 @@ const FUNCTION_MIGRATION_HINTS: Record<string, string> = {
   update_clinical_record_atomic:
     "No se pudo actualizar la consulta: hay funciones duplicadas en Supabase. Ejecutá la migración 147 (147_clinical_record_atomic_overload_cleanup.sql) en el SQL Editor.",
   update_clinical_record_consultation_at:
-    "No se pudo actualizar la fecha: falta la migración 149 en Supabase (cascade de fechas de HC).",
+    "No se pudo actualizar la fecha: falta la migración 152 en Supabase (cascade de fechas de HC). Ejecutala y después: NOTIFY pgrst, 'reload schema';",
   archive_clinical_record:
     "No se pudo archivar la consulta: falta la migración 151 en Supabase (archive_clinical_record). Ejecutala en el SQL Editor y después: NOTIFY pgrst, 'reload schema';",
+  sync_clinical_record_related_dates:
+    "Falta la migración 152 en Supabase (sync de fechas de diagnóstico/tratamiento/receta).",
   get_clinic_entitlements:
     "Falta la migración 121 en Supabase (entitlements comerciales).",
   increment_feature_usage:

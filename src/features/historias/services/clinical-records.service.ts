@@ -32,27 +32,29 @@ function sanitizeClinicalRecordFields(data: ClinicalRecordInput) {
   };
 }
 
-function parseStructuredPayloads(data: ClinicalRecordInput) {
-  let diagnosesJson: unknown = [];
-  let treatmentsJson: unknown = [];
-  if (data.diagnoses_json?.trim()) {
+function parseStructuredPayloads(data: ClinicalRecordInput): {
+  diagnoses: ReturnType<typeof parseDiagnosesJson> | null;
+  treatments: ReturnType<typeof parseTreatmentsJson> | null;
+} {
+  // null = caller did not send JSON → do not wipe/re-sync children (migration 152).
+  let diagnoses: ReturnType<typeof parseDiagnosesJson> | null = null;
+  let treatments: ReturnType<typeof parseTreatmentsJson> | null = null;
+
+  if (data.diagnoses_json != null && data.diagnoses_json.trim() !== "") {
     try {
-      diagnosesJson = JSON.parse(data.diagnoses_json);
+      diagnoses = parseDiagnosesJson(JSON.parse(data.diagnoses_json));
     } catch {
-      diagnosesJson = [];
+      diagnoses = [];
     }
   }
-  if (data.treatments_json?.trim()) {
+  if (data.treatments_json != null && data.treatments_json.trim() !== "") {
     try {
-      treatmentsJson = JSON.parse(data.treatments_json);
+      treatments = parseTreatmentsJson(JSON.parse(data.treatments_json));
     } catch {
-      treatmentsJson = [];
+      treatments = [];
     }
   }
-  return {
-    diagnoses: parseDiagnosesJson(diagnosesJson),
-    treatments: parseTreatmentsJson(treatmentsJson),
-  };
+  return { diagnoses, treatments };
 }
 
 export type ClinicalRecordRow = Record<string, unknown> & { id: string };
@@ -125,10 +127,12 @@ async function tryPersistStructuredColumns(
   auditContext: { ip_address: string | null; user_agent: string | null },
   payload: {
     diagnosis_cie10: string | null;
-    diagnoses: unknown;
-    treatments: unknown;
+    diagnoses: unknown[] | null;
+    treatments: unknown[] | null;
   }
 ) {
+  if (payload.diagnoses == null && payload.treatments == null) return;
+
   const { data: before } = await db
     .from("clinical_records")
     .select(
@@ -140,12 +144,15 @@ async function tryPersistStructuredColumns(
 
   if (!before) return;
 
+  const nextDiagnoses = payload.diagnoses ?? before.diagnoses_json ?? [];
+  const nextTreatments = payload.treatments ?? before.treatments_json ?? [];
+
   const { error } = await db
     .from("clinical_records")
     .update({
       diagnosis_cie10: payload.diagnosis_cie10,
-      diagnoses_json: payload.diagnoses,
-      treatments_json: payload.treatments,
+      diagnoses_json: nextDiagnoses,
+      treatments_json: nextTreatments,
       record_version: (before.record_version ?? 1) + 1,
       updated_by: userId,
       updated_at: new Date().toISOString(),
@@ -163,8 +170,8 @@ async function tryPersistStructuredColumns(
   };
   const afterSnap = {
     diagnosis_cie10: payload.diagnosis_cie10,
-    diagnoses_json: payload.diagnoses,
-    treatments_json: payload.treatments,
+    diagnoses_json: nextDiagnoses,
+    treatments_json: nextTreatments,
     record_version: (before.record_version ?? 1) + 1,
   };
 
@@ -274,8 +281,8 @@ export async function createClinicalRecordEntry(
     p_audit_ip: input.auditContext.ip_address,
     p_audit_user_agent: input.auditContext.user_agent,
     p_diagnosis_cie10: sanitized.diagnosis_cie10,
-    p_diagnoses_json: structured.diagnoses,
-    p_treatments_json: structured.treatments,
+    p_diagnoses_json: structured.diagnoses ?? [],
+    p_treatments_json: structured.treatments ?? [],
   });
 
   if (error) {
@@ -305,8 +312,8 @@ export async function createClinicalRecordEntry(
           input.auditContext,
           {
             diagnosis_cie10: sanitized.diagnosis_cie10,
-            diagnoses: structured.diagnoses,
-            treatments: structured.treatments,
+            diagnoses: structured.diagnoses ?? [],
+            treatments: structured.treatments ?? [],
           }
         );
       }
@@ -324,8 +331,8 @@ export async function createClinicalRecordEntry(
   if (row?.id) {
     await tryPersistStructuredColumns(db, row.id, input.clinicId, input.userId, input.auditContext, {
       diagnosis_cie10: sanitized.diagnosis_cie10,
-      diagnoses: structured.diagnoses,
-      treatments: structured.treatments,
+      diagnoses: structured.diagnoses ?? [],
+      treatments: structured.treatments ?? [],
     });
   }
 
@@ -346,7 +353,7 @@ export async function updateClinicalRecordEntry(
   const structured = parseStructuredPayloads(input.parsed);
   const consultationAt = input.parsed.consultation_at?.trim() || null;
 
-  const { data, error } = await rpcWithLegacyFallback(db, "update_clinical_record_atomic", {
+  const rpcArgs: RpcArgs = {
     p_clinic_id: input.clinicId,
     p_record_id: input.recordId,
     p_patient_id: sanitized.patient_id,
@@ -362,9 +369,18 @@ export async function updateClinicalRecordEntry(
     p_audit_ip: input.auditContext.ip_address,
     p_audit_user_agent: input.auditContext.user_agent,
     p_diagnosis_cie10: sanitized.diagnosis_cie10,
-    p_diagnoses_json: structured.diagnoses,
-    p_treatments_json: structured.treatments,
-  });
+  };
+  // Only send structured payloads when the caller provided them. Omitting keeps
+  // PostgREST from defaulting missing params to [] on older DB overloads; on
+  // migration 152+, NULL means "leave children alone".
+  if (structured.diagnoses != null) {
+    rpcArgs.p_diagnoses_json = structured.diagnoses;
+  }
+  if (structured.treatments != null) {
+    rpcArgs.p_treatments_json = structured.treatments;
+  }
+
+  const { data, error } = await rpcWithLegacyFallback(db, "update_clinical_record_atomic", rpcArgs);
 
   if (error) {
     return serviceErr(resolvePostgresUserMessage(error, { fallback: error.message }));
@@ -400,6 +416,33 @@ export async function updateClinicalRecordEntry(
         fallback: "No se pudo guardar el contenido de la consulta.",
       })
     );
+  }
+
+  if (consultationAt) {
+    const stamp = { created_at: consultationAt, updated_at: new Date().toISOString() };
+    await Promise.all([
+      db
+        .from("clinical_record_diagnoses")
+        .update(stamp)
+        .eq("clinical_record_id", input.recordId)
+        .eq("clinic_id", input.clinicId),
+      db
+        .from("clinical_record_treatments")
+        .update(stamp)
+        .eq("clinical_record_id", input.recordId)
+        .eq("clinic_id", input.clinicId),
+      db
+        .from("prescription_drafts")
+        .update(stamp)
+        .eq("clinical_record_id", input.recordId)
+        .eq("clinic_id", input.clinicId),
+    ]);
+    await db
+      .from("prescription_drafts")
+      .update({ issued_at: consultationAt, updated_at: stamp.updated_at })
+      .eq("clinical_record_id", input.recordId)
+      .eq("clinic_id", input.clinicId)
+      .not("issued_at", "is", null);
   }
 
   const payload = data as { old: Record<string, unknown>; data: Record<string, unknown> };

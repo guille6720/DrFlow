@@ -120,7 +120,7 @@ export async function updateClinicalRecordNotes(
   const { data: record, error: fetchError } = await supabase
     .from("clinical_records")
     .select(
-      "id, patient_id, professional_id, appointment_id, chief_complaint, diagnosis, evolution, indications, created_at"
+      "id, patient_id, professional_id, appointment_id, chief_complaint, diagnosis, evolution, indications, created_at, diagnosis_cie10, diagnoses_json, treatments_json"
     )
     .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
@@ -132,6 +132,83 @@ export async function updateClinicalRecordNotes(
     return { error: "Esta evolución no tiene profesional asignado y no se puede editar." };
   }
 
+  // Preserve structured children. Empty JSON + child rows must be rebuilt so older
+  // update_clinical_record_atomic overloads (DEFAULT '[]') cannot wipe treatments.
+  let diagnosesJson =
+    typeof record.diagnoses_json === "string"
+      ? record.diagnoses_json
+      : JSON.stringify(record.diagnoses_json ?? []);
+  let treatmentsJson =
+    typeof record.treatments_json === "string"
+      ? record.treatments_json
+      : JSON.stringify(record.treatments_json ?? []);
+
+  const diagnosesEmpty =
+    !record.diagnoses_json ||
+    (Array.isArray(record.diagnoses_json) && record.diagnoses_json.length === 0) ||
+    diagnosesJson === "[]";
+  const treatmentsEmpty =
+    !record.treatments_json ||
+    (Array.isArray(record.treatments_json) && record.treatments_json.length === 0) ||
+    treatmentsJson === "[]";
+
+  if (diagnosesEmpty || treatmentsEmpty) {
+    const [{ data: dxRows }, { data: txRows }] = await Promise.all([
+      diagnosesEmpty
+        ? supabase
+            .from("clinical_record_diagnoses")
+            .select(
+              "name, cie10_code, cie11_code, snomed_code, clinical_diagnosis_id, pathology_id, is_chronic"
+            )
+            .eq("clinical_record_id", idParsed.data)
+            .eq("clinic_id", clinicId)
+            .order("sort_order", { ascending: true })
+        : Promise.resolve({ data: null }),
+      treatmentsEmpty
+        ? supabase
+            .from("clinical_record_treatments")
+            .select(
+              "product, dose, frequency, notes, status, quantity, vademecum_code, catalog_source, active_ingredient, clinical_treatment_id, treatment_kind, category"
+            )
+            .eq("clinical_record_id", idParsed.data)
+            .eq("clinic_id", clinicId)
+            .order("sort_order", { ascending: true })
+        : Promise.resolve({ data: null }),
+    ]);
+
+    if (diagnosesEmpty && dxRows?.length) {
+      diagnosesJson = JSON.stringify(
+        dxRows.map((row) => ({
+          name: row.name,
+          cie10_code: row.cie10_code,
+          cie11_code: row.cie11_code ?? null,
+          snomed_code: row.snomed_code ?? null,
+          clinical_diagnosis_id: row.clinical_diagnosis_id ?? null,
+          pathology_id: row.pathology_id,
+          is_chronic: row.is_chronic,
+        }))
+      );
+    }
+    if (treatmentsEmpty && txRows?.length) {
+      treatmentsJson = JSON.stringify(
+        txRows.map((row) => ({
+          product: row.product,
+          dose: row.dose ?? undefined,
+          frequency: row.frequency ?? undefined,
+          notes: row.notes ?? undefined,
+          status: row.status ?? "Actual",
+          quantity: row.quantity ?? undefined,
+          vademecum_code: row.vademecum_code,
+          catalog_source: row.catalog_source,
+          active_ingredient: row.active_ingredient,
+          clinical_treatment_id: row.clinical_treatment_id ?? null,
+          kind: row.treatment_kind ?? null,
+          category: row.category ?? null,
+        }))
+      );
+    }
+  }
+
   const formData = new FormData();
   formData.set("patient_id", record.patient_id);
   formData.set("professional_id", record.professional_id);
@@ -141,6 +218,9 @@ export async function updateClinicalRecordNotes(
   formData.set("evolution", fields.evolution);
   formData.set("indications", fields.indications ?? record.indications ?? "");
   formData.set("consultation_at", record.created_at);
+  if (record.diagnosis_cie10) formData.set("diagnosis_cie10", record.diagnosis_cie10);
+  formData.set("diagnoses_json", diagnosesJson);
+  formData.set("treatments_json", treatmentsJson);
 
   return persistClinicalRecordUpdate(idParsed.data, formData, gate.access, gate.ctx, supabase);
 }
