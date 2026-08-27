@@ -2,6 +2,9 @@
 
 import { type ReactNode, useMemo, useState } from "react";
 
+import { toast } from "@/core/notifications/toast";
+
+import { archiveClinicalRecord } from "@/features/historias/actions/clinical-records";
 import { PatientEhrClinicalTables } from "@/features/historias/components/historias/patient-ehr-clinical-tables";
 import { PatientEhrEvolutionPanel } from "@/features/historias/components/historias/patient-ehr-evolution-panel";
 import { PatientEhrFiltersBar } from "@/features/historias/components/historias/patient-ehr-filters-bar";
@@ -80,8 +83,10 @@ export function PatientEhrInteractiveBody({
     loadMoreRecords,
     loadingMoreRecords,
     resolveConsultationSignature,
+    removeClinicalRecord,
   } = usePatientEhrStateContext();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function handleSidebarSelect(id: string) {
     setSelectedId(id);
@@ -99,6 +104,39 @@ export function PatientEhrInteractiveBody({
     setEditingId(id);
     if (!inlineConsultOpen) {
       replaceClientUrl(buildPatientWorkspaceUrl(patientId, { tab: "soap", consulta: id }));
+    }
+  }
+
+  async function handleDeleteConsultation(id: string) {
+    if (id.startsWith("hce-") || deletingId) return;
+    const confirmed = window.confirm(
+      "¿Eliminar esta evolución?\n\nSe archivará y dejará de mostrarse en la historia clínica. Podés crear una nueva después."
+    );
+    if (!confirmed) return;
+
+    setDeletingId(id);
+    try {
+      const result = await archiveClinicalRecord(id);
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+      removeClinicalRecord(id);
+      if (editingId === id) setEditingId(null);
+      const remaining = sidebarList.filter((row) => row.id !== id);
+      const nextId = remaining[0]?.id ?? null;
+      setSelectedId(nextId);
+      if (!inlineConsultOpen) {
+        replaceClientUrl(
+          buildPatientWorkspaceUrl(patientId, {
+            tab: "soap",
+            ...(nextId ? { consulta: nextId } : {}),
+          })
+        );
+      }
+      toast.success("Evolución eliminada");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -137,7 +175,9 @@ export function PatientEhrInteractiveBody({
             pendingConsultation={pendingSidebarConsultation}
             onSelect={handleSidebarSelect}
             onEdit={inlineConsultOpen ? undefined : handleStartEdit}
+            onDelete={inlineConsultOpen ? undefined : (id) => void handleDeleteConsultation(id)}
             editingId={editingId}
+            deletingId={deletingId}
             hasMoreRecords={clinicalRecordsPagination.hasMore}
             loadingMoreRecords={loadingMoreRecords}
             onLoadMoreRecords={loadMoreRecords}

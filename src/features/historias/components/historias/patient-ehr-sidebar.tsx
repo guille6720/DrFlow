@@ -18,7 +18,9 @@ type Props = {
   pendingConsultation?: PendingSidebarConsultation | null;
   onSelect: (id: string) => void;
   onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
   editingId?: string | null;
+  deletingId?: string | null;
   hasMoreRecords?: boolean;
   loadingMoreRecords?: boolean;
   onLoadMoreRecords?: () => void;
@@ -32,7 +34,9 @@ export function PatientEhrSidebar({
   pendingConsultation = null,
   onSelect,
   onEdit,
+  onDelete,
   editingId = null,
+  deletingId = null,
   hasMoreRecords = false,
   loadingMoreRecords = false,
   onLoadMoreRecords,
@@ -67,6 +71,8 @@ export function PatientEhrSidebar({
             {sidebarList.map((c) => {
               const active = !pendingConsultation && c.id === selectedId;
               const canEdit = Boolean(onEdit) && !c.id.startsWith("hce-");
+              const canDelete = Boolean(onDelete) && !c.id.startsWith("hce-");
+              const isDeleting = deletingId === c.id;
               return (
                 <li key={c.id}>
                   <div
@@ -83,14 +89,28 @@ export function PatientEhrSidebar({
                       <p className="font-bold">{formatPatientEhrSidebarDate(c.created_at)}</p>
                       <p className="mt-0.5 truncate font-medium">{c.professional_name}</p>
                     </button>
-                    {canEdit ? (
-                      <button
-                        type="button"
-                        onClick={() => onEdit?.(c.id)}
-                        className="drflow-ehr-action-link shrink-0 pt-0.5 text-[11px] font-semibold hover:underline"
-                      >
-                        {editingId === c.id ? "Editando" : "Editar"}
-                      </button>
+                    {canEdit || canDelete ? (
+                      <div className="flex shrink-0 flex-col items-end gap-0.5 pt-0.5">
+                        {canEdit ? (
+                          <button
+                            type="button"
+                            onClick={() => onEdit?.(c.id)}
+                            className="drflow-ehr-action-link text-[11px] font-semibold hover:underline"
+                          >
+                            {editingId === c.id ? "Editando" : "Editar"}
+                          </button>
+                        ) : null}
+                        {canDelete ? (
+                          <button
+                            type="button"
+                            disabled={isDeleting}
+                            onClick={() => onDelete?.(c.id)}
+                            className="text-[11px] font-semibold text-[var(--destructive,#b91c1c)] hover:underline disabled:opacity-60"
+                          >
+                            {isDeleting ? "Eliminando…" : "Eliminar"}
+                          </button>
+                        ) : null}
+                      </div>
                     ) : null}
                   </div>
                 </li>

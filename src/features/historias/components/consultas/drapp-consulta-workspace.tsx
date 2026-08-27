@@ -113,7 +113,9 @@ function DrappHistorySidebar({
   pendingDateIso,
   editingRecordId,
   archiving,
+  deletingRecordId,
   onEditConsultation,
+  onDeleteConsultation,
   onStartNew,
   onCancelEdit,
 }: {
@@ -126,7 +128,9 @@ function DrappHistorySidebar({
   pendingDateIso: string;
   editingRecordId: string | null;
   archiving?: boolean;
+  deletingRecordId?: string | null;
   onEditConsultation: (consultation: PatientEhrConsultation) => void;
+  onDeleteConsultation: (consultation: PatientEhrConsultation) => void;
   onStartNew: () => void;
   onCancelEdit: () => void;
 }) {
@@ -216,13 +220,23 @@ function DrappHistorySidebar({
                       {formatPatientEhrSidebarDate(c.created_at)}{" "}
                       <span className="font-medium text-[var(--primary)]">{c.professional_name}</span>
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => onEditConsultation(c)}
-                      className="shrink-0 text-[11px] font-semibold text-[var(--accent)] hover:underline"
-                    >
-                      {isEditing ? "Editando" : "Editar"}
-                    </button>
+                    <div className="flex shrink-0 flex-col items-end gap-0.5">
+                      <button
+                        type="button"
+                        onClick={() => onEditConsultation(c)}
+                        className="text-[11px] font-semibold text-[var(--accent)] hover:underline"
+                      >
+                        {isEditing ? "Editando" : "Editar"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={deletingRecordId === c.id || Boolean(archiving)}
+                        onClick={() => onDeleteConsultation(c)}
+                        className="text-[11px] font-semibold text-[var(--destructive,#b91c1c)] hover:underline disabled:opacity-60"
+                      >
+                        {deletingRecordId === c.id ? "Eliminando…" : "Eliminar"}
+                      </button>
+                    </div>
                   </div>
                   {body ? (
                     <button
@@ -339,6 +353,7 @@ function DrappConsultaWorkspaceInner({
   const [sidebarSearch, setSidebarSearch] = useState("");
   const [quickSaving, setQuickSaving] = useState(false);
   const [archivingRecord, setArchivingRecord] = useState(false);
+  const [deletingRecordId, setDeletingRecordId] = useState<string | null>(null);
   const [fullModalOpen, setFullModalOpen] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [lastSavedRecordId, setLastSavedRecordId] = useState<string | null>(null);
@@ -446,36 +461,44 @@ function DrappConsultaWorkspaceInner({
     [consultationAt]
   );
 
-  const handleCancelEdit = useCallback(async () => {
-    if (!editingRecordId) return;
-    const confirmed = window.confirm(
-      "¿Eliminar esta evolución?\n\nSe archivará y dejará de mostrarse en la historia clínica."
-    );
-    if (!confirmed) return;
+  const handleDeleteConsultationById = useCallback(
+    async (recordId: string, options?: { startNew?: boolean }) => {
+      if (!recordId || deletingRecordId) return;
+      const confirmed = window.confirm(
+        "¿Eliminar esta evolución?\n\nSe archivará y dejará de mostrarse en la historia clínica. Podés crear una nueva después."
+      );
+      if (!confirmed) return;
 
-    setArchivingRecord(true);
-    try {
-      const result = await archiveClinicalRecord(editingRecordId);
-      if (result.error) {
-        toast.error(result.error);
-        return;
+      setDeletingRecordId(recordId);
+      if (editingRecordId === recordId) setArchivingRecord(true);
+      try {
+        const result = await archiveClinicalRecord(recordId);
+        if (result.error) {
+          toast.error(result.error);
+          return;
+        }
+        removeClinicalRecord(recordId);
+        if (options?.startNew || editingRecordId === recordId) {
+          startNewConsultation();
+          setLastSavedRecordId(null);
+          setComposerDiagnosisRows([]);
+          setComposerTreatmentRows([]);
+          requestOpen("evolucion");
+        }
+        toast.success("Evolución eliminada");
+      } finally {
+        setDeletingRecordId(null);
+        setArchivingRecord(false);
       }
-      removeClinicalRecord(editingRecordId);
-      startNewConsultation();
-      setLastSavedRecordId(null);
-      setComposerDiagnosisRows([]);
-      setComposerTreatmentRows([]);
-      requestOpen("evolucion");
-      toast.success("Evolución eliminada");
-    } finally {
-      setArchivingRecord(false);
-    }
-  }, [
-    editingRecordId,
-    removeClinicalRecord,
-    requestOpen,
-    startNewConsultation,
-  ]);
+    },
+    [
+      deletingRecordId,
+      editingRecordId,
+      removeClinicalRecord,
+      requestOpen,
+      startNewConsultation,
+    ]
+  );
 
   useEffect(() => {
     historySnapshotRef.current = {
@@ -676,6 +699,7 @@ function DrappConsultaWorkspaceInner({
           pendingDateIso={pendingDateIso}
           editingRecordId={editingRecordId}
           archiving={archivingRecord}
+          deletingRecordId={deletingRecordId}
           onEditConsultation={(c) => {
             loadConsultationForEdit(c);
             setComposerDiagnosisRows(diagnosisRows.filter((row) => row.recordId === c.id));
@@ -685,6 +709,7 @@ function DrappConsultaWorkspaceInner({
             queueMicrotask(() => evolutionRef.current?.focus());
             toast.success("Evolución cargada para editar");
           }}
+          onDeleteConsultation={(c) => void handleDeleteConsultationById(c.id)}
           onStartNew={() => {
             startNewConsultation();
             setLastSavedRecordId(null);
@@ -692,7 +717,9 @@ function DrappConsultaWorkspaceInner({
             setComposerTreatmentRows([]);
             requestOpen("evolucion");
           }}
-          onCancelEdit={() => void handleCancelEdit()}
+          onCancelEdit={() =>
+            void handleDeleteConsultationById(editingRecordId ?? "", { startNew: true })
+          }
         />
 
         <main className="drapp-consulta-main flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--card,#fff)] p-3 text-[var(--foreground,#0f172a)] sm:p-4">

@@ -95,7 +95,7 @@ export async function fetchPatientClinicalRecordsForEhr(
 }> {
   const withCount = options.withCount === true;
   const run = async (columns: string) => {
-    const result = await supabase
+    const query = supabase
       .from("clinical_records")
       .select(columns, withCount ? { count: "exact" } : undefined)
       .eq("clinic_id", clinicId)
@@ -103,10 +103,32 @@ export async function fetchPatientClinicalRecordsForEhr(
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
       .limit(options.limit);
+
+    // Prefer active HC only when lifecycle column exists (migration 131).
+    const withLifecycle = await query.eq("lifecycle_status", "active");
+    if (
+      withLifecycle.error &&
+      /lifecycle_status/i.test(withLifecycle.error.message ?? "")
+    ) {
+      const fallback = await supabase
+        .from("clinical_records")
+        .select(columns, withCount ? { count: "exact" } : undefined)
+        .eq("clinic_id", clinicId)
+        .eq("patient_id", patientId)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .limit(options.limit);
+      return {
+        data: (fallback.data as ClinicalRecordEhrRow[] | null) ?? null,
+        count: fallback.count ?? null,
+        error: fallback.error ? { message: fallback.error.message } : null,
+      };
+    }
+
     return {
-      data: (result.data as ClinicalRecordEhrRow[] | null) ?? null,
-      count: result.count ?? null,
-      error: result.error ? { message: result.error.message } : null,
+      data: (withLifecycle.data as ClinicalRecordEhrRow[] | null) ?? null,
+      count: withLifecycle.count ?? null,
+      error: withLifecycle.error ? { message: withLifecycle.error.message } : null,
     };
   };
 

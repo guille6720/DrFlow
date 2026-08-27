@@ -66,6 +66,7 @@ export async function loadMorePatientClinicalRecords(
     )
     .eq("clinic_id", clinicId)
     .eq("patient_id", idParsed.data)
+    .eq("lifecycle_status", "active")
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
     .limit(PATIENT_EHR_RECORD_PAGE_SIZE + 1);
@@ -75,6 +76,24 @@ export async function loadMorePatientClinicalRecords(
   }
 
   let { data: records, error } = await query;
+  if (error && /lifecycle_status/i.test(error.message)) {
+    let withoutLifecycle = supabase
+      .from("clinical_records")
+      .select(
+        "id, created_at, chief_complaint, diagnosis, evolution, indications, diagnosis_cie10, diagnoses_json, treatments_json, professional_id, professional_signature, professionals(license_national, license_provincial, profiles(full_name, email))"
+      )
+      .eq("clinic_id", clinicId)
+      .eq("patient_id", idParsed.data)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(PATIENT_EHR_RECORD_PAGE_SIZE + 1);
+    if (parsedCursor) {
+      withoutLifecycle = withoutLifecycle.lt("created_at", parsedCursor.sortValue);
+    }
+    const retry = await withoutLifecycle;
+    records = retry.data as typeof records;
+    error = retry.error;
+  }
   if (error && /diagnoses_json|treatments_json|diagnosis_cie10/i.test(error.message)) {
     let basicQuery = supabase
       .from("clinical_records")

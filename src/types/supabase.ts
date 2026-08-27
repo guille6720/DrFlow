@@ -1950,6 +1950,9 @@ export type Database = {
       clinical_records: {
         Row: {
           appointment_id: string | null
+          archive_reason: string | null
+          archived_at: string | null
+          archived_by: string | null
           chief_complaint: string | null
           clinic_id: string
           created_at: string
@@ -1960,9 +1963,11 @@ export type Database = {
           evolution: string | null
           id: string
           indications: string | null
+          lifecycle_status: string
           patient_id: string
           professional_id: string
           professional_signature: string | null
+          record_version: number
           template_id: string | null
           treatments_json: Json
           updated_at: string
@@ -1970,6 +1975,9 @@ export type Database = {
         }
         Insert: {
           appointment_id?: string | null
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
           chief_complaint?: string | null
           clinic_id: string
           created_at?: string
@@ -1980,9 +1988,11 @@ export type Database = {
           evolution?: string | null
           id?: string
           indications?: string | null
+          lifecycle_status?: string
           patient_id: string
           professional_id: string
           professional_signature?: string | null
+          record_version?: number
           template_id?: string | null
           treatments_json?: Json
           updated_at?: string
@@ -1990,6 +2000,9 @@ export type Database = {
         }
         Update: {
           appointment_id?: string | null
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
           chief_complaint?: string | null
           clinic_id?: string
           created_at?: string
@@ -2000,9 +2013,11 @@ export type Database = {
           evolution?: string | null
           id?: string
           indications?: string | null
+          lifecycle_status?: string
           patient_id?: string
           professional_id?: string
           professional_signature?: string | null
+          record_version?: number
           template_id?: string | null
           treatments_json?: Json
           updated_at?: string
