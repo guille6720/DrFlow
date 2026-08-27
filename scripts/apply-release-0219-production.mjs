@@ -161,6 +161,12 @@ const RELEASE_MIGRATIONS = [
     block: "clinical",
     label: "Fix ambiguous update_clinical_record_atomic overloads (save/delete HC)",
   },
+  {
+    file: "148_clinical_record_version_column.sql",
+    version: "148",
+    block: "clinical",
+    label: "Ensure clinical_records.record_version exists (date/save fix)",
+  },
 ];
 
 const args = process.argv.slice(2);

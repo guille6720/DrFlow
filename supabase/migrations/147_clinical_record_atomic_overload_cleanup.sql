@@ -2,6 +2,13 @@
 -- Migration 130 added p_change_reason via CREATE OR REPLACE (new signature) without
 -- dropping the 111/063 variants, so PostgREST cannot resolve RPC calls.
 
+-- Ensure compliance columns exist (130 may be missing on staging/partial DBs).
+ALTER TABLE clinical_records
+  ADD COLUMN IF NOT EXISTS record_version INTEGER NOT NULL DEFAULT 1;
+
+ALTER TABLE clinical_record_audit
+  ADD COLUMN IF NOT EXISTS change_reason TEXT;
+
 DROP FUNCTION IF EXISTS public.update_clinical_record_atomic(
   UUID, UUID, UUID, UUID, UUID, TEXT, TEXT, TEXT, TEXT, UUID, TEXT, TEXT, TEXT
 );
