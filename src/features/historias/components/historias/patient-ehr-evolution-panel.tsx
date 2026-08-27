@@ -50,19 +50,24 @@ function EvolutionNotesEditor({ selected, onCancel, onSaved }: EditorProps) {
   async function handleSave() {
     setSaving(true);
     setError(null);
-    const result = await updateClinicalRecordNotes(selected.id, {
-      chief_complaint: chiefComplaint,
-      evolution,
-      diagnosis: selected.diagnosis,
-      indications: selected.indications,
-    });
-    setSaving(false);
-    if (result.error) {
-      setError(result.error);
-      return;
+    try {
+      const result = await updateClinicalRecordNotes(selected.id, {
+        chief_complaint: chiefComplaint,
+        evolution,
+        diagnosis: selected.diagnosis,
+        indications: selected.indications,
+      });
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      toast.success("Evolución actualizada");
+      onSaved();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo guardar la evolución.");
+    } finally {
+      setSaving(false);
     }
-    toast.success("Evolución actualizada");
-    onSaved();
   }
 
   return (

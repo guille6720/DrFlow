@@ -105,43 +105,95 @@ export async function updateClinicalRecordConsultationAt(
   recordId: string,
   consultationAtIso: string
 ) {
-  const [gate, supabase] = await Promise.all([gateClinicalRecordWrite(), createClient()]);
-  if (!gate.ok) return { error: gate.error };
-  const { clinicId, userId } = gate.access;
+  try {
+    const [gate, supabase] = await Promise.all([gateClinicalRecordWrite(), createClient()]);
+    if (!gate.ok) return { error: gate.error };
+    const { clinicId, userId } = gate.access;
 
-  const idParsed = parseEntityId(recordId, "Consulta");
-  if (!idParsed.ok) return { error: idParsed.error };
+    const idParsed = parseEntityId(recordId, "Consulta");
+    if (!idParsed.ok) return { error: idParsed.error };
 
-  const parsedDate = new Date(consultationAtIso);
-  if (Number.isNaN(parsedDate.getTime())) {
-    return { error: "Fecha de consulta inválida." };
-  }
+    const parsedDate = new Date(consultationAtIso);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return { error: "Fecha de consulta inválida." };
+    }
+    const consultationAt = parsedDate.toISOString();
 
-  const { data, error } = await supabase.rpc(
-    "update_clinical_record_consultation_at" as never,
-    {
+    // Prefer lean RPC (migration 149). Race a timeout so PostgREST schema-cache
+    // stalls cannot leave the UI spinning forever.
+    const rpcCall = supabase.rpc("update_clinical_record_consultation_at" as never, {
       p_clinic_id: clinicId,
       p_record_id: idParsed.data,
-      p_consultation_at: parsedDate.toISOString(),
+      p_consultation_at: consultationAt,
       p_updated_by: userId,
       p_audit_ip: gate.ctx.ip_address,
       p_audit_user_agent: gate.ctx.user_agent,
-    } as never
-  );
+    } as never);
 
-  if (error) {
-    if (!isMissingRpcInSchemaCache(error)) {
+    const rpcResult = (await Promise.race([
+      rpcCall,
+      new Promise<{ data: null; error: { message: string; code: string } }>((resolve) =>
+        setTimeout(
+          () =>
+            resolve({
+              data: null,
+              error: { message: "RPC_TIMEOUT", code: "PGRST202" },
+            }),
+          10_000
+        )
+      ),
+    ])) as {
+      data: unknown;
+      error: { message?: string; code?: string; details?: string } | null;
+    };
+
+    if (!rpcResult.error && rpcResult.data) {
+      const payload = rpcResult.data as {
+        old?: { patient_id?: string; created_at?: string };
+        data?: { patient_id?: string };
+      };
+      const patientId = String(payload.data?.patient_id ?? payload.old?.patient_id ?? "");
+
+      void logAudit({
+        clinicId,
+        module: "clinical",
+        what: "Modificó fecha de consulta clínica",
+        entityType: "clinical_record",
+        entityId: idParsed.data,
+        patientId: patientId || undefined,
+        action: "update",
+        oldValues: { created_at: payload.old?.created_at },
+        newValues: { created_at: consultationAt },
+      });
+
+      // Soft cache invalidation only — avoid blocking the action on a full page rebuild.
+      if (patientId) revalidatePath(`/pacientes/${patientId}`, "page");
+      revalidatePath("/consultas");
+      return { success: true as const, patientId: patientId || null };
+    }
+
+    const rpcError = rpcResult.error;
+    const canFallback =
+      !rpcError ||
+      isMissingRpcInSchemaCache(rpcError) ||
+      rpcError.message === "RPC_TIMEOUT" ||
+      /sync_clinical_record_related_dates|update_clinical_record_consultation_at/i.test(
+        `${rpcError.message ?? ""} ${"details" in rpcError ? String(rpcError.details ?? "") : ""}`
+      );
+
+    if (!canFallback) {
       return {
-        error: resolvePostgresUserMessage(error, {
+        error: resolvePostgresUserMessage(rpcError, {
           fallback: "No se pudo actualizar la fecha de la consulta.",
         }),
       };
     }
-    // Fallback for DBs that still lack the lean RPC: full SOAP update path.
+
+    // Fallback: full atomic update with existing structured JSON (no child wipe).
     const { data: record, error: fetchError } = await supabase
       .from("clinical_records")
       .select(
-        "id, patient_id, professional_id, appointment_id, chief_complaint, diagnosis, evolution, indications"
+        "id, patient_id, professional_id, appointment_id, chief_complaint, diagnosis, evolution, indications, diagnosis_cie10, diagnoses_json, treatments_json"
       )
       .eq("id", idParsed.data)
       .eq("clinic_id", clinicId)
@@ -149,6 +201,9 @@ export async function updateClinicalRecordConsultationAt(
 
     if (fetchError) return { error: fetchError.message };
     if (!record) return { error: "Consulta no encontrada." };
+    if (!record.professional_id) {
+      return { error: "Esta evolución no tiene profesional asignado y no se puede editar." };
+    }
 
     const formData = new FormData();
     formData.set("patient_id", record.patient_id);
@@ -158,33 +213,58 @@ export async function updateClinicalRecordConsultationAt(
     formData.set("diagnosis", record.diagnosis ?? "");
     formData.set("evolution", record.evolution ?? "");
     formData.set("indications", record.indications ?? "");
-    formData.set("consultation_at", parsedDate.toISOString());
+    formData.set("consultation_at", consultationAt);
+    if (record.diagnosis_cie10) formData.set("diagnosis_cie10", record.diagnosis_cie10);
+    formData.set(
+      "diagnoses_json",
+      typeof record.diagnoses_json === "string"
+        ? record.diagnoses_json
+        : JSON.stringify(record.diagnoses_json ?? [])
+    );
+    formData.set(
+      "treatments_json",
+      typeof record.treatments_json === "string"
+        ? record.treatments_json
+        : JSON.stringify(record.treatments_json ?? [])
+    );
 
-    return persistClinicalRecordUpdate(idParsed.data, formData, gate.access, gate.ctx, supabase);
+    const persisted = await persistClinicalRecordUpdate(
+      idParsed.data,
+      formData,
+      gate.access,
+      gate.ctx,
+      supabase
+    );
+    if ("error" in persisted && persisted.error) return persisted;
+
+    // After atomic update (child sync may insert with now()), realign related dates.
+    await Promise.all([
+      supabase
+        .from("clinical_record_diagnoses")
+        .update({ created_at: consultationAt, updated_at: new Date().toISOString() })
+        .eq("clinical_record_id", idParsed.data)
+        .eq("clinic_id", clinicId),
+      supabase
+        .from("clinical_record_treatments")
+        .update({ created_at: consultationAt, updated_at: new Date().toISOString() })
+        .eq("clinical_record_id", idParsed.data)
+        .eq("clinic_id", clinicId),
+      supabase
+        .from("prescription_drafts")
+        .update({ created_at: consultationAt, updated_at: new Date().toISOString() })
+        .eq("clinical_record_id", idParsed.data)
+        .eq("clinic_id", clinicId),
+    ]);
+
+    return { success: true as const, patientId: record.patient_id };
+  } catch (err) {
+    return {
+      error:
+        err instanceof Error
+          ? err.message
+          : "No se pudo actualizar la fecha de la consulta.",
+    };
   }
-
-  if (!data) return { error: "No se pudo actualizar la fecha." };
-
-  const payload = data as { old?: { patient_id?: string }; data?: { patient_id?: string } };
-  const patientId = String(payload.data?.patient_id ?? payload.old?.patient_id ?? "");
-
-  await logAudit({
-    clinicId,
-    module: "clinical",
-    what: "Modificó fecha de consulta clínica",
-    entityType: "clinical_record",
-    entityId: idParsed.data,
-    patientId: patientId || undefined,
-    action: "update",
-    oldValues: payload.old ?? {},
-    newValues: payload.data ?? {},
-  });
-
-  revalidatePath(`/historias/${idParsed.data}`, "page");
-  if (patientId) revalidatePath(`/pacientes/${patientId}`, "page");
-  revalidatePath("/consultas");
-  revalidatePath("/recetas");
-  return { success: true };
 }
 
 export async function updateClinicalRecordNotes(

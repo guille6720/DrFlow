@@ -31,16 +31,21 @@ export function PatientEhrTableDateCell({ recordId, createdAt, dateLabel }: Prop
   async function handleSave() {
     setLoading(true);
     setError(null);
-    const iso = new Date(value).toISOString();
-    const result = await updateClinicalRecordConsultationAt(recordId, iso);
-    setLoading(false);
-    if (result.error) {
-      setError(result.error);
-      return;
+    try {
+      const iso = new Date(value).toISOString();
+      const result = await updateClinicalRecordConsultationAt(recordId, iso);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      patchConsultationDate(recordId, iso);
+      toast.success("Fecha guardada");
+      setEditing(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo guardar la fecha.");
+    } finally {
+      setLoading(false);
     }
-    patchConsultationDate(recordId, iso);
-    toast.success("Fecha guardada");
-    setEditing(false);
   }
 
   if (!editing) {

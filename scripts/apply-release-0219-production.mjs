@@ -173,6 +173,12 @@ const RELEASE_MIGRATIONS = [
     block: "clinical",
     label: "Cascade consultation date to diagnoses, treatments, prescriptions",
   },
+  {
+    file: "150_reload_postgrest_schema_consultation_at.sql",
+    version: "150",
+    block: "clinical",
+    label: "Reload PostgREST schema cache after consultation-at RPC",
+  },
 ];
 
 const args = process.argv.slice(2);
