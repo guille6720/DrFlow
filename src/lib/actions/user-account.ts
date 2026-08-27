@@ -4,10 +4,11 @@ import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/sess
 import { getClinicEntitlements } from "@/core/entitlements/entitlements.server";
 import { isHrefEntitledBySnapshot } from "@/core/entitlements/nav-features";
 import { toClientEntitlementsSnapshot } from "@/core/entitlements/resolve";
-import { hasPermission, PERMISSIONS } from "@/core/permissions/roles";
+import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
 import { loadMyDoctorProfile, type MyDoctorProfileData } from "@/lib/actions/doctor-profile";
+import { USER_ACCOUNT_MODULE_LINKS } from "@/lib/constants/user-account-module-links";
 import type { UserRole } from "@/types/database";
 
 export type MyUserAccountData = {
@@ -20,31 +21,6 @@ export type MyUserAccountData = {
   showProfessionalForm: boolean;
   doctorProfile?: MyDoctorProfileData;
 };
-
-export const USER_ACCOUNT_MODULE_LINKS: {
-  href: string;
-  label: string;
-  permission: keyof typeof PERMISSIONS | null;
-}[] = [
-  { href: "/dashboard", label: "Dashboard", permission: null },
-  { href: "/agenda", label: "Agenda", permission: null },
-  { href: "/sala-espera", label: "Sala de espera", permission: "manageWaitingRoom" },
-  { href: "/pacientes", label: "Pacientes", permission: "managePatients" },
-  { href: "/caja", label: "Caja / Cobranzas", permission: "manageCashRegister" },
-  { href: "/facturacion/liquidacion", label: "Liquidación obras sociales", permission: "manageCashRegister" },
-  { href: "/secretaria/documentos", label: "Documentos administrativos", permission: "manageAdminDocuments" },
-  { href: "/historias", label: "Historia clínica", permission: "viewClinicalRecords" },
-  { href: "/consultas", label: "Consultas", permission: "editClinicalRecords" },
-  { href: "/telemedicina", label: "Telemedicina", permission: "viewClinicalRecords" },
-  { href: "/recetas", label: "Recetas", permission: "issuePrescriptions" },
-  { href: "/herramientas/farmacologia", label: "Farmacología", permission: "viewPharmacology" },
-  { href: "/gemini", label: "Asistente IA", permission: "viewClinicalRecords" },
-  { href: "/recordatorios", label: "Recordatorios WhatsApp", permission: "manageAppointments" },
-  { href: "/pami/planillas", label: "Planillas PAMI", permission: "manageSettings" },
-  { href: "/reportes", label: "Reportes", permission: "viewReports" },
-  { href: "/reportes/bi", label: "Reportes avanzados", permission: "viewReports" },
-  { href: "/configuracion", label: "Configuración y equipo", permission: "manageSettings" },
-];
 
 export async function loadMyUserAccount(): Promise<{
   data?: MyUserAccountData;
