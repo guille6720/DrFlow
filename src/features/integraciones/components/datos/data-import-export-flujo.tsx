@@ -110,7 +110,7 @@ export const EXPORT_CARDS: Array<{
   {
     flujo: "export-masivo",
     title: "Exportación masiva",
-    description: "Filtros, secciones clínicas, CSV / Excel / JSON / FHIR / ZIP.",
+    description: "Todas las historias: JSON / CSV / Excel / FHIR / ZIP.",
     icon: ArrowDownToLine,
     phase: 4,
   },

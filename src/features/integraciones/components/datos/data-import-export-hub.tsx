@@ -30,6 +30,8 @@ export function DataImportExportHub(props: DatosHubProps) {
   const canUseDataExport = useCanUseFeature(FEATURES.DATA_EXPORT);
   const importCards = IMPORT_CARDS.filter((card) => card.flujo !== "import-fhir" || canUseFhir);
   const exportCards = EXPORT_CARDS.filter((card) => {
+    // Bulk clinical export stays visible for admins; DATA_EXPORT is checked in-panel/server.
+    if (card.flujo === "export-masivo") return props.canBulkExport;
     const addon = addonFeatureForDatosExportFlujo(card.flujo);
     if (!addon) return true;
     return canUseDataExport;

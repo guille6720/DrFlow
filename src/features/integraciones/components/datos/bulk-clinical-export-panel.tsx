@@ -1,6 +1,7 @@
 "use client";
 
 import { Download } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
@@ -48,7 +49,18 @@ export function BulkClinicalExportPanel({
   professionals,
   insuranceOptions,
 }: Props) {
-  const [draft, setDraft] = useState<BulkExportDraft>(EMPTY_BULK_EXPORT_DRAFT);
+  const params = useSearchParams();
+  const initialFormat = (() => {
+    const raw = params.get("formato") ?? params.get("format");
+    if (raw === "csv" || raw === "xlsx" || raw === "json" || raw === "fhir" || raw === "zip") {
+      return raw;
+    }
+    return "json";
+  })();
+  const [draft, setDraft] = useState<BulkExportDraft>({
+    ...EMPTY_BULK_EXPORT_DRAFT,
+    format: initialFormat,
+  });
   const [busy, setBusy] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -116,8 +128,12 @@ export function BulkClinicalExportPanel({
     <div className="space-y-3">
       <AddonUpgradeNotice feature={FEATURES.DATA_EXPORT} />
       <p className="text-sm text-slate-600">
-        Padrón activo estimado: {estimatedCount} paciente{estimatedCount === 1 ? "" : "s"}. El archivo se
-        arma en segundo plano; no se envía al navegador hasta estar listo.
+        Exportá <strong className="font-semibold text-slate-800">todas las historias clínicas</strong>{" "}
+        del consultorio (o un subconjunto). Por defecto: todos los pacientes activos, formato JSON.
+        El archivo se arma en segundo plano y se descarga al terminar.
+      </p>
+      <p className="text-sm text-slate-600">
+        Padrón activo estimado: {estimatedCount} paciente{estimatedCount === 1 ? "" : "s"}.
       </p>
       <BulkClinicalExportFilters
         draft={draft}

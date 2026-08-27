@@ -28,7 +28,7 @@ export type BulkExportDraft = {
 };
 
 export const EMPTY_BULK_EXPORT_DRAFT: BulkExportDraft = {
-  format: "csv",
+  format: "json",
   scope: "all",
   patientIds: [],
   patientLabels: {},

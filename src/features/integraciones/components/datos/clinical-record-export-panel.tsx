@@ -184,9 +184,13 @@ export function ClinicalRecordExportPanel({ canExport }: Props) {
         ) : null}
       </div>
       <p className="text-xs text-slate-500">
-        ¿Querés exportar muchos pacientes a la vez? Usá{" "}
-        <a href="/datos?flujo=export-masivo" className="font-medium text-teal-800 underline">
-          Exportación masiva
+        ¿Querés exportar <strong className="font-medium">todas</strong> las historias de la clínica?
+        Usá{" "}
+        <a
+          href="/datos?flujo=export-masivo&formato=json"
+          className="font-medium text-teal-800 underline"
+        >
+          Exportación masiva (JSON)
         </a>
         .
       </p>
