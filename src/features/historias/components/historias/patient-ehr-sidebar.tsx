@@ -90,7 +90,7 @@ export function PatientEhrSidebar({
                       <p className="mt-0.5 truncate font-medium">{c.professional_name}</p>
                     </button>
                     {canEdit || canDelete ? (
-                      <div className="flex shrink-0 flex-col items-end gap-0.5 pt-0.5">
+                      <div className="flex shrink-0 items-start gap-2 pt-0.5">
                         {canEdit ? (
                           <button
                             type="button"

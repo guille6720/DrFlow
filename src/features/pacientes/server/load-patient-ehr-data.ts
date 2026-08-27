@@ -94,63 +94,59 @@ export async function fetchPatientClinicalRecordsForEhr(
   error: { message: string } | null;
 }> {
   const withCount = options.withCount === true;
-  const run = async (columns: string) => {
-    const query = supabase
+  const run = async (columns: string, withLifecycleFilter: boolean) => {
+    let query = supabase
       .from("clinical_records")
       .select(columns, withCount ? { count: "exact" } : undefined)
       .eq("clinic_id", clinicId)
-      .eq("patient_id", patientId)
+      .eq("patient_id", patientId);
+
+    if (withLifecycleFilter) {
+      query = query.eq("lifecycle_status", "active");
+    }
+
+    const result = await query
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
       .limit(options.limit);
 
-    // Prefer active HC only when lifecycle column exists (migration 131).
-    const withLifecycle = await query.eq("lifecycle_status", "active");
-    if (
-      withLifecycle.error &&
-      /lifecycle_status/i.test(withLifecycle.error.message ?? "")
-    ) {
-      const fallback = await supabase
-        .from("clinical_records")
-        .select(columns, withCount ? { count: "exact" } : undefined)
-        .eq("clinic_id", clinicId)
-        .eq("patient_id", patientId)
-        .order("created_at", { ascending: false })
-        .order("id", { ascending: false })
-        .limit(options.limit);
-      return {
-        data: (fallback.data as ClinicalRecordEhrRow[] | null) ?? null,
-        count: fallback.count ?? null,
-        error: fallback.error ? { message: fallback.error.message } : null,
-      };
-    }
-
     return {
-      data: (withLifecycle.data as ClinicalRecordEhrRow[] | null) ?? null,
-      count: withLifecycle.count ?? null,
-      error: withLifecycle.error ? { message: withLifecycle.error.message } : null,
+      data: (result.data as ClinicalRecordEhrRow[] | null) ?? null,
+      count: result.count ?? null,
+      error: result.error ? { message: result.error.message } : null,
     };
   };
 
-  const full = await run(CLINICAL_RECORD_EHR_SELECT_FULL);
+  const runPreferringActive = async (columns: string) => {
+    const withLifecycle = await run(columns, true);
+    if (
+      withLifecycle.error &&
+      /lifecycle_status|column|schema cache|does not exist/i.test(withLifecycle.error.message)
+    ) {
+      return run(columns, false);
+    }
+    return withLifecycle;
+  };
+
+  const full = await runPreferringActive(CLINICAL_RECORD_EHR_SELECT_FULL);
   if (!full.error) return full;
 
   if (isMissingStructuredColumnError(full.error.message)) {
-    const basic = await run(CLINICAL_RECORD_EHR_SELECT_BASIC);
+    const basic = await runPreferringActive(CLINICAL_RECORD_EHR_SELECT_BASIC);
     if (!basic.error) return basic;
     if (isProfessionalsEmbedError(basic.error.message)) {
-      return run(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
+      return runPreferringActive(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
     }
     return basic;
   }
 
   if (isProfessionalsEmbedError(full.error.message)) {
-    const minimal = await run(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
+    const minimal = await runPreferringActive(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
     if (!minimal.error) return minimal;
   }
 
   // Last resort: plain columns without join (covers mixed schema issues).
-  const minimal = await run(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
+  const minimal = await runPreferringActive(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
   if (!minimal.error) return minimal;
 
   return full;

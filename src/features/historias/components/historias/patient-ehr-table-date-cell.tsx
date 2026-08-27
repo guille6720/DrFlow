@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { toast } from "@/core/notifications/toast";
 
-import { updateClinicalRecordConsultationAt } from "@/features/historias/actions/clinical-records";
+import { updateClinicalRecordConsultationAt } from "@/features/historias/actions/update-consultation-at";
 import { usePatientEhrStateContext } from "@/features/historias/components/historias/patient-ehr-state-context";
 import { toPatientEhrDatetimeLocalValue } from "@/features/historias/components/historias/patient-ehr-utils";
 
