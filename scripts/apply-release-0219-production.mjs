@@ -167,6 +167,12 @@ const RELEASE_MIGRATIONS = [
     block: "clinical",
     label: "Ensure clinical_records.record_version exists (date/save fix)",
   },
+  {
+    file: "149_clinical_record_cascade_related_dates.sql",
+    version: "149",
+    block: "clinical",
+    label: "Cascade consultation date to diagnoses, treatments, prescriptions",
+  },
 ];
 
 const args = process.argv.slice(2);

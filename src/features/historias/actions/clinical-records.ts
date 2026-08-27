@@ -10,6 +10,10 @@ import {
   isArchivableLifecycle,
 } from "@/core/compliance/clinical-deletion-protection";
 import {
+  isMissingRpcInSchemaCache,
+  resolvePostgresUserMessage,
+} from "@/core/errors/postgres-error";
+import {
   type AuditRequestContext,
   getAuditRequestContext,
 } from "@/core/security/audit-context";
@@ -103,7 +107,7 @@ export async function updateClinicalRecordConsultationAt(
 ) {
   const [gate, supabase] = await Promise.all([gateClinicalRecordWrite(), createClient()]);
   if (!gate.ok) return { error: gate.error };
-  const { clinicId } = gate.access;
+  const { clinicId, userId } = gate.access;
 
   const idParsed = parseEntityId(recordId, "Consulta");
   if (!idParsed.ok) return { error: idParsed.error };
@@ -112,29 +116,75 @@ export async function updateClinicalRecordConsultationAt(
   if (Number.isNaN(parsedDate.getTime())) {
     return { error: "Fecha de consulta inválida." };
   }
-  const { data: record, error: fetchError } = await supabase
-    .from("clinical_records")
-    .select(
-      "id, patient_id, professional_id, appointment_id, chief_complaint, diagnosis, evolution, indications"
-    )
-    .eq("id", idParsed.data)
-    .eq("clinic_id", clinicId)
-    .maybeSingle();
 
-  if (fetchError) return { error: fetchError.message };
-  if (!record) return { error: "Consulta no encontrada." };
+  const { data, error } = await supabase.rpc(
+    "update_clinical_record_consultation_at" as never,
+    {
+      p_clinic_id: clinicId,
+      p_record_id: idParsed.data,
+      p_consultation_at: parsedDate.toISOString(),
+      p_updated_by: userId,
+      p_audit_ip: gate.ctx.ip_address,
+      p_audit_user_agent: gate.ctx.user_agent,
+    } as never
+  );
 
-  const formData = new FormData();
-  formData.set("patient_id", record.patient_id);
-  formData.set("professional_id", record.professional_id);
-  if (record.appointment_id) formData.set("appointment_id", record.appointment_id);
-  formData.set("chief_complaint", record.chief_complaint ?? "");
-  formData.set("diagnosis", record.diagnosis ?? "");
-  formData.set("evolution", record.evolution ?? "");
-  formData.set("indications", record.indications ?? "");
-  formData.set("consultation_at", parsedDate.toISOString());
+  if (error) {
+    if (!isMissingRpcInSchemaCache(error)) {
+      return {
+        error: resolvePostgresUserMessage(error, {
+          fallback: "No se pudo actualizar la fecha de la consulta.",
+        }),
+      };
+    }
+    // Fallback for DBs that still lack the lean RPC: full SOAP update path.
+    const { data: record, error: fetchError } = await supabase
+      .from("clinical_records")
+      .select(
+        "id, patient_id, professional_id, appointment_id, chief_complaint, diagnosis, evolution, indications"
+      )
+      .eq("id", idParsed.data)
+      .eq("clinic_id", clinicId)
+      .maybeSingle();
 
-  return persistClinicalRecordUpdate(idParsed.data, formData, gate.access, gate.ctx, supabase);
+    if (fetchError) return { error: fetchError.message };
+    if (!record) return { error: "Consulta no encontrada." };
+
+    const formData = new FormData();
+    formData.set("patient_id", record.patient_id);
+    formData.set("professional_id", record.professional_id);
+    if (record.appointment_id) formData.set("appointment_id", record.appointment_id);
+    formData.set("chief_complaint", record.chief_complaint ?? "");
+    formData.set("diagnosis", record.diagnosis ?? "");
+    formData.set("evolution", record.evolution ?? "");
+    formData.set("indications", record.indications ?? "");
+    formData.set("consultation_at", parsedDate.toISOString());
+
+    return persistClinicalRecordUpdate(idParsed.data, formData, gate.access, gate.ctx, supabase);
+  }
+
+  if (!data) return { error: "No se pudo actualizar la fecha." };
+
+  const payload = data as { old?: { patient_id?: string }; data?: { patient_id?: string } };
+  const patientId = String(payload.data?.patient_id ?? payload.old?.patient_id ?? "");
+
+  await logAudit({
+    clinicId,
+    module: "clinical",
+    what: "Modificó fecha de consulta clínica",
+    entityType: "clinical_record",
+    entityId: idParsed.data,
+    patientId: patientId || undefined,
+    action: "update",
+    oldValues: payload.old ?? {},
+    newValues: payload.data ?? {},
+  });
+
+  revalidatePath(`/historias/${idParsed.data}`, "page");
+  if (patientId) revalidatePath(`/pacientes/${patientId}`, "page");
+  revalidatePath("/consultas");
+  revalidatePath("/recetas");
+  return { success: true };
 }
 
 export async function updateClinicalRecordNotes(

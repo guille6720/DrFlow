@@ -96,6 +96,10 @@ export function PatientEhrSupplementalSections({
           <ul className="divide-y divide-[var(--border)] text-xs">
             {prescriptions.map((p) => (
               <li key={p.id} className="px-3 py-2">
+                <span className="font-semibold">
+                  {format(new Date(p.created_at), "d MMM yyyy", { locale: es })}
+                </span>
+                {" — "}
                 {p.label}
               </li>
             ))}
