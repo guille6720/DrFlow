@@ -13,6 +13,11 @@ import { assertStoragePathInClinic } from "@/core/security/tenant-scope";
 
 const BUCKET = CLINICAL_STORAGE_BUCKET;
 
+/** Storage allow-lists match exact MIME tokens; strip ";charset=…" for uploads. */
+export function storageContentType(contentType: string): string {
+  return contentType.split(";")[0]?.trim().toLowerCase() || "application/octet-stream";
+}
+
 export function buildExportStagingPath(
   clinicId: string,
   batchId: string,
@@ -32,7 +37,7 @@ export async function uploadExportStagingFile(
   const storagePath = buildExportStagingPath(clinicId, batchId, fileName);
   const { error } = await supabase.storage.from(BUCKET).upload(storagePath, buffer, {
     upsert: false,
-    contentType,
+    contentType: storageContentType(contentType),
     cacheControl: EXPORT_CACHE_CONTROL_NO_STORE,
   });
   if (error) throw new Error(error.message);

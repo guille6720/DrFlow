@@ -179,7 +179,7 @@ export async function buildBulkClinicalExport(
     return {
       buffer: Buffer.from(JSON.stringify(body, null, 2), "utf8"),
       fileName: `${base}.json`,
-      mime: "application/json;charset=utf-8",
+      mime: "application/json",
       patientCount: snapshots.length,
       recordCount,
       warnings,
@@ -194,7 +194,7 @@ export async function buildBulkClinicalExport(
     return {
       buffer: Buffer.from(JSON.stringify(bundle, null, 2), "utf8"),
       fileName: `${base}.fhir.json`,
-      mime: "application/fhir+json;charset=utf-8",
+      mime: "application/fhir+json",
       patientCount: snapshots.length,
       recordCount: bundle.total ?? snapshots.length,
       warnings,
