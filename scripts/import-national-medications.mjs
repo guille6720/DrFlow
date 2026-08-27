@@ -55,15 +55,17 @@ function normalizeRows(payload) {
   const sourceUpdatedAt = parseSourceDate(payload?.fecha);
   const sourceFile = payload?.fuente ?? DEFAULT_URL;
 
-  const parsed = [];
+  const byKey = new Map();
   for (const item of list) {
     const activeIngredient = String(item.droga ?? "").trim();
     const brandName = String(item.marca ?? "").trim();
     const presentation = String(item.presentacion ?? "").trim();
     if (!activeIngredient || !brandName || !presentation) continue;
 
-    parsed.push({
-      sourceKey: sourceKey(item),
+    const key = sourceKey(item);
+    // Last wins — avoids ON CONFLICT affecting the same row twice in one upsert batch.
+    byKey.set(key, {
+      sourceKey: key,
       activeIngredient,
       brandName,
       presentation,
@@ -74,7 +76,7 @@ function normalizeRows(payload) {
     });
   }
 
-  return parsed;
+  return [...byKey.values()];
 }
 
 function buildInsertBatch(batch) {
@@ -217,7 +219,7 @@ async function main() {
   }
 
   const rows = normalizeRows(payload);
-  console.log(`Productos parseados: ${rows.length} (fuente: ${payload?.fuente ?? "local"})`);
+  console.log(`Productos parseados: ${rows.length} únicos por source_key (fuente: ${payload?.fuente ?? "local"})`);
 
   if (splitDir) {
     writeSplitBatches(rows, splitDir, SPLIT_BATCH_SIZE);
@@ -226,12 +228,22 @@ async function main() {
   if (apply || applyApi) {
     const env = loadEnv();
     if (applyApi) {
-      const url = env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const key = env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+      const url =
+        process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
+        env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+      const key =
+        process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ||
+        env.SUPABASE_SERVICE_ROLE_KEY?.trim();
       if (!url || !key) throw new Error("Faltan NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY");
+      if (!/^https?:\/\//i.test(url)) {
+        throw new Error(
+          `NEXT_PUBLIC_SUPABASE_URL inválida (${url.length} chars). ` +
+            `Definí $env:NEXT_PUBLIC_SUPABASE_URL="https://nipqdarduknydqptqzup.supabase.co"`
+        );
+      }
       await applyViaApi(url, key, rows);
     } else {
-      const dbUrl = env.DATABASE_URL ?? process.env.DATABASE_URL;
+      const dbUrl = process.env.DATABASE_URL?.trim() || env.DATABASE_URL?.trim();
       if (!dbUrl) throw new Error("Falta DATABASE_URL en .env.local");
       applyBatches(dbUrl, rows, APPLY_BATCH_SIZE);
     }

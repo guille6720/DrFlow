@@ -68,7 +68,7 @@ function parseRows(filePath) {
   const priceListDate = parsePriceListDate(headers);
   const sourceFile = basename(filePath);
 
-  const parsed = [];
+  const byKey = new Map();
   for (const row of rows) {
     const alfabetaId = Number(row.ALFABETA);
     const activeIngredient = String(row["PRINCIPIO ACTIVO"] ?? "").trim();
@@ -78,7 +78,7 @@ function parseRows(filePath) {
 
     if (!alfabetaId || !activeIngredient || !brandName || !presentation) continue;
 
-    parsed.push({
+    byKey.set(`${alfabetaId}|${presentation}`, {
       alfabetaId,
       activeIngredient,
       brandName,
@@ -92,7 +92,7 @@ function parseRows(filePath) {
     });
   }
 
-  return parsed;
+  return [...byKey.values()];
 }
 
 function rowToDbRecord(r) {
@@ -256,8 +256,10 @@ async function main() {
 
   const env = loadEnv();
   const dbUrl = process.env.DATABASE_URL?.trim();
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ?? env.SUPABASE_SERVICE_ROLE_KEY;
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || env.NEXT_PUBLIC_SUPABASE_URL?.trim();
 
   if (apply) {
     if (!dbUrl) {
@@ -280,6 +282,12 @@ O generá lotes chicos: npm run import:pami-vademecum -- --split-dir supabase/se
   if (applyApi) {
     if (!serviceKey || !supabaseUrl) {
       console.error("❌ Falta SUPABASE_SERVICE_ROLE_KEY y NEXT_PUBLIC_SUPABASE_URL en .env.local");
+      process.exit(1);
+    }
+    if (!/^https?:\/\//i.test(supabaseUrl)) {
+      console.error(
+        `❌ NEXT_PUBLIC_SUPABASE_URL inválida. Definí $env:NEXT_PUBLIC_SUPABASE_URL="https://….supabase.co"`
+      );
       process.exit(1);
     }
     await applyViaApi(supabaseUrl, serviceKey, rows);

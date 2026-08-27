@@ -75,6 +75,8 @@
     "import:national-medications:download": "node scripts/import-national-medications.mjs --download",
     "import:national-medications:apply": "node scripts/import-national-medications.mjs --download --apply-api",
     "import:national-medications:split": "node scripts/import-national-medications.mjs --file data/anmat/medicamentos.json --split-dir supabase/seeds/national_batches",
+    "apply:medications:production": "node scripts/apply-medications-production.mjs",
+    "apply:medications:production:verify": "node scripts/apply-medications-production.mjs --verify-only",
     "parse:diagnoses": "node scripts/parse-cie10es-diagnoses.mjs",
     "import:diagnoses": "node scripts/import-diagnoses.mjs",
     "import:diagnoses:apply": "node scripts/import-diagnoses.mjs --apply",
