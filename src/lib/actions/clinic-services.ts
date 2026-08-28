@@ -19,6 +19,7 @@ import { recordAudit } from "@/core/security/audit-service";
 import { verifyPaymentForeignKeys } from "@/core/security/ownership-guard";
 import {
   APPOINTMENT_REMINDER_COLUMNS,
+  PAYMENT_RETURN_COLUMNS,
 } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 import { mockPaymentSchema } from "@/core/validations/cash-schemas";
@@ -259,7 +260,7 @@ export async function createMockPayment(formData: FormData) {
       mock_transaction_id: result.mockTransactionId,
       paid_at: result.paidAt,
     })
-    .select()
+    .select(PAYMENT_RETURN_COLUMNS)
     .single();
 
   if (error) return { error: error.message };

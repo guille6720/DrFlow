@@ -41,8 +41,14 @@ describe("Fase 11 dashboard first paint", () => {
     const center = readSrc(
       "src/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-center.tsx"
     );
-    expect(center).toMatch(/ClinicalOpsQuickActions/);
+    expect(center).toMatch(/ClinicalOpsLeftRail/);
     expect(center).toMatch(/ClinicalOpsMainSectionsCore/);
+
+    const rail = readSrc(
+      "src/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-left-rail.tsx"
+    );
+    expect(rail).toMatch(/Acciones rápidas/);
+    expect(rail).toMatch(/\/pacientes\/nuevo/);
 
     const main = readSrc(
       "src/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-main-sections-core.tsx"

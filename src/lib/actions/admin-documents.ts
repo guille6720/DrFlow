@@ -17,6 +17,7 @@ import {
   validateAdminDocumentUpload,
 } from "@/core/security/file-upload";
 import { assertStoragePathInClinic } from "@/core/security/tenant-scope";
+import { PATIENT_ADMIN_DOCUMENT_RETURN_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 import { adminDocumentUploadSchema } from "@/core/validations/admin-documents";
 import { firstZodIssue, parseEntityId } from "@/core/validations/params";
@@ -81,7 +82,7 @@ export async function uploadPatientAdminDocument(formData: FormData) {
       file_size: file.size,
       uploaded_by: user?.id,
     })
-    .select()
+    .select(PATIENT_ADMIN_DOCUMENT_RETURN_COLUMNS)
     .single();
 
   if (error) {

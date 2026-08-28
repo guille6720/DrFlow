@@ -7,6 +7,7 @@ import {
   mergeFhirPatientBundles,
 } from "@/core/services/interoperability/fhir";
 
+import { mapWithConcurrency } from "@/features/integraciones/lib/async-pool";
 import {
   type BulkClinicalExportRequest,
   bulkExportNeedsClinicalLoad,
@@ -29,7 +30,12 @@ import {
 } from "@/features/integraciones/server/select-bulk-export-patients";
 
 import { BULK_EXPORT_ZIP_MAX_BYTES } from "@/lib/constants/clinical-documents";
+import { getCachedClinicProfessionalsList } from "@/lib/server/cached-clinic-queries";
 import { buildClinicalPackageBaseName } from "@/lib/utils/clinical-history-filename";
+import { getProfessionalDisplayName } from "@/lib/utils/professional";
+
+/** Parallel patient export cap — limits Supabase round-trip latency without overloading staging. */
+const BULK_EXPORT_CONCURRENCY = 4;
 
 export type BulkClinicalExportFile = {
   buffer: Buffer;
@@ -107,14 +113,26 @@ export async function buildBulkClinicalExport(
     [];
 
   if (loadClinical) {
-    for (const row of selected.patients) {
-      const packed = await loadPatientExportPackage(
-        supabase,
-        clinicId,
-        row.id,
-        request.sections,
-        request.range
-      );
+    const professionals = await getCachedClinicProfessionalsList(clinicId);
+    const exportContext = {
+      professionalName: new Map(
+        professionals.map((row) => [row.id, getProfessionalDisplayName(row)])
+      ),
+    };
+    const packedList = await mapWithConcurrency(
+      selected.patients,
+      BULK_EXPORT_CONCURRENCY,
+      (row) =>
+        loadPatientExportPackage(
+          supabase,
+          clinicId,
+          row.id,
+          request.sections,
+          request.range,
+          exportContext
+        )
+    );
+    for (const packed of packedList) {
       snapshots.push(packed.snapshot);
       packages.push(packed);
       warnings.push(...packed.snapshot.warnings);

@@ -10,6 +10,7 @@ import {
 import type { DbClient } from "@/core/repositories/types";
 import type { ServiceResult } from "@/core/services/types";
 import { serviceErr, serviceOk } from "@/core/services/types";
+import { CLINICAL_RECORD_INSERT_RETURN_COLUMNS } from "@/core/supabase/select-columns";
 import { clinicalRecordSchema, sanitizeText } from "@/core/validations/schemas";
 
 import {
@@ -218,11 +219,19 @@ async function insertClinicalRecordDirect(
     diagnosis_cie10: input.sanitized.diagnosis_cie10,
   };
 
-  let result = await db.from("clinical_records").insert(withStructured).select("*").single();
+  let result = await db
+    .from("clinical_records")
+    .insert(withStructured)
+    .select(CLINICAL_RECORD_INSERT_RETURN_COLUMNS)
+    .single();
   if (result.error) {
     const message = (result.error.message ?? "").toLowerCase();
     if (message.includes("diagnosis_cie10") || message.includes("diagnoses_json")) {
-      result = await db.from("clinical_records").insert(baseRow).select("*").single();
+      result = await db
+        .from("clinical_records")
+        .insert(baseRow)
+        .select(CLINICAL_RECORD_INSERT_RETURN_COLUMNS)
+        .single();
     }
   }
 

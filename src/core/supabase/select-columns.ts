@@ -49,6 +49,28 @@ export const CLINICAL_TEMPLATE_COLUMNS =
 export const CLINICAL_RECORD_EDIT_COLUMNS =
   "id, clinic_id, patient_id, appointment_id, professional_id, chief_complaint, diagnosis, evolution, indications, professional_signature, created_at, updated_at";
 
+/** Minimal columns returned after direct insert fallback (legacy RPC drift). */
+export const CLINICAL_RECORD_INSERT_RETURN_COLUMNS =
+  "id, clinic_id, patient_id, appointment_id, professional_id, chief_complaint, diagnosis, evolution, indications, diagnosis_cie10, created_at, updated_at, record_version";
+
+export const DATA_IMPORT_SESSION_COLUMNS =
+  "id, clinic_id, created_by, import_type, original_filename, storage_path, status, column_mapping, date_format, template_id, headers, preview_rows, stats, duplicate_decisions, invalid_sample, duplicate_sample, error_summary, imported_count, skipped_count, failed_count, started_at, completed_at, created_at, updated_at";
+
+export const CLINIC_SUBSCRIPTION_COLUMNS =
+  "id, clinic_id, plan_id, status, billing_cycle, mercado_pago_payer_email, current_period_end, canceled_at, promo_started_at, promo_ends_at, promo_months, promo_price_amount, regular_price_amount, price_currency, created_at, updated_at";
+
+export const PATIENT_ADMIN_DOCUMENT_RETURN_COLUMNS =
+  "id, clinic_id, patient_id, category, title, file_name, file_path, file_size, uploaded_by, created_at";
+
+export const PAYMENT_RETURN_COLUMNS =
+  "id, clinic_id, patient_id, appointment_id, amount, deposit_amount, status, mock_transaction_id, paid_at, created_at";
+
+export const CASH_CLOSURE_RETURN_COLUMNS =
+  "id, clinic_id, closure_date, totals, patient_count, consultation_count, cash_difference, notes, closed_by, closed_at";
+
+export const CASH_INVOICE_RETURN_COLUMNS =
+  "id, clinic_id, cash_charge_id, patient_id, amount, status, notes, created_by, created_at";
+
 export const MEDICAL_ORDER_LIST_COLUMNS =
   "id, clinic_id, patient_id, clinical_record_id, professional_id, order_text, order_type, notes, status, issued_at, created_at, updated_at, version";
 
