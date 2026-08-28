@@ -60,7 +60,7 @@ export type DescCursor = {
   id: string;
 };
 
-export function parseDescCursor(raw: string | undefined): DescCursor | null {
+export function parseDescCursor(raw: string | undefined | null): DescCursor | null {
   if (!raw?.trim()) return null;
   const sep = raw.indexOf("|");
   if (sep <= 0) return null;
@@ -73,3 +73,25 @@ export function parseDescCursor(raw: string | undefined): DescCursor | null {
 export function encodeDescCursor(sortValue: string, id: string): string {
   return `${sortValue}|${id}`;
 }
+
+/**
+ * PostgREST filter for keyset "older than" on `(created_at DESC, id DESC)`.
+ * Avoids duplicates/skips when multiple rows share the same created_at.
+ */
+export function descCursorOlderThanFilter(cursor: DescCursor): string {
+  const ts = cursor.sortValue;
+  const id = cursor.id;
+  return `created_at.lt.${ts},and(created_at.eq.${ts},id.lt.${id})`;
+}
+
+/**
+ * PostgREST filter for keyset "newer than" on `(created_at DESC, id DESC)` (for prev page).
+ */
+export function descCursorNewerThanFilter(cursor: DescCursor): string {
+  const ts = cursor.sortValue;
+  const id = cursor.id;
+  return `created_at.gt.${ts},and(created_at.eq.${ts},id.gt.${id})`;
+}
+
+/** Max OFFSET pages allowed as fallback when cursor is absent (shallow pages only). */
+export const KEYSET_OFFSET_FALLBACK_MAX_PAGE = 3;

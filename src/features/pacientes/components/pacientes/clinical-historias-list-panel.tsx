@@ -28,6 +28,8 @@ export function ClinicalHistoriasListPanel({
   singlePatientFromSearch,
   totalPages,
   safePage,
+  nextCursor,
+  prevCursor,
 }: Props) {
   return (
     <div className="space-y-4">
@@ -106,10 +108,20 @@ export function ClinicalHistoriasListPanel({
             />
           </Card>
 
-          {(totalPages > 1 || totalRecords > 0) && (
+          {(totalPages > 1 || totalRecords > 0 || nextCursor || prevCursor) && (
             <ListPagination>
-              {safePage > 1 && (
-                <Link href={buildPacientesHistoriasUrl({ q: q || undefined, page: safePage - 1 })}>
+              {(safePage > 1 || prevCursor) && (
+                <Link
+                  href={
+                    safePage <= 2
+                      ? buildPacientesHistoriasUrl({ q: q || undefined })
+                      : buildPacientesHistoriasUrl({
+                          q: q || undefined,
+                          page: safePage - 1,
+                          before: prevCursor,
+                        })
+                  }
+                >
                   <Button
                     variant="outline"
                     size="sm"
@@ -125,8 +137,14 @@ export function ClinicalHistoriasListPanel({
                 totalPages={totalPages}
                 suffix={`${totalRecords} consultas`}
               />
-              {safePage < totalPages && (
-                <Link href={buildPacientesHistoriasUrl({ q: q || undefined, page: safePage + 1 })}>
+              {(safePage < totalPages || nextCursor) && (
+                <Link
+                  href={buildPacientesHistoriasUrl({
+                    q: q || undefined,
+                    page: safePage + 1,
+                    cursor: nextCursor,
+                  })}
+                >
                   <Button
                     variant="outline"
                     size="sm"

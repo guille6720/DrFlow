@@ -4,7 +4,6 @@ import { getActiveClinic, getActiveClinicId } from "@/core/auth/session.server";
 import {
   evaluateRetentionPreservationSupport,
   isWithinClinicalRetentionPeriod,
-  latestClinicalEntryAt,
   normalizeRetentionYears,
   patientHistoryRetentionUntil,
 } from "@/core/compliance/data-retention-policy";
@@ -49,7 +48,8 @@ export async function loadClinicRetentionSummary(): Promise<{
     { count: activePatients },
     { count: inactivePatients },
     { count: clinicalRecordCount },
-    { data: recordDates },
+    { data: oldestRows },
+    { data: newestRows },
   ] = await Promise.all([
     supabase
       .from("patients")
@@ -69,19 +69,24 @@ export async function loadClinicRetentionSummary(): Promise<{
       .from("clinical_records")
       .select("created_at")
       .eq("clinic_id", clinicId)
-      .order("created_at", { ascending: true }),
+      .order("created_at", { ascending: true })
+      .limit(1),
+    supabase
+      .from("clinical_records")
+      .select("created_at")
+      .eq("clinic_id", clinicId)
+      .order("created_at", { ascending: false })
+      .limit(1),
   ]);
 
-  const dates = (recordDates ?? []).map((row) => row.created_at as string);
-  const newestRecordAt = latestClinicalEntryAt(dates);
-  const oldestRecordAt = dates.length
-    ? dates.reduce((oldest, current) =>
-        new Date(current).getTime() < new Date(oldest).getTime() ? current : oldest
-      )
-    : null;
-  const recordsWithinRetention = newestRecordAt
-    ? dates.filter((createdAt) => isWithinClinicalRetentionPeriod(createdAt, retentionYears)).length
-    : 0;
+  const oldestRecordAt = oldestRows?.[0]?.created_at ?? null;
+  const newestRecordAt = newestRows?.[0]?.created_at ?? null;
+  // Approximate in-window count without scanning all rows: when newest is within retention,
+  // treat all records as in-window (conservative ops metric). Exact purge uses dedicated jobs.
+  const recordsWithinRetention =
+    newestRecordAt && isWithinClinicalRetentionPeriod(newestRecordAt, retentionYears)
+      ? (clinicalRecordCount ?? 0)
+      : 0;
   const historyUntil = patientHistoryRetentionUntil(newestRecordAt, retentionYears);
   const preservation = evaluateRetentionPreservationSupport(retentionYears);
 
@@ -97,7 +102,10 @@ export async function loadClinicRetentionSummary(): Promise<{
       historyRetentionUntilNewest: historyUntil ? historyUntil.toISOString() : null,
       meetsDefaultMinimum: preservation.meetsMinimumAssumption,
       autoPurgeEnabled: false,
-      retentionNotes: preservation.notes,
+      retentionNotes: [
+        ...preservation.notes,
+        "recordsWithinRetention uses newest-entry heuristic (no full-table scan).",
+      ],
     },
   };
 }

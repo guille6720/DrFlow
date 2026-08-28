@@ -5,7 +5,7 @@ import { z } from "zod";
 import { isSameOriginPost } from "@/core/security/csrf";
 import {
   AUTH_RESET_RATE_LIMIT,
-  checkRateLimit,
+  checkRateLimitAsync,
   getRequestClientIp,
 } from "@/core/security/rate-limit";
 import { getPublicSiteUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/core/supabase/env";
@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
   }
 
   const clientIp = getRequestClientIp(request);
-  if (!checkRateLimit(`auth:reset:${clientIp}`, AUTH_RESET_RATE_LIMIT)) {
+  const limited = await checkRateLimitAsync(`auth:reset:${clientIp}`, AUTH_RESET_RATE_LIMIT);
+  if (!limited.allowed) {
     loginUrl.searchParams.set("error", "Demasiados intentos. Esperá unos minutos e intentá de nuevo.");
     return redirectGet(loginUrl);
   }

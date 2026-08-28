@@ -1,6 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { HISTORIAS_PAGE_SIZE } from "@/core/supabase/pagination";
+import {
+  descCursorNewerThanFilter,
+  descCursorOlderThanFilter,
+  encodeDescCursor,
+  HISTORIAS_PAGE_SIZE,
+  KEYSET_OFFSET_FALLBACK_MAX_PAGE,
+  parseDescCursor,
+} from "@/core/supabase/pagination";
 
 import type { PatientRecordGroup } from "@/features/historias/components/historias/clinical-records-grouped-list";
 import { searchPatientsForClinic } from "@/features/pacientes/server/search-patients";
@@ -10,11 +17,18 @@ import type { ClinicalRecordListRow } from "@/lib/utils/clinical-record-list-typ
 
 export { HISTORIAS_PAGE_SIZE };
 
-export function buildHistoriasUrl(params: { q?: string; page?: number }) {
+export function buildHistoriasUrl(params: {
+  q?: string;
+  page?: number;
+  cursor?: string | null;
+  before?: string | null;
+}) {
   const parts = new URLSearchParams();
   parts.set("seccion", "historias");
   if (params.q) parts.set("q", params.q);
   if (params.page && params.page > 1) parts.set("page", String(params.page));
+  if (params.cursor) parts.set("cursor", params.cursor);
+  if (params.before) parts.set("before", params.before);
   return `/pacientes?${parts.toString()}`;
 }
 
@@ -28,19 +42,32 @@ export type HistoriasPageData = {
   singlePatientFromSearch: string | null;
   totalPages: number;
   safePage: number;
+  /** Keyset cursor for the next (older) page — exclusive. */
+  nextCursor: string | null;
+  /** Keyset cursor for the previous (newer) page — exclusive via `before`. */
+  prevCursor: string | null;
+  paginationMode: "keyset" | "offset_fallback" | "empty";
 };
+
+const SELECT_FIELDS =
+  "id, patient_id, diagnosis, chief_complaint, created_at, patients(first_name, last_name, phone, document_number), professionals(profiles(full_name))";
 
 export async function loadHistoriasPageData(
   supabase: SupabaseClient,
   clinicId: string | null,
   q: string,
-  page: number
+  page: number,
+  options?: { cursor?: string | null; before?: string | null }
 ): Promise<HistoriasPageData> {
   let records: ClinicalRecordListRow[] = [];
   let listTitle = "Consultas recientes";
   let noMatchPatients = false;
   let totalRecords = 0;
   let clinicTotalRecords = 0;
+  let nextCursor: string | null = null;
+  let prevCursor: string | null = null;
+  let paginationMode: HistoriasPageData["paginationMode"] = "empty";
+  let effectivePage = Math.max(1, page);
 
   if (clinicId) {
     let patientIds: string[] | null = null;
@@ -73,33 +100,103 @@ export async function loadHistoriasPageData(
     }
 
     if (!noMatchPatients) {
-      const selectFields =
-        "id, patient_id, diagnosis, chief_complaint, created_at, patients(first_name, last_name, phone, document_number), professionals(profiles(full_name))";
-
       const clinicCountPromise = supabase
         .from("clinical_records")
         .select("id", { count: "exact", head: true })
         .eq("clinic_id", clinicId);
 
+      const afterCursor = parseDescCursor(options?.cursor);
+      const beforeCursor = parseDescCursor(options?.before);
+      const fetchLimit = HISTORIAS_PAGE_SIZE + 1;
+
       let recordsQuery = supabase
         .from("clinical_records")
-        .select(selectFields, { count: "exact" })
-        .eq("clinic_id", clinicId)
-        .order("created_at", { ascending: false });
+        .select(SELECT_FIELDS, { count: "exact" })
+        .eq("clinic_id", clinicId);
 
       if (patientIds) {
         recordsQuery = recordsQuery.in("patient_id", patientIds);
       }
 
-      const from = (page - 1) * HISTORIAS_PAGE_SIZE;
+      if (beforeCursor) {
+        // Walk newer rows (prev page): ASC then reverse.
+        paginationMode = "keyset";
+        recordsQuery = recordsQuery
+          .or(descCursorNewerThanFilter(beforeCursor))
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+          .limit(fetchLimit);
+      } else if (afterCursor) {
+        paginationMode = "keyset";
+        recordsQuery = recordsQuery
+          .or(descCursorOlderThanFilter(afterCursor))
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
+          .limit(fetchLimit);
+      } else if (effectivePage > 1 && effectivePage <= KEYSET_OFFSET_FALLBACK_MAX_PAGE) {
+        // Shallow OFFSET only — deep pages must use cursor links.
+        paginationMode = "offset_fallback";
+        const from = (effectivePage - 1) * HISTORIAS_PAGE_SIZE;
+        recordsQuery = recordsQuery
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
+          .range(from, from + HISTORIAS_PAGE_SIZE - 1);
+      } else {
+        // Page 1, or deep page without cursor → keyset first page (avoid deep OFFSET).
+        paginationMode = "keyset";
+        if (effectivePage > KEYSET_OFFSET_FALLBACK_MAX_PAGE) {
+          effectivePage = 1;
+        }
+        recordsQuery = recordsQuery
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
+          .limit(fetchLimit);
+      }
+
       const [{ count: clinicCount }, { data, count }] = await Promise.all([
         clinicCountPromise,
-        recordsQuery.range(from, from + HISTORIAS_PAGE_SIZE - 1),
+        recordsQuery,
       ]);
 
       clinicTotalRecords = clinicCount ?? 0;
-      records = (data ?? []) as unknown as ClinicalRecordListRow[];
       totalRecords = count ?? 0;
+
+      let rows = (data ?? []) as unknown as ClinicalRecordListRow[];
+
+      if (beforeCursor) {
+        const hasMoreNewer = rows.length > HISTORIAS_PAGE_SIZE;
+        if (hasMoreNewer) rows = rows.slice(0, HISTORIAS_PAGE_SIZE);
+        rows = [...rows].reverse();
+        const first = rows[0];
+        const last = rows.at(-1);
+        // More older content always exists when walking back from a before-cursor
+        // (unless we somehow landed on the end); next = older than last.
+        nextCursor = last ? encodeDescCursor(last.created_at, last.id) : null;
+        prevCursor = hasMoreNewer && first ? encodeDescCursor(first.created_at, first.id) : null;
+      } else if (paginationMode === "offset_fallback") {
+        records = rows;
+        const first = rows[0];
+        const last = rows.at(-1);
+        nextCursor =
+          rows.length === HISTORIAS_PAGE_SIZE && last
+            ? encodeDescCursor(last.created_at, last.id)
+            : null;
+        prevCursor =
+          effectivePage > 1 && first ? encodeDescCursor(first.created_at, first.id) : null;
+      } else {
+        const hasMoreOlder = rows.length > HISTORIAS_PAGE_SIZE;
+        if (hasMoreOlder) rows = rows.slice(0, HISTORIAS_PAGE_SIZE);
+        const first = rows[0];
+        const last = rows.at(-1);
+        nextCursor =
+          hasMoreOlder && last ? encodeDescCursor(last.created_at, last.id) : null;
+        prevCursor =
+          (afterCursor || effectivePage > 1) && first
+            ? encodeDescCursor(first.created_at, first.id)
+            : null;
+      }
+
+      records = rows;
     } else {
       const { count: clinicCount } = await supabase
         .from("clinical_records")
@@ -110,7 +207,7 @@ export async function loadHistoriasPageData(
   }
 
   const totalPages = Math.max(1, Math.ceil(totalRecords / HISTORIAS_PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
+  const safePage = Math.min(Math.max(1, effectivePage), totalPages);
 
   const uniquePatientIds = [...new Set(records.map((r) => r.patient_id as string))];
   const patientCountCache =
@@ -169,5 +266,8 @@ export async function loadHistoriasPageData(
     singlePatientFromSearch,
     totalPages,
     safePage,
+    nextCursor,
+    prevCursor,
+    paginationMode,
   };
 }

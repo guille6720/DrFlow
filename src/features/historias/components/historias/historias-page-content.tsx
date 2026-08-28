@@ -26,6 +26,8 @@ export function HistoriasPageContent({
   singlePatientFromSearch,
   totalPages,
   safePage,
+  nextCursor,
+  prevCursor,
 }: Props) {
   return (
     <div className="space-y-6 p-4 sm:p-6">
@@ -109,10 +111,20 @@ export function HistoriasPageContent({
             />
           </Card>
 
-          {(totalPages > 1 || totalRecords > 0) && (
+          {(totalPages > 1 || totalRecords > 0 || nextCursor || prevCursor) && (
             <ListPagination>
-              {safePage > 1 && (
-                <Link href={buildHistoriasUrl({ q: q || undefined, page: safePage - 1 })}>
+              {(safePage > 1 || prevCursor) && (
+                <Link
+                  href={
+                    safePage <= 2
+                      ? buildHistoriasUrl({ q: q || undefined })
+                      : buildHistoriasUrl({
+                          q: q || undefined,
+                          page: safePage - 1,
+                          before: prevCursor,
+                        })
+                  }
+                >
                   <Button variant="outline" size="sm" className="border-slate-500 bg-slate-700/80 text-slate-100 hover:bg-slate-600">
                     <ChevronLeft className="h-4 w-4" />
                     Anterior
@@ -124,8 +136,14 @@ export function HistoriasPageContent({
                 totalPages={totalPages}
                 suffix={`${totalRecords} consultas`}
               />
-              {safePage < totalPages && (
-                <Link href={buildHistoriasUrl({ q: q || undefined, page: safePage + 1 })}>
+              {(safePage < totalPages || nextCursor) && (
+                <Link
+                  href={buildHistoriasUrl({
+                    q: q || undefined,
+                    page: safePage + 1,
+                    cursor: nextCursor,
+                  })}
+                >
                   <Button variant="outline" size="sm" className="border-slate-500 bg-slate-700/80 text-slate-100 hover:bg-slate-600">
                     Siguiente
                     <ChevronRight className="h-4 w-4" />

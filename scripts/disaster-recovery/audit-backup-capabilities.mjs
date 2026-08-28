@@ -3,9 +3,9 @@
  * Phase 5 — read-only audit of staging backup / PITR capabilities.
  * Never prints secrets or connection strings.
  */
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { spawnSync } from "node:child_process";
 
 import { loadEnv } from "../_env.mjs";
 import { PRODUCTION_REF, readLinkedProjectRef, STAGING_REF } from "../supabase-project-refs.mjs";

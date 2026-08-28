@@ -26,10 +26,19 @@ export default async function PacientesPage({
     cobertura?: string;
     patologia?: string;
     seccion?: string;
+    cursor?: string;
+    before?: string;
   }>;
 }) {
-  const { q: qRaw, page: pageStr, cobertura, patologia: patologiaRaw, seccion: seccionRaw } =
-    await searchParams;
+  const {
+    q: qRaw,
+    page: pageStr,
+    cobertura,
+    patologia: patologiaRaw,
+    seccion: seccionRaw,
+    cursor,
+    before,
+  } = await searchParams;
   const q = sanitizePatientSearchTerm(qRaw);
   const patologia = sanitizePatientPathologySearchTerm(patologiaRaw);
   const page = parsePageParam(pageStr);
@@ -46,7 +55,7 @@ export default async function PacientesPage({
 
   const historiasData =
     seccion === "historias" && canViewClinical
-      ? await loadHistoriasPageData(supabase, clinicId, q, page)
+      ? await loadHistoriasPageData(supabase, clinicId, q, page, { cursor, before })
       : null;
 
   const pageData =
