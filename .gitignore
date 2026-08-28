@@ -39,6 +39,7 @@ yarn-error.log*
 .env*
 !.env.example
 e2e/.phase6-env.local
+e2e/.phase3-tenant-env.local
 
 # vercel
 .vercel

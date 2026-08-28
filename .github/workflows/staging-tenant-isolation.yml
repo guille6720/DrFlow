@@ -1,0 +1,106 @@
+name: Staging tenant isolation
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_playwright:
+        description: "Run Playwright patient isolation spec against staging URL"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+jobs:
+  live-jwt-probes:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Guard — refuse production ref
+        run: |
+          if echo "$NEXT_PUBLIC_SUPABASE_URL" | grep -q 'nipqdarduknydqptqzup'; then
+            echo "Refusing production Supabase URL"
+            exit 1
+          fi
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+
+      - name: Write staging env (secrets only)
+        run: |
+          cat > .env.local <<EOF
+          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.STAGING_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY=${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
+          E2E_EMAIL=${{ secrets.STAGING_E2E_EMAIL }}
+          E2E_PASSWORD=${{ secrets.STAGING_E2E_PASSWORD }}
+          E2E_TENANT_B_EMAIL=${{ secrets.STAGING_E2E_TENANT_B_EMAIL }}
+          E2E_TENANT_B_PASSWORD=${{ secrets.STAGING_E2E_TENANT_B_PASSWORD }}
+          EOF
+
+      - name: Seed Phase 3 fixtures
+        run: |
+          npm run phase6:seed:staging-e2e
+          node scripts/ensure-phase6-clinical-record.mjs
+          node scripts/phase3-seed-staging-tenant-fixtures.mjs
+
+      - name: Live JWT tenant isolation probes
+        run: node scripts/qa-staging-tenant-isolation.mjs --json
+
+      - name: Vitest live JWT integration
+        run: DRFLOW_RLS_INTEGRATION=1 npx vitest run tests/cross-tenant-rls.integration.test.ts
+        env:
+          DRFLOW_RLS_INTEGRATION: "1"
+
+      - name: Upload probe report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-tenant-isolation-report
+          path: coverage/staging-tenant-isolation.json
+
+  playwright-isolation:
+    if: inputs.run_playwright == 'true'
+    runs-on: ubuntu-latest
+    needs: live-jwt-probes
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - run: npm ci
+      - run: npx playwright install chromium
+
+      - name: Write staging env
+        run: |
+          cat > .env.local <<EOF
+          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.STAGING_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          E2E_EMAIL=${{ secrets.STAGING_E2E_EMAIL }}
+          E2E_PASSWORD=${{ secrets.STAGING_E2E_PASSWORD }}
+          EOF
+
+      - name: Seed phase3 env for Playwright
+        run: |
+          npm run phase6:seed:staging-e2e
+          node scripts/phase3-seed-staging-tenant-fixtures.mjs
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Playwright tenant isolation
+        run: npx playwright test e2e/tenant-isolation-staging.spec.ts
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ secrets.STAGING_APP_URL }}

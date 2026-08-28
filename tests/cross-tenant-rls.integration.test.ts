@@ -1,10 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
 import { describe, expect, it } from "vitest";
 
-function loadEnvLocal(): Record<string, string> {
-  const path = resolve(process.cwd(), ".env.local");
+function loadEnvFile(path: string): Record<string, string> {
   if (!existsSync(path)) return {};
   const env: Record<string, string> = {};
   for (const line of readFileSync(path, "utf8").split("\n")) {
@@ -14,105 +13,182 @@ function loadEnvLocal(): Record<string, string> {
   return env;
 }
 
-const env = { ...loadEnvLocal(), ...process.env };
-const url = env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+function resolveAnonKey(env: Record<string, string>): string {
+  const publishable = env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
+  const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  const usable = (key?: string) =>
+    Boolean(key) && !/placeholder|\[SENSITIVE\]/i.test(key!) && key!.length > 40;
+  if (usable(publishable)) return publishable!;
+  if (usable(anon)) return anon!;
+  return publishable ?? anon ?? "";
+}
+
+const rootEnv = {
+  ...loadEnvFile(resolve(process.cwd(), ".env.local")),
+  ...process.env,
+};
+const phase3Env = loadEnvFile(resolve(process.cwd(), "e2e/.phase3-tenant-env.local"));
+
+const url = rootEnv.NEXT_PUBLIC_SUPABASE_URL;
+const anonKey = resolveAnonKey(rootEnv);
+const emailA = rootEnv.E2E_EMAIL?.trim();
+const passwordA = rootEnv.E2E_PASSWORD?.trim();
+const emailB = rootEnv.E2E_TENANT_B_EMAIL?.trim();
+const passwordB = rootEnv.E2E_TENANT_B_PASSWORD?.trim();
+
+const hasFixtures =
+  !!phase3Env.PHASE3_CLINIC_A &&
+  !!phase3Env.PHASE3_CLINIC_B &&
+  !!phase3Env.PHASE3_PATIENT_A &&
+  !!phase3Env.PHASE3_PATIENT_B &&
+  !!phase3Env.PHASE3_RECORD_A &&
+  !!phase3Env.PHASE3_RECORD_B;
+
 const runIntegration =
-  env.DRFLOW_RLS_INTEGRATION === "1" &&
+  rootEnv.DRFLOW_RLS_INTEGRATION === "1" &&
   !!url &&
-  !!serviceKey &&
-  !url.includes("placeholder");
+  !!anonKey &&
+  !!emailA &&
+  !!passwordA &&
+  !!emailB &&
+  !!passwordB &&
+  hasFixtures &&
+  !url.includes("placeholder") &&
+  !url.includes("nipqdarduknydqptqzup");
 
-describe.skipIf(!runIntegration)("cross-tenant RLS (integration)", () => {
-  it("usuario de una clínica no lee paciente de otra clínica por id", async () => {
-    const admin = createClient(url!, serviceKey!, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+async function signIn(email: string, password: string): Promise<SupabaseClient> {
+  const client = createClient(url!, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data, error } = await client.auth.signInWithPassword({ email, password });
+  if (error || !data.session) {
+    throw new Error(`Sign-in failed: ${error?.message ?? "no session"}`);
+  }
+  return client;
+}
 
-    const { data: clinics, error: clinicsErr } = await admin
-      .from("clinics")
-      .select("id")
-      .limit(2);
+describe.skipIf(!runIntegration)("cross-tenant RLS (live JWT integration)", () => {
+  it("User A reads own clinic patient but not Clinic B patient", async () => {
+    const client = await signIn(emailA!, passwordA!);
+    const patientA = phase3Env.PHASE3_PATIENT_A!;
+    const patientB = phase3Env.PHASE3_PATIENT_B!;
+    const clinicA = phase3Env.PHASE3_CLINIC_A!;
 
-    expect(clinicsErr).toBeNull();
-    expect(clinics && clinics.length >= 2).toBe(true);
-
-    const [clinicA, clinicB] = clinics!;
-
-    const { data: membersA } = await admin
-      .from("clinic_members")
-      .select("user_id")
-      .eq("clinic_id", clinicA.id)
-      .eq("is_active", true)
-      .limit(1)
-      .maybeSingle();
-
-    expect(membersA?.user_id).toBeTruthy();
-
-    const { data: patientB } = await admin
+    const { data: rowA, error: errA } = await client
       .from("patients")
-      .select("id")
-      .eq("clinic_id", clinicB.id)
-      .limit(1)
+      .select("id, clinic_id")
+      .eq("id", patientA)
       .maybeSingle();
+    expect(errA).toBeNull();
+    expect(rowA?.clinic_id).toBe(clinicA);
 
-    if (!patientB?.id) {
-      return;
-    }
-
-    const { data: profile } = await admin
-      .from("profiles")
-      .select("email")
-      .eq("id", membersA!.user_id)
-      .single();
-
-    expect(profile?.email).toBeTruthy();
-
-    // Impersonación: JWT de usuario real requiere password; validamos vía reglas admin:
-    // un select anon autenticado como member A no debe existir sin login en este test.
-    // Comprobación proxy: RLS policies existen (static) + fila B pertenece a clínica distinta.
-    expect(clinicA.id).not.toBe(clinicB.id);
-
-    const { data: rowCheck } = await admin
+    const { data: rowB, error: errB } = await client
       .from("patients")
-      .select("clinic_id")
-      .eq("id", patientB.id)
-      .single();
-
-    expect(rowCheck?.clinic_id).toBe(clinicB.id);
+      .select("id, clinic_id")
+      .eq("id", patientB)
+      .maybeSingle();
+    expect(errB).toBeNull();
+    expect(rowB).toBeNull();
   });
 
-  it("waiting_list rows are scoped to distinct clinic_ids across tenants", async () => {
-    const admin = createClient(url!, serviceKey!, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+  it("User A cannot read Clinic B clinical_record by id", async () => {
+    const client = await signIn(emailA!, passwordA!);
+    const recordB = phase3Env.PHASE3_RECORD_B!;
 
-    const { data: clinics } = await admin.from("clinics").select("id").limit(2);
-    if (!clinics || clinics.length < 2) return;
+    const { data, error } = await client
+      .from("clinical_records")
+      .select("id, clinic_id, patient_id")
+      .eq("id", recordB)
+      .maybeSingle();
 
-    const [clinicA, clinicB] = clinics;
-    const [{ data: rowA }, { data: rowB }] = await Promise.all([
-      admin.from("waiting_list").select("id, clinic_id").eq("clinic_id", clinicA.id).limit(1).maybeSingle(),
-      admin.from("waiting_list").select("id, clinic_id").eq("clinic_id", clinicB.id).limit(1).maybeSingle(),
-    ]);
-
-    if (rowA?.id && rowB?.id) {
-      expect(rowA.clinic_id).toBe(clinicA.id);
-      expect(rowB.clinic_id).toBe(clinicB.id);
-      expect(rowA.clinic_id).not.toBe(rowB.clinic_id);
-    }
+    expect(error).toBeNull();
+    expect(data).toBeNull();
   });
 
-  it("superadmin profile exists for elevated access path", async () => {
-    const admin = createClient(url!, serviceKey!, {
-      auth: { persistSession: false, autoRefreshToken: false },
+  it("User A RPC update_clinical_record_atomic on Clinic B is denied", async () => {
+    const client = await signIn(emailA!, passwordA!);
+    const { data: userData } = await client.auth.getUser();
+    const userId = userData.user!.id;
+
+    const { error } = await client.rpc("update_clinical_record_atomic", {
+      p_clinic_id: phase3Env.PHASE3_CLINIC_B,
+      p_record_id: phase3Env.PHASE3_RECORD_B,
+      p_patient_id: phase3Env.PHASE3_PATIENT_B,
+      p_professional_id: null,
+      p_appointment_id: null,
+      p_chief_complaint: "cross-tenant vitest probe",
+      p_diagnosis: "",
+      p_evolution: "",
+      p_indications: "",
+      p_updated_by: userId,
     });
 
-    const { count } = await admin
-      .from("profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("is_superadmin", true);
+    expect(error).toBeTruthy();
+    expect(String(error?.message ?? "")).toMatch(/FORBIDDEN|RECORD_NOT_FOUND|permission/i);
+  });
 
-    expect(count).toBeGreaterThanOrEqual(0);
+  it("User A PATIENT_MISMATCH rejects same-clinic wrong patient_id without mutation", async () => {
+    const sameClinicPatientB = phase3Env.PHASE3_SAME_CLINIC_PATIENT_B;
+    if (!sameClinicPatientB) return;
+
+    const client = await signIn(emailA!, passwordA!);
+    const recordA = phase3Env.PHASE3_RECORD_A!;
+    const { data: userData } = await client.auth.getUser();
+
+    const { data: before } = await client
+      .from("clinical_records")
+      .select(
+        "patient_id, clinic_id, professional_id, chief_complaint, diagnosis, evolution, indications, updated_at"
+      )
+      .eq("id", recordA)
+      .single();
+
+    const { error } = await client.rpc("update_clinical_record_atomic", {
+      p_clinic_id: phase3Env.PHASE3_CLINIC_A,
+      p_record_id: recordA,
+      p_patient_id: sameClinicPatientB,
+      p_professional_id: before.professional_id,
+      p_appointment_id: null,
+      p_chief_complaint: before.chief_complaint ?? "qa",
+      p_diagnosis: before.diagnosis ?? "",
+      p_evolution: before.evolution ?? "",
+      p_indications: before.indications ?? "",
+      p_updated_by: userData.user!.id,
+    });
+
+    expect(String(error?.message ?? "")).toMatch(/PATIENT_MISMATCH/i);
+
+    const { data: after } = await client
+      .from("clinical_records")
+      .select("patient_id, chief_complaint, updated_at")
+      .eq("id", recordA)
+      .single();
+
+    expect(after?.patient_id).toBe(before.patient_id);
+    expect(after?.chief_complaint).toBe(before.chief_complaint);
+    expect(after?.updated_at).toBe(before.updated_at);
+  });
+
+  it("User A cannot obtain signed URL for Clinic B storage path", async () => {
+    const client = await signIn(emailA!, passwordA!);
+    const path = phase3Env.PHASE3_ATTACHMENT_B_PATH!;
+
+    const { data, error } = await client.storage.from("clinical-files").createSignedUrl(path, 60);
+    expect(data?.signedUrl).toBeFalsy();
+    expect(error ?? !data?.signedUrl).toBeTruthy();
+  });
+
+  it("User B inverse — cannot read Clinic A patient", async () => {
+    const client = await signIn(emailB!, passwordB!);
+    const patientA = phase3Env.PHASE3_PATIENT_A!;
+
+    const { data, error } = await client
+      .from("patients")
+      .select("id")
+      .eq("id", patientA)
+      .maybeSingle();
+
+    expect(error).toBeNull();
+    expect(data).toBeNull();
   });
 });
