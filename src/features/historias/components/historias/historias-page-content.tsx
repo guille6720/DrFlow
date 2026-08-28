@@ -28,6 +28,7 @@ export function HistoriasPageContent({
   safePage,
   nextCursor,
   prevCursor,
+  paginationError,
 }: Props) {
   return (
     <div className="space-y-6 p-4 sm:p-6">
@@ -85,6 +86,17 @@ export function HistoriasPageContent({
           icon={FileText}
           title="Sin resultados"
           description={`No encontramos pacientes para “${q}”. Probá con otro nombre o DNI.`}
+        />
+      ) : paginationError ? (
+        <EmptyState
+          icon={FileText}
+          title="Paginación no disponible"
+          description={paginationError}
+          action={
+            <Link href={buildHistoriasUrl({ q: q || undefined })}>
+              <Button variant="outline">Volver al inicio</Button>
+            </Link>
+          }
         />
       ) : records.length === 0 ? (
         <EmptyState

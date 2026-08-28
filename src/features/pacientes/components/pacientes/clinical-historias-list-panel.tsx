@@ -30,6 +30,7 @@ export function ClinicalHistoriasListPanel({
   safePage,
   nextCursor,
   prevCursor,
+  paginationError,
 }: Props) {
   return (
     <div className="space-y-4">
@@ -82,6 +83,17 @@ export function ClinicalHistoriasListPanel({
           icon={FileText}
           title="Sin resultados"
           description={`No encontramos pacientes para “${q}”. Probá con otro nombre o DNI.`}
+        />
+      ) : paginationError ? (
+        <EmptyState
+          icon={FileText}
+          title="Paginación no disponible"
+          description={paginationError}
+          action={
+            <Link href={buildPacientesHistoriasUrl({ q: q || undefined })}>
+              <Button variant="outline">Volver al inicio</Button>
+            </Link>
+          }
         />
       ) : records.length === 0 ? (
         <EmptyState

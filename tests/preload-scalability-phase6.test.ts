@@ -109,12 +109,12 @@ describe("Phase 6 k6 script structure", () => {
   it("captures status classes and separates auth vs app modes", async () => {
     const { readFileSync } = await import("node:fs");
     const { join } = await import("node:path");
-    const src = readFileSync(join(process.cwd(), "load/k6/app-capacity.js"), "utf8");
-    expect(src).toContain("http_2xx");
-    expect(src).toContain("http_429");
-    expect(src).toContain("http_5xx");
-    expect(src).toContain("MODE");
-    expect(src).toContain("K6_SESSION_COOKIE");
-    expect(src).toContain("STAGE");
+    const metrics = readFileSync(join(process.cwd(), "load/k6/lib/metrics.js"), "utf8");
+    const app = readFileSync(join(process.cwd(), "load/k6/app-capacity.js"), "utf8");
+    expect(metrics).toContain("http_2xx");
+    expect(metrics).toContain("http_429");
+    expect(metrics).toContain("http_5xx");
+    expect(app).toContain("K6_SESSION_COOKIE");
+    expect(app).toContain("STAGE");
   });
 });

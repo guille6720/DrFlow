@@ -46,7 +46,12 @@ export type HistoriasPageData = {
   nextCursor: string | null;
   /** Keyset cursor for the previous (newer) page — exclusive via `before`. */
   prevCursor: string | null;
-  paginationMode: "keyset" | "offset_fallback" | "empty";
+  paginationMode: "keyset" | "offset_fallback" | "empty" | "cursor_required" | "invalid_cursor";
+  /**
+   * Controlled pagination contract error — never silently returns page-1 data
+   * when a deep page was requested without a valid cursor.
+   */
+  paginationError: string | null;
 };
 
 const SELECT_FIELDS =
@@ -67,7 +72,70 @@ export async function loadHistoriasPageData(
   let nextCursor: string | null = null;
   let prevCursor: string | null = null;
   let paginationMode: HistoriasPageData["paginationMode"] = "empty";
+  let paginationError: string | null = null;
   let effectivePage = Math.max(1, page);
+
+  const rawCursor = options?.cursor?.trim() || null;
+  const rawBefore = options?.before?.trim() || null;
+  const afterCursor = parseDescCursor(rawCursor);
+  const beforeCursor = parseDescCursor(rawBefore);
+
+  // Invalid cursor/before strings → controlled contract error (no silent page-1 data).
+  if ((rawCursor && !afterCursor) || (rawBefore && !beforeCursor)) {
+    paginationMode = "invalid_cursor";
+    paginationError =
+      "El enlace de paginación no es válido. Volvé a la primera página e intentá de nuevo.";
+    return {
+      records: [],
+      listTitle,
+      noMatchPatients: false,
+      totalRecords: 0,
+      clinicTotalRecords: 0,
+      groups: [],
+      singlePatientFromSearch: null,
+      totalPages: 1,
+      safePage: 1,
+      nextCursor: null,
+      prevCursor: null,
+      paginationMode,
+      paginationError,
+    };
+  }
+
+  // Deep page without keyset cursor → controlled response (never clamp to page-1 rows).
+  if (
+    !afterCursor &&
+    !beforeCursor &&
+    effectivePage > KEYSET_OFFSET_FALLBACK_MAX_PAGE
+  ) {
+    paginationMode = "cursor_required";
+    paginationError =
+      "Para ver páginas más profundas usá Siguiente/Anterior (paginación por cursor). La página solicitada no puede resolverse por OFFSET.";
+    if (clinicId) {
+      const { count: clinicCount } = await supabase
+        .from("clinical_records")
+        .select("id", { count: "exact", head: true })
+        .eq("clinic_id", clinicId);
+      clinicTotalRecords = clinicCount ?? 0;
+      totalRecords = clinicTotalRecords;
+    }
+    const totalPages = Math.max(1, Math.ceil(totalRecords / HISTORIAS_PAGE_SIZE));
+    return {
+      records: [],
+      listTitle,
+      noMatchPatients: false,
+      totalRecords,
+      clinicTotalRecords,
+      groups: [],
+      singlePatientFromSearch: null,
+      totalPages,
+      safePage: Math.min(effectivePage, totalPages),
+      nextCursor: null,
+      prevCursor: null,
+      paginationMode,
+      paginationError,
+    };
+  }
 
   if (clinicId) {
     let patientIds: string[] | null = null;
@@ -105,8 +173,6 @@ export async function loadHistoriasPageData(
         .select("id", { count: "exact", head: true })
         .eq("clinic_id", clinicId);
 
-      const afterCursor = parseDescCursor(options?.cursor);
-      const beforeCursor = parseDescCursor(options?.before);
       const fetchLimit = HISTORIAS_PAGE_SIZE + 1;
 
       let recordsQuery = supabase
@@ -134,7 +200,7 @@ export async function loadHistoriasPageData(
           .order("id", { ascending: false })
           .limit(fetchLimit);
       } else if (effectivePage > 1 && effectivePage <= KEYSET_OFFSET_FALLBACK_MAX_PAGE) {
-        // Shallow OFFSET only — deep pages must use cursor links.
+        // Shallow OFFSET only — deep pages require cursor (handled above).
         paginationMode = "offset_fallback";
         const from = (effectivePage - 1) * HISTORIAS_PAGE_SIZE;
         recordsQuery = recordsQuery
@@ -142,11 +208,9 @@ export async function loadHistoriasPageData(
           .order("id", { ascending: false })
           .range(from, from + HISTORIAS_PAGE_SIZE - 1);
       } else {
-        // Page 1, or deep page without cursor → keyset first page (avoid deep OFFSET).
+        // Page 1 only (keyset without cursor).
         paginationMode = "keyset";
-        if (effectivePage > KEYSET_OFFSET_FALLBACK_MAX_PAGE) {
-          effectivePage = 1;
-        }
+        effectivePage = 1;
         recordsQuery = recordsQuery
           .order("created_at", { ascending: false })
           .order("id", { ascending: false })
@@ -269,5 +333,6 @@ export async function loadHistoriasPageData(
     nextCursor,
     prevCursor,
     paginationMode,
+    paginationError,
   };
 }

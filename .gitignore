@@ -61,3 +61,7 @@ next-env.d.ts
 
 # QA exports generados (scripts/export-qa-module-code.mjs)
 /docs/qa-exports/
+
+# Local tooling binaries (k6, etc.)
+tools/
+
