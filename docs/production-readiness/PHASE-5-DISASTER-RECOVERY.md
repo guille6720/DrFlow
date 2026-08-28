@@ -301,3 +301,107 @@ Script: `npm run phase5:dr:sentry-verify` — sends synthetic `Phase5SyntheticOp
 Rationale: Actual RPO **exceeds 1 hour** without verified PITR. Enable PITR on staging (or production target tier), restore to an isolated project, measure RPO/RTO, then re-open Phase 5 sign-off.
 
 Do **not** proceed automatically to Phase 6.
+
+---
+
+## 20. Phase 5 Revalidation (2026-08-28)
+
+Second pass to close **BL-P0-2** with explicit Management API verification — **no WAL/archive inference**.
+
+### Step 1 — PITR verification (Management API)
+
+| Field | Value |
+|-------|-------|
+| **Source** | `supabase backups list --project-ref gprmsufvhabntbrytwyi --output-format json` |
+| **PITR enabled** | **`false`** |
+| Earliest recovery point | `null` (PITR off) |
+| Latest recovery point | `null` (PITR off) |
+| Retention window | N/A until addon enabled |
+| Latest daily physical backup | `2026-08-28T07:35:53.048Z` |
+| Implied RPO without PITR | **~13.4 h** (and up to ~24 h between snapshots) |
+
+Evidence: `coverage/phase5-pitr-evidence.json`
+
+### ⛔ MANUAL INFRA ACTION REQUIRED
+
+Infrastructure execution **STOPPED** at Step 1. Isolated PITR restore **not attempted**.
+
+```
+Supabase Dashboard
+→ DrFlow-Staging (gprmsufvhabntbrytwyi)
+→ Database
+→ Backups
+→ Point-in-Time Recovery
+→ Enable PITR add-on (pitr_7 minimum on Pro/Team)
+```
+
+After enablement: `npm run phase5:dr:verify-pitr` → measure RPO → restore to **new project** → measure full RTO.
+
+### Steps 2–3 — Effective RPO / isolated restore
+
+| Step | Status |
+|------|--------|
+| Synthetic transaction T0 + PITR lag measurement | **BLOCKED** — PITR disabled |
+| Restore to new project | **NOT PERFORMED** |
+| Full RTO measured | **NOT MEASURED** |
+
+### Step 4 — Restore data validation
+
+| Check | Status |
+|-------|--------|
+| Against **restored** project | **N/A** — no restore performed |
+| Against **live staging** (baseline) | PASS — prior drill evidence still valid |
+
+### Step 5 — Platform config checklist
+
+Created: [PHASE-5-PLATFORM-RECOVERY-CHECKLIST.md](./PHASE-5-PLATFORM-RECOVERY-CHECKLIST.md)
+
+### Step 6 — Storage recovery (DR-P1-2)
+
+| Item | Status |
+|------|--------|
+| `seed-storage-fixture.mjs` | Uploads minimal PDF to `clinical-files` bucket |
+| `storage-integrity.mjs` | DB ↔ object ↔ clinic path ↔ checksum |
+| Live staging after seed | **PASS** — object readable, clinic path correct |
+| Post-DB-restore storage | **Separate concern** — objects not in Postgres backup |
+
+Evidence: `coverage/phase5-storage-fixture.json`, `coverage/phase5-storage-integrity.json`
+
+### Step 7 — Logical backup fallback
+
+| Item | Status |
+|------|--------|
+| Script | `scripts/disaster-recovery/logical-backup.mjs` |
+| `DATABASE_URL` locally | **REQUIRED — not configured** |
+| Automated backup artifacts | **Not produced** (setup gate) |
+
+Evidence: `coverage/phase5-logical-backup-status.json`
+
+### Step 8 — Operational alerts (DR-P1-4)
+
+| Item | Status |
+|------|--------|
+| Code wiring | Complete (`ops-alert.ts`) |
+| `OPS_ALERT_WEBHOOK_URL` staging | **Not configured** (local + Vercel preview check) |
+| Live delivery verified | **NO** — cannot mark PASS |
+
+### Step 9 — Sentry live verification
+
+| Item | Status |
+|------|--------|
+| `SENTRY_DSN` / `DRFLOW_SENTRY_STAGING=1` | **Not configured** locally |
+| Live event in Sentry UI | **NOT VERIFIED** |
+
+### BL-P0-2 revalidation verdict
+
+| # | Criterion | Met? |
+|---|-----------|------|
+| 1 | PITR actually enabled | **NO** |
+| 2 | Latest recovery point verified | **NO** |
+| 3 | Actual RPO ≤ 1 h | **NO** (~13–24 h daily bound) |
+| 4 | Real database restore performed | **NO** |
+| 5 | Full RTO measured | **NO** |
+| 6 | Full RTO ≤ 2 h | **NO** |
+| 7–10 | Post-restore clinical/audit/RLS/tenant | **N/A** (no restore) |
+
+### **BL-P0-2: OPEN — Phase 6 remains NO-GO**

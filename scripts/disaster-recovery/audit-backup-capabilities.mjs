@@ -5,10 +5,10 @@
  */
 import { existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { spawnSync } from "node:child_process";
 
 import { loadEnv } from "../_env.mjs";
-import { stagingDbQuery } from "../lib/staging-db-query.mjs";
-import { PRODUCTION_REF, readLinkedProjectRef,STAGING_REF } from "../supabase-project-refs.mjs";
+import { PRODUCTION_REF, readLinkedProjectRef, STAGING_REF } from "../supabase-project-refs.mjs";
 
 const OUT_DIR = resolve(process.cwd(), "coverage");
 const OUT_FILE = resolve(OUT_DIR, "phase5-backup-audit.json");
@@ -39,42 +39,28 @@ function scanLocalBackups() {
   };
 }
 
-function probeWalSettings() {
-  try {
-    const result = stagingDbQuery(`
-SELECT name, setting
-FROM pg_settings
-WHERE name IN ('wal_level', 'archive_mode', 'max_wal_senders', 'track_commit_timestamp')
-ORDER BY name;
-`);
-    const rows = result.rows ?? result.result ?? [];
-    return { ok: true, rows };
-  } catch (err) {
-    return { ok: false, error: String(err.message ?? err).slice(0, 500) };
+function fetchManagementBackups() {
+  const result = spawnSync(
+    "npx",
+    ["supabase", "backups", "list", "--project-ref", STAGING_REF, "--output-format", "json"],
+    { encoding: "utf8", shell: true }
+  );
+  const text = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start < 0 || end <= start) {
+    return { ok: false, error: text.slice(0, 400) };
   }
-}
-
-function inferPitrFromWal(rows) {
-  const map = Object.fromEntries((rows ?? []).map((r) => [r.name, r.setting]));
-  const walLevel = map.wal_level ?? "unknown";
-  const archiveMode = map.archive_mode ?? "unknown";
-  return {
-    walLevel,
-    archiveMode,
-    /** Supabase PITR is a platform feature; WAL alone does not prove PITR billing. */
-    pitrLikelyPlatformManaged: walLevel === "logical" || archiveMode === "on",
-    pitrConfirmed: false,
-    note:
-      "Confirm PITR in Supabase Dashboard → Project → Database → Backups. CLI/pg_settings cannot prove paid PITR retention.",
-  };
+  return { ok: true, data: JSON.parse(text.slice(start, end + 1)) };
 }
 
 async function main() {
   const linked = readLinkedProjectRef();
   const env = loadEnv({ required: false });
   const hasDatabaseUrl = Boolean(process.env.DATABASE_URL || env.DATABASE_URL || env.SUPABASE_DB_URL);
-  const wal = probeWalSettings();
-  const pitr = inferPitrFromWal(wal.rows);
+  const mgmt = fetchManagementBackups();
+  const api = mgmt.ok ? mgmt.data : null;
+  const pitrEnabled = api?.pitr_enabled === true;
 
   const report = {
     generatedAt: new Date().toISOString(),
@@ -114,16 +100,24 @@ async function main() {
       },
     },
     pitr: {
-      status: pitr.pitrConfirmed ? "enabled_verified" : "not_verified_in_dashboard",
-      ...pitr,
-      manualVerificationSteps: [
-        "Supabase Dashboard → DrFlow-Staging (gprmsufvhabntbrytwyi) → Database → Backups",
-        "Confirm whether 'Point in Time Recovery' toggle is ON",
-        "Record retention window (e.g. 7 days) and latest recoverable timestamp",
-        "If OFF: actual RPO is daily-backup bound (~24 h), failing RPO <= 1 h target",
-      ],
+      status: pitrEnabled ? "enabled_verified" : "disabled_verified_management_api",
+      enabled: pitrEnabled,
+      sourceOfEvidence: "Supabase Management API (`supabase backups list`)",
+      earliestRecoveryPoint: pitrEnabled && api?.physical_backup_data?.earliest_physical_backup_date_unix
+        ? new Date(api.physical_backup_data.earliest_physical_backup_date_unix * 1000).toISOString()
+        : null,
+      latestRecoveryPoint: pitrEnabled && api?.physical_backup_data?.latest_physical_backup_date_unix
+        ? new Date(api.physical_backup_data.latest_physical_backup_date_unix * 1000).toISOString()
+        : null,
+      dailyBackupsListed: api?.backups?.length ?? 0,
+      manualVerificationSteps: pitrEnabled
+        ? ["Record retention window from dashboard PITR settings"]
+        : [
+            "MANUAL INFRA ACTION REQUIRED",
+            "Supabase Dashboard → DrFlow-Staging → Database → Backups → Enable PITR",
+          ],
     },
-    walProbe: wal,
+    managementApiProbe: mgmt.ok ? { ok: true } : { ok: false, error: mgmt.error },
     rpoTargetHours: 1,
     rtoTargetHours: 2,
     stagingOnly: true,
@@ -136,7 +130,7 @@ async function main() {
   console.log("\n📋 Phase 5 — Backup capability audit (staging)\n");
   console.log(`   Project ref: ${redactRef(STAGING_REF)}`);
   console.log(`   Linked ref:  ${linked ? redactRef(linked) : "(not linked)"}`);
-  console.log(`   PITR:        ${report.pitr.status}`);
+  console.log(`   PITR:        ${pitrEnabled ? "enabled (Management API)" : "disabled (Management API)"}`);
   console.log(`   pg_dump:     ${hasDatabaseUrl ? "DATABASE_URL configured" : "not configured locally"}`);
   console.log(`   Local dumps: ${report.backupInventory.logicalPgDump.localFiles.count} file(s)`);
   console.log(`\n→ ${OUT_FILE}\n`);
