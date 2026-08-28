@@ -116,7 +116,7 @@ export function EditConsultaFormBody({
           )}
           {record.appointment_id && (
             <Link
-              href="/agenda?view=day"
+              href="/turnos/agenda?view=day"
               className="inline-flex items-center rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
             >
               Volver a agenda

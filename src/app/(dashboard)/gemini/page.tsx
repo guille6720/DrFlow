@@ -37,7 +37,7 @@ export default async function GeminiPage() {
           de investigación solo aparece si el flag está habilitado tras revisión legal/privacidad.
         </p>
         <GeminiUsageHint />
-        <GeminiWorkspaceClient />
+        <GeminiWorkspaceClient clinicId={clinicId} />
       </div>
     </>
   );

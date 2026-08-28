@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
+import { logClientError } from "@/core/errors";
+
 import { ClinicalWorkspaceView } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-view";
 import type { PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import { PatientClinicalAuditPanel } from "@/features/pacientes/components/pacientes/patient-clinical-audit-panel";
@@ -91,9 +93,10 @@ export function PatientWorkspaceShell({
   const { activeTab, setTab, openHcWorkspace, navigateWorkspace, workspaceSearchParams } =
     usePatientWorkspaceTab(patientId, initialTab);
   const [pending, startTransition] = useTransition();
-  const loadedTabsRef = useRef(new Set<string>([initialTab]));
+  const cacheKeyFor = (tab: string) => `${patientId}:${tab}`;
+  const loadedTabsRef = useRef(new Set<string>([cacheKeyFor(initialTab)]));
   const [tabCache, setTabCache] = useState<Record<string, TabCacheEntry>>(() => ({
-    [initialTab]: {
+    [cacheKeyFor(initialTab)]: {
       workspace: initialWorkspace,
       adminDocuments: initialAdminDocuments,
       auditTrail: initialAuditTrail,
@@ -102,12 +105,14 @@ export function PatientWorkspaceShell({
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (loadedTabsRef.current.has(activeTab)) return;
+    const key = `${patientId}:${activeTab}`;
+    if (loadedTabsRef.current.has(key)) return;
 
     let cancelled = false;
+    const requestedPatientId = patientId;
     startTransition(async () => {
       setLoadError(null);
-      const result = await loadPatientWorkspaceTabPanel(patientId, activeTab);
+      const result = await loadPatientWorkspaceTabPanel(requestedPatientId, activeTab);
       if (cancelled) return;
 
       if (result.error || !result.workspace) {
@@ -115,12 +120,23 @@ export function PatientWorkspaceShell({
         return;
       }
 
-      loadedTabsRef.current.add(activeTab);
+      const loadedPatientId = result.workspace.ehr?.patientInfo?.id ?? result.workspace.patient?.id;
+      if (loadedPatientId && loadedPatientId !== requestedPatientId) {
+        logClientError("patient-workspace-shell.cross-patient-payload", new Error("patient_mismatch"), {
+          expectedPatientId: requestedPatientId,
+          receivedPatientId: loadedPatientId,
+          tab: activeTab,
+        });
+        setLoadError("No se pudo cargar la historia clínica de este paciente.");
+        return;
+      }
+
+      loadedTabsRef.current.add(key);
       setTabCache((prev) => {
-        if (prev[activeTab]) return prev;
+        if (prev[key]) return prev;
         return {
           ...prev,
-          [activeTab]: {
+          [key]: {
             workspace: result.workspace!,
             adminDocuments: result.adminDocuments,
             auditTrail: buildAuditState(result.auditTrail),
@@ -132,15 +148,32 @@ export function PatientWorkspaceShell({
     return () => {
       cancelled = true;
     };
-  }, [activeTab, patientId]);
+  }, [activeTab, patientId, startTransition]);
 
-  const current = tabCache[activeTab]?.workspace ?? initialWorkspace;
-  const currentAuditTrail = tabCache[activeTab]?.auditTrail ?? null;
+  const activeCacheKey = cacheKeyFor(activeTab);
+  const cachedWorkspace = tabCache[activeCacheKey]?.workspace;
+  const cachedEhrPatientId =
+    cachedWorkspace?.ehr?.patientInfo?.id ?? cachedWorkspace?.patient?.id ?? null;
+  const workspaceMatchesPatient = !cachedEhrPatientId || cachedEhrPatientId === patientId;
+  if (cachedWorkspace && !workspaceMatchesPatient) {
+    logClientError("patient-workspace-shell.stale-cache-blocked", new Error("patient_mismatch"), {
+      expectedPatientId: patientId,
+      receivedPatientId: cachedEhrPatientId,
+      tab: activeTab,
+    });
+  }
+
+  const current =
+    cachedWorkspace && workspaceMatchesPatient ? cachedWorkspace : initialWorkspace;
+  const currentAuditTrail =
+    cachedWorkspace && workspaceMatchesPatient
+      ? (tabCache[activeCacheKey]?.auditTrail ?? null)
+      : null;
   const chartFocus = chartFocusForTab(activeTab);
-  const panelLoading = pending && !tabCache[activeTab];
+  const panelLoading = pending && !(tabCache[activeCacheKey] && workspaceMatchesPatient);
 
   const activePanel = useMemo(() => {
-    const currentAdminDocuments = tabCache[activeTab]?.adminDocuments ?? [];
+    const currentAdminDocuments = tabCache[activeCacheKey]?.adminDocuments ?? [];
     if (panelLoading) return <PatientWorkspacePanelSkeleton />;
     if (loadError) {
       return <p className="text-sm text-red-600">{loadError}</p>;
@@ -256,6 +289,7 @@ export function PatientWorkspaceShell({
         return null;
     }
   }, [
+    activeCacheKey,
     activeTab,
     canEditClinical,
     canIssue,

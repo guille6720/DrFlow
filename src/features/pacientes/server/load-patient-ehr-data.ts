@@ -360,7 +360,9 @@ export function buildPatientEhrWorkspaceData(input: {
 
   if (hceRows && hceRows.length > 0) {
     usesHceExport = true;
-    const fromHce = buildEhrPayloadFromHceRows(hceRows, professionalFallback);
+    const fromHce = buildEhrPayloadFromHceRows(hceRows, professionalFallback, {
+      patientId: patient.id,
+    });
     ({ consultations, diagnosisRows, treatmentRows } = mergeEhrPayload(fromHce, fromRecords));
     // Safety net: if HCE had no evolutions and merge still empty, force BD rows.
     if (consultations.length === 0 && fromRecords.consultations.length > 0) {

@@ -162,6 +162,7 @@ export async function POST(request: NextRequest) {
       patientId: parsed.data.patient_id,
       professionalId: parsed.data.professional_id,
       appointmentId: parsed.data.appointment_id,
+      recordId: recordId ?? undefined,
     });
     if (!ownership.ok) {
       return NextResponse.json({ error: ownership.error, v: "clinical-persist-v1" }, { status: 400 });

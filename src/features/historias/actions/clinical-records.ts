@@ -249,6 +249,7 @@ async function persistClinicalRecordUpdate(
     patientId: parsed.data.patient_id,
     professionalId: parsed.data.professional_id,
     appointmentId: parsed.data.appointment_id,
+    recordId,
   });
   if (!ownership.ok) return { error: ownership.error };
 

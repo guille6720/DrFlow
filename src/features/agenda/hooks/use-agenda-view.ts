@@ -3,14 +3,17 @@
 import {
   addDays,
   addMonths,
+  eachDayOfInterval,
+  endOfWeek,
   isAfter,
   isBefore,
   isSameMonth,
   startOfDay,
   startOfMonth,
+  startOfWeek,
   subDays,
 } from "date-fns";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 import { filterAgendaAppointments } from "@/core/booking/location-filters";
@@ -22,21 +25,41 @@ import {
   isMonthWithinAppointmentHorizon,
 } from "@/lib/utils/appointment-booking-horizon";
 
+export type AgendaCalendarMode = "day" | "week" | "month";
+
 type Options = {
   appointments: AppointmentAgendaRow[];
   defaultProfessionalId?: string;
 };
+
+function parseViewParam(raw: string | null): AgendaCalendarMode {
+  if (raw === "week" || raw === "month" || raw === "day") return raw;
+  return "day";
+}
 
 export function useAgendaView({
   appointments,
   defaultProfessionalId: _defaultProfessionalId = "",
 }: Options) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [filterProfessional, setFilterProfessional] = useState("");
   const [filterSpecialty, setFilterSpecialty] = useState("");
   const [filterLocation, setFilterLocation] = useState("");
   const [editingAppointment, setEditingAppointment] = useState<AppointmentAgendaRow | null>(null);
+  const viewMode = parseViewParam(searchParams.get("view"));
+
+  const setViewMode = useCallback(
+    (mode: AgendaCalendarMode) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (mode === "day") params.delete("view");
+      else params.set("view", mode);
+      const qs = params.toString();
+      router.replace(qs ? `/turnos/agenda?${qs}` : "/turnos/agenda", { scroll: false });
+    },
+    [router, searchParams]
+  );
 
   const filtered = useMemo(
     () =>
@@ -48,7 +71,16 @@ export function useAgendaView({
     [appointments, filterProfessional, filterSpecialty, filterLocation]
   );
 
-  const weekDays = useMemo(() => [startOfDay(currentDate)], [currentDate]);
+  const weekDays = useMemo(() => {
+    const day = startOfDay(currentDate);
+    if (viewMode === "week") {
+      return eachDayOfInterval({
+        start: startOfWeek(day, { weekStartsOn: 1 }),
+        end: endOfWeek(day, { weekStartsOn: 1 }),
+      });
+    }
+    return [day];
+  }, [currentDate, viewMode]);
 
   const openNewAppointmentForm = useCallback(() => {
     router.push("/turnos/nuevo");
@@ -63,11 +95,12 @@ export function useAgendaView({
 
   const shiftCalendar = useCallback(
     (back: boolean) => {
-      const next = back ? subDays(currentDate, 1) : addDays(currentDate, 1);
+      const step = viewMode === "week" ? 7 : 1;
+      const next = back ? subDays(currentDate, step) : addDays(currentDate, step);
       if (!back && isAfter(startOfDay(next), startOfDay(horizonEnd))) return;
       setCurrentDate(next);
     },
-    [currentDate, horizonEnd]
+    [currentDate, horizonEnd, viewMode]
   );
 
   const goToMonth = useCallback(
@@ -110,6 +143,8 @@ export function useAgendaView({
     () => ({
       currentDate,
       setCurrentDate,
+      viewMode,
+      setViewMode,
       filterProfessional,
       setFilterProfessional,
       filterSpecialty,
@@ -131,6 +166,8 @@ export function useAgendaView({
     }),
     [
       currentDate,
+      viewMode,
+      setViewMode,
       filterProfessional,
       filterSpecialty,
       filterLocation,

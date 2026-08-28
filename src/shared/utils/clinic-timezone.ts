@@ -51,6 +51,21 @@ export function startOfClinicDay(
   );
 }
 
+/** True when both instants fall on the same calendar day in the clinic timezone. */
+export function isSameClinicCalendarDay(
+  a: string | Date,
+  b: string | Date = new Date(),
+  timeZone: string = DEFAULT_CLINIC_TIMEZONE
+): boolean {
+  const aIso = typeof a === "string" ? a : a.toISOString();
+  const bIso = typeof b === "string" ? b : b.toISOString();
+  if (Number.isNaN(Date.parse(aIso)) || Number.isNaN(Date.parse(bIso))) return false;
+  return (
+    formatInTimeZone(aIso, timeZone, "yyyy-MM-dd") ===
+    formatInTimeZone(bIso, timeZone, "yyyy-MM-dd")
+  );
+}
+
 export function addClinicDays(
   date: Date,
   days: number,

@@ -211,6 +211,7 @@ export function PatientSoapWorkspace({
 
   return (
     <PatientEhrStateProvider
+      key={patient.id}
       consultations={consultations}
       attachments={attachments}
       patient={patient}

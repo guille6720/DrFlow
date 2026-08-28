@@ -1,4 +1,23 @@
+import { existsSync, readFileSync } from "fs";
+import { resolve } from "path";
 import { defineConfig, devices } from "@playwright/test";
+
+function loadDotEnvLocal() {
+  const path = resolve(__dirname, ".env.local");
+  if (!existsSync(path)) return;
+  for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const match = trimmed.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
+    if (!match) continue;
+    const [, key, rawValue] = match;
+    if (process.env[key] === undefined) {
+      process.env[key] = rawValue.trim().replace(/^["']|["']$/g, "");
+    }
+  }
+}
+
+loadDotEnvLocal();
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
 
@@ -12,6 +31,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : undefined,
+  timeout: 120_000,
   reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL,

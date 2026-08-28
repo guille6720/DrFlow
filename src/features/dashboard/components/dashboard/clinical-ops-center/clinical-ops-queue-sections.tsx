@@ -139,7 +139,7 @@ function WaitingQueueList({
                       </Button>
                     </Link>
                   ) : null}
-                  <Link href={`/agenda?view=day&highlight=${row.id}`}>
+                  <Link href={`/turnos/agenda?view=day&highlight=${row.id}`}>
                     <Button variant="ghost" size="sm" type="button">
                       Reprogramar
                     </Button>

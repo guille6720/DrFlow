@@ -37,10 +37,31 @@ export function normalizePublicUrl(url: string): string {
   return `https://${trimmed}`;
 }
 
+/** Returns false for placeholders, malformed hosts, or invalid URL syntax. */
+export function isValidPublicSiteUrl(url: string): boolean {
+  const trimmed = url.trim();
+  if (!trimmed || /\[SENSITIVE\]|your-project|example\.com/i.test(trimmed)) {
+    return false;
+  }
+  try {
+    const normalized = normalizePublicUrl(trimmed);
+    const parsed = new URL(normalized);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return false;
+    const host = parsed.hostname;
+    if (!host) return false;
+    if (host !== "localhost" && !host.includes(".")) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** URL pública sin barra final (Vercel / dominio propio). */
 export function getSiteUrl(fallbackOrigin?: string): string {
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (configured) return normalizePublicUrl(configured);
+  if (configured && isValidPublicSiteUrl(configured)) {
+    return normalizePublicUrl(configured);
+  }
   if (fallbackOrigin) return fallbackOrigin.replace(/\/$/, "");
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
@@ -54,13 +75,13 @@ export function getSiteUrl(fallbackOrigin?: string): string {
  */
 export function getPublicSiteUrl(fallbackOrigin?: string): string {
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (configured && !isLocalhostUrl(configured)) {
+  if (configured && !isLocalhostUrl(configured) && isValidPublicSiteUrl(configured)) {
     return normalizePublicUrl(configured);
   }
 
   if (fallbackOrigin) {
     const origin = fallbackOrigin.replace(/\/$/, "");
-    if (!isLocalhostUrl(origin)) return origin;
+    if (!isLocalhostUrl(origin) && isValidPublicSiteUrl(origin)) return origin;
   }
 
   if (process.env.VERCEL_URL) {

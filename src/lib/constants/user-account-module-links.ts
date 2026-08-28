@@ -7,7 +7,7 @@ export const USER_ACCOUNT_MODULE_LINKS: {
   permission: keyof typeof PERMISSIONS | null;
 }[] = [
   { href: "/dashboard", label: "Dashboard", permission: null },
-  { href: "/agenda", label: "Agenda", permission: null },
+  { href: "/turnos/agenda", label: "Agenda", permission: null },
   { href: "/sala-espera", label: "Sala de espera", permission: "manageWaitingRoom" },
   { href: "/pacientes", label: "Pacientes", permission: "managePatients" },
   { href: "/caja", label: "Caja / Cobranzas", permission: "manageCashRegister" },

@@ -2,6 +2,7 @@
 
 import { CalendarClock, Play, Trash2, X } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
 
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
@@ -58,6 +59,17 @@ function CalendarAppointmentDialogContent({
     onClose();
   }
 
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
   return (
     <>
       {!row.cancelOpen ? (
@@ -70,8 +82,8 @@ function CalendarAppointmentDialogContent({
           />
           <div className="drflow-modal-panel drflow-card-light relative z-10 w-full max-w-md rounded-2xl bg-white p-5 text-slate-900 shadow-xl">
           <div className="mb-4 flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h2 className="text-lg font-semibold text-slate-900">{patientName}</h2>
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <h2 className="truncate text-lg font-semibold text-slate-900">{patientName}</h2>
               {patientDni ? (
                 <p className="mt-0.5 text-sm font-medium text-slate-600">DNI {patientDni}</p>
               ) : null}
@@ -84,8 +96,12 @@ function CalendarAppointmentDialogContent({
             </div>
             <button
               type="button"
-              onClick={onClose}
-              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+              onClick={(event) => {
+                event.stopPropagation();
+                onClose();
+              }}
+              aria-label="Cerrar"
+              className="relative z-10 shrink-0 rounded-lg p-2 text-slate-500 hover:bg-slate-100"
             >
               <X className="h-5 w-5" />
             </button>

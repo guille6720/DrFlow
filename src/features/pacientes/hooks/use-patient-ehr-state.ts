@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { toast } from "@/core/notifications/toast";
 
@@ -99,6 +99,29 @@ export function usePatientEhrState(
   );
   const [loadingMoreRecords, startLoadMoreRecords] = useTransition();
   const [printingFullHistory, setPrintingFullHistory] = useState(false);
+  const activePatientId = options?.patientId ?? printBundle.patient.id;
+  const prevPatientIdRef = useRef(activePatientId);
+
+  // Soft-nav between patients can reuse this hook instance — clear patches/extras.
+  useEffect(() => {
+    if (prevPatientIdRef.current === activePatientId) {
+      return;
+    }
+    prevPatientIdRef.current = activePatientId;
+    setExtraConsultations([]);
+    setExtraDiagnosisRows([]);
+    setExtraTreatmentRows([]);
+    setConsultationDatePatches({});
+    setConsultationContentPatches({});
+    setRemovedRecordIds(new Set());
+    setRecordsPagination(
+      options?.clinicalRecordsPagination ?? {
+        total: consultations.length,
+        hasMore: false,
+        nextCursor: null,
+      }
+    );
+  }, [activePatientId, consultations.length, options?.clinicalRecordsPagination]);
 
   const mergedConsultations = useMemo(
     () =>
@@ -233,11 +256,15 @@ export function usePatientEhrState(
   const loadMoreRecords = useCallback(() => {
     if (!options?.patientId || !recordsPagination.hasMore || loadingMoreRecords) return;
 
+    const requestedPatientId = options.patientId;
     startLoadMoreRecords(async () => {
       const result = await loadMorePatientClinicalRecords(
-        options.patientId!,
+        requestedPatientId,
         recordsPagination.nextCursor ?? undefined
       );
+      if (requestedPatientId !== (options?.patientId ?? printBundle.patient.id)) {
+        return;
+      }
       if (result.error) {
         toast.error(result.error);
         return;
@@ -252,7 +279,13 @@ export function usePatientEhrState(
         nextCursor: result.nextCursor ?? null,
       }));
     });
-  }, [loadingMoreRecords, options, recordsPagination.hasMore, recordsPagination.nextCursor]);
+  }, [
+    loadingMoreRecords,
+    options,
+    printBundle.patient.id,
+    recordsPagination.hasMore,
+    recordsPagination.nextCursor,
+  ]);
 
   const appendClinicalHistory = useCallback(
     (payload: {
@@ -320,9 +353,13 @@ export function usePatientEhrState(
     let printTreatmentRows = mergedTreatmentRows;
 
     if (scope === "all" && recordsPagination.hasMore && options?.patientId) {
+      const requestedPatientId = options.patientId;
       setPrintingFullHistory(true);
       try {
-        const result = await loadPatientClinicalRecordsForPrint(options.patientId);
+        const result = await loadPatientClinicalRecordsForPrint(requestedPatientId);
+        if (requestedPatientId !== (options?.patientId ?? printBundle.patient.id)) {
+          return;
+        }
         if (result.error) {
           toast.error(result.error);
           return;

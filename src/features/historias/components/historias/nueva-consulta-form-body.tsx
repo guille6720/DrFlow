@@ -241,7 +241,7 @@ export function NuevaConsultaFormBody({
               </Link>
             ) : null}
             {fromAppointment ? (
-              <ButtonLink href="/agenda?view=day" variant="outline">
+              <ButtonLink href="/turnos/agenda?view=day" variant="outline">
                 Volver a agenda
               </ButtonLink>
             ) : null}

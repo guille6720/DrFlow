@@ -7,8 +7,8 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/shared/utils/cn";
 
 const tabs = [
-  { href: "/agenda?view=week", label: "Calendario", icon: Calendar, match: (p: string, v: string | null) => p.startsWith("/agenda") && v !== "day" },
-  { href: "/agenda?view=day", label: "Agenda", icon: CalendarDays, match: (p: string, v: string | null) => p.startsWith("/agenda") && v === "day" },
+  { href: "/turnos/agenda?view=week", label: "Calendario", icon: Calendar, match: (p: string, v: string | null) => (p.startsWith("/turnos/agenda") || p.startsWith("/agenda")) && v !== "day" },
+  { href: "/turnos/agenda?view=day", label: "Agenda", icon: CalendarDays, match: (p: string, v: string | null) => (p.startsWith("/turnos/agenda") || p.startsWith("/agenda")) && v === "day" },
   { href: "/pacientes", label: "Pacientes", icon: Users, match: (p: string) => p.startsWith("/pacientes") },
   { href: "/configuracion", label: "Profesionales", icon: Stethoscope, match: (p: string) => p.startsWith("/configuracion") },
 ];
@@ -19,6 +19,7 @@ export function ClinicalTopNav() {
   const view = searchParams.get("view");
 
   const show =
+    pathname.startsWith("/turnos/agenda") ||
     pathname.startsWith("/agenda") ||
     pathname.startsWith("/pacientes") ||
     pathname.startsWith("/configuracion");

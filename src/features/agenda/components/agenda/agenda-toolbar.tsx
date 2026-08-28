@@ -17,6 +17,8 @@ type Props = {
     AgendaViewState,
     | "currentDate"
     | "weekDays"
+    | "viewMode"
+    | "setViewMode"
     | "filterProfessional"
     | "setFilterProfessional"
     | "filterSpecialty"
@@ -35,6 +37,8 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
   const {
     currentDate,
     weekDays,
+    viewMode,
+    setViewMode,
     filterProfessional,
     setFilterProfessional,
     filterSpecialty,
@@ -64,12 +68,39 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <div
+            className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-0.5"
+            role="group"
+            aria-label="Vista de agenda"
+          >
+            {(
+              [
+                ["day", "Día"],
+                ["week", "Semana"],
+                ["month", "Mes"],
+              ] as const
+            ).map(([mode, label]) => (
+              <button
+                key={mode}
+                type="button"
+                className={
+                  viewMode === mode
+                    ? "rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-teal-800 shadow-sm"
+                    : "rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-900"
+                }
+                aria-pressed={viewMode === mode}
+                onClick={() => setViewMode(mode)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
             className="drflow-agenda-nav-btn"
             onClick={() => shiftCalendar(true)}
-            aria-label="Día anterior"
+            aria-label={viewMode === "week" ? "Semana anterior" : "Día anterior"}
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -80,7 +111,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
             type="button"
             className="drflow-agenda-nav-btn"
             onClick={() => shiftCalendar(false)}
-            aria-label="Día siguiente"
+            aria-label={viewMode === "week" ? "Semana siguiente" : "Día siguiente"}
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -89,6 +120,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
 
       <div className="mt-4 flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:flex-wrap sm:items-center">
         <Select
+          label="Médico"
           options={[
             { value: "", label: "Todos los médicos" },
             ...professionals.map((p) => ({
@@ -102,6 +134,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
         />
 
         <Select
+          label="Especialidad"
           options={[
             { value: "", label: "Todas las especialidades" },
             ...specialties.map((s) => ({ value: s.id, label: s.name })),
@@ -113,6 +146,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
 
         {locations.length > 0 ? (
           <Select
+            label="Sede"
             options={[
               { value: "", label: "Todas las sedes" },
               ...locations.map((l) => ({ value: l.id, label: l.name })),

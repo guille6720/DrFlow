@@ -103,7 +103,7 @@ export const COMMAND_PALETTE_ACTIONS: CommandPaletteItemDef[] = [
 
 export const COMMAND_PALETTE_NAV: CommandPaletteItemDef[] = [
   { id: "nav-dashboard", label: "Dashboard", href: "/dashboard", group: "navegacion", icon: LayoutDashboard },
-  { id: "nav-agenda", label: "Agenda", href: "/agenda", group: "navegacion", icon: Calendar },
+  { id: "nav-agenda", label: "Agenda", href: "/turnos/agenda", group: "navegacion", icon: Calendar },
   {
     id: "nav-waiting-room",
     label: "Sala de espera",

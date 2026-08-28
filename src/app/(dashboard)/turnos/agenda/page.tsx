@@ -1,4 +1,5 @@
 import { subDays } from "date-fns";
+import { Suspense } from "react";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
@@ -73,21 +74,23 @@ export default async function TurnosAgendaPage() {
         role={role}
         userName={profile?.full_name}
       />
-      <AgendaView
-        appointments={appointmentRows}
-        patients={[]}
-        professionals={professionalRows}
-        locations={locations}
-        specialties={specialties}
-        clinicId={clinicId}
-        role={role}
-        defaultDuration={clinic?.default_appointment_duration ?? 30}
-        scheduleBlocks={blocks.data ?? []}
-        bookingSlug={bookingSlug ?? clinic?.slug ?? null}
-        defaultProfessionalId={defaultProfessionalId}
-        isSuperadmin={isSuperadmin}
-        permissionOverrides={permissionOverrides}
-      />
+      <Suspense fallback={<p className="p-4 text-sm text-slate-500">Cargando agenda…</p>}>
+        <AgendaView
+          appointments={appointmentRows}
+          patients={[]}
+          professionals={professionalRows}
+          locations={locations}
+          specialties={specialties}
+          clinicId={clinicId}
+          role={role}
+          defaultDuration={clinic?.default_appointment_duration ?? 30}
+          scheduleBlocks={blocks.data ?? []}
+          bookingSlug={bookingSlug ?? clinic?.slug ?? null}
+          defaultProfessionalId={defaultProfessionalId}
+          isSuperadmin={isSuperadmin}
+          permissionOverrides={permissionOverrides}
+        />
+      </Suspense>
     </>
   );
 }

@@ -78,6 +78,7 @@ export async function PatientWorkspaceContent({
         </div>
       ) : null}
       <PatientWorkspaceShell
+        key={patientId}
         clinicId={clinicId}
         clinic={clinic}
         patient={patient}

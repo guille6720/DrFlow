@@ -13,6 +13,6 @@ const GeminiWorkspace = dynamic(
   }
 );
 
-export function GeminiWorkspaceClient() {
-  return <GeminiWorkspace />;
+export function GeminiWorkspaceClient({ clinicId }: { clinicId: string }) {
+  return <GeminiWorkspace clinicId={clinicId} />;
 }

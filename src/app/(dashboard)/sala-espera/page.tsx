@@ -49,7 +49,7 @@ export default async function SalaEsperaPage() {
         userName={profile?.full_name}
       />
       <div className="p-3 sm:p-4">
-        <Link href="/agenda" className="mb-4 inline-block">
+        <Link href="/turnos/agenda" className="mb-4 inline-block">
           <Button variant="outline" size="sm">
             Ir a agenda
           </Button>

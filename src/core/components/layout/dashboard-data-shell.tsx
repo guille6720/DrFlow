@@ -97,23 +97,26 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
 
   const path = (await headers()).get("x-drflow-path") ?? "";
 
-  let clinicFeatures = emptyClinicFeaturesContext();
-  if (clinicId) {
-    try {
-      clinicFeatures = await getCachedClinicFeatures(clinicId);
-    } catch (err) {
-      console.error("[dashboard-shell] getCachedClinicFeatures failed:", err);
-    }
-  }
-
-  let entitlementsSnapshot = toClientEntitlementsSnapshot(emptyEntitlements(clinicId ?? null));
-  if (clinicId) {
-    try {
-      entitlementsSnapshot = toClientEntitlementsSnapshot(await getClinicEntitlements());
-    } catch (err) {
-      console.error("[dashboard-shell] getClinicEntitlements failed:", err);
-    }
-  }
+  const [clinicFeatures, entitlementsSnapshot] = await Promise.all([
+    (async () => {
+      if (!clinicId) return emptyClinicFeaturesContext();
+      try {
+        return await getCachedClinicFeatures(clinicId);
+      } catch (err) {
+        console.error("[dashboard-shell] getCachedClinicFeatures failed:", err);
+        return emptyClinicFeaturesContext();
+      }
+    })(),
+    (async () => {
+      if (!clinicId) return toClientEntitlementsSnapshot(emptyEntitlements(null));
+      try {
+        return toClientEntitlementsSnapshot(await getClinicEntitlements());
+      } catch (err) {
+        console.error("[dashboard-shell] getClinicEntitlements failed:", err);
+        return toClientEntitlementsSnapshot(emptyEntitlements(clinicId));
+      }
+    })(),
+  ]);
 
   if (path && !canAccessRoute(role, path, isSuperadmin, permissionOverrides)) {
     await logAudit({
