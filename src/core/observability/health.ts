@@ -1,4 +1,8 @@
 import { getReleasePayload } from "@/core/app-release";
+import {
+  alertOnDbUnavailable,
+  alertOnReadinessFailure,
+} from "@/core/observability/ops-alert";
 import { sanitizeMonitoringPayload } from "@/core/observability/sanitize-monitoring-payload";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { toJson } from "@/core/supabase/json";
@@ -165,6 +169,21 @@ export async function getHealthStatus(): Promise<InternalHealthStatus> {
 
 export async function recordHealthCheckEvent(): Promise<InternalHealthStatus> {
   const status = await getHealthStatus();
+
+  if (!status.ok) {
+    if (!status.checks.supabase.ok) {
+      alertOnDbUnavailable({
+        error: status.checks.supabase.error ?? "supabase_probe_failed",
+      });
+    }
+    alertOnReadinessFailure({
+      checks: sanitizeMonitoringPayload({
+        supabase: status.checks.supabase,
+        schema: status.checks.schema,
+        memory: { ok: status.checks.memory.ok },
+      }) as Record<string, unknown>,
+    });
+  }
 
   if (hasAdminClient()) {
     const supabase = createAdminClient();

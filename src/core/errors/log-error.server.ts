@@ -1,6 +1,10 @@
 import "server-only";
 
 import { toErrorMessage } from "@/core/errors/error-utils";
+import {
+  alertOnClinicalSaveFailure,
+  alertOnSevereAuthFailure,
+} from "@/core/observability/ops-alert";
 import { recordObservabilityEvent } from "@/core/observability/record";
 import { getRequestTraceId } from "@/core/observability/request-trace";
 import { sanitizeTelemetryMetadata } from "@/core/observability/sanitize-monitoring-payload";
@@ -63,25 +67,28 @@ async function logServerErrorAsync(
       traceId,
       metadata,
     });
-    return;
+  } else {
+    void recordObservabilityEvent({
+      clinicId: options?.clinicId ?? null,
+      category: options?.category ?? "error",
+      name: scope,
+      status: "error",
+      path: options?.path,
+      traceId,
+      errorMessage: message.slice(0, 500),
+      metadata,
+    });
+
+    captureServerException(error, {
+      scope,
+      clinicId: options?.clinicId,
+      path: options?.path,
+      traceId,
+      metadata,
+    });
   }
 
-  void recordObservabilityEvent({
-    clinicId: options?.clinicId ?? null,
-    category: options?.category ?? "error",
-    name: scope,
-    status: "error",
-    path: options?.path,
-    traceId,
-    errorMessage: message.slice(0, 500),
-    metadata,
-  });
-
-  captureServerException(error, {
-    scope,
-    clinicId: options?.clinicId,
-    path: options?.path,
-    traceId,
-    metadata,
-  });
+  const clinicHash = hashClinicScope(options?.clinicId);
+  alertOnClinicalSaveFailure(scope, { correlationId: traceId ?? undefined, clinicScopeHash: clinicHash });
+  alertOnSevereAuthFailure(scope, { correlationId: traceId ?? undefined });
 }

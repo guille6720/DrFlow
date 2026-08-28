@@ -260,7 +260,7 @@ const badCounts = [...integrityOut.matchAll(/\|\s*(\d+)\s*\|/g)]
 const jsonCountHits = [...integrityOut.matchAll(/"violation_count"\s*:\s*"?(\d+)"?/g)].map((m) =>
   Number(m[1])
 );
-const anyViolations =
+const _anyViolations =
   badCounts.some((n) => n > 0) ||
   jsonCountHits.some((n) => n > 0) ||
   /violation_count[^\n]*[1-9]/i.test(integrityOut);
