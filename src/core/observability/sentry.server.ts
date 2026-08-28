@@ -1,5 +1,8 @@
 import "server-only";
 
+import { getBuildId } from "@/core/app-release";
+import { sanitizeSentryEventInPlace, sanitizeTelemetryMetadata } from "@/core/observability/sanitize-monitoring-payload";
+
 type SentryNode = typeof import("@sentry/node");
 
 let sentryModule: SentryNode | null = null;
@@ -10,8 +13,15 @@ function getSentryDsn(): string | undefined {
   return process.env.SENTRY_DSN?.trim() || undefined;
 }
 
+function isSentryRuntimeEnabled(): boolean {
+  if (!getSentryDsn()) return false;
+  if (process.env.DRFLOW_SENTRY_DISABLED === "1") return false;
+  const env = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development";
+  return env === "production" || env === "preview" || process.env.DRFLOW_SENTRY_STAGING === "1";
+}
+
 export function isSentryEnabled(): boolean {
-  return Boolean(getSentryDsn());
+  return isSentryRuntimeEnabled();
 }
 
 async function loadSentry(): Promise<SentryNode | null> {
@@ -35,8 +45,13 @@ export async function initSentryServer(): Promise<void> {
   Sentry.init({
     dsn: getSentryDsn(),
     environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development",
+    release: `drflow@${getBuildId()}`,
     tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 0,
-    enabled: process.env.NODE_ENV === "production",
+    enabled: isSentryRuntimeEnabled(),
+    beforeSend(event) {
+      sanitizeSentryEventInPlace(event);
+      return event;
+    },
   });
 
   initialized = true;
@@ -59,12 +74,15 @@ export function captureServerException(
     const Sentry = await loadSentry();
     if (!Sentry) return;
 
+    const metadata = sanitizeTelemetryMetadata(context?.metadata);
+
     Sentry.withScope((scope) => {
       if (context?.scope) scope.setTag("drflow.scope", context.scope);
       if (context?.clinicId) scope.setTag("drflow.clinic_id", context.clinicId);
       if (context?.path) scope.setTag("drflow.path", context.path);
       if (context?.traceId) scope.setTag("drflow.trace_id", context.traceId);
-      if (context?.metadata) scope.setContext("metadata", context.metadata);
+      scope.setTag("drflow.release", getBuildId());
+      if (metadata) scope.setContext("metadata", metadata);
       Sentry.captureException(error);
     });
   })();

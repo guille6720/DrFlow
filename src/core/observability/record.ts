@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { logServerError } from "@/core/errors/log-error.server";
+import { sanitizeMonitoringPayload } from "@/core/observability/sanitize-monitoring-payload";
 import { createTraceId } from "@/core/observability/trace-id";
 import {
   inferStatusFromDuration,
@@ -52,7 +53,7 @@ export async function recordObservabilityEvent(input: ObservabilityEventInput): 
     path: input.path ?? null,
     duration_ms: durationMs ?? null,
     trace_id: input.traceId ?? null,
-    metadata: input.metadata ?? {},
+    metadata: input.metadata ? sanitizeMonitoringPayload(input.metadata) : {},
     error_message: input.errorMessage ?? null,
   };
 

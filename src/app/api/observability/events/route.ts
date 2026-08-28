@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { clientObservabilityBatchSchema } from "@/core/observability/client-ingest-schema";
 import { recordObservabilityEvent } from "@/core/observability/record";
+import { sanitizeTelemetryMetadata } from "@/core/observability/sanitize-monitoring-payload";
 import { inferWebVitalStatus } from "@/core/observability/web-vitals-thresholds";
 import { requireSameOriginMutation } from "@/core/security/csrf";
 
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
       path: event.path,
       durationMs: event.durationMs,
       traceId: event.traceId ?? traceId ?? undefined,
-      metadata: event.metadata,
+      metadata: sanitizeTelemetryMetadata(event.metadata),
       errorMessage: event.errorMessage,
     });
   }

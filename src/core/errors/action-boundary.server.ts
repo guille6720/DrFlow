@@ -1,6 +1,7 @@
 import "server-only";
 
 import { logServerError } from "@/core/errors/log-error.server";
+import { getRequestTraceId } from "@/core/observability/request-trace";
 
 export type ActionErrorBoundaryOptions = {
   clinicId?: string | null;
@@ -21,8 +22,10 @@ export async function withActionErrorBoundary<T>(
   try {
     return await fn();
   } catch (error) {
+    const traceId = await getRequestTraceId();
     logServerError(scope, error, {
       clinicId: options?.clinicId,
+      traceId,
       metadata: {
         ...options?.metadata,
         fileName: options?.getFileName?.(),

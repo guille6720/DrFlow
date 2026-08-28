@@ -1,6 +1,10 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { logServerError } from "@/core/errors/log-error.server";
+import { userFacingErrorMessage } from "@/core/observability/correlation-id";
+import { observeCriticalOperation } from "@/core/observability/observe-critical-operation";
+import { getRequestTraceId } from "@/core/observability/request-trace";
 import { getAuditRequestContext } from "@/core/security/audit-context";
 import { verifyClinicalRecordForeignKeys } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
@@ -171,13 +175,18 @@ export async function POST(request: NextRequest) {
     const auditContext = await getAuditRequestContext();
 
     if (recordId) {
-      const result = await updateClinicalRecordEntry(supabase, {
-        recordId,
-        clinicId,
-        userId: user.id,
-        parsed: parsed.data,
-        auditContext,
-      });
+      const result = await observeCriticalOperation(
+        "clinical.consultation.save",
+        { clinicId, path: "/api/clinical-records/persist" },
+        () =>
+          updateClinicalRecordEntry(supabase, {
+            recordId,
+            clinicId,
+            userId: user.id,
+            parsed: parsed.data,
+            auditContext,
+          })
+      );
       if (!result.ok) {
         return NextResponse.json({ error: result.error, v: "clinical-persist-v1" }, { status: 500 });
       }
@@ -188,13 +197,18 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const result = await createClinicalRecordEntry(supabase, {
-      clinicId,
-      userId: user.id,
-      parsed: parsed.data,
-      consultationModalityRaw: body.consultation_modality,
-      auditContext,
-    });
+    const result = await observeCriticalOperation(
+      "clinical.consultation.save",
+      { clinicId, path: "/api/clinical-records/persist" },
+      () =>
+        createClinicalRecordEntry(supabase, {
+          clinicId,
+          userId: user.id,
+          parsed: parsed.data,
+          consultationModalityRaw: body.consultation_modality,
+          auditContext,
+        })
+    );
 
     if (!result.ok) {
       return NextResponse.json({ error: result.error, v: "clinical-persist-v1" }, { status: 500 });
@@ -206,9 +220,18 @@ export async function POST(request: NextRequest) {
       v: "clinical-persist-v1",
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "No se pudo guardar la consulta";
+    const traceId = await getRequestTraceId();
+    logServerError("clinical.persist", err, {
+      path: "/api/clinical-records/persist",
+      traceId,
+      category: "error",
+    });
+    const message = userFacingErrorMessage(
+      "No se pudo guardar la consulta.",
+      traceId
+    );
     return NextResponse.json(
-      { error: `clinical-persist-v1: ${message}`, v: "clinical-persist-v1" },
+      { error: message, v: "clinical-persist-v1" },
       { status: 500 }
     );
   }
