@@ -2,6 +2,7 @@
 
 **Repository:** [guille6720/DrFlow](https://github.com/guille6720/DrFlow)  
 **Branch:** `release/0.2.19-staging-promotion`  
+**Commit:** `00fc6700772138c50de806eaa85267f8c18dde92`  
 **Report date:** 2026-08-28  
 **Scope:** Staging/preview only — **production (`drflow.opusorg.com`) never load-tested**
 
