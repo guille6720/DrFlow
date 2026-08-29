@@ -40,6 +40,10 @@ yarn-error.log*
 !.env.example
 e2e/.phase6-env.local
 e2e/.phase3-tenant-env.local
+e2e/.phase7b-session-pool.json
+e2e/.phase7b-env.local
+coverage/load/*session*
+coverage/load/*cookie*
 
 # vercel
 .vercel

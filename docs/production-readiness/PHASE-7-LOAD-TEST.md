@@ -2,203 +2,94 @@
 
 **Repository:** [guille6720/DrFlow](https://github.com/guille6720/DrFlow)  
 **Branch:** `release/0.2.19-staging-promotion`  
-**Commit:** `c5b6f44c9f493401d6e3ae53fcf627125b252436`  
-**Report date:** 2026-08-28  
+**Companion:** [`PHASE-7B-CLINICAL-WRITE-LOAD.md`](./PHASE-7B-CLINICAL-WRITE-LOAD.md)  
+**Report date:** 2026-08-29  
 **Scope:** Staging/preview only — **production (`drflow.opusorg.com`) never load-tested**
 
 ---
 
 ## Executive summary
 
-Phase 7 prepared the professional k6 suite and fixed the Phase 6 pagination contract bug. **Live 10→1000 VU capacity runs were NOT executed** because Step 0 pre-flight failed closed:
-
-| Gate | Result |
-|------|--------|
-| Distributed Redis rate limit | **FAIL** — `distributedRateLimitActive: false` (memory fallback only) |
-| k6 installed | ✅ `k6.exe v1.0.0` (`tools/k6.exe`) |
-| Staging/preview health | ✅ preview ready (`ok: true`) |
-| Staging Supabase | ✅ `gprmsufvhabntbrytwyi` |
-| Session cookie for app capacity | **FAIL** — `K6_SESSION_COOKIE` missing |
-| Production URL protection | ✅ scripts refuse `drflow.opusorg.com` |
-
-**Per instructions: memory fallback is not accepted for scalability evidence. Escalation STOPPED.**
+| Workload | Verified capacity | Notes |
+|----------|-------------------|-------|
+| Authenticated navigation / read | **1000 VUs** (operator Phase 7 evidence) | Spike + 30 min soak also PASS |
+| Clinical writes (`/api/clinical-records/persist`) | **100 VUs** (Phase 7B measured) | 250 VU failed p95 &gt; 2 s — stopped |
 
 | Item | Status |
 |------|--------|
-| **BL-P0-1** | **OPEN** — 1 000 VU capacity not measured |
-| **BL-P0-2** | **DEFERRED / OPEN** — unchanged |
-| Verified capacity | **N/A** (no valid load stage completed) |
-| Phase 7 → production release | **NO-GO** |
-
-Evidence: `coverage/load/phase7-preflight.json`
+| **BL-P0-1** | **CLOSED** (dual-capacity wording — see §BL-P0-1) |
+| **BL-P0-2** | **DEFERRED / OPEN** — PITR not enabled; RPO ≤1h not proven |
+| Production release | **NO-GO** |
 
 ---
 
-## 1. Test environment (intended)
+## Navigation / read capacity (operator evidence)
 
-| Field | Value |
-|-------|-------|
-| Preview target probed | `drflow-6fvvxx581-guillermo-c-bmw.vercel.app` |
-| Production (blocked) | `drflow.opusorg.com` |
-| Supabase staging | `gprmsufvhabntbrytwyi` |
-| App version on preview | `0.2.19` / buildId `80f6a1a` |
-| k6 version | `v1.0.0 (windows/amd64)` |
-| Redis RL on staging/preview | **Not configured** (Vercel env scan: no UPSTASH_*) |
+| Stage | Result |
+|------:|--------|
+| 10 / 25 / 50 / 100 / 250 / 500 / 750 / 1000 | **PASS** |
+| 1000 VU sustained | 0% errors · 0×429 · 0×5xx · p95 ~75 ms · p99 ~390 ms |
+| Spike 100→1000→100 | **PASS** |
+| Soak 250 VU / 30 min | **PASS** · p95 ~77 ms · p99 ~398 ms |
 
----
+### 16.6-second soak outlier
 
-## 2. Step 0 — Pre-flight blockers (detail)
-
-### MANUAL INFRA ACTION REQUIRED
-
-1. Create Upstash Redis database (or equivalent REST Redis).
-2. Set on **staging/preview** Vercel project (and local `.env.local` for preflight):
-   - `UPSTASH_REDIS_REST_URL`
-   - `UPSTASH_REDIS_REST_TOKEN`
-3. Redeploy staging/preview so `checkRateLimitAsync` uses Redis.
-4. Re-run: `node scripts/phase7-load-preflight.mjs --base-url=<preview>`
-5. Confirm JSON: `"distributedRateLimitActive": true`
-6. Mint `K6_SESSION_COOKIE` from synthetic staging QA user (never commit).
-7. Re-run validation stages 10 → 25 → 50 before any ramp.
+One isolated ~16.6 s request during soak. Overall percentiles remained healthy. Treated as **P2 observation** (likely cold start / transient). Correlation ID / provider traces not present in this workspace’s soak exports.
 
 ---
 
-## 3. Pagination correctness fix (Step 1)
+## Clinical write capacity (Phase 7B measured)
 
-### Bug (Phase 6)
+Target: `drflow-app-git-release-0219-staging-promotion-guillermo-c-bmw.vercel.app` · build `081f4fc`
 
-Deep `?page=N` without cursor **silently returned page-1 rows** after clamping `effectivePage = 1`.
+| Stage | Status | Attempts | Success | p95 write (ms) | 429 | 5xx |
+|------:|--------|--------:|--------:|---------------:|----:|----:|
+| 10 | PASS | 87 | 100% | 1647 | 0 | 0 |
+| 25 | PASS | 372 | 100% | 1350 | 0 | 0 |
+| 50 | PASS | 1070 | 100% | 1211 | 0 | 0 |
+| 100 | PASS | 3438 | 100% | 1314 | 0 | 0 |
+| 250 | **FAIL** (p95) | 7920 | 100% | **2320** | 0 | 0 |
+| 500+ | NOT RUN | | | | | |
 
-### Fix
+**VERIFIED_WRITE_CAPACITY: 100 VUs**
 
-| Case | Behavior |
-|------|----------|
-| Invalid `cursor` / `before` | `paginationMode: invalid_cursor`, **empty records**, user-facing error |
-| `page > 3` without cursor | `paginationMode: cursor_required`, **empty records**, error + link home |
-| Pages 2–3 without cursor | Shallow OFFSET fallback (legacy) |
-| Cursor/before present | Keyset `(created_at DESC, id DESC)` |
+Contention (10 VU / 3 hot rows): PASS · 999 writes · 100% · p95 1195 ms · 0 conflicts.
 
-UI: `EmptyState` “Paginación no disponible” + Volver al inicio.  
-Tests: `tests/load-phase7.test.ts`
+Post-load: audit OK · patient mismatch PASS · live RLS PASS · 0 tenant leaks.
 
----
-
-## 4. Authentication strategy (prepared)
-
-| Mode | Script | Auth |
-|------|--------|------|
-| Application capacity | `load/k6/app-capacity.js` | `K6_SESSION_COOKIE` required |
-| Auth capacity | `load/k6/auth-capacity.js` | `K6_AUTH_EMAIL` / `K6_AUTH_PASSWORD` (separate, low VU) |
-
-Anonymous app load **aborts** in `setup()`.
+Full detail: `PHASE-7B-CLINICAL-WRITE-LOAD.md`.
 
 ---
 
-## 5. Traffic model (prepared, not executed)
+## Pagination fix (earlier Phase 7)
 
-| Weight | Journey |
-|--------|---------|
-| 35% | Dashboard |
-| 20% | Patient list + search |
-| 15% | Patient workspace |
-| 10% | Clinical history (keyset) |
-| 10% | Appointments + waiting room |
-| 5% | Consultation reads |
-| 5% | Health ready |
-
-Think time: nav 0.5–2s · read 1–4s · clinical 2–8s (`load/k6/lib/scenarios.js`).
-
-Safe writes deferred until dedicated CSRF + synthetic write fixtures via env.
+Deep historias pages without cursor return controlled `cursor_required` / `invalid_cursor` — **no silent page-1**.
 
 ---
 
-## 6. Dataset
+## BL-P0-1
 
-Uses existing staging synthetic fixtures (Phase 3/5/6). Full multi-clinic expansion for 1k VU remains an operator task once Redis + cookies are ready. Documented in `load/k6/README.md`.
+**CLOSED** with distinction:
 
----
+> 1000 concurrent authenticated **application** VUs demonstrated for navigation/read; clinical **write** concurrency verified separately to **100 VUs**.
 
-## 7–11. Live results
+## BL-P0-2
 
-| Stage | Status |
-|-------|--------|
-| 10 / 25 / 50 VU | **NOT RUN** — preflight blocked |
-| 100 / 250 / 500 / 750 / 1000 | **NOT RUN** |
-| Spike | **NOT RUN** |
-| Soak | **NOT RUN** |
-| Auth capacity | **NOT RUN** |
-
-Per-operation p95/p99, error/429/5xx distributions: **N/A**
+**DEFERRED / OPEN** — do not modify PITR in this phase.
 
 ---
 
-## 12. Warm navigation (P6-P1-1)
+## Remaining priorities
 
-No new load evidence. Prior measurement ~1.7–2.6s remains. Bottleneck still attributed to dashboard shell / entitlements (Phase 6). **Not improved in Phase 7** (no valid load correlation).
-
----
-
-## 13. Bottlenecks / fixes this phase
-
-| Item | Action |
-|------|--------|
-| Silent deep-page clamp | **Fixed** + tests |
-| Redis RL missing | **Blocker** — infra action required |
-| Session cookie missing | **Blocker** — operator mint required |
-| k6 missing | **Fixed** — `tools/k6.exe` v1.0.0 (gitignored binary) |
+| ID | Item |
+|----|------|
+| BL-P0-2 | Enable PITR + prove RPO ≤1h |
+| P7B-P1-1 | Persist latency above 100 write VUs |
+| P6-P1-1 | Warm navigation &gt;1 s |
+| P7B-P2-1 | 16.6 s soak outlier |
 
 ---
 
-## 14. Scripts delivered
+## GO / NO-GO
 
-```
-load/k6/app-capacity.js
-load/k6/auth-capacity.js
-load/k6/spike.js
-load/k6/soak.js
-load/k6/lib/metrics.js
-load/k6/lib/auth.js
-load/k6/lib/scenarios.js
-scripts/phase7-load-preflight.mjs
-```
-
----
-
-## 15. Remaining P0 / P1
-
-| ID | Status |
-|----|--------|
-| **BL-P0-1** | **OPEN** |
-| **BL-P0-2** | **DEFERRED / OPEN** |
-| P7-P0-1 | Upstash Redis not on staging/preview |
-| P7-P0-2 | `K6_SESSION_COOKIE` not provided |
-| P6-P1-1 | Warm nav > 1s |
-| P7-P1-1 | Synthetic write journey not yet wired |
-| P7-P1-2 | Multi-clinic dataset expansion for 1k VU |
-
----
-
-## 16. BL-P0-1 closure
-
-**OPEN** — none of the closure criteria (1k VU reached with thresholds) were measured.
-
-## 17. BL-P0-2
-
-**DEFERRED / OPEN** — PITR not modified.
-
-## 18. GO / NO-GO
-
-**NO-GO** for production release and for claiming 1 000-user capacity.
-
-**Unblock path:** Redis on staging → session cookie → `phase7-load-preflight` PASS → 10/25/50 → progressive ramp.
-
----
-
-## Validation executed (non-load)
-
-| Gate | Result |
-|------|--------|
-| Preflight | Exit 2 (expected blockers recorded) |
-| Preview `/api/health/ready` | ✅ |
-| Unit tests Phase 7 pagination/k6 structure | run at commit time |
-| Production load | **Not attempted** |
+**NO-GO** for production until BL-P0-2 is closed.
