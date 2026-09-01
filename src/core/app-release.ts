@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.20",
+    date: "2026-09-01",
+    title: "Consultas: impresión del día y autoguardado al navegar",
+    highlights: [
+      "Imprimir «Historia del día» usa la consulta en curso, no una evolución anterior",
+      "Autoguardado antes de imprimir y al salir de Consultas hacia Historias clínicas",
+      "Mismo formato de impresión en toda la historia clínica",
+    ],
+  },
+  {
     version: "0.2.19",
     date: "2026-08-21",
     title: "Entregables a11y/tema (staging review)",
