@@ -136,6 +136,7 @@ export function ConsultationDatetimePicker({ value, onChange }: Props) {
         anchorRef={anchorRef}
         open={open}
         preferredMaxHeight={420}
+        preferredMinWidth={300}
         className="rounded-lg border border-[var(--border,#e2e8f0)] bg-[var(--card,#fff)] p-3 shadow-xl"
       >
         <div

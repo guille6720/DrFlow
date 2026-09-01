@@ -21,4 +21,15 @@ describe("computeFloatingAnchorBox", () => {
     expect(box.top).toBeLessThan(720);
     expect(box.maxHeight).toBeGreaterThan(120);
   });
+
+  it("honors preferredMinWidth for narrow anchors", () => {
+    const box = computeFloatingAnchorBox(
+      { top: 200, bottom: 230, left: 40, width: 90 },
+      { width: 1200, height: 800 },
+      360,
+      4,
+      300
+    );
+    expect(box.width).toBe(300);
+  });
 });
