@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, CheckCircle2, Plus } from "lucide-react";
+import { CheckCircle2, Plus } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CLINICAL_RESEARCH_PROTOCOLS_FLAG } from "@/core/compliance/clinical-research-ai";
@@ -30,6 +30,7 @@ import {
   formatPatientEhrSidebarDate,
   isSameCalendarDay,
   patientEhrEvolutionBody,
+  toPatientEhrDatetimeLocalValue,
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import { useNuevaConsultaForm } from "@/features/historias/hooks/use-nueva-consulta-form";
 import type { ClinicalDiagnosisEntry } from "@/features/historias/utils/clinical-structured-entries";
@@ -55,6 +56,7 @@ import type {
 } from "@/features/pacientes/utils/patient-ehr-model";
 import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EHR_NEW_CONSULT_FORM_ID } from "@/lib/utils/clinical-history-filename";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
@@ -90,17 +92,6 @@ function truncate(text: string, max = 180): string {
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length <= max) return clean;
   return `${clean.slice(0, max - 1)}…`;
-}
-
-function formatConsultationDateLabel(value: string): string {
-  if (!value) return "";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleDateString("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
 }
 
 function DrappHistorySidebar({
@@ -367,7 +358,6 @@ function DrappConsultaWorkspaceInner({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const evolutionRef = useRef<HTMLTextAreaElement>(null);
   const chiefComplaintRef = useRef<HTMLTextAreaElement>(null);
-  const dateInputRef = useRef<HTMLInputElement>(null);
   const quickSaveLock = useRef(false);
 
   const { openPanel, setDirty, requestOpen, closePanel, markCleanAndClose } =
@@ -458,6 +448,10 @@ function DrappConsultaWorkspaceInner({
   const pendingDateIso = useMemo(
     () => new Date(consultationAt).toISOString(),
     [consultationAt]
+  );
+  const maxConsultationAt = useMemo(
+    () => toPatientEhrDatetimeLocalValue(new Date().toISOString()),
+    []
   );
 
   useEffect(() => {
@@ -942,30 +936,17 @@ function DrappConsultaWorkspaceInner({
                   {/* Keep motivo in form payload when editing evolución */}
                   <input type="hidden" name="chief_complaint" value={chiefComplaint} />
 
-                  <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 pt-1">
-                    <label className="inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-[var(--foreground,#0f172a)]">
-                      <CalendarDays className="h-4 w-4 text-[var(--primary,#0F4C5C)]" aria-hidden />
-                      <span className="font-medium text-[var(--primary,#0F4C5C)]">
-                        {formatConsultationDateLabel(consultationAt)}
-                      </span>
-                      <input
-                        ref={dateInputRef}
-                        type="datetime-local"
-                        value={consultationAt}
-                        onChange={(e) => setConsultationAt(e.target.value)}
-                        className="sr-only"
-                        tabIndex={-1}
-                      />
-                      <button
-                        type="button"
-                        className="text-[12px] text-slate-500 underline-offset-2 hover:underline"
-                        onClick={() =>
-                          dateInputRef.current?.showPicker?.() ?? dateInputRef.current?.click()
-                        }
-                      >
-                        Cambiar
-                      </button>
-                    </label>
+                  <div className="flex shrink-0 flex-col gap-1 pt-1 sm:max-w-sm">
+                    <Input
+                      type="datetime-local"
+                      label="Fecha de la consulta"
+                      value={consultationAt}
+                      max={maxConsultationAt}
+                      onChange={(e) => setConsultationAt(e.target.value)}
+                    />
+                    <p className="text-[11px] text-slate-500">
+                      Podés cargar evoluciones de fechas anteriores.
+                    </p>
                   </div>
                 </div>
               ) : null}

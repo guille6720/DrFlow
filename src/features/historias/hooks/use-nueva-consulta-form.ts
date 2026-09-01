@@ -349,7 +349,7 @@ export function useNuevaConsultaForm({
         clinicalTreatments,
         treatmentMedications,
         vitals,
-        ...(editingRecordId ? { consultationAt } : {}),
+        consultationAt,
       }),
     [
       evolution,
@@ -360,7 +360,6 @@ export function useNuevaConsultaForm({
       clinicalTreatments,
       treatmentMedications,
       vitals,
-      editingRecordId,
       consultationAt,
     ]
   );
@@ -615,7 +614,7 @@ export function useNuevaConsultaForm({
               clinicalTreatments: draft.clinicalTreatments,
               treatmentMedications: draft.treatmentMedications,
               vitals: draft.vitals,
-              ...(savedId ? { consultationAt } : {}),
+              consultationAt,
             })
           );
           if (draftKey) {
@@ -853,6 +852,7 @@ export function useNuevaConsultaForm({
         clinicalTreatments: [],
         treatmentMedications: [],
         vitals: "",
+        consultationAt: toDatetimeLocalValue(new Date()),
       })
     );
   }
