@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "@/core/notifications/toast";
@@ -34,7 +34,7 @@ import {
   readConsultationDraft,
   saveConsultationDraft,
 } from "@/lib/utils/consultation-draft";
-import { buildProfessionalSignature } from "@/lib/utils/professional";
+import { buildProfessionalSignature, getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { PrescriptionMedication } from "@/types/prescription";
 
 type Template = {
@@ -53,7 +53,18 @@ export type NuevaConsultaWorkspaceConfig = {
   onSaved: (
     recordId: string,
     silent?: boolean,
-    meta?: { consultationAtIso?: string }
+    meta?: {
+      consultationAtIso?: string;
+      snapshot?: {
+        chief_complaint: string;
+        evolution: string;
+        diagnosis: string;
+        indications: string;
+        professional_id: string;
+        professional_name: string;
+        professional_signature: string;
+      };
+    }
   ) => void;
   onClose: () => void;
 };
@@ -115,6 +126,7 @@ export function useNuevaConsultaForm({
   fallbackProfessionalId,
 }: Options) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const defaultPatient = workspace?.patientId ?? searchParams.get("patient") ?? "";
   const defaultProfessional =
@@ -536,30 +548,30 @@ export function useNuevaConsultaForm({
         if (appointmentId) formData.set("appointment_id", appointmentId);
         const diagnosisText = buildDiagnosisText(draft.diagnoses, draft.diagnosis);
         const primaryCie10 = draft.diagnoses.find((d) => d.cie10_code?.trim())?.cie10_code ?? "";
-        formData.set("chief_complaint", draft.chiefComplaint);
-        formData.set("diagnosis", diagnosisText);
-        formData.set("diagnosis_cie10", primaryCie10);
-        formData.set("diagnoses_json", JSON.stringify(draft.diagnoses));
         const mergedTreatments = mergeTreatmentsForPersist(
           draft.clinicalTreatments,
           draft.treatmentMedications
         );
-        formData.set("treatments_json", JSON.stringify(mergedTreatments));
-        formData.set(
-          "indications",
-          buildConsultIndicationsText(
-            draft.treatmentMedications,
-            draft.indications,
-            draft.clinicalTreatments
-          )
+        const indicationsText = buildConsultIndicationsText(
+          draft.treatmentMedications,
+          draft.indications,
+          draft.clinicalTreatments
         );
-        formData.set("evolution", buildEvolutionWithVitals(draft.evolution, draft.vitals));
+        const evolutionText = buildEvolutionWithVitals(draft.evolution, draft.vitals);
+        formData.set("chief_complaint", draft.chiefComplaint);
+        formData.set("diagnosis", diagnosisText);
+        formData.set("diagnosis_cie10", primaryCie10);
+        formData.set("diagnoses_json", JSON.stringify(draft.diagnoses));
+        formData.set("treatments_json", JSON.stringify(mergedTreatments));
+        formData.set("indications", indicationsText);
+        formData.set("evolution", evolutionText);
         formData.set("professional_signature", professionalSignature);
         formData.set("consultation_at", new Date(consultationAt).toISOString());
 
         const recordId = editingRecordIdRef.current;
         const appointmentRaw = formData.get("appointment_id");
-        const apiResult = await persistClinicalRecordRequest({
+        const professionalIdValue = String(formData.get("professional_id") ?? "");
+        const apiPayload = {
           recordId: recordId ?? undefined,
           consultation_modality:
             typeof formData.get("consultation_modality") === "string"
@@ -568,7 +580,7 @@ export function useNuevaConsultaForm({
           patient_id: String(formData.get("patient_id") ?? ""),
           appointment_id:
             typeof appointmentRaw === "string" && appointmentRaw.trim() ? appointmentRaw : null,
-          professional_id: String(formData.get("professional_id") ?? ""),
+          professional_id: professionalIdValue,
           chief_complaint: String(formData.get("chief_complaint") ?? ""),
           diagnosis: String(formData.get("diagnosis") ?? ""),
           evolution: String(formData.get("evolution") ?? ""),
@@ -578,7 +590,8 @@ export function useNuevaConsultaForm({
           diagnosis_cie10: String(formData.get("diagnosis_cie10") ?? "") || null,
           diagnoses_json: String(formData.get("diagnoses_json") ?? "") || null,
           treatments_json: String(formData.get("treatments_json") ?? "") || null,
-        });
+        };
+        const apiResult = await persistClinicalRecordRequest(apiPayload);
 
         if ("error" in apiResult) {
           setError(apiResult.error);
@@ -619,8 +632,18 @@ export function useNuevaConsultaForm({
           }
           setAutoSaveStatus("saved");
           if (workspace) {
+            const pro = professionals.find((p) => p.id === professionalIdValue);
             workspace.onSaved(savedId, options?.silent, {
               consultationAtIso: new Date(consultationAt).toISOString(),
+              snapshot: {
+                chief_complaint: draft.chiefComplaint,
+                evolution: evolutionText,
+                diagnosis: diagnosisText,
+                indications: indicationsText,
+                professional_id: professionalIdValue,
+                professional_name: pro ? getProfessionalDisplayName(pro) : "Consulta en curso",
+                professional_signature: professionalSignature,
+              },
             });
           } else if (!options?.silent && !recordId) {
             router.push(`/historias/${savedId}`);
@@ -645,10 +668,53 @@ export function useNuevaConsultaForm({
       consultationAt,
       draftKey,
       professionalSignature,
+      professionals,
       router,
       workspace,
     ]
   );
+
+  const flushKeepaliveSave = useCallback(() => {
+    const draft = formDraftRef.current;
+    const form = formRef.current;
+    if (!form || savingRef.current) return;
+    if (!draft.isDirty && !editingRecordIdRef.current) return;
+    if (!patientId || !activeProfessionalId) return;
+
+    const diagnosisText = buildDiagnosisText(draft.diagnoses, draft.diagnosis);
+    const mergedTreatments = mergeTreatmentsForPersist(
+      draft.clinicalTreatments,
+      draft.treatmentMedications
+    );
+    void persistClinicalRecordRequest(
+      {
+        recordId: editingRecordIdRef.current ?? undefined,
+        patient_id: patientId,
+        appointment_id: appointmentId || null,
+        professional_id: activeProfessionalId,
+        chief_complaint: draft.chiefComplaint,
+        diagnosis: diagnosisText,
+        evolution: buildEvolutionWithVitals(draft.evolution, draft.vitals),
+        indications: buildConsultIndicationsText(
+          draft.treatmentMedications,
+          draft.indications,
+          draft.clinicalTreatments
+        ),
+        professional_signature: professionalSignature,
+        consultation_at: new Date(consultationAt).toISOString(),
+        diagnosis_cie10: draft.diagnoses.find((d) => d.cie10_code?.trim())?.cie10_code ?? null,
+        diagnoses_json: JSON.stringify(draft.diagnoses),
+        treatments_json: JSON.stringify(mergedTreatments),
+      },
+      { keepalive: true }
+    );
+  }, [
+    activeProfessionalId,
+    appointmentId,
+    consultationAt,
+    patientId,
+    professionalSignature,
+  ]);
 
   const saveIfDirty = useCallback(
     async (options?: { silent?: boolean }) => {
@@ -676,7 +742,7 @@ export function useNuevaConsultaForm({
   useEffect(() => {
     function handleBeforeUnload(event: BeforeUnloadEvent) {
       if (!formDraftRef.current.isDirty) return;
-      void saveIfDirtyRef.current({ silent: true });
+      flushKeepaliveSave();
       event.preventDefault();
       event.returnValue = "";
     }
@@ -684,9 +750,16 @@ export function useNuevaConsultaForm({
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      void saveIfDirtyRef.current({ silent: true });
+      flushKeepaliveSave();
     };
-  }, []);
+  }, [flushKeepaliveSave]);
+
+  const prevPathnameRef = useRef(pathname);
+  useEffect(() => {
+    if (prevPathnameRef.current === pathname) return;
+    prevPathnameRef.current = pathname;
+    void saveIfDirtyRef.current({ silent: true });
+  }, [pathname]);
 
   function pharmacologyHref(mode?: "symptoms" | "pathology" | "vademecum") {
     if (!consultationContext) {

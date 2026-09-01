@@ -348,6 +348,10 @@ function DrappConsultaWorkspaceInner({
     appendClinicalHistory,
     patchClinicalRecord,
     removeClinicalRecord,
+    setSelectedId,
+    setDayPrintAnchorIso,
+    setActiveRecordId,
+    registerBeforePrint,
   } = usePatientEhrStateContext();
 
   const [sidebarSearch, setSidebarSearch] = useState("");
@@ -369,15 +373,6 @@ function DrappConsultaWorkspaceInner({
   const { openPanel, setDirty, requestOpen, closePanel, markCleanAndClose } =
     useDrappQuickPanel("evolucion");
   const researchProtocolsEnabled = useFeatureFlag(CLINICAL_RESEARCH_PROTOCOLS_FLAG);
-
-  const historySnapshotRef = useRef({
-    professionalId: professionalId ?? defaultProfessionalId ?? "",
-    professionalName: "Consulta en curso",
-    professionalSignature: "",
-    chiefComplaint: "",
-    evolution: "",
-    indications: "",
-  });
 
   const {
     formRef,
@@ -414,29 +409,33 @@ function DrappConsultaWorkspaceInner({
       appointmentId: appointmentId ?? undefined,
       professionalId: professionalId ?? defaultProfessionalId ?? undefined,
       onSaved: (recordId, silent, meta) => {
-        const snap = historySnapshotRef.current;
         const createdAt = meta?.consultationAtIso ?? new Date().toISOString();
+        const snap = meta?.snapshot;
+        setSelectedId(recordId);
+        setActiveRecordId(recordId);
+        setDayPrintAnchorIso(createdAt);
         patchClinicalRecord(recordId, {
           created_at: createdAt,
-          chief_complaint: snap.chiefComplaint,
-          evolution: snap.evolution,
-          indications: snap.indications,
-          professional_id: snap.professionalId || null,
-          professional_name: snap.professionalName,
-          professional_signature: snap.professionalSignature || null,
+          chief_complaint: snap?.chief_complaint ?? "",
+          evolution: snap?.evolution ?? "",
+          diagnosis: snap?.diagnosis ?? "",
+          indications: snap?.indications ?? "",
+          professional_id: snap?.professional_id || null,
+          professional_name: snap?.professional_name ?? "Consulta en curso",
+          professional_signature: snap?.professional_signature || null,
         });
         appendClinicalHistory({
           consultations: [
             {
               id: recordId,
               created_at: createdAt,
-              professional_id: snap.professionalId || null,
-              professional_signature: snap.professionalSignature || null,
-              professional_name: snap.professionalName,
-              chief_complaint: snap.chiefComplaint,
-              diagnosis: "",
-              evolution: snap.evolution,
-              indications: snap.indications,
+              professional_id: snap?.professional_id || null,
+              professional_signature: snap?.professional_signature || null,
+              professional_name: snap?.professional_name ?? "Consulta en curso",
+              chief_complaint: snap?.chief_complaint ?? "",
+              diagnosis: snap?.diagnosis ?? "",
+              evolution: snap?.evolution ?? "",
+              indications: snap?.indications ?? "",
               category: "evolution",
             },
           ],
@@ -460,6 +459,18 @@ function DrappConsultaWorkspaceInner({
     () => new Date(consultationAt).toISOString(),
     [consultationAt]
   );
+
+  useEffect(() => {
+    setDayPrintAnchorIso(pendingDateIso);
+    setActiveRecordId(editingRecordId);
+  }, [editingRecordId, pendingDateIso, setActiveRecordId, setDayPrintAnchorIso]);
+
+  useEffect(() => {
+    registerBeforePrint(async () => {
+      await saveIfDirty({ silent: true });
+    });
+    return () => registerBeforePrint(null);
+  }, [registerBeforePrint, saveIfDirty]);
 
   const handleDeleteConsultationById = useCallback(
     async (recordId: string, options?: { startNew?: boolean }) => {
@@ -499,24 +510,6 @@ function DrappConsultaWorkspaceInner({
       startNewConsultation,
     ]
   );
-
-  useEffect(() => {
-    historySnapshotRef.current = {
-      professionalId: activeProfessionalId,
-      professionalName: pendingLabel,
-      professionalSignature: professionalSignature ?? "",
-      chiefComplaint,
-      evolution,
-      indications,
-    };
-  }, [
-    activeProfessionalId,
-    chiefComplaint,
-    evolution,
-    indications,
-    pendingLabel,
-    professionalSignature,
-  ]);
 
   const quickCtx = useMemo((): QuickClinicalSaveContext | null => {
     if (!activeProfessionalId) return null;

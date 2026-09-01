@@ -86,6 +86,28 @@ export function filterConsultationsByConsultationDay(
   return consultations.filter((row) => isSameCalendarDay(row.created_at, consultationCreatedAt));
 }
 
+/** Prefer in-progress / active consultation date for "Historia del día" print. */
+export function resolveDayPrintAnchorIso(options: {
+  dayPrintAnchorIso?: string | null;
+  activeRecordId?: string | null;
+  evolutionList: PatientEhrConsultation[];
+  selected?: PatientEhrConsultation | null;
+}): string | null {
+  if (options.dayPrintAnchorIso) return options.dayPrintAnchorIso;
+  if (options.activeRecordId) {
+    const active = options.evolutionList.find((row) => row.id === options.activeRecordId);
+    if (active?.created_at) return active.created_at;
+  }
+  return options.selected?.created_at ?? null;
+}
+
+export function resolveDayPrintConsultations(
+  evolutionList: PatientEhrConsultation[],
+  anchorIso: string | null | undefined
+): PatientEhrConsultation[] {
+  return filterConsultationsByConsultationDay(evolutionList, anchorIso);
+}
+
 export function extractConsultationFileName(consultation: PatientEhrConsultation): string | null {
   for (const candidate of [
     consultation.diagnosis,

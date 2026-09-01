@@ -23,12 +23,14 @@ export type PersistClinicalRecordResult =
 
 /** Persist clinical record via API — no server actions (avoids RSC refresh crash). */
 export async function persistClinicalRecordRequest(
-  input: PersistClinicalRecordInput
+  input: PersistClinicalRecordInput,
+  init?: Pick<RequestInit, "keepalive">
 ): Promise<PersistClinicalRecordResult> {
   const response = await fetch("/api/clinical-records/persist", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
+    keepalive: init?.keepalive ?? false,
     body: JSON.stringify(input),
   });
 

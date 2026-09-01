@@ -15,8 +15,9 @@ import {
   buildConsultationSidebarList,
   filterClinicalRowsByConsultationDay,
   formatPatientEhrSidebarDate,
-  isSameCalendarDay,
   resolveConsultationAttachment,
+  resolveDayPrintAnchorIso,
+  resolveDayPrintConsultations,
   resolveSelectedConsultation,
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import { printEhrClinicalDocument } from "@/features/historias/utils/print-ehr-clinical-document";
@@ -99,6 +100,9 @@ export function usePatientEhrState(
   );
   const [loadingMoreRecords, startLoadMoreRecords] = useTransition();
   const [printingFullHistory, setPrintingFullHistory] = useState(false);
+  const [dayPrintAnchorIso, setDayPrintAnchorIso] = useState<string | null>(null);
+  const [activeRecordId, setActiveRecordId] = useState<string | null>(null);
+  const beforePrintRef = useRef<(() => Promise<void> | void) | null>(null);
   const activePatientId = options?.patientId ?? printBundle.patient.id;
   const prevPatientIdRef = useRef(activePatientId);
 
@@ -114,6 +118,8 @@ export function usePatientEhrState(
     setConsultationDatePatches({});
     setConsultationContentPatches({});
     setRemovedRecordIds(new Set());
+    setDayPrintAnchorIso(null);
+    setActiveRecordId(null);
     setRecordsPagination(
       options?.clinicalRecordsPagination ?? {
         total: consultations.length,
@@ -246,10 +252,21 @@ export function usePatientEhrState(
     [selectedId, sidebarList, evolutionList, sorted]
   );
 
-  const dayPrintConsultations = useMemo(() => {
-    if (!selected) return [];
-    return evolutionList.filter((c) => isSameCalendarDay(c.created_at, selected.created_at));
-  }, [evolutionList, selected]);
+  const dayPrintAnchor = useMemo(
+    () =>
+      resolveDayPrintAnchorIso({
+        dayPrintAnchorIso,
+        activeRecordId,
+        evolutionList,
+        selected,
+      }),
+    [activeRecordId, dayPrintAnchorIso, evolutionList, selected]
+  );
+
+  const dayPrintConsultations = useMemo(
+    () => resolveDayPrintConsultations(evolutionList, dayPrintAnchor),
+    [dayPrintAnchor, evolutionList]
+  );
 
   const vitalsRows = useMemo(() => sorted.filter((c) => c.category === "vitals"), [sorted]);
 
@@ -348,6 +365,10 @@ export function usePatientEhrState(
     if (scope === "day" && dayPrintConsultations.length === 0) return;
     if (printingFullHistory) return;
 
+    if (beforePrintRef.current) {
+      await beforePrintRef.current();
+    }
+
     let printConsultations = evolutionList;
     let printDiagnosisRows = mergedDiagnosisRows;
     let printTreatmentRows = mergedTreatmentRows;
@@ -388,7 +409,7 @@ export function usePatientEhrState(
       }
     }
 
-    const dayCreatedAt = selected?.created_at ?? dayPrintConsultations[0]?.created_at ?? null;
+    const dayCreatedAt = dayPrintAnchor ?? selected?.created_at ?? dayPrintConsultations[0]?.created_at ?? null;
     const diagnosisRows =
       scope === "day"
         ? filterClinicalRowsByConsultationDay(printDiagnosisRows, dayCreatedAt)
@@ -426,6 +447,10 @@ export function usePatientEhrState(
     });
   }
 
+  const registerBeforePrint = useCallback((fn: (() => Promise<void> | void) | null) => {
+    beforePrintRef.current = fn;
+  }, []);
+
   return {
     evolutionList,
     sidebarList,
@@ -441,6 +466,7 @@ export function usePatientEhrState(
     consultationAttachmentById,
     vitalsRows,
     dayPrintConsultations,
+    dayPrintAnchorIso: dayPrintAnchor,
     triggerPrint,
     printingFullHistory,
     diagnosisRows: mergedDiagnosisRows,
@@ -453,6 +479,9 @@ export function usePatientEhrState(
     patchClinicalRecord,
     removeClinicalRecord,
     resolveConsultationSignature,
+    setDayPrintAnchorIso,
+    setActiveRecordId,
+    registerBeforePrint,
     patientId: options?.patientId ?? printBundle.patient.id,
   };
 }
