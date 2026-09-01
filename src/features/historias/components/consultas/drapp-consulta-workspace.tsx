@@ -7,6 +7,7 @@ import { toast } from "@/core/notifications/toast";
 
 import { cn } from "@/shared/utils/cn";
 
+import { ConsultationDatetimePicker } from "@/features/historias/components/consultas/consultation-datetime-picker";
 import { DrappConsultaFullModal } from "@/features/historias/components/consultas/drapp-consulta-full-modal";
 import { DrappDiagnosisQuickForm } from "@/features/historias/components/consultas/drapp-diagnosis-quick-form";
 import { DrappProtocolsQuickPanel } from "@/features/historias/components/consultas/drapp-protocols-quick-panel";
@@ -28,7 +29,6 @@ import {
   formatPatientEhrSidebarDate,
   isSameCalendarDay,
   patientEhrEvolutionBody,
-  toPatientEhrDatetimeLocalValue,
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import { useNuevaConsultaForm } from "@/features/historias/hooks/use-nueva-consulta-form";
 import type { ClinicalDiagnosisEntry } from "@/features/historias/utils/clinical-structured-entries";
@@ -53,7 +53,6 @@ import type {
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
 
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EHR_NEW_CONSULT_FORM_ID } from "@/lib/utils/clinical-history-filename";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
@@ -402,10 +401,6 @@ function DrappConsultaWorkspaceInner({
   const pendingDateIso = useMemo(
     () => new Date(consultationAt).toISOString(),
     [consultationAt]
-  );
-  const maxConsultationAt = useMemo(
-    () => toPatientEhrDatetimeLocalValue(new Date().toISOString()),
-    []
   );
 
   useEffect(() => {
@@ -849,18 +844,10 @@ function DrappConsultaWorkspaceInner({
                   {/* Keep motivo in form payload when editing evolución */}
                   <input type="hidden" name="chief_complaint" value={chiefComplaint} />
 
-                  <div className="flex shrink-0 flex-col gap-1 pt-1 sm:max-w-sm">
-                    <Input
-                      type="datetime-local"
-                      label="Fecha de la consulta"
-                      value={consultationAt}
-                      max={maxConsultationAt}
-                      onChange={(e) => setConsultationAt(e.target.value)}
-                    />
-                    <p className="text-[11px] text-slate-500">
-                      Podés cargar evoluciones de fechas anteriores.
-                    </p>
-                  </div>
+                  <ConsultationDatetimePicker
+                    value={consultationAt}
+                    onChange={setConsultationAt}
+                  />
                 </div>
               ) : null}
               </div>
