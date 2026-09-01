@@ -14,6 +14,15 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.23",
+    date: "2026-09-01",
+    title: "Consultas: calendario de fecha sin recorte",
+    highlights: [
+      "El selector de fecha de evolución se muestra completo al hacer clic en Cambiar",
+      "Corrección de ancho del calendario cuando el botón de fecha es angosto",
+    ],
+  },
+  {
     version: "0.2.22",
     date: "2026-09-01",
     title: "Consultas: calendario junto a la fecha de evolución",

@@ -13,6 +13,7 @@ type Props = {
   children: ReactNode;
   className?: string;
   preferredMaxHeight?: number;
+  preferredMinWidth?: number;
 };
 
 export function FloatingAnchorPanel({
@@ -21,6 +22,7 @@ export function FloatingAnchorPanel({
   children,
   className,
   preferredMaxHeight = 360,
+  preferredMinWidth,
 }: Props) {
   const [box, setBox] = useState<ReturnType<typeof computeFloatingAnchorBox> | null>(null);
 
@@ -35,7 +37,9 @@ export function FloatingAnchorPanel({
         computeFloatingAnchorBox(
           { top: rect.top, bottom: rect.bottom, left: rect.left, width: rect.width },
           { width: window.innerWidth, height: window.innerHeight },
-          preferredMaxHeight
+          preferredMaxHeight,
+          4,
+          preferredMinWidth
         )
       );
     }
@@ -47,7 +51,7 @@ export function FloatingAnchorPanel({
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
     };
-  }, [anchorRef, open, preferredMaxHeight]);
+  }, [anchorRef, open, preferredMaxHeight, preferredMinWidth]);
 
   if (!open || !box || typeof document === "undefined") return null;
 

@@ -19,14 +19,18 @@ export function computeFloatingAnchorBox(
   rect: FloatingAnchorRect,
   viewport: { width: number; height: number },
   preferredMaxHeight = 360,
-  gap = 4
+  gap = 4,
+  preferredMinWidth?: number
 ): FloatingAnchorBox {
   const spaceBelow = viewport.height - rect.bottom - gap - VIEWPORT_PADDING;
   const spaceAbove = rect.top - gap - VIEWPORT_PADDING;
   const openBelow = spaceBelow >= 140 || spaceBelow >= spaceAbove;
   const available = openBelow ? spaceBelow : spaceAbove;
   const maxHeight = Math.min(preferredMaxHeight, Math.max(120, available));
-  const width = Math.min(rect.width, Math.max(160, viewport.width - VIEWPORT_PADDING * 2));
+  const maxPanelWidth = viewport.width - VIEWPORT_PADDING * 2;
+  const width = preferredMinWidth
+    ? Math.min(Math.max(rect.width, preferredMinWidth), maxPanelWidth)
+    : Math.min(rect.width, Math.max(160, maxPanelWidth));
   const left = Math.min(
     Math.max(VIEWPORT_PADDING, rect.left),
     Math.max(VIEWPORT_PADDING, viewport.width - width - VIEWPORT_PADDING)
