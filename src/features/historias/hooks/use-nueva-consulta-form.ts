@@ -333,6 +333,7 @@ export function useNuevaConsultaForm({
         clinicalTreatments,
         treatmentMedications,
         vitals,
+        consultationAt,
       }),
     [
       evolution,
@@ -343,6 +344,7 @@ export function useNuevaConsultaForm({
       clinicalTreatments,
       treatmentMedications,
       vitals,
+      consultationAt,
     ]
   );
   const [savedFingerprint, setSavedFingerprint] = useState(contentFingerprint);
@@ -355,7 +357,9 @@ export function useNuevaConsultaForm({
     clinicalTreatments.length > 0 ||
     treatmentMedications.length > 0 ||
     vitals.trim().length > 0;
-  const isDirty = hasContent && contentFingerprint !== savedFingerprint;
+  const isDirty = editingRecordId
+    ? contentFingerprint !== savedFingerprint
+    : hasContent && contentFingerprint !== savedFingerprint;
 
   useEffect(() => {
     formDraftRef.current = {
@@ -581,6 +585,7 @@ export function useNuevaConsultaForm({
               clinicalTreatments: draft.clinicalTreatments,
               treatmentMedications: draft.treatmentMedications,
               vitals: draft.vitals,
+              consultationAt,
             })
           );
           if (draftKey) {
@@ -702,6 +707,7 @@ export function useNuevaConsultaForm({
 
   function loadConsultationForEdit(record: {
     id: string;
+    created_at?: string | null;
     chief_complaint?: string | null;
     diagnosis?: string | null;
     evolution?: string | null;
@@ -711,6 +717,10 @@ export function useNuevaConsultaForm({
     clearTemplateVariables();
     setEditingRecordId(record.id);
     editingRecordIdRef.current = record.id;
+    const nextConsultationAt = record.created_at
+      ? toDatetimeLocalValue(new Date(record.created_at))
+      : toDatetimeLocalValue(new Date());
+    setConsultationAt(nextConsultationAt);
     setChiefComplaint(record.chief_complaint?.trim() ?? "");
     setDiagnosis(record.diagnosis?.trim() ?? "");
     setDiagnoses([]);
@@ -731,6 +741,7 @@ export function useNuevaConsultaForm({
       clinicalTreatments: [],
       treatmentMedications: [],
       vitals: "",
+      consultationAt: nextConsultationAt,
     });
     setSavedFingerprint(nextFp);
     setAutoSaveStatus("saved");
@@ -750,6 +761,7 @@ export function useNuevaConsultaForm({
         clinicalTreatments: [],
         treatmentMedications: [],
         vitals: "",
+        consultationAt: toDatetimeLocalValue(new Date()),
       })
     );
   }

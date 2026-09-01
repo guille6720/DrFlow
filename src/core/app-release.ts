@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.21",
+    date: "2026-09-01",
+    title: "Consultas: fecha de evoluciones anteriores",
+    highlights: [
+      "Selector de fecha visible al cargar una nueva evolución",
+      "La fecha elegida se guarda y actualiza la historia clínica",
+      "Podés registrar consultas de fechas pasadas sin perder el autoguardado",
+    ],
+  },
+  {
     version: "0.2.19",
     date: "2026-08-21",
     title: "Entregables a11y/tema (staging review)",
