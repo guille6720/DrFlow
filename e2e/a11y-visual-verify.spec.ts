@@ -1,3 +1,6 @@
+import { mkdirSync } from "node:fs";
+import path from "node:path";
+
 import { expect, test } from "@playwright/test";
 
 import { loginViaUi } from "./helpers/auth";
@@ -12,9 +15,9 @@ import { ALL_APP_THEMES, applyAppTheme } from "./helpers/theme";
  * Run against staging:
  *   $env:PLAYWRIGHT_BASE_URL="https://drflow-app-git-release-0219-staging-promotion-guillermo-c-bmw.vercel.app"
  *   $env:PLAYWRIGHT_SKIP_WEBSERVER="1"
- *   npx playwright test e2e/a11y-visual-verify.spec.ts --project=a11y-desktop
+ *   npx playwright test e2e/a11y-visual-verify.spec.ts --project=a11y-desktop --workers=1
  *
- * Screenshots: test-results/.../a11y-visual/
+ * Screenshots: tmp/theme-visual-qa/
  */
 const VISUAL_PAGES = [
   { id: "dashboard", path: "/dashboard" },
@@ -24,6 +27,8 @@ const VISUAL_PAGES = [
   { id: "consultas", path: "/consultas" },
   { id: "sala-espera", path: "/sala-espera" },
 ] as const;
+
+const OUT_DIR = path.join(process.cwd(), "tmp", "theme-visual-qa");
 
 test.describe("Theme visual QA — dashboard clinical pack", () => {
   test.beforeEach(({}, testInfo) => {
@@ -35,17 +40,28 @@ test.describe("Theme visual QA — dashboard clinical pack", () => {
 
   test.skip(!hasE2EAuthCredentials(), "Needs E2E_EMAIL / E2E_PASSWORD.");
 
+  test.beforeAll(() => {
+    mkdirSync(OUT_DIR, { recursive: true });
+  });
+
   test.beforeEach(async ({ page }) => {
     await loginViaUi(page);
   });
 
   for (const theme of ALL_APP_THEMES) {
     for (const pageDef of VISUAL_PAGES) {
-      test(`${pageDef.id} @ ${theme.id}`, async ({ page }, testInfo) => {
+      test(`${pageDef.id} @ ${theme.id}`, async ({ page }) => {
         await applyAppTheme(page, theme);
         await page.goto(pageDef.path, { waitUntil: "domcontentloaded" });
+        await page.waitForLoadState("networkidle").catch(() => undefined);
         await applyAppTheme(page, theme);
-        await page.waitForTimeout(400);
+        // Avoid capturing shell loading placeholders ("Cargando panel...")
+        await page
+          .locator("text=Cargando panel")
+          .first()
+          .waitFor({ state: "hidden", timeout: 20_000 })
+          .catch(() => undefined);
+        await page.waitForTimeout(800);
         await expect(page).not.toHaveURL(/\/login(?:\?|$)/);
         await expect(page.locator("body")).toBeVisible();
 
@@ -63,7 +79,7 @@ test.describe("Theme visual QA — dashboard clinical pack", () => {
         expect(attrs.primary.length).toBeGreaterThan(0);
 
         await page.screenshot({
-          path: testInfo.outputPath("a11y-visual", `${pageDef.id}__${theme.id}.png`),
+          path: path.join(OUT_DIR, `${pageDef.id}__${theme.id}.png`),
           fullPage: true,
         });
       });
