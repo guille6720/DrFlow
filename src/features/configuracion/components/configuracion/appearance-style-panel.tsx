@@ -26,8 +26,8 @@ const STYLE_ICONS: Record<UiStyleId, typeof Sparkles> = {
 };
 
 const STYLE_SWATCHES: Record<UiStyleId, string[]> = {
-  "clinical-blue": ["#F6F9FC", "#0B2748", "#0D63D8", "#12A4A6", "#08111F"],
-  "medical-slate": ["#F7F8FA", "#182230", "#2563EB", "#0F9488", "#7057D9", "#0D1117"],
+  "clinical-blue": ["#F5F7F9", "#FFFFFF", "#0D63D8", "#0F766E", "#08111F"],
+  "medical-slate": ["#F5F7F9", "#FFFFFF", "#2563EB", "#0F766E", "#0D1117"],
 };
 
 const APPEARANCE_MODES: Array<{

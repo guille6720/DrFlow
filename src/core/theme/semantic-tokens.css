@@ -13,20 +13,20 @@
   --text-on-secondary: #ffffff;
   --text-on-accent: #ffffff;
   --text-on-card: #172033;
-  --text-on-sidebar: #e8eef6;
-  --text-on-selected: #0b2748;
+  --text-on-sidebar: #1e293b;
+  --text-on-selected: #0f172a;
   --placeholder: #667085;
 
-  --surface-page: #f6f9fc;
+  --surface-page: #f5f7f9;
   --surface-card: #ffffff;
   --surface-elevated: #ffffff;
-  --surface-sidebar: #0b2748;
+  --surface-sidebar: #ffffff;
   --surface-input: #ffffff;
-  --surface-hover: #eef3f8;
-  --surface-selected: #e8f1ff;
+  --surface-hover: #f1f5f9;
+  --surface-selected: #ccfbf1;
 
-  --border-default: #dce3ec;
-  --border-strong: #c5d0de;
+  --border-default: #e2e8f0;
+  --border-strong: #cbd5e1;
 
   --primary-hover: #0a52b4;
   --info: #1769c2;

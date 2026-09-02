@@ -15,21 +15,42 @@ html[data-clinical-dark="1"] {
   --text-on-selected: #f8fafc;
 }
 
-/* Light chrome: sidebar remains dark — active chip uses sidebar tokens */
+/* Light chrome: white sidebar + teal active (claro reference) */
 html[data-ui-style="2"]:not([data-clinical-dark="1"])
   .drflow-ui-sidebar
   a.bg-gradient-to-r {
-  background: var(--sidebar-active-bg, #123a66) !important;
+  background: var(--sidebar-active-bg, #0f766e) !important;
   background-image: none !important;
-  color: var(--text-on-sidebar, #e8eef6) !important;
+  color: #ffffff !important;
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"])
   .drflow-ui-sidebar
   a.bg-gradient-to-r
   svg {
-  color: var(--sidebar-accent, var(--primary)) !important;
+  color: #ffffff !important;
   opacity: 1 !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"])
+  .drflow-ui-sidebar
+  a:not(.bg-gradient-to-r) {
+  color: var(--text-on-sidebar, #1e293b) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"])
+  .drflow-ui-sidebar
+  a:not(.bg-gradient-to-r)
+  svg {
+  color: var(--sidebar-accent, #0f766e) !important;
+  opacity: 1 !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"])
+  .drflow-ui-sidebar
+  a:not(.bg-gradient-to-r):hover {
+  background: var(--surface-hover, #f1f5f9) !important;
+  color: var(--text-primary, #0f172a) !important;
 }
 
 /* Dark active nav */

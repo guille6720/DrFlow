@@ -199,7 +199,8 @@ export function Sidebar({
         id="drflow-sidebar"
         aria-label="Menú lateral"
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r drflow-ui-sidebar drflow-sidebar-gradient shadow-xl shadow-black/30 transition-transform duration-200 ease-out",
+          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r drflow-ui-sidebar drflow-sidebar-gradient transition-transform duration-200 ease-out",
+          "shadow-sm",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           desktopHidden ? "lg:-translate-x-full" : "lg:translate-x-0"
         )}

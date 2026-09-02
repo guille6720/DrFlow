@@ -34,15 +34,15 @@ export function GeminiWebAppLink({ className, onNavigate }: Props) {
       className={cn(
         "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all",
         active
-          ? "drflow-sidebar-nav-active bg-gradient-to-r text-[var(--text-on-sidebar,#e8eef6)] shadow-md"
-          : "text-slate-200 hover:bg-slate-800/90 hover:text-white",
+          ? "drflow-sidebar-nav-active bg-gradient-to-r text-white shadow-sm"
+          : "text-[var(--text-on-sidebar,#1e293b)] hover:bg-[var(--surface-hover,#f1f5f9)]",
         className
       )}
     >
       <Sparkles
         className={cn(
           "h-5 w-5 shrink-0",
-          active ? "text-[var(--sidebar-accent,var(--primary))]" : "text-violet-400"
+          active ? "text-white" : "text-violet-500"
         )}
         strokeWidth={2.25}
         aria-hidden

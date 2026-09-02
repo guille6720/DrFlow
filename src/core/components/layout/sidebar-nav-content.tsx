@@ -54,12 +54,15 @@ function SidebarNavLinkItem({
         "flex items-center gap-3 rounded-2xl py-2.5 text-sm font-semibold transition-all",
         nested ? "px-3 pl-9" : "px-3",
         active
-          ? "drflow-sidebar-nav-active bg-gradient-to-r text-[var(--text-on-sidebar,#e8eef6)] shadow-md"
-          : "text-slate-200 hover:bg-slate-800/90 hover:text-white"
+          ? "drflow-sidebar-nav-active bg-gradient-to-r text-white shadow-sm"
+          : "text-[var(--text-on-sidebar,#1e293b)] hover:bg-[var(--surface-hover,#f1f5f9)]"
       )}
     >
       <item.icon
-        className={cn("h-5 w-5 shrink-0", active ? "text-[var(--sidebar-accent,var(--primary))]" : "text-[var(--sidebar-accent,#4d9cff)]")}
+        className={cn(
+          "h-5 w-5 shrink-0",
+          active ? "text-white" : "text-[var(--sidebar-accent,#0f766e)]"
+        )}
         strokeWidth={2.25}
       />
       {item.label}
@@ -103,17 +106,24 @@ function SidebarNavGroupItem({
         className={cn(
           "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all",
           childActive
-            ? "bg-slate-800/90 text-white"
-            : "text-slate-200 hover:bg-slate-800/90 hover:text-white"
+            ? "bg-[var(--sidebar-active-bg,#0f766e)] text-white"
+            : "text-[var(--text-on-sidebar,#1e293b)] hover:bg-[var(--surface-hover,#f1f5f9)]"
         )}
       >
         <group.icon
-          className="h-5 w-5 shrink-0 text-[var(--sidebar-accent,#4d9cff)]"
+          className={cn(
+            "h-5 w-5 shrink-0",
+            childActive ? "text-white" : "text-[var(--sidebar-accent,#0f766e)]"
+          )}
           strokeWidth={2.25}
         />
         <span className="flex-1 text-left">{group.label}</span>
         <ChevronDown
-          className={cn("h-4 w-4 shrink-0 text-slate-200 transition-transform", open && "rotate-180")}
+          className={cn(
+            "h-4 w-4 shrink-0 transition-transform",
+            childActive ? "text-white" : "text-[var(--text-on-sidebar,#1e293b)]",
+            open && "rotate-180"
+          )}
           strokeWidth={2.25}
           aria-hidden
         />
@@ -215,35 +225,35 @@ export function SidebarNavContent({
         ))}
       </nav>
 
-      <div className="space-y-1 border-t border-slate-700/80 p-3">
+      <div className="space-y-1 border-t border-[var(--border-default,#e2e8f0)] p-3">
         {isInvitedMember ? (
           <button
             type="button"
             onClick={() => setAppearanceOpen(true)}
-            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-[var(--text-on-sidebar,#1e293b)] transition hover:bg-[var(--surface-hover,#f1f5f9)]"
           >
-            <Palette className="h-5 w-5 text-[var(--sidebar-accent,#4d9cff)]" strokeWidth={2.25} />
+            <Palette className="h-5 w-5 text-[var(--sidebar-accent,#0f766e)]" strokeWidth={2.25} />
             Cambiar estilo
           </button>
         ) : null}
         <button
           type="button"
           onClick={onToggleSidebarHidden}
-          className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 hover:text-slate-100"
+          className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-[var(--text-on-sidebar,#1e293b)] transition hover:bg-[var(--surface-hover,#f1f5f9)]"
         >
           {sidebarHidden ? (
-            <PanelLeftOpen className="h-5 w-5 text-[var(--sidebar-accent,#4d9cff)]" />
+            <PanelLeftOpen className="h-5 w-5 text-[var(--sidebar-accent,#0f766e)]" />
           ) : (
-            <PanelLeftClose className="h-5 w-5 text-[var(--sidebar-accent,#4d9cff)]" />
+            <PanelLeftClose className="h-5 w-5 text-[var(--sidebar-accent,#0f766e)]" />
           )}
           {sidebarHidden ? "Mostrar menú lateral" : "Ocultar menú lateral"}
         </button>
         <form action="/api/auth/signout" method="post">
           <button
             type="submit"
-            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-300 hover:bg-red-950/50 hover:text-red-300"
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-[var(--text-on-sidebar,#1e293b)] hover:bg-red-50 hover:text-red-700"
           >
-            <LogOut className="h-5 w-5" strokeWidth={2.25} />
+            <LogOut className="h-5 w-5 text-[var(--sidebar-accent,#0f766e)]" strokeWidth={2.25} />
             Cerrar sesión
           </button>
         </form>

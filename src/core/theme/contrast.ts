@@ -73,9 +73,10 @@ export const THEME_CONTRAST_PAIRS: Array<{
   { id: "cb-light-btn", fg: "#FFFFFF", bg: "#0D63D8" },
   { id: "cb-light-btn-hover", fg: "#FFFFFF", bg: "#0A52B4" },
   { id: "cb-light-danger", fg: "#FFFFFF", bg: "#D92D20", role: "largeText" },
-  { id: "cb-light-sidebar", fg: "#E8EEF6", bg: "#0B2748" },
-  { id: "cb-light-sidebar-nav", fg: "#E8EEF6", bg: "#0B2748" },
-  { id: "cb-light-accent-soft", fg: "#0B2748", bg: "#E8F1FF" },
+  { id: "cb-light-sidebar", fg: "#1E293B", bg: "#FFFFFF" },
+  { id: "cb-light-sidebar-nav", fg: "#1E293B", bg: "#FFFFFF" },
+  { id: "cb-light-sidebar-active", fg: "#FFFFFF", bg: "#0F766E" },
+  { id: "cb-light-accent-soft", fg: "#0F172A", bg: "#CCFBF1" },
   // Clinical Blue dark
   { id: "cb-dark-primary", fg: "#F3F7FC", bg: "#08111F" },
   { id: "cb-dark-on-card", fg: "#F3F7FC", bg: "#101B2D" },
@@ -90,7 +91,8 @@ export const THEME_CONTRAST_PAIRS: Array<{
   { id: "ms-light-muted", fg: "#667085", bg: "#F7F8FA" },
   { id: "ms-light-btn", fg: "#FFFFFF", bg: "#2563EB" },
   { id: "ms-light-accent", fg: "#FFFFFF", bg: "#7057D9", role: "largeText" },
-  { id: "ms-light-sidebar", fg: "#E8EDF3", bg: "#182230" },
+  { id: "ms-light-sidebar", fg: "#1E293B", bg: "#FFFFFF" },
+  { id: "ms-light-sidebar-active", fg: "#FFFFFF", bg: "#0F766E" },
   // Medical Slate dark
   { id: "ms-dark-primary", fg: "#F4F6F8", bg: "#0D1117" },
   { id: "ms-dark-on-card", fg: "#F4F6F8", bg: "#161B22" },

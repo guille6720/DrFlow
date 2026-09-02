@@ -601,34 +601,56 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-sidebar-gradient {
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar {
   border-color: var(--border);
+  background: var(--sidebar) !important;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.06);
   -webkit-font-smoothing: auto;
   -moz-osx-font-smoothing: auto;
   text-rendering: optimizeLegibility;
 }
 
-/* Official palettes keep a dark sidebar in light appearance — use on-sidebar ink */
+/* Claro: white sidebar → dark nav ink (AA) */
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar .text-slate-200,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar .text-slate-300,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar .text-slate-400,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar .text-slate-500 {
-  color: var(--text-on-sidebar, #e8eef6) !important;
+  color: var(--text-on-sidebar, #1e293b) !important;
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.text-slate-200,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.text-slate-300 {
-  color: var(--text-on-sidebar, #e8eef6) !important;
+  color: var(--text-on-sidebar, #1e293b) !important;
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r {
   background: var(--sidebar-active-bg) !important;
   background-image: none !important;
-  color: var(--text-on-sidebar, #e8eef6) !important;
+  color: #ffffff !important;
   box-shadow: none !important;
 }
 
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r :is(svg, span) {
+  color: #ffffff !important;
+}
+
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r svg {
-  color: var(--sidebar-accent) !important;
+  color: #ffffff !important;
   opacity: 1 !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar button {
+  color: var(--text-on-sidebar, #1e293b) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar button:hover {
+  background: var(--surface-hover, #f1f5f9) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar button svg {
+  color: var(--sidebar-accent, #0f766e) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
+  background: var(--sidebar) !important;
 }
 
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar a.bg-gradient-to-r {
@@ -1437,7 +1459,7 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh main .drflow-
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar button.text-slate-400,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar button.text-slate-500 {
-  color: color-mix(in srgb, var(--text-on-sidebar, #e8eef6) 72%, transparent) !important;
+  color: var(--text-secondary, #475569) !important;
 }
 
 /* No forzar texto claro sobre islas blancas dentro de tarjetas oscuras */
