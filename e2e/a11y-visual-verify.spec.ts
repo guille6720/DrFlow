@@ -5,65 +5,68 @@ import { hasE2EAuthCredentials } from "./helpers/e2e-env";
 import { ALL_APP_THEMES, applyAppTheme } from "./helpers/theme";
 
 /**
- * Section 13 helper: capture screenshots of representative surfaces per theme
- * for human review under test-results/a11y-visual/.
+ * Visual capture pack for manual theme QA.
+ * Surfaces: Dashboard / Turnos / Pacientes / HC / Consultas / Sala de espera
+ * × Clinical Blue + Medical Slate × light/dark.
  *
- * Run: npx playwright test e2e/a11y-visual-verify.spec.ts --project=a11y-desktop
+ * Run against staging:
+ *   $env:PLAYWRIGHT_BASE_URL="https://drflow-app-git-release-0219-staging-promotion-guillermo-c-bmw.vercel.app"
+ *   $env:PLAYWRIGHT_SKIP_WEBSERVER="1"
+ *   npx playwright test e2e/a11y-visual-verify.spec.ts --project=a11y-desktop
+ *
+ * Screenshots: test-results/.../a11y-visual/
  */
 const VISUAL_PAGES = [
-  { id: "login", path: "/login", auth: false },
-  { id: "dashboard", path: "/dashboard", auth: true },
-  { id: "configuracion", path: "/configuracion", auth: true },
-  { id: "pacientes", path: "/pacientes", auth: true },
-  { id: "historias", path: "/historias", auth: true },
-  { id: "agenda", path: "/agenda", auth: true },
+  { id: "dashboard", path: "/dashboard" },
+  { id: "turnos", path: "/turnos" },
+  { id: "pacientes", path: "/pacientes" },
+  { id: "historias", path: "/historias" },
+  { id: "consultas", path: "/consultas" },
+  { id: "sala-espera", path: "/sala-espera" },
 ] as const;
 
-test.describe("A11y visual capture for manual review", () => {
+test.describe("Theme visual QA — dashboard clinical pack", () => {
   test.beforeEach(({}, testInfo) => {
     test.skip(
       testInfo.project.name !== "a11y-desktop",
-      "Screenshot pack is desktop-only; tablet/mobile covered by a11y-theme-audit."
+      "Screenshot pack is desktop-only."
     );
   });
 
-  for (const theme of ALL_APP_THEMES) {
-    test(`login screenshot @ ${theme.id}`, async ({ page }, testInfo) => {
-      await applyAppTheme(page, theme);
-      await page.goto("/login", { waitUntil: "domcontentloaded" });
-      await applyAppTheme(page, theme);
-      await expect(page.locator("body")).toBeVisible();
-      await page.screenshot({
-        path: testInfo.outputPath("a11y-visual", `login-${theme.id}.png`),
-        fullPage: true,
-      });
-    });
-  }
+  test.skip(!hasE2EAuthCredentials(), "Needs E2E_EMAIL / E2E_PASSWORD.");
 
-  test.describe("authenticated surfaces", () => {
-    test.skip(!hasE2EAuthCredentials(), "Needs E2E_EMAIL / E2E_PASSWORD for app screenshots.");
-
-    test.beforeEach(async ({ page }) => {
-      await loginViaUi(page);
-    });
-
-    for (const theme of ALL_APP_THEMES.filter((t) =>
-      ["style-6-dark", "style-6-light", "style-5-dark", "style-4-light", "style-2-dark"].includes(
-        t.id
-      )
-    )) {
-      for (const pageDef of VISUAL_PAGES.filter((p) => p.auth)) {
-        test(`${pageDef.id} @ ${theme.id}`, async ({ page }, testInfo) => {
-          await applyAppTheme(page, theme);
-          await page.goto(pageDef.path, { waitUntil: "domcontentloaded" });
-          await applyAppTheme(page, theme);
-          await expect(page).not.toHaveURL(/\/login(?:\?|$)/);
-          await page.screenshot({
-            path: testInfo.outputPath("a11y-visual", `${pageDef.id}-${theme.id}.png`),
-            fullPage: true,
-          });
-        });
-      }
-    }
+  test.beforeEach(async ({ page }) => {
+    await loginViaUi(page);
   });
+
+  for (const theme of ALL_APP_THEMES) {
+    for (const pageDef of VISUAL_PAGES) {
+      test(`${pageDef.id} @ ${theme.id}`, async ({ page }, testInfo) => {
+        await applyAppTheme(page, theme);
+        await page.goto(pageDef.path, { waitUntil: "domcontentloaded" });
+        await applyAppTheme(page, theme);
+        await page.waitForTimeout(400);
+        await expect(page).not.toHaveURL(/\/login(?:\?|$)/);
+        await expect(page.locator("body")).toBeVisible();
+
+        const attrs = await page.evaluate(() => ({
+          style: document.documentElement.getAttribute("data-ui-style"),
+          palette: document.documentElement.getAttribute("data-ui-palette"),
+          dark: document.documentElement.getAttribute("data-clinical-dark"),
+          primary: getComputedStyle(document.documentElement)
+            .getPropertyValue("--primary")
+            .trim(),
+        }));
+        expect(attrs.style).toBe("2");
+        expect(attrs.palette).toBe(theme.style);
+        expect(attrs.dark).toBe(theme.clinicalDark ? "1" : "0");
+        expect(attrs.primary.length).toBeGreaterThan(0);
+
+        await page.screenshot({
+          path: testInfo.outputPath("a11y-visual", `${pageDef.id}__${theme.id}.png`),
+          fullPage: true,
+        });
+      });
+    }
+  }
 });
