@@ -1,4 +1,6 @@
 ﻿@import "tailwindcss";
+/* App appearance (Claro/Oscuro/Sistema) drives dark: — not OS prefers-color-scheme alone */
+@custom-variant dark (&:where([data-clinical-dark="1"], [data-clinical-dark="1"] *));
 @import "@fontsource-variable/plus-jakarta-sans/wght.css";
 @import "@fontsource/geist-mono/latin.css";
 @import "../core/theme/official-palettes.css";

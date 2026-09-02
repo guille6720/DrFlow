@@ -14,6 +14,15 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.36",
+    date: "2026-09-02",
+    title: "Superadmin Planes legible en Claro",
+    highlights: [
+      "Inputs de Planes usan tokens de superficie (ya no dark: del SO sobre modo Claro)",
+      "Variante Tailwind dark: sigue data-clinical-dark de la app",
+    ],
+  },
+  {
     version: "0.2.35",
     date: "2026-09-02",
     title: "Medical Slate Oscuro: dashboard ops legible",
