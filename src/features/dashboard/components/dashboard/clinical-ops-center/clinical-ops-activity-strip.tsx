@@ -23,19 +23,22 @@ export function ClinicalOpsActivityStrip({
       label: "En espera",
       value: metrics.waitingCount,
       icon: Clock,
-      tone: metrics.waitingCount > 0 ? "text-amber-300" : "text-slate-300",
+      tone:
+        metrics.waitingCount > 0
+          ? "text-amber-600"
+          : "text-[var(--text-secondary,#475569)]",
     },
     {
       label: "Atendidos",
       value: metrics.attendedCount,
       icon: UserCheck,
-      tone: "text-teal-300",
+      tone: "text-[var(--sidebar-accent,#0f766e)]",
     },
     {
       label: "Espera prom.",
       value: metrics.averageWaitingMinutes != null ? `${metrics.averageWaitingMinutes} min` : "—",
       icon: HeartPulse,
-      tone: "text-slate-300",
+      tone: "text-[var(--text-secondary,#475569)]",
     },
     {
       label: "Próximo turno",
@@ -43,13 +46,16 @@ export function ClinicalOpsActivityStrip({
         ? formatClinicDateTime(metrics.nextAppointment.start_at, "HH:mm")
         : "—",
       icon: CalendarClock,
-      tone: "text-teal-300",
+      tone: "text-[var(--sidebar-accent,#0f766e)]",
     },
     {
       label: "Demorados",
       value: metrics.delayedCount,
       icon: AlertTriangle,
-      tone: metrics.delayedCount > 0 ? "text-red-300" : "text-slate-300",
+      tone:
+        metrics.delayedCount > 0
+          ? "text-red-600"
+          : "text-[var(--text-secondary,#475569)]",
     },
   ];
 
@@ -58,11 +64,11 @@ export function ClinicalOpsActivityStrip({
       {cards.map(({ label, value, icon: Icon, tone }) => (
         <div
           key={label}
-          className="drflow-card-light rounded-xl border border-slate-700/60 bg-slate-900/50 px-3 py-3"
+          className="drflow-card-light rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] px-3 py-3"
         >
           <div className="flex items-center gap-2">
             <Icon className={cn("h-4 w-4 shrink-0", tone)} aria-hidden />
-            <span className="text-xs text-slate-500">{label}</span>
+            <span className="text-xs text-[var(--text-muted,#64748b)]">{label}</span>
           </div>
           <p className={cn("mt-1 text-xl font-bold tabular-nums", tone)}>{value}</p>
         </div>

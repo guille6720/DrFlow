@@ -37,8 +37,8 @@ export function ClinicalOpsAiRailInner({ ops }: Props) {
   return (
     <div className="space-y-4 text-sm">
       <div>
-        <h3 className="mb-1 text-xs font-semibold uppercase text-slate-500">Resumen del día</h3>
-        <ul className="space-y-1 text-slate-300">
+        <h3 className="mb-1 text-xs font-semibold uppercase text-[var(--text-muted,#64748b)]">Resumen del día</h3>
+        <ul className="space-y-1 text-[var(--text-secondary,#475569)]">
           <li>{ops.activity.waitingCount} en espera · {ops.activity.attendedCount} atendidos</li>
           {ops.activity.averageWaitingMinutes != null ? (
             <li>Espera promedio: {ops.activity.averageWaitingMinutes} min</li>
@@ -49,7 +49,7 @@ export function ClinicalOpsAiRailInner({ ops }: Props) {
 
       {reminders.length > 0 ? (
         <div>
-          <h3 className="mb-1 text-xs font-semibold uppercase text-slate-500">Recordatorios</h3>
+          <h3 className="mb-1 text-xs font-semibold uppercase text-[var(--text-muted,#64748b)]">Recordatorios</h3>
           <ul className="space-y-1.5">
             {reminders.map((r) => (
               <li key={r} className="rounded-lg border border-amber-800/40 bg-amber-950/20 px-2 py-1.5 text-amber-100">
@@ -62,13 +62,13 @@ export function ClinicalOpsAiRailInner({ ops }: Props) {
 
       {followUps.length > 0 ? (
         <div>
-          <h3 className="mb-1 text-xs font-semibold uppercase text-slate-500">Seguimientos sugeridos</h3>
+          <h3 className="mb-1 text-xs font-semibold uppercase text-[var(--text-muted,#64748b)]">Seguimientos sugeridos</h3>
           <ul className="space-y-1">
             {followUps.map((f) => (
               <li key={f.href + f.label}>
-                <Link href={f.href} className="block rounded-lg px-2 py-1 text-teal-300 hover:bg-slate-800">
+                <Link href={f.href} className="block rounded-lg px-2 py-1 text-[var(--sidebar-accent,#0f766e)] hover:bg-[var(--surface-hover,#f1f5f9)]">
                   <span className="font-medium">{f.label}</span>
-                  <span className="block truncate text-xs text-slate-500">{f.detail}</span>
+                  <span className="block truncate text-xs text-[var(--text-muted,#64748b)]">{f.detail}</span>
                 </Link>
               </li>
             ))}
@@ -78,11 +78,11 @@ export function ClinicalOpsAiRailInner({ ops }: Props) {
 
       {pendingDocs.length > 0 ? (
         <div>
-          <h3 className="mb-1 text-xs font-semibold uppercase text-slate-500">Documentación pendiente</h3>
-          <ul className="space-y-1 text-slate-400">
+          <h3 className="mb-1 text-xs font-semibold uppercase text-[var(--text-muted,#64748b)]">Documentación pendiente</h3>
+          <ul className="space-y-1 text-[var(--text-muted,#64748b)]">
             {pendingDocs.slice(0, 5).map((t) => (
               <li key={t.id}>
-                <Link href={t.href} className="hover:text-teal-300 hover:underline">
+                <Link href={t.href} className="hover:text-[var(--sidebar-accent,#0f766e)] hover:underline">
                   {t.label}: {t.detail}
                 </Link>
               </li>

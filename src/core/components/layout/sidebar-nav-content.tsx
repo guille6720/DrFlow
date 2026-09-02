@@ -180,9 +180,9 @@ export function SidebarNavContent({
 
   return (
     <>
-      <div className="border-b border-slate-700/80 px-4 py-5">
+      <div className="border-b border-[var(--border-default,#e2e8f0)] px-4 py-5">
         <DrFlowLogo size="lg" href="/dashboard" centered />
-        <p className="mt-2 truncate text-center text-xs font-semibold tracking-normal text-slate-200">
+        <p className="mt-2 truncate text-center text-xs font-semibold tracking-normal text-[var(--text-on-sidebar,#1e293b)]">
           {clinicName?.trim() || (clinicId ? "Mi clínica" : "Sin clínica")}
         </p>
         {isInvitedMember ? (

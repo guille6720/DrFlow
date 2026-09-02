@@ -31,21 +31,21 @@ function TodayTasksSection({
                 "flex items-start gap-2 rounded-lg border px-3 py-2",
                 task.priority === "high"
                   ? "border-amber-700/50 bg-amber-950/20"
-                  : "border-slate-700/50 bg-slate-900/30"
+                  : "border-[var(--border-default,#e2e8f0)] bg-[var(--surface-hover,#f1f5f9)]"
               )}
             >
               <button
                 type="button"
                 onClick={() => onComplete(task.id)}
-                className="mt-0.5 rounded p-1 text-slate-400 hover:bg-slate-800 hover:text-teal-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50"
+                className="mt-0.5 rounded p-1 text-[var(--text-muted,#64748b)] hover:bg-[var(--surface-hover,#f1f5f9)] hover:text-[var(--sidebar-accent,#0f766e)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50"
                 aria-label={`Marcar completada: ${task.label}`}
               >
                 <Check className="h-4 w-4" aria-hidden />
               </button>
               <div className="min-w-0 flex-1">
-                <Link href={task.href} className="block hover:text-teal-300">
-                  <p className="text-sm font-medium text-slate-100">{task.label}</p>
-                  <p className="truncate text-xs text-slate-400">{task.detail}</p>
+                <Link href={task.href} className="block hover:text-[var(--sidebar-accent,#0f766e)]">
+                  <p className="text-sm font-medium text-[var(--text-primary,#172033)]">{task.label}</p>
+                  <p className="truncate text-xs text-[var(--text-muted,#64748b)]">{task.detail}</p>
                 </Link>
               </div>
             </li>

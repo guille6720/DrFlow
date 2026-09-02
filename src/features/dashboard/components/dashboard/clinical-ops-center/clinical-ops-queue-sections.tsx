@@ -76,7 +76,7 @@ function WaitingQueueList({
             return (
               <li
                 key={row.id}
-                className="rounded-xl border border-slate-700/50 bg-slate-900/30 p-3"
+                className="rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-hover,#f1f5f9)] p-3"
               >
                 <div className="flex gap-3">
                   <PatientAvatar
@@ -86,13 +86,13 @@ function WaitingQueueList({
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-slate-100">{name}</p>
+                      <p className="font-semibold text-[var(--text-primary,#172033)]">{name}</p>
                       {row.age != null ? (
-                        <span className="text-xs text-slate-500">{row.age} años</span>
+                        <span className="text-xs text-[var(--text-muted,#64748b)]">{row.age} años</span>
                       ) : null}
                       <PriorityBadge priority={row.priority} />
                     </div>
-                    <p className="mt-0.5 text-xs text-slate-400">
+                    <p className="mt-0.5 text-xs text-[var(--text-muted,#64748b)]">
                       Turno {formatClinicDateTime(row.start_at, "HH:mm")} hs · Espera{" "}
                       {row.waitingMinutes} min
                       {row.professionals?.profiles?.full_name
@@ -100,8 +100,8 @@ function WaitingQueueList({
                         : ""}
                     </p>
                     {row.notes?.trim() ? (
-                      <p className="mt-1 text-xs text-slate-300">
-                        <span className="text-slate-500">Motivo:</span> {row.notes.trim()}
+                      <p className="mt-1 text-xs text-[var(--text-secondary,#475569)]">
+                        <span className="text-[var(--text-muted,#64748b)]">Motivo:</span> {row.notes.trim()}
                       </p>
                     ) : null}
                     {row.allergies?.trim() ? (
@@ -172,7 +172,7 @@ export function CriticalAlertsSection({
                   ? "border-red-800/60 bg-red-950/40"
                   : alert.severity === "high"
                     ? "border-amber-800/60 bg-amber-950/30"
-                    : "border-slate-700 bg-slate-900/30"
+                    : "border-[var(--border-default,#e2e8f0)] bg-[var(--surface-hover,#f1f5f9)]"
               )}
             >
               <div className="flex items-start gap-2">
@@ -184,8 +184,8 @@ export function CriticalAlertsSection({
                   aria-hidden
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-slate-100">{alert.title}</p>
-                  <p className="text-xs text-slate-400">{alert.detail}</p>
+                  <p className="text-sm font-semibold text-[var(--text-primary,#172033)]">{alert.title}</p>
+                  <p className="text-xs text-[var(--text-muted,#64748b)]">{alert.detail}</p>
                   <Link
                     href={alert.href}
                     className="mt-1 inline-block text-xs font-semibold text-teal-400 hover:underline"

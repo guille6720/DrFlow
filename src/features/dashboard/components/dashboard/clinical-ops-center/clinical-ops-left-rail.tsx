@@ -48,15 +48,15 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
   return (
     <nav
       aria-label="Navegación operativa del día"
-      className="drflow-card-light drflow-sticky-rail flex flex-col gap-3 rounded-xl border border-slate-700/60 bg-slate-900/40 p-3"
+      className="drflow-card-light drflow-sticky-rail flex flex-col gap-3 rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] p-3"
     >
-      <p className="px-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <p className="px-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted,#64748b)]">
         Operaciones
       </p>
       <ClinicalOpsSectionNav items={NAV} counts={counts} />
 
-      <div className="mt-2 border-t border-slate-700/60 pt-3">
-        <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <div className="mt-2 border-t border-[var(--border-default,#e2e8f0)] pt-3">
+        <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted,#64748b)]">
           Acciones rápidas
         </p>
         <ul className="space-y-1 text-sm">
@@ -64,9 +64,9 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
             <Link
               href="/pacientes/nuevo"
               prefetch
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-slate-300 hover:bg-slate-800 hover:text-teal-200"
+              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-[var(--text-primary,#172033)] hover:bg-[var(--surface-hover,#f1f5f9)] hover:text-[var(--sidebar-accent,#0f766e)]"
             >
-              <Plus className="h-3.5 w-3.5" aria-hidden />
+              <Plus className="h-3.5 w-3.5 text-[var(--sidebar-accent,#0f766e)]" aria-hidden />
               Nuevo paciente
             </Link>
           </li>
@@ -74,9 +74,9 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
             <Link
               href="/turnos/nuevo"
               prefetch
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-slate-300 hover:bg-slate-800 hover:text-teal-200"
+              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-[var(--text-primary,#172033)] hover:bg-[var(--surface-hover,#f1f5f9)] hover:text-[var(--sidebar-accent,#0f766e)]"
             >
-              <CalendarDays className="h-3.5 w-3.5" aria-hidden />
+              <CalendarDays className="h-3.5 w-3.5 text-[var(--sidebar-accent,#0f766e)]" aria-hidden />
               Nuevo turno
             </Link>
           </li>
@@ -84,9 +84,9 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
             <Link
               href="/sala-espera"
               prefetch
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-slate-300 hover:bg-slate-800 hover:text-teal-200"
+              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-[var(--text-primary,#172033)] hover:bg-[var(--surface-hover,#f1f5f9)] hover:text-[var(--sidebar-accent,#0f766e)]"
             >
-              <Zap className="h-3.5 w-3.5" aria-hidden />
+              <Zap className="h-3.5 w-3.5 text-[var(--sidebar-accent,#0f766e)]" aria-hidden />
               Sala de espera
             </Link>
           </li>
@@ -94,9 +94,9 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
       </div>
 
       {ops.activity?.nextAppointment ? (
-        <div className="mt-auto rounded-lg border border-teal-800/40 bg-teal-950/30 p-2 text-xs text-teal-200">
+        <div className="mt-auto rounded-lg border border-[color-mix(in_srgb,var(--sidebar-accent,#0f766e)_25%,transparent)] bg-[var(--accent-soft,#ccfbf1)] p-2 text-xs text-[var(--sidebar-accent,#0f766e)]">
           <p className="font-semibold">Próximo turno</p>
-          <p className="mt-0.5 text-teal-100/90">
+          <p className="mt-0.5 opacity-90">
             {ops.activity.nextAppointment.patients
               ? `${ops.activity.nextAppointment.patients.last_name}, ${ops.activity.nextAppointment.patients.first_name}`
               : "Paciente"}{" "}

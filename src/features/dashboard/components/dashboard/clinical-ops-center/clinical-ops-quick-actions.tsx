@@ -53,7 +53,7 @@ export function ClinicalOpsQuickActions() {
                   }}
                   className={cn(
                     "animate-fab-in flex items-center gap-2 rounded-full py-2 pl-3 pr-4 text-sm font-medium text-white shadow-lg",
-                    "bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-500 hover:to-slate-600"
+                    "drflow-accent-fill"
                   )}
                   style={{ animationDelay: `${i * 40}ms` }}
                 >
@@ -91,7 +91,7 @@ export function ClinicalOpsQuickActions() {
         className={cn(
           "flex h-14 w-14 items-center justify-center rounded-full drflow-accent-fill text-white",
           "hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
-          open && "rotate-45 !bg-slate-700"
+          open && "rotate-45 !bg-[var(--text-secondary,#475569)]"
         )}
       >
         {open ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}

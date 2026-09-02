@@ -68,20 +68,30 @@ export function ClinicalOpsSectionNav({ items, counts }: Props) {
               onClick={() => handleNavigate(id)}
               aria-current={isActive ? "true" : undefined}
               className={cn(
-                "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50",
+                "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
                 isActive
-                  ? "bg-teal-950/50 text-teal-50"
-                  : "text-slate-200 hover:bg-slate-800 hover:text-white"
+                  ? "bg-[var(--sidebar-active-bg,#0f766e)] text-white"
+                  : "text-[var(--text-primary,#172033)] hover:bg-[var(--surface-hover,#f1f5f9)]"
               )}
             >
               <Icon
-                className={cn("h-4 w-4 shrink-0", isActive ? "text-teal-200" : "text-slate-300")}
+                className={cn(
+                  "h-4 w-4 shrink-0",
+                  isActive ? "text-white" : "text-[var(--sidebar-accent,#0f766e)]"
+                )}
                 strokeWidth={2.25}
                 aria-hidden
               />
               <span className="min-w-0 flex-1 truncate">{label}</span>
               {count > 0 ? (
-                <span className="inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-slate-700 px-1.5 text-xs font-bold text-teal-100 ring-1 ring-slate-500">
+                <span
+                  className={cn(
+                    "inline-flex min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-xs font-bold ring-1",
+                    isActive
+                      ? "bg-white/20 text-white ring-white/30"
+                      : "bg-[var(--accent-soft,#ccfbf1)] text-[var(--sidebar-accent,#0f766e)] ring-[color-mix(in_srgb,var(--sidebar-accent,#0f766e)_25%,transparent)]"
+                  )}
+                >
                   {count}
                 </span>
               ) : null}

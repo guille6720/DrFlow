@@ -26,12 +26,12 @@ export function PatientAvatar({
       ? "ring-2 ring-red-500"
       : priority === "high"
         ? "ring-2 ring-amber-400"
-        : "ring-1 ring-slate-600";
+        : "ring-1 ring-[var(--border-default,#e2e8f0)]";
 
   return (
     <div
       className={cn(
-        "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-700 text-sm font-semibold text-teal-200",
+        "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface-selected,#ccfbf1)] text-sm font-semibold text-[var(--sidebar-accent,#0f766e)]",
         ring,
         className
       )}
@@ -62,18 +62,18 @@ export function OpsSection({
       id={id}
       aria-labelledby={id ? `${id}-title` : undefined}
       className={cn(
-        "drflow-card-light scroll-mt-24 rounded-xl border border-slate-700/60 bg-slate-900/40 p-4 shadow-sm",
+        "drflow-card-light scroll-mt-24 rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] p-4 shadow-sm",
         className
       )}
     >
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2
           id={id ? `${id}-title` : undefined}
-          className="text-sm font-bold uppercase tracking-wide text-slate-800"
+          className="text-sm font-bold uppercase tracking-wide text-[var(--text-primary,#172033)]"
         >
           {title}
           {count != null ? (
-            <span className="ml-2 inline-flex min-w-[1.5rem] items-center justify-center rounded-full bg-slate-200 px-2 py-0.5 text-xs font-bold text-slate-800 ring-1 ring-slate-300">
+            <span className="ml-2 inline-flex min-w-[1.5rem] items-center justify-center rounded-full bg-[var(--surface-hover,#f1f5f9)] px-2 py-0.5 text-xs font-bold text-[var(--text-primary,#172033)] ring-1 ring-[var(--border-default,#e2e8f0)]">
               {count}
             </span>
           ) : null}
@@ -89,9 +89,9 @@ export function PriorityBadge({ priority }: { priority?: ClinicalOpsWaitingPrior
   const tone: ClinicalOpsWaitingPriority =
     priority === "urgent" || priority === "high" ? priority : "normal";
   const styles: Record<ClinicalOpsWaitingPriority, string> = {
-    urgent: "bg-red-950/80 text-red-200 border-red-700",
-    high: "bg-amber-950/80 text-amber-200 border-amber-700",
-    normal: "bg-slate-800 text-slate-300 border-slate-600",
+    urgent: "bg-red-50 text-red-700 border-red-200",
+    high: "bg-amber-50 text-amber-800 border-amber-200",
+    normal: "bg-[var(--surface-hover,#f1f5f9)] text-[var(--text-secondary,#475569)] border-[var(--border-default,#e2e8f0)]",
   };
   const labels: Record<ClinicalOpsWaitingPriority, string> = {
     urgent: "Urgente",

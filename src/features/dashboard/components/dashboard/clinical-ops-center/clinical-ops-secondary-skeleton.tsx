@@ -4,7 +4,7 @@ function Block({ className }: { className?: string }) {
   return (
     <div
       className={[
-        "animate-pulse rounded-xl border border-slate-700/40 bg-slate-800/50",
+        "animate-pulse rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-hover,#f1f5f9)]",
         className,
       ]
         .filter(Boolean)

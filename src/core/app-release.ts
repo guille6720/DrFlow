@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.32",
+    date: "2026-09-02",
+    title: "Dashboard claro: cards y rail sin gris oscuro",
+    highlights: [
+      "Centro de operaciones clínicas usa superficies blancas en modo Claro",
+      "Rail operativo, métricas y secciones dejan de hardcodear slate-900",
+      "Sidebar y labels de clínica legibles sobre fondo blanco",
+    ],
+  },
+  {
     version: "0.2.31",
     date: "2026-09-02",
     title: "Apariencia: Clinical Blue + Medical Slate",

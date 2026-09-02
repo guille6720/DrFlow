@@ -33,22 +33,25 @@ export function ClinicalOpsTopBar({ clinicName, professionalName, notificationCo
 
   return (
     <div
-      className="drflow-card-light flex flex-col gap-3 rounded-xl border border-slate-700/60 bg-slate-900/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+      className="drflow-card-light flex flex-col gap-3 rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
       role="region"
       aria-label="Barra operativa del día"
     >
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-        <time dateTime={clock?.iso} className="font-mono font-semibold text-teal-300">
+        <time
+          dateTime={clock?.iso}
+          className="font-mono font-semibold text-[var(--sidebar-accent,#0f766e)]"
+        >
           {clock?.label ?? "Cargando hora…"}
         </time>
         {professionalName ? (
-          <span className="inline-flex items-center gap-1.5 text-slate-300">
-            <UserRound className="h-4 w-4 text-slate-500" aria-hidden />
+          <span className="inline-flex items-center gap-1.5 text-[var(--text-primary,#172033)]">
+            <UserRound className="h-4 w-4 text-[var(--text-muted,#64748b)]" aria-hidden />
             {professionalName}
           </span>
         ) : null}
-        <span className="inline-flex items-center gap-1.5 text-slate-400">
-          <Building2 className="h-4 w-4 text-slate-500" aria-hidden />
+        <span className="inline-flex items-center gap-1.5 text-[var(--text-secondary,#475569)]">
+          <Building2 className="h-4 w-4 text-[var(--text-muted,#64748b)]" aria-hidden />
           {clinicName}
         </span>
       </div>
@@ -59,7 +62,7 @@ export function ClinicalOpsTopBar({ clinicName, professionalName, notificationCo
           <button
             type="button"
             onClick={() => scrollToClinicalOpsSection("ops-notifications")}
-            className="inline-flex h-11 items-center gap-1.5 rounded-2xl border border-amber-700/50 bg-amber-950/40 px-3 text-sm text-amber-200 hover:bg-amber-950/60"
+            className="inline-flex h-11 items-center gap-1.5 rounded-2xl border border-amber-200 bg-amber-50 px-3 text-sm text-amber-800 hover:bg-amber-100"
             aria-label={`${notificationCount} notificaciones operativas`}
           >
             <Bell className="h-4 w-4" aria-hidden />

@@ -32,13 +32,13 @@ export function PrescriptionsAndOrdersSections({
             {rxList.map((rx) => (
               <li
                 key={rx.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-700/50 bg-slate-900/30 px-3 py-2"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-hover,#f1f5f9)] px-3 py-2"
               >
                 <div className="min-w-0">
-                  <p className="font-medium text-slate-100">
+                  <p className="font-medium text-[var(--text-primary,#172033)]">
                     {rx.patients ? `${rx.patients.last_name}, ${rx.patients.first_name}` : "Paciente"}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-[var(--text-muted,#64748b)]">
                     <Pill className="mr-1 inline h-3 w-3" aria-hidden />
                     {rx.medicationsSummary} · {rx.status} ·{" "}
                     {formatClinicDateTime(rx.created_at, "d MMM HH:mm")}
@@ -70,15 +70,15 @@ export function PrescriptionsAndOrdersSections({
             {orderList.map((order) => (
               <li
                 key={order.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-700/50 bg-slate-900/30 px-3 py-2"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-hover,#f1f5f9)] px-3 py-2"
               >
                 <div className="min-w-0">
-                  <p className="font-medium text-slate-100">
+                  <p className="font-medium text-[var(--text-primary,#172033)]">
                     {order.patients
                       ? `${order.patients.last_name}, ${order.patients.first_name}`
                       : "Paciente"}
                   </p>
-                  <p className="truncate text-xs text-slate-400">
+                  <p className="truncate text-xs text-[var(--text-muted,#64748b)]">
                     <FileText className="mr-1 inline h-3 w-3" aria-hidden />
                     {order.order_text} · {formatClinicDateTime(order.created_at, "d MMM HH:mm")}
                   </p>
@@ -124,15 +124,15 @@ export function LabResultsSection({
                 "flex items-center justify-between gap-2 rounded-lg border px-3 py-2",
                 lab.severity === "review"
                   ? "border-amber-700/50 bg-amber-950/20"
-                  : "border-slate-700/50 bg-slate-900/30"
+                  : "border-[var(--border-default,#e2e8f0)] bg-[var(--surface-hover,#f1f5f9)]"
               )}
             >
               <div className="min-w-0">
-                <p className="flex items-center gap-1 font-medium text-slate-100">
+                <p className="flex items-center gap-1 font-medium text-[var(--text-primary,#172033)]">
                   <FlaskConical className="h-3.5 w-3.5 shrink-0 text-teal-400" aria-hidden />
                   <span className="truncate">{lab.file_name}</span>
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[var(--text-muted,#64748b)]">
                   {lab.patients ? `${lab.patients.last_name}, ${lab.patients.first_name}` : "Paciente"} ·{" "}
                   {formatClinicDateTime(lab.created_at, "d MMM HH:mm")}
                 </p>
