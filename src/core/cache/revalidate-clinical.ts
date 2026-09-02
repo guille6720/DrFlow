@@ -10,3 +10,9 @@ export function revalidateClinicalSurfaces(extraPaths: string[] = []) {
     revalidatePath(path);
   }
 }
+
+/** After a consultation save, refresh HC and Consultas server data. */
+export function revalidateClinicalConsultationSurfaces(patientId: string) {
+  revalidatePath(`/pacientes/${patientId}`, "page");
+  revalidatePath("/consultas", "page");
+}

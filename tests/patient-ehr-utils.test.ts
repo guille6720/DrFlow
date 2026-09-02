@@ -83,6 +83,18 @@ describe("buildConsultationSidebarList", () => {
 
     expect(sidebar.map((c) => c.id)).toEqual(["d1", "t1"]);
   });
+
+  it("shows every evolution even when multiple visits share the same day", () => {
+    const sorted = [
+      consultation({ id: "evo-late", created_at: "2022-11-10T18:00:00Z", category: "evolution" }),
+      consultation({ id: "evo-early", created_at: "2022-11-10T09:00:00Z", category: "evolution" }),
+      consultation({ id: "older", created_at: "2022-11-09T10:00:00Z", category: "evolution" }),
+    ];
+
+    const sidebar = buildConsultationSidebarList(sorted, sorted);
+
+    expect(sidebar.map((c) => c.id)).toEqual(["evo-late", "evo-early", "older"]);
+  });
 });
 
 describe("resolveSelectedConsultation", () => {

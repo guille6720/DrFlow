@@ -85,6 +85,8 @@ type Props = PatientEhrViewProps & {
   finalizing?: boolean;
   /** Rendered above the consulta shell (inside EHR provider — e.g. nav chips + print). */
   headerSlot?: ReactNode;
+  /** Registers a flush callback used before leaving to Historia clínica. */
+  onRegisterFlushBeforeLeave?: (flush: () => Promise<boolean>) => void;
 };
 
 function truncate(text: string, max = 180): string {
@@ -316,6 +318,7 @@ function DrappConsultaWorkspaceInner({
   onOpenSheet,
   onFinalize,
   finalizing = false,
+  onRegisterFlushBeforeLeave,
 }: Omit<
   Props,
   | "consultations"
@@ -460,6 +463,10 @@ function DrappConsultaWorkspaceInner({
     });
     return () => registerBeforePrint(null);
   }, [registerBeforePrint, saveIfDirty]);
+
+  useEffect(() => {
+    onRegisterFlushBeforeLeave?.(() => saveIfDirty({ silent: true }));
+  }, [onRegisterFlushBeforeLeave, saveIfDirty]);
 
   const handleDeleteConsultationById = useCallback(
     async (recordId: string, options?: { startNew?: boolean }) => {
@@ -1008,6 +1015,7 @@ export function DrappConsultaWorkspace(props: Props) {
     clinicalRecordsPagination,
     professionals,
     headerSlot,
+    onRegisterFlushBeforeLeave,
     ...rest
   } = props;
 
@@ -1028,6 +1036,7 @@ export function DrappConsultaWorkspace(props: Props) {
           <DrappConsultaWorkspaceInner
             key={`${patient.id}:${rest.appointmentId ?? ""}`}
             {...rest}
+            onRegisterFlushBeforeLeave={onRegisterFlushBeforeLeave}
             patient={patient}
             professionals={professionals}
           />

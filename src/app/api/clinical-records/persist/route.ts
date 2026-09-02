@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { revalidateClinicalConsultationSurfaces } from "@/core/cache/revalidate-clinical";
 import { logServerError } from "@/core/errors/log-error.server";
 import { userFacingErrorMessage } from "@/core/observability/correlation-id";
 import { observeCriticalOperation } from "@/core/observability/observe-critical-operation";
@@ -64,8 +65,8 @@ type PersistBody = {
 };
 
 /**
- * Persist clinical record (create or update) without server actions / revalidatePath.
- * Avoids post-action RSC refresh that breaks /consultas autosave in production.
+ * Persist clinical record (create or update) without server actions.
+ * Revalidates patient HC and Consultas after save so navigation sees fresh data.
  */
 export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) {
@@ -190,6 +191,7 @@ export async function POST(request: NextRequest) {
       if (!result.ok) {
         return NextResponse.json({ error: result.error, v: "clinical-persist-v1" }, { status: 500 });
       }
+      revalidateClinicalConsultationSurfaces(parsed.data.patient_id);
       return NextResponse.json({
         success: true as const,
         data: { id: recordId },
@@ -213,6 +215,8 @@ export async function POST(request: NextRequest) {
     if (!result.ok) {
       return NextResponse.json({ error: result.error, v: "clinical-persist-v1" }, { status: 500 });
     }
+
+    revalidateClinicalConsultationSurfaces(parsed.data.patient_id);
 
     return NextResponse.json({
       success: true as const,

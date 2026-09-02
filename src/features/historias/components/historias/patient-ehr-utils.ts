@@ -35,22 +35,35 @@ export function calendarDayKey(iso: string): string {
   return `${y}-${m}-${day}`;
 }
 
-/** Una entrada por día de consulta (incluye todas las categorías visibles). */
+/** One sidebar row per day for DX/TX/vitals; every evolution stays visible. */
 export function buildConsultationSidebarList(
   sorted: PatientEhrConsultation[],
   evolutionList: PatientEhrConsultation[]
 ): PatientEhrConsultation[] {
   const source = sorted.length > 0 ? sorted : evolutionList;
+  const nonEvolutionByDay = new Map<string, PatientEhrConsultation>();
+  const evolutionRows: PatientEhrConsultation[] = [];
+  const evolutionDays = new Set<string>();
 
-  const byDay = new Map<string, PatientEhrConsultation>();
   for (const consultation of source) {
+    if (consultation.category === "evolution") {
+      evolutionRows.push(consultation);
+      evolutionDays.add(calendarDayKey(consultation.created_at));
+      continue;
+    }
     const key = calendarDayKey(consultation.created_at);
-    if (!byDay.has(key)) {
-      byDay.set(key, consultation);
+    if (!nonEvolutionByDay.has(key)) {
+      nonEvolutionByDay.set(key, consultation);
     }
   }
 
-  return [...byDay.values()];
+  const supplemental = [...nonEvolutionByDay.values()].filter(
+    (row) => !evolutionDays.has(calendarDayKey(row.created_at))
+  );
+
+  return [...evolutionRows, ...supplemental].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 }
 
 export function resolveSelectedConsultation(

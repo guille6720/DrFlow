@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.24",
+    date: "2026-09-01",
+    title: "Consultas: HC actualizada al guardar evolución",
+    highlights: [
+      "Historia clínica del paciente muestra evoluciones recién guardadas desde Consultas",
+      "Varias evoluciones del mismo día aparecen en el panel lateral",
+      "Al ir a Historia clínica se guarda y recarga con datos frescos",
+    ],
+  },
+  {
     version: "0.2.23",
     date: "2026-09-01",
     title: "Consultas: calendario de fecha sin recorte",
