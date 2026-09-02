@@ -89,9 +89,9 @@ export function ClinicalOpsQuickActions() {
         aria-label={open ? "Cerrar acciones clínicas" : "Acciones clínicas rápidas"}
         aria-expanded={open}
         className={cn(
-          "flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-xl shadow-cyan-500/35",
-          "hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400",
-          open && "rotate-45 bg-gradient-to-br from-slate-600 to-slate-800"
+          "flex h-14 w-14 items-center justify-center rounded-full drflow-accent-fill text-white",
+          "hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
+          open && "rotate-45 !bg-slate-700"
         )}
       >
         {open ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}

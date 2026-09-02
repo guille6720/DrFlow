@@ -97,8 +97,8 @@ export function PatientEhrActionLinks({
           className={cn(
             "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition",
             activeSheet === "receta"
-              ? "bg-teal-600 text-white shadow-sm"
-              : "bg-gradient-to-r from-cyan-500 to-teal-600 text-white shadow-sm hover:from-cyan-600 hover:to-teal-700"
+              ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm"
+              : "drflow-accent-fill text-white shadow-sm"
           )}
         >
           <Plus className="h-4 w-4" />

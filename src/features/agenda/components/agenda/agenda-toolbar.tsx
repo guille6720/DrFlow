@@ -55,7 +55,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
     <div className="drflow-card-light rounded-2xl bg-white p-4 text-slate-900 ring-1 ring-slate-200 sm:p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="shrink-0 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 p-3 text-white shadow-md shadow-cyan-500/25">
+          <span className="shrink-0 rounded-2xl drflow-accent-fill p-3 text-white">
             <CalendarDays className="h-6 w-6" />
           </span>
           <div className="min-w-0">
@@ -159,7 +159,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
 
         <Link
           href="/turnos/nuevo"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-cyan-500/20 hover:from-cyan-600 hover:to-teal-700 sm:ml-auto sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl drflow-accent-fill px-4 py-2.5 text-sm font-semibold text-white sm:ml-auto sm:w-auto"
         >
           <Plus className="h-4 w-4" />
           Nuevo turno

@@ -157,35 +157,29 @@ textarea.drflow-ui-input:disabled::placeholder {
 
 /* Light islands inside dark themes: form ink stays dark on white */
 html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-label,
-html[data-clinical-dark="1"] .drflow-surface-light .drflow-ui-label,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-label {
+html[data-clinical-dark="1"] .drflow-surface-light .drflow-ui-label {
   color: #334155 !important;
 }
 
 html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-input,
 html[data-clinical-dark="1"] .drflow-surface-light .drflow-ui-input,
 html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-select,
-html[data-clinical-dark="1"] .drflow-surface-light .drflow-ui-select,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-input,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-select {
+html[data-clinical-dark="1"] .drflow-surface-light .drflow-ui-select {
   background-color: #ffffff !important;
   color: #0f172a !important;
   border-color: #cbd5e1 !important;
 }
 
 html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-input::placeholder,
-html[data-clinical-dark="1"] .drflow-surface-light .drflow-ui-input::placeholder,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-input::placeholder {
+html[data-clinical-dark="1"] .drflow-surface-light .drflow-ui-input::placeholder {
   color: #64748b !important;
   -webkit-text-fill-color: #64748b;
 }
 
-html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-helper,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-helper {
+html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-helper {
   color: #475569 !important;
 }
 
-html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-error,
-html[data-ui-palette="cobalt"] .drflow-ui-card .drflow-ui-error {
+html[data-clinical-dark="1"] .drflow-card-light .drflow-ui-error {
   color: #b91c1c !important;
 }

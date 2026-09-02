@@ -56,8 +56,8 @@ export function ProfessionalIntakeSidebar({
           className={cn(
             "mt-3 flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition",
             isNew
-              ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900 shadow-md"
-              : "border border-teal-200 bg-white text-teal-800 hover:bg-teal-50"
+              ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md"
+              : "border border-[color-mix(in_srgb,var(--primary)_35%,transparent)] bg-white text-[var(--primary)] hover:bg-[var(--surface-selected,#e8f1ff)]"
           )}
         >
           <Plus className="h-4 w-4" />
@@ -83,7 +83,7 @@ export function ProfessionalIntakeSidebar({
                     className={cn(
                       "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition",
                       active
-                        ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900 shadow-md shadow-teal-500/20"
+                        ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md"
                         : "text-slate-700 hover:bg-white hover:shadow-sm"
                     )}
                   >

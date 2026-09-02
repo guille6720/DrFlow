@@ -172,37 +172,29 @@
   cursor: not-allowed;
 }
 
-/* Cobalt: white primary CTAs — lock blue label on hover/active/disabled */
-html[data-ui-palette="cobalt"] .drflow-ui-button.drflow-btn-primary,
-html[data-ui-palette="cobalt"] .drflow-ui-button[class*="from-cyan"] {
-  background-color: #ffffff !important;
-  color: #1d4ed8 !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-ui-button.drflow-btn-primary:hover:not(:disabled),
-html[data-ui-palette="cobalt"] .drflow-ui-button[class*="from-cyan"]:hover:not(:disabled),
-html[data-ui-palette="cobalt"] .drflow-ui-button.drflow-btn-primary:active:not(:disabled),
-html[data-ui-palette="cobalt"] .drflow-ui-button[class*="from-cyan"]:active:not(:disabled) {
-  background-color: #eff6ff !important;
-  color: #1e40af !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-ui-button.drflow-btn-primary[aria-busy="true"],
-html[data-ui-palette="cobalt"] .drflow-ui-button[class*="from-cyan"][aria-busy="true"] {
-  background-color: #ffffff !important;
-  color: #1d4ed8 !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-ui-button.drflow-btn-primary:disabled:not([aria-busy="true"]),
-html[data-ui-palette="cobalt"] .drflow-ui-button[class*="from-cyan"]:disabled:not([aria-busy="true"]) {
-  background-color: #e2e8f0 !important;
-  color: #1e40af !important;
-}
-
-/* Midnight / Soft Clinic / Clinical: hover must keep on-primary ink */
-html[data-ui-palette="midnight"] .drflow-ui-button.drflow-btn-primary:hover:not(:disabled),
-html[data-ui-palette="midnight"] .drflow-ui-button.drflow-btn-primary:active:not(:disabled),
-html[data-ui-palette="clinicsoft"] .drflow-ui-button.drflow-btn-primary:hover:not(:disabled),
 html[data-ui-style="2"] .drflow-ui-button.drflow-btn-primary:hover:not(:disabled) {
   color: var(--text-on-primary, var(--primary-foreground)) !important;
+}
+
+/* Tokenized accent fill for FABs / chrome CTAs that previously used cyan-teal gradients */
+.drflow-accent-fill {
+  background: var(--primary) !important;
+  background-image: none !important;
+  color: var(--text-on-primary, var(--primary-foreground)) !important;
+  box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.drflow-accent-fill:hover {
+  background: var(--primary-hover, var(--primary-dark, var(--primary))) !important;
+}
+
+.drflow-accent-fill-secondary {
+  background: var(--secondary) !important;
+  background-image: none !important;
+  color: var(--text-on-secondary, var(--secondary-foreground)) !important;
+  box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--secondary) 30%, transparent);
+}
+
+.drflow-accent-fill-secondary:hover {
+  filter: brightness(0.95);
 }

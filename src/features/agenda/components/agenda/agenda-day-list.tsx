@@ -272,7 +272,7 @@ export const AgendaDayList = memo(function AgendaDayList({
           <button
             type="button"
             onClick={onEmptySlotClick}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-600 px-3 py-2 text-sm font-semibold text-white shadow-md shadow-cyan-500/20 hover:from-cyan-600 hover:to-teal-700"
+            className="inline-flex items-center gap-2 rounded-xl drflow-accent-fill px-3 py-2 text-sm font-semibold text-white"
           >
             <Plus className="h-4 w-4" />
             Agregar turno

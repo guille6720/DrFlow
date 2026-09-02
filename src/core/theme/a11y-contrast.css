@@ -108,8 +108,7 @@ html[data-clinical-dark="1"] [data-selected="true"]:not(option) {
 
 /* Light islands inside dark themes + Cobalt cards: never pale text on white */
 html[data-clinical-dark="1"] .drflow-card-light,
-html[data-clinical-dark="1"] .drflow-surface-light,
-html[data-ui-palette="cobalt"] .drflow-ui-card {
+html[data-clinical-dark="1"] .drflow-surface-light {
   --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-muted: #475569;
@@ -118,8 +117,7 @@ html[data-ui-palette="cobalt"] .drflow-ui-card {
   --muted-foreground: #334155;
 }
 
-html[data-clinical-dark="1"] .drflow-card-light :is(.text-slate-50, .text-slate-100, .text-slate-200, .text-white),
-html[data-ui-palette="cobalt"] .drflow-ui-card :is(.text-slate-50, .text-slate-100, .text-slate-200, .text-white):not(button):not(.drflow-ui-button) {
+html[data-clinical-dark="1"] .drflow-card-light :is(.text-slate-50, .text-slate-100, .text-slate-200, .text-white) {
   color: #0f172a !important;
 }
 
@@ -205,21 +203,21 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-theme-option[data-
 }
 
 /* Dark themes: faded slate utilities → readable secondary (not near-disabled gray) */
-html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+html[data-clinical-dark="1"]
   .drflow-mesh
   main
   :is(.text-slate-400, .text-slate-500, .text-gray-400, .text-gray-500, .text-zinc-400, .text-zinc-500):not(button):not(.drflow-ui-button):not(a.bg-gradient-to-r) {
   color: var(--text-secondary) !important;
 }
 
-html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+html[data-clinical-dark="1"]
   .drflow-mesh
   main
   :is(.text-slate-300, .text-gray-300, .text-zinc-300):not(button):not(.drflow-ui-button):not(a.bg-gradient-to-r) {
   color: var(--text-primary) !important;
 }
 
-html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+html[data-clinical-dark="1"]
   .drflow-mesh
   main
   :is(.text-slate-600, .text-slate-700, .text-gray-600, .text-gray-700):not(button):not(.drflow-ui-button) {
@@ -227,14 +225,14 @@ html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
 }
 
 /* Light themes: pale slate utilities → muted/secondary dark ink */
-html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"])
+html[data-ui-style="2"]:not([data-clinical-dark="1"])
   .drflow-mesh
   main
   :is(.text-slate-400, .text-slate-500, .text-gray-400, .text-gray-500):not(button):not(.drflow-ui-button) {
   color: var(--text-muted) !important;
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"])
+html[data-ui-style="2"]:not([data-clinical-dark="1"])
   .drflow-mesh
   main
   :is(.text-slate-600, .text-slate-700):not(button):not(.drflow-ui-button) {
@@ -263,14 +261,14 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="coba
 }
 
 /* Borders that vanish in dark mode */
-html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+html[data-clinical-dark="1"]
   .drflow-mesh
   main
   :is(.border-slate-100, .border-slate-200, .border-gray-100, .border-gray-200) {
   border-color: var(--border-default) !important;
 }
 
-html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"])
+html[data-clinical-dark="1"]
   .drflow-mesh
   main
   :is(.divide-slate-100, .divide-slate-200)

@@ -177,7 +177,7 @@ export function Sidebar({
     <>
       <button
         type="button"
-        className="fixed left-4 top-4 z-50 rounded-2xl bg-gradient-to-r from-cyan-500 to-teal-500 p-2.5 text-white shadow-lg shadow-cyan-500/30 lg:hidden"
+        className="fixed left-4 top-4 z-50 rounded-2xl drflow-accent-fill p-2.5 text-white lg:hidden"
         onClick={() => setMobileOpen(!mobileOpen)}
         aria-label={mobileOpen ? "Cerrar menú de navegación" : "Abrir menú de navegación"}
         aria-expanded={mobileOpen}

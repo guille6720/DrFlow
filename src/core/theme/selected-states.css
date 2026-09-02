@@ -7,57 +7,40 @@
  */
 
 /* ——— Token floors ——— */
-html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="cobalt"]) {
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) {
   --text-on-selected: #0f172a;
 }
 
-html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) {
+html[data-clinical-dark="1"] {
   --text-on-selected: #f8fafc;
 }
 
-/* Soft Clinic light: active nav is saturated teal — must use white labels */
-html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) {
-  --sidebar-active-bg: #0f766e;
-  --text-on-selected: #0f172a;
-}
-
-html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r,
-html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a[aria-current="page"] {
-  background: #0f766e !important;
-  background-image: none !important;
-  color: #ffffff !important;
-}
-
-html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r svg,
-html[data-ui-palette="clinicsoft"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a[aria-current="page"] svg {
-  color: #ffffff !important;
-  opacity: 1 !important;
-}
-
-/* Clinical / Azure light: pale active chip → dark ink */
-html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="clinicsoft"]):not([data-ui-palette="cobalt"])
+/* Light chrome: sidebar remains dark — active chip uses sidebar tokens */
+html[data-ui-style="2"]:not([data-clinical-dark="1"])
   .drflow-ui-sidebar
   a.bg-gradient-to-r {
-  background: var(--sidebar-active-bg, #ecfdf5) !important;
-  color: #0f172a !important;
+  background: var(--sidebar-active-bg, #123a66) !important;
+  background-image: none !important;
+  color: var(--text-on-sidebar, #e8eef6) !important;
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette="clinicsoft"]):not([data-ui-palette="cobalt"])
+html[data-ui-style="2"]:not([data-clinical-dark="1"])
   .drflow-ui-sidebar
   a.bg-gradient-to-r
   svg {
-  color: var(--sidebar-accent, #0f766e) !important;
+  color: var(--sidebar-accent, var(--primary)) !important;
   opacity: 1 !important;
 }
 
-/* Dark clinical active nav: teal/navy fill + light label */
-html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-sidebar a.bg-gradient-to-r {
-  background: var(--sidebar-active-bg, #134e4a) !important;
-  color: #f8fafc !important;
+/* Dark active nav */
+html[data-clinical-dark="1"] .drflow-ui-sidebar a.bg-gradient-to-r {
+  background: var(--sidebar-active-bg, #12253d) !important;
+  background-image: none !important;
+  color: var(--text-on-sidebar, #f8fafc) !important;
 }
 
-html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-sidebar a.bg-gradient-to-r svg {
-  color: var(--sidebar-accent, #2dd4bf) !important;
+html[data-clinical-dark="1"] .drflow-ui-sidebar a.bg-gradient-to-r svg {
+  color: var(--sidebar-accent, var(--primary)) !important;
   opacity: 1 !important;
 }
 
@@ -76,17 +59,13 @@ html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]) .drflow-ui-sidebar 
 
 /* Pale selected cards (light modes / pale tokens): hard-lock dark ink */
 html:not([data-clinical-dark="1"]) .drflow-theme-option[aria-pressed="true"],
-html:not([data-clinical-dark="1"]) .drflow-theme-option[data-selected="true"],
-html[data-ui-palette="cobalt"] .drflow-theme-option[aria-pressed="true"],
-html[data-ui-palette="cobalt"] .drflow-theme-option[data-selected="true"] {
+html:not([data-clinical-dark="1"]) .drflow-theme-option[data-selected="true"] {
   --text-on-selected: #0f172a;
   color: #0f172a !important;
 }
 
 html:not([data-clinical-dark="1"]) .drflow-theme-option[aria-pressed="true"] :is(.drflow-theme-option-title, .drflow-theme-option-desc, svg),
-html:not([data-clinical-dark="1"]) .drflow-theme-option[data-selected="true"] :is(.drflow-theme-option-title, .drflow-theme-option-desc, svg),
-html[data-ui-palette="cobalt"] .drflow-theme-option[aria-pressed="true"] :is(.drflow-theme-option-title, .drflow-theme-option-desc, svg),
-html[data-ui-palette="cobalt"] .drflow-theme-option[data-selected="true"] :is(.drflow-theme-option-title, .drflow-theme-option-desc, svg) {
+html:not([data-clinical-dark="1"]) .drflow-theme-option[data-selected="true"] :is(.drflow-theme-option-title, .drflow-theme-option-desc, svg) {
   color: #0f172a !important;
 }
 
@@ -99,25 +78,12 @@ html[data-ui-palette="cobalt"] .drflow-theme-option[data-selected="true"] :is(.d
   color: #ffffff !important;
 }
 
-/* Default gradient tabs: ensure white on teal/cyan */
-html:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"]) .drflow-patient-workspace-tab-active {
-  background: linear-gradient(135deg, #0f766e, #0d9488) !important;
-  border-color: #0f766e !important;
-  color: #ffffff !important;
-}
-
-html[data-ui-palette="azure"] .drflow-patient-workspace-tab-active {
-  color: #ffffff !important;
-}
-
-html[data-ui-palette="cobalt"] .drflow-patient-workspace-tab-active {
-  color: #f8fafc !important;
-}
-
-html[data-ui-palette="clinicsoft"] .drflow-patient-workspace-tab-active {
-  background: #0f766e !important;
+/* Active workspace tabs follow official primary tokens */
+html .drflow-patient-workspace-tab-active {
+  background: var(--primary) !important;
   background-image: none !important;
-  color: #ffffff !important;
+  border-color: var(--primary) !important;
+  color: var(--text-on-primary, var(--primary-foreground)) !important;
 }
 
 /* ——— Pale utility selected chips / cards in mesh ——— */
@@ -188,19 +154,15 @@ html:not([data-clinical-dark="1"]) .drflow-mesh main [data-highlighted="true"] {
 }
 
 /* ——— EHR sidebar active (often pale cyan/blue) ——— */
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-sidebar-active,
-html[data-ui-palette="cobalt"] .drflow-ehr-sidebar-active,
-html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-ehr-sidebar-active {
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-sidebar-active {
   color: #0f172a !important;
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-sidebar-active :is(span, p, svg),
-html[data-ui-palette="cobalt"] .drflow-ehr-sidebar-active :is(span, p, svg),
-html[data-ui-palette="azure"]:not([data-clinical-dark="1"]) .drflow-ehr-sidebar-active :is(span, p, svg) {
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-sidebar-active :is(span, p, svg) {
   color: #0f172a !important;
 }
 
-html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]):not([data-ui-palette="azure"])
+html[data-clinical-dark="1"]
   .drflow-ehr-shell
   .drflow-ehr-sidebar-active {
   color: var(--ehr-text, #f8fafc) !important;
@@ -222,8 +184,7 @@ html[data-clinical-dark="1"]:not([data-ui-palette="cobalt"]):not([data-ui-palett
 }
 
 /* ——— Clinical filter chips (light) ——— */
-html:not([data-clinical-dark="1"]) .drflow-clinical-workspace-filter-btn[aria-pressed="true"],
-html[data-ui-palette="cobalt"] .drflow-clinical-workspace-filter-btn[aria-pressed="true"] {
+html:not([data-clinical-dark="1"]) .drflow-clinical-workspace-filter-btn[aria-pressed="true"] {
   background: #eff6ff !important;
   color: #1d4ed8 !important;
   border-color: #2563eb !important;

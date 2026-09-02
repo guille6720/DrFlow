@@ -10,7 +10,7 @@ export function SectorHero({ title, subtitle, icon: Icon }: Props) {
   return (
     <div className="mb-3 border-b border-slate-600/70 pb-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-md shadow-teal-500/30 ring-2 ring-teal-400/40 sm:h-12 sm:w-12">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl drflow-accent-fill text-white ring-2 ring-[color-mix(in_srgb,var(--primary)_40%,transparent)] sm:h-12 sm:w-12">
           <Icon className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={1.75} />
         </div>
         <div className="min-w-0 flex-1">

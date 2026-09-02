@@ -34,13 +34,16 @@ export function GeminiWebAppLink({ className, onNavigate }: Props) {
       className={cn(
         "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all",
         active
-          ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900 shadow-md shadow-teal-500/20"
+          ? "drflow-sidebar-nav-active bg-gradient-to-r text-[var(--text-on-sidebar,#e8eef6)] shadow-md"
           : "text-slate-200 hover:bg-slate-800/90 hover:text-white",
         className
       )}
     >
       <Sparkles
-        className={cn("h-5 w-5 shrink-0", active ? "text-slate-900" : "text-violet-400")}
+        className={cn(
+          "h-5 w-5 shrink-0",
+          active ? "text-[var(--sidebar-accent,var(--primary))]" : "text-violet-400"
+        )}
         strokeWidth={2.25}
         aria-hidden
       />
@@ -63,8 +66,8 @@ export function GeminiWebAppFab() {
       title="Abrir Gemini en DrFlow"
       className={cn(
         "fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full",
-        "bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/30",
-        "hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+        "drflow-accent-fill-secondary text-white",
+        "hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
       )}
     >
       <Sparkles className="h-5 w-5" aria-hidden />

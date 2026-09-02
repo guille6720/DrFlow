@@ -54,12 +54,12 @@ function SidebarNavLinkItem({
         "flex items-center gap-3 rounded-2xl py-2.5 text-sm font-semibold transition-all",
         nested ? "px-3 pl-9" : "px-3",
         active
-          ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900 shadow-md shadow-teal-500/20"
+          ? "drflow-sidebar-nav-active bg-gradient-to-r text-[var(--text-on-sidebar,#e8eef6)] shadow-md"
           : "text-slate-200 hover:bg-slate-800/90 hover:text-white"
       )}
     >
       <item.icon
-        className={cn("h-5 w-5 shrink-0", active ? "text-slate-900" : "text-teal-400")}
+        className={cn("h-5 w-5 shrink-0", active ? "text-[var(--sidebar-accent,var(--primary))]" : "text-[var(--sidebar-accent,#4d9cff)]")}
         strokeWidth={2.25}
       />
       {item.label}

@@ -14,7 +14,7 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
-    version: "0.2.25",
+    version: "0.2.26",
     date: "2026-09-02",
     title: "Apariencia: Clinical Blue + Medical Slate",
     highlights: [

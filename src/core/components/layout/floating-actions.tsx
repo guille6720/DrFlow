@@ -38,25 +38,25 @@ const globalActions: FabAction[] = [
     href: "/turnos/nuevo",
     label: "Nuevo turno",
     icon: Calendar,
-    color: "bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600",
+    color: "drflow-accent-fill",
   },
   {
     href: "/pacientes/nuevo",
     label: "Nuevo paciente",
     icon: Users,
-    color: "bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600",
+    color: "drflow-accent-fill-secondary",
   },
   {
     href: "/consultas",
     label: "Nueva consulta",
     icon: Stethoscope,
-    color: "bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700",
+    color: "drflow-accent-fill",
   },
   {
     href: "/herramientas/farmacologia",
     label: "Guía farmacológica",
     icon: Pill,
-    color: "bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600",
+    color: "drflow-accent-fill-secondary",
   },
 ];
 
@@ -66,19 +66,19 @@ function patientActions(patientId: string): FabAction[] {
       href: patientWorkflowHref(patientId, "soap"),
       label: "Nueva SOAP",
       icon: Stethoscope,
-      color: "bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700",
+      color: "drflow-accent-fill",
     },
     {
       href: patientWorkflowHref(patientId, "prescription"),
       label: "Nueva receta",
       icon: Pill,
-      color: "bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600",
+      color: "drflow-accent-fill-secondary",
     },
     {
       href: patientWorkflowHref(patientId, "order"),
       label: "Nueva orden",
       icon: ClipboardList,
-      color: "bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600",
+      color: "drflow-accent-fill",
     },
   ];
 }
@@ -134,9 +134,9 @@ export function FloatingActions() {
         onClick={() => setOpen(!open)}
         aria-label={open ? "Cerrar acciones" : "Acciones rápidas"}
         className={cn(
-          "flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-xl shadow-cyan-500/35",
-          "hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/40 active:scale-95",
-          open && "rotate-45 bg-gradient-to-br from-slate-600 to-slate-800 shadow-slate-600/30"
+          "flex h-14 w-14 items-center justify-center rounded-full drflow-accent-fill text-white",
+          "hover:scale-105 active:scale-95",
+          open && "rotate-45 !bg-slate-700 !shadow-slate-600/30"
         )}
       >
         {open ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
