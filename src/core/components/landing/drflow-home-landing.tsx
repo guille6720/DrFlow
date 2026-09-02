@@ -211,7 +211,7 @@ export function DrFlowHomeLanding() {
               </div>
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-[3.35rem] lg:leading-[1.08]">
                 Gestión clínica{" "}
-                <span className="bg-gradient-to-r from-cyan-300 to-teal-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[var(--primary-light,var(--primary))] to-[var(--primary)] bg-clip-text text-transparent">
                   sin saltos.
                 </span>
               </h1>
@@ -290,7 +290,7 @@ export function DrFlowHomeLanding() {
                   key={b.title}
                   className="rounded-2xl border border-white bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
                 >
-                  <div className="inline-flex rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 p-2.5 text-white shadow-md shadow-teal-500/20">
+                  <div className="inline-flex rounded-xl drflow-accent-fill p-2.5 text-white">
                     <b.icon className="h-6 w-6" />
                   </div>
                   <h3 className="mt-4 font-semibold text-slate-900">{b.title}</h3>
@@ -436,7 +436,7 @@ export function DrFlowHomeLanding() {
                   <Quote className="h-8 w-8 text-teal-500/40" />
                   <p className="mt-4 flex-1 text-sm leading-relaxed text-slate-700">&ldquo;{t.quote}&rdquo;</p>
                   <div className="mt-6 flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 text-sm font-bold text-white">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full drflow-accent-fill text-sm font-bold text-white">
                       {t.initials}
                     </span>
                     <div>

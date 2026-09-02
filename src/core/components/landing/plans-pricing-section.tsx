@@ -72,7 +72,7 @@ export function PlansPricingSection({
               }
             >
               {plan.recommended ? (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 px-3 py-0.5 text-xs font-semibold text-white shadow-sm">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full drflow-accent-fill px-3 py-0.5 text-xs font-semibold text-white">
                   Recomendado
                 </span>
               ) : null}

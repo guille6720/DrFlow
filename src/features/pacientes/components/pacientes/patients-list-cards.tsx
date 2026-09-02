@@ -108,7 +108,7 @@ const PatientListCard = memo(function PatientListCard({
           <Link
             href={patientClinicalHistoryPath(p.id)}
             prefetch
-            className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-cyan-700 hover:to-teal-700"
+            className="inline-flex items-center gap-1.5 rounded-lg drflow-accent-fill px-3 py-1.5 text-xs font-semibold text-white"
           >
             <FileText className="h-3.5 w-3.5" />
             Historia clínica

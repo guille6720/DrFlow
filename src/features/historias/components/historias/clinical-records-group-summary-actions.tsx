@@ -40,7 +40,7 @@ export function ClinicalRecordsGroupSummaryActions({ group, whatsappName }: Prop
       <Link
         href={patientClinicalHistoryPath(group.patientId)}
         prefetch
-        className="rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-cyan-700 hover:to-teal-700"
+        className="rounded-lg drflow-accent-fill px-3 py-1.5 text-xs font-semibold text-white"
         onClick={(e) => e.stopPropagation()}
       >
         Toda su historia

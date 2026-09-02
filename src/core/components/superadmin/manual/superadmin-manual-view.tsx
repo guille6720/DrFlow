@@ -35,7 +35,7 @@ export function SuperadminManualView({ thresholds }: { thresholds: UsageThreshol
 
   return (
     <div className="space-y-4" data-superadmin-manual>
-      <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-teal-50/40 p-5 dark:border-slate-700 dark:from-slate-900 dark:to-teal-950/30">
+      <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-[color-mix(in_srgb,var(--primary)_8%,white)] p-5 dark:border-slate-700 dark:from-slate-900 dark:to-[color-mix(in_srgb,var(--primary)_12%,#0f172a)]">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="mb-2 flex flex-wrap items-center gap-2">

@@ -71,7 +71,7 @@ export function ClinicalOpsQuickActions() {
                 onClick={() => setOpen(false)}
                 className={cn(
                   "animate-fab-in flex items-center gap-2 rounded-full py-2 pl-3 pr-4 text-sm font-medium text-white shadow-lg",
-                  "bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700"
+                  "drflow-accent-fill"
                 )}
                 style={{ animationDelay: `${i * 40}ms` }}
               >

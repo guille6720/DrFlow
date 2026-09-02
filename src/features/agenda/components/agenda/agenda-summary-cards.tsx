@@ -44,13 +44,13 @@ export const AgendaSummaryCards = memo(function AgendaSummaryCards({
         label: "Turnos esta semana",
         value: weekAppointments.length,
         icon: CalendarDays,
-        className: "from-cyan-50 to-teal-50 text-cyan-900 ring-cyan-100",
+        className: "from-[color-mix(in_srgb,var(--primary)_12%,white)] to-[color-mix(in_srgb,var(--secondary)_10%,white)] text-[var(--text-primary,#0f172a)] ring-[color-mix(in_srgb,var(--primary)_18%,white)]",
       },
       {
         label: "Confirmados",
         value: confirmed,
         icon: CalendarCheck2,
-        className: "from-emerald-50 to-teal-50 text-emerald-900 ring-emerald-100",
+        className: "from-[color-mix(in_srgb,var(--success)_12%,white)] to-[color-mix(in_srgb,var(--secondary)_8%,white)] text-[var(--text-primary,#0f172a)] ring-[color-mix(in_srgb,var(--success)_18%,white)]",
       },
       {
         label: "Pendientes",

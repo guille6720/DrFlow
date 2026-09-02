@@ -38,7 +38,7 @@ const STATUS_CARD_STYLES: Record<string, string> = {
   pending:
     "border-l-amber-400 bg-gradient-to-r from-amber-950/90 via-amber-900/70 to-slate-800/80 text-amber-50",
   confirmed:
-    "border-l-teal-400 bg-gradient-to-r from-teal-900/90 via-cyan-900/70 to-slate-800/80 text-teal-50",
+    "border-l-[var(--primary)] bg-[color-mix(in_srgb,var(--primary)_28%,#0f172a)] text-[var(--text-on-sidebar,#f8fafc)]",
   attended:
     "border-l-emerald-400 bg-gradient-to-r from-emerald-950/90 via-emerald-900/60 to-slate-800/80 text-emerald-50",
   cancelled:
@@ -331,14 +331,14 @@ export function CalendarGrid({
                 className={cn(
                   "border-l border-slate-700/50 p-3 text-center",
                   isToday
-                    ? "bg-gradient-to-b from-teal-600/25 to-slate-900/80"
+                    ? "bg-gradient-to-b from-[color-mix(in_srgb,var(--primary)_25%,transparent)] to-slate-900/80"
                     : "bg-slate-900/80"
                 )}
               >
                 <p
                   className={cn(
                     "text-[11px] font-semibold uppercase tracking-wider",
-                    isToday ? "text-teal-300" : "text-slate-400"
+                    isToday ? "text-[var(--sidebar-accent,var(--primary))]" : "text-slate-400"
                   )}
                 >
                   {format(day, "EEE", { locale: es })}
