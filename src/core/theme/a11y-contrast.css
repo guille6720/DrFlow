@@ -244,8 +244,8 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"])
   opacity: 1 !important;
 }
 
-.drflow-ui-sidebar :is(.text-slate-300, .text-slate-400, .text-slate-500) {
-  color: var(--text-on-sidebar, var(--text-secondary)) !important;
+.drflow-ui-sidebar :is(.text-slate-200, .text-slate-300, .text-slate-400, .text-slate-500) {
+  color: var(--text-on-sidebar, #e8eef6) !important;
 }
 
 /* Badges / chips / toasts — keep ink ≥ token contrast */

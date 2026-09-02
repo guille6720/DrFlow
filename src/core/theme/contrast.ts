@@ -74,6 +74,7 @@ export const THEME_CONTRAST_PAIRS: Array<{
   { id: "cb-light-btn-hover", fg: "#FFFFFF", bg: "#0A52B4" },
   { id: "cb-light-danger", fg: "#FFFFFF", bg: "#D92D20", role: "largeText" },
   { id: "cb-light-sidebar", fg: "#E8EEF6", bg: "#0B2748" },
+  { id: "cb-light-sidebar-nav", fg: "#E8EEF6", bg: "#0B2748" },
   { id: "cb-light-accent-soft", fg: "#0B2748", bg: "#E8F1FF" },
   // Clinical Blue dark
   { id: "cb-dark-primary", fg: "#F3F7FC", bg: "#08111F" },

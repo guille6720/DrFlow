@@ -191,16 +191,16 @@ html[data-ui-palette="medical-slate"] .drflow-ui-sidebar a:not(.bg-gradient-to-r
 }
 
 html[data-ui-palette="medical-slate"] .drflow-ui-sidebar a:not(.bg-gradient-to-r):hover {
-  background: var(--surface-hover) !important;
-  color: var(--text-primary) !important;
+  background: var(--sidebar-active-bg) !important;
+  color: var(--text-on-sidebar, #e8edf3) !important;
 }
 
 html[data-ui-palette="medical-slate"] .drflow-ui-sidebar :is(.text-slate-200, .text-slate-300, .text-slate-400, .text-slate-500) {
-  color: #e2e8f0 !important;
+  color: var(--text-on-sidebar, #e8edf3) !important;
 }
 
 html[data-ui-palette="medical-slate"] .drflow-ui-sidebar :is(.text-white, .text-slate-50, .text-slate-100) {
-  color: var(--text-primary) !important;
+  color: var(--text-on-sidebar, #e8edf3) !important;
 }
 
 html[data-ui-palette="medical-slate"] .drflow-ui-header,

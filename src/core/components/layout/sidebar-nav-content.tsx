@@ -107,7 +107,10 @@ function SidebarNavGroupItem({
             : "text-slate-200 hover:bg-slate-800/90 hover:text-white"
         )}
       >
-        <group.icon className="h-5 w-5 shrink-0 text-teal-400" strokeWidth={2.25} />
+        <group.icon
+          className="h-5 w-5 shrink-0 text-[var(--sidebar-accent,#4d9cff)]"
+          strokeWidth={2.25}
+        />
         <span className="flex-1 text-left">{group.label}</span>
         <ChevronDown
           className={cn("h-4 w-4 shrink-0 text-slate-200 transition-transform", open && "rotate-180")}
@@ -219,7 +222,7 @@ export function SidebarNavContent({
             onClick={() => setAppearanceOpen(true)}
             className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 hover:text-white"
           >
-            <Palette className="h-5 w-5 text-teal-400" strokeWidth={2.25} />
+            <Palette className="h-5 w-5 text-[var(--sidebar-accent,#4d9cff)]" strokeWidth={2.25} />
             Cambiar estilo
           </button>
         ) : null}
@@ -229,9 +232,9 @@ export function SidebarNavContent({
           className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 hover:text-slate-100"
         >
           {sidebarHidden ? (
-            <PanelLeftOpen className="h-5 w-5 text-teal-400" />
+            <PanelLeftOpen className="h-5 w-5 text-[var(--sidebar-accent,#4d9cff)]" />
           ) : (
-            <PanelLeftClose className="h-5 w-5 text-teal-400" />
+            <PanelLeftClose className="h-5 w-5 text-[var(--sidebar-accent,#4d9cff)]" />
           )}
           {sidebarHidden ? "Mostrar menú lateral" : "Ocultar menú lateral"}
         </button>
