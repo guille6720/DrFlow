@@ -66,13 +66,15 @@ export const THEME_CONTRAST_PAIRS: Array<{
   large?: boolean;
 }> = [
   // Clinical Blue light
+  // Primary was #1677FF (~4.1:1 on white = AA large only). #0D63D8 is ≥4.5:1 AA normal.
   { id: "cb-light-primary", fg: "#172033", bg: "#F6F9FC" },
   { id: "cb-light-secondary", fg: "#667085", bg: "#FFFFFF" },
   { id: "cb-light-muted", fg: "#667085", bg: "#F6F9FC" },
-  { id: "cb-light-btn", fg: "#FFFFFF", bg: "#1677FF", role: "largeText" },
-  { id: "cb-light-btn-hover", fg: "#FFFFFF", bg: "#0D63D8", role: "largeText" },
+  { id: "cb-light-btn", fg: "#FFFFFF", bg: "#0D63D8" },
+  { id: "cb-light-btn-hover", fg: "#FFFFFF", bg: "#0A52B4" },
   { id: "cb-light-danger", fg: "#FFFFFF", bg: "#D92D20", role: "largeText" },
   { id: "cb-light-sidebar", fg: "#E8EEF6", bg: "#0B2748" },
+  { id: "cb-light-accent-soft", fg: "#0B2748", bg: "#E8F1FF" },
   // Clinical Blue dark
   { id: "cb-dark-primary", fg: "#F3F7FC", bg: "#08111F" },
   { id: "cb-dark-on-card", fg: "#F3F7FC", bg: "#101B2D" },
@@ -85,7 +87,7 @@ export const THEME_CONTRAST_PAIRS: Array<{
   { id: "ms-light-primary", fg: "#182230", bg: "#F7F8FA" },
   { id: "ms-light-secondary", fg: "#667085", bg: "#FFFFFF" },
   { id: "ms-light-muted", fg: "#667085", bg: "#F7F8FA" },
-  { id: "ms-light-btn", fg: "#FFFFFF", bg: "#2563EB", role: "largeText" },
+  { id: "ms-light-btn", fg: "#FFFFFF", bg: "#2563EB" },
   { id: "ms-light-accent", fg: "#FFFFFF", bg: "#7057D9", role: "largeText" },
   { id: "ms-light-sidebar", fg: "#E8EDF3", bg: "#182230" },
   // Medical Slate dark

@@ -12,7 +12,7 @@ export const MEDICAL_SLATE_CHART_COLORS = [
 ] as const;
 
 export const CLINICAL_BLUE_CHART_COLORS = [
-  "#1677FF",
+  "#0D63D8",
   "#12A4A6",
   "#4D9CFF",
   "#168A5B",
