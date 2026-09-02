@@ -14,6 +14,15 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.33",
+    date: "2026-09-02",
+    title: "HC: datos de nacimiento/edad/afiliado legibles en Claro",
+    highlights: [
+      "Valores del encabezado de paciente dejan de usar texto casi blanco",
+      "Nacimiento, edad y N° afiliado visibles sobre fondo claro",
+    ],
+  },
+  {
     version: "0.2.32",
     date: "2026-09-02",
     title: "Dashboard claro: cards y rail sin gris oscuro",
