@@ -11,11 +11,15 @@ import {
 } from "react";
 
 import {
+  APPEARANCE_MODE_STORAGE_KEY,
+  type AppearanceMode,
   applyUiThemeToDocument,
   CLINICAL_DARK_STORAGE_KEY,
-  isBentoStyle,
-  readClinicalDarkFromStorage,
+  DEFAULT_APPEARANCE_MODE,
+  DEFAULT_UI_STYLE,
+  readAppearanceModeFromStorage,
   readUiStyleFromStorage,
+  resolveClinicalDark,
   UI_STYLE_STORAGE_KEY,
   type UiStyleId,
 } from "@/core/theme/ui-theme";
@@ -23,78 +27,103 @@ import {
 type UiThemeContextValue = {
   style: UiStyleId;
   clinicalDark: boolean;
+  appearanceMode: AppearanceMode;
   setStyle: (style: UiStyleId) => void;
   setClinicalDark: (on: boolean) => void;
+  setAppearanceMode: (mode: AppearanceMode) => void;
   isStyle2: boolean;
 };
 
 const UiThemeContext = createContext<UiThemeContextValue | null>(null);
 
-export function UiThemeProvider({ children }: { children: ReactNode }) {
-  const [style, setStyleState] = useState<UiStyleId>("6");
-  const [clinicalDark, setClinicalDarkState] = useState(true);
+function persistTheme(style: UiStyleId, mode: AppearanceMode, clinicalDark: boolean) {
+  applyUiThemeToDocument(style, clinicalDark);
+  try {
+    localStorage.setItem(UI_STYLE_STORAGE_KEY, style);
+    localStorage.setItem(APPEARANCE_MODE_STORAGE_KEY, mode);
+    // Keep legacy key in sync for older scripts / e2e helpers
+    localStorage.setItem(CLINICAL_DARK_STORAGE_KEY, clinicalDark ? "1" : "0");
+  } catch {
+    /* private mode */
+  }
+}
 
-  const persist = useCallback((nextStyle: UiStyleId, nextDark: boolean) => {
-    applyUiThemeToDocument(nextStyle, nextDark);
-    try {
-      localStorage.setItem(UI_STYLE_STORAGE_KEY, nextStyle);
-      if (isBentoStyle(nextStyle)) {
-        localStorage.setItem(CLINICAL_DARK_STORAGE_KEY, nextDark ? "1" : "0");
-      }
-    } catch {
-      /* private mode */
-    }
-  }, []);
+export function UiThemeProvider({ children }: { children: ReactNode }) {
+  const [style, setStyleState] = useState<UiStyleId>(DEFAULT_UI_STYLE);
+  const [appearanceMode, setAppearanceModeState] =
+    useState<AppearanceMode>(DEFAULT_APPEARANCE_MODE);
+  const [clinicalDark, setClinicalDarkState] = useState(false);
 
   const setStyle = useCallback(
     (next: UiStyleId) => {
       setStyleState(next);
-      // Midnight Navy: arrancar en oscuro (sistema de diseño principal).
-      if (next === "6") {
-        setClinicalDarkState(true);
-        persist(next, true);
-        return;
-      }
-      // Paletas claras: arrancar en claro para que se note el cambio de colores.
-      if (next === "2" || next === "5") {
-        setClinicalDarkState(false);
-        persist(next, false);
-        return;
-      }
-      const dark = isBentoStyle(next) ? clinicalDark : false;
-      persist(next, dark);
+      const dark = resolveClinicalDark(appearanceMode);
+      setClinicalDarkState(dark);
+      persistTheme(next, appearanceMode, dark);
     },
-    [clinicalDark, persist]
+    [appearanceMode]
+  );
+
+  const setAppearanceMode = useCallback(
+    (mode: AppearanceMode) => {
+      setAppearanceModeState(mode);
+      const dark = resolveClinicalDark(mode);
+      setClinicalDarkState(dark);
+      persistTheme(style, mode, dark);
+    },
+    [style]
   );
 
   const setClinicalDark = useCallback(
     (on: boolean) => {
-      if (!isBentoStyle(style)) return;
+      const mode: AppearanceMode = on ? "dark" : "light";
+      setAppearanceModeState(mode);
       setClinicalDarkState(on);
-      persist(style, on);
+      persistTheme(style, mode, on);
     },
-    [persist, style]
+    [style]
   );
 
   useEffect(() => {
     queueMicrotask(() => {
       const s = readUiStyleFromStorage();
-      const d = readClinicalDarkFromStorage();
+      const mode = readAppearanceModeFromStorage();
+      const dark = resolveClinicalDark(mode);
       setStyleState(s);
-      setClinicalDarkState(d);
-      applyUiThemeToDocument(s, d);
+      setAppearanceModeState(mode);
+      setClinicalDarkState(dark);
+      persistTheme(s, mode, dark);
     });
   }, []);
+
+  useEffect(() => {
+    if (appearanceMode !== "system") return undefined;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => {
+      const dark = mq.matches;
+      setClinicalDarkState(dark);
+      applyUiThemeToDocument(style, dark);
+      try {
+        localStorage.setItem(CLINICAL_DARK_STORAGE_KEY, dark ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [appearanceMode, style]);
 
   const value = useMemo(
     () => ({
       style,
       clinicalDark,
+      appearanceMode,
       setStyle,
       setClinicalDark,
-      isStyle2: isBentoStyle(style),
+      setAppearanceMode,
+      isStyle2: true,
     }),
-    [style, clinicalDark, setStyle, setClinicalDark]
+    [style, clinicalDark, appearanceMode, setStyle, setClinicalDark, setAppearanceMode]
   );
 
   return <UiThemeContext.Provider value={value}>{children}</UiThemeContext.Provider>;

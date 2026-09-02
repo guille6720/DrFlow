@@ -70,8 +70,8 @@ export default function RootLayout({
     <html
       lang="es"
       data-ui-style="2"
-      data-ui-palette="midnight"
-      data-clinical-dark="1"
+      data-ui-palette="clinical-blue"
+      data-clinical-dark="0"
       className="h-full antialiased"
     >
       <body className="min-h-full">

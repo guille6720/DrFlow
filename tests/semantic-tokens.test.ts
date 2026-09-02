@@ -9,25 +9,25 @@ import {
   semanticVar,
 } from "@/core/theme/semantic-tokens";
 
-const cssPath = join(process.cwd(), "src/core/theme/semantic-tokens.css");
+const cssPath = join(process.cwd(), "src/core/theme/official-palettes.css");
 const css = readFileSync(cssPath, "utf8");
+const semanticCss = readFileSync(join(process.cwd(), "src/core/theme/semantic-tokens.css"), "utf8");
 
 describe("DrFlow semantic tokens contract", () => {
   it("defines every required CSS variable at least once", () => {
+    const combined = `${css}\n${semanticCss}`;
     for (const token of SEMANTIC_TOKEN_CSS_VARS) {
-      expect(css.includes(`${token}:`), `missing ${token} in semantic-tokens.css`).toBe(true);
+      expect(combined.includes(`${token}:`), `missing ${token}`).toBe(true);
     }
   });
 
-  it("covers every palette id in CSS selectors", () => {
-    expect(css).toContain('data-ui-style="2"');
-    expect(css).toContain('data-ui-palette="azure"');
-    expect(css).toContain('data-ui-palette="cobalt"');
-    expect(css).toContain('data-ui-palette="clinicsoft"');
-    expect(css).toContain('data-ui-palette="midnight"');
+  it("covers every official palette id in CSS selectors", () => {
+    expect(css).toContain('data-ui-palette="clinical-blue"');
+    expect(css).toContain('data-ui-palette="medical-slate"');
     expect(SEMANTIC_PALETTE_IDS).toEqual(
-      expect.arrayContaining(["clinical", "azure", "cobalt", "clinicsoft", "midnight"])
+      expect.arrayContaining(["clinical-blue", "medical-slate"])
     );
+    expect(SEMANTIC_PALETTE_IDS).toHaveLength(2);
   });
 
   it("exposes semanticVar helpers as CSS var() strings", () => {
@@ -38,6 +38,7 @@ describe("DrFlow semantic tokens contract", () => {
 
   it("is imported from globals.css", () => {
     const globals = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
-    expect(globals).toContain('theme/semantic-tokens.css');
+    expect(globals).toContain("theme/official-palettes.css");
+    expect(globals).toContain("theme/semantic-tokens.css");
   });
 });

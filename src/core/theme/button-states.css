@@ -39,7 +39,7 @@
 
 .drflow-ui-button.drflow-btn-primary:hover:not(:disabled):not([aria-busy="true"]),
 .drflow-ui-button.drflow-btn-primary:active:not(:disabled):not([aria-busy="true"]) {
-  background-color: var(--primary-dark, var(--primary)) !important;
+  background-color: var(--primary-hover, var(--primary-dark, var(--primary))) !important;
   color: var(--text-on-primary, var(--primary-foreground)) !important;
 }
 

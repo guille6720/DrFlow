@@ -16,18 +16,18 @@ import { UI_STYLE_IDS } from "@/core/theme/ui-theme";
  */
 describe("Automated a11y audit contract (unit)", () => {
   it("covers every clinical UI style id", () => {
-    expect(UI_STYLE_IDS.sort()).toEqual(["2", "3", "4", "5", "6"]);
+    expect([...UI_STYLE_IDS].sort()).toEqual(["clinical-blue", "medical-slate"].sort());
   });
 
   it("covers every semantic palette id", () => {
     expect([...SEMANTIC_PALETTE_IDS].sort()).toEqual(
-      ["azure", "clinicsoft", "clinical", "cobalt", "midnight"].sort()
+      ["clinical-blue", "medical-slate"].sort()
     );
   });
 
   it("ships contrast pairs for each palette family", () => {
     const ids = THEME_CONTRAST_PAIRS.map((p) => p.id).join(" ");
-    for (const needle of ["s2-", "mn-", "sc-", "az-", "co-", "form-", "sel-"]) {
+    for (const needle of ["cb-", "ms-", "form-", "sel-"]) {
       expect(ids.includes(needle), `missing pairs for ${needle}`).toBe(true);
     }
   });

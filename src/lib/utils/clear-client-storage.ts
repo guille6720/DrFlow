@@ -1,4 +1,10 @@
-import { applyUiThemeToDocument } from "@/core/theme/ui-theme";
+import {
+  APPEARANCE_MODE_STORAGE_KEY,
+  applyUiThemeToDocument,
+  CLINICAL_DARK_STORAGE_KEY,
+  DEFAULT_UI_STYLE,
+  UI_STYLE_STORAGE_KEY,
+} from "@/core/theme/ui-theme";
 
 /** Limpia datos locales de DrFlow (tema, portal, QA, etc.). */
 export function clearDrFlowClientStorage(): void {
@@ -30,5 +36,13 @@ export function clearDrFlowClientStorage(): void {
     /* ignore */
   }
 
-  applyUiThemeToDocument("6", true);
+  try {
+    localStorage.setItem(UI_STYLE_STORAGE_KEY, DEFAULT_UI_STYLE);
+    localStorage.setItem(APPEARANCE_MODE_STORAGE_KEY, "light");
+    localStorage.setItem(CLINICAL_DARK_STORAGE_KEY, "0");
+  } catch {
+    /* ignore */
+  }
+
+  applyUiThemeToDocument(DEFAULT_UI_STYLE, false);
 }

@@ -1,7 +1,6 @@
 /**
  * DrFlow semantic token contract.
- * CSS values live in `semantic-tokens.css` (per palette × light/dark).
- * Components should reference these CSS variables — not ad-hoc slate/gray.
+ * CSS values live in `official-palettes.css` + `semantic-tokens.css`.
  */
 
 export const SEMANTIC_TEXT_TOKENS = [
@@ -37,18 +36,11 @@ export const SEMANTIC_TOKEN_CSS_VARS = [
 
 export type SemanticTokenCssVar = (typeof SEMANTIC_TOKEN_CSS_VARS)[number];
 
-/** Palette ids that must define the full semantic set in CSS. */
-export const SEMANTIC_PALETTE_IDS = [
-  "clinical", // Style 2, no data-ui-palette
-  "azure",
-  "cobalt",
-  "clinicsoft",
-  "midnight",
-] as const;
+/** Official palette ids that must define the full semantic set in CSS. */
+export const SEMANTIC_PALETTE_IDS = ["clinical-blue", "medical-slate"] as const;
 
 export type SemanticPaletteId = (typeof SEMANTIC_PALETTE_IDS)[number];
 
-/** Ready-to-use CSS `var()` expressions for className / style props. */
 export const semanticVar = {
   textPrimary: "var(--text-primary)",
   textSecondary: "var(--text-secondary)",

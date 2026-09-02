@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.25",
+    date: "2026-09-02",
+    title: "Apariencia: Clinical Blue + Medical Slate",
+    highlights: [
+      "Únicas paletas oficiales: Clinical Blue (default) y Medical Slate",
+      "Modo Claro / Oscuro / Sistema en Configuración → Apariencia",
+      "Preferencias antiguas migran automáticamente a Clinical Blue",
+    ],
+  },
+  {
     version: "0.2.24",
     date: "2026-09-01",
     title: "Consultas: HC actualizada al guardar evolución",

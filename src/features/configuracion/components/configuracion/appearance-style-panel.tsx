@@ -1,12 +1,17 @@
 "use client";
 
-import { Droplets, Layers, Mic, Moon, Palette, Sparkles, Sun, Zap } from "lucide-react";
+import { Mic, Monitor, Moon, Palette, Sparkles, Sun } from "lucide-react";
 
 import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
 import { useCanUseVoiceInput } from "@/core/components/entitlements/entitlements-provider";
 import { useUiTheme } from "@/core/components/theme/ui-theme-provider";
 import { FEATURES } from "@/core/entitlements/features";
-import { UI_STYLE_IDS, UI_STYLE_LABELS, type UiStyleId } from "@/core/theme/ui-theme";
+import {
+  type AppearanceMode,
+  UI_STYLE_IDS,
+  UI_STYLE_LABELS,
+  type UiStyleId,
+} from "@/core/theme/ui-theme";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -16,61 +21,37 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 const STYLE_ICONS: Record<UiStyleId, typeof Sparkles> = {
-  "2": Sparkles,
-  "3": Droplets,
-  "4": Layers,
-  "5": Palette,
-  "6": Zap,
+  "clinical-blue": Sparkles,
+  "medical-slate": Palette,
 };
 
 const STYLE_SWATCHES: Record<UiStyleId, string[]> = {
-  "2": ["#F8FAFC", "#0F4C5C", "#0F766E", "#0B1220"],
-  "3": ["#e8f2fc", "#0284c7", "#38bdf8"],
-  "4": ["#2563eb", "#1d4ed8", "#ffffff"],
-  "5": ["#F9FAFB", "#0D9488", "#F3E8FF", "#DCFCE7", "#0B1118"],
-  "6": ["#07182D", "#5CB8F6", "#8457F4", "#F84FA3", "#FFBC58", "#56D3DE"],
+  "clinical-blue": ["#F6F9FC", "#0B2748", "#1677FF", "#12A4A6", "#08111F"],
+  "medical-slate": ["#F7F8FA", "#182230", "#2563EB", "#0F9488", "#7057D9", "#0D1117"],
 };
 
-const BENTO_STYLES: UiStyleId[] = ["2", "3", "4", "5", "6"];
-
-function darkModeHint(style: UiStyleId, clinicalDark: boolean): string {
-  if (style === "6") {
-    return clinicalDark
-      ? "Midnight Navy (#07182D): azul, violeta, magenta y cian con alto contraste clínico."
-      : "Midnight Navy claro: superficies blancas con acento #5CB8F6 (sidebar navy).";
-  }
-  if (style === "5") {
-    return clinicalDark
-      ? "Soft Clinic oscuro (#0B1118): teal activo, chips pastel adaptados y alto contraste."
-      : "Soft Clinic claro: fondo #F9FAFB, sidebar blanca, activo teal #0D9488 y acentos pastel.";
-  }
-  if (style === "4") {
-    return clinicalDark
-      ? "Azul profundo nocturno; tarjetas claras con texto oscuro nítido."
-      : "Fondo azul cobalto saturado; tarjetas blancas de alto contraste.";
-  }
-  if (style === "2") {
-    return clinicalDark
-      ? "Modo oscuro Clinical Blue (#0B1220)."
-      : "Clinical Blue + Teal claro: fondo #F8FAFC, primary #0F4C5C.";
-  }
-  return clinicalDark
-    ? "Fondo oscuro clínico, bordes planos y alto contraste para turnos nocturnos."
-    : "Modo claro plano: fondo gris muy suave, tarjetas blancas y rejilla Bento.";
-}
+const APPEARANCE_MODES: Array<{
+  id: AppearanceMode;
+  label: string;
+  icon: typeof Sun;
+}> = [
+  { id: "light", label: "Claro", icon: Sun },
+  { id: "dark", label: "Oscuro", icon: Moon },
+  { id: "system", label: "Sistema", icon: Monitor },
+];
 
 function AppearanceStyleControls() {
-  const { style, clinicalDark, setStyle, setClinicalDark } = useUiTheme();
+  const { style, appearanceMode, setStyle, setAppearanceMode } = useUiTheme();
   const voice = useVoiceInputOptional();
   const canUseVoice = useCanUseVoiceInput();
 
   return (
     <div className="space-y-6">
       <div>
-        <p className="mb-3 text-sm font-medium text-[var(--text-secondary,var(--muted-foreground,#334155))]">
-          Preset de estilo
+        <p className="mb-3 text-sm font-medium text-[var(--text-secondary,var(--muted-foreground,#667085))]">
+          Paleta
         </p>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           {UI_STYLE_IDS.map((id) => {
             const active = style === id;
             const Icon = STYLE_ICONS[id];
@@ -83,9 +64,7 @@ function AppearanceStyleControls() {
                 data-selected={active ? "true" : "false"}
                 className={cn(
                   "drflow-theme-option rounded-xl border p-4 text-left transition ring-offset-2",
-                  active
-                    ? "ring-2 ring-[var(--ring)]"
-                    : "hover:border-[var(--ring)]"
+                  active ? "ring-2 ring-[var(--ring)]" : "hover:border-[var(--ring)]"
                 )}
               >
                 <div className="flex items-center gap-2">
@@ -98,11 +77,11 @@ function AppearanceStyleControls() {
                     )}
                   />
                   <span className="drflow-theme-option-title font-semibold">
-                    Estilo {id}
+                    {UI_STYLE_LABELS[id]}
                   </span>
-                  {id === "6" ? (
+                  {id === "clinical-blue" ? (
                     <span className="rounded-full bg-[var(--primary)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--primary-foreground)]">
-                      Nuevo
+                      Default
                     </span>
                   ) : null}
                 </div>
@@ -110,14 +89,16 @@ function AppearanceStyleControls() {
                   {STYLE_SWATCHES[id].map((color) => (
                     <span
                       key={color}
-                      className="h-3.5 w-3.5 rounded-full border border-black/20"
+                      className="h-3.5 w-3.5 rounded-full border border-[var(--border)]"
                       style={{ backgroundColor: color }}
                       title={color}
                     />
                   ))}
                 </div>
-                <p className="drflow-theme-option-desc mt-2 text-xs leading-relaxed">
-                  {UI_STYLE_LABELS[id]}
+                <p className="drflow-theme-option-desc mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+                  {id === "clinical-blue"
+                    ? "Azul clínico con sidebar navy y acentos teal. Alta legibilidad médica."
+                    : "Slate médico con acento violeta. Profesional y neutro."}
                 </p>
               </button>
             );
@@ -125,33 +106,35 @@ function AppearanceStyleControls() {
         </div>
       </div>
 
-      {BENTO_STYLES.includes(style) && (
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="flex items-center gap-2 font-semibold text-[var(--text-primary,var(--foreground))]">
-                {clinicalDark ? (
-                  <Moon className="h-4 w-4 text-[var(--accent)]" />
-                ) : (
-                  <Sun className="h-4 w-4 text-[var(--warning)]" />
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-4">
+        <p className="mb-3 font-semibold text-[var(--text-primary,var(--foreground))]">Modo</p>
+        <div className="grid grid-cols-3 gap-2">
+          {APPEARANCE_MODES.map((mode) => {
+            const active = appearanceMode === mode.id;
+            const Icon = mode.icon;
+            return (
+              <button
+                key={mode.id}
+                type="button"
+                onClick={() => setAppearanceMode(mode.id)}
+                aria-pressed={active}
+                className={cn(
+                  "inline-flex flex-col items-center gap-1.5 rounded-lg border px-3 py-3 text-sm font-medium transition",
+                  active
+                    ? "border-[var(--primary)] bg-[var(--surface-selected)] text-[var(--text-on-selected)] ring-2 ring-[var(--ring)]"
+                    : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--ring)]"
                 )}
-                Clinical Dark Mode
-              </p>
-              <p className="mt-1 text-xs text-[var(--text-secondary,var(--muted-foreground))]">
-                {darkModeHint(style, clinicalDark)}
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant={clinicalDark ? "primary" : "outline"}
-              size="sm"
-              onClick={() => setClinicalDark(!clinicalDark)}
-            >
-              {clinicalDark ? "Usar modo claro" : "Activar modo oscuro"}
-            </Button>
-          </div>
+              >
+                <Icon className="h-4 w-4" />
+                {mode.label}
+              </button>
+            );
+          })}
         </div>
-      )}
+        <p className="mt-3 text-xs text-[var(--text-secondary,var(--muted-foreground))]">
+          Sistema sigue la preferencia de apariencia del sistema operativo.
+        </p>
+      </div>
 
       {voice ? (
         <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-4">
@@ -196,23 +179,24 @@ function AppearanceStyleControls() {
       ) : null}
 
       <p className="text-xs text-[var(--text-secondary,var(--muted-foreground))]">
-        La preferencia se guarda en este navegador. El Estilo 6 (Midnight Navy) es el recomendado
-        por contraste clínico; los demás presets siguen disponibles.
+        La preferencia se guarda solo en este navegador. No modifica datos clínicos ni de
+        usuario en el servidor. Clinical Blue es la paleta por defecto de DrFlow.
       </p>
     </div>
   );
 }
 
-export function AppearanceStylePanel({ embedded = false }: { embedded?: boolean }) {
+type Props = {
+  embedded?: boolean;
+};
+
+export function AppearanceStylePanel({ embedded = false }: Props) {
   if (embedded) {
     return <AppearanceStyleControls />;
   }
 
   return (
-    <Card
-      title="Apariencia de la interfaz"
-      description="Elegí un estilo visual. Midnight Navy es el default. El modo oscuro clínico está disponible en todos los presets Bento (2–6)."
-    >
+    <Card title="Apariencia" description="Paleta oficial y modo claro / oscuro / sistema.">
       <AppearanceStyleControls />
     </Card>
   );

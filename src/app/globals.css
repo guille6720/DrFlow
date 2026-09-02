@@ -1,8 +1,10 @@
 ﻿@import "tailwindcss";
 @import "@fontsource-variable/plus-jakarta-sans/wght.css";
 @import "@fontsource/geist-mono/latin.css";
-@import "../core/theme/midnight-navy.css";
+@import "../core/theme/official-palettes.css";
 @import "../core/theme/semantic-tokens.css";
+/* Legacy Midnight component overrides remapped to Medical Slate */
+@import "../core/theme/midnight-navy.css";
 @import "../core/theme/a11y-contrast.css";
 @import "../core/theme/button-states.css";
 @import "../core/theme/form-states.css";
@@ -420,82 +422,8 @@ html[data-ui-style="2"] {
   --radius: 0.75rem;
 }
 
-/* Style 2 â€” Clinical Blue + Teal (light) */
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --border: #d7e0e8;
-  --input: #cbd5e1;
-  --muted: #f1f5f9;
-  --muted-foreground: #334155;
-  --primary: #0f4c5c;
-  --primary-dark: #0c3d4a;
-  --primary-light: #0f766e;
-  --primary-foreground: #ffffff;
-  --secondary: #ffffff;
-  --secondary-foreground: #0f172a;
-  --accent: #0f766e;
-  --accent-foreground: #ffffff;
-  --accent-soft: #ecfdf5;
-  --destructive: #b91c1c;
-  --destructive-foreground: #ffffff;
-  --success: #15803d;
-  --warning: #b45309;
-  --ring: #0f766e;
-  --sidebar: #ffffff;
-  --sidebar-accent: #0f766e;
-  --sidebar-active-bg: #ecfdf5;
-  --table-hover: #f1f5f9;
-  --placeholder: #64748b;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #475569;
-  --text-on-selected: #0f172a;
-  --surface-selected: #ecfdf5;
-}
-
-/* Style 2 — Clinical Blue + Teal (dark) */
-html[data-ui-style="2"][data-clinical-dark="1"] {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --card: #1e293b;
-  --card-foreground: #f8fafc;
-  --border: #334155;
-  --input: #162032;
-  --muted: #2a3a4f;
-  --muted-foreground: #cbd5e1;
-  --primary: #2dd4bf;
-  --primary-dark: #14b8a6;
-  --primary-light: #5eead4;
-  --primary-foreground: #0b1220;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
-  --accent: #38bdf8;
-  --accent-foreground: #0b1220;
-  --accent-soft: #134e4a;
-  --destructive: #f87171;
-  --destructive-foreground: #0b1220;
-  --success: #4ade80;
-  --warning: #fbbf24;
-  --ring: #2dd4bf;
-  --sidebar: #111827;
-  --sidebar-accent: #2dd4bf;
-  --sidebar-active-bg: #134e4a;
-  --table-hover: #2a3a4f;
-  --placeholder: #94a3b8;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-on-selected: #f8fafc;
-  --surface-page: #0f172a;
-  --surface-card: #1e293b;
-  --surface-elevated: #334155;
-  --surface-input: #162032;
-  --surface-hover: #2a3a4f;
-  --surface-selected: #134e4a;
-}
+/* Palette chrome tokens: see official-palettes.css (Clinical Blue / Medical Slate).
+   Keep structural Style-2 rules below; do not redefine --primary/--background here. */
 
 html[data-ui-style="2"] .drflow-mesh {
   background-image: none;
