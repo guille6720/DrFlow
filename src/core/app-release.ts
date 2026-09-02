@@ -14,6 +14,16 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.34",
+    date: "2026-09-02",
+    title: "Dashboard oscuro: chips y rail operativo legibles",
+    highlights: [
+      "Contadores de secciones dejan de verse negros sobre negro en modo Oscuro",
+      "Ítem activo de Operaciones (En espera, etc.) mantiene texto blanco sobre teal",
+      "Islas claras del dashboard usan tokens de superficie claros anidados",
+    ],
+  },
+  {
     version: "0.2.33",
     date: "2026-09-02",
     title: "HC: datos de nacimiento/edad/afiliado legibles en Claro",

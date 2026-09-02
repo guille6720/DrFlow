@@ -68,3 +68,34 @@ html:not([data-clinical-dark="1"]) #drflow-sidebar .border-slate-700\/80 {
 html:not([data-clinical-dark="1"]) #drflow-sidebar .text-slate-200 {
   color: var(--text-on-sidebar, #1e293b) !important;
 }
+
+/* Dark shell + light ops cards: keep count chips and active rail readable */
+html[data-clinical-dark="1"] .clinical-ops-center .drflow-card-light {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+  --surface-hover: #f1f5f9;
+  --surface-card: #ffffff;
+  --border-default: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --sidebar-active-bg: #0f766e;
+  --sidebar-accent: #0f766e;
+  --accent-soft: #ccfbf1;
+}
+
+html[data-clinical-dark="1"] .clinical-ops-center [aria-current="true"] {
+  background-color: #0f766e !important;
+  color: #ffffff !important;
+}
+
+html[data-clinical-dark="1"] .clinical-ops-center [aria-current="true"] :is(span, svg) {
+  color: #ffffff !important;
+}
+
+html[data-clinical-dark="1"] .clinical-ops-center .ops-section-count {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  box-shadow: inset 0 0 0 1px #e2e8f0;
+}

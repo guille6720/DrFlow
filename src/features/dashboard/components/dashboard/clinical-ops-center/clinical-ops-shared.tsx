@@ -73,7 +73,7 @@ export function OpsSection({
         >
           {title}
           {count != null ? (
-            <span className="ml-2 inline-flex min-w-[1.5rem] items-center justify-center rounded-full bg-[var(--surface-hover,#f1f5f9)] px-2 py-0.5 text-xs font-bold text-[var(--text-primary,#172033)] ring-1 ring-[var(--border-default,#e2e8f0)]">
+            <span className="ops-section-count ml-2 inline-flex min-w-[1.5rem] items-center justify-center rounded-full bg-[var(--surface-hover,#f1f5f9)] px-2 py-0.5 text-xs font-bold text-[var(--text-primary,#172033)] ring-1 ring-[var(--border-default,#e2e8f0)]">
               {count}
             </span>
           ) : null}

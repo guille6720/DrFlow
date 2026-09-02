@@ -115,10 +115,29 @@ html[data-clinical-dark="1"] .drflow-surface-light {
   --foreground: #0f172a;
   --card-foreground: #0f172a;
   --muted-foreground: #334155;
+  /* Nested chips/hovers must stay light-surface tokens, not shell dark surfaces */
+  --surface-hover: #f1f5f9;
+  --surface-card: #ffffff;
+  --surface-selected: #ccfbf1;
+  --surface-elevated: #ffffff;
+  --border-default: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --accent-soft: #ccfbf1;
+  --sidebar-accent: #0f766e;
+  --sidebar-active-bg: #0f766e;
+  --text-on-selected: #0f172a;
 }
 
 html[data-clinical-dark="1"] .drflow-card-light :is(.text-slate-50, .text-slate-100, .text-slate-200, .text-white) {
   color: #0f172a !important;
+}
+
+/* Saturated active fills inside light islands keep white ink */
+html[data-clinical-dark="1"] .drflow-card-light [aria-current="true"],
+html[data-clinical-dark="1"] .drflow-card-light [aria-current="true"] :is(span, svg),
+html[data-clinical-dark="1"] .drflow-card-light .drflow-on-accent,
+html[data-clinical-dark="1"] .drflow-card-light .drflow-on-accent :is(span, svg) {
+  color: #ffffff !important;
 }
 
 /* Pale selected / hover chips in light themes keep dark ink */

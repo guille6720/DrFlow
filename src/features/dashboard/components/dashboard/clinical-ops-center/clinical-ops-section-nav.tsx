@@ -70,7 +70,7 @@ export function ClinicalOpsSectionNav({ items, counts }: Props) {
               className={cn(
                 "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
                 isActive
-                  ? "bg-[var(--sidebar-active-bg,#0f766e)] text-white"
+                  ? "drflow-on-accent bg-[var(--sidebar-active-bg,#0f766e)] text-white"
                   : "text-[var(--text-primary,#172033)] hover:bg-[var(--surface-hover,#f1f5f9)]"
               )}
             >
