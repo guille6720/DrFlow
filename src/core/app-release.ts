@@ -14,6 +14,15 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.35",
+    date: "2026-09-02",
+    title: "Medical Slate Oscuro: dashboard ops legible",
+    highlights: [
+      "Cards del centro de operaciones dejan de mezclar fondo oscuro con texto negro",
+      "Ops usa clinical-ops-card con tokens de tema (claro y oscuro) en ambas paletas",
+    ],
+  },
+  {
     version: "0.2.34",
     date: "2026-09-02",
     title: "Dashboard oscuro: chips y rail operativo legibles",

@@ -1,12 +1,26 @@
 /**
- * Clinical Ops dashboard — light/dark surface remaps.
- * Components prefer tokens; these rules neutralize residual slate-900 hardcodes in Claro.
+ * Clinical Ops dashboard surfaces.
+ * Uses `.clinical-ops-card` (not `.drflow-card-light`) so Medical Slate / Clinical Blue
+ * dark modes keep dark cards + light ink instead of fighting light-island remaps.
  */
 
-html:not([data-clinical-dark="1"]) .clinical-ops-center {
+.clinical-ops-center {
   color: var(--text-primary, #172033);
 }
 
+.clinical-ops-card {
+  background-color: var(--surface-card, #ffffff);
+  color: var(--text-primary, #172033);
+  border-color: var(--border-default, #e2e8f0);
+}
+
+.clinical-ops-center .ops-section-count {
+  background-color: var(--surface-hover, #f1f5f9);
+  color: var(--text-primary, #172033);
+  box-shadow: inset 0 0 0 1px var(--border-default, #e2e8f0);
+}
+
+/* ——— Claro: neutralize residual dark hardcodes ——— */
 html:not([data-clinical-dark="1"]) .clinical-ops-center :is(
   [class*="bg-slate-900"],
   [class*="bg-slate-800"]
@@ -69,33 +83,48 @@ html:not([data-clinical-dark="1"]) #drflow-sidebar .text-slate-200 {
   color: var(--text-on-sidebar, #1e293b) !important;
 }
 
-/* Dark shell + light ops cards: keep count chips and active rail readable */
-html[data-clinical-dark="1"] .clinical-ops-center .drflow-card-light {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border-color: #e2e8f0 !important;
-  --surface-hover: #f1f5f9;
-  --surface-card: #ffffff;
-  --border-default: #e2e8f0;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #475569;
-  --sidebar-active-bg: #0f766e;
-  --sidebar-accent: #0f766e;
-  --accent-soft: #ccfbf1;
-}
-
-html[data-clinical-dark="1"] .clinical-ops-center [aria-current="true"] {
-  background-color: #0f766e !important;
+/* Claro: teal active rail keeps white ink */
+html:not([data-clinical-dark="1"]) .clinical-ops-center [aria-current="true"],
+html:not([data-clinical-dark="1"]) .clinical-ops-center [aria-current="true"] :is(span, svg) {
   color: #ffffff !important;
 }
 
-html[data-clinical-dark="1"] .clinical-ops-center [aria-current="true"] :is(span, svg) {
-  color: #ffffff !important;
+/* ——— Oscuro: dark cards + light ink (both palettes) ——— */
+html[data-clinical-dark="1"] .clinical-ops-center {
+  color: var(--text-primary, #f4f6f8);
+}
+
+html[data-clinical-dark="1"] .clinical-ops-center .clinical-ops-card {
+  background-color: var(--surface-card, #161b22) !important;
+  color: var(--text-primary, #f4f6f8) !important;
+  border-color: var(--border-default, #303844) !important;
 }
 
 html[data-clinical-dark="1"] .clinical-ops-center .ops-section-count {
-  background-color: #f1f5f9 !important;
-  color: #0f172a !important;
-  box-shadow: inset 0 0 0 1px #e2e8f0;
+  background-color: var(--surface-hover, #1c2330) !important;
+  color: var(--text-primary, #f4f6f8) !important;
+  box-shadow: inset 0 0 0 1px var(--border-default, #303844);
+}
+
+html[data-clinical-dark="1"] .clinical-ops-center [aria-current="true"] {
+  background-color: var(--sidebar-active-bg, #1c2330) !important;
+  color: var(--text-on-sidebar, #f8fafc) !important;
+}
+
+html[data-clinical-dark="1"] .clinical-ops-center [aria-current="true"] :is(span, svg) {
+  color: var(--text-on-sidebar, #f8fafc) !important;
+}
+
+/* Medical Slate dark: slightly brighter active + accent for rail */
+html[data-ui-palette="medical-slate"][data-clinical-dark="1"] .clinical-ops-center [aria-current="true"] {
+  background-color: #243041 !important;
+  color: #f4f6f8 !important;
+}
+
+html[data-ui-palette="medical-slate"][data-clinical-dark="1"] .clinical-ops-center [aria-current="true"] :is(span, svg) {
+  color: #f4f6f8 !important;
+}
+
+html[data-ui-palette="medical-slate"][data-clinical-dark="1"] .clinical-ops-center [aria-current="true"] svg {
+  color: #9dd4fa !important;
 }

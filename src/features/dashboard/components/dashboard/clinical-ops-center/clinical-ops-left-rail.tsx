@@ -48,7 +48,7 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
   return (
     <nav
       aria-label="Navegación operativa del día"
-      className="drflow-card-light drflow-sticky-rail flex flex-col gap-3 rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] p-3"
+      className="clinical-ops-card drflow-sticky-rail flex flex-col gap-3 rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] p-3"
     >
       <p className="px-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted,#64748b)]">
         Operaciones

@@ -33,7 +33,7 @@ export function ClinicalOpsTopBar({ clinicName, professionalName, notificationCo
 
   return (
     <div
-      className="drflow-card-light flex flex-col gap-3 rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+      className="clinical-ops-card flex flex-col gap-3 rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
       role="region"
       aria-label="Barra operativa del día"
     >

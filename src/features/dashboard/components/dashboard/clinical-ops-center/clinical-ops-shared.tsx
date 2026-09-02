@@ -62,7 +62,7 @@ export function OpsSection({
       id={id}
       aria-labelledby={id ? `${id}-title` : undefined}
       className={cn(
-        "drflow-card-light scroll-mt-24 rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] p-4 shadow-sm",
+        "clinical-ops-card scroll-mt-24 rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] p-4 shadow-sm",
         className
       )}
     >
