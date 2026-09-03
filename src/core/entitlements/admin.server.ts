@@ -24,6 +24,7 @@ import { createClient } from "@/core/supabase/server";
 
 const planKeySchema = z.enum([
   PLAN_KEYS.TRIAL,
+  PLAN_KEYS.ESSENTIAL,
   PLAN_KEYS.BASIC,
   PLAN_KEYS.PRO,
   PLAN_KEYS.PREMIUM,

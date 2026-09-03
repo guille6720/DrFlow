@@ -21,21 +21,42 @@ function revalidateSuperadmin(clinicId?: string) {
 }
 
 export async function previewClinicPlanChangeAction(currentPlanKey: string, newPlanKey: string) {
-  const access = await requireSuperadminOrDeny();
-  if (!access.ok) return { ok: false as const, error: access.error, diff: null };
-  const diff = await compareClinicPlans(currentPlanKey, newPlanKey);
-  if (!diff) return { ok: false as const, error: "No se pudo calcular el diff.", diff: null };
-  return { ok: true as const, diff, error: null };
+  try {
+    const access = await requireSuperadminOrDeny();
+    if (!access.ok) return { ok: false as const, error: access.error, diff: null };
+    const diff = await compareClinicPlans(currentPlanKey, newPlanKey);
+    if (!diff) return { ok: false as const, error: "No se pudo calcular el diff.", diff: null };
+    return { ok: true as const, diff, error: null };
+  } catch (err) {
+    return {
+      ok: false as const,
+      error: err instanceof Error ? err.message : "No se pudo comparar los planes.",
+      diff: null,
+    };
+  }
 }
 
 export async function assignClinicPlanAction(formData: FormData) {
-  const clinicId = String(formData.get("clinicId") ?? "");
-  const planKey = String(formData.get("planKey") ?? "");
-  const reason = String(formData.get("reason") ?? "");
-  const result = await assignClinicEntitlementPlan({ clinicId, planKey, reason });
-  if (!result.ok) return result;
-  revalidateSuperadmin(clinicId);
-  return result;
+  try {
+    const clinicId = String(formData.get("clinicId") ?? "");
+    const planKey = String(formData.get("planKey") ?? "");
+    const reason = String(formData.get("reason") ?? "");
+    if (!clinicId || !planKey) {
+      return { ok: false as const, error: "Faltan clínica o plan." };
+    }
+    if (!reason.trim()) {
+      return { ok: false as const, error: "Indicá un motivo para auditoría." };
+    }
+    const result = await assignClinicEntitlementPlan({ clinicId, planKey, reason });
+    if (!result.ok) return result;
+    revalidateSuperadmin(clinicId);
+    return result;
+  } catch (err) {
+    return {
+      ok: false as const,
+      error: err instanceof Error ? err.message : "No se pudo asignar el plan.",
+    };
+  }
 }
 
 export async function setRecommendationStatusAction(formData: FormData) {
