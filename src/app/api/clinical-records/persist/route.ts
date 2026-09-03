@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { resolveApiClinicAccess } from "@/core/auth/resolve-api-clinic-access";
 import { revalidateClinicalConsultationSurfaces } from "@/core/cache/revalidate-clinical";
 import { logServerError } from "@/core/errors/log-error.server";
 import { userFacingErrorMessage } from "@/core/observability/correlation-id";
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
     }
 
     const cookieStore = await cookies();
-    let clinicId = cookieStore.get(CLINIC_COOKIE)?.value ?? null;
+    const cookieClinicId = cookieStore.get(CLINIC_COOKIE)?.value ?? null;
 
     const { data: memberships, error: memberError } = await supabase
       .from("clinic_members")
@@ -133,35 +134,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const members = memberships ?? [];
     const { data: profile } = await supabase
       .from("profiles")
       .select("is_superadmin")
       .eq("id", user.id)
       .maybeSingle();
 
-    if (members.length === 0) {
-      if (!profile?.is_superadmin) {
-        return NextResponse.json({ error: "Sin permisos", v: "clinical-persist-v1" }, { status: 403 });
-      }
-      if (!clinicId) {
-        return NextResponse.json({ error: "Sin clínica activa", v: "clinical-persist-v1" }, { status: 403 });
-      }
-    } else {
-      if (!clinicId || !members.some((m) => m.clinic_id === clinicId)) {
-        clinicId = members[0]?.clinic_id ?? null;
-      }
-      if (!clinicId) {
-        return NextResponse.json({ error: "Sin clínica activa", v: "clinical-persist-v1" }, { status: 403 });
-      }
-      const membership = members.find((m) => m.clinic_id === clinicId);
-      const allowed =
-        Boolean(profile?.is_superadmin) ||
-        (membership?.role != null && CLINICAL_WRITE_ROLES.has(membership.role));
-      if (!allowed) {
-        return NextResponse.json({ error: "Sin permisos", v: "clinical-persist-v1" }, { status: 403 });
-      }
+    const access = resolveApiClinicAccess({
+      cookieClinicId,
+      members: memberships ?? [],
+      isSuperadmin: Boolean(profile?.is_superadmin),
+      allowedRoles: CLINICAL_WRITE_ROLES,
+    });
+    if (!access.ok) {
+      return NextResponse.json(
+        { error: access.error, v: "clinical-persist-v1" },
+        { status: access.status }
+      );
     }
+    const clinicId = access.clinicId;
 
     const ownership = await verifyClinicalRecordForeignKeys(supabase, clinicId, {
       patientId: parsed.data.patient_id,
