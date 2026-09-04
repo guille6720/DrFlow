@@ -19,10 +19,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   if (!(await isPublicPortalAllowedForSlug(slug))) {
-    return { title: "App pacientes | DrFlow" };
+    return { title: "App pacientes | NexClinic" };
   }
   return {
-    title: `App pacientes — ${slug} | DrFlow`,
+    title: `App pacientes — ${slug} | NexClinic`,
     description: "Pedí turno, recetas y contactá a tu consultorio por WhatsApp.",
   };
 }

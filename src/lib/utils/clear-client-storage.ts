@@ -6,7 +6,7 @@ import {
   UI_STYLE_STORAGE_KEY,
 } from "@/core/theme/ui-theme";
 
-/** Limpia datos locales de DrFlow (tema, portal, QA, etc.). */
+/** Limpia datos locales de NexClinic (tema, portal, QA, etc.). */
 export function clearDrFlowClientStorage(): void {
   if (typeof window === "undefined") return;
 

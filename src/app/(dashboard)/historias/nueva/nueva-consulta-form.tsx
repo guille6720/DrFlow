@@ -55,7 +55,7 @@ export default function NuevaConsultaForm({
       <Header
         title={form.fromAppointment ? "Consulta en curso" : "Nueva consulta"}
         subtitle={
-          form.fromAppointment ? "Flujo DrFlow: agenda → consulta → receta" : undefined
+          form.fromAppointment ? "Flujo NexClinic: agenda → consulta → receta" : undefined
         }
         clinics={clinics}
         activeClinicId={clinicId}

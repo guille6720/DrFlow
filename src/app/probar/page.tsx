@@ -10,19 +10,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
+import { getPublicSiteUrl } from "@/core/supabase/env";
 
 import { ButtonLink } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Probar DrFlow 10 días gratis | Consultorio",
+  title: "Probar NexClinic 10 días gratis | Consultorio",
   description:
-    "Probá DrFlow gratis durante 10 días: agenda, historia clínica, recetas, PAMI y app para pacientes.",
+    "Probá NexClinic gratis durante 10 días: agenda, historia clínica, recetas, PAMI y app para pacientes.",
   openGraph: {
-    title: "Probar DrFlow 10 días gratis",
+    title: "Probar NexClinic 10 días gratis",
     description:
       "Software para consultorios argentinos. Agenda, HC, recetas y app del paciente.",
-    url: "https://drflow.opusorg.com/probar",
-    siteName: "DrFlow",
+    url: `${getPublicSiteUrl()}/probar`,
+    siteName: "NexClinic",
     locale: "es_AR",
     type: "website",
     images: [
@@ -30,13 +31,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "DrFlow",
+        alt: "NexClinic",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Probar DrFlow 10 días gratis",
+    title: "Probar NexClinic 10 días gratis",
     description: "Agenda, HC, recetas y app del paciente — 10 días gratis.",
     images: ["/og-image.png"],
   },
@@ -64,7 +65,7 @@ export default function ProbarPage() {
           Invitación · Prueba 10 días
         </p>
         <h1 className="mt-3 text-center text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-          Probá DrFlow en tu consultorio,{" "}
+          Probá NexClinic en tu consultorio,{" "}
           <span className="text-blue-700">gratis por 10 días</span>
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-center text-base text-slate-600 sm:text-lg">

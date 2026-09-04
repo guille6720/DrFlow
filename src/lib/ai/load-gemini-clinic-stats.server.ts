@@ -48,7 +48,7 @@ function resolvePeriodBounds(period: GeminiStatsPeriodId, now: Date, timeZone: s
     return {
       start: addMonths(now, -60),
       end: now,
-      label: "histórico en DrFlow (últimos 5 años)",
+      label: "histórico en NexClinic (últimos 5 años)",
     };
   }
   if (period === "last_month") {

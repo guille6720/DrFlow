@@ -29,10 +29,10 @@ export function InvitationCredentialsViewPanel({ credentials }: Props) {
         Hola <strong>{credentials.full_name}</strong>
         {credentials.clinic_name ? (
           <>
-            , este es tu acceso a <strong>{credentials.clinic_name}</strong> en DrFlow.
+            , este es tu acceso a <strong>{credentials.clinic_name}</strong> en NexClinic.
           </>
         ) : (
-          ", este es tu acceso a DrFlow."
+          ", este es tu acceso a NexClinic."
         )}
       </p>
 

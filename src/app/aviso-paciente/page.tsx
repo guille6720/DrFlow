@@ -30,7 +30,7 @@ export default async function AvisoPacientePage({
         <section className="mt-8 space-y-4 text-sm leading-relaxed text-slate-700">
           <p>
             El consultorio médico al que solicitás turno es el <strong>responsable</strong> del
-            tratamiento de tus datos personales y, cuando corresponda, de datos de salud. DrFlow es la
+            tratamiento de tus datos personales y, cuando corresponda, de datos de salud. NexClinic es la
             herramienta tecnológica que utiliza el consultorio para organizar turnos y tu ficha.
           </p>
 
@@ -63,7 +63,7 @@ export default async function AvisoPacientePage({
 
         <div className="mt-10 flex flex-wrap gap-3">
           <Link href="/privacidad">
-            <Button variant="outline">Política de privacidad DrFlow</Button>
+            <Button variant="outline">Política de privacidad NexClinic</Button>
           </Link>
           {clinicSlug ? (
             <Link href={`/portal/${clinicSlug}`}>

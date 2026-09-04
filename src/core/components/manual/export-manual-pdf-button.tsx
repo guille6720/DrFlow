@@ -146,14 +146,14 @@ export function ExportManualPdfButton() {
     doc.setTextColor(100);
     y = addWrappedText(
       doc,
-      "Este PDF se regenera desde el manual vivo de DrFlow. Ante una actualización de la app, descargá de nuevo desde Ayuda para tener la última versión.",
+      "Este PDF se regenera desde el manual vivo de NexClinic. Ante una actualización de la app, descargá de nuevo desde Ayuda para tener la última versión.",
       margin,
       y,
       maxW,
       4
     );
 
-    doc.save(`DrFlow-Manual-medico-v${getAppVersion()}.pdf`);
+    doc.save(`NexClinic-Manual-medico-v${getAppVersion()}.pdf`);
   }
 
   return (

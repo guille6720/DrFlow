@@ -59,7 +59,7 @@ export function ClinicPlanPanel({
 
   return (
     <Card
-      title="Tu plan DrFlow"
+      title="Tu plan NexClinic"
       description="Suscripción del consultorio — activación automática vía Mercado Pago."
     >
       <div className="space-y-4 text-sm">
@@ -151,7 +151,7 @@ export function ClinicPlanPanel({
               {isCanceled ? "Plan cancelado (acceso hasta vencimiento)" : "Plan activo"}
             </p>
             <p className="mt-1 text-emerald-900">
-              {summary.planLabel ?? "DrFlow"} · {summary.cycleLabel ?? "—"}
+              {summary.planLabel ?? "NexClinic"} · {summary.cycleLabel ?? "—"}
               {summary.periodEndLabel ? (
                 <>
                   <br />
@@ -217,7 +217,7 @@ export function ClinicPlanPanel({
         ) : (
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <p className="font-semibold text-slate-900">Acceso activo</p>
-            <p className="mt-1 text-slate-700">Tu consultorio tiene acceso completo a DrFlow.</p>
+            <p className="mt-1 text-slate-700">Tu consultorio tiene acceso completo a NexClinic.</p>
           </div>
         )}
 

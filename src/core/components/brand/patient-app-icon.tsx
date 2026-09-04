@@ -33,7 +33,7 @@ export function PatientAppIcon({
   return (
     <Image
       src={src}
-      alt="DrFlow — App para pacientes"
+      alt="NexClinic — App para pacientes"
       width={px}
       height={px}
       sizes={brandIconSizes(px)}

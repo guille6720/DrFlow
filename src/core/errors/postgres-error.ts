@@ -4,7 +4,7 @@ import {
   type RpcErrorCode,
 } from "@/core/errors/rpc-error-messages";
 
-/** Official PostgreSQL SQLSTATE codes used by DrFlow. */
+/** Official PostgreSQL SQLSTATE codes used by NexClinic. */
 export const PG_ERROR_CODES = {
   UNIQUE_VIOLATION: "23505",
   CHECK_VIOLATION: "23514",

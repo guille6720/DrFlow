@@ -115,7 +115,7 @@ describe("AI audit — audit_logs row shape (DB integration contract)", () => {
       action: params.action,
       metadata: params.metadata,
       ipAddress: "200.58.123.45",
-      userAgent: "DrFlow/1.0",
+      userAgent: "NexClinic/1.0",
     });
 
     expect(row.module).toBe("ia");

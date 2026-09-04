@@ -53,7 +53,7 @@ function buildUserPrompt(
   const parts = [];
   if (statsContext) {
     parts.push(
-      "Datos del consultorio (fuente: base DrFlow, no inventar ni agregar pacientes):\n" +
+      "Datos del consultorio (fuente: base NexClinic, no inventar ni agregar pacientes):\n" +
         statsContext
     );
   }

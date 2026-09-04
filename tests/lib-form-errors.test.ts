@@ -16,7 +16,7 @@ describe("form-errors", () => {
   });
 
   it("normalizes slugs", () => {
-    expect(normalizeSlug("  Dr Flow Demo  ")).toBe("dr-flow-demo");
+    expect(normalizeSlug("  NexClinic Demo  ")).toBe("nexclinic-demo");
     expect(normalizeSlug("Turnos@2026!!")).toBe("turnos2026");
   });
 });

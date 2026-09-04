@@ -20,7 +20,7 @@ import {
 
 const IMPORT_OPTIONS = [
   { value: "pdf", label: "Historias PDF (una o en lote)" },
-  { value: "csv", label: "Consultas CSV (plantilla DrFlow)" },
+  { value: "csv", label: "Consultas CSV (plantilla NexClinic)" },
   { value: "hce", label: "Export HCE (HCE_export.csv)" },
   { value: "jsonl", label: "Export teams (teams-*.jsonl)" },
 ];

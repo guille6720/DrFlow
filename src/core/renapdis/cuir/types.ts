@@ -7,7 +7,7 @@
  * Sandbox/debug uses a separate delimited representation and must never be
  * treated as a legal CUIR.
  *
- * Platform (M1) + repository (M2) IDs are assigned by DNSISA — DrFlow must NOT invent them.
+ * Platform (M1) + repository (M2) IDs are assigned by DNSISA — NexClinic must NOT invent them.
  */
 
 export const CUIR_STATUSES = ["sandbox", "pending_official_ids", "official"] as const;
@@ -180,7 +180,7 @@ export function resolveIndecJurisdictionCode(
 }
 
 /**
- * Resolve DrFlow category:subtype (or legacy keys) to official M4.
+ * Resolve NexClinic category:subtype (or legacy keys) to official M4.
  * Returns null when mapping is not yet implemented from the published regulation.
  */
 export function resolveOfficialTypeSubtypeCode(

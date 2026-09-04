@@ -1,5 +1,5 @@
 /**
- * DrFlow semantic token contract.
+ * NexClinic semantic token contract.
  * CSS values live in `official-palettes.css` + `semantic-tokens.css`.
  */
 

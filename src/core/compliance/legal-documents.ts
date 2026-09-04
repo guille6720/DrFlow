@@ -29,7 +29,7 @@ export const LEGAL_DRAFT_DOCUMENTS: LegalDraftDocument[] = [
     id: "terms_of_service",
     file: "docs/legal/TERMS-OF-SERVICE-DRAFT.md",
     title: "Términos de Servicio",
-    purpose: "Condiciones de uso del SaaS DrFlow entre operador y Cliente (consultorio).",
+    purpose: "Condiciones de uso del SaaS NexClinic entre operador y Cliente (consultorio).",
     isDraftRequiringAttorney: true,
   },
   {
@@ -43,7 +43,7 @@ export const LEGAL_DRAFT_DOCUMENTS: LegalDraftDocument[] = [
     id: "data_processing_agreement",
     file: "docs/legal/DATA-PROCESSING-AGREEMENT-DRAFT.md",
     title: "Acuerdo de Tratamiento de Datos (DPA)",
-    purpose: "Encargo de tratamiento Cliente (responsable) ↔ DrFlow (encargado).",
+    purpose: "Encargo de tratamiento Cliente (responsable) ↔ NexClinic (encargado).",
     isDraftRequiringAttorney: true,
   },
   {

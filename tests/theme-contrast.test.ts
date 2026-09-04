@@ -14,7 +14,7 @@ function pairRole(pair: (typeof THEME_CONTRAST_PAIRS)[number]): ContrastRole {
   return "text";
 }
 
-describe("DrFlow theme contrast (WCAG AA)", () => {
+describe("NexClinic theme contrast (WCAG AA)", () => {
   for (const pair of THEME_CONTRAST_PAIRS) {
     const role = pairRole(pair);
     const need = requiredRatio(role);

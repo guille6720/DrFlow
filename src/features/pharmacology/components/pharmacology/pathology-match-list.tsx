@@ -29,7 +29,7 @@ export function PathologyMatchList({
       <EmptyState
         icon={Activity}
         title="Agregá al menos un síntoma"
-        description="Seleccioná la presentación clínica del paciente. DrFlow sugerirá patologías CIE-10 compatibles."
+        description="Seleccioná la presentación clínica del paciente. NexClinic sugerirá patologías CIE-10 compatibles."
         className="bg-white"
       />
     );

@@ -59,7 +59,7 @@ export function parseBiReportPeriod(value?: string | null): BiPeriod {
 
 export function buildBiReportCsv(report: ClinicBiReport, periodLabel: string): string[][] {
   const rows: string[][] = [
-    ["Reporte BI DrFlow", periodLabel],
+    ["Reporte BI NexClinic", periodLabel],
     [],
     ["Métrica", "Valor"],
     ["Turnos programados", String(report.appointment_stats.total_scheduled)],

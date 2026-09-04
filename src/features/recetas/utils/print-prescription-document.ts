@@ -113,7 +113,7 @@ function buildQrHtml(data: PrescriptionDocumentData): string {
   const imgUrl = buildPrescriptionQrImageUrl(data.qrPayload);
   const title = data.qrTitle ?? "Verificación local";
   const hint =
-    data.qrHint ?? "Placeholder DrFlow — no constituye trazabilidad REFEPS.";
+    data.qrHint ?? "Placeholder NexClinic — no constituye trazabilidad REFEPS.";
   return `
     <section class="order-doc-block order-doc-qr">
       <h2>${escapeHtml(title)}</h2>
@@ -168,7 +168,7 @@ export function buildPrescriptionDocumentHtml(data: PrescriptionDocumentData): s
   return `
     <article class="order-doc">
       <header class="order-doc-header">
-        <p class="order-doc-kicker">República Argentina — DrFlow</p>
+        <p class="order-doc-kicker">República Argentina — NexClinic</p>
         <h1>RECETA LOCAL / BORRADOR</h1>
         <p class="order-doc-meta">
           N° ${escapeHtml(data.prescriptionNumber ?? "—")} · ${escapeHtml(issued)} ·

@@ -63,7 +63,7 @@ export type DrFlowFhirBundle = {
     tag?: Array<{ system: string; code: string; display: string }>;
   };
   entry: Array<{ resource: Record<string, unknown> }>;
-  /** DrFlow extension — not a FHIR official field; kept for staging traceability. */
+  /** NexClinic extension — not a FHIR official field; kept for staging traceability. */
   drflow?: {
     cuirStatus: CuirStatus;
     cuirFormatted: string | null;
@@ -233,7 +233,7 @@ export function buildDrFlowFhirBundle(input: BuildFhirBundleInput): DrFlowFhirBu
         {
           system: "urn:drflow:interoperability",
           code: "preparation",
-          display: "DrFlow FHIR preparation layer — not official DNSISA conformance",
+          display: "NexClinic FHIR preparation layer — not official DNSISA conformance",
         },
       ],
     },

@@ -1,5 +1,5 @@
 /**
- * Multi-tenant scope helpers. DrFlow uses clinic_id as the tenant boundary.
+ * Multi-tenant scope helpers. NexClinic uses clinic_id as the tenant boundary.
  * Every server query on clinic-scoped data MUST filter by clinic_id from session.
  */
 

@@ -104,7 +104,7 @@ export const REFEPS_STATUS_LABELS: Record<RefepsStatus, string> = {
 
 export const ARGENTINA_PRESCRIPTION_DISCLAIMER =
   "Receta local / borrador — no es homologación REFEPS. " +
-  "Generada en DrFlow según Ley 25.649 (prescripción por nombre genérico). " +
+  "Generada en NexClinic según Ley 25.649 (prescripción por nombre genérico). " +
   "Para validez ante farmacias con trazabilidad REFEPS/RENaPDiS, la clínica debe completar " +
   "homologación con el Ministerio de Salud de la Nación y firma digital habilitante.";
 

@@ -49,7 +49,7 @@ export function SuperadminManualView({ thresholds }: { thresholds: UsageThreshol
               {SUPERADMIN_MANUAL_META.title}
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-slate-600 dark:text-slate-300">
-              Superadmin es el centro de control comercial y administrativo de DrFlow. Permite a
+              Superadmin es el centro de control comercial y administrativo de NexClinic. Permite a
               administradores autorizados gestionar planes de clínicas, entitlements, límites,
               overrides, consumo y recomendaciones de upgrade sin modificar información clínica.
             </p>

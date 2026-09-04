@@ -47,15 +47,15 @@ export const pamiGuiaMessages = {
     ],
   },
   comparison: {
-    cardTitle: "Qué trae DrFlow vs otras apps",
+    cardTitle: "Qué trae NexClinic vs otras apps",
     items: [
       {
         label: "Turneras",
-        body: "agenda y recordatorios — DrFlow suma plantillas clínicas PAMI, estudios/derivaciones en 1 clic y guía por síntomas.",
+        body: "agenda y recordatorios — NexClinic suma plantillas clínicas PAMI, estudios/derivaciones en 1 clic y guía por síntomas.",
       },
       {
         label: "MedicAI",
-        body: "facturación OS/ARCA — DrFlow es más liviano para cabecera solo PAMI (sin liquidaciones por ahora).",
+        body: "facturación OS/ARCA — NexClinic es más liviano para cabecera solo PAMI (sin liquidaciones por ahora).",
       },
       {
         label: "WhatsApp",

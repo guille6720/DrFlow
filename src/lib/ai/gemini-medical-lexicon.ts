@@ -1,4 +1,4 @@
-/** Medical terms and clinical-trial protocols used by Gemini clinic search in DrFlow. */
+/** Medical terms and clinical-trial protocols used by Gemini clinic search in NexClinic. */
 
 export type GeminiLexiconCondition = {
   id: string;
@@ -17,7 +17,7 @@ export type GeminiClinicalProtocol = {
   summary: string;
   inclusion: string[];
   exclusion: string[];
-  /** Needles used to find candidate patients inside DrFlow HC text. */
+  /** Needles used to find candidate patients inside NexClinic HC text. */
   candidateNeedles: string[];
   /** Related lexicon condition ids. */
   conditionIds: string[];

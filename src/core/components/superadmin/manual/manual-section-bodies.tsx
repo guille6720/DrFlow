@@ -37,7 +37,7 @@ export function renderManualSectionBody(
       return (
         <>
           <p>
-            Superadmin es el centro de control comercial y administrativo de DrFlow. Permite a
+            Superadmin es el centro de control comercial y administrativo de NexClinic. Permite a
             administradores autorizados gestionar planes de clínicas, entitlements, límites,
             overrides, consumo y recomendaciones de upgrade sin modificar información clínica.
           </p>

@@ -158,7 +158,7 @@ export function getRenapdisOperationalReadiness(): ReadinessItem[] {
       id: "dnsisa_external",
       state: "blocked_external",
       label: "External DNSISA / Ministry dependencies",
-      evidence: "No official platform/repository IDs or Ministry API homologation in DrFlow.",
+      evidence: "No official platform/repository IDs or Ministry API homologation in NexClinic.",
       actionNeeded: "Await DNSISA assignment and official credentials.",
     },
   ];

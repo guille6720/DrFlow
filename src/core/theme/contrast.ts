@@ -1,5 +1,5 @@
 /**
- * WCAG contrast helpers for DrFlow theme tokens (unit-testable).
+ * WCAG contrast helpers for NexClinic theme tokens (unit-testable).
  * Relative luminance + contrast ratio per WCAG 2.x.
  *
  * Targets (medical UI prefers ≥ minimum):
@@ -56,7 +56,7 @@ export function meetsWcagAa(
   return contrastRatio(fg, bg) >= requiredRatio(resolved);
 }
 
-/** Canonical readable pairs used by DrFlow official palettes (must stay AA). */
+/** Canonical readable pairs used by NexClinic official palettes (must stay AA). */
 export const THEME_CONTRAST_PAIRS: Array<{
   id: string;
   fg: string;

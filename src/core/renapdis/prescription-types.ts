@@ -48,7 +48,7 @@ export function isPrescriptionCategory(value: unknown): value is PrescriptionCat
 export function mapLegacyPrescriptionTypeToCategory(
   type: string | null | undefined
 ): PrescriptionCategory {
-  // Existing DrFlow types are medication-oriented.
+  // Existing NexClinic types are medication-oriented.
   void type;
   return "medication";
 }

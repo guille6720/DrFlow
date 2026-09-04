@@ -69,7 +69,7 @@ export function ImportConsumersPanel({ canImport, embedded }: Props) {
     <PanelShell embedded={embedded} title="Importar pacientes (Excel consumers)">
       <p className="mb-3 text-sm text-slate-600">
         Subí el export de residentes/pacientes, por ejemplo{" "}
-        <code className="rounded bg-slate-100 px-1">consumers-*.csv.xlsx</code>. DrFlow lee DNI,
+        <code className="rounded bg-slate-100 px-1">consumers-*.csv.xlsx</code>. NexClinic lee DNI,
         nombre, fecha de nacimiento, teléfono, email y PAMI desde cada fila.
       </p>
       <p className="mb-4 text-xs text-slate-500">

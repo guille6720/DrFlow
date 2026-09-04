@@ -96,7 +96,7 @@ export async function POST(request: Request) {
     const { clinic, profile } = await getDashboardShell();
     const result = await createCheckoutPreference({
       clinicId: access.clinicId,
-      clinicName: clinic?.name?.trim() || "Consultorio DrFlow",
+      clinicName: clinic?.name?.trim() || "Consultorio NexClinic",
       planId,
       cycle,
       payerEmail: profile?.email,

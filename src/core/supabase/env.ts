@@ -23,8 +23,14 @@ export function getSupabaseAnonKey(): string {
   return key;
 }
 
-/** Fallback público si SITE_URL no está o apunta a localhost (emails / OAuth). */
+/**
+ * Fallback público si SITE_URL no está o apunta a localhost (emails / OAuth).
+ * Staging/preview keep the Vercel host until nexclinic.com DNS cutover is approved.
+ */
 export const PUBLIC_SITE_FALLBACK = "https://drflow-app-rho.vercel.app";
+
+/** Canonical production URL once DNS + env cutover is approved. */
+export const CANONICAL_APP_URL = "https://nexclinic.com";
 
 function isLocalhostUrl(url: string): boolean {
   return url.includes("localhost") || url.includes("127.0.0.1");
@@ -56,12 +62,29 @@ export function isValidPublicSiteUrl(url: string): boolean {
   }
 }
 
+/**
+ * Prefer APP_URL (nexclinic.com cutover) then SITE_URL (staging/preview).
+ * Does not force nexclinic.com while staging still points at Vercel.
+ */
+function readConfiguredPublicUrl(): string | undefined {
+  const candidates = [
+    process.env.NEXT_PUBLIC_APP_URL?.trim(),
+    process.env.NEXT_PUBLIC_SITE_URL?.trim(),
+    process.env.SITE_URL?.trim(),
+    process.env.APP_URL?.trim(),
+  ];
+  for (const configured of candidates) {
+    if (configured && isValidPublicSiteUrl(configured)) {
+      return normalizePublicUrl(configured);
+    }
+  }
+  return undefined;
+}
+
 /** URL pública sin barra final (Vercel / dominio propio). */
 export function getSiteUrl(fallbackOrigin?: string): string {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (configured && isValidPublicSiteUrl(configured)) {
-    return normalizePublicUrl(configured);
-  }
+  const configured = readConfiguredPublicUrl();
+  if (configured) return configured;
   if (fallbackOrigin) return fallbackOrigin.replace(/\/$/, "");
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
@@ -74,9 +97,9 @@ export function getSiteUrl(fallbackOrigin?: string): string {
  * En el navegador, pasá `window.location.origin` como fallbackOrigin en dev local.
  */
 export function getPublicSiteUrl(fallbackOrigin?: string): string {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (configured && !isLocalhostUrl(configured) && isValidPublicSiteUrl(configured)) {
-    return normalizePublicUrl(configured);
+  const configured = readConfiguredPublicUrl();
+  if (configured && !isLocalhostUrl(configured)) {
+    return configured;
   }
 
   if (fallbackOrigin) {

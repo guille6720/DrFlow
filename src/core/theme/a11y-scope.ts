@@ -1,5 +1,5 @@
 /**
- * Scope policy for DrFlow theme / accessibility work (brief §14).
+ * Scope policy for NexClinic theme / accessibility work (brief §14).
  * Visual/theme/a11y only — never behavior, data, or auth.
  */
 

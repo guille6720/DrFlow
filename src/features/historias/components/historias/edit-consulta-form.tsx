@@ -62,7 +62,7 @@ export function EditConsultaForm({
     <>
       <Header
         title="Editar consulta"
-        subtitle={record.appointment_id ? "Flujo DrFlow: agenda → consulta → receta" : undefined}
+        subtitle={record.appointment_id ? "Flujo NexClinic: agenda → consulta → receta" : undefined}
         clinics={clinics}
         activeClinicId={clinicId}
         role={role}

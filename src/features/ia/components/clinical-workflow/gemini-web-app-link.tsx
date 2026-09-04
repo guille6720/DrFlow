@@ -17,7 +17,7 @@ type Props = {
   onNavigate?: () => void;
 };
 
-/** Abre Gemini dentro de DrFlow. Nunca sale a gemini.google.com. */
+/** Abre Gemini dentro de NexClinic. Nunca sale a gemini.google.com. */
 export function GeminiWebAppLink({ className, onNavigate }: Props) {
   const enabled = useFeatureFlag("consultation_assistant");
   const entitled = useCanUseFeature(FEATURES.AI);
@@ -28,8 +28,8 @@ export function GeminiWebAppLink({ className, onNavigate }: Props) {
   return (
     <SafeInternalLink
       href={GEMINI_IN_APP_HREF}
-      aria-label="Abrir Gemini en DrFlow"
-      title="Abrir Gemini en DrFlow"
+      aria-label="Abrir Gemini en NexClinic"
+      title="Abrir Gemini en NexClinic"
       onClick={() => onNavigate?.()}
       className={cn(
         "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all",
@@ -52,7 +52,7 @@ export function GeminiWebAppLink({ className, onNavigate }: Props) {
   );
 }
 
-/** Botón flotante inferior derecho — Gemini dentro de DrFlow. */
+/** Botón flotante inferior derecho — Gemini dentro de NexClinic. */
 export function GeminiWebAppFab() {
   const enabled = useFeatureFlag("consultation_assistant");
   const entitled = useCanUseFeature(FEATURES.AI);
@@ -62,8 +62,8 @@ export function GeminiWebAppFab() {
   return (
     <SafeInternalLink
       href={GEMINI_IN_APP_HREF}
-      aria-label="Abrir Gemini en DrFlow"
-      title="Abrir Gemini en DrFlow"
+      aria-label="Abrir Gemini en NexClinic"
+      title="Abrir Gemini en NexClinic"
       className={cn(
         "fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full",
         "drflow-accent-fill-secondary text-white",

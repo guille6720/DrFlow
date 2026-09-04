@@ -103,5 +103,5 @@ export const pamiCabeceraClinicalEsAr = {
     `Hola ${patientName}, le recordamos su turno de PAMI el ${dateLabel} con ${professionalName}. ` +
     `Consultorio: ${clinicName}. ` +
     `Traiga DNI, credencial PAMI y medicación actual. ` +
-    `Ante cancelación avise con anticipación. — DrFlow`,
+    `Ante cancelación avise con anticipación. — NexClinic`,
 } as const;

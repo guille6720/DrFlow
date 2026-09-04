@@ -10,7 +10,7 @@ type TelemedicineRoomEmbedProps = {
 export function TelemedicineRoomEmbed({
   roomUrl,
   embedUrl,
-  title = "Videoconsulta DrFlow",
+  title = "Videoconsulta NexClinic",
 }: TelemedicineRoomEmbedProps) {
   return (
     <div className="flex h-[min(80vh,720px)] flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-950 shadow-lg">

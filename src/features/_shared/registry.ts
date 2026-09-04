@@ -1,4 +1,4 @@
-/** Feature module identifiers — vertical slices of DrFlow (Phase 3). */
+/** Feature module identifiers — vertical slices of NexClinic (Phase 3). */
 export type FeatureModuleId =
   | "core"
   | "dashboard"

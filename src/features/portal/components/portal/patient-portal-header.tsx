@@ -13,7 +13,7 @@ export function PatientPortalHeader({ doctorName, doctor }: Props) {
       <div className="mx-auto flex max-w-lg items-center gap-4">
         <PatientAppIcon size="sm" className="shrink-0 shadow-md" />
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium text-emerald-200">DrFlow · Pacientes</p>
+          <p className="text-xs font-medium text-emerald-200">NexClinic · Pacientes</p>
           <h1 className="truncate text-lg font-bold">{doctorName}</h1>
           {doctor?.specialty ? (
             <p className="truncate text-sm text-emerald-100">{doctor.specialty}</p>

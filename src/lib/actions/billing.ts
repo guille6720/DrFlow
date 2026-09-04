@@ -85,7 +85,7 @@ export async function startMercadoPagoCheckout(
   }
 
   const { clinic, profile } = await getDashboardShell();
-  const clinicName = clinic?.name?.trim() || "Consultorio DrFlow";
+  const clinicName = clinic?.name?.trim() || "Consultorio NexClinic";
 
   const result = await createCheckoutPreference({
     clinicId: access.clinicId,

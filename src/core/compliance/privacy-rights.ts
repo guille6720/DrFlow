@@ -31,7 +31,7 @@ export type PrivacyRequestStatus = (typeof PRIVACY_REQUEST_STATUSES)[number];
 export const PRIVACY_RETENTION_ACK_ERROR = "PRIVACY_RETENTION_ACK_REQUIRED";
 
 export const PRIVACY_DELETION_RETENTION_WARNING =
-  "Un pedido de supresión o bloqueo NO autoriza borrar automáticamente la historia clínica, recetas emitidas ni auditoría. DrFlow solo admite baja lógica del paciente y medidas administrativas; la HC se conserva según la política de retención del consultorio (Ley 26.529).";
+  "Un pedido de supresión o bloqueo NO autoriza borrar automáticamente la historia clínica, recetas emitidas ni auditoría. NexClinic solo admite baja lógica del paciente y medidas administrativas; la HC se conserva según la política de retención del consultorio (Ley 26.529).";
 
 export function privacyRequestTypeLabel(type: PrivacyRequestType): string {
   switch (type) {

@@ -125,7 +125,7 @@ export const CHANGELOG: ChangelogItem[] = [
     highlights: [
       "Informe §15: arquitectura, causas, archivos, tokens, patrones, tests — sin deploy a producción",
       "Gate lint/typecheck/build + suite tema; commits de tema aislados del WIP comercial",
-      "DrFlow Staging (develop) listo para revisión visual humana",
+      "NexClinic Staging (develop) listo para revisión visual humana",
     ],
   },
   {
@@ -322,7 +322,7 @@ export const CHANGELOG: ChangelogItem[] = [
   {
     version: "0.1.0",
     date: "2026-06-01",
-    title: "MVP DrFlow para consultorio",
+    title: "MVP NexClinic para consultorio",
     highlights: [
       "Agenda, pacientes, historia clínica y recetas",
       "Portal paciente PWA y turnos públicos",

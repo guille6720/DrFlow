@@ -25,7 +25,7 @@ export function MedicalOrderDocumentView({ data, className }: Props) {
     >
       <header className="drflow-medical-order-doc-header border-b-2 border-teal-600 pb-3 text-center">
         <p className="drflow-medical-order-doc-kicker text-[11px] uppercase tracking-wide">
-          República Argentina — DrFlow
+          República Argentina — NexClinic
         </p>
         <h2 className="drflow-medical-order-doc-heading mt-1 text-xl font-serif font-bold tracking-wide">
           {medicalOrderDocumentHeading(data.orderType)}
@@ -105,7 +105,7 @@ export function MedicalOrderDocumentView({ data, className }: Props) {
       />
 
       <footer className="drflow-medical-order-doc-footer mt-6 border-t pt-3 text-[10px]">
-        Documento generado electrónicamente en DrFlow. Verifique datos del paciente antes de presentar.
+        Documento generado electrónicamente en NexClinic. Verifique datos del paciente antes de presentar.
       </footer>
     </article>
   );

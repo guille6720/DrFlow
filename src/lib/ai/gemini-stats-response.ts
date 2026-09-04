@@ -13,8 +13,8 @@ export function geminiStatsToStructured(
   const filterText = filterBits.length ? ` · ${filterBits.join(" / ")}` : "";
   const summary =
     result.patientCount === 0
-      ? `No hay pacientes en DrFlow que coincidan${filterText} en ${result.periodLabel}.`
-      : `${result.patientCount} paciente${result.patientCount === 1 ? "" : "s"} en DrFlow${filterText} · ${result.periodLabel} (${result.visitCount} consulta${result.visitCount === 1 ? "" : "s"}).`;
+      ? `No hay pacientes en NexClinic que coincidan${filterText} en ${result.periodLabel}.`
+      : `${result.patientCount} paciente${result.patientCount === 1 ? "" : "s"} en NexClinic${filterText} · ${result.periodLabel} (${result.visitCount} consulta${result.visitCount === 1 ? "" : "s"}).`;
 
   const findings = [
     result.protocolLabel ? `Protocolo: ${result.protocolLabel}` : null,
@@ -30,7 +30,7 @@ export function geminiStatsToStructured(
       : []),
     ...(result.protocolLabel
       ? [
-          "Coincidencia por texto de HC en DrFlow (diagnóstico/motivo/evolución). No reemplaza elegibilidad completa del protocolo.",
+          "Coincidencia por texto de HC en NexClinic (diagnóstico/motivo/evolución). No reemplaza elegibilidad completa del protocolo.",
         ]
       : []),
   ];

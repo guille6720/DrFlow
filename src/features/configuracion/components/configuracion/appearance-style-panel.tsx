@@ -180,7 +180,7 @@ function AppearanceStyleControls() {
 
       <p className="text-xs text-[var(--text-secondary,var(--muted-foreground))]">
         La preferencia se guarda solo en este navegador. No modifica datos clínicos ni de
-        usuario en el servidor. Clinical Blue es la paleta por defecto de DrFlow.
+        usuario en el servidor. Clinical Blue es la paleta por defecto de NexClinic.
       </p>
     </div>
   );

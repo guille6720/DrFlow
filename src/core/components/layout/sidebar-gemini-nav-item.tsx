@@ -6,7 +6,7 @@ type Props = {
   onNavigate?: () => void;
 };
 
-/** Sidebar shortcut to Gemini inside DrFlow. */
+/** Sidebar shortcut to Gemini inside NexClinic. */
 export function SidebarGeminiNavItem({ onNavigate }: Props) {
   return <GeminiWebAppLink onNavigate={onNavigate} />;
 }

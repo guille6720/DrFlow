@@ -87,7 +87,7 @@ async function entitlementsForTrustedClinic(
   return loadEntitlementsForClinic(clinicId);
 }
 
-/** DrFlow tenant = clinic. Spec alias: organization. */
+/** NexClinic tenant = clinic. Spec alias: organization. */
 export async function getOrganizationEntitlements(args?: {
   organizationId?: string | null;
   clinicId?: string | null;

@@ -21,7 +21,7 @@ function getFromAddress(): string | null {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() ?? "";
   if (siteUrl.includes("opusorg.com")) {
-    return "DrFlow <noreply@opusorg.com>";
+    return "NexClinic <noreply@opusorg.com>";
   }
 
   return null;
@@ -181,11 +181,11 @@ export function buildClinicInviteEmailContent(input: {
   const credentialsUrl = input.credentialsPath
     ? `${getPublicSiteUrl()}${input.credentialsPath}`
     : `${getPublicSiteUrl()}/acceso-invitado`;
-  const subject = `Acceso a DrFlow — ${input.clinicName}`;
+  const subject = `Acceso a NexClinic — ${input.clinicName}`;
   const text = [
     `Hola ${input.fullName},`,
     "",
-    `Te dieron acceso al consultorio "${input.clinicName}" en DrFlow.`,
+    `Te dieron acceso al consultorio "${input.clinicName}" en NexClinic.`,
     "",
     "Podés ver tu usuario y contraseña en este enlace:",
     credentialsUrl,
@@ -198,7 +198,7 @@ export function buildClinicInviteEmailContent(input: {
     "",
     "Por seguridad, cambiá la contraseña después del primer acceso desde Configuración.",
     "",
-    "DrFlow",
+    "NexClinic",
   ].join("\n");
 
   return { subject, text };

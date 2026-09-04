@@ -50,7 +50,7 @@ export function RefepsSettingsPanel({ settings }: Props) {
         <div>
           <p className="font-medium">Integración adapter — no es homologación MSN automática</p>
           <p className="mt-1">
-            DrFlow prepara el payload canónico, hash de firma digital y envío a REFEPS cuando la
+            NexClinic prepara el payload canónico, hash de firma digital y envío a REFEPS cuando la
             clínica completó el trámite nacional. Sin credenciales API, opera en{" "}
             <strong>modo sandbox</strong> con identificadores de prueba.
           </p>

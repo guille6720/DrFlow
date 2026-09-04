@@ -13,7 +13,7 @@ const cssPath = join(process.cwd(), "src/core/theme/official-palettes.css");
 const css = readFileSync(cssPath, "utf8");
 const semanticCss = readFileSync(join(process.cwd(), "src/core/theme/semantic-tokens.css"), "utf8");
 
-describe("DrFlow semantic tokens contract", () => {
+describe("NexClinic semantic tokens contract", () => {
   it("defines every required CSS variable at least once", () => {
     const combined = `${css}\n${semanticCss}`;
     for (const token of SEMANTIC_TOKEN_CSS_VARS) {

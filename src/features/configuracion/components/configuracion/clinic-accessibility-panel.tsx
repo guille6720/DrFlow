@@ -44,7 +44,7 @@ export function ClinicAccessibilityPanel() {
       <div className="mb-4 flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
         <Accessibility className="mt-0.5 h-4 w-4 shrink-0" />
         <p>
-          DrFlow prioriza teclado, foco visible, landmarks y lectores de pantalla. Esta sección
+          NexClinic prioriza teclado, foco visible, landmarks y lectores de pantalla. Esta sección
           documenta el cumplimiento WCAG 2.1 AA y atajos útiles para el staff.
         </p>
       </div>

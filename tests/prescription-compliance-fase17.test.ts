@@ -26,7 +26,7 @@ function read(rel: string): string {
 }
 
 describe("prescription-compliance policy module", () => {
-  it("declares DrFlow is not homologated", () => {
+  it("declares NexClinic is not homologated", () => {
     const posture = evaluatePrescriptionCompliancePosture();
     expect(posture.drflowHomologated).toBe(false);
     expect(posture.disclaimer).toContain("no es homologación REFEPS");

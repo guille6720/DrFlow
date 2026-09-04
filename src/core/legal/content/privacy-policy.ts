@@ -2,20 +2,20 @@ import type { LegalDocument } from "@/core/legal/content/types";
 
 export const privacyPolicyDocument: LegalDocument = {
   id: "privacidad",
-  title: "Política de Privacidad de DrFlow",
+  title: "Política de Privacidad de NexClinic",
   sections: [
     {
       title: "1. Introducción",
       blocks: [
         {
           type: "p",
-          text: "DrFlow respeta la privacidad de sus usuarios y reconoce la importancia de proteger los datos personales tratados mediante la plataforma.",
+          text: "NexClinic respeta la privacidad de sus usuarios y reconoce la importancia de proteger los datos personales tratados mediante la plataforma.",
         },
         {
           type: "p",
           text: "La presente Política de Privacidad describe cómo se recopilan, utilizan, almacenan y protegen los datos personales conforme a la Ley N.º 25.326 de Protección de los Datos Personales, la Ley N.º 26.529 sobre Derechos del Paciente y demás normativa aplicable.",
         },
-        { type: "p", text: "Al utilizar DrFlow, el usuario acepta esta Política de Privacidad." },
+        { type: "p", text: "Al utilizar NexClinic, el usuario acepta esta Política de Privacidad." },
       ],
     },
     {
@@ -23,11 +23,11 @@ export const privacyPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "El profesional, consultorio o institución que crea la cuenta en DrFlow es el responsable del tratamiento de los datos personales de sus pacientes.",
+          text: "El profesional, consultorio o institución que crea la cuenta en NexClinic es el responsable del tratamiento de los datos personales de sus pacientes.",
         },
         {
           type: "p",
-          text: "DrFlow actúa como encargado del tratamiento, procesando los datos únicamente por cuenta e instrucción del responsable.",
+          text: "NexClinic actúa como encargado del tratamiento, procesando los datos únicamente por cuenta e instrucción del responsable.",
         },
       ],
     },
@@ -36,7 +36,7 @@ export const privacyPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Dependiendo del uso de la plataforma, DrFlow puede procesar las siguientes categorías de información:",
+          text: "Dependiendo del uso de la plataforma, NexClinic puede procesar las siguientes categorías de información:",
         },
         { type: "h4", text: "Datos del usuario" },
         {
@@ -95,7 +95,7 @@ export const privacyPolicyDocument: LegalDocument = {
         },
         {
           type: "p",
-          text: "DrFlow no utiliza datos clínicos para publicidad, venta de información ni elaboración de perfiles comerciales de pacientes.",
+          text: "NexClinic no utiliza datos clínicos para publicidad, venta de información ni elaboración de perfiles comerciales de pacientes.",
         },
       ],
     },
@@ -106,7 +106,7 @@ export const privacyPolicyDocument: LegalDocument = {
         {
           type: "ul",
           items: [
-            "la relación contractual entre DrFlow y el usuario;",
+            "la relación contractual entre NexClinic y el usuario;",
             "las obligaciones legales aplicables al profesional o institución;",
             "las instrucciones impartidas por el responsable del tratamiento;",
             "los consentimientos obtenidos por el profesional cuando la legislación lo requiera.",
@@ -123,7 +123,7 @@ export const privacyPolicyDocument: LegalDocument = {
           items: [
             "el profesional titular;",
             "usuarios autorizados por el titular;",
-            "personal técnico de DrFlow únicamente cuando resulte estrictamente necesario para brindar soporte, mantenimiento o resolver incidentes, sujeto a deberes de confidencialidad;",
+            "personal técnico de NexClinic únicamente cuando resulte estrictamente necesario para brindar soporte, mantenimiento o resolver incidentes, sujeto a deberes de confidencialidad;",
             "autoridades competentes cuando exista obligación legal.",
           ],
         },
@@ -132,7 +132,7 @@ export const privacyPolicyDocument: LegalDocument = {
     {
       title: "7. Compartición de datos",
       blocks: [
-        { type: "p", text: "DrFlow no vende ni comercializa datos personales." },
+        { type: "p", text: "NexClinic no vende ni comercializa datos personales." },
         { type: "p", text: "La información únicamente podrá compartirse cuando:" },
         {
           type: "ul",
@@ -150,7 +150,7 @@ export const privacyPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow implementa medidas técnicas y organizativas razonables destinadas a proteger la información contra accesos no autorizados, alteración, pérdida, destrucción o divulgación indebida.",
+          text: "NexClinic implementa medidas técnicas y organizativas razonables destinadas a proteger la información contra accesos no autorizados, alteración, pérdida, destrucción o divulgación indebida.",
         },
         { type: "p", text: "Entre ellas pueden incluirse:" },
         {
@@ -181,7 +181,7 @@ export const privacyPolicyDocument: LegalDocument = {
         },
         {
           type: "p",
-          text: "Una vez finalizados dichos plazos, los datos podrán ser eliminados de forma segura conforme a los procedimientos internos de DrFlow.",
+          text: "Una vez finalizados dichos plazos, los datos podrán ser eliminados de forma segura conforme a los procedimientos internos de NexClinic.",
         },
       ],
     },
@@ -199,7 +199,7 @@ export const privacyPolicyDocument: LegalDocument = {
       ],
     },
     {
-      title: "11. Derechos del usuario de DrFlow",
+      title: "11. Derechos del usuario de NexClinic",
       blocks: [
         { type: "p", text: "El titular de la cuenta podrá:" },
         {
@@ -218,7 +218,7 @@ export const privacyPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow podrá utilizar servicios de terceros para infraestructura, almacenamiento, correo electrónico, copias de seguridad, monitoreo, autenticación u otras funciones necesarias para operar la plataforma.",
+          text: "NexClinic podrá utilizar servicios de terceros para infraestructura, almacenamiento, correo electrónico, copias de seguridad, monitoreo, autenticación u otras funciones necesarias para operar la plataforma.",
         },
         {
           type: "p",
@@ -231,7 +231,7 @@ export const privacyPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Cuando la infraestructura tecnológica implique el tratamiento o almacenamiento de información fuera de la República Argentina, DrFlow procurará que dichas transferencias se realicen conforme a la legislación aplicable y mediante proveedores que implementen medidas de seguridad adecuadas.",
+          text: "Cuando la infraestructura tecnológica implique el tratamiento o almacenamiento de información fuera de la República Argentina, NexClinic procurará que dichas transferencias se realicen conforme a la legislación aplicable y mediante proveedores que implementen medidas de seguridad adecuadas.",
         },
       ],
     },
@@ -251,7 +251,7 @@ export const privacyPolicyDocument: LegalDocument = {
     {
       title: "15. Menores de edad",
       blocks: [
-        { type: "p", text: "DrFlow no está destinado a ser utilizado directamente por menores de edad." },
+        { type: "p", text: "NexClinic no está destinado a ser utilizado directamente por menores de edad." },
         {
           type: "p",
           text: "Los datos de pacientes menores únicamente serán incorporados por profesionales o instituciones autorizadas conforme a la legislación vigente.",
@@ -263,7 +263,7 @@ export const privacyPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow podrá actualizar esta Política de Privacidad cuando resulte necesario por cambios legales, regulatorios, tecnológicos o funcionales.",
+          text: "NexClinic podrá actualizar esta Política de Privacidad cuando resulte necesario por cambios legales, regulatorios, tecnológicos o funcionales.",
         },
         { type: "p", text: "La versión vigente será la publicada dentro de la plataforma." },
       ],
@@ -273,7 +273,7 @@ export const privacyPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Las consultas relacionadas con esta Política de Privacidad podrán realizarse mediante los canales oficiales de contacto publicados en DrFlow.",
+          text: "Las consultas relacionadas con esta Política de Privacidad podrán realizarse mediante los canales oficiales de contacto publicados en NexClinic.",
         },
         {
           type: "p",

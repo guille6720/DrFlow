@@ -10,7 +10,7 @@ import { CLINICAL_RECORD_RETENTION_YEARS } from "@/core/legal/documents";
  * retention runs for N years counted from the patient's **last clinical entry**,
  * not from first visit or account creation.
  *
- * DrFlow does **not** auto-purge clinical records when the window elapses.
+ * NexClinic does **not** auto-purge clinical records when the window elapses.
  * Preservation during the window is enforced by soft-delete / immutable audit
  * (see Phase 7). Destruction after the window is an operational/legal decision
  * outside automated product jobs.
@@ -39,7 +39,7 @@ export const CLINICAL_RETENTION_POLICY = {
   legalReference: "Ley 26.529 / práctica habitual — mínimo configurable por consultorio",
   autoPurgeEnabled: false as const,
   autoPurgeNote:
-    "DrFlow no ejecuta jobs de destrucción automática de HC al vencer el plazo. La conservación es el comportamiento por defecto.",
+    "NexClinic no ejecuta jobs de destrucción automática de HC al vencer el plazo. La conservación es el comportamiento por defecto.",
 } as const;
 
 export type DataRetentionCategory = {

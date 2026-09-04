@@ -15,8 +15,8 @@ export function MarketingFooter() {
   const email = getSalesContactEmail();
   const phone = getSalesWhatsAppPhone();
   const whatsAppHref =
-    phone && buildWhatsAppUrl(phone, "Hola, tengo una consulta sobre DrFlow.")
-      ? buildWhatsAppUrl(phone, "Hola, tengo una consulta sobre DrFlow.")
+    phone && buildWhatsAppUrl(phone, "Hola, tengo una consulta sobre NexClinic.")
+      ? buildWhatsAppUrl(phone, "Hola, tengo una consulta sobre NexClinic.")
       : null;
 
   return (
@@ -24,7 +24,7 @@ export function MarketingFooter() {
       <div className="mx-auto max-w-6xl px-4 py-12">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="sm:col-span-2 lg:col-span-1">
-            <DrFlowLogo size="md" href="/" />
+            <DrFlowLogo size="md" href="/" variant="onDark" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed">
               Software clínico para consultorios y clínicas en Argentina. Agenda, historia clínica,
               recetas PAMI y app para pacientes.
@@ -123,7 +123,7 @@ export function MarketingFooter() {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-slate-800 pt-8 text-xs sm:flex-row">
-          <p>© {new Date().getFullYear()} DrFlow · Opus Org. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} NexClinic · Opus Org. Todos los derechos reservados.</p>
           <p className="inline-flex items-center gap-2 text-emerald-400/90">
             <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden />
             Todos los sistemas operativos

@@ -67,7 +67,7 @@ export function ImportClinicalCsvPanel({ canImport, embedded }: Props) {
   return (
     <PanelShell embedded={embedded} title="Importar consultas CSV">
       <p className="mb-3 text-sm text-slate-600">
-        Ideal para migraciones masivas (1000+ filas): una fila = una consulta. DrFlow crea o
+        Ideal para migraciones masivas (1000+ filas): una fila = una consulta. NexClinic crea o
         vincula pacientes por <strong>documento_dni</strong> y registra motivo, evolución,
         diagnóstico e indicaciones.
       </p>

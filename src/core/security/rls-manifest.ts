@@ -1,5 +1,5 @@
 /**
- * Manifest de tablas que deben tener RLS en migraciones DrFlow.
+ * Manifest de tablas que deben tener RLS en migraciones NexClinic.
  * Actualizar al agregar tablas clínicas nuevas.
  */
 export const TABLES_REQUIRING_RLS = [

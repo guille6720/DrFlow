@@ -1,5 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
+
+import { NexClinicLogo } from "@/core/components/brand/nexclinic-logo";
 
 import { ButtonLink } from "@/components/ui/button";
 
@@ -27,25 +28,13 @@ export function MarketingHeader({ variant = "light" }: MarketingHeaderProps) {
       }
     >
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:py-3.5">
-        <Link href="/" className="inline-flex shrink-0 items-center gap-2.5">
-          <Image
-            src="/drflow-logo.png"
-            alt="DrFlow"
-            width={40}
-            height={40}
-            priority
-            className="h-9 w-9 rounded-xl object-contain sm:h-10 sm:w-10"
-          />
-          <span
-            className={
-              isDark
-                ? "hidden text-lg font-bold tracking-tight text-white sm:inline"
-                : "hidden text-lg font-bold tracking-tight text-slate-900 sm:inline"
-            }
-          >
-            DrFlow
-          </span>
-        </Link>
+        <NexClinicLogo
+          href="/"
+          size="sm"
+          priority
+          variant={isDark ? "onDark" : "color"}
+          className="shrink-0"
+        />
 
         <nav
           aria-label="Secciones del sitio"

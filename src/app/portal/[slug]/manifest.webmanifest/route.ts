@@ -49,7 +49,7 @@ export async function GET(
 
   const manifest = {
     id: `drflow-patient-${slug}`,
-    name: `${clinicName} — DrFlow Pacientes`,
+    name: `${clinicName} — NexClinic Pacientes`,
     short_name: `${shortName} · Pac.`,
     description: "Pedí turnos, recetas y contactá a tu consultorio.",
     start_url: `/portal/${slug}`,

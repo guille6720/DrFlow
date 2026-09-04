@@ -167,7 +167,7 @@ export async function downloadPrescriptionPdf(data: PrescriptionDocumentData): P
   doc.setFontSize(14);
   doc.text("RECETA LOCAL / BORRADOR", 105, 18, { align: "center" });
   doc.setFontSize(9);
-  doc.text("República Argentina — DrFlow", 105, 24, { align: "center" });
+  doc.text("República Argentina — NexClinic", 105, 24, { align: "center" });
 
   doc.setFontSize(10);
   let y = 34;

@@ -29,7 +29,7 @@ import type { GeminiStatsPatient } from "@/lib/ai/gemini-structured-response";
 import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
 
 const STATS_SUGGESTED_PROMPTS = [
-  "¿Cuántos pacientes con hipertensión hay en DrFlow?",
+  "¿Cuántos pacientes con hipertensión hay en NexClinic?",
   "Pacientes con asma o EPOC",
   "Diagnósticos más frecuentes este mes",
 ];
@@ -201,7 +201,7 @@ function GeminiWorkspaceScoped({
   if (!enabled) {
     return (
       <p className="text-sm text-slate-700">
-        Activá el asistente de consulta en configuración para usar Gemini dentro de DrFlow.
+        Activá el asistente de consulta en configuración para usar Gemini dentro de NexClinic.
       </p>
     );
   }
@@ -354,7 +354,7 @@ function GeminiWorkspaceScoped({
           <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 text-sm font-medium text-violet-950">
               <Sparkles className="h-4 w-4" />
-              Gemini en DrFlow
+              Gemini en NexClinic
             </div>
             <span className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-white px-2 py-0.5 text-[10px] font-medium text-violet-800">
               <Bot className="h-3 w-3" />

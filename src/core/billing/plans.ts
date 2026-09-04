@@ -159,13 +159,13 @@ export function buildPlanSalesMessage(planId: BillingPlanId, clinicName?: string
   const label = plan?.name ?? planId;
   const clinic = clinicName?.trim() ? ` — consultorio: ${clinicName.trim()}` : "";
   if (plan?.status === "development") {
-    return `Hola, me interesa el plan ${label} de DrFlow (en desarrollo). ¿Cuándo estará disponible?${clinic}`;
+    return `Hola, me interesa el plan ${label} de NexClinic (en desarrollo). ¿Cuándo estará disponible?${clinic}`;
   }
   if (isCommercialSkuId(planId)) {
     const copy = formatPromoCopyEs(planId);
     return `Hola, quiero activar ${label} (${copy.currentPromoLine}; ${copy.thenRegularLine})${clinic}.`;
   }
-  return `Hola, quiero activar DrFlow plan ${label}${clinic}. ¿Me pasan link de pago?`;
+  return `Hola, quiero activar NexClinic plan ${label}${clinic}. ¿Me pasan link de pago?`;
 }
 
 export function getSalesContactEmail(): string {

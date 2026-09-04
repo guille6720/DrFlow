@@ -145,7 +145,7 @@ export function resolvePrescriptionDocumentQr(input: {
       }),
       qrTitle: "CUIR SANDBOX — SIN VALIDEZ LEGAL",
       qrHint:
-        "Identificador de prueba DrFlow. No implica validación del Ministerio ni homologación ReNaPDiS.",
+        "Identificador de prueba NexClinic. No implica validación del Ministerio ni homologación ReNaPDiS.",
     };
   }
 
@@ -178,7 +178,7 @@ export function resolvePrescriptionDocumentQr(input: {
       coverageKind: input.coverageKind,
     }),
     qrTitle: "Verificación local",
-    qrHint: "Placeholder DrFlow — no constituye trazabilidad REFEPS.",
+    qrHint: "Placeholder NexClinic — no constituye trazabilidad REFEPS.",
   };
 }
 

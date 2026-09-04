@@ -31,7 +31,7 @@ export default function GlobalError({
           textAlign: "center",
         }}
       >
-        <h1 style={{ fontSize: "1.125rem", fontWeight: 600 }}>DrFlow no pudo cargar</h1>
+        <h1 style={{ fontSize: "1.125rem", fontWeight: 600 }}>NexClinic no pudo cargar</h1>
         <p style={{ maxWidth: "28rem", fontSize: "0.875rem", color: "#94a3b8" }}>
           Hubo un error inesperado. Probá recargar o volvé al login.
         </p>

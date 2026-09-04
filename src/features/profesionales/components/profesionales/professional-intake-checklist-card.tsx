@@ -15,7 +15,7 @@ export function ProfessionalIntakeChecklistCard({ showReference, onToggleReferen
     <Card title="Checklist de ingreso (Argentina)" className="border-slate-200">
       <p className="mb-3 text-xs text-slate-600">
         Referencia de campos habituales en fichas de médicos (colegios, obras sociales y MSAL).
-        DrFlow registra lo esencial; el resto queda como guía.
+        NexClinic registra lo esencial; el resto queda como guía.
       </p>
       <button
         type="button"

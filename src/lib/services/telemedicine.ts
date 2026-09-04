@@ -60,6 +60,6 @@ export function buildTelemedicineMessage(input: {
     "",
     "Recomendamos usar Chrome o Safari con cámara y micrófono habilitados.",
     "",
-    "DrFlow",
+    "NexClinic",
   ].join("\n");
 }

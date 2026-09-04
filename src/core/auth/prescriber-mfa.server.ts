@@ -118,7 +118,7 @@ export async function startPrescriberTotpEnrollment(): Promise<
   const supabase = await createClient();
   const { data, error } = await supabase.auth.mfa.enroll({
     factorType: "totp",
-    friendlyName: "DrFlow prescritor",
+    friendlyName: "NexClinic prescritor",
   });
   if (error || !data) {
     return { ok: false, error: error?.message ?? "No se pudo iniciar el enrolamiento MFA." };

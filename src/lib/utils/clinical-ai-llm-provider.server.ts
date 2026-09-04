@@ -40,7 +40,7 @@ function buildSanitizeOptions(input: {
   return { knownIdentifiers: input.knownIdentifiers };
 }
 
-const SYSTEM_PROMPT = `Sos un asistente clínico administrativo en DrFlow (Argentina).
+const SYSTEM_PROMPT = `Sos un asistente clínico administrativo en NexClinic (Argentina).
 Respondé en español claro y profesional.
 NO inventes diagnósticos, medicación ni órdenes.
 NO tomes decisiones clínicas: ayudá al profesional con redacción, resúmenes y orientación operativa.

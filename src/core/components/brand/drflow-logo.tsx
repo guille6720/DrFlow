@@ -1,68 +1,24 @@
-import Image from "next/image";
-import Link from "next/link";
+import { NexClinicLogo } from "@/core/components/brand/nexclinic-logo";
 
-import { brandIconSizes } from "@/core/components/brand/brand-image-utils";
-
-import { cn } from "@/shared/utils/cn";
+export { NexClinicLogo } from "@/core/components/brand/nexclinic-logo";
 
 type LogoSize = "xs" | "sm" | "md" | "lg" | "xl";
 
-const heights: Record<LogoSize, number> = {
-  xs: 40,
-  sm: 52,
-  md: 68,
-  lg: 88,
-  xl: 108,
-};
-
-interface DrFlowLogoProps {
+interface BrandLogoProps {
   size?: LogoSize;
   className?: string;
   href?: string | null;
   priority?: boolean;
   centered?: boolean;
+  withTagline?: boolean;
+  markOnly?: boolean;
+  variant?: "color" | "mono" | "onDark";
 }
 
-/** Logo oficial DrFlow (PNG fondo transparente). */
-export function DrFlowLogo({
-  size = "md",
-  className,
-  href = "/",
-  priority = false,
-  centered = false,
-}: DrFlowLogoProps) {
-  const height = heights[size];
-  const width = Math.round(height * 1.05);
-
-  const image = (
-    <Image
-      src="/drflow-logo.png"
-      alt="DrFlow"
-      width={width}
-      height={height}
-      sizes={brandIconSizes(height)}
-      priority={priority}
-      loading={priority ? undefined : "lazy"}
-      className={cn(
-        "h-auto w-auto object-contain rounded-2xl",
-        className
-      )}
-      style={{ height, width: "auto", maxWidth: "100%" }}
-    />
-  );
-
-  const wrapperClass = cn(
-    "inline-flex shrink-0 items-center",
-    centered && "mx-auto w-full justify-center"
-  );
-
-  if (href) {
-    return (
-      <Link href={href} className={wrapperClass}>
-        {image}
-      </Link>
-    );
-  }
-
-  return <div className={wrapperClass}>{image}</div>;
+/**
+ * Logo público NexClinic.
+ * El nombre de export `DrFlowLogo` se mantiene para no romper imports existentes.
+ */
+export function DrFlowLogo(props: BrandLogoProps) {
+  return <NexClinicLogo {...props} />;
 }
