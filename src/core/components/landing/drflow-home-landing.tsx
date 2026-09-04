@@ -13,6 +13,7 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -24,7 +25,6 @@ import {
   TRIAL_DAYS_INCLUDED,
 } from "@/core/billing/plans";
 import { AccountDeletedCleanup } from "@/core/components/auth/account-deleted-cleanup";
-import { NexClinicMark } from "@/core/components/brand/nexclinic-mark";
 import { MarketingFooter } from "@/core/components/landing/marketing-footer";
 import { MarketingHeader } from "@/core/components/landing/marketing-header";
 import {
@@ -195,10 +195,15 @@ export function DrFlowHomeLanding() {
               <Suspense fallback={null}>
                 <AccountDeletedCleanup />
               </Suspense>
-              <div className="mb-6 flex items-center gap-4">
-                <span className="inline-flex h-16 w-16 shrink-0 sm:h-[72px] sm:w-[72px]">
-                  <NexClinicMark className="h-full w-full" variant="color" title="NexClinic" />
-                </span>
+              <div className="mb-6 flex flex-col items-start gap-4">
+                <Image
+                  src="/nexclinic-logo-horizontal.png"
+                  alt="NexClinic — Gestión médica inteligente"
+                  width={420}
+                  height={120}
+                  priority
+                  className="h-14 w-auto max-w-full object-contain sm:h-16"
+                />
                 <p className="inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-4 py-1 text-sm font-medium text-teal-200">
                   <Sparkles className="h-3.5 w-3.5" />
                   PAMI · App paciente · Argentina

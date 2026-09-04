@@ -32,7 +32,7 @@ export function MarketingHeader({ variant = "light" }: MarketingHeaderProps) {
           href="/"
           size="sm"
           priority
-          variant={isDark ? "onDark" : "color"}
+          variant="color"
           className="shrink-0"
         />
 

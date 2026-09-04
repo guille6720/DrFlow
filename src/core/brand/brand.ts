@@ -14,13 +14,14 @@ export const BRAND_SEO_DESCRIPTION =
 export const BRAND_OG_DESCRIPTION =
   "Agenda, pacientes, historia clínica, recetas y app para pacientes. Pensado para médicos en Argentina.";
 
-/** Canonical production hostname once DNS is cut over. Staging continues via NEXT_PUBLIC_SITE_URL. */
-export const BRAND_CANONICAL_HOST = "nexclinic.com";
+/** Canonical production hostname (OpusOrg subdomain). Staging may still use Vercel preview. */
+export const BRAND_CANONICAL_HOST = "nexclinic.opusorg.com";
 export const BRAND_CANONICAL_URL = `https://${BRAND_CANONICAL_HOST}`;
 
 /** Legacy public hosts kept for redirects / dual-read until production cutover is approved. */
 export const BRAND_LEGACY_HOSTS = [
   "drflow.opusorg.com",
+  "nexclinic.com",
   "drflow-app-rho.vercel.app",
 ] as const;
 

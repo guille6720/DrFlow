@@ -25,12 +25,12 @@ export function getSupabaseAnonKey(): string {
 
 /**
  * Fallback público si SITE_URL no está o apunta a localhost (emails / OAuth).
- * Staging/preview keep the Vercel host until nexclinic.com DNS cutover is approved.
+ * Staging/preview keep the Vercel host until nexclinic.opusorg.com DNS cutover is approved.
  */
 export const PUBLIC_SITE_FALLBACK = "https://drflow-app-rho.vercel.app";
 
 /** Canonical production URL once DNS + env cutover is approved. */
-export const CANONICAL_APP_URL = "https://nexclinic.com";
+export const CANONICAL_APP_URL = "https://nexclinic.opusorg.com";
 
 function isLocalhostUrl(url: string): boolean {
   return url.includes("localhost") || url.includes("127.0.0.1");

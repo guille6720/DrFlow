@@ -14,13 +14,25 @@ export const NEXCLINIC_DOMAIN_REDIRECTS_PENDING_APPROVAL = [
   {
     source: "/:path*",
     has: [{ type: "host", value: "drflow.opusorg.com" }],
-    destination: "https://nexclinic.com/:path*",
+    destination: "https://nexclinic.opusorg.com/:path*",
     permanent: true,
   },
   {
     source: "/:path*",
     has: [{ type: "host", value: "www.drflow.opusorg.com" }],
-    destination: "https://nexclinic.com/:path*",
+    destination: "https://nexclinic.opusorg.com/:path*",
+    permanent: true,
+  },
+  {
+    source: "/:path*",
+    has: [{ type: "host", value: "nexclinic.com" }],
+    destination: "https://nexclinic.opusorg.com/:path*",
+    permanent: true,
+  },
+  {
+    source: "/:path*",
+    has: [{ type: "host", value: "www.nexclinic.com" }],
+    destination: "https://nexclinic.opusorg.com/:path*",
     permanent: true,
   },
 ] as const;

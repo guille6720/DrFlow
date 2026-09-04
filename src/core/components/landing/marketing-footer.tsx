@@ -24,7 +24,7 @@ export function MarketingFooter() {
       <div className="mx-auto max-w-6xl px-4 py-12">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="sm:col-span-2 lg:col-span-1">
-            <DrFlowLogo size="md" href="/" variant="onDark" />
+            <DrFlowLogo size="md" href="/" variant="color" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed">
               Software clínico para consultorios y clínicas en Argentina. Agenda, historia clínica,
               recetas PAMI y app para pacientes.
