@@ -16,9 +16,30 @@ import {
 import { CancelSubscriptionButton } from "@/core/components/billing/cancel-subscription-button";
 import { MercadoPagoCheckoutButton } from "@/core/components/billing/mercadopago-checkout-button";
 import { ClinicUpgradeHintCard } from "@/core/components/entitlements/clinic-upgrade-hint-card";
+import { PLAN_KEYS } from "@/core/entitlements/plan-keys";
 
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+
+/** Plans granted via Superadmin (not Mercado Pago self-serve Essential/Pro). */
+const COMPLIMENTARY_COMMERCIAL_PLANS = new Set<string>([
+  PLAN_KEYS.PREMIUM,
+  PLAN_KEYS.ENTERPRISE,
+  PLAN_KEYS.PRO,
+]);
+
+function commercialPlanDisplayName(planKey: string): string {
+  const labels: Record<string, string> = {
+    [PLAN_KEYS.TRIAL]: "Prueba",
+    [PLAN_KEYS.ESSENTIAL]: "Essential",
+    [PLAN_KEYS.BASIC]: "Basic",
+    [PLAN_KEYS.PRO]: "Pro",
+    [PLAN_KEYS.PREMIUM]: "Premium",
+    [PLAN_KEYS.ENTERPRISE]: "Enterprise",
+    [PLAN_KEYS.LEGACY]: "Legacy",
+  };
+  return labels[planKey] ?? planKey;
+}
 
 type Props = {
   summary: ClinicSubscriptionSummary;
@@ -56,11 +77,23 @@ export function ClinicPlanPanel({
   const purchasablePlans = getPublicBillingPlans().filter(isPlanAvailableForPurchase);
   const currentPlanId = summary.subscription?.plan_id;
   const canUpgradeToPro = subscriptionActive && currentPlanId === "essential";
+  const complimentaryCommercialActive =
+    Boolean(commercialPlanKey) &&
+    COMPLIMENTARY_COMMERCIAL_PLANS.has(commercialPlanKey!) &&
+    !commercialStatus;
+  const hideMercadoPagoCheckout = complimentaryCommercialActive && !subscriptionActive;
+  const commercialLabel = commercialPlanKey
+    ? commercialPlanDisplayName(commercialPlanKey)
+    : null;
 
   return (
     <Card
       title="Tu plan NexClinic"
-      description="Suscripción del consultorio — activación automática vía Mercado Pago."
+      description={
+        hideMercadoPagoCheckout
+          ? "Plan comercial del consultorio (sin cargo por Mercado Pago)."
+          : "Suscripción del consultorio — activación automática vía Mercado Pago."
+      }
     >
       <div className="space-y-4 text-sm">
         {paymentNotice === "ok" ? (
@@ -80,9 +113,18 @@ export function ClinicPlanPanel({
           </div>
         ) : null}
 
-        {commercialPlanKey ? (
+        {complimentaryCommercialActive && commercialLabel ? (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4">
+            <p className="font-semibold text-emerald-950">Plan {commercialLabel} activo</p>
+            <p className="mt-1 text-emerald-900">
+              Acceso comercial asignado sin cargo por Mercado Pago. Los límites e inclusiones de
+              abajo corresponden a este plan.
+            </p>
+          </div>
+        ) : commercialPlanKey ? (
           <p className="text-xs text-slate-500">
-            Catálogo comercial: <span className="font-medium text-slate-700">{commercialPlanKey}</span>
+            Catálogo comercial:{" "}
+            <span className="font-medium text-slate-700">{commercialLabel}</span>
             {commercialStatus ? (
               <>
                 {" "}
@@ -187,7 +229,7 @@ export function ClinicPlanPanel({
               </p>
             ) : null}
           </div>
-        ) : summary.trialExpired ? (
+        ) : complimentaryCommercialActive ? null : summary.trialExpired ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
             <p className="font-semibold text-amber-950">Prueba finalizada</p>
             <p className="mt-1 text-amber-900">
@@ -228,6 +270,10 @@ export function ClinicPlanPanel({
               contactá ventas
             </Link>{" "}
             para activar tu plan.
+          </p>
+        ) : hideMercadoPagoCheckout ? (
+          <p className="text-xs text-slate-500">
+            No hace falta pagar por Mercado Pago mientras este plan comercial esté activo.
           </p>
         ) : !subscriptionActive ? (
           <div className="space-y-3">
@@ -300,7 +346,7 @@ export function ClinicPlanPanel({
           </div>
         )}
       </div>
-      <ClinicUpgradeHintCard />
+      {!hideMercadoPagoCheckout ? <ClinicUpgradeHintCard /> : null}
     </Card>
   );
 }
