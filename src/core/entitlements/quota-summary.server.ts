@@ -10,7 +10,9 @@ import { FEATURES } from "@/core/entitlements/features";
 import { countClinicSeatRows } from "@/core/entitlements/limits.server";
 import {
   type CommercialQuotaRow,
+  formatPatientQuotaLabel,
   formatQuotaLabel,
+  resolvedFeatureLimit,
 } from "@/core/entitlements/quota-display";
 import { lookupFeature } from "@/core/entitlements/resolve";
 import { bytesToMb } from "@/core/entitlements/storage";
@@ -30,16 +32,23 @@ export async function listCommercialQuotaRows(clinicId: string): Promise<Commerc
     countActiveAutomationJobs(supabase, clinicId),
   ]);
 
-  const patientsLimit = lookupFeature(entitlements, FEATURES.PATIENTS_MAX)?.limit ?? 0;
-  const usersLimit = lookupFeature(entitlements, FEATURES.USERS_MAX)?.limit ?? 0;
-  const professionalsLimit = lookupFeature(entitlements, FEATURES.PROFESSIONALS_MAX)?.limit ?? 0;
-  const aiLimit = lookupFeature(entitlements, FEATURES.AI_MONTHLY_REQUESTS)?.limit ?? 0;
-  const whatsappLimit = lookupFeature(entitlements, FEATURES.WHATSAPP_MONTHLY_MESSAGES)?.limit ?? 0;
-  const transcriptionsLimit =
-    lookupFeature(entitlements, FEATURES.AI_MONTHLY_TRANSCRIPTIONS)?.limit ?? 0;
+  const patientsLimit = resolvedFeatureLimit(lookupFeature(entitlements, FEATURES.PATIENTS_MAX));
+  const usersLimit = resolvedFeatureLimit(lookupFeature(entitlements, FEATURES.USERS_MAX));
+  const professionalsLimit = resolvedFeatureLimit(
+    lookupFeature(entitlements, FEATURES.PROFESSIONALS_MAX)
+  );
+  const aiLimit = resolvedFeatureLimit(lookupFeature(entitlements, FEATURES.AI_MONTHLY_REQUESTS));
+  const whatsappLimit = resolvedFeatureLimit(
+    lookupFeature(entitlements, FEATURES.WHATSAPP_MONTHLY_MESSAGES)
+  );
+  const transcriptionsLimit = resolvedFeatureLimit(
+    lookupFeature(entitlements, FEATURES.AI_MONTHLY_TRANSCRIPTIONS)
+  );
 
-  const storageLimit = lookupFeature(entitlements, FEATURES.STORAGE_MAX_MB)?.limit ?? 0;
-  const automationsLimit = lookupFeature(entitlements, FEATURES.AUTOMATIONS_MAX_ACTIVE)?.limit ?? 0;
+  const storageLimit = resolvedFeatureLimit(lookupFeature(entitlements, FEATURES.STORAGE_MAX_MB));
+  const automationsLimit = resolvedFeatureLimit(
+    lookupFeature(entitlements, FEATURES.AUTOMATIONS_MAX_ACTIVE)
+  );
   const statusLabel = commercialStatusLabel(
     effectiveCommercialStatus(entitlements.status, entitlements.trialEndsAt)
   );
@@ -48,7 +57,7 @@ export async function listCommercialQuotaRows(clinicId: string): Promise<Commerc
     ...(statusLabel
       ? [{ label: "Estado comercial", value: `extras en pausa (${statusLabel})` }]
       : []),
-    { label: "Pacientes", value: formatQuotaLabel(patients, patientsLimit) },
+    { label: "Pacientes", value: formatPatientQuotaLabel(patients, patientsLimit) },
     { label: "Usuarios", value: formatQuotaLabel(users, usersLimit) },
     { label: "Profesionales", value: formatQuotaLabel(professionals, professionalsLimit) },
     {

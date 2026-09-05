@@ -58,6 +58,7 @@ export const DRFLOW_BILLING_PLANS: BillingPlan[] = [
       "IA clínica (hasta 1000 acciones/mes)",
       "25 GB de almacenamiento",
       "Reportes avanzados",
+      "Pacientes ilimitados",
       "Soporte prioritario",
     ],
     mercadoPagoPreferenceSku: "drflow-pro-mensual",
