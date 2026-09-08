@@ -38,6 +38,46 @@ export function residentStatusLabel(status: string): string {
   return STATUS_LABELS[status] ?? status;
 }
 
+/** True while the person has an open/active geriatrics stay (not discharged/deceased). */
+export function isOpenResidentStatus(status: string): boolean {
+  return status !== "egresado" && status !== "fallecido";
+}
+
+/** Patient IDs that already have an open geriatrics resident record in this clinic. */
+export async function listOpenResidentPatientIds(
+  clinicId: string,
+  patientIds?: readonly string[]
+): Promise<Set<string>> {
+  const supabase = asStagingSchemaClient(await createClient());
+  let query = supabase
+    .from("geriatrics_residents")
+    .select("patient_id, status")
+    .eq("clinic_id", clinicId);
+
+  if (patientIds && patientIds.length > 0) {
+    query = query.in("patient_id", [...patientIds]);
+  }
+
+  const { data } = await query;
+  const ids = new Set<string>();
+  for (const row of data ?? []) {
+    const patientId = String(row.patient_id ?? "");
+    const status = String(row.status ?? "");
+    if (patientId && isOpenResidentStatus(status)) {
+      ids.add(patientId);
+    }
+  }
+  return ids;
+}
+
+export async function isPatientOpenResident(
+  clinicId: string,
+  patientId: string
+): Promise<boolean> {
+  const ids = await listOpenResidentPatientIds(clinicId, [patientId]);
+  return ids.has(patientId);
+}
+
 export async function listGeriatricsResidents(clinicId: string): Promise<ResidentListItem[]> {
   const supabase = asStagingSchemaClient(await createClient());
   const typed = await createClient();

@@ -17,6 +17,13 @@ type Props = {
    * client snapshot so the list button stays visible after Superadmin enablement.
    */
   geriatricsEnabled?: boolean;
+  /** Patient already has an open geriatrics resident record. */
+  isResident?: boolean;
+  /**
+   * On patient ficha: hide entirely once already admitted.
+   * On list: keep visible (red) to differentiate.
+   */
+  hideWhenResident?: boolean;
 };
 
 /**
@@ -28,11 +35,33 @@ export function AddPatientToGeriatricsButton({
   compact = false,
   className,
   geriatricsEnabled,
+  isResident = false,
+  hideWhenResident = false,
 }: Props) {
   const hasGeriatricsFromContext = useHasGeriatrics();
   const hasGeriatrics =
     typeof geriatricsEnabled === "boolean" ? geriatricsEnabled : hasGeriatricsFromContext;
   if (!hasGeriatrics) return null;
+  if (isResident && hideWhenResident) return null;
+
+  if (isResident) {
+    return (
+      <Link
+        href={`/geriatria/residentes`}
+        prefetch
+        title="Ya es residente. Abrí el módulo Geriatría → Residentes."
+        className={cn(
+          compact
+            ? "inline-flex items-center gap-1.5 rounded-lg border border-red-400 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-800 hover:bg-red-100 dark:border-red-700 dark:bg-red-950/50 dark:text-red-200"
+            : "inline-flex items-center gap-1.5 rounded-lg border border-red-400 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800 hover:bg-red-100 dark:border-red-700 dark:bg-red-950/50 dark:text-red-200",
+          className
+        )}
+      >
+        <Home className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
+        En Geriatría
+      </Link>
+    );
+  }
 
   return (
     <Link

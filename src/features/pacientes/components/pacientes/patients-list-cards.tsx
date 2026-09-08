@@ -50,6 +50,7 @@ interface PatientListCardProps {
   shareMeta?: ShareMeta | null;
   canIssuePrescriptions?: boolean;
   geriatricsEnabled?: boolean;
+  isResident?: boolean;
 }
 
 const PatientListCard = memo(function PatientListCard({
@@ -59,6 +60,7 @@ const PatientListCard = memo(function PatientListCard({
   shareMeta,
   canIssuePrescriptions,
   geriatricsEnabled,
+  isResident = false,
 }: PatientListCardProps) {
   const hasGeriatricsHook = useHasGeriatrics();
   const hasGeriatrics =
@@ -79,11 +81,11 @@ const PatientListCard = memo(function PatientListCard({
         e,
         buildPatientContextMenuItems(p.id, {
           canIssue: canIssuePrescriptions,
-          canAdmitGeriatrics: hasGeriatrics,
+          canAdmitGeriatrics: hasGeriatrics && !isResident,
         })
       );
     },
-    [p.id, canIssuePrescriptions, hasGeriatrics]
+    [p.id, canIssuePrescriptions, hasGeriatrics, isResident]
   );
 
   return (
@@ -128,6 +130,7 @@ const PatientListCard = memo(function PatientListCard({
             patientId={p.id}
             compact
             geriatricsEnabled={geriatricsEnabled}
+            isResident={isResident}
           />
           {canIssuePrescriptions ? (
             <Link
@@ -162,6 +165,7 @@ interface Props {
   shareByPatient?: Map<string, ShareMeta>;
   canIssuePrescriptions?: boolean;
   geriatricsEnabled?: boolean;
+  residentPatientIds?: ReadonlySet<string>;
 }
 
 /** Misma fila blanca que Historia clínica (`ClinicalRecordsGroupedList`). */
@@ -172,6 +176,7 @@ export function PatientsListCards({
   shareByPatient,
   canIssuePrescriptions,
   geriatricsEnabled,
+  residentPatientIds,
 }: Props) {
   if (patients.length === 0) return null;
 
@@ -186,6 +191,7 @@ export function PatientsListCards({
           shareMeta={shareByPatient?.get(p.id) ?? null}
           canIssuePrescriptions={canIssuePrescriptions}
           geriatricsEnabled={geriatricsEnabled}
+          isResident={residentPatientIds?.has(p.id) ?? false}
         />
       ))}
     </div>

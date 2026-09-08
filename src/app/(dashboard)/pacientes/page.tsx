@@ -9,6 +9,7 @@ import { loadClinicProducts } from "@/core/products/products.server";
 import { parsePageParam } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
 
+import { listOpenResidentPatientIds } from "@/features/geriatria/server/residents.server";
 import { loadHistoriasPageData } from "@/features/historias/server/load-historias-page";
 import { PacientesPageContent } from "@/features/pacientes/components/pacientes/pacientes-page-content";
 import { loadPacientesPageData } from "@/features/pacientes/server/load-pacientes-page";
@@ -79,6 +80,14 @@ export default async function PacientesPage({
         }
       : await loadPacientesPageData(supabase, clinicId, q, page, cobertura, patologia);
 
+  const residentPatientIds =
+    geriatricsEnabled && clinicId && pageData.patients.length > 0
+      ? await listOpenResidentPatientIds(
+          clinicId,
+          pageData.patients.map((p) => p.id)
+        )
+      : new Set<string>();
+
   const headerSubtitle =
     seccion === "historias"
       ? `${historiasData?.clinicTotalRecords ?? 0} consultas en la clínica`
@@ -103,6 +112,7 @@ export default async function PacientesPage({
         canViewClinical={canViewClinical}
         historiasData={historiasData}
         geriatricsEnabled={geriatricsEnabled}
+        residentPatientIds={residentPatientIds}
         {...pageData}
       />
     </>

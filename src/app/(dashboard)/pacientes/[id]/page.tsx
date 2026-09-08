@@ -10,6 +10,7 @@ import { loadClinicProducts } from "@/core/products/products.server";
 import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
+import { isPatientOpenResident } from "@/features/geriatria/server/residents.server";
 import { PatientWorkspaceContent } from "@/features/pacientes";
 import { PatientWorkspaceSkeleton } from "@/features/pacientes";
 import { AddPatientToGeriatricsButton } from "@/features/pacientes/components/pacientes/add-patient-to-geriatrics-button";
@@ -58,6 +59,8 @@ export default async function PacienteDetailPage({
   const canManageAdminDocuments = hasPermission(role, "manageAdminDocuments", isSuperadmin);
   const products = await loadClinicProducts(clinicId);
   const geriatricsEnabled = hasProduct(products, PRODUCTS.GERIATRICS);
+  const isResident =
+    geriatricsEnabled ? await isPatientOpenResident(clinicId, patientRow.id) : false;
 
   const initialTabRaw = parsePatientWorkspaceTab(
     tabParam ? (LEGACY_TAB_ALIASES[tabParam] ?? tabParam) : null
@@ -99,6 +102,8 @@ export default async function PacienteDetailPage({
               <AddPatientToGeriatricsButton
                 patientId={patientRow.id}
                 geriatricsEnabled={geriatricsEnabled}
+                isResident={isResident}
+                hideWhenResident
               />
               <DeletePatientButton
                 patientId={patientRow.id}

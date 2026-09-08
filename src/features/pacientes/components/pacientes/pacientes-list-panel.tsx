@@ -23,6 +23,7 @@ type Props = PacientesPageData & {
   canIssuePrescriptions: boolean;
   hasSearch: boolean;
   geriatricsEnabled?: boolean;
+  residentPatientIds?: ReadonlySet<string>;
 };
 
 export function PacientesListPanel({
@@ -39,6 +40,7 @@ export function PacientesListPanel({
   canIssuePrescriptions,
   hasSearch,
   geriatricsEnabled,
+  residentPatientIds,
 }: Props) {
   const [isNavigating, setIsNavigating] = useState(false);
   const showListSkeleton = isNavigating;
@@ -115,6 +117,7 @@ export function PacientesListPanel({
               shareByPatient={shareByPatient}
               canIssuePrescriptions={canIssuePrescriptions}
               geriatricsEnabled={geriatricsEnabled}
+              residentPatientIds={residentPatientIds}
             />
           </Card>
           {(totalPages > 1 || total > 0) && (
