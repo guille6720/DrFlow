@@ -9,6 +9,7 @@ import { createClient } from "@/core/supabase/server";
 
 import { PatientWorkspaceContent } from "@/features/pacientes";
 import { PatientWorkspaceSkeleton } from "@/features/pacientes";
+import { AddPatientToGeriatricsButton } from "@/features/pacientes/components/pacientes/add-patient-to-geriatrics-button";
 import { DeletePatientButton } from "@/features/pacientes/components/pacientes/delete-patient-button";
 import { PatientAdminDetailView } from "@/features/pacientes/components/pacientes/patient-admin-detail-view";
 import { PatientHeaderIdentity } from "@/features/pacientes/components/pacientes/patient-header-identity";
@@ -89,10 +90,13 @@ export default async function PacienteDetailPage({
             />
           </Suspense>
           {canManagePatients && (
-            <DeletePatientButton
-              patientId={patientRow.id}
-              patientName={`${patientRow.last_name}, ${patientRow.first_name}`}
-            />
+            <>
+              <AddPatientToGeriatricsButton patientId={patientRow.id} />
+              <DeletePatientButton
+                patientId={patientRow.id}
+                patientName={`${patientRow.last_name}, ${patientRow.first_name}`}
+              />
+            </>
           )}
         </div>
 

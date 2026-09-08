@@ -4,12 +4,15 @@ import { FileText, ScrollText } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback } from "react";
 
+import { useHasGeriatrics } from "@/core/components/products/products-provider";
+
 import { patientClinicalHistoryPath, patientFichaPath } from "@/shared/utils/clinical-navigation";
 
 import {
   buildPatientContextMenuItems,
   openClinicalContextMenu,
 } from "@/features/ia/components/clinical-workflow/clinical-context-menu";
+import { AddPatientToGeriatricsButton } from "@/features/pacientes/components/pacientes/add-patient-to-geriatrics-button";
 import { PatientAppShareControl } from "@/features/pacientes/components/pacientes/patient-app-share-control";
 import { PatientWhatsAppButton } from "@/features/pacientes/components/pacientes/patient-whatsapp-button";
 import { isPamiPatient } from "@/features/pacientes/utils/patient-age";
@@ -55,6 +58,7 @@ const PatientListCard = memo(function PatientListCard({
   shareMeta,
   canIssuePrescriptions,
 }: PatientListCardProps) {
+  const hasGeriatrics = useHasGeriatrics();
   const patientDisplay = `${p.last_name}, ${p.first_name}`;
   const contact = p.phone ?? p.email ?? null;
   const metaParts = [
@@ -69,10 +73,13 @@ const PatientListCard = memo(function PatientListCard({
     (e: React.MouseEvent) => {
       openClinicalContextMenu(
         e,
-        buildPatientContextMenuItems(p.id, { canIssue: canIssuePrescriptions })
+        buildPatientContextMenuItems(p.id, {
+          canIssue: canIssuePrescriptions,
+          canAdmitGeriatrics: hasGeriatrics,
+        })
       );
     },
-    [p.id, canIssuePrescriptions]
+    [p.id, canIssuePrescriptions, hasGeriatrics]
   );
 
   return (
@@ -105,6 +112,7 @@ const PatientListCard = memo(function PatientListCard({
           ) : null}
           <GeneratePatientPortalAccessControl patientId={p.id} compact />
           <PatientWhatsAppButton phone={p.phone} message={contactMessage} size="icon" />
+          <AddPatientToGeriatricsButton patientId={p.id} compact />
           <Link
             href={patientClinicalHistoryPath(p.id)}
             prefetch
