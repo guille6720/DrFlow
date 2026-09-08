@@ -5,12 +5,14 @@ import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-hea
 import { ManualHelpLink } from "@/core/components/superadmin/manual/manual-help-link";
 import { SuperadminClearOverrideButton } from "@/core/components/superadmin/superadmin-clear-override-button";
 import { SuperadminClinicPlanForm } from "@/core/components/superadmin/superadmin-clinic-plan-form";
+import { SuperadminClinicProductsForm } from "@/core/components/superadmin/superadmin-clinic-products-form";
 import { SuperadminOverrideForm } from "@/core/components/superadmin/superadmin-override-form";
 import { listEntitlementsAdminOverrides } from "@/core/entitlements/admin.server";
 import { ADMIN_ASSIGNABLE_PLAN_KEYS } from "@/core/entitlements/admin-constants";
 import { listSuperadminClinicCommercialRows } from "@/core/entitlements/superadmin-clinics.server";
 import { requireSuperadminPage } from "@/core/entitlements/superadmin-guard.server";
 import { logServerError } from "@/core/errors/log-error.server";
+import { loadClinicProducts } from "@/core/products/products.server";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -25,15 +27,22 @@ export default async function SuperadminClinicDetailPage({
 
   let clinic: Awaited<ReturnType<typeof listSuperadminClinicCommercialRows>>[number] | undefined;
   let clinicOverrides: Awaited<ReturnType<typeof listEntitlementsAdminOverrides>> = [];
+  let products = { clinic: true, geriatrics: false, catalogAvailable: false };
   let loadError: string | null = null;
 
   try {
-    const [rows, overrides] = await Promise.all([
+    const [rows, overrides, productsSnap] = await Promise.all([
       listSuperadminClinicCommercialRows(),
       listEntitlementsAdminOverrides(),
+      loadClinicProducts(clinicId),
     ]);
     clinic = rows.find((r) => r.clinicId === clinicId);
     clinicOverrides = overrides.filter((o) => o.clinicId === clinicId);
+    products = {
+      clinic: productsSnap.clinic,
+      geriatrics: productsSnap.geriatrics,
+      catalogAvailable: productsSnap.catalogAvailable,
+    };
   } catch (err) {
     loadError = err instanceof Error ? err.message : "Error al cargar datos comerciales";
     logServerError("superadmin.clinic-detail", err, { persist: false });
@@ -100,6 +109,13 @@ export default async function SuperadminClinicDetailPage({
             <Row label="Uso IA / WhatsApp (mes)" value={`${clinic.usageAi} / ${clinic.usageWhatsapp}`} />
           </dl>
         </Card>
+
+        <SuperadminClinicProductsForm
+          clinicId={clinic.clinicId}
+          clinicEnabled={products.clinic}
+          geriatricsEnabled={products.geriatrics}
+          catalogAvailable={products.catalogAvailable}
+        />
 
         <Card title="Recomendación" description="Motor centralizado — sin cambio automático">
           {clinic.planKey === "legacy" ? (

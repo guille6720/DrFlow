@@ -45,3 +45,5 @@ What problem / feature drove this change?
 | 005 | Import / export phase 2 (templates, historical docs, JSON/ZIP) |
 | 006 | FHIR R4 interoperability (import / export phase 3) |
 | 007 | Bulk clinical export (import / export phase 4) |
+| 008 | Geriatría — auditoría Fase 1 |
+| 009 | Geriatría — entrega staging (productos + módulo) |

@@ -25,6 +25,7 @@ import {
   TRIAL_DAYS_INCLUDED,
 } from "@/core/billing/plans";
 import { AccountDeletedCleanup } from "@/core/components/auth/account-deleted-cleanup";
+import { GeriatricsPricingSection } from "@/core/components/landing/geriatrics-pricing-section";
 import { MarketingFooter } from "@/core/components/landing/marketing-footer";
 import { MarketingHeader } from "@/core/components/landing/marketing-header";
 import {
@@ -457,6 +458,9 @@ export function DrFlowHomeLanding() {
         <section className="bg-white py-20">
           <div className="mx-auto max-w-6xl px-4">
             <PlansPricingSection />
+            <div className="mt-16">
+              <GeriatricsPricingSection />
+            </div>
             <p className="mt-8 text-center text-sm text-slate-500">
               Consultas comerciales:{" "}
               <a href={`mailto:${salesEmail}`} className="text-teal-700 hover:underline">

@@ -14,9 +14,12 @@ import {
   SUPERADMIN_SIDEBAR_NAV_ENTRIES,
 } from "@/core/components/layout/sidebar-nav-config";
 import { SidebarNavContent } from "@/core/components/layout/sidebar-nav-content";
+import { useClinicProducts } from "@/core/components/products/products-provider";
 import { isHrefEntitledBySnapshot } from "@/core/entitlements/nav-features";
 import type { ClientEntitlementsSnapshot } from "@/core/entitlements/types";
 import { canAccessImportExport, hasPermission, isInvitedClinicMember, type PermissionOverrides } from "@/core/permissions/roles";
+import type { ClinicProductsSnapshot } from "@/core/products/products";
+import { isHrefAllowedByProducts } from "@/core/products/route-products";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -51,7 +54,8 @@ function filterNavLink(
   isSuperadmin: boolean | undefined,
   clinicFeatures: ReturnType<typeof useClinicFeatures>,
   permissionOverrides?: PermissionOverrides,
-  entitlements?: ClientEntitlementsSnapshot | null
+  entitlements?: ClientEntitlementsSnapshot | null,
+  products?: ClinicProductsSnapshot | null
 ): boolean {
   if (item.href === "/datos") {
     return canAccessImportExport(role, isSuperadmin ?? false, permissionOverrides);
@@ -82,6 +86,10 @@ function filterNavLink(
     return false;
   }
 
+  if (!isHrefAllowedByProducts(item.href, products ?? null)) {
+    return false;
+  }
+
   return true;
 }
 
@@ -91,7 +99,8 @@ function filterSidebarNavEntries(
   isSuperadmin: boolean | undefined,
   clinicFeatures: ReturnType<typeof useClinicFeatures>,
   permissionOverrides?: PermissionOverrides,
-  entitlements?: ClientEntitlementsSnapshot | null
+  entitlements?: ClientEntitlementsSnapshot | null,
+  products?: ClinicProductsSnapshot | null
 ): SidebarNavEntry[] {
   return entries
     .map((entry) => {
@@ -103,7 +112,8 @@ function filterSidebarNavEntries(
             isSuperadmin,
             clinicFeatures,
             permissionOverrides,
-            entitlements
+            entitlements,
+            products
           )
         );
         if (children.length === 0) return null;
@@ -116,7 +126,8 @@ function filterSidebarNavEntries(
         isSuperadmin,
         clinicFeatures,
         permissionOverrides,
-        entitlements
+        entitlements,
+        products
       )
         ? entry
         : null;
@@ -137,6 +148,7 @@ export function Sidebar({
   const { hidden: desktopHidden, toggleHidden } = useDashboardSidebar();
   const clinicFeatures = useClinicFeatures();
   const entitlements = useEntitlementsSnapshot();
+  const products = useClinicProducts();
 
   const visibleItems = useMemo(() => {
     const base = filterSidebarNavEntries(
@@ -145,7 +157,8 @@ export function Sidebar({
       isSuperadmin,
       clinicFeatures,
       permissionOverrides,
-      entitlements
+      entitlements,
+      products
     );
     if (!isSuperadmin) return base;
     const superadmin = filterSidebarNavEntries(
@@ -154,10 +167,11 @@ export function Sidebar({
       isSuperadmin,
       clinicFeatures,
       permissionOverrides,
-      entitlements
+      entitlements,
+      products
     );
     return [...base, ...superadmin];
-  }, [role, isSuperadmin, clinicFeatures, permissionOverrides, entitlements]);
+  }, [role, isSuperadmin, clinicFeatures, permissionOverrides, entitlements, products]);
 
   const isInvitedMember = isInvitedClinicMember(role, isSuperadmin);
 

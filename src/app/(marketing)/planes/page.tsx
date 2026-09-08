@@ -8,6 +8,7 @@ import {
   getSalesWhatsAppPhone,
   TRIAL_DAYS_INCLUDED,
 } from "@/core/billing/plans";
+import { GeriatricsPricingSection } from "@/core/components/landing/geriatrics-pricing-section";
 import { MarketingFooter } from "@/core/components/landing/marketing-footer";
 import { MarketingHeader } from "@/core/components/landing/marketing-header";
 import { PlansModuleNotice } from "@/core/components/landing/plans-module-notice";
@@ -63,6 +64,9 @@ export default async function PlanesPage({
           mercadoPagoEnabled={mercadoPagoEnabled}
           isAuthenticated={Boolean(session)}
         />
+        <div className="mt-16">
+          <GeriatricsPricingSection />
+        </div>
         <p className="mt-10 text-center text-xs text-slate-500">
           Consultas comerciales:{" "}
           <a href={`mailto:${salesEmail}`} className="text-teal-700 hover:underline">

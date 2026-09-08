@@ -131,6 +131,86 @@ export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
     ],
   },
   { featureId: "pacientes", href: "/pacientes", label: "Pacientes", permission: "managePatients" },
+  {
+    type: "group",
+    id: "geriatria",
+    label: "Geriatría",
+    featureId: "geriatria",
+    children: [
+      {
+        featureId: "geriatria",
+        href: "/geriatria",
+        label: "Panel general",
+        permission: "managePatients",
+      },
+      {
+        featureId: "geriatria",
+        href: "/geriatria/residentes",
+        label: "Residentes",
+        permission: "managePatients",
+      },
+      {
+        featureId: "geriatria",
+        href: "/geriatria/habitaciones",
+        label: "Habitaciones y camas",
+        permission: "managePatients",
+      },
+      {
+        featureId: "geriatria",
+        href: "/geriatria/enfermeria",
+        label: "Enfermería",
+        permission: "viewClinicalRecords",
+      },
+      {
+        featureId: "geriatria",
+        href: "/geriatria/medicacion",
+        label: "Medicación",
+        permission: "viewClinicalRecords",
+      },
+      {
+        featureId: "geriatria",
+        href: "/geriatria/planes-cuidados",
+        label: "Planes de cuidados",
+        permission: "viewClinicalRecords",
+      },
+      {
+        featureId: "geriatria",
+        href: "/geriatria/evoluciones",
+        label: "Evoluciones",
+        permission: "viewClinicalRecords",
+      },
+      {
+        featureId: "geriatria",
+        href: "/geriatria/nutricion",
+        label: "Nutrición",
+        permission: "viewClinicalRecords",
+      },
+      {
+        featureId: "geriatria",
+        href: "/geriatria/incidentes",
+        label: "Incidentes",
+        permission: "viewClinicalRecords",
+      },
+      {
+        featureId: "geriatria",
+        href: "/geriatria/familiares",
+        label: "Familiares / responsables",
+        permission: "managePatients",
+      },
+      {
+        featureId: "geriatria",
+        href: "/geriatria/traslados",
+        label: "Traslados y estudios",
+        permission: "managePatients",
+      },
+      {
+        featureId: "geriatria",
+        href: "/geriatria/reportes",
+        label: "Reportes",
+        permission: "viewReports",
+      },
+    ],
+  },
 ];
 
 /** Superadmin-only commercial control (sidebar append). */

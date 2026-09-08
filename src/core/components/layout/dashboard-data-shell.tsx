@@ -20,6 +20,7 @@ import { LazyDashboardCopilotHosts } from "@/core/components/layout/lazy-dashboa
 import { LazyDashboardInteractionHosts } from "@/core/components/layout/lazy-dashboard-interaction-hosts";
 import { Sidebar } from "@/core/components/layout/sidebar";
 import { PerformanceMonitor } from "@/core/components/observability/performance-monitor";
+import { ProductsProvider } from "@/core/components/products/products-provider";
 import { PwaRegister } from "@/core/components/pwa/pwa-register";
 import { UiThemeProvider } from "@/core/components/theme/ui-theme-provider";
 import { TrialBanner } from "@/core/components/trial/trial-banner";
@@ -28,6 +29,10 @@ import { getClinicEntitlements } from "@/core/entitlements/entitlements.server";
 import { emptyEntitlements, toClientEntitlementsSnapshot } from "@/core/entitlements/resolve";
 import { isVoiceInputEntitledBySnapshot } from "@/core/entitlements/voice-features";
 import { canAccessRoute } from "@/core/permissions/roles";
+import { emptyClinicProducts, toClientProductsSnapshot } from "@/core/products";
+import { hasAnyProduct } from "@/core/products/product-access";
+import { loadClinicProducts } from "@/core/products/products.server";
+import { canAccessPathWithProducts } from "@/core/products/route-products";
 import { createClient } from "@/core/supabase/server";
 import {
   isClinicTrialExpired,
@@ -97,7 +102,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
 
   const path = (await headers()).get("x-drflow-path") ?? "";
 
-  const [clinicFeatures, entitlementsSnapshot] = await Promise.all([
+  const [clinicFeatures, entitlementsSnapshot, productsSnapshot] = await Promise.all([
     (async () => {
       if (!clinicId) return emptyClinicFeaturesContext();
       try {
@@ -116,6 +121,15 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
         return toClientEntitlementsSnapshot(emptyEntitlements(clinicId));
       }
     })(),
+    (async () => {
+      if (!clinicId) return toClientProductsSnapshot(emptyClinicProducts(null));
+      try {
+        return toClientProductsSnapshot(await loadClinicProducts(clinicId));
+      } catch (err) {
+        console.error("[dashboard-shell] loadClinicProducts failed:", err);
+        return toClientProductsSnapshot(emptyClinicProducts(clinicId));
+      }
+    })(),
   ]);
 
   if (path && !canAccessRoute(role, path, isSuperadmin, permissionOverrides)) {
@@ -126,6 +140,34 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
       metadata: { path, reason: "rbac_denied" },
     });
     redirect("/dashboard");
+  }
+
+  if (
+    path &&
+    clinicId &&
+    !isSuperadmin &&
+    !canAccessPathWithProducts(path, productsSnapshot)
+  ) {
+    await logAudit({
+      clinicId,
+      entityType: "route_access",
+      action: "view",
+      metadata: { path, reason: "product_entitlement_denied" },
+    });
+    redirect(hasAnyProduct(productsSnapshot) ? "/dashboard" : "/sin-productos");
+  }
+
+  if (
+    path &&
+    clinicId &&
+    !isSuperadmin &&
+    !hasAnyProduct(productsSnapshot) &&
+    path !== "/sin-productos" &&
+    !path.startsWith("/configuracion") &&
+    !path.startsWith("/ayuda") &&
+    !path.startsWith("/pagos")
+  ) {
+    redirect("/sin-productos");
   }
 
   if (path && clinicId && !isRouteAllowedByPlugins(path, clinicFeatures.plugins)) {
@@ -173,6 +215,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
       )}
       <DashboardSidebarProvider>
         <EntitlementsProvider snapshot={entitlementsSnapshot}>
+          <ProductsProvider snapshot={productsSnapshot}>
           <CommercialStatusBanner />
           <ClinicFeaturesProvider plugins={clinicFeatures.plugins} flags={clinicFeatures.flags}>
             <LazyDashboardInteractionHosts role={role} isSuperadmin={isSuperadmin} />
@@ -217,6 +260,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
               </AdminOpsCopilotProvider>
             </ClinicalCopilotProvider>
           </ClinicFeaturesProvider>
+          </ProductsProvider>
         </EntitlementsProvider>
       </DashboardSidebarProvider>
     </div>

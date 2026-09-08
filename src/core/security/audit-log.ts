@@ -27,6 +27,7 @@ export const AUDIT_MODULES = [
   "waiting_room",
   "ia",
   "system",
+  "geriatrics",
 ] as const;
 
 export type AuditModule = (typeof AUDIT_MODULES)[number];
@@ -73,6 +74,10 @@ const ENTITY_MODULE_MAP: Record<string, AuditModule> = {
   clinic_member: "settings",
   waiting_room: "waiting_room",
   ai_request: "ia",
+  clinic_product: "settings",
+  geriatrics_resident: "geriatrics",
+  geriatrics_incident: "geriatrics",
+  geriatrics_medication: "geriatrics",
 };
 
 export function deriveAuditModule(entityType: string): AuditModule {
