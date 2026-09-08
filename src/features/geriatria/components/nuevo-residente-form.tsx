@@ -36,7 +36,7 @@ export function NuevoResidenteForm({ freeBeds, defaultPatientId }: Props) {
   return (
     <Card
       title="Ingreso de residente"
-      description="Seleccioná un paciente existente de la clínica. No se duplica la identidad: se crea la ficha geriátrica vinculada."
+      description="El paciente sigue en Clínica con toda su historia clínica. Solo se agrega la ficha de residente geriátrico (misma identidad)."
     >
       <form action={onSubmit} className="space-y-4">
         <PatientSearchCombobox

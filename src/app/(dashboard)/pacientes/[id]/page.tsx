@@ -4,6 +4,9 @@ import { Suspense } from "react";
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { hasProduct } from "@/core/products/product-access";
+import { PRODUCTS } from "@/core/products/products";
+import { loadClinicProducts } from "@/core/products/products.server";
 import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
@@ -53,6 +56,8 @@ export default async function PacienteDetailPage({
   const canViewClinical = hasPermission(role, "viewClinicalRecords", isSuperadmin);
   const canIssue = hasPermission(role, "issuePrescriptions", isSuperadmin);
   const canManageAdminDocuments = hasPermission(role, "manageAdminDocuments", isSuperadmin);
+  const products = await loadClinicProducts(clinicId);
+  const geriatricsEnabled = hasProduct(products, PRODUCTS.GERIATRICS);
 
   const initialTabRaw = parsePatientWorkspaceTab(
     tabParam ? (LEGACY_TAB_ALIASES[tabParam] ?? tabParam) : null
@@ -91,7 +96,10 @@ export default async function PacienteDetailPage({
           </Suspense>
           {canManagePatients && (
             <>
-              <AddPatientToGeriatricsButton patientId={patientRow.id} />
+              <AddPatientToGeriatricsButton
+                patientId={patientRow.id}
+                geriatricsEnabled={geriatricsEnabled}
+              />
               <DeletePatientButton
                 patientId={patientRow.id}
                 patientName={`${patientRow.last_name}, ${patientRow.first_name}`}

@@ -3,6 +3,9 @@ import {
 } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { hasProduct } from "@/core/products/product-access";
+import { PRODUCTS } from "@/core/products/products";
+import { loadClinicProducts } from "@/core/products/products.server";
 import { parsePageParam } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
 
@@ -47,6 +50,8 @@ export default async function PacientesPage({
   const canIssuePrescriptions = hasPermission(role, "issuePrescriptions", isSuperadmin);
   const canViewClinical = hasPermission(role, "viewClinicalRecords", isSuperadmin);
   const supabase = await createClient();
+  const products = clinicId ? await loadClinicProducts(clinicId) : null;
+  const geriatricsEnabled = products ? hasProduct(products, PRODUCTS.GERIATRICS) : false;
 
   const seccion: PacientesPageSection =
     canViewClinical && parsePacientesPageSection(seccionRaw) === "historias"
@@ -97,6 +102,7 @@ export default async function PacientesPage({
         canIssuePrescriptions={canIssuePrescriptions}
         canViewClinical={canViewClinical}
         historiasData={historiasData}
+        geriatricsEnabled={geriatricsEnabled}
         {...pageData}
       />
     </>

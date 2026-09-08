@@ -16,6 +16,7 @@ type Props = PacientesPageData & {
   canIssuePrescriptions: boolean;
   canViewClinical: boolean;
   historiasData: HistoriasPageData | null;
+  geriatricsEnabled?: boolean;
 };
 
 export function PacientesPageContent({
@@ -33,6 +34,7 @@ export function PacientesPageContent({
   canIssuePrescriptions,
   canViewClinical,
   historiasData,
+  geriatricsEnabled,
 }: Props) {
   const hasSearch = Boolean(q || patologia);
   const showHistorias = seccion === "historias" && canViewClinical;
@@ -95,6 +97,7 @@ export function PacientesPageContent({
             cobertura={cobertura}
             canIssuePrescriptions={canIssuePrescriptions}
             hasSearch={hasSearch}
+            geriatricsEnabled={geriatricsEnabled}
           />
         </>
       )}

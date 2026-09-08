@@ -49,6 +49,7 @@ interface PatientListCardProps {
   doctorInfo?: DoctorShareInfo | null;
   shareMeta?: ShareMeta | null;
   canIssuePrescriptions?: boolean;
+  geriatricsEnabled?: boolean;
 }
 
 const PatientListCard = memo(function PatientListCard({
@@ -57,8 +58,11 @@ const PatientListCard = memo(function PatientListCard({
   doctorInfo,
   shareMeta,
   canIssuePrescriptions,
+  geriatricsEnabled,
 }: PatientListCardProps) {
-  const hasGeriatrics = useHasGeriatrics();
+  const hasGeriatricsHook = useHasGeriatrics();
+  const hasGeriatrics =
+    typeof geriatricsEnabled === "boolean" ? geriatricsEnabled : hasGeriatricsHook;
   const patientDisplay = `${p.last_name}, ${p.first_name}`;
   const contact = p.phone ?? p.email ?? null;
   const metaParts = [
@@ -112,7 +116,6 @@ const PatientListCard = memo(function PatientListCard({
           ) : null}
           <GeneratePatientPortalAccessControl patientId={p.id} compact />
           <PatientWhatsAppButton phone={p.phone} message={contactMessage} size="icon" />
-          <AddPatientToGeriatricsButton patientId={p.id} compact />
           <Link
             href={patientClinicalHistoryPath(p.id)}
             prefetch
@@ -121,6 +124,11 @@ const PatientListCard = memo(function PatientListCard({
             <FileText className="h-3.5 w-3.5" />
             Historia clínica
           </Link>
+          <AddPatientToGeriatricsButton
+            patientId={p.id}
+            compact
+            geriatricsEnabled={geriatricsEnabled}
+          />
           {canIssuePrescriptions ? (
             <Link
               href={buildPatientWorkspaceUrl(p.id, { tab: "recetas", action: "nueva" })}
@@ -153,6 +161,7 @@ interface Props {
   doctorInfo?: DoctorShareInfo | null;
   shareByPatient?: Map<string, ShareMeta>;
   canIssuePrescriptions?: boolean;
+  geriatricsEnabled?: boolean;
 }
 
 /** Misma fila blanca que Historia clínica (`ClinicalRecordsGroupedList`). */
@@ -162,6 +171,7 @@ export function PatientsListCards({
   doctorInfo,
   shareByPatient,
   canIssuePrescriptions,
+  geriatricsEnabled,
 }: Props) {
   if (patients.length === 0) return null;
 
@@ -175,6 +185,7 @@ export function PatientsListCards({
           doctorInfo={doctorInfo}
           shareMeta={shareByPatient?.get(p.id) ?? null}
           canIssuePrescriptions={canIssuePrescriptions}
+          geriatricsEnabled={geriatricsEnabled}
         />
       ))}
     </div>
