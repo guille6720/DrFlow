@@ -32,7 +32,31 @@ const PRINT_CLEANUP_FALLBACK_MS = 120_000;
 
 /** A4 at 96dpi — zero-size iframes clip multi-page prints in Chrome/Edge. */
 const PRINT_FRAME_WIDTH_PX = "794px";
-const PRINT_FRAME_HEIGHT_PX = "1123px";
+const PRINT_FRAME_HEIGHT_PX_FALLBACK = 1123;
+
+function clearWindowSelection(): void {
+  try {
+    const selection = window.getSelection?.();
+    selection?.removeAllRanges();
+  } catch {
+    /* ignore */
+  }
+}
+
+function resizeFrameToContent(iframe: HTMLIFrameElement): void {
+  try {
+    const doc = iframe.contentDocument;
+    if (!doc) return;
+    const height = Math.max(
+      doc.documentElement?.scrollHeight ?? 0,
+      doc.body?.scrollHeight ?? 0,
+      PRINT_FRAME_HEIGHT_PX_FALLBACK
+    );
+    iframe.style.height = `${height}px`;
+  } catch {
+    /* ignore */
+  }
+}
 
 let sharedPrintFrame: HTMLIFrameElement | null = null;
 
@@ -149,7 +173,7 @@ function getSharedPrintFrame(): HTMLIFrameElement | null {
     iframe.style.left = "-10000px";
     iframe.style.top = "0";
     iframe.style.width = PRINT_FRAME_WIDTH_PX;
-    iframe.style.height = PRINT_FRAME_HEIGHT_PX;
+    iframe.style.height = `${PRINT_FRAME_HEIGHT_PX_FALLBACK}px`;
     iframe.style.border = "0";
     iframe.style.opacity = "0";
     iframe.style.visibility = "hidden";
@@ -188,9 +212,12 @@ function tryPrintViaIframe(html: string): PrintHtmlDocumentResult {
   const startPrint = () => {
     if (started) return;
     started = true;
+    clearWindowSelection();
+    resizeFrameToContent(iframe);
     triggerPrintWithCleanup(frameWindow, () => {
       try {
         iframe.srcdoc = "";
+        iframe.style.height = `${PRINT_FRAME_HEIGHT_PX_FALLBACK}px`;
       } catch {
         /* ignore */
       }
@@ -223,6 +250,9 @@ export function printHtmlDocument(options: PrintHtmlDocumentOptions): PrintHtmlD
   if (typeof window === "undefined") {
     return fail("print_unavailable", PRINT_UNAVAILABLE_MESSAGE);
   }
+
+  // Avoid Chrome/Edge "Print selection only" when text was highlighted in the editor.
+  clearWindowSelection();
 
   try {
     const run = (): PrintHtmlDocumentResult => {

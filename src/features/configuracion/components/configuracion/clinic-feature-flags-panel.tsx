@@ -3,6 +3,7 @@
 import { ToggleLeft } from "lucide-react";
 import { useState, useTransition } from "react";
 
+import { CLINICAL_RESEARCH_PROTOCOLS_FLAG } from "@/core/compliance/clinical-research-ai";
 import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
 import { useEntitlementsSnapshot } from "@/core/components/entitlements/entitlements-provider";
 import type { FeatureKey } from "@/core/entitlements/features";
@@ -13,7 +14,10 @@ import type { FeatureFlagId } from "@/features/flags/lib/registry";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { updateClinicFeatureFlag } from "@/lib/actions/clinic-feature-flags";
+import {
+  enableClinicalResearchProtocols,
+  updateClinicFeatureFlag,
+} from "@/lib/actions/clinic-feature-flags";
 
 type FlagRow = {
   id: FeatureFlagId;
@@ -40,16 +44,21 @@ function FlagToggleRow({
   pending,
   onToggle,
   onDeniedFeature,
+  researchAcknowledged,
+  onResearchAcknowledged,
 }: {
   flag: FlagRow;
   pending: boolean;
   onToggle: (id: FeatureFlagId, enabled: boolean) => void;
   onDeniedFeature: (feature: FeatureKey) => void;
+  researchAcknowledged: boolean;
+  onResearchAcknowledged: (value: boolean) => void;
 }) {
   const snapshot = useEntitlementsSnapshot();
   const addon = addonFeatureForClinicFeatureFlag(flag.id);
   const entitled = isFeatureEntitledBySnapshot(addon, snapshot);
   const lockedOff = Boolean(addon) && !entitled && !flag.enabled;
+  const isResearchFlag = flag.id === CLINICAL_RESEARCH_PROTOCOLS_FLAG;
 
   return (
     <li className="space-y-2 py-4">
@@ -63,13 +72,31 @@ function FlagToggleRow({
             ) : null}
           </div>
           <p className="mt-1 text-sm text-slate-600">{flag.description}</p>
+          {isResearchFlag && !flag.enabled ? (
+            <label className="mt-2 flex cursor-pointer items-start gap-2 text-xs text-slate-600">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 rounded border-slate-300"
+                checked={researchAcknowledged}
+                onChange={(e) => onResearchAcknowledged(e.target.checked)}
+              />
+              <span>
+                Confirmo revisión legal/privacidad documentada (Fase 18) antes de activar screening
+                de candidatos.
+              </span>
+            </label>
+          ) : null}
         </div>
         <label className="flex shrink-0 cursor-pointer items-center gap-2 text-sm">
           <input
             type="checkbox"
             className="h-4 w-4 rounded border-slate-300"
             checked={flag.enabled}
-            disabled={pending || lockedOff}
+            disabled={
+              pending ||
+              lockedOff ||
+              (isResearchFlag && !flag.enabled && !researchAcknowledged)
+            }
             onChange={(e) => {
               if (addon && e.target.checked && !entitled) {
                 onDeniedFeature(addon);
@@ -90,13 +117,17 @@ export function ClinicFeatureFlagsPanel({ flags: initial }: Props) {
   const [flags, setFlags] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [deniedFeature, setDeniedFeature] = useState<FeatureKey | null>(null);
+  const [researchAcknowledged, setResearchAcknowledged] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function toggle(id: FeatureFlagId, enabled: boolean) {
     setError(null);
     setDeniedFeature(null);
     startTransition(async () => {
-      const result = await updateClinicFeatureFlag(id, enabled);
+      const result =
+        id === CLINICAL_RESEARCH_PROTOCOLS_FLAG && enabled
+          ? await enableClinicalResearchProtocols({ acknowledgedLegalReview: researchAcknowledged })
+          : await updateClinicFeatureFlag(id, enabled);
       if (result.error) {
         setError(result.error);
         return;
@@ -130,6 +161,8 @@ export function ClinicFeatureFlagsPanel({ flags: initial }: Props) {
             pending={pending}
             onToggle={toggle}
             onDeniedFeature={setDeniedFeature}
+            researchAcknowledged={researchAcknowledged}
+            onResearchAcknowledged={setResearchAcknowledged}
           />
         ))}
       </ul>

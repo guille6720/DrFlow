@@ -21,7 +21,7 @@ export function PatientEhrPrintEvolutionBlock({ consultation }: Props) {
       : patientEhrEvolutionBody(consultation);
 
   return (
-    <article className="drflow-ehr-print-evolution break-inside-avoid">
+    <article className="drflow-ehr-print-evolution">
       <header className="drflow-ehr-print-evolution-header">
         <h2 className="drflow-ehr-print-evolution-title">
           {formatPrintHeaderDate(consultation.created_at)} {consultation.professional_name}

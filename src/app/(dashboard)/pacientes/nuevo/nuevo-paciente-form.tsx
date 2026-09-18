@@ -42,6 +42,10 @@ export default function NuevoPacienteForm({
 }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [existingPatient, setExistingPatient] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const cancelHref = returnPath && returnPath.startsWith("/") ? returnPath : "/pacientes";
 
@@ -49,10 +53,17 @@ export default function NuevoPacienteForm({
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setExistingPatient(null);
     const result = await createPatient(new FormData(e.currentTarget));
     setLoading(false);
     if (result.error) {
       setError(result.error);
+      if ("existingPatientId" in result && result.existingPatientId) {
+        setExistingPatient({
+          id: result.existingPatientId,
+          name: result.existingPatientName ?? "Paciente existente",
+        });
+      }
     } else if (result.data) {
       const destination =
         returnPath && returnPath.startsWith("/")
@@ -85,7 +96,26 @@ export default function NuevoPacienteForm({
               acceptedCoverages={acceptedCoverages}
               prefill={prefill}
             />
-            {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}
+            {error && (
+              <div className="space-y-2 sm:col-span-2">
+                <p className="text-sm text-red-600">{error}</p>
+                {existingPatient ? (
+                  <Link
+                    href={`/pacientes/${existingPatient.id}`}
+                    className="inline-flex text-sm font-medium text-blue-700 underline underline-offset-2 hover:text-blue-800"
+                  >
+                    Abrir ficha de {existingPatient.name}
+                  </Link>
+                ) : (
+                  <Link
+                    href="/pacientes"
+                    className="inline-flex text-sm font-medium text-blue-700 underline underline-offset-2 hover:text-blue-800"
+                  >
+                    Ir a buscar en Pacientes
+                  </Link>
+                )}
+              </div>
+            )}
             <div className="flex gap-2 sm:col-span-2">
               <Button type="submit" loading={loading} pendingLabel="Guardando...">
                 Guardar paciente

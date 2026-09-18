@@ -1,6 +1,9 @@
 import type { z } from "zod";
 
-import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
+import {
+  isUniqueViolation,
+  resolvePostgresUserMessage,
+} from "@/core/errors/postgres-error";
 import type { DbClient } from "@/core/repositories/types";
 import type { ServiceResult } from "@/core/services/types";
 import { serviceErr, serviceOk } from "@/core/services/types";
@@ -16,6 +19,16 @@ import type { Patient, UserRole } from "@/types/database";
 
 type PatientFormData = z.infer<typeof patientSchema>;
 export type SanitizedPatient = PatientFormData;
+
+export type CreatePatientConflict = {
+  existingPatientId: string;
+  existingPatientName: string;
+  documentNumber: string;
+};
+
+export type CreatePatientResult =
+  | ServiceResult<Patient>
+  | { ok: false; error: string; conflict: CreatePatientConflict };
 
 const ADMIN_ONLY_ROLES: UserRole[] = ["secretary"];
 
@@ -108,7 +121,7 @@ export async function createPatientRecord(
     sanitized: SanitizedPatient;
     insurancePlan: string | null;
   }
-): Promise<ServiceResult<Patient>> {
+): Promise<CreatePatientResult> {
   const clinic = await findClinicInsuranceDefaults(db, input.clinicId);
   const insuranceProvider =
     input.sanitized.insurance_provider?.trim() ||
@@ -121,7 +134,33 @@ export async function createPatientRecord(
     p_profile: input.adminOnly ? null : extractClinicalProfileFields(input.sanitized),
   });
 
-  if (error) return serviceErr(error.message);
+  if (error) {
+    const friendly = resolvePostgresUserMessage(error, { fallback: error.message });
+    if (isUniqueViolation(error) || /document_number/i.test(error.message ?? "")) {
+      const documentNumber = input.sanitized.document_number.trim();
+      const { data: existing } = await db
+        .from("patients")
+        .select("id, first_name, last_name, document_number, is_active")
+        .eq("clinic_id", input.clinicId)
+        .eq("document_number", documentNumber)
+        .maybeSingle();
+
+      if (existing) {
+        const name = `${existing.last_name}, ${existing.first_name}`;
+        const inactiveNote = existing.is_active === false ? " (ficha desactivada)" : "";
+        return {
+          ok: false,
+          error: `Ya existe un paciente con DNI ${documentNumber}: ${name}${inactiveNote}. Abrí su ficha en lugar de crear uno nuevo.`,
+          conflict: {
+            existingPatientId: existing.id,
+            existingPatientName: name,
+            documentNumber,
+          },
+        };
+      }
+    }
+    return serviceErr(friendly);
+  }
   return serviceOk(data as Patient);
 }
 

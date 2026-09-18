@@ -67,6 +67,11 @@ function selectWorkspaceMigrations() {
       excluded.push(file);
       continue;
     }
+    // Defer post-geriatrics packs (e.g. 160 research protocols) to a separate apply.
+    if (ver !== null && ver >= 160) {
+      excluded.push(file);
+      continue;
+    }
     // Keep 001–109, 121–129, 158–159, and timestamped (already on remote).
     selected.push(file);
   }

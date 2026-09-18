@@ -11,10 +11,6 @@ export type DrappQuickPanelId =
   | "protocolos"
   | null;
 
-function isStickyPanel(panel: DrappQuickPanelId): boolean {
-  return panel === "evolucion" || panel === "motivo";
-}
-
 function panelDirtyMessage(
   panel: Exclude<DrappQuickPanelId, null | "evolucion" | "motivo" | "protocolos">
 ): string {
@@ -41,7 +37,8 @@ export function useDrappQuickPanel(initial: DrappQuickPanelId = "evolucion") {
           if (!window.confirm(panelDirtyMessage(openPanel))) return;
         }
         setDirty(false);
-        setOpenPanel(isStickyPanel(next) ? next : null);
+        // Evolution stays the home surface; toggling a tool panel closes back to it.
+        setOpenPanel("evolucion");
         return;
       }
 
@@ -59,13 +56,13 @@ export function useDrappQuickPanel(initial: DrappQuickPanelId = "evolucion") {
       if (!window.confirm(panelDirtyMessage(openPanel))) return false;
     }
     setDirty(false);
-    setOpenPanel(null);
+    setOpenPanel("evolucion");
     return true;
   }, [dirty, openPanel]);
 
   const markCleanAndClose = useCallback(() => {
     setDirty(false);
-    setOpenPanel(null);
+    setOpenPanel("evolucion");
   }, []);
 
   return {

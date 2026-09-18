@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Plus } from "lucide-react";
+import { CalendarDays, CheckCircle2, Plus } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CLINICAL_RESEARCH_PROTOCOLS_FLAG } from "@/core/compliance/clinical-research-ai";
@@ -9,7 +9,6 @@ import { toast } from "@/core/notifications/toast";
 import { cn } from "@/shared/utils/cn";
 
 import { archiveClinicalRecord } from "@/features/historias/actions/clinical-records";
-import { ConsultationDatetimePicker } from "@/features/historias/components/consultas/consultation-datetime-picker";
 import { DrappConsultaFullModal } from "@/features/historias/components/consultas/drapp-consulta-full-modal";
 import { DrappDiagnosisQuickForm } from "@/features/historias/components/consultas/drapp-diagnosis-quick-form";
 import { DrappProtocolsQuickPanel } from "@/features/historias/components/consultas/drapp-protocols-quick-panel";
@@ -93,6 +92,17 @@ function truncate(text: string, max = 180): string {
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length <= max) return clean;
   return `${clean.slice(0, max - 1)}…`;
+}
+
+function formatConsultationDateLabel(value: string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }
 
 function DrappHistorySidebar({
@@ -359,7 +369,7 @@ function DrappConsultaWorkspaceInner({
   const [composerTreatmentRows, setComposerTreatmentRows] = useState<PatientEhrTreatmentRow[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const evolutionRef = useRef<HTMLTextAreaElement>(null);
-  const chiefComplaintRef = useRef<HTMLTextAreaElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
   const quickSaveLock = useRef(false);
 
   const { openPanel, setDirty, requestOpen, closePanel, markCleanAndClose } =
@@ -722,24 +732,8 @@ function DrappConsultaWorkspaceInner({
             <input type="hidden" name="patient_id" value={patient.id} />
             <input type="hidden" name="professional_id" value={formProfessionalId} />
 
-            <section
-              className={cn(
-                "drapp-consulta-composer flex min-h-0 flex-1 flex-col rounded-sm border border-[var(--border,#e8e0b8)]",
-                openPanel === "tratamiento" || openPanel === "diagnostico"
-                  ? "overflow-visible"
-                  : "overflow-hidden"
-              )}
-            >
-              <div className="drapp-consulta-actions flex shrink-0 flex-wrap items-center gap-1 border-b border-[var(--border,#efe6b8)] px-2 py-1.5">
-                <DrappActionLink
-                  active={openPanel === "motivo"}
-                  onClick={() => {
-                    requestOpen("motivo");
-                    queueMicrotask(() => chiefComplaintRef.current?.focus());
-                  }}
-                >
-                  Motivo de la consulta
-                </DrappActionLink>
+            <section className="drapp-consulta-composer relative flex min-h-[min(70vh,640px)] flex-col overflow-hidden rounded-sm border border-[var(--border,#e8e0b8)]">
+              <div className="drapp-consulta-actions flex flex-wrap items-center gap-1 border-b border-[var(--border,#efe6b8)] px-2 py-1.5">
                 <DrappActionLink
                   active={openPanel === "evolucion" || openPanel === null}
                   onClick={() => {
@@ -780,7 +774,7 @@ function DrappConsultaWorkspaceInner({
                 <DrappActionLink
                   active={fullModalOpen}
                   onClick={() => {
-                    if (openPanel && openPanel !== "evolucion" && openPanel !== "motivo") {
+                    if (openPanel && openPanel !== "evolucion") {
                       if (!closePanel()) return;
                     }
                     setFullModalOpen(true);
@@ -854,97 +848,132 @@ function DrappConsultaWorkspaceInner({
                 </div>
               </div>
 
-              <div className="drapp-consulta-panel-body flex min-h-0 flex-1 flex-col">
-              {openPanel === "diagnostico" ? (
-                <DrappDiagnosisQuickForm
-                  saving={quickSaving}
-                  onDirtyChange={setDirty}
-                  onCancel={() => {
-                    void closePanel();
-                  }}
-                  onSave={handleSaveDiagnosis}
+              {/* Evolution always fills the composer; tools open as overlays from the buttons. */}
+              <div className="drapp-consulta-evolution flex min-h-0 flex-1 flex-col space-y-2 p-3">
+                <Textarea
+                  name="chief_complaint"
+                  label="Motivo de consulta"
+                  rows={2}
+                  voiceInput
+                  value={chiefComplaint}
+                  onChange={(e) => setChiefComplaint(e.target.value)}
+                  placeholder="Motivo de la consulta…"
+                  className="drapp-consulta-evolution-input shrink-0 border-[var(--input,#e8d98a)] bg-transparent text-[var(--foreground,#0f172a)]"
                 />
-              ) : null}
-
-              {openPanel === "tratamiento" ? (
-                <DrappTreatmentQuickForm
-                  saving={quickSaving}
-                  onDirtyChange={setDirty}
-                  onCancel={() => {
-                    void closePanel();
-                  }}
-                  onSave={handleSaveTreatment}
+                <Textarea
+                  ref={evolutionRef}
+                  name="evolution"
+                  label="Evolución"
+                  required
+                  rows={16}
+                  grow
+                  voiceInput
+                  value={evolution}
+                  onChange={(e) => setEvolution(e.target.value)}
+                  placeholder="Escribe aquí la evolución"
+                  className="drapp-consulta-evolution-input min-h-[min(52vh,420px)] border-[var(--input,#e8d98a)] bg-transparent text-[14px] leading-relaxed text-[var(--foreground,#0f172a)]"
                 />
-              ) : null}
 
-              {openPanel === "vitales" ? (
-                <DrappVitalsQuickForm
-                  saving={quickSaving}
-                  onDirtyChange={setDirty}
-                  onCancel={() => {
-                    void closePanel();
-                  }}
-                  onSave={handleSaveVitals}
-                />
-              ) : null}
-
-              {openPanel === "protocolos" ? (
-                <DrappProtocolsQuickPanel
-                  onCancel={() => {
-                    void closePanel();
-                  }}
-                  onInsertIntoEvolution={(text) => {
-                    const trimmed = evolution.trim();
-                    setEvolution(trimmed ? `${trimmed}\n\n${text}` : text);
-                    requestOpen("evolucion");
-                    queueMicrotask(() => evolutionRef.current?.focus());
-                    toast.success("Protocolo insertado en evolución");
-                  }}
-                />
-              ) : null}
-
-              {openPanel === "motivo" ? (
-                <div className="drapp-consulta-evolution flex min-h-0 flex-1 flex-col space-y-2 p-3">
-                  <Textarea
-                    ref={chiefComplaintRef}
-                    name="chief_complaint"
-                    label="Motivo de la consulta"
-                    grow
-                    voiceInput
-                    preservePasteFormat
-                    value={chiefComplaint}
-                    onChange={(e) => setChiefComplaint(e.target.value)}
-                    placeholder="Motivo de la consulta…"
-                    className="drapp-consulta-evolution-input min-h-[16rem] border-[var(--input,#e8d98a)] bg-transparent text-[14px] leading-relaxed text-[var(--foreground,#0f172a)]"
-                  />
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                  <label className="inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-[var(--foreground,#0f172a)]">
+                    <CalendarDays className="h-4 w-4 text-[var(--primary,#0F4C5C)]" aria-hidden />
+                    <span className="font-medium text-[var(--primary,#0F4C5C)]">
+                      {formatConsultationDateLabel(consultationAt)}
+                    </span>
+                    <input
+                      ref={dateInputRef}
+                      type="datetime-local"
+                      value={consultationAt}
+                      onChange={(e) => setConsultationAt(e.target.value)}
+                      className="sr-only"
+                      tabIndex={-1}
+                    />
+                    <button
+                      type="button"
+                      className="text-[12px] text-slate-500 underline-offset-2 hover:underline"
+                      onClick={() =>
+                        dateInputRef.current?.showPicker?.() ?? dateInputRef.current?.click()
+                      }
+                    >
+                      Cambiar
+                    </button>
+                  </label>
                 </div>
-              ) : null}
-
-              {openPanel === "evolucion" || openPanel === null ? (
-                <div className="drapp-consulta-evolution flex min-h-0 flex-1 flex-col space-y-2 p-3">
-                  <Textarea
-                    ref={evolutionRef}
-                    name="evolution"
-                    label="Evolución"
-                    required
-                    grow
-                    voiceInput
-                    preservePasteFormat
-                    value={evolution}
-                    onChange={(e) => setEvolution(e.target.value)}
-                    placeholder="Escribe aquí la evolución"
-                    className="drapp-consulta-evolution-input min-h-[16rem] border-[var(--input,#e8d98a)] bg-transparent text-[14px] leading-relaxed text-[var(--foreground,#0f172a)]"
-                  />
-                  {/* Keep motivo in form payload when editing evolución */}
-                  <input type="hidden" name="chief_complaint" value={chiefComplaint} />
-
-                  <ConsultationDatetimePicker
-                    value={consultationAt}
-                    onChange={setConsultationAt}
-                  />
-                </div>
-              ) : null}
               </div>
+
+              {openPanel === "diagnostico" ||
+              openPanel === "tratamiento" ||
+              openPanel === "vitales" ||
+              openPanel === "protocolos" ? (
+                <div
+                  className="absolute inset-0 z-30 flex items-start justify-center bg-black/25 p-3 sm:p-4"
+                  role="presentation"
+                  onClick={() => {
+                    void closePanel();
+                  }}
+                >
+                  <div
+                    className="mt-10 w-full max-w-xl max-h-[min(80vh,720px)] overflow-y-auto rounded-md border border-[var(--border,#e8e0b8)] bg-[var(--card,#fff)] shadow-xl"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={
+                      openPanel === "diagnostico"
+                        ? "Diagnóstico"
+                        : openPanel === "tratamiento"
+                          ? "Tratamiento"
+                          : openPanel === "vitales"
+                            ? "Signos vitales"
+                            : "Protocolos"
+                    }
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {openPanel === "diagnostico" ? (
+                      <DrappDiagnosisQuickForm
+                        saving={quickSaving}
+                        onDirtyChange={setDirty}
+                        onCancel={() => {
+                          void closePanel();
+                        }}
+                        onSave={handleSaveDiagnosis}
+                      />
+                    ) : null}
+                    {openPanel === "tratamiento" ? (
+                      <DrappTreatmentQuickForm
+                        saving={quickSaving}
+                        onDirtyChange={setDirty}
+                        onCancel={() => {
+                          void closePanel();
+                        }}
+                        onSave={handleSaveTreatment}
+                      />
+                    ) : null}
+                    {openPanel === "vitales" ? (
+                      <DrappVitalsQuickForm
+                        saving={quickSaving}
+                        onDirtyChange={setDirty}
+                        onCancel={() => {
+                          void closePanel();
+                        }}
+                        onSave={handleSaveVitals}
+                      />
+                    ) : null}
+                    {openPanel === "protocolos" ? (
+                      <DrappProtocolsQuickPanel
+                        onCancel={() => {
+                          void closePanel();
+                        }}
+                        onInsertIntoEvolution={(text) => {
+                          const trimmed = evolution.trim();
+                          setEvolution(trimmed ? `${trimmed}\n\n${text}` : text);
+                          requestOpen("evolucion");
+                          queueMicrotask(() => evolutionRef.current?.focus());
+                          toast.success("Protocolo insertado en evolución");
+                        }}
+                      />
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
             </section>
 
             <input
@@ -965,14 +994,7 @@ function DrappConsultaWorkspaceInner({
             {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
           </form>
 
-          <div
-            className={cn(
-              "drapp-consulta-tables mt-4 space-y-3",
-              openPanel === "motivo" || openPanel === "evolucion" || openPanel === null
-                ? "hidden lg:block lg:max-h-[28vh] lg:overflow-y-auto"
-                : "hidden"
-            )}
-          >
+          <div className="drapp-consulta-tables mt-4 space-y-3">
             <PatientEhrClinicalTables
               patientId={patient.id}
               diagnosisRows={filters.diagnostics ? composerDiagnosisRows : []}
