@@ -28,8 +28,10 @@ import {
 import type { PatientEhrViewProps } from "@/features/historias/components/historias/patient-ehr-types";
 import {
   formatPatientEhrSidebarDate,
+  isDedicatedVitalsConsultation,
   isSameCalendarDay,
   patientEhrEvolutionBody,
+  patientEhrVitalsHistoryText,
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import { useNuevaConsultaForm } from "@/features/historias/hooks/use-nueva-consulta-form";
 import type { ClinicalDiagnosisEntry } from "@/features/historias/utils/clinical-structured-entries";
@@ -591,11 +593,11 @@ function DrappConsultaWorkspaceInner({
 
   const vitalsHistory = useMemo(() => {
     return sidebarList
-      .filter((c) => c.category === "vitals" || /signos vitales/i.test(c.chief_complaint + c.evolution))
+      .filter((c) => isDedicatedVitalsConsultation(c))
       .map((c) => ({
         id: c.id,
         created_at: c.created_at,
-        text: patientEhrEvolutionBody(c) || c.evolution,
+        text: patientEhrVitalsHistoryText(c),
       }));
   }, [sidebarList]);
 

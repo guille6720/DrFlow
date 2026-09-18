@@ -170,3 +170,28 @@ export function patientEhrEvolutionBody(c: PatientEhrConsultation): string {
   if (cc && !/^importado\b/i.test(cc)) return cc;
   return cc || "Sin texto de evolución registrado.";
 }
+
+/** True only for dedicated vitals entries — not long notes that merely mention signos vitales. */
+export function isDedicatedVitalsConsultation(c: {
+  category?: string | null;
+  chief_complaint?: string | null;
+  evolution?: string | null;
+}): boolean {
+  const cc = (c.chief_complaint ?? "").trim();
+  // Quick-save and dedicated vitals rows use this chief complaint.
+  if (/^signos?\s+vitales?\b/i.test(cc)) return true;
+
+  const evo = (c.evolution ?? "").trim();
+  // Dedicated vitals body shape only (never a long narrative that cites vitals mid-text).
+  if (/^signos?\s+vitales?\s*:/i.test(evo) && evo.length <= 600) return true;
+
+  return false;
+}
+
+/** Display line for the Signos vitales history panel. */
+export function patientEhrVitalsHistoryText(c: PatientEhrConsultation): string {
+  const body = patientEhrEvolutionBody(c).trim();
+  const prefixed = body.match(/^signos?\s+vitales?\s*:\s*([\s\S]+)$/i);
+  if (prefixed?.[1]) return prefixed[1].trim();
+  return body;
+}

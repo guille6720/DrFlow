@@ -42,4 +42,30 @@ describe("buildEhrPayloadFromRecords", () => {
     expect(treatmentRows[0].product).toContain("Enalapril");
     expect(treatmentRows[0].dose).toBe("10mg");
   });
+
+  it("does not classify long notes as vitals just because they mention signos vitales", () => {
+    const { consultations } = buildEhrPayloadFromRecords([
+      {
+        id: "3",
+        created_at: "2026-08-28T20:30:00.000Z",
+        chief_complaint: "Control",
+        diagnosis: "",
+        evolution:
+          "Historia Clínica completa. Presenta signos vitales estables (TA 120/80, FC 60 lpm) y continúa control.",
+        indications: "",
+        professional_name: "Dr. Test",
+      },
+      {
+        id: "4",
+        created_at: "2026-08-28T20:31:00.000Z",
+        chief_complaint: "Signos vitales",
+        diagnosis: "",
+        evolution: "Signos vitales: TA 120/80 FC 72",
+        indications: "",
+        professional_name: "Dr. Test",
+      },
+    ]);
+    expect(consultations.find((c) => c.id === "3")?.category).toBe("evolution");
+    expect(consultations.find((c) => c.id === "4")?.category).toBe("vitals");
+  });
 });

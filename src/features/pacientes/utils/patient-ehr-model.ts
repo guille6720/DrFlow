@@ -77,11 +77,12 @@ function classifyCategory(
   diagnosis = "",
   evolution = ""
 ): PatientEhrConsultation["category"] {
-  const cc = chief_complaint.toLowerCase();
-  if (cc.includes("signos vitales")) return "vitals";
+  const cc = chief_complaint.toLowerCase().trim();
+  if (/^signos?\s+vitales?\b/i.test(cc)) return "vitals";
   if (cc.includes("tratamiento")) return "treatment";
   if (cc.includes("diagnóstico") || cc.includes("diagnostico")) return "diagnostic";
   if (cc.includes("documento adjunto") || cc.includes("archivo")) return "document";
+  // Evolution text that merely mentions "signos vitales" stays an evolution.
   if (
     looksLikeClinicalFileName(diagnosis) ||
     looksLikeClinicalFileName(evolution) ||

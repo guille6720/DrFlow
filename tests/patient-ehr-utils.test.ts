@@ -5,7 +5,9 @@ import {
   filterClinicalRowsByConsultationDay,
   filterConsultationsByConsultationDay,
   formatPatientEhrSidebarDate,
+  isDedicatedVitalsConsultation,
   patientEhrEvolutionBody,
+  patientEhrVitalsHistoryText,
   resolveConsultationAttachment,
   resolveDayPrintAnchorIso,
   resolveDayPrintConsultations,
@@ -36,6 +38,49 @@ describe("patientEhrEvolutionBody", () => {
       chief_complaint: "[HCE: resumen.pdf]",
     } as PatientEhrConsultation;
     expect(patientEhrEvolutionBody(c)).toBe("Sin texto de evolución registrado.");
+  });
+});
+
+describe("isDedicatedVitalsConsultation", () => {
+  it("accepts quick-save vitals with chief complaint Signos vitales", () => {
+    expect(
+      isDedicatedVitalsConsultation({
+        category: "vitals",
+        chief_complaint: "Signos vitales",
+        evolution: "Signos vitales: TA 120/80 FC 72",
+      })
+    ).toBe(true);
+  });
+
+  it("rejects long evolution notes that only mention signos vitales", () => {
+    const report = [
+      "Historia Clínica y Reporte de Seguimiento Médico",
+      "Presenta signos vitales estables (TA 120/80, FC 60 lpm).",
+      "Continúa tratamiento farmacológico y control ambulatorio.",
+    ].join("\n");
+    expect(
+      isDedicatedVitalsConsultation({
+        category: "evolution",
+        chief_complaint: "Control",
+        evolution: report,
+      })
+    ).toBe(false);
+    expect(
+      isDedicatedVitalsConsultation({
+        category: "vitals",
+        chief_complaint: "Control",
+        evolution: report,
+      })
+    ).toBe(false);
+  });
+
+  it("formats vitals history without the Signos vitales prefix", () => {
+    expect(
+      patientEhrVitalsHistoryText({
+        evolution: "Signos vitales: TA 120/80 FC 72 Temp 36.5",
+        chief_complaint: "Signos vitales",
+      } as PatientEhrConsultation)
+    ).toBe("TA 120/80 FC 72 Temp 36.5");
   });
 });
 
