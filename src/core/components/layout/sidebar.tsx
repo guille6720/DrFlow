@@ -19,7 +19,10 @@ import { isHrefEntitledBySnapshot } from "@/core/entitlements/nav-features";
 import type { ClientEntitlementsSnapshot } from "@/core/entitlements/types";
 import { canAccessImportExport, hasPermission, isInvitedClinicMember, type PermissionOverrides } from "@/core/permissions/roles";
 import type { ClinicProductsSnapshot } from "@/core/products/products";
-import { isHrefAllowedByProducts } from "@/core/products/route-products";
+import {
+  isHrefNavLockedByProducts,
+  isHrefVisibleInNav,
+} from "@/core/products/route-products";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -48,7 +51,7 @@ function isNavHrefEntitled(
   return isHrefEntitledBySnapshot(href, snapshot);
 }
 
-function filterNavLink(
+function resolveNavLink(
   item: SidebarNavLink,
   role: UserRole | null,
   isSuperadmin: boolean | undefined,
@@ -56,41 +59,44 @@ function filterNavLink(
   permissionOverrides?: PermissionOverrides,
   entitlements?: ClientEntitlementsSnapshot | null,
   products?: ClinicProductsSnapshot | null
-): boolean {
+): SidebarNavLink | null {
   if (item.href === "/datos") {
-    return canAccessImportExport(role, isSuperadmin ?? false, permissionOverrides);
+    if (!canAccessImportExport(role, isSuperadmin ?? false, permissionOverrides)) {
+      return null;
+    }
   }
 
   if (item.href.startsWith("/superadmin")) {
-    return Boolean(isSuperadmin);
+    if (!isSuperadmin) return null;
   }
 
   if (
     item.permission &&
     !hasPermission(role, item.permission, isSuperadmin, permissionOverrides)
   ) {
-    return false;
+    return null;
   }
 
   const pluginId = NAV_PLUGIN_BY_FEATURE[item.featureId];
   if (pluginId && !isPluginEnabled(clinicFeatures.plugins, pluginId)) {
-    return false;
+    return null;
   }
 
   const flagId = NAV_FLAG_BY_HREF[item.href];
   if (flagId && !isFeatureFlagEnabled(clinicFeatures, flagId)) {
-    return false;
+    return null;
   }
 
   if (!isNavHrefEntitled(item.href, entitlements ?? null)) {
-    return false;
+    return null;
   }
 
-  if (!isHrefAllowedByProducts(item.href, products ?? null)) {
-    return false;
+  if (!isHrefVisibleInNav(item.href, products ?? null)) {
+    return null;
   }
 
-  return true;
+  const locked = isHrefNavLockedByProducts(item.href, products ?? null);
+  return locked ? { ...item, disabled: true } : { ...item, disabled: false };
 }
 
 function filterSidebarNavEntries(
@@ -105,22 +111,24 @@ function filterSidebarNavEntries(
   return entries
     .map((entry) => {
       if (isSidebarNavGroup(entry)) {
-        const children = entry.children.filter((child) =>
-          filterNavLink(
-            child,
-            role,
-            isSuperadmin,
-            clinicFeatures,
-            permissionOverrides,
-            entitlements,
-            products
+        const children = entry.children
+          .map((child) =>
+            resolveNavLink(
+              child,
+              role,
+              isSuperadmin,
+              clinicFeatures,
+              permissionOverrides,
+              entitlements,
+              products
+            )
           )
-        );
+          .filter((child): child is SidebarNavLink => child != null);
         if (children.length === 0) return null;
         return { ...entry, children };
       }
 
-      return filterNavLink(
+      return resolveNavLink(
         entry,
         role,
         isSuperadmin,
@@ -128,9 +136,7 @@ function filterSidebarNavEntries(
         permissionOverrides,
         entitlements,
         products
-      )
-        ? entry
-        : null;
+      );
     })
     .filter((entry): entry is SidebarNavEntry => entry != null);
 }

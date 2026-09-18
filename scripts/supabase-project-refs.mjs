@@ -43,3 +43,25 @@ export function assertLinkedStagingOrExit(cwd = process.cwd()) {
   }
   return linked;
 }
+
+/**
+ * Abort unless CLI link is DrFlow production.
+ */
+export function assertLinkedProductionOrExit(cwd = process.cwd()) {
+  const linked = readLinkedProjectRef(cwd);
+  if (linked === STAGING_REF) {
+    console.error(
+      `\nERROR: Linked project is ${STAGING_NAME} (${STAGING_REF}).\n` +
+        `Relink to ${PRODUCTION_NAME} (${PRODUCTION_REF}) before production migration commands.\n`
+    );
+    process.exit(1);
+  }
+  if (linked && linked !== PRODUCTION_REF) {
+    console.error(
+      `\nERROR: Linked project-ref is "${linked}".\n` +
+        `Expected ${PRODUCTION_NAME} (${PRODUCTION_REF}).\n`
+    );
+    process.exit(1);
+  }
+  return linked;
+}

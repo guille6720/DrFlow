@@ -33,6 +33,8 @@ import {
 
 export type SidebarNavLink = FeatureNavItem & {
   icon: typeof LayoutDashboard;
+  /** Product present in nav but not enabled (e.g. Geriatría before Superadmin toggle). */
+  disabled?: boolean;
 };
 
 export type SidebarNavGroup = {

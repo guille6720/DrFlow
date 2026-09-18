@@ -10,6 +10,8 @@ import {
 import {
   canAccessPathWithProducts,
   isHrefAllowedByProducts,
+  isHrefNavLockedByProducts,
+  isHrefVisibleInNav,
   routeRequiresProduct,
 } from "@/core/products/route-products";
 
@@ -26,6 +28,8 @@ describe("clinic products entitlements", () => {
     expect(canAccessPathWithProducts("/consultas", snap)).toBe(true);
     expect(canAccessPathWithProducts("/geriatria", snap)).toBe(false);
     expect(isHrefAllowedByProducts("/geriatria/residentes", snap)).toBe(false);
+    expect(isHrefVisibleInNav("/geriatria/residentes", snap)).toBe(true);
+    expect(isHrefNavLockedByProducts("/geriatria/residentes", snap)).toBe(true);
   });
 
   it("TEST 2 shape: clinic OFF geriatrics ON allows only geriatrics product routes", () => {
@@ -67,7 +71,7 @@ describe("clinic products entitlements", () => {
     expect(canAccessPathWithProducts("/caja", snap)).toBe(false);
   });
 
-  it("TEST 5/8: direct URL /geriatria denied when OFF", () => {
+  it("TEST 5/8: direct URL /geriatria denied when OFF; nav still visible locked", () => {
     const snap = {
       clinicId: "a",
       clinic: true,
@@ -76,6 +80,20 @@ describe("clinic products entitlements", () => {
     };
     expect(routeRequiresProduct("/geriatria/foo")).toBe(PRODUCTS.GERIATRICS);
     expect(canAccessPathWithProducts("/geriatria", snap)).toBe(false);
+    expect(isHrefVisibleInNav("/geriatria", snap)).toBe(true);
+    expect(isHrefNavLockedByProducts("/geriatria", snap)).toBe(true);
+  });
+
+  it("unlocks geriatrics nav when Superadmin enables product", () => {
+    const snap = {
+      clinicId: "a",
+      clinic: true,
+      geriatrics: true,
+      catalogAvailable: true,
+    };
+    expect(isHrefVisibleInNav("/geriatria", snap)).toBe(true);
+    expect(isHrefNavLockedByProducts("/geriatria", snap)).toBe(false);
+    expect(isHrefAllowedByProducts("/geriatria", snap)).toBe(true);
   });
 
   it("legacy fail-open for clinic when catalog missing; geriatrics fail-closed", () => {

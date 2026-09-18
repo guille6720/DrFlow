@@ -77,15 +77,39 @@ export function navProductForHref(href: string): ProductKey | null {
   return routeRequiresProduct(href);
 }
 
+export function isGeriatricsHref(href: string): boolean {
+  return href === "/geriatria" || href.startsWith("/geriatria/");
+}
+
 export function isHrefAllowedByProducts(
   href: string,
   snapshot: ClinicProductsSnapshot | null
 ): boolean {
-  if (!snapshot) return !href.startsWith("/geriatria");
+  if (!snapshot) return !isGeriatricsHref(href);
   const required = navProductForHref(href);
   if (!required) {
     // Hide clinic-only groups when clinic product off — handled via prefixes on children.
     return true;
   }
   return hasProduct(snapshot, required);
+}
+
+/**
+ * Geriatría stays visible in the sidebar even when the product is OFF.
+ * Click handlers must no-op until Superadmin enables product.geriatrics.
+ */
+export function isHrefVisibleInNav(
+  href: string,
+  snapshot: ClinicProductsSnapshot | null
+): boolean {
+  if (isGeriatricsHref(href)) return true;
+  return isHrefAllowedByProducts(href, snapshot);
+}
+
+export function isHrefNavLockedByProducts(
+  href: string,
+  snapshot: ClinicProductsSnapshot | null
+): boolean {
+  if (!isGeriatricsHref(href)) return false;
+  return !isHrefAllowedByProducts(href, snapshot);
 }

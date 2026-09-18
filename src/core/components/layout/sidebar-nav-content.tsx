@@ -41,7 +41,45 @@ function SidebarNavLinkItem({
   onPrefetch: (href: string) => void;
   nested?: boolean;
 }) {
-  const active = isNavLinkActive(pathname, item.href);
+  const active = !item.disabled && isNavLinkActive(pathname, item.href);
+  const className = cn(
+    "flex items-center gap-3 rounded-2xl py-2.5 text-sm font-semibold transition-all",
+    nested ? "px-3 pl-9" : "px-3",
+    item.disabled
+      ? "cursor-not-allowed opacity-55 text-[var(--text-on-sidebar,#1e293b)]"
+      : active
+        ? "drflow-sidebar-nav-active bg-gradient-to-r text-white shadow-sm"
+        : "text-[var(--text-on-sidebar,#1e293b)] hover:bg-[var(--surface-hover,#f1f5f9)]"
+  );
+
+  const icon = (
+    <item.icon
+      className={cn(
+        "h-5 w-5 shrink-0",
+        active ? "text-white" : "text-[var(--sidebar-accent,#0f766e)]",
+        item.disabled && "opacity-70"
+      )}
+      strokeWidth={2.25}
+    />
+  );
+
+  if (item.disabled) {
+    return (
+      <span
+        role="link"
+        aria-disabled="true"
+        title="Geriatría aún no está habilitada para esta clínica"
+        className={className}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+      >
+        {icon}
+        {item.label}
+      </span>
+    );
+  }
 
   return (
     <Link
@@ -50,21 +88,9 @@ function SidebarNavLinkItem({
       onMouseEnter={() => onPrefetch(item.href)}
       onFocus={() => onPrefetch(item.href)}
       onClick={onNavigate}
-      className={cn(
-        "flex items-center gap-3 rounded-2xl py-2.5 text-sm font-semibold transition-all",
-        nested ? "px-3 pl-9" : "px-3",
-        active
-          ? "drflow-sidebar-nav-active bg-gradient-to-r text-white shadow-sm"
-          : "text-[var(--text-on-sidebar,#1e293b)] hover:bg-[var(--surface-hover,#f1f5f9)]"
-      )}
+      className={className}
     >
-      <item.icon
-        className={cn(
-          "h-5 w-5 shrink-0",
-          active ? "text-white" : "text-[var(--sidebar-accent,#0f766e)]"
-        )}
-        strokeWidth={2.25}
-      />
+      {icon}
       {item.label}
     </Link>
   );
@@ -93,6 +119,7 @@ function SidebarNavGroupItem({
   useEffect(() => {
     if (!open) return;
     for (const child of group.children) {
+      if (child.disabled) continue;
       onPrefetch(child.href);
     }
   }, [open, group.children, onPrefetch]);
