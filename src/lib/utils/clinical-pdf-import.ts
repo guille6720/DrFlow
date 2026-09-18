@@ -283,6 +283,7 @@ export async function insertLegacyPdfClinicalRecords(
     await supabase.from("clinical_record_audit").insert({
       clinical_record_id: record.id,
       clinic_id: params.clinicId,
+      patient_id: params.patientId,
       action: "create",
       changed_by: params.userId,
       new_values: { source: "legacy_pdf_import", marker: entry.marker },

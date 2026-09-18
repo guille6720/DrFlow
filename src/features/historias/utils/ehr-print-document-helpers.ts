@@ -238,7 +238,11 @@ export function formatCompactMatricula(consultation: PatientEhrConsultation): st
 const PRINT_SIDE_BLOCK_HEADERS =
   "signos?\\s+vitales?|laboratorio|estudios?\\s+complementarios?";
 
-/** Headers that end a side-block when notes use plain clinical titles (no markdown #). */
+/**
+ * Next clinical section after a stripped block.
+ * Must recognize plain headers (EVOLUCION, CONDUCTA…) — not only markdown `#` —
+ * or stripping SIGNOS VITALES / laboratorio eats the rest of the note.
+ */
 const CLINICAL_SECTION_BOUNDARY =
   "antecedentes?|evoluci[oó]n(?:es)?|conducta(?:\\s+y\\s+seguimiento)?|diagn[oó]stic(?:o|os)|tratamiento(?:s)?|indicacion(?:es)?|motivo(?:\\s+de\\s+(?:la\\s+)?consulta)?|examen\\s+f[ií]sico|plan(?:\\s+de\\s+seguimiento)?|laboratorio|estudios?\\s+complementarios?|signos?\\s+vitales?";
 

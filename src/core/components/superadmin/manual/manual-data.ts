@@ -49,7 +49,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     id: "intro",
     title: "Qué es Superadmin",
     keywords: ["superadmin", "introducción", "comercial", "control"],
-    summary: "Centro comercial y administrativo de DrFlow.",
+    summary: "Centro comercial y administrativo de NexClinic.",
   },
   {
     id: "quick-start",

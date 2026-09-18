@@ -9,7 +9,7 @@ export const backupsPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "La presente Política establece los lineamientos generales para la realización de copias de seguridad, recuperación de información y continuidad operativa de la plataforma DrFlow.",
+          text: "La presente Política establece los lineamientos generales para la realización de copias de seguridad, recuperación de información y continuidad operativa de la plataforma NexClinic.",
         },
         {
           type: "p",
@@ -20,7 +20,7 @@ export const backupsPolicyDocument: LegalDocument = {
     {
       title: "2. Alcance",
       blocks: [
-        { type: "p", text: "Esta Política aplica a toda la información almacenada en DrFlow, incluyendo, entre otros:" },
+        { type: "p", text: "Esta Política aplica a toda la información almacenada en NexClinic, incluyendo, entre otros:" },
         {
           type: "ul",
           items: [
@@ -43,7 +43,7 @@ export const backupsPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow realiza copias de seguridad periódicas de la información crítica para garantizar la continuidad del servicio.",
+          text: "NexClinic realiza copias de seguridad periódicas de la información crítica para garantizar la continuidad del servicio.",
         },
         { type: "p", text: "Las copias pueden incluir:" },
         {
@@ -86,7 +86,7 @@ export const backupsPolicyDocument: LegalDocument = {
         },
         {
           type: "p",
-          text: "DrFlow podrá modificar la estrategia de respaldos cuando resulte necesario para mejorar la seguridad o la continuidad del servicio.",
+          text: "NexClinic podrá modificar la estrategia de respaldos cuando resulte necesario para mejorar la seguridad o la continuidad del servicio.",
         },
       ],
     },
@@ -95,7 +95,7 @@ export const backupsPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Ante un incidente técnico, DrFlow realizará esfuerzos razonables para restaurar la información disponible utilizando las copias de seguridad existentes.",
+          text: "Ante un incidente técnico, NexClinic realizará esfuerzos razonables para restaurar la información disponible utilizando las copias de seguridad existentes.",
         },
         { type: "p", text: "La recuperación dependerá, entre otros factores, de:" },
         {
@@ -114,7 +114,7 @@ export const backupsPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow procurará restablecer el servicio dentro de un plazo razonable una vez resuelto el incidente que motivó la interrupción.",
+          text: "NexClinic procurará restablecer el servicio dentro de un plazo razonable una vez resuelto el incidente que motivó la interrupción.",
         },
         {
           type: "p",
@@ -155,9 +155,9 @@ export const backupsPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Aunque DrFlow implementa mecanismos de respaldo, ninguna solución informática puede garantizar la inexistencia absoluta de pérdida de información.",
+          text: "Aunque NexClinic implementa mecanismos de respaldo, ninguna solución informática puede garantizar la inexistencia absoluta de pérdida de información.",
         },
-        { type: "p", text: "DrFlow no será responsable por pérdidas derivadas de:" },
+        { type: "p", text: "NexClinic no será responsable por pérdidas derivadas de:" },
         {
           type: "ul",
           items: [
@@ -177,7 +177,7 @@ export const backupsPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow implementará medidas razonables destinadas a restablecer la prestación del servicio luego de incidentes técnicos, procurando minimizar el tiempo de indisponibilidad y preservar la integridad de la información.",
+          text: "NexClinic implementará medidas razonables destinadas a restablecer la prestación del servicio luego de incidentes técnicos, procurando minimizar el tiempo de indisponibilidad y preservar la integridad de la información.",
         },
       ],
     },
@@ -186,7 +186,7 @@ export const backupsPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Las copias de seguridad podrán conservarse durante el tiempo que DrFlow considere necesario para garantizar la continuidad operativa, cumplir obligaciones legales o atender requerimientos técnicos.",
+          text: "Las copias de seguridad podrán conservarse durante el tiempo que NexClinic considere necesario para garantizar la continuidad operativa, cumplir obligaciones legales o atender requerimientos técnicos.",
         },
         {
           type: "p",
@@ -201,7 +201,7 @@ export const backupsPolicyDocument: LegalDocument = {
           type: "p",
           text: "Esta Política podrá modificarse para adaptarse a cambios tecnológicos, mejoras de infraestructura o modificaciones normativas.",
         },
-        { type: "p", text: "La versión vigente será la publicada en DrFlow." },
+        { type: "p", text: "La versión vigente será la publicada en NexClinic." },
       ],
     },
     {

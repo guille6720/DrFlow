@@ -17,6 +17,13 @@ describe("critical tables avoid SELECT * returning", () => {
     "src/features/recetas/repositories/prescription-drafts.repository.ts",
     "src/features/recetas/repositories/medical-orders.repository.ts",
     "src/lib/actions/appointments.ts",
+    "src/features/historias/services/clinical-records.service.ts",
+    "src/features/integraciones/actions/patient-import-session.ts",
+    "src/features/integraciones/actions/fhir-import-session.ts",
+    "src/core/billing/subscription-service.ts",
+    "src/lib/actions/admin-documents.ts",
+    "src/lib/actions/cash-register.ts",
+    "src/lib/actions/clinic-services.ts",
   ];
 
   it.each(files)("does not use wildcard or empty .select() in %s", (file) => {

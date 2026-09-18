@@ -1,3 +1,5 @@
+import { isSameClinicCalendarDay } from "@/shared/utils/clinic-timezone";
+
 import type { AppointmentStatus } from "@/types/database";
 
 export type AppointmentLifecycleLabel =
@@ -173,6 +175,23 @@ export function isWaitingRoomQueueStatus(
   status?: WaitingRoomStatus | null
 ): boolean {
   return status === "waiting" || status === "confirmed";
+}
+
+/** Cap absurd multi-day stale waiting statuses (clinic day ~12h). */
+export const WAITING_ROOM_ELAPSED_CAP_SECONDS = 12 * 60 * 60;
+
+/**
+ * Live wait timers only for queue statuses entered during the current clinic calendar day.
+ * Stale "waiting" from prior days must not keep accumulating elapsed time in the UI.
+ */
+export function shouldShowWaitingRoomElapsed(input: {
+  waitingRoomStatus?: WaitingRoomStatus | null;
+  enteredAt?: string | null;
+  now?: Date;
+  timeZone?: string;
+}): boolean {
+  if (!isWaitingRoomQueueStatus(input.waitingRoomStatus) || !input.enteredAt) return false;
+  return isSameClinicCalendarDay(input.enteredAt, input.now ?? new Date(), input.timeZone);
 }
 
 /** Compact `MM:SS` or `H:MM:SS` wait-time label. */

@@ -25,7 +25,7 @@ export default async function GeminiPage() {
     <>
       <Header
         title="Gemini"
-        subtitle="Asistente clínico dentro de DrFlow"
+        subtitle="Asistente clínico dentro de NexClinic"
         clinics={clinics}
         activeClinicId={clinicId}
         role={role}
@@ -37,7 +37,7 @@ export default async function GeminiPage() {
           de investigación solo aparece si el flag está habilitado tras revisión legal/privacidad.
         </p>
         <GeminiUsageHint />
-        <GeminiWorkspaceClient />
+        <GeminiWorkspaceClient clinicId={clinicId} />
       </div>
     </>
   );

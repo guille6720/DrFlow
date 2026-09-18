@@ -3,11 +3,10 @@
 import { useCallback, useEffect, useState, useTransition } from "react";
 
 import {
-  getStoredDocument,
   getWhatsappPatientRequests,
   type PatientRequestRecord,
-  setStoredDocument,
 } from "@/features/pacientes/utils/patient-requests-storage";
+import { logoutPatientPortalSession } from "@/features/portal/actions/patient-portal-logout";
 import {
   mapPortalAppointmentToRequestItem,
   mergePatientRequestItems,
@@ -37,34 +36,29 @@ function mapWhatsappRequest(record: PatientRequestRecord): PatientRequestItem {
 }
 
 export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
-  const [documentNumber, setDocumentNumber] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
   const [items, setItems] = useState<PatientRequestItem[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [refreshing, startRefresh] = useTransition();
+  const [loggingOut, startLogout] = useTransition();
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [cancelling, startCancel] = useTransition();
 
-  const loadAppointments = useCallback((dni: string) => {
-    const trimmed = dni.trim();
-    if (!trimmed) {
-      setItems([]);
-      setLoadError(null);
-      return;
-    }
-
+  const loadAppointments = useCallback(() => {
     startRefresh(async () => {
       setLoadError(null);
-      const result = await fetchPatientPortalAppointments(slug, trimmed);
+      const result = await fetchPatientPortalAppointments(slug);
+      setAuthenticated(Boolean(result.authenticated));
       if (result.error) {
         setLoadError(result.error);
       }
 
       const serverItems = (result.appointments ?? []).map(mapPortalAppointmentToRequestItem);
-      const localWhatsapp = getWhatsappPatientRequests(slug)
-        .filter((record) => record.documentNumber === trimmed)
-        .map(mapWhatsappRequest);
+      const localWhatsapp = result.authenticated
+        ? getWhatsappPatientRequests(slug).map(mapWhatsappRequest)
+        : [];
 
       setItems(mergePatientRequestItems(serverItems, localWhatsapp));
     });
@@ -72,15 +66,21 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
 
   useEffect(() => {
     queueMicrotask(() => {
-      const dni = getStoredDocument(slug);
-      setDocumentNumber(dni);
-      loadAppointments(dni);
+      loadAppointments();
     });
   }, [slug, refreshTrigger, loadAppointments]);
 
   const handleRefresh = () => {
-    setStoredDocument(slug, documentNumber);
-    loadAppointments(documentNumber);
+    loadAppointments();
+  };
+
+  const handleLogout = () => {
+    startLogout(async () => {
+      await logoutPatientPortalSession();
+      setAuthenticated(false);
+      setItems([]);
+      setLoadError(null);
+    });
   };
 
   const isConfirmed = (request: PatientRequestItem) => request.status === "confirmed";
@@ -100,7 +100,7 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
     }
     setCancelError(null);
     startCancel(async () => {
-      const result = await cancelPatientAppointment(slug, documentNumber, appointmentId, reason);
+      const result = await cancelPatientAppointment(slug, appointmentId, reason);
       if (result.error) {
         setCancelError(result.error);
         return;
@@ -112,11 +112,11 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
   }
 
   return {
-    documentNumber,
-    setDocumentNumber,
+    authenticated,
     items,
     loadError,
     refreshing,
+    loggingOut,
     cancelTarget,
     setCancelTarget,
     cancelReason,
@@ -125,6 +125,7 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
     setCancelError,
     cancelling,
     handleRefresh,
+    handleLogout,
     isConfirmed,
     isCancelled,
     canCancel,

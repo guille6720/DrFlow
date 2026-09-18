@@ -33,8 +33,7 @@ const BOOKING_LINK_DOCTOR_SELECT = `
     license_number,
     license_national,
     license_provincial,
-    specialties(name),
-    profiles(full_name, phone)
+    specialties(name)
   )
 `;
 
@@ -171,7 +170,7 @@ export async function resolvePortalDoctorInfo(slug: string): Promise<DoctorShare
   const { data: professional } = await supabase
     .from("professionals")
     .select(
-      "display_name, license_number, license_national, license_provincial, specialties(name), profiles(full_name, phone)"
+      "display_name, license_number, license_national, license_provincial, specialties(name)"
     )
     .eq("clinic_id", clinic.id)
     .eq("is_active", true)
@@ -187,7 +186,7 @@ export async function resolvePortalDoctorInfo(slug: string): Promise<DoctorShare
     fullName: pro ? getProfessionalDisplayName(pro) : clinic.name,
     licenseLabel: pro ? formatProfessionalLicenses(pro) : null,
     specialty: specialtyName ?? null,
-    phone: clinic.phone ?? pro?.profiles?.phone ?? null,
+    phone: clinic.phone ?? null,
     clinicName: clinic.name,
   };
 }

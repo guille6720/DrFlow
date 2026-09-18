@@ -44,7 +44,7 @@ async function runPublicApiAuth(
     };
   }
 
-  if (!checkPublicApiRateLimit(auth.keyId)) {
+  if (!(await checkPublicApiRateLimit(auth.keyId))) {
     return {
       ok: false,
       response: publicApiError("Rate limit excedido (120 req/min)", 429, obsCtx.traceId),

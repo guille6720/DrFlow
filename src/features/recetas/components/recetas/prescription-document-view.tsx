@@ -25,7 +25,7 @@ export function PrescriptionDocumentView({ data, className }: Props) {
     >
       <header className="drflow-medical-order-doc-header border-b-2 border-teal-600 pb-3 text-center">
         <p className="drflow-medical-order-doc-kicker text-[11px] uppercase tracking-wide">
-          República Argentina — DrFlow
+          República Argentina — NexClinic
         </p>
         <h2 className="drflow-medical-order-doc-heading mt-1 text-xl font-serif font-bold tracking-wide">
           RECETA LOCAL / BORRADOR
@@ -183,14 +183,14 @@ export function PrescriptionDocumentView({ data, className }: Props) {
                 </p>
               ) : null}
               <p className="mt-2 text-xs text-slate-500">
-                {data.qrHint ?? "Placeholder DrFlow — no constituye trazabilidad REFEPS."}
+                {data.qrHint ?? "Placeholder NexClinic — no constituye trazabilidad REFEPS."}
               </p>
             </div>
           </div>
         </section>
       ) : null}
 
-      <footer className="drflow-medical-order-doc-footer mt-6 border-t pt-3 text-[10px]">        Receta generada electrónicamente en DrFlow. Verifique datos del paciente antes de presentar
+      <footer className="drflow-medical-order-doc-footer mt-6 border-t pt-3 text-[10px]">        Receta generada electrónicamente en NexClinic. Verifique datos del paciente antes de presentar
         en farmacia.
       </footer>
     </article>

@@ -12,6 +12,10 @@ import type {
   RefepsSubmissionMode,
   RefepsSubmitResult,
 } from "@/core/refeps/types";
+import {
+  getRefepsDependencyStatus,
+  nationalSubmitBlockedByOutage,
+} from "@/core/renapdis/external-outage";
 
 import type { ElectronicPrescription } from "@/types/prescription";
 
@@ -100,6 +104,14 @@ export async function submitPrescriptionToRefepsProvider(input: {
   });
   if (validationError) {
     return { ok: false, error: validationError };
+  }
+
+  const outage = nationalSubmitBlockedByOutage(getRefepsDependencyStatus());
+  if (outage) {
+    return {
+      ok: false,
+      error: outage.error,
+    };
   }
 
   const mode = resolveRefepsSubmissionMode();

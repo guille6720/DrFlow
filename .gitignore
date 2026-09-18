@@ -38,6 +38,12 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+e2e/.phase6-env.local
+e2e/.phase3-tenant-env.local
+e2e/.phase7b-session-pool.json
+e2e/.phase7b-env.local
+coverage/load/*session*
+coverage/load/*cookie*
 
 # vercel
 .vercel
@@ -59,3 +65,7 @@ next-env.d.ts
 
 # QA exports generados (scripts/export-qa-module-code.mjs)
 /docs/qa-exports/
+
+# Local tooling binaries (k6, etc.)
+tools/
+

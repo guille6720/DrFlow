@@ -28,7 +28,7 @@ export function FinalizeConsultationButton({ appointmentId, returnHref }: Props)
     setLoading(false);
     if (!result.error) {
       clearConsultationTimer(appointmentId);
-      router.push(returnHref ?? "/agenda?view=day");
+      router.push(returnHref ?? "/turnos/agenda?view=day");
     }
   }
 

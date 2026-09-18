@@ -57,12 +57,12 @@ export function AppInstallCard({
 
   const isClinic = variant === "clinic";
   const title = isClinic
-    ? "DrFlow consultorio"
+    ? "NexClinic consultorio"
     : clinicName
       ? `App ${clinicName}`
-      : "App DrFlow para pacientes";
+      : "App NexClinic para pacientes";
   const subtitle = isClinic
-    ? "Agregá DrFlow a la pantalla de inicio para acceder al dashboard y la agenda."
+    ? "Agregá NexClinic a la pantalla de inicio para acceder al dashboard y la agenda."
     : "Agregá la app a la pantalla de inicio para pedir turnos, recetas y WhatsApp.";
 
   const markInstalled = useCallback(() => {

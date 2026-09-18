@@ -8,7 +8,7 @@ import { InvitationCredentialsLookupForm } from "@/features/auth/components/invi
 
 export const metadata: Metadata = {
   title: "Credenciales de invitación",
-  description: "Consultá el usuario y contraseña de acceso a DrFlow si te invitaron al consultorio.",
+  description: "Consultá el usuario y contraseña de acceso a NexClinic si te invitaron al consultorio.",
   robots: { index: false, follow: false },
 };
 

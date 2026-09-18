@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { resolveApiClinicAccess } from "@/core/auth/resolve-api-clinic-access";
 import { createClient } from "@/core/supabase/server";
 
 import type { Database } from "@/types/supabase";
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     const cookieStore = await cookies();
-    let clinicId = cookieStore.get(CLINIC_COOKIE)?.value ?? null;
+    const cookieClinicId = cookieStore.get(CLINIC_COOKIE)?.value ?? null;
 
     const { data: memberships, error: memberError } = await supabase
       .from("clinic_members")
@@ -100,39 +101,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const members = memberships ?? [];
-    if (members.length === 0) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_superadmin")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (!profile?.is_superadmin) {
-        return NextResponse.json({ error: "Sin permisos", v: "cancel-v4" }, { status: 403 });
-      }
-      if (!clinicId) {
-        return NextResponse.json({ error: "Sin clínica activa", v: "cancel-v4" }, { status: 403 });
-      }
-    } else {
-      if (!clinicId || !members.some((m) => m.clinic_id === clinicId)) {
-        clinicId = members[0]?.clinic_id ?? null;
-      }
-      if (!clinicId) {
-        return NextResponse.json({ error: "Sin clínica activa", v: "cancel-v4" }, { status: 403 });
-      }
-      const membership = members.find((m) => m.clinic_id === clinicId);
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_superadmin")
-        .eq("id", user.id)
-        .maybeSingle();
-      const allowed =
-        Boolean(profile?.is_superadmin) ||
-        (membership?.role != null && MANAGE_ROLES.has(membership.role));
-      if (!allowed) {
-        return NextResponse.json({ error: "Sin permisos", v: "cancel-v4" }, { status: 403 });
-      }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_superadmin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const access = resolveApiClinicAccess({
+      cookieClinicId,
+      members: memberships ?? [],
+      isSuperadmin: Boolean(profile?.is_superadmin),
+      allowedRoles: MANAGE_ROLES,
+    });
+    if (!access.ok) {
+      return NextResponse.json(
+        { error: access.error, v: "cancel-v4" },
+        { status: access.status }
+      );
     }
+    const clinicId = access.clinicId;
 
     const reason = CATEGORY_LABELS[category] ?? "Otro";
 

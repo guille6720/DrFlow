@@ -4,6 +4,11 @@ import { z } from "zod";
 import { getActiveClinic, getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { hasPermission } from "@/core/permissions/roles";
+import {
+  checkRateLimitAsync,
+  getRequestClientIp,
+  SEARCH_API_RATE_LIMIT,
+} from "@/core/security/rate-limit";
 import { PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
 
@@ -16,6 +21,14 @@ export const GET = withObservabilityApiRoute("patients_search", async (request, 
   const user = await getSession();
   if (!user) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  const limited = await checkRateLimitAsync(
+    `search:patients:${user.id}:${getRequestClientIp(request)}`,
+    SEARCH_API_RATE_LIMIT
+  );
+  if (!limited.allowed) {
+    return NextResponse.json({ error: "Demasiadas búsquedas. Reintentá en un momento." }, { status: 429 });
   }
 
   const url = new URL(request.url);

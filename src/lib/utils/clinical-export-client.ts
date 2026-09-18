@@ -95,7 +95,7 @@ export async function downloadClinicalHistoryPdf(
   const jsPDF = await loadJsPdf();
   const doc = new jsPDF();
   doc.setFontSize(16);
-  doc.text("DrFlow — Historia clínica", 20, 20);
+  doc.text("NexClinic — Historia clínica", 20, 20);
   doc.setFontSize(11);
   doc.text(`Paciente: ${patient.last_name}, ${patient.first_name}`, 20, 32);
   doc.text(`DNI: ${patient.document_number}`, 20, 40);
@@ -134,7 +134,7 @@ export async function downloadPatientsPdf(patients: PatientExportRow[]) {
   const jsPDF = await loadJsPdf();
   const doc = new jsPDF();
   doc.setFontSize(16);
-  doc.text("DrFlow — Listado de pacientes", 20, 20);
+  doc.text("NexClinic — Listado de pacientes", 20, 20);
   doc.setFontSize(10);
   let y = 32;
   for (const p of patients) {
@@ -154,7 +154,7 @@ export async function downloadClinicalRecordsListPdf(records: ClinicalRecordExpo
   const jsPDF = await loadJsPdf();
   const doc = new jsPDF();
   doc.setFontSize(16);
-  doc.text("DrFlow — Consultas clínicas", 20, 20);
+  doc.text("NexClinic — Consultas clínicas", 20, 20);
   doc.setFontSize(11);
   doc.text(title, 20, 30);
   let y = 40;

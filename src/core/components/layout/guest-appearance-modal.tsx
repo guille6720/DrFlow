@@ -39,7 +39,7 @@ export function GuestAppearanceModal({ open, onClose }: GuestAppearanceModalProp
                 Apariencia de la interfaz
               </h2>
               <p className="drflow-modal-subtitle mt-1 text-xs text-slate-500">
-                Elegí el estilo visual de DrFlow. La preferencia se guarda en este navegador.
+                Elegí el estilo visual de NexClinic. La preferencia se guarda en este navegador.
               </p>
             </div>
             <button

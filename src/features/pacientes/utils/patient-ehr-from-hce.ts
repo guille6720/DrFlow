@@ -48,7 +48,8 @@ function parseTreatmentFromHceRow(row: HceExportRow, recordId: string, recordCre
 /** Construye tablas como el export HCE original (diagnósticos / tratamientos / evoluciones). */
 export function buildEhrPayloadFromHceRows(
   rows: HceExportRow[],
-  professionalFallback: string
+  professionalFallback: string,
+  options?: { patientId?: string }
 ): {
   consultations: PatientEhrConsultation[];
   diagnosisRows: PatientEhrDiagnosisRow[];
@@ -57,10 +58,11 @@ export function buildEhrPayloadFromHceRows(
   const consultations: PatientEhrConsultation[] = [];
   const diagnosisRows: PatientEhrDiagnosisRow[] = [];
   const treatmentRows: PatientEhrTreatmentRow[] = [];
+  const idPrefix = options?.patientId ? `hce-${options.patientId}` : "hce";
 
   for (const row of rows) {
     const tipo = row.tipo_registro.toLowerCase();
-    const recordId = `hce-${row.lineNumber}`;
+    const recordId = `${idPrefix}-${row.lineNumber}`;
     const iso = row.fecha_inicio ? `${row.fecha_inicio}T12:00:00.000Z` : new Date().toISOString();
     const dateLabel = formatShortDateFromIso(row.fecha_inicio, iso);
 

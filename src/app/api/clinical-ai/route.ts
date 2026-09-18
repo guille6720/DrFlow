@@ -12,6 +12,11 @@ import { withObservabilityApiRoute } from "@/core/observability/api-route";
 import { hasPermission } from "@/core/permissions/roles";
 import { requireSameOriginMutation } from "@/core/security/csrf";
 import { verifyPatientInClinic } from "@/core/security/ownership-guard";
+import {
+  AI_API_RATE_LIMIT,
+  checkRateLimitAsync,
+  getRequestClientIp,
+} from "@/core/security/rate-limit";
 import { createClient } from "@/core/supabase/server";
 import { clinicalAiRequestSchema } from "@/core/validations/clinical-ai-api";
 
@@ -65,6 +70,17 @@ export const POST = withObservabilityApiRoute("clinical_ai", async (request, ctx
     hasPermission(role, "editClinicalRecords", isSuperadmin);
   if (!canUse) {
     return NextResponse.json({ error: "Sin permisos clínicos" }, { status: 403 });
+  }
+
+  const limited = await checkRateLimitAsync(
+    `ai:clinical:${clinicId}:${getRequestClientIp(request)}`,
+    AI_API_RATE_LIMIT
+  );
+  if (!limited.allowed) {
+    return NextResponse.json(
+      { error: "Demasiadas solicitudes de IA. Reintentá en un momento." },
+      { status: 429 }
+    );
   }
 
   const entitlement = await requireAddonFeatureAccess(FEATURES.AI);

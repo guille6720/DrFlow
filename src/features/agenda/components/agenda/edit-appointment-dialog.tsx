@@ -148,7 +148,7 @@ export function EditAppointmentDialog({
             minSearchLength={1}
             searchResultLimit={20}
             displayMode="detailed"
-            createPatientHref={(q) => buildCreatePatientHref(q, "/agenda")}
+            createPatientHref={(q) => buildCreatePatientHref(q, "/turnos/agenda")}
             required
           />
           <Select

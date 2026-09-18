@@ -53,7 +53,7 @@ export function RetentionPolicyPanel({ summary, error }: Props) {
   return (
     <Card
       title="Retención y eliminación de datos"
-      description="Política operativa del consultorio (Ley 26.529 / Ley 25.326). El reloj de HC corre desde la última consulta. DrFlow no elimina historias clínicas automáticamente."
+      description="Política operativa del consultorio (Ley 26.529 / Ley 25.326). El reloj de HC corre desde la última consulta. NexClinic no elimina historias clínicas automáticamente."
     >
       <div className="space-y-4 text-sm">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

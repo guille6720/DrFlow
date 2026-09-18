@@ -11,6 +11,7 @@ import { useClinicalCopilotChat } from "@/features/ia/hooks/use-clinical-copilot
 import {
   clearGeminiWorkspaceSnapshot,
   type GeminiSearchHistoryEntry,
+  type GeminiWorkspaceScope,
   loadGeminiWorkspaceSnapshot,
   saveGeminiWorkspaceSnapshot,
   upsertGeminiSearchHistory,
@@ -29,7 +30,7 @@ import type { GeminiStatsPatient } from "@/lib/ai/gemini-structured-response";
 import type { ClinicalCopilotContext } from "@/lib/utils/clinical-copilot";
 
 const STATS_SUGGESTED_PROMPTS = [
-  "¿Cuántos pacientes con hipertensión hay en DrFlow?",
+  "¿Cuántos pacientes con hipertensión hay en NexClinic?",
   "Pacientes con asma o EPOC",
   "Diagnósticos más frecuentes este mes",
 ];
@@ -109,7 +110,7 @@ function PatientResultsList({
   );
 }
 
-export function GeminiWorkspace() {
+export function GeminiWorkspace({ clinicId }: { clinicId: string }) {
   const enabled = useFeatureFlag("consultation_assistant");
   const researchEnabled = useFeatureFlag(CLINICAL_RESEARCH_PROTOCOLS_FLAG);
   const suggestedPrompts = useMemo(
@@ -120,7 +121,42 @@ export function GeminiWorkspace() {
     [researchEnabled]
   );
   const [patient, setPatient] = useState<PatientSearchOption | null>(null);
-  const snapshot = useMemo(() => loadGeminiWorkspaceSnapshot(), []);
+  const scope: GeminiWorkspaceScope | null = useMemo(() => {
+    const trimmed = clinicId.trim();
+    if (!trimmed) return null;
+    return { clinicId: trimmed, patientId: patient?.id ?? "_clinic" };
+  }, [clinicId, patient?.id]);
+
+  // Remount chat + history when clinic/patient scope changes so turns cannot leak.
+  return (
+    <GeminiWorkspaceScoped
+      key={scope ? `${scope.clinicId}:${scope.patientId}` : "no-clinic"}
+      enabled={enabled}
+      researchEnabled={researchEnabled}
+      suggestedPrompts={suggestedPrompts}
+      patient={patient}
+      setPatient={setPatient}
+      scope={scope}
+    />
+  );
+}
+
+function GeminiWorkspaceScoped({
+  enabled,
+  researchEnabled,
+  suggestedPrompts,
+  patient,
+  setPatient,
+  scope,
+}: {
+  enabled: boolean;
+  researchEnabled: boolean;
+  suggestedPrompts: string[];
+  patient: PatientSearchOption | null;
+  setPatient: (value: PatientSearchOption | null) => void;
+  scope: GeminiWorkspaceScope | null;
+}) {
+  const snapshot = useMemo(() => loadGeminiWorkspaceSnapshot(scope), [scope]);
   const [searchHistory, setSearchHistory] = useState<GeminiSearchHistoryEntry[]>(
     () => snapshot.searchHistory
   );
@@ -152,12 +188,15 @@ export function GeminiWorkspace() {
   const activeHistory = searchHistory.find((item) => item.id === activeHistoryId) ?? null;
 
   useEffect(() => {
-    saveGeminiWorkspaceSnapshot({
-      turns,
-      searchHistory,
-      activeHistoryId,
-    });
-  }, [turns, searchHistory, activeHistoryId]);
+    saveGeminiWorkspaceSnapshot(
+      {
+        turns,
+        searchHistory,
+        activeHistoryId,
+      },
+      scope
+    );
+  }, [turns, searchHistory, activeHistoryId, scope]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -166,7 +205,7 @@ export function GeminiWorkspace() {
   if (!enabled) {
     return (
       <p className="text-sm text-slate-700">
-        Activá el asistente de consulta en configuración para usar Gemini dentro de DrFlow.
+        Activá el asistente de consulta en configuración para usar Gemini dentro de NexClinic.
       </p>
     );
   }
@@ -200,7 +239,7 @@ export function GeminiWorkspace() {
     reset();
     setSearchHistory([]);
     setActiveHistoryId(null);
-    clearGeminiWorkspaceSnapshot();
+    clearGeminiWorkspaceSnapshot(scope);
     hydratedQueryIds.current.clear();
   }
 
@@ -319,7 +358,7 @@ export function GeminiWorkspace() {
           <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 text-sm font-medium text-violet-950">
               <Sparkles className="h-4 w-4" />
-              Gemini en DrFlow
+              Gemini en NexClinic
             </div>
             <span className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-white px-2 py-0.5 text-[10px] font-medium text-violet-800">
               <Bot className="h-3 w-3" />

@@ -39,6 +39,20 @@ export interface ElectronicPrescription {
   prescription_number: string | null;
   issued_at: string | null;
   validity_days: number;
+  validity_starts_at?: string | null;
+  prescription_category?: string | null;
+  prescription_subtype?: string | null;
+  national_rx_status?: string | null;
+  cuir_status?: string | null;
+  cuir_platform_id?: string | null;
+  cuir_repository_id?: string | null;
+  cuir_jurisdiction?: string | null;
+  cuir_type_subtype?: string | null;
+  cuir_group_id?: string | null;
+  cuir_item_number?: string | null;
+  cuir_formatted?: string | null;
+  diagnosis_coding?: Record<string, unknown> | null;
+  fhir_bundle_meta?: Record<string, unknown> | null;
   refeps_status: RefepsStatus;
   refeps_id: string | null;
   refeps_submitted_at?: string | null;
@@ -90,7 +104,7 @@ export const REFEPS_STATUS_LABELS: Record<RefepsStatus, string> = {
 
 export const ARGENTINA_PRESCRIPTION_DISCLAIMER =
   "Receta local / borrador — no es homologación REFEPS. " +
-  "Generada en DrFlow según Ley 25.649 (prescripción por nombre genérico). " +
+  "Generada en NexClinic según Ley 25.649 (prescripción por nombre genérico). " +
   "Para validez ante farmacias con trazabilidad REFEPS/RENaPDiS, la clínica debe completar " +
   "homologación con el Ministerio de Salud de la Nación y firma digital habilitante.";
 

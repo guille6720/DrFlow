@@ -16,7 +16,7 @@ export async function deliverReminderEmail(input: {
 }): Promise<DeliverReminderEmailResult> {
   const result = await sendTransactionalEmail({
     to: input.to,
-    subject: input.subject ?? "Recordatorio de turno — DrFlow",
+    subject: input.subject ?? "Recordatorio de turno — NexClinic",
     text: input.message,
   });
 

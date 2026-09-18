@@ -104,7 +104,7 @@ export function AiProviderPanel() {
       <div className="mb-4 flex items-start gap-2 rounded-lg border border-violet-100 bg-violet-50/80 px-3 py-2 text-sm text-violet-900">
         <Bot className="mt-0.5 h-4 w-4 shrink-0" />
         <p>
-          Bring your own key (BYOK): cada usuario elige su modelo. DrFlow no comparte tu clave con
+          Bring your own key (BYOK): cada usuario elige su modelo. NexClinic no comparte tu clave con
           otros usuarios del consultorio.
         </p>
       </div>
@@ -190,7 +190,7 @@ export function AiProviderPanel() {
                 <ExternalLink className="h-3 w-3 opacity-60" />
               </a>
               <p className="mt-2 text-[11px] text-slate-500">
-                No es login de DrFlow: es la clave de tu cuenta Google para consultas con Gemini.
+                No es login de NexClinic: es la clave de tu cuenta Google para consultas con Gemini.
               </p>
             </div>
           ) : null}

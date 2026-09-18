@@ -176,7 +176,7 @@ export function buildClinicalTimeline(input: ClinicalTimelineInput): ClinicalTim
         at: appt.start_at,
         title: "Turno atendido",
         meta: appt.professional_name ?? undefined,
-        href: "/agenda",
+        href: "/turnos/agenda",
       });
       continue;
     }
@@ -187,7 +187,7 @@ export function buildClinicalTimeline(input: ClinicalTimelineInput): ClinicalTim
         at: appt.start_at,
         title: "Paciente ausente",
         meta: appt.professional_name ?? undefined,
-        href: "/agenda",
+        href: "/turnos/agenda",
       });
     }
   }

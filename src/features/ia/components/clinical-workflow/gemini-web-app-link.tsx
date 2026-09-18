@@ -17,7 +17,7 @@ type Props = {
   onNavigate?: () => void;
 };
 
-/** Abre Gemini dentro de DrFlow. Nunca sale a gemini.google.com. */
+/** Abre Gemini dentro de NexClinic. Nunca sale a gemini.google.com. */
 export function GeminiWebAppLink({ className, onNavigate }: Props) {
   const enabled = useFeatureFlag("consultation_assistant");
   const entitled = useCanUseFeature(FEATURES.AI);
@@ -28,19 +28,23 @@ export function GeminiWebAppLink({ className, onNavigate }: Props) {
   return (
     <SafeInternalLink
       href={GEMINI_IN_APP_HREF}
-      aria-label="Abrir Gemini en DrFlow"
-      title="Abrir Gemini en DrFlow"
+      aria-label="Abrir Gemini en NexClinic"
+      title="Abrir Gemini en NexClinic"
       onClick={() => onNavigate?.()}
       className={cn(
-        "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all",
+        "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all",
         active
-          ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900 shadow-md shadow-teal-500/20"
-          : "text-slate-300 hover:bg-slate-800/90 hover:text-white",
+          ? "drflow-sidebar-nav-active bg-gradient-to-r text-white shadow-sm"
+          : "text-[var(--text-on-sidebar,#1e293b)] hover:bg-[var(--surface-hover,#f1f5f9)]",
         className
       )}
     >
       <Sparkles
-        className={cn("h-5 w-5 shrink-0", active ? "text-slate-900" : "text-violet-400")}
+        className={cn(
+          "h-5 w-5 shrink-0",
+          active ? "text-white" : "text-violet-500"
+        )}
+        strokeWidth={2.25}
         aria-hidden
       />
       Gemini
@@ -48,7 +52,7 @@ export function GeminiWebAppLink({ className, onNavigate }: Props) {
   );
 }
 
-/** Botón flotante inferior derecho — Gemini dentro de DrFlow. */
+/** Botón flotante inferior derecho — Gemini dentro de NexClinic. */
 export function GeminiWebAppFab() {
   const enabled = useFeatureFlag("consultation_assistant");
   const entitled = useCanUseFeature(FEATURES.AI);
@@ -58,12 +62,12 @@ export function GeminiWebAppFab() {
   return (
     <SafeInternalLink
       href={GEMINI_IN_APP_HREF}
-      aria-label="Abrir Gemini en DrFlow"
-      title="Abrir Gemini en DrFlow"
+      aria-label="Abrir Gemini en NexClinic"
+      title="Abrir Gemini en NexClinic"
       className={cn(
         "fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full",
-        "bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/30",
-        "hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+        "drflow-accent-fill-secondary text-white",
+        "hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
       )}
     >
       <Sparkles className="h-5 w-5" aria-hidden />

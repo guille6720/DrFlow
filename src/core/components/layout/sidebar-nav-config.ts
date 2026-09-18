@@ -12,6 +12,7 @@ import {
   FileText,
   FolderOpen,
   HeartPulse,
+  Home,
   LayoutDashboard,
   PenLine,
   Pill,
@@ -32,6 +33,8 @@ import {
 
 export type SidebarNavLink = FeatureNavItem & {
   icon: typeof LayoutDashboard;
+  /** Product present in nav but not enabled (e.g. Geriatría before Superadmin toggle). */
+  disabled?: boolean;
 };
 
 export type SidebarNavGroup = {
@@ -74,6 +77,18 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
   "/reportes": BarChart3,
   "/ayuda": BookOpen,
   "/configuracion": Settings,
+  "/geriatria": Home,
+  "/geriatria/residentes": Users,
+  "/geriatria/habitaciones": Building2,
+  "/geriatria/enfermeria": HeartPulse,
+  "/geriatria/medicacion": Pill,
+  "/geriatria/planes-cuidados": ClipboardList,
+  "/geriatria/evoluciones": FileText,
+  "/geriatria/nutricion": ClipboardPlus,
+  "/geriatria/incidentes": ClipboardList,
+  "/geriatria/familiares": Users,
+  "/geriatria/traslados": ArrowDownUp,
+  "/geriatria/reportes": BarChart3,
   "/superadmin": Building2,
   "/superadmin/clinics": Building2,
   "/superadmin/plans": BarChart3,
@@ -86,6 +101,7 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
 const GROUP_ICONS: Record<string, typeof LayoutDashboard> = {
   administracion: Building2,
   medicos: Stethoscope,
+  geriatria: Home,
   superadmin: Building2,
 };
 

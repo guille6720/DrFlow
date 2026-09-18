@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("DrFlow smoke E2E", () => {
+test.describe("NexClinic smoke E2E", () => {
   test("login page renders", async ({ page }) => {
     await page.goto("/login");
     await expect(page.getByRole("button", { name: /ingresar|iniciar/i })).toBeVisible();
@@ -13,7 +13,7 @@ test.describe("DrFlow smoke E2E", () => {
 
   test("public privacy page", async ({ page }) => {
     await page.goto("/privacidad");
-    await expect(page.locator("body")).toContainText(/DrFlow|privacidad/i);
+    await expect(page.locator("body")).toContainText(/NexClinic|privacidad/i);
   });
 
   test("health API returns JSON", async ({ request }) => {

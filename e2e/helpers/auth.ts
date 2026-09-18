@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { type Page } from "@playwright/test";
 
 import { hasE2EAuthCredentials, readE2ECredentials } from "./e2e-env";
 
@@ -20,6 +20,5 @@ export async function loginViaUi(page: Page): Promise<void> {
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Contraseña").fill(password);
   await page.getByRole("button", { name: "Ingresar" }).click();
-
-  await expect(page).not.toHaveURL(/\/login(?:\?|$)/, { timeout: 45_000 });
+  await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 45_000 });
 }

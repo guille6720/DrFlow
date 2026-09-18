@@ -25,6 +25,7 @@ import {
   TRIAL_DAYS_INCLUDED,
 } from "@/core/billing/plans";
 import { AccountDeletedCleanup } from "@/core/components/auth/account-deleted-cleanup";
+import { GeriatricsPricingSection } from "@/core/components/landing/geriatrics-pricing-section";
 import { MarketingFooter } from "@/core/components/landing/marketing-footer";
 import { MarketingHeader } from "@/core/components/landing/marketing-header";
 import {
@@ -131,7 +132,7 @@ const TESTIMONIALS = [
   {
     initials: "LF",
     quote:
-      "Desde que implementamos DrFlow redujimos el tiempo administrativo. La interfaz es tan intuitiva que el equipo se adaptó en un día.",
+      "Desde que implementamos NexClinic redujimos el tiempo administrativo. La interfaz es tan intuitiva que el equipo se adaptó en un día.",
     name: "Dra. Laura Fernández",
     role: "Directora Médica, Centro Médico Horizonte",
   },
@@ -162,7 +163,7 @@ const FAQ = [
   },
   {
     q: "¿Incluye receta electrónica REFEPS?",
-    a: "DrFlow emite recetas locales Ley 25.649. Incluye adapter REFEPS/RENaPDiS (sandbox o API); la homologación MSN del consultorio sigue siendo requisito legal.",
+    a: "NexClinic emite recetas locales Ley 25.649. Incluye adapter REFEPS/RENaPDiS (sandbox o API); la homologación MSN del consultorio sigue siendo requisito legal.",
   },
   {
     q: "¿Dónde obtengo soporte técnico?",
@@ -174,8 +175,8 @@ export function DrFlowHomeLanding() {
   const salesEmail = getSalesContactEmail();
   const phone = getSalesWhatsAppPhone();
   const salesWhatsAppHref =
-    phone && buildWhatsAppUrl(phone, "Hola, quiero conocer DrFlow para mi consultorio.")
-      ? buildWhatsAppUrl(phone, "Hola, quiero conocer DrFlow para mi consultorio.")
+    phone && buildWhatsAppUrl(phone, "Hola, quiero conocer NexClinic para mi consultorio.")
+      ? buildWhatsAppUrl(phone, "Hola, quiero conocer NexClinic para mi consultorio.")
       : null;
 
   return (
@@ -195,14 +196,14 @@ export function DrFlowHomeLanding() {
               <Suspense fallback={null}>
                 <AccountDeletedCleanup />
               </Suspense>
-              <div className="mb-6 flex items-center gap-4">
+              <div className="mb-6 flex flex-col items-start gap-4">
                 <Image
-                  src="/drflow-logo.png"
-                  alt="DrFlow"
-                  width={72}
-                  height={72}
+                  src="/nexclinic-logo-horizontal.png"
+                  alt="NexClinic — Gestión médica inteligente"
+                  width={420}
+                  height={120}
                   priority
-                  className="h-16 w-16 rounded-2xl object-contain sm:h-[72px] sm:w-[72px]"
+                  className="h-14 w-auto max-w-full object-contain sm:h-16"
                 />
                 <p className="inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-4 py-1 text-sm font-medium text-teal-200">
                   <Sparkles className="h-3.5 w-3.5" />
@@ -210,9 +211,9 @@ export function DrFlowHomeLanding() {
                 </p>
               </div>
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-[3.35rem] lg:leading-[1.08]">
-                Gestión clínica{" "}
-                <span className="bg-gradient-to-r from-cyan-300 to-teal-400 bg-clip-text text-transparent">
-                  sin saltos.
+                Gestión médica{" "}
+                <span className="bg-gradient-to-r from-teal-300 to-emerald-400 bg-clip-text text-transparent">
+                  inteligente.
                 </span>
               </h1>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-300">
@@ -280,7 +281,7 @@ export function DrFlowHomeLanding() {
                 Todo lo que necesita para operar con excelencia
               </h2>
               <p className="mx-auto mt-3 max-w-2xl text-slate-600">
-                DrFlow está construido sobre tecnologías modernas para una experiencia fluida, segura
+                NexClinic está construido sobre tecnologías modernas para una experiencia fluida, segura
                 y escalable — enfocada en los pacientes.
               </p>
             </div>
@@ -290,7 +291,7 @@ export function DrFlowHomeLanding() {
                   key={b.title}
                   className="rounded-2xl border border-white bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
                 >
-                  <div className="inline-flex rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 p-2.5 text-white shadow-md shadow-teal-500/20">
+                  <div className="inline-flex rounded-xl drflow-accent-fill p-2.5 text-white">
                     <b.icon className="h-6 w-6" />
                   </div>
                   <h3 className="mt-4 font-semibold text-slate-900">{b.title}</h3>
@@ -348,7 +349,7 @@ export function DrFlowHomeLanding() {
             <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-wide text-teal-400">
-                  DrFlow AI Cortex
+                  NexClinic AI Cortex
                 </p>
                 <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
                   Su copiloto médico inteligente.
@@ -397,7 +398,7 @@ export function DrFlowHomeLanding() {
                 Privacidad y seguridad garantizadas por diseño
               </h2>
               <p className="mx-auto mt-3 max-w-2xl text-slate-600">
-                La información de sus pacientes es su activo más valioso. DrFlow cumple con las
+                La información de sus pacientes es su activo más valioso. NexClinic cumple con las
                 normativas más estrictas de protección de datos en salud.
               </p>
             </div>
@@ -424,7 +425,7 @@ export function DrFlowHomeLanding() {
                 Confiado por profesionales de la salud
               </h2>
               <p className="mx-auto mt-3 max-w-2xl text-slate-600">
-                Médicos y clínicas que modernizaron su gestión diaria con DrFlow.
+                Médicos y clínicas que modernizaron su gestión diaria con NexClinic.
               </p>
             </div>
             <div className="mt-12 grid gap-6 lg:grid-cols-3">
@@ -436,7 +437,7 @@ export function DrFlowHomeLanding() {
                   <Quote className="h-8 w-8 text-teal-500/40" />
                   <p className="mt-4 flex-1 text-sm leading-relaxed text-slate-700">&ldquo;{t.quote}&rdquo;</p>
                   <div className="mt-6 flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 text-sm font-bold text-white">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full drflow-accent-fill text-sm font-bold text-white">
                       {t.initials}
                     </span>
                     <div>
@@ -457,6 +458,9 @@ export function DrFlowHomeLanding() {
         <section className="bg-white py-20">
           <div className="mx-auto max-w-6xl px-4">
             <PlansPricingSection />
+            <div className="mt-16">
+              <GeriatricsPricingSection />
+            </div>
             <p className="mt-8 text-center text-sm text-slate-500">
               Consultas comerciales:{" "}
               <a href={`mailto:${salesEmail}`} className="text-teal-700 hover:underline">
@@ -493,7 +497,7 @@ export function DrFlowHomeLanding() {
         <section id="faq" className="border-t border-slate-200 bg-slate-50 py-20">
           <div className="mx-auto max-w-3xl px-4">
             <h2 className="text-center text-3xl font-bold text-slate-900">Preguntas frecuentes</h2>
-            <p className="mt-2 text-center text-slate-600">Todo lo que necesita saber sobre DrFlow.</p>
+            <p className="mt-2 text-center text-slate-600">Todo lo que necesita saber sobre NexClinic.</p>
             <dl className="mt-10 space-y-4">
               {FAQ.map((item) => (
                 <div key={item.q} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -512,7 +516,7 @@ export function DrFlowHomeLanding() {
               ¿Listo para llevar su consultorio al siguiente nivel?
             </h2>
             <p className="mt-4 text-slate-400">
-              Modernice su práctica, reduzca ausencias y recupere tiempo con DrFlow.
+              Modernice su práctica, reduzca ausencias y recupere tiempo con NexClinic.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <ButtonLink href="/probar" size="lg">

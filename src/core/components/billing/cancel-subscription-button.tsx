@@ -72,7 +72,7 @@ export function CancelSubscriptionButton({ periodEndLabel, alreadyCanceled = fal
           Cancelar suscripción
         </Button>
         <p className="text-xs text-slate-500">
-          Sin cargos posteriores en DrFlow. Si ya pagaste el período, el acceso continúa hasta el
+          Sin cargos posteriores en NexClinic. Si ya pagaste el período, el acceso continúa hasta el
           vencimiento.
         </p>
       </div>

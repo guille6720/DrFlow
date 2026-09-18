@@ -28,7 +28,7 @@ export function PatientAppLandingSection() {
             </h2>
             <p className="mt-4 text-slate-600">
               Instalable en el celular (PWA). Tus pacientes pueden pedir turno, solicitar recetas
-              por WhatsApp o usar el formulario web — con el mismo logo DrFlow.
+              por WhatsApp o usar el formulario web — con el mismo logo NexClinic.
             </p>
             <ul className="mt-6 space-y-3 text-sm text-slate-700">
               <li className="flex items-center gap-2">

@@ -43,6 +43,7 @@ import { logServerError } from "@/core/errors/log-error.server";
 import { buildAuditLogRow } from "@/core/security/audit-log";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { toJson } from "@/core/supabase/json";
+import { CLINIC_SUBSCRIPTION_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 import { isClinicTrialExpired, trialDaysRemaining } from "@/core/trial/clinic-trial";
 
@@ -111,7 +112,7 @@ export async function loadClinicSubscriptionSummary(
   const supabase = await createClient();
   const { data: subscription } = await supabase
     .from("clinic_subscriptions")
-    .select("*")
+    .select(CLINIC_SUBSCRIPTION_COLUMNS)
     .eq("clinic_id", clinicId)
     .maybeSingle();
 

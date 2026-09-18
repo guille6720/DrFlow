@@ -1,7 +1,7 @@
 /**
  * Phase 9 — Centralized audit log security posture.
  *
- * Documents what DrFlow must log and the DB/app controls that protect audit integrity.
+ * Documents what NexClinic must log and the DB/app controls that protect audit integrity.
  * Does not certify legal compliance by itself.
  */
 
@@ -33,7 +33,7 @@ export type SensitiveAuditCategory = {
   appSignals: string[];
 };
 
-/** Sensitive operations DrFlow must record (PHASE 9 matrix). */
+/** Sensitive operations NexClinic must record (PHASE 9 matrix). */
 export const SENSITIVE_AUDIT_CATEGORIES: SensitiveAuditCategory[] = [
   {
     id: "view_patient_clinical",

@@ -55,7 +55,7 @@ export function buildMedicalOrderDocumentHtml(data: MedicalOrderDocumentData): s
   return `
     <article class="order-doc">
       <header class="order-doc-header">
-        <p class="order-doc-kicker">República Argentina — DrFlow</p>
+        <p class="order-doc-kicker">República Argentina — NexClinic</p>
         <h1>${escapeHtml(medicalOrderDocumentHeading(data.orderType))}</h1>
         <p class="order-doc-meta">Fecha de emisión: ${escapeHtml(issued)}</p>
       </header>
@@ -99,7 +99,7 @@ export function buildMedicalOrderDocumentHtml(data: MedicalOrderDocumentData): s
       })}
 
       <footer class="order-doc-footer">
-        <p>Documento generado electrónicamente en DrFlow. Verifique datos del paciente antes de presentar.</p>
+        <p>Documento generado electrónicamente en NexClinic. Verifique datos del paciente antes de presentar.</p>
       </footer>
     </article>
   `;

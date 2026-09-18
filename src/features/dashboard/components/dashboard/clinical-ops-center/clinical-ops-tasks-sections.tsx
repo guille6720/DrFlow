@@ -27,13 +27,13 @@ export function TodayScheduleSection({
               return (
                 <li
                   key={appt.id}
-                  className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-800/50"
+                  className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-[var(--surface-hover,#f1f5f9)]"
                 >
                   <span className="font-mono text-xs text-teal-400">
                     {formatClinicDateTime(appt.start_at, "HH:mm")}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-slate-200">{name}</span>
-                  <span className="text-xs capitalize text-slate-500">{appt.status}</span>
+                  <span className="min-w-0 flex-1 truncate text-[var(--text-primary,#172033)]">{name}</span>
+                  <span className="text-xs capitalize text-[var(--text-muted,#64748b)]">{appt.status}</span>
                 </li>
               );
             })}
@@ -64,10 +64,10 @@ export function NotificationsSection({
             <li key={n.id}>
               <Link
                 href={n.href}
-                className="flex items-start gap-2 rounded-lg border border-slate-700/50 px-3 py-2 transition hover:border-teal-700/50 hover:bg-slate-800/50"
+                className="flex items-start gap-2 rounded-lg border border-[var(--border-default,#e2e8f0)] px-3 py-2 transition hover:border-[var(--sidebar-accent,#0f766e)] hover:bg-[var(--surface-hover,#f1f5f9)]"
               >
-                <span className="text-sm font-medium text-slate-200">{n.label}</span>
-                <span className="text-xs text-slate-500">{n.patientName}</span>
+                <span className="text-sm font-medium text-[var(--text-primary,#172033)]">{n.label}</span>
+                <span className="text-xs text-[var(--text-muted,#64748b)]">{n.patientName}</span>
               </Link>
             </li>
           ))}

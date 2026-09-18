@@ -26,6 +26,18 @@ export function loadEnv({ required = true } = {}) {
   return env;
 }
 
+/** Prefer a usable anon JWT over placeholder publishable keys in local env files. */
+export function resolveSupabaseAnonKey(env) {
+  const publishable = env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
+  const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  const isUsable = (key) =>
+    Boolean(key) && !/placeholder|\[SENSITIVE\]/i.test(key) && key.length > 40;
+
+  if (isUsable(publishable)) return publishable;
+  if (isUsable(anon)) return anon;
+  return publishable ?? anon ?? "";
+}
+
 /** Reads a flag value from argv (`--url=http://...`). */
 export function readArg(prefix) {
   const hit = process.argv.find((arg) => arg.startsWith(`${prefix}=`));

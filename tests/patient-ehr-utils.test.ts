@@ -7,6 +7,8 @@ import {
   formatPatientEhrSidebarDate,
   patientEhrEvolutionBody,
   resolveConsultationAttachment,
+  resolveDayPrintAnchorIso,
+  resolveDayPrintConsultations,
   resolveSelectedConsultation,
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import type { PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
@@ -80,6 +82,18 @@ describe("buildConsultationSidebarList", () => {
     const sidebar = buildConsultationSidebarList(sorted, []);
 
     expect(sidebar.map((c) => c.id)).toEqual(["d1", "t1"]);
+  });
+
+  it("shows every evolution even when multiple visits share the same day", () => {
+    const sorted = [
+      consultation({ id: "evo-late", created_at: "2022-11-10T18:00:00Z", category: "evolution" }),
+      consultation({ id: "evo-early", created_at: "2022-11-10T09:00:00Z", category: "evolution" }),
+      consultation({ id: "older", created_at: "2022-11-09T10:00:00Z", category: "evolution" }),
+    ];
+
+    const sidebar = buildConsultationSidebarList(sorted, sorted);
+
+    expect(sidebar.map((c) => c.id)).toEqual(["evo-late", "evo-early", "older"]);
   });
 });
 
@@ -173,5 +187,65 @@ describe("resolveConsultationAttachment", () => {
     );
 
     expect(match?.id).toBe("att-1");
+  });
+});
+
+describe("resolveDayPrintAnchorIso", () => {
+  const today = "2026-09-01T15:00:00.000Z";
+  const yesterday = "2026-08-31T15:00:00.000Z";
+  const list: PatientEhrConsultation[] = [
+    {
+      id: "new-today",
+      created_at: today,
+      professional_name: "Dr. A",
+      chief_complaint: "",
+      diagnosis: "",
+      evolution: "Hoy",
+      indications: "",
+      category: "evolution",
+    },
+    {
+      id: "old-yesterday",
+      created_at: yesterday,
+      professional_name: "Dr. A",
+      chief_complaint: "",
+      diagnosis: "",
+      evolution: "Ayer",
+      indications: "",
+      category: "evolution",
+    },
+  ];
+
+  it("prefers explicit day print anchor over selected consultation", () => {
+    expect(
+      resolveDayPrintAnchorIso({
+        dayPrintAnchorIso: today,
+        activeRecordId: null,
+        evolutionList: list,
+        selected: list[1],
+      })
+    ).toBe(today);
+  });
+
+  it("uses active in-progress record when anchor not set", () => {
+    expect(
+      resolveDayPrintAnchorIso({
+        dayPrintAnchorIso: null,
+        activeRecordId: "new-today",
+        evolutionList: list,
+        selected: list[1],
+      })
+    ).toBe(today);
+  });
+
+  it("filters day print consultations by anchor day", () => {
+    const anchor = resolveDayPrintAnchorIso({
+      dayPrintAnchorIso: today,
+      activeRecordId: "new-today",
+      evolutionList: list,
+      selected: list[1],
+    });
+    const dayRows = resolveDayPrintConsultations(list, anchor);
+    expect(dayRows.map((row) => row.id)).toEqual(["new-today"]);
   });
 });

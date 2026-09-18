@@ -16,8 +16,8 @@ const ClinicalOpsAiRailInner = dynamic(
 
 function AiRailSkeleton() {
   return (
-    <aside className="rounded-xl border border-slate-700/60 bg-slate-900/40 p-4 lg:sticky lg:top-4">
-      <p className="text-sm text-slate-500">Cargando asistente…</p>
+    <aside className="rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] p-4 lg:sticky lg:top-4">
+      <p className="text-sm text-[var(--text-muted,#64748b)]">Cargando asistente…</p>
     </aside>
   );
 }
@@ -33,10 +33,10 @@ export function ClinicalOpsAiRail({ ops }: Props) {
   return (
     <aside
       aria-label="Asistente clínico"
-      className="drflow-sticky-rail flex flex-col gap-3 rounded-xl border border-slate-700/60 bg-slate-900/40 p-4"
+      className="drflow-sticky-rail flex flex-col gap-3 rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] p-4"
     >
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-primary,#172033)]">
           Asistente IA
         </h2>
         <Sparkles className="h-4 w-4 text-teal-400" aria-hidden />
@@ -44,7 +44,7 @@ export function ClinicalOpsAiRail({ ops }: Props) {
 
       <ClinicalOpsAiRailInner ops={ops} />
 
-      <p className="text-[11px] leading-snug text-slate-500">
+      <p className="text-[11px] leading-snug text-[var(--text-muted,#64748b)]">
         Las sugerencias requieren confirmación del profesional. No reemplazan el criterio clínico.
       </p>
 

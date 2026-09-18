@@ -9,6 +9,7 @@ import { processPendingClinicJobs } from "@/core/jobs/process";
 import { recordAudit } from "@/core/security/audit-service";
 import { validateSpreadsheetImportUpload } from "@/core/security/file-upload";
 import { requirePatientImportAccess } from "@/core/services/import-access.service";
+import { DATA_IMPORT_SESSION_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 import { parseEntityId } from "@/core/validations/params";
 
@@ -51,7 +52,7 @@ async function loadOwnedSession(
 ) {
   const { data, error } = await supabase
     .from("data_import_sessions")
-    .select("*")
+    .select(DATA_IMPORT_SESSION_COLUMNS)
     .eq("id", sessionId)
     .eq("clinic_id", clinicId)
     .maybeSingle();
@@ -129,7 +130,7 @@ export async function createPatientImportSession(formData: FormData): Promise<{
       stats: { total: table.rows.length, ready: 0, duplicates: 0, invalid: 0 },
       duplicate_decisions: defaultDuplicateDecisions(),
     })
-    .select("*")
+    .select(DATA_IMPORT_SESSION_COLUMNS)
     .single();
 
   if (error || !data) {
@@ -185,7 +186,7 @@ export async function savePatientImportMapping(
     })
     .eq("id", parsed.data)
     .eq("clinic_id", auth.clinicId)
-    .select("*")
+    .select(DATA_IMPORT_SESSION_COLUMNS)
     .single();
 
   if (error || !data) return { error: "No se pudo guardar el mapeo." };
@@ -232,7 +233,7 @@ export async function validatePatientImportSession(sessionIdRaw: string): Promis
     })
     .eq("id", session.id)
     .eq("clinic_id", auth.clinicId)
-    .select("*")
+    .select(DATA_IMPORT_SESSION_COLUMNS)
     .single();
 
   if (error || !data) return { error: "No se pudo validar el archivo." };
@@ -258,7 +259,7 @@ export async function savePatientImportDecisions(
     })
     .eq("id", parsed.data)
     .eq("clinic_id", auth.clinicId)
-    .select("*")
+    .select(DATA_IMPORT_SESSION_COLUMNS)
     .single();
 
   if (error || !data) return { error: "No se pudieron guardar las decisiones." };
@@ -310,7 +311,7 @@ export async function confirmPatientImportSession(sessionIdRaw: string): Promise
     })
     .eq("id", session.id)
     .eq("clinic_id", auth.clinicId)
-    .select("*")
+    .select(DATA_IMPORT_SESSION_COLUMNS)
     .single();
 
   await recordAudit({

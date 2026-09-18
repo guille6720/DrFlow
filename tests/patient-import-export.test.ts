@@ -21,7 +21,7 @@ import {
 } from "@/features/integraciones/lib/spreadsheet-export-safety";
 
 describe("patient import mapping", () => {
-  it("suggests DrFlow fields from Spanish headers", () => {
+  it("suggests NexClinic fields from Spanish headers", () => {
     const mapping = suggestPatientColumnMapping([
       "Documento",
       "Apellido",

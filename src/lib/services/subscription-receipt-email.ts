@@ -1,5 +1,7 @@
 import "server-only";
 
+import { getPublicSiteUrl } from "@/core/supabase/env";
+
 import { sendTransactionalEmail } from "@/lib/services/transactional-email";
 
 export function buildSubscriptionReceiptEmailContent(input: {
@@ -9,9 +11,10 @@ export function buildSubscriptionReceiptEmailContent(input: {
   amountLabel: string;
   periodEndLabel: string;
 }): { subject: string; text: string } {
-  const subject = `Pago confirmado — DrFlow ${input.planName}`;
+  const siteUrl = getPublicSiteUrl();
+  const subject = `Pago confirmado — NexClinic ${input.planName}`;
   const text = [
-    `Gracias por activar DrFlow.`,
+    `Gracias por activar NexClinic.`,
     "",
     `Consultorio: ${input.clinicName}`,
     `Plan: ${input.planName} (${input.cycleLabel})`,
@@ -20,7 +23,7 @@ export function buildSubscriptionReceiptEmailContent(input: {
     "",
     "Ya podés usar agenda, historias clínicas y recetas sin límite de prueba.",
     "",
-    "DrFlow — https://drflow.opusorg.com",
+    `NexClinic — ${siteUrl}`,
   ].join("\n");
 
   return { subject, text };

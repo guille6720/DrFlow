@@ -118,7 +118,7 @@ export function ManualIllustration({
         ))}
       </div>
       <p className="mt-3 text-[10px] text-slate-500">
-        Esquema del flujo en DrFlow — se actualiza con cada versión de la app.
+        Esquema del flujo en NexClinic — se actualiza con cada versión de la app.
       </p>
     </figure>
   );

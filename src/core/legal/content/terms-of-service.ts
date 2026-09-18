@@ -2,14 +2,14 @@ import type { LegalDocument } from "@/core/legal/content/types";
 
 export const termsOfServiceDocument: LegalDocument = {
   id: "terminos",
-  title: "Términos del Servicio de DrFlow",
+  title: "Términos del Servicio de NexClinic",
   sections: [
     {
       title: "1. Aceptación",
       blocks: [
         {
           type: "p",
-          text: "Los presentes Términos del Servicio regulan el acceso y uso de la plataforma DrFlow. Al crear una cuenta o utilizar la plataforma, el usuario declara haber leído, comprendido y aceptado estos términos, así como la Política de Privacidad y la Política de Seguridad vigentes.",
+          text: "Los presentes Términos del Servicio regulan el acceso y uso de la plataforma NexClinic. Al crear una cuenta o utilizar la plataforma, el usuario declara haber leído, comprendido y aceptado estos términos, así como la Política de Privacidad y la Política de Seguridad vigentes.",
         },
         {
           type: "p",
@@ -24,11 +24,11 @@ export const termsOfServiceDocument: LegalDocument = {
         {
           type: "ul",
           items: [
-            "DrFlow: plataforma informática destinada a la gestión de consultorios y establecimientos de salud.",
-            "Proveedor: titular y desarrollador de DrFlow.",
+            "NexClinic: plataforma informática destinada a la gestión de consultorios y establecimientos de salud.",
+            "Proveedor: titular y desarrollador de NexClinic.",
             "Usuario: profesional, consultorio, clínica o persona autorizada que utiliza la plataforma.",
             "Paciente: persona cuyos datos son registrados por el usuario.",
-            "Datos Clínicos: toda información médica, administrativa o personal ingresada en DrFlow.",
+            "Datos Clínicos: toda información médica, administrativa o personal ingresada en NexClinic.",
           ],
         },
       ],
@@ -38,7 +38,7 @@ export const termsOfServiceDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow proporciona herramientas destinadas a la administración de consultorios y establecimientos de salud, incluyendo, entre otras:",
+          text: "NexClinic proporciona herramientas destinadas a la administración de consultorios y establecimientos de salud, incluyendo, entre otras:",
         },
         {
           type: "ul",
@@ -61,7 +61,7 @@ export const termsOfServiceDocument: LegalDocument = {
         },
         {
           type: "p",
-          text: "DrFlow constituye una herramienta de apoyo a la gestión sanitaria y no reemplaza el criterio profesional del médico ni la relación médico-paciente.",
+          text: "NexClinic constituye una herramienta de apoyo a la gestión sanitaria y no reemplaza el criterio profesional del médico ni la relación médico-paciente.",
         },
       ],
     },
@@ -110,11 +110,11 @@ export const termsOfServiceDocument: LegalDocument = {
         },
         {
           type: "p",
-          text: "DrFlow actúa exclusivamente como proveedor tecnológico y encargado del tratamiento de los datos siguiendo las instrucciones del usuario.",
+          text: "NexClinic actúa exclusivamente como proveedor tecnológico y encargado del tratamiento de los datos siguiendo las instrucciones del usuario.",
         },
         {
           type: "p",
-          text: "DrFlow no comercializa ni utiliza la información clínica con fines publicitarios.",
+          text: "NexClinic no comercializa ni utiliza la información clínica con fines publicitarios.",
         },
       ],
     },
@@ -123,7 +123,7 @@ export const termsOfServiceDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Toda historia clínica registrada mediante DrFlow pertenece al profesional o institución titular de la cuenta.",
+          text: "Toda historia clínica registrada mediante NexClinic pertenece al profesional o institución titular de la cuenta.",
         },
         { type: "p", text: "El usuario es responsable de:" },
         {
@@ -137,7 +137,7 @@ export const termsOfServiceDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Las recetas, certificados y demás documentos emitidos mediante DrFlow constituyen herramientas de apoyo para el profesional.",
+          text: "Las recetas, certificados y demás documentos emitidos mediante NexClinic constituyen herramientas de apoyo para el profesional.",
         },
         {
           type: "p",
@@ -150,7 +150,7 @@ export const termsOfServiceDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow realiza esfuerzos razonables para mantener la disponibilidad continua del servicio.",
+          text: "NexClinic realiza esfuerzos razonables para mantener la disponibilidad continua del servicio.",
         },
         { type: "p", text: "No obstante, podrán producirse interrupciones por:" },
         {
@@ -171,7 +171,7 @@ export const termsOfServiceDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Cuando DrFlow ofrezca un período de prueba gratuito, éste tendrá la duración informada al momento del registro.",
+          text: "Cuando NexClinic ofrezca un período de prueba gratuito, éste tendrá la duración informada al momento del registro.",
         },
         {
           type: "p",
@@ -184,7 +184,7 @@ export const termsOfServiceDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Los servicios pagos se regirán por los valores publicados por DrFlow al momento de la contratación.",
+          text: "Los servicios pagos se regirán por los valores publicados por NexClinic al momento de la contratación.",
         },
         { type: "p", text: "Salvo disposición expresa en contrario:" },
         {
@@ -202,7 +202,7 @@ export const termsOfServiceDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Todo el software, diseño, interfaz, logotipos, código fuente, documentación, bases de datos, nombres comerciales y demás elementos de DrFlow son propiedad del proveedor o de sus respectivos titulares.",
+          text: "Todo el software, diseño, interfaz, logotipos, código fuente, documentación, bases de datos, nombres comerciales y demás elementos de NexClinic son propiedad del proveedor o de sus respectivos titulares.",
         },
         {
           type: "p",
@@ -210,7 +210,7 @@ export const termsOfServiceDocument: LegalDocument = {
         },
         {
           type: "p",
-          text: "Queda prohibida la reproducción, copia, modificación, ingeniería inversa, distribución o explotación no autorizada de cualquier componente de DrFlow.",
+          text: "Queda prohibida la reproducción, copia, modificación, ingeniería inversa, distribución o explotación no autorizada de cualquier componente de NexClinic.",
         },
       ],
     },
@@ -227,7 +227,7 @@ export const termsOfServiceDocument: LegalDocument = {
             "introducir software malicioso;",
             "realizar pruebas de intrusión sin autorización;",
             "copiar o distribuir el software sin autorización;",
-            "utilizar DrFlow para fines distintos de aquellos para los cuales fue desarrollado.",
+            "utilizar NexClinic para fines distintos de aquellos para los cuales fue desarrollado.",
           ],
         },
       ],
@@ -245,7 +245,7 @@ export const termsOfServiceDocument: LegalDocument = {
     {
       title: "15. Suspensión y cancelación",
       blocks: [
-        { type: "p", text: "DrFlow podrá suspender temporal o definitivamente una cuenta cuando:" },
+        { type: "p", text: "NexClinic podrá suspender temporal o definitivamente una cuenta cuando:" },
         {
           type: "ul",
           items: [
@@ -262,7 +262,7 @@ export const termsOfServiceDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow constituye una herramienta informática de apoyo a la gestión sanitaria.",
+          text: "NexClinic constituye una herramienta informática de apoyo a la gestión sanitaria.",
         },
         {
           type: "p",
@@ -283,7 +283,7 @@ export const termsOfServiceDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow podrá modificar estos Términos del Servicio cuando resulte necesario por cambios normativos, mejoras técnicas o incorporación de nuevas funcionalidades.",
+          text: "NexClinic podrá modificar estos Términos del Servicio cuando resulte necesario por cambios normativos, mejoras técnicas o incorporación de nuevas funcionalidades.",
         },
         { type: "p", text: "La versión vigente será la publicada dentro de la plataforma." },
         { type: "p", text: "El uso continuado del servicio implicará la aceptación de las modificaciones." },
@@ -295,7 +295,7 @@ export const termsOfServiceDocument: LegalDocument = {
         { type: "p", text: "El usuario podrá solicitar la baja de su cuenta en cualquier momento." },
         {
           type: "p",
-          text: "Una vez finalizada la relación contractual, DrFlow podrá conservar determinada información durante los plazos exigidos por la legislación aplicable y posteriormente proceder a su eliminación segura, salvo solicitud de exportación o existencia de obligaciones legales de conservación.",
+          text: "Una vez finalizada la relación contractual, NexClinic podrá conservar determinada información durante los plazos exigidos por la legislación aplicable y posteriormente proceder a su eliminación segura, salvo solicitud de exportación o existencia de obligaciones legales de conservación.",
         },
       ],
     },
@@ -317,7 +317,7 @@ export const termsOfServiceDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Para consultas legales, administrativas o relacionadas con estos Términos del Servicio, el usuario podrá comunicarse con el soporte oficial de DrFlow mediante los canales de contacto publicados en la plataforma.",
+          text: "Para consultas legales, administrativas o relacionadas con estos Términos del Servicio, el usuario podrá comunicarse con el soporte oficial de NexClinic mediante los canales de contacto publicados en la plataforma.",
         },
       ],
     },

@@ -7,8 +7,8 @@ import { DOCTOR_THEME_COLOR, getPwaIcons } from "@/features/pacientes/utils/pati
 export default function manifest(): MetadataRoute.Manifest {
   const origin = getSiteUrl();
   return {
-    name: "DrFlow — Consultorio",
-    short_name: "DrFlow",
+    name: "NexClinic — Consultorio",
+    short_name: "NexClinic",
     description: "Agenda, pacientes e historia clínica en tu celular.",
     start_url: "/login",
     scope: "/",

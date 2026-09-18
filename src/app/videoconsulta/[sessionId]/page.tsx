@@ -32,7 +32,7 @@ export default async function VideoconsultaPublicPage({ params }: PageProps) {
   return (
     <div className="mx-auto min-h-screen max-w-4xl px-4 py-8">
       <div className="mb-4 text-center">
-        <p className="text-sm font-medium uppercase tracking-wide text-teal-700">DrFlow</p>
+        <p className="text-sm font-medium uppercase tracking-wide text-teal-700">NexClinic</p>
         <h1 className="mt-1 text-2xl font-bold text-slate-900">Videoconsulta</h1>
         <p className="mt-2 text-sm text-slate-600">
           {session.clinicName} · {startLabel}

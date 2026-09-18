@@ -17,6 +17,8 @@ type Props = {
     AgendaViewState,
     | "currentDate"
     | "weekDays"
+    | "viewMode"
+    | "setViewMode"
     | "filterProfessional"
     | "setFilterProfessional"
     | "filterSpecialty"
@@ -35,6 +37,8 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
   const {
     currentDate,
     weekDays,
+    viewMode,
+    setViewMode,
     filterProfessional,
     setFilterProfessional,
     filterSpecialty,
@@ -51,7 +55,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
     <div className="drflow-card-light rounded-2xl bg-white p-4 text-slate-900 ring-1 ring-slate-200 sm:p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="shrink-0 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 p-3 text-white shadow-md shadow-cyan-500/25">
+          <span className="shrink-0 rounded-2xl drflow-accent-fill p-3 text-white">
             <CalendarDays className="h-6 w-6" />
           </span>
           <div className="min-w-0">
@@ -64,12 +68,39 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <div
+            className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-0.5"
+            role="group"
+            aria-label="Vista de agenda"
+          >
+            {(
+              [
+                ["day", "Día"],
+                ["week", "Semana"],
+                ["month", "Mes"],
+              ] as const
+            ).map(([mode, label]) => (
+              <button
+                key={mode}
+                type="button"
+                className={
+                  viewMode === mode
+                    ? "rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-teal-800 shadow-sm"
+                    : "rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-900"
+                }
+                aria-pressed={viewMode === mode}
+                onClick={() => setViewMode(mode)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
             className="drflow-agenda-nav-btn"
             onClick={() => shiftCalendar(true)}
-            aria-label="Día anterior"
+            aria-label={viewMode === "week" ? "Semana anterior" : "Día anterior"}
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -80,7 +111,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
             type="button"
             className="drflow-agenda-nav-btn"
             onClick={() => shiftCalendar(false)}
-            aria-label="Día siguiente"
+            aria-label={viewMode === "week" ? "Semana siguiente" : "Día siguiente"}
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -89,6 +120,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
 
       <div className="mt-4 flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:flex-wrap sm:items-center">
         <Select
+          label="Médico"
           options={[
             { value: "", label: "Todos los médicos" },
             ...professionals.map((p) => ({
@@ -102,6 +134,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
         />
 
         <Select
+          label="Especialidad"
           options={[
             { value: "", label: "Todas las especialidades" },
             ...specialties.map((s) => ({ value: s.id, label: s.name })),
@@ -113,6 +146,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
 
         {locations.length > 0 ? (
           <Select
+            label="Sede"
             options={[
               { value: "", label: "Todas las sedes" },
               ...locations.map((l) => ({ value: l.id, label: l.name })),
@@ -125,7 +159,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
 
         <Link
           href="/turnos/nuevo"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-cyan-500/20 hover:from-cyan-600 hover:to-teal-700 sm:ml-auto sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl drflow-accent-fill px-4 py-2.5 text-sm font-semibold text-white sm:ml-auto sm:w-auto"
         >
           <Plus className="h-4 w-4" />
           Nuevo turno

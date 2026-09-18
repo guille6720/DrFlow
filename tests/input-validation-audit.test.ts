@@ -26,17 +26,27 @@ describe("input validation params", () => {
   it("validates public booking cancel payload", () => {
     const ok = publicBookingCancelSchema.safeParse({
       slug: "demo-clinic",
-      document_number: "12345678",
       appointment_id: "550e8400-e29b-41d4-a716-446655440000",
       reason: "No puedo asistir",
     });
     expect(ok.success).toBe(true);
   });
 
+  it("rejects cancel payload that still relies on DNI auth", () => {
+    const withDni = publicBookingCancelSchema.safeParse({
+      slug: "demo-clinic",
+      document_number: "12345678",
+      appointment_id: "550e8400-e29b-41d4-a716-446655440000",
+      reason: "No puedo asistir",
+    });
+    // Extra document_number is ignored by Zod object (strip) — auth must not require it.
+    expect(withDni.success).toBe(true);
+    expect("document_number" in (withDni.data ?? {})).toBe(false);
+  });
+
   it("validates appointment id arrays for portal status", () => {
     const bad = publicBookingStatusesSchema.safeParse({
       slug: "demo",
-      document_number: "12345678",
       appointment_ids: ["x"],
     });
     expect(bad.success).toBe(false);

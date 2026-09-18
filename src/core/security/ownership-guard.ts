@@ -160,6 +160,38 @@ export async function verifyAppointmentPatientMatch(
   return { ok: true };
 }
 
+export async function verifyClinicalRecordPatientMatch(
+  db: DbClient,
+  clinicId: string,
+  recordId: string,
+  patientId: string
+): Promise<OwnershipResult> {
+  const { data } = await db
+    .from("clinical_records")
+    .select("patient_id")
+    .eq("id", recordId)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+
+  if (!data) {
+    return { ok: false, error: "Consulta no pertenece al consultorio activo" };
+  }
+  if (data.patient_id !== patientId) {
+    return { ok: false, error: "La consulta no corresponde al paciente indicado" };
+  }
+  return { ok: true };
+}
+
+export async function verifyOptionalClinicalRecordPatientMatch(
+  db: DbClient,
+  clinicId: string,
+  recordId: string | null | undefined,
+  patientId: string
+): Promise<OwnershipResult> {
+  if (!recordId) return { ok: true };
+  return verifyClinicalRecordPatientMatch(db, clinicId, recordId, patientId);
+}
+
 function firstOwnershipFailure(...results: OwnershipResult[]): OwnershipResult {
   return results.find((result) => !result.ok) ?? { ok: true };
 }
@@ -171,16 +203,19 @@ export async function verifyClinicalRecordForeignKeys(
     patientId: string;
     professionalId: string;
     appointmentId?: string | null;
+    /** When updating an existing row, assert it already belongs to patientId. */
+    recordId?: string | null;
   }
 ): Promise<OwnershipResult> {
-  const [patient, professional, appointment] = await Promise.all([
+  const [patient, professional, appointment, record] = await Promise.all([
     verifyPatientInClinic(db, clinicId, keys.patientId),
     verifyProfessionalInClinic(db, clinicId, keys.professionalId),
     keys.appointmentId
       ? verifyAppointmentPatientMatch(db, clinicId, keys.appointmentId, keys.patientId)
       : Promise.resolve({ ok: true as const }),
+    verifyOptionalClinicalRecordPatientMatch(db, clinicId, keys.recordId, keys.patientId),
   ]);
-  return firstOwnershipFailure(patient, professional, appointment);
+  return firstOwnershipFailure(patient, professional, appointment, record);
 }
 
 export async function verifyAppointmentForeignKeys(
@@ -233,7 +268,12 @@ export async function verifyPrescriptionForeignKeys(
   const [patient, professional, record] = await Promise.all([
     verifyPatientInClinic(db, clinicId, keys.patientId),
     verifyProfessionalInClinic(db, clinicId, keys.professionalId),
-    verifyOptionalClinicalRecordInClinic(db, clinicId, keys.clinicalRecordId),
+    verifyOptionalClinicalRecordPatientMatch(
+      db,
+      clinicId,
+      keys.clinicalRecordId,
+      keys.patientId
+    ),
   ]);
   return firstOwnershipFailure(patient, professional, record);
 }

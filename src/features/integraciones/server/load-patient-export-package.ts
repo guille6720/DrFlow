@@ -34,6 +34,11 @@ import { getCachedClinicProfessionalsList } from "@/lib/server/cached-clinic-que
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 import type { PrescriptionMedication } from "@/types/prescription";
 
+export type PatientExportLoadContext = {
+  /** When bulk-exporting, pass a shared map to avoid repeated clinic professional lookups. */
+  professionalName?: Map<string, string>;
+};
+
 export type ExportAttachmentFile = {
   category: string | null;
   file_name: string;
@@ -74,14 +79,19 @@ export async function loadPatientExportPackage(
   clinicId: string,
   patientId: string,
   sections: ClinicalExportSection[],
-  range: ClinicalExportDateRange
+  range: ClinicalExportDateRange,
+  context?: PatientExportLoadContext
 ): Promise<PatientExportPackage> {
   const include = new Set(sections);
   const warnings: string[] = [];
-  const professionals = await getCachedClinicProfessionalsList(clinicId);
-  const professionalName = new Map(
-    professionals.map((row) => [row.id, getProfessionalDisplayName(row)])
-  );
+  const professionalName =
+    context?.professionalName ??
+    new Map(
+      (await getCachedClinicProfessionalsList(clinicId)).map((row) => [
+        row.id,
+        getProfessionalDisplayName(row),
+      ])
+    );
 
   const { data: patientRow, error: patientError } = await supabase
     .from("patients")

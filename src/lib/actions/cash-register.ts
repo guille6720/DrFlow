@@ -7,6 +7,7 @@ import { FEATURES } from "@/core/entitlements/features";
 import { requirePermissionAndAddon } from "@/core/entitlements/guard.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { verifyCashChargeForeignKeys } from "@/core/security/ownership-guard";
+import { CASH_CLOSURE_RETURN_COLUMNS, CASH_INVOICE_RETURN_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 import {
   cashClosureSchema,
@@ -221,7 +222,7 @@ export async function closeDailyCash(formData: FormData) {
       },
       { onConflict: "clinic_id,closure_date" }
     )
-    .select()
+    .select(CASH_CLOSURE_RETURN_COLUMNS)
     .single();
 
   if (error) return { error: error.message };
@@ -270,7 +271,7 @@ export async function prepareCashInvoice(chargeId: string) {
       notes: "Preparado para integración AFIP/ARCA",
       created_by: userId,
     })
-    .select()
+    .select(CASH_INVOICE_RETURN_COLUMNS)
     .single();
 
   if (error) return { error: error.message };

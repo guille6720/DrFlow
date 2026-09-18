@@ -1,5 +1,11 @@
 import { getReleasePayload } from "@/core/app-release";
+import {
+  alertOnDbUnavailable,
+  alertOnReadinessFailure,
+} from "@/core/observability/ops-alert";
+import { sanitizeMonitoringPayload } from "@/core/observability/sanitize-monitoring-payload";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
+import { toJson } from "@/core/supabase/json";
 
 export type PublicHealthStatus = {
   ok: boolean;
@@ -9,6 +15,11 @@ export type PublicHealthStatus = {
   checks: {
     supabase: { ok: boolean; latencyMs?: number; error?: string };
     memory: { ok: boolean };
+    schema?: { ok: boolean; error?: string };
+    env?: {
+      publishableKeyConfigured: boolean;
+      serviceRoleConfigured: boolean;
+    };
   };
 };
 
@@ -23,18 +34,25 @@ export type InternalHealthStatus = PublicHealthStatus & {
 export type HealthStatus = InternalHealthStatus;
 
 async function probeSupabase(): Promise<PublicHealthStatus["checks"]["supabase"]> {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    return { ok: false, error: "Not configured" };
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const publishableKey = (
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    ""
+  ).trim();
+
+  if (!url) {
+    return { ok: false, error: "NEXT_PUBLIC_SUPABASE_URL missing" };
+  }
+  if (!publishableKey || publishableKey.includes("placeholder")) {
+    return { ok: false, error: "Supabase publishable/anon key missing or placeholder" };
   }
 
   const start = performance.now();
   try {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/$/, "");
-    const res = await fetch(`${url}/rest/v1/`, {
+    const res = await fetch(`${url.replace(/\/$/, "")}/rest/v1/`, {
       method: "HEAD",
-      headers: {
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "",
-      },
+      headers: { apikey: publishableKey },
       cache: "no-store",
     });
     return {
@@ -50,13 +68,66 @@ async function probeSupabase(): Promise<PublicHealthStatus["checks"]["supabase"]
   }
 }
 
+function probePublicEnv(): NonNullable<PublicHealthStatus["checks"]["env"]> {
+  const publishableKey = (
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    ""
+  ).trim();
+  return {
+    publishableKeyConfigured: Boolean(publishableKey && !publishableKey.includes("placeholder")),
+    serviceRoleConfigured: hasAdminClient(),
+  };
+}
+
+/**
+ * Lightweight schema compatibility probe (Phase 3 fiscalization marker).
+ * Uses service role only when configured; otherwise skips as ok=true.
+ */
+async function probeSchemaCompatibility(): Promise<{ ok: boolean; error?: string }> {
+  if (!hasAdminClient()) {
+    return { ok: true };
+  }
+  try {
+    const supabase = createAdminClient();
+    const { error: clinicsError } = await supabase
+      .from("clinics")
+      .select("id, is_fiscalization")
+      .limit(1);
+    if (clinicsError) {
+      return { ok: false, error: "schema_probe_failed" };
+    }
+    const { count, error: dxError } = await supabase
+      .from("clinical_diagnoses")
+      .select("id", { count: "exact", head: true })
+      .eq("active", true);
+    if (dxError) {
+      return { ok: false, error: "clinical_diagnoses_unavailable" };
+    }
+    if ((count ?? 0) < 1) {
+      return { ok: false, error: "clinical_diagnoses_empty" };
+    }
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "schema_probe_failed" };
+  }
+}
+
 /** Public probe — no infra secrets or heap details. */
-export async function getPublicHealthStatus(): Promise<PublicHealthStatus> {
+export async function getPublicHealthStatus(options?: {
+  includeSchema?: boolean;
+}): Promise<PublicHealthStatus> {
   const release = getReleasePayload();
   const mem = process.memoryUsage();
   const heapUsedMb = Math.round(mem.heapUsed / 1024 / 1024);
   const supabaseCheck = await probeSupabase();
-  const ok = supabaseCheck.ok && heapUsedMb < 512;
+  const schemaCheck = options?.includeSchema ? await probeSchemaCompatibility() : undefined;
+  const envCheck = probePublicEnv();
+  const ok =
+    supabaseCheck.ok &&
+    envCheck.publishableKeyConfigured &&
+    heapUsedMb < 512 &&
+    (schemaCheck ? schemaCheck.ok : true);
 
   return {
     ok,
@@ -66,6 +137,8 @@ export async function getPublicHealthStatus(): Promise<PublicHealthStatus> {
     checks: {
       supabase: supabaseCheck,
       memory: { ok: heapUsedMb < 512 },
+      env: envCheck,
+      ...(schemaCheck ? { schema: schemaCheck } : {}),
     },
   };
 }
@@ -77,7 +150,8 @@ export async function getHealthStatus(): Promise<InternalHealthStatus> {
   const heapUsedMb = Math.round(mem.heapUsed / 1024 / 1024);
   const heapTotalMb = Math.round(mem.heapTotal / 1024 / 1024);
   const supabaseCheck = await probeSupabase();
-  const ok = supabaseCheck.ok && heapUsedMb < 512;
+  const schemaCheck = await probeSchemaCompatibility();
+  const ok = supabaseCheck.ok && heapUsedMb < 512 && schemaCheck.ok;
 
   return {
     ok,
@@ -88,12 +162,28 @@ export async function getHealthStatus(): Promise<InternalHealthStatus> {
       supabase: supabaseCheck,
       memory: { ok: heapUsedMb < 512, heapUsedMb, heapTotalMb },
       serviceRole: { configured: hasAdminClient() },
+      schema: schemaCheck,
     },
   };
 }
 
 export async function recordHealthCheckEvent(): Promise<InternalHealthStatus> {
   const status = await getHealthStatus();
+
+  if (!status.ok) {
+    if (!status.checks.supabase.ok) {
+      alertOnDbUnavailable({
+        error: status.checks.supabase.error ?? "supabase_probe_failed",
+      });
+    }
+    alertOnReadinessFailure({
+      checks: sanitizeMonitoringPayload({
+        supabase: status.checks.supabase,
+        schema: status.checks.schema,
+        memory: { ok: status.checks.memory.ok },
+      }) as Record<string, unknown>,
+    });
+  }
 
   if (hasAdminClient()) {
     const supabase = createAdminClient();
@@ -104,11 +194,14 @@ export async function recordHealthCheckEvent(): Promise<InternalHealthStatus> {
       status: status.ok ? "ok" : "warn",
       path: "/api/health",
       duration_ms: status.checks.supabase.latencyMs ?? null,
-      metadata: {
-        version: status.version,
-        heapUsedMb: status.checks.memory.heapUsedMb,
-        serviceRole: status.checks.serviceRole.configured,
-      },
+      metadata: toJson(
+        sanitizeMonitoringPayload({
+          version: status.version,
+          heapUsedMb: status.checks.memory.heapUsedMb,
+          serviceRoleConfigured: status.checks.serviceRole.configured,
+          schemaOk: status.checks.schema?.ok ?? null,
+        })
+      ),
     });
   }
 

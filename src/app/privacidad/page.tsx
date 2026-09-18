@@ -8,7 +8,7 @@ import { ButtonLink } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Política de privacidad",
-  description: "Política de privacidad y tratamiento de datos de DrFlow para consultorios en Argentina.",
+  description: "Política de privacidad y tratamiento de datos de NexClinic para consultorios en Argentina.",
   alternates: { canonical: "/privacidad" },
   robots: { index: true, follow: true },
 };

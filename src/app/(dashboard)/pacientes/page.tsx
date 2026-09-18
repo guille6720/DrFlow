@@ -3,9 +3,13 @@ import {
 } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { hasProduct } from "@/core/products/product-access";
+import { PRODUCTS } from "@/core/products/products";
+import { loadClinicProducts } from "@/core/products/products.server";
 import { parsePageParam } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
 
+import { listOpenResidentPatientIds } from "@/features/geriatria/server/residents.server";
 import { loadHistoriasPageData } from "@/features/historias/server/load-historias-page";
 import { PacientesPageContent } from "@/features/pacientes/components/pacientes/pacientes-page-content";
 import { loadPacientesPageData } from "@/features/pacientes/server/load-pacientes-page";
@@ -26,10 +30,19 @@ export default async function PacientesPage({
     cobertura?: string;
     patologia?: string;
     seccion?: string;
+    cursor?: string;
+    before?: string;
   }>;
 }) {
-  const { q: qRaw, page: pageStr, cobertura, patologia: patologiaRaw, seccion: seccionRaw } =
-    await searchParams;
+  const {
+    q: qRaw,
+    page: pageStr,
+    cobertura,
+    patologia: patologiaRaw,
+    seccion: seccionRaw,
+    cursor,
+    before,
+  } = await searchParams;
   const q = sanitizePatientSearchTerm(qRaw);
   const patologia = sanitizePatientPathologySearchTerm(patologiaRaw);
   const page = parsePageParam(pageStr);
@@ -38,6 +51,8 @@ export default async function PacientesPage({
   const canIssuePrescriptions = hasPermission(role, "issuePrescriptions", isSuperadmin);
   const canViewClinical = hasPermission(role, "viewClinicalRecords", isSuperadmin);
   const supabase = await createClient();
+  const products = clinicId ? await loadClinicProducts(clinicId) : null;
+  const geriatricsEnabled = products ? hasProduct(products, PRODUCTS.GERIATRICS) : false;
 
   const seccion: PacientesPageSection =
     canViewClinical && parsePacientesPageSection(seccionRaw) === "historias"
@@ -46,7 +61,7 @@ export default async function PacientesPage({
 
   const historiasData =
     seccion === "historias" && canViewClinical
-      ? await loadHistoriasPageData(supabase, clinicId, q, page)
+      ? await loadHistoriasPageData(supabase, clinicId, q, page, { cursor, before })
       : null;
 
   const pageData =
@@ -64,6 +79,14 @@ export default async function PacientesPage({
           page,
         }
       : await loadPacientesPageData(supabase, clinicId, q, page, cobertura, patologia);
+
+  const residentPatientIds =
+    geriatricsEnabled && clinicId && pageData.patients.length > 0
+      ? await listOpenResidentPatientIds(
+          clinicId,
+          pageData.patients.map((p) => p.id)
+        )
+      : new Set<string>();
 
   const headerSubtitle =
     seccion === "historias"
@@ -88,6 +111,8 @@ export default async function PacientesPage({
         canIssuePrescriptions={canIssuePrescriptions}
         canViewClinical={canViewClinical}
         historiasData={historiasData}
+        geriatricsEnabled={geriatricsEnabled}
+        residentPatientIds={residentPatientIds}
         {...pageData}
       />
     </>

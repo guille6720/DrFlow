@@ -19,7 +19,7 @@ describe("parseGeminiClinicStatsQuery", () => {
     expect(query?.condition?.id).toBe("hta");
   });
 
-  it("uses full DrFlow history when searching a term without period", () => {
+  it("uses full NexClinic history when searching a term without period", () => {
     const query = parseGeminiClinicStatsQuery("¿Cuántos pacientes con asma hay?");
     expect(query?.condition?.id).toBe("asma");
     expect(query?.period).toBe("all");

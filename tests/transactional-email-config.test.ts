@@ -16,13 +16,13 @@ describe("isTransactionalEmailConfigured", () => {
   });
 
   it("returns true with EMAIL_FROM and RESEND_API_KEY", () => {
-    process.env.EMAIL_FROM = "DrFlow <noreply@test.com>";
+    process.env.EMAIL_FROM = "NexClinic <noreply@test.com>";
     process.env.RESEND_API_KEY = "re_test";
     expect(isTransactionalEmailConfigured()).toBe(true);
   });
 
   it("returns true with EMAIL_FROM and SMTP credentials", () => {
-    process.env.EMAIL_FROM = "DrFlow <noreply@test.com>";
+    process.env.EMAIL_FROM = "NexClinic <noreply@test.com>";
     delete process.env.RESEND_API_KEY;
     process.env.SMTP_HOST = "smtp.example.com";
     process.env.SMTP_USER = "user";

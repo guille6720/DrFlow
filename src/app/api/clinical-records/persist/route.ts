@@ -1,11 +1,18 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { firstZodIssue } from "@/core/validations/params";
-import { clinicalRecordSchema } from "@/core/validations/schemas";
+import { resolveApiClinicAccess } from "@/core/auth/resolve-api-clinic-access";
+import { revalidateClinicalConsultationSurfaces } from "@/core/cache/revalidate-clinical";
+import { logServerError } from "@/core/errors/log-error.server";
+import { userFacingErrorMessage } from "@/core/observability/correlation-id";
+import { observeCriticalOperation } from "@/core/observability/observe-critical-operation";
+import { getRequestTraceId } from "@/core/observability/request-trace";
 import { getAuditRequestContext } from "@/core/security/audit-context";
 import { verifyClinicalRecordForeignKeys } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
+import { firstZodIssue } from "@/core/validations/params";
+import { clinicalRecordSchema } from "@/core/validations/schemas";
+
 import {
   createClinicalRecordEntry,
   updateClinicalRecordEntry,
@@ -59,8 +66,8 @@ type PersistBody = {
 };
 
 /**
- * Persist clinical record (create or update) without server actions / revalidatePath.
- * Avoids post-action RSC refresh that breaks /consultas autosave in production.
+ * Persist clinical record (create or update) without server actions.
+ * Revalidates patient HC and Consultas after save so navigation sees fresh data.
  */
 export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) {
@@ -112,7 +119,7 @@ export async function POST(request: NextRequest) {
     }
 
     const cookieStore = await cookies();
-    let clinicId = cookieStore.get(CLINIC_COOKIE)?.value ?? null;
+    const cookieClinicId = cookieStore.get(CLINIC_COOKIE)?.value ?? null;
 
     const { data: memberships, error: memberError } = await supabase
       .from("clinic_members")
@@ -127,40 +134,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const members = memberships ?? [];
     const { data: profile } = await supabase
       .from("profiles")
       .select("is_superadmin")
       .eq("id", user.id)
       .maybeSingle();
 
-    if (members.length === 0) {
-      if (!profile?.is_superadmin) {
-        return NextResponse.json({ error: "Sin permisos", v: "clinical-persist-v1" }, { status: 403 });
-      }
-      if (!clinicId) {
-        return NextResponse.json({ error: "Sin clínica activa", v: "clinical-persist-v1" }, { status: 403 });
-      }
-    } else {
-      if (!clinicId || !members.some((m) => m.clinic_id === clinicId)) {
-        clinicId = members[0]?.clinic_id ?? null;
-      }
-      if (!clinicId) {
-        return NextResponse.json({ error: "Sin clínica activa", v: "clinical-persist-v1" }, { status: 403 });
-      }
-      const membership = members.find((m) => m.clinic_id === clinicId);
-      const allowed =
-        Boolean(profile?.is_superadmin) ||
-        (membership?.role != null && CLINICAL_WRITE_ROLES.has(membership.role));
-      if (!allowed) {
-        return NextResponse.json({ error: "Sin permisos", v: "clinical-persist-v1" }, { status: 403 });
-      }
+    const access = resolveApiClinicAccess({
+      cookieClinicId,
+      members: memberships ?? [],
+      isSuperadmin: Boolean(profile?.is_superadmin),
+      allowedRoles: CLINICAL_WRITE_ROLES,
+    });
+    if (!access.ok) {
+      return NextResponse.json(
+        { error: access.error, v: "clinical-persist-v1" },
+        { status: access.status }
+      );
     }
+    const clinicId = access.clinicId;
 
     const ownership = await verifyClinicalRecordForeignKeys(supabase, clinicId, {
       patientId: parsed.data.patient_id,
       professionalId: parsed.data.professional_id,
       appointmentId: parsed.data.appointment_id,
+      recordId: recordId ?? undefined,
     });
     if (!ownership.ok) {
       return NextResponse.json({ error: ownership.error, v: "clinical-persist-v1" }, { status: 400 });
@@ -169,16 +167,22 @@ export async function POST(request: NextRequest) {
     const auditContext = await getAuditRequestContext();
 
     if (recordId) {
-      const result = await updateClinicalRecordEntry(supabase, {
-        recordId,
-        clinicId,
-        userId: user.id,
-        parsed: parsed.data,
-        auditContext,
-      });
+      const result = await observeCriticalOperation(
+        "clinical.consultation.save",
+        { clinicId, path: "/api/clinical-records/persist" },
+        () =>
+          updateClinicalRecordEntry(supabase, {
+            recordId,
+            clinicId,
+            userId: user.id,
+            parsed: parsed.data,
+            auditContext,
+          })
+      );
       if (!result.ok) {
         return NextResponse.json({ error: result.error, v: "clinical-persist-v1" }, { status: 500 });
       }
+      revalidateClinicalConsultationSurfaces(parsed.data.patient_id);
       return NextResponse.json({
         success: true as const,
         data: { id: recordId },
@@ -186,17 +190,24 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const result = await createClinicalRecordEntry(supabase, {
-      clinicId,
-      userId: user.id,
-      parsed: parsed.data,
-      consultationModalityRaw: body.consultation_modality,
-      auditContext,
-    });
+    const result = await observeCriticalOperation(
+      "clinical.consultation.save",
+      { clinicId, path: "/api/clinical-records/persist" },
+      () =>
+        createClinicalRecordEntry(supabase, {
+          clinicId,
+          userId: user.id,
+          parsed: parsed.data,
+          consultationModalityRaw: body.consultation_modality,
+          auditContext,
+        })
+    );
 
     if (!result.ok) {
       return NextResponse.json({ error: result.error, v: "clinical-persist-v1" }, { status: 500 });
     }
+
+    revalidateClinicalConsultationSurfaces(parsed.data.patient_id);
 
     return NextResponse.json({
       success: true as const,
@@ -204,9 +215,18 @@ export async function POST(request: NextRequest) {
       v: "clinical-persist-v1",
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "No se pudo guardar la consulta";
+    const traceId = await getRequestTraceId();
+    logServerError("clinical.persist", err, {
+      path: "/api/clinical-records/persist",
+      traceId,
+      category: "error",
+    });
+    const message = userFacingErrorMessage(
+      "No se pudo guardar la consulta.",
+      traceId
+    );
     return NextResponse.json(
-      { error: `clinical-persist-v1: ${message}`, v: "clinical-persist-v1" },
+      { error: message, v: "clinical-persist-v1" },
       { status: 500 }
     );
   }

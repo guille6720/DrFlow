@@ -99,7 +99,7 @@ export function openClinicalContextMenu(
 
 export function buildPatientContextMenuItems(
   patientId: string,
-  opts?: { canIssue?: boolean; canEditClinical?: boolean }
+  opts?: { canIssue?: boolean; canEditClinical?: boolean; canAdmitGeriatrics?: boolean }
 ): ClinicalContextMenuItem[] {
   const items: ClinicalContextMenuItem[] = [
     { id: "chart", label: "Abrir ficha", href: patientWorkflowHref(patientId, "chart") },
@@ -112,6 +112,13 @@ export function buildPatientContextMenuItems(
       { id: "rx", label: "Nueva receta", href: patientWorkflowHref(patientId, "prescription") },
       { id: "order", label: "Nueva orden", href: patientWorkflowHref(patientId, "order") }
     );
+  }
+  if (opts?.canAdmitGeriatrics) {
+    items.push({
+      id: "geriatrics",
+      label: "Agregar a Geriatría",
+      href: `/geriatria/residentes/nuevo?patientId=${encodeURIComponent(patientId)}`,
+    });
   }
   items.push({ id: "edit", label: "Editar datos", href: `/pacientes/${patientId}/editar` });
   return items;

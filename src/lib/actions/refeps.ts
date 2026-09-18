@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireSettingsAccess } from "@/core/actions/clinic-guard";
+import { requireElevatedPrescriberSession } from "@/core/auth/prescriber-mfa.server";
 import { revalidatePrescriptionSurfaces } from "@/core/cache/revalidate-prescription-surfaces";
 import {
   getRefepsConfigurationHint,
@@ -123,6 +124,12 @@ export async function updateRefepsClinicSettings(formData: FormData): Promise<{
 export async function submitPrescriptionToRefeps(prescriptionId: string) {
   const access = await requireClinicalIssueAccess();
   if (!access.ok) return { error: access.error };
+
+  const mfa = await requireElevatedPrescriberSession({
+    clinicId: access.data.clinicId,
+    userId: access.data.userId,
+  });
+  if (!mfa.ok) return { error: mfa.error };
 
   const idParsed = parseEntityId(prescriptionId, "Receta");
   if (!idParsed.ok) return { error: idParsed.error };

@@ -126,7 +126,7 @@ function matchPeriod(folded: string, hasConditionOrProtocol: boolean): GeminiSta
   if (/este\s+anio|este\s+ano|del\s+anio/.test(folded)) return "year";
   if (/historico|en\s+drflow|toda\s+la\s+base|siempre/.test(folded)) return "all";
   if (/este\s+mes|del\s+mes|en\s+el\s+mes/.test(folded)) return "monthly";
-  // Term/protocol search without explicit period → whole clinic history in DrFlow.
+  // Term/protocol search without explicit period → whole clinic history in NexClinic.
   if (hasConditionOrProtocol && !PERIOD_HINT.test(folded)) return "all";
   return "monthly";
 }
@@ -295,7 +295,7 @@ export function formatGeminiClinicStatsContextForAI(result: GeminiClinicStatsRes
             return `• ${bits.join(" ")}`;
           })
           .join("\n")}`
-      : "Pacientes: ninguno en el período con esos términos en la HC de DrFlow.";
+      : "Pacientes: ninguno en el período con esos términos en la HC de NexClinic.";
 
   return [result.protocolContext, header, diagnoses, patients].filter(Boolean).join("\n\n");
 }
@@ -335,7 +335,7 @@ export function formatGeminiClinicStatsContext(result: GeminiClinicStatsResult):
             return `• ${bits.join(" ")}`;
           })
           .join("\n")}`
-      : "Pacientes: ninguno en el período con esos términos en la HC de DrFlow.";
+      : "Pacientes: ninguno en el período con esos términos en la HC de NexClinic.";
 
   return [result.protocolContext, header, diagnoses, patients].filter(Boolean).join("\n\n");
 }

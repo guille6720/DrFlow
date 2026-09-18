@@ -131,7 +131,7 @@ export function PatientAppInstallView({ slug, clinicName, doctor }: Props) {
           <div className="mx-auto mb-3 w-fit rounded-2xl bg-white p-3 shadow-lg">
             <PatientAppIcon size="md" priority />
           </div>
-          <p className="text-sm font-medium text-emerald-200">DrFlow · Pacientes</p>
+          <p className="text-sm font-medium text-emerald-200">NexClinic · Pacientes</p>
           <h1 className="mt-1 text-2xl font-bold">{doctor?.fullName ?? clinicName}</h1>
           {doctor?.licenseLabel && (
             <p className="text-sm text-emerald-100">{doctor.licenseLabel}</p>

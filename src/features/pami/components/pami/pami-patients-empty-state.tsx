@@ -36,7 +36,7 @@ export function PamiPatientsEmptyState({ hasSearch = false, searchQuery = "" }: 
       aria-labelledby={titleId}
     >
       <div
-        className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-lg shadow-teal-500/30 ring-2 ring-teal-400/40"
+        className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl drflow-accent-fill text-white ring-2 ring-[color-mix(in_srgb,var(--primary)_40%,transparent)]"
         aria-hidden
       >
         <HeartHandshake className="h-10 w-10" strokeWidth={1.75} />

@@ -199,6 +199,7 @@ export async function insertClinicalCsvRecord(input: {
   await input.supabase.from("clinical_record_audit").insert({
     clinical_record_id: record.id,
     clinic_id: input.clinicId,
+    patient_id: input.patientId,
     action: "create",
     changed_by: input.userId,
     new_values: { source: "clinical_csv_import", marker: input.row.import_marker },

@@ -190,8 +190,8 @@ export async function createCheckoutPreference(input: {
     items: [
       {
         id: sku,
-        title: `DrFlow — plan ${input.planId} (${cycleLabel})`,
-        description: `Suscripción DrFlow para ${input.clinicName}`,
+        title: `NexClinic — plan ${input.planId} (${cycleLabel})`,
+        description: `Suscripción NexClinic para ${input.clinicName}`,
         quantity: 1,
         currency_id: "ARS",
         unit_price: amount,
@@ -204,7 +204,7 @@ export async function createCheckoutPreference(input: {
       failure: `${siteUrl}/configuracion?grupo=consultorio&seccion=plan&pago=error`,
       pending: `${siteUrl}/configuracion?grupo=consultorio&seccion=plan&pago=pending`,
     },
-    statement_descriptor: "DRFLOW",
+    statement_descriptor: "NEXCLINIC",
   };
 
   if (input.payerEmail?.trim()) {

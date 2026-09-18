@@ -4,6 +4,9 @@ import { useState, useTransition } from "react";
 
 import { updateCommercialPlanAction } from "@/lib/actions/superadmin-commercial";
 
+const fieldClass =
+  "w-full rounded-md border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-input,#fff)] px-2 py-1.5 text-[var(--text-primary,#172033)] placeholder:text-[var(--text-muted,#64748b)]";
+
 export function SuperadminPlanEditForm({
   planKey,
   name,
@@ -28,7 +31,7 @@ export function SuperadminPlanEditForm({
 
   return (
     <form
-      className="mt-3 space-y-2 border-t border-slate-100 pt-3 text-sm dark:border-slate-800"
+      className="mt-3 space-y-2 border-t border-[var(--border-default,#e2e8f0)] pt-3 text-sm text-[var(--text-primary,#172033)]"
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
@@ -40,21 +43,16 @@ export function SuperadminPlanEditForm({
       }}
     >
       {isTrial ? (
-        <p className="text-xs font-medium text-amber-800 dark:text-amber-200">
+        <p className="text-xs font-medium text-amber-800">
           Advertencia: modificar Trial afecta clínicas nuevas.
         </p>
       ) : null}
-      <input
-        name="name"
-        defaultValue={name}
-        required
-        className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 dark:border-slate-600 dark:bg-slate-900"
-      />
+      <input name="name" defaultValue={name} required className={fieldClass} />
       <textarea
         name="description"
         defaultValue={description ?? ""}
         rows={2}
-        className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 dark:border-slate-600 dark:bg-slate-900"
+        className={fieldClass}
       />
       <div className="flex flex-wrap gap-3">
         <label className="flex items-center gap-1">
@@ -63,7 +61,7 @@ export function SuperadminPlanEditForm({
             name="displayOrder"
             type="number"
             defaultValue={displayOrder}
-            className="w-20 rounded-md border border-slate-300 px-2 py-1 dark:border-slate-600 dark:bg-slate-900"
+            className={`w-20 ${fieldClass}`}
           />
         </label>
         <label className="flex items-center gap-1">
@@ -84,11 +82,11 @@ export function SuperadminPlanEditForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-slate-900 px-3 py-1.5 font-medium text-white disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+        className="rounded-md bg-[var(--text-primary,#172033)] px-3 py-1.5 font-medium text-[var(--surface-card,#fff)] disabled:opacity-50"
       >
         Guardar
       </button>
-      {message ? <p className="text-xs text-slate-600 dark:text-slate-300">{message}</p> : null}
+      {message ? <p className="text-xs text-[var(--text-secondary,#475569)]">{message}</p> : null}
     </form>
   );
 }

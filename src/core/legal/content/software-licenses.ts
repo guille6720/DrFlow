@@ -2,14 +2,14 @@ import type { LegalDocument } from "@/core/legal/content/types";
 
 export const softwareLicensesDocument: LegalDocument = {
   id: "licencias",
-  title: "Licencias de Software y Propiedad Intelectual de DrFlow",
+  title: "Licencias de Software y Propiedad Intelectual de NexClinic",
   sections: [
     {
       title: "1. Objeto",
       blocks: [
         {
           type: "p",
-          text: "El presente documento regula los derechos de propiedad intelectual y las condiciones de uso del software DrFlow, así como de todos sus componentes, funcionalidades y contenidos.",
+          text: "El presente documento regula los derechos de propiedad intelectual y las condiciones de uso del software NexClinic, así como de todos sus componentes, funcionalidades y contenidos.",
         },
         {
           type: "p",
@@ -22,7 +22,7 @@ export const softwareLicensesDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow, incluyendo su software, código fuente, arquitectura, diseño, interfaz gráfica, logotipos, documentación, bases de datos propias, nombre comercial, marca, contenido original y demás componentes, constituye propiedad intelectual de su titular o de los respectivos licenciantes.",
+          text: "NexClinic, incluyendo su software, código fuente, arquitectura, diseño, interfaz gráfica, logotipos, documentación, bases de datos propias, nombre comercial, marca, contenido original y demás componentes, constituye propiedad intelectual de su titular o de los respectivos licenciantes.",
         },
         { type: "p", text: "Todos los derechos no concedidos expresamente quedan reservados." },
       ],
@@ -30,7 +30,7 @@ export const softwareLicensesDocument: LegalDocument = {
     {
       title: "3. Licencia de uso",
       blocks: [
-        { type: "p", text: "DrFlow concede al usuario una licencia de uso:" },
+        { type: "p", text: "NexClinic concede al usuario una licencia de uso:" },
         {
           type: "ul",
           items: [
@@ -52,7 +52,7 @@ export const softwareLicensesDocument: LegalDocument = {
     {
       title: "4. Usos permitidos",
       blocks: [
-        { type: "p", text: "El usuario podrá utilizar DrFlow exclusivamente para:" },
+        { type: "p", text: "El usuario podrá utilizar NexClinic exclusivamente para:" },
         {
           type: "ul",
           items: [
@@ -83,8 +83,8 @@ export const softwareLicensesDocument: LegalDocument = {
             "realizar ingeniería inversa;",
             "intentar obtener el código fuente;",
             "eliminar avisos de propiedad intelectual;",
-            "desarrollar productos derivados utilizando componentes de DrFlow;",
-            "utilizar la plataforma para prestar servicios que compitan directamente con DrFlow.",
+            "desarrollar productos derivados utilizando componentes de NexClinic;",
+            "utilizar la plataforma para prestar servicios que compitan directamente con NexClinic.",
           ],
         },
       ],
@@ -94,7 +94,7 @@ export const softwareLicensesDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow podrá incorporar componentes desarrollados por terceros, incluyendo software de código abierto u otras bibliotecas licenciadas.",
+          text: "NexClinic podrá incorporar componentes desarrollados por terceros, incluyendo software de código abierto u otras bibliotecas licenciadas.",
         },
         {
           type: "p",
@@ -102,7 +102,7 @@ export const softwareLicensesDocument: LegalDocument = {
         },
         {
           type: "p",
-          text: "Cuando la licencia correspondiente así lo exija, DrFlow pondrá a disposición del usuario la información relativa a dichas licencias.",
+          text: "Cuando la licencia correspondiente así lo exija, NexClinic pondrá a disposición del usuario la información relativa a dichas licencias.",
         },
       ],
     },
@@ -111,7 +111,7 @@ export const softwareLicensesDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "\"DrFlow\", su logotipo, nombre comercial, identidad visual y demás signos distintivos constituyen marcas o elementos identificatorios del titular.",
+          text: "\"NexClinic\", su logotipo, nombre comercial, identidad visual y demás signos distintivos constituyen marcas o elementos identificatorios del titular.",
         },
         { type: "p", text: "No podrán utilizarse sin autorización previa y por escrito." },
       ],
@@ -123,7 +123,7 @@ export const softwareLicensesDocument: LegalDocument = {
           type: "p",
           text: "Los datos cargados por los usuarios continúan siendo propiedad del profesional, consultorio o institución titular de la cuenta.",
         },
-        { type: "p", text: "DrFlow no adquiere derechos de propiedad sobre:" },
+        { type: "p", text: "NexClinic no adquiere derechos de propiedad sobre:" },
         {
           type: "ul",
           items: [
@@ -139,7 +139,7 @@ export const softwareLicensesDocument: LegalDocument = {
         },
         {
           type: "p",
-          text: "El usuario concede únicamente la autorización necesaria para que DrFlow procese dicha información con el fin de prestar el servicio contratado.",
+          text: "El usuario concede únicamente la autorización necesaria para que NexClinic procese dicha información con el fin de prestar el servicio contratado.",
         },
       ],
     },
@@ -148,15 +148,15 @@ export const softwareLicensesDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow podrá desarrollar nuevas funcionalidades, mejoras, actualizaciones y modificaciones del software.",
+          text: "NexClinic podrá desarrollar nuevas funcionalidades, mejoras, actualizaciones y modificaciones del software.",
         },
         {
           type: "p",
-          text: "Todos los derechos sobre dichas mejoras pertenecerán exclusivamente al titular de DrFlow.",
+          text: "Todos los derechos sobre dichas mejoras pertenecerán exclusivamente al titular de NexClinic.",
         },
         {
           type: "p",
-          text: "Las sugerencias o comentarios enviados por los usuarios podrán ser utilizados libremente por DrFlow para mejorar la plataforma, sin generar obligación de compensación económica.",
+          text: "Las sugerencias o comentarios enviados por los usuarios podrán ser utilizados libremente por NexClinic para mejorar la plataforma, sin generar obligación de compensación económica.",
         },
       ],
     },
@@ -206,7 +206,7 @@ export const softwareLicensesDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow podrá adoptar las medidas legales, administrativas y técnicas que considere necesarias para proteger sus derechos de propiedad intelectual frente a usos no autorizados.",
+          text: "NexClinic podrá adoptar las medidas legales, administrativas y técnicas que considere necesarias para proteger sus derechos de propiedad intelectual frente a usos no autorizados.",
         },
       ],
     },
@@ -239,7 +239,7 @@ export const softwareLicensesDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Las consultas relacionadas con licencias, propiedad intelectual o autorizaciones de uso podrán realizarse mediante los canales oficiales de contacto publicados por DrFlow.",
+          text: "Las consultas relacionadas con licencias, propiedad intelectual o autorizaciones de uso podrán realizarse mediante los canales oficiales de contacto publicados por NexClinic.",
         },
       ],
     },

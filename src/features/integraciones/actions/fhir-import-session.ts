@@ -9,6 +9,7 @@ import { FEATURES } from "@/core/entitlements/features";
 import { recordAudit } from "@/core/security/audit-service";
 import { validateJsonImportUpload } from "@/core/security/file-upload";
 import { requireClinicalImportAccess } from "@/core/services/import-access.service";
+import { DATA_IMPORT_SESSION_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 import { parseEntityId } from "@/core/validations/params";
 
@@ -87,7 +88,7 @@ export async function createFhirImportSession(formData: FormData): Promise<{
       duplicate_sample: withDupes.duplicates.slice(0, 80),
       error_summary: withDupes.draft.issues.slice(0, 6).join(" · ") || null,
     })
-    .select("*")
+    .select(DATA_IMPORT_SESSION_COLUMNS)
     .single();
 
   if (error || !data) return { error: error?.message ?? "No se pudo crear la sesión FHIR." };
@@ -140,7 +141,7 @@ export async function confirmFhirImportSession(
   const supabase = await createClient();
   const { data: session } = await supabase
     .from("data_import_sessions")
-    .select("*")
+    .select(DATA_IMPORT_SESSION_COLUMNS)
     .eq("id", parsed.data)
     .eq("clinic_id", auth.clinicId)
     .maybeSingle();

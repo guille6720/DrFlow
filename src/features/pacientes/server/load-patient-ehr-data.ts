@@ -94,15 +94,22 @@ export async function fetchPatientClinicalRecordsForEhr(
   error: { message: string } | null;
 }> {
   const withCount = options.withCount === true;
-  const run = async (columns: string) => {
-    const result = await supabase
+  const run = async (columns: string, withLifecycleFilter: boolean) => {
+    let query = supabase
       .from("clinical_records")
       .select(columns, withCount ? { count: "exact" } : undefined)
       .eq("clinic_id", clinicId)
-      .eq("patient_id", patientId)
+      .eq("patient_id", patientId);
+
+    if (withLifecycleFilter) {
+      query = query.eq("lifecycle_status", "active");
+    }
+
+    const result = await query
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
       .limit(options.limit);
+
     return {
       data: (result.data as ClinicalRecordEhrRow[] | null) ?? null,
       count: result.count ?? null,
@@ -110,25 +117,36 @@ export async function fetchPatientClinicalRecordsForEhr(
     };
   };
 
-  const full = await run(CLINICAL_RECORD_EHR_SELECT_FULL);
+  const runPreferringActive = async (columns: string) => {
+    const withLifecycle = await run(columns, true);
+    if (
+      withLifecycle.error &&
+      /lifecycle_status|column|schema cache|does not exist/i.test(withLifecycle.error.message)
+    ) {
+      return run(columns, false);
+    }
+    return withLifecycle;
+  };
+
+  const full = await runPreferringActive(CLINICAL_RECORD_EHR_SELECT_FULL);
   if (!full.error) return full;
 
   if (isMissingStructuredColumnError(full.error.message)) {
-    const basic = await run(CLINICAL_RECORD_EHR_SELECT_BASIC);
+    const basic = await runPreferringActive(CLINICAL_RECORD_EHR_SELECT_BASIC);
     if (!basic.error) return basic;
     if (isProfessionalsEmbedError(basic.error.message)) {
-      return run(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
+      return runPreferringActive(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
     }
     return basic;
   }
 
   if (isProfessionalsEmbedError(full.error.message)) {
-    const minimal = await run(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
+    const minimal = await runPreferringActive(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
     if (!minimal.error) return minimal;
   }
 
   // Last resort: plain columns without join (covers mixed schema issues).
-  const minimal = await run(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
+  const minimal = await runPreferringActive(CLINICAL_RECORD_EHR_SELECT_MINIMAL);
   if (!minimal.error) return minimal;
 
   return full;
@@ -342,7 +360,9 @@ export function buildPatientEhrWorkspaceData(input: {
 
   if (hceRows && hceRows.length > 0) {
     usesHceExport = true;
-    const fromHce = buildEhrPayloadFromHceRows(hceRows, professionalFallback);
+    const fromHce = buildEhrPayloadFromHceRows(hceRows, professionalFallback, {
+      patientId: patient.id,
+    });
     ({ consultations, diagnosisRows, treatmentRows } = mergeEhrPayload(fromHce, fromRecords));
     // Safety net: if HCE had no evolutions and merge still empty, force BD rows.
     if (consultations.length === 0 && fromRecords.consultations.length > 0) {

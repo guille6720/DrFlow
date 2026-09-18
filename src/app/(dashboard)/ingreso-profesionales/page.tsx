@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
+import { getPrescriberMfaStatus } from "@/core/auth/prescriber-mfa.server";
 import { hasPermission } from "@/core/permissions/roles";
 import { createClient } from "@/core/supabase/server";
 
@@ -28,26 +29,41 @@ export default async function IngresoProfesionalesPage({
   }
 
   const supabase = await createClient();
+  const canPrescribe = hasPermission(role, "issuePrescriptions", isSuperadmin);
 
-  const [locations, sidebarProfessionals, { data: members }, { data: invitations }, selectedDetail] =
-    clinicId
-      ? await Promise.all([
-          getCachedClinicLocations(clinicId),
-          loadProfessionalIntakeSidebar(supabase, clinicId),
-          supabase
-            .from("clinic_members")
-            .select("id, role, is_active, user_id, professional_id, profiles(full_name, email)")
-            .eq("clinic_id", clinicId)
-            .order("created_at"),
-          supabase
-            .from("clinic_invitations")
-            .select("id, email, full_name, status, initial_password")
-            .eq("clinic_id", clinicId),
-          selectedId
-            ? loadProfessionalIntakeDetail(supabase, clinicId, selectedId)
-            : Promise.resolve({ professional: null, rules: [] }),
-        ])
-      : [[], [], { data: [] }, { data: [] }, { professional: null, rules: [] }];
+  const [
+    locations,
+    sidebarProfessionals,
+    { data: members },
+    { data: invitations },
+    selectedDetail,
+    mfaStatus,
+  ] = clinicId
+    ? await Promise.all([
+        getCachedClinicLocations(clinicId),
+        loadProfessionalIntakeSidebar(supabase, clinicId),
+        supabase
+          .from("clinic_members")
+          .select("id, role, is_active, user_id, professional_id, profiles(full_name, email)")
+          .eq("clinic_id", clinicId)
+          .order("created_at"),
+        supabase
+          .from("clinic_invitations")
+          .select("id, email, full_name, status, initial_password")
+          .eq("clinic_id", clinicId),
+        selectedId
+          ? loadProfessionalIntakeDetail(supabase, clinicId, selectedId)
+          : Promise.resolve({ professional: null, rules: [] }),
+        getPrescriberMfaStatus(),
+      ])
+    : [
+        [],
+        [],
+        { data: [] },
+        { data: [] },
+        { professional: null, rules: [] },
+        await getPrescriberMfaStatus(),
+      ];
 
   const teamMembers = enrichTeamMembers(members ?? [], invitations ?? []);
   const invitedMembers = filterSidebarInvitedMembers(teamMembers, sidebarProfessionals);
@@ -79,6 +95,8 @@ export default async function IngresoProfesionalesPage({
         initialScheduleRules={selectedDetail.rules}
         teamMembers={teamMembers}
         invitedMembers={invitedMembers}
+        mfaStatus={mfaStatus}
+        canPrescribe={canPrescribe}
       />
     </Suspense>
   );

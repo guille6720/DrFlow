@@ -4,18 +4,22 @@ import { FileText, ScrollText } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback } from "react";
 
+import { useHasGeriatrics } from "@/core/components/products/products-provider";
+
 import { patientClinicalHistoryPath, patientFichaPath } from "@/shared/utils/clinical-navigation";
 
 import {
   buildPatientContextMenuItems,
   openClinicalContextMenu,
 } from "@/features/ia/components/clinical-workflow/clinical-context-menu";
+import { AddPatientToGeriatricsButton } from "@/features/pacientes/components/pacientes/add-patient-to-geriatrics-button";
 import { PatientAppShareControl } from "@/features/pacientes/components/pacientes/patient-app-share-control";
 import { PatientWhatsAppButton } from "@/features/pacientes/components/pacientes/patient-whatsapp-button";
 import { isPamiPatient } from "@/features/pacientes/utils/patient-age";
 import { formatPatientConsultationCountShort } from "@/features/pacientes/utils/patient-consultation-count";
 import { buildPatientContactMessage } from "@/features/pacientes/utils/patient-messages";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { GeneratePatientPortalAccessControl } from "@/features/portal/components/generate-patient-portal-access-control";
 
 import { Badge } from "@/components/ui/badge";
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
@@ -45,6 +49,8 @@ interface PatientListCardProps {
   doctorInfo?: DoctorShareInfo | null;
   shareMeta?: ShareMeta | null;
   canIssuePrescriptions?: boolean;
+  geriatricsEnabled?: boolean;
+  isResident?: boolean;
 }
 
 const PatientListCard = memo(function PatientListCard({
@@ -53,7 +59,12 @@ const PatientListCard = memo(function PatientListCard({
   doctorInfo,
   shareMeta,
   canIssuePrescriptions,
+  geriatricsEnabled,
+  isResident = false,
 }: PatientListCardProps) {
+  const hasGeriatricsHook = useHasGeriatrics();
+  const hasGeriatrics =
+    typeof geriatricsEnabled === "boolean" ? geriatricsEnabled : hasGeriatricsHook;
   const patientDisplay = `${p.last_name}, ${p.first_name}`;
   const contact = p.phone ?? p.email ?? null;
   const metaParts = [
@@ -68,10 +79,13 @@ const PatientListCard = memo(function PatientListCard({
     (e: React.MouseEvent) => {
       openClinicalContextMenu(
         e,
-        buildPatientContextMenuItems(p.id, { canIssue: canIssuePrescriptions })
+        buildPatientContextMenuItems(p.id, {
+          canIssue: canIssuePrescriptions,
+          canAdmitGeriatrics: hasGeriatrics && !isResident,
+        })
       );
     },
-    [p.id, canIssuePrescriptions]
+    [p.id, canIssuePrescriptions, hasGeriatrics, isResident]
   );
 
   return (
@@ -102,15 +116,22 @@ const PatientListCard = memo(function PatientListCard({
               compact
             />
           ) : null}
+          <GeneratePatientPortalAccessControl patientId={p.id} compact />
           <PatientWhatsAppButton phone={p.phone} message={contactMessage} size="icon" />
           <Link
             href={patientClinicalHistoryPath(p.id)}
             prefetch
-            className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:from-cyan-700 hover:to-teal-700"
+            className="inline-flex items-center gap-1.5 rounded-lg drflow-accent-fill px-3 py-1.5 text-xs font-semibold text-white"
           >
             <FileText className="h-3.5 w-3.5" />
             Historia clínica
           </Link>
+          <AddPatientToGeriatricsButton
+            patientId={p.id}
+            compact
+            geriatricsEnabled={geriatricsEnabled}
+            isResident={isResident}
+          />
           {canIssuePrescriptions ? (
             <Link
               href={buildPatientWorkspaceUrl(p.id, { tab: "recetas", action: "nueva" })}
@@ -143,6 +164,8 @@ interface Props {
   doctorInfo?: DoctorShareInfo | null;
   shareByPatient?: Map<string, ShareMeta>;
   canIssuePrescriptions?: boolean;
+  geriatricsEnabled?: boolean;
+  residentPatientIds?: ReadonlySet<string>;
 }
 
 /** Misma fila blanca que Historia clínica (`ClinicalRecordsGroupedList`). */
@@ -152,6 +175,8 @@ export function PatientsListCards({
   doctorInfo,
   shareByPatient,
   canIssuePrescriptions,
+  geriatricsEnabled,
+  residentPatientIds,
 }: Props) {
   if (patients.length === 0) return null;
 
@@ -165,6 +190,8 @@ export function PatientsListCards({
           doctorInfo={doctorInfo}
           shareMeta={shareByPatient?.get(p.id) ?? null}
           canIssuePrescriptions={canIssuePrescriptions}
+          geriatricsEnabled={geriatricsEnabled}
+          isResident={residentPatientIds?.has(p.id) ?? false}
         />
       ))}
     </div>

@@ -11,7 +11,7 @@ const LoginFormView = dynamic(
 
 export const metadata: Metadata = {
   title: "Iniciar sesión",
-  description: "Accedé a tu consultorio DrFlow: agenda, pacientes, historia clínica y recetas.",
+  description: "Accedé a tu consultorio NexClinic: agenda, pacientes, historia clínica y recetas.",
   alternates: { canonical: "/login" },
   robots: { index: true, follow: true },
 };

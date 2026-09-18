@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useMemo, useRef, useState, useTransition } from "react";
 
 import { toast } from "@/core/notifications/toast";
 
@@ -15,7 +15,7 @@ import {
   type PatientWorkspaceUrlOptions,
 } from "@/features/pacientes/utils/patient-workspace-actions";
 
-import { ButtonLink } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { finalizeConsultation } from "@/lib/actions/appointments";
 import { updateWaitingRoomStatus } from "@/lib/actions/waiting-room";
 import type { Patient } from "@/types/database";
@@ -59,6 +59,7 @@ export function DoctorConsultaSession({
   const searchParams = useSearchParams();
   const [finalizing, setFinalizing] = useState(false);
   const [, startTransition] = useTransition();
+  const flushBeforeLeaveRef = useRef<(() => Promise<boolean>) | null>(null);
 
   const patientId = patientRecord.id;
   const ehr = workspace.ehr;
@@ -112,6 +113,14 @@ export function DoctorConsultaSession({
     });
   }
 
+  async function openClinicalHistory() {
+    const flushed = flushBeforeLeaveRef.current
+      ? await flushBeforeLeaveRef.current()
+      : true;
+    if (!flushed) return;
+    window.location.assign(clinicalHistoryHref);
+  }
+
   const sessionHeader = (
     <div className="flex flex-wrap items-center gap-2">
       <ButtonLink href="/consultas" variant="outline" size="sm">
@@ -120,9 +129,9 @@ export function DoctorConsultaSession({
       <ButtonLink href="/sala-espera" variant="outline" size="sm">
         Sala de espera
       </ButtonLink>
-      <ButtonLink href={clinicalHistoryHref} variant="secondary" size="sm">
+      <Button type="button" variant="secondary" size="sm" onClick={() => void openClinicalHistory()}>
         Historia clínica de: {patientDisplayName}
-      </ButtonLink>
+      </Button>
       <PatientEhrPrintMenu triggerLabel="Imprimir historia" />
     </div>
   );
@@ -149,6 +158,9 @@ export function DoctorConsultaSession({
         professionalId={professionalId}
         finalizing={finalizing}
         headerSlot={sessionHeader}
+        onRegisterFlushBeforeLeave={(flush) => {
+          flushBeforeLeaveRef.current = flush;
+        }}
         onFinalize={appointmentId ? () => void handleFinalize() : undefined}
         onOpenSheet={(sheet) => {
           navigateWorkspace({

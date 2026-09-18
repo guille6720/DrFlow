@@ -21,7 +21,7 @@ export type CommercialSkuPricing = {
 export const COMMERCIAL_SKU_PRICING: Record<CommercialSkuId, CommercialSkuPricing> = {
   essential: {
     id: "essential",
-    displayName: "DrFlow Essential",
+    displayName: "NexClinic Essential",
     tagline:
       "Para profesionales independientes que necesitan gestionar su consultorio de forma simple y segura.",
     promoPriceArs: 25_000,
@@ -31,7 +31,7 @@ export const COMMERCIAL_SKU_PRICING: Record<CommercialSkuId, CommercialSkuPricin
   },
   pro: {
     id: "pro",
-    displayName: "DrFlow Pro",
+    displayName: "NexClinic Pro",
     tagline:
       "Para consultorios y equipos médicos que buscan automatización, IA y mayor capacidad.",
     promoPriceArs: 40_000,

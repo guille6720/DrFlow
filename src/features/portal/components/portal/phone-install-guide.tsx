@@ -56,7 +56,7 @@ export function PhoneInstallGuide({ platform, step }: PhoneInstallGuideProps) {
             <div className="mx-auto mb-2 w-fit rounded-xl bg-white p-2">
               <PatientAppIcon size="sm" />
             </div>
-            <p className="text-[9px] font-bold text-white">DrFlow</p>
+            <p className="text-[9px] font-bold text-white">NexClinic</p>
             <p className="text-[8px] text-emerald-200">Pacientes</p>
           </div>
 

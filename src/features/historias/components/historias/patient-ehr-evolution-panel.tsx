@@ -9,6 +9,7 @@ import { toast } from "@/core/notifications/toast";
 
 import { updateClinicalRecordNotes } from "@/features/historias/actions/clinical-records";
 import { PatientEhrConsultationDateEditor } from "@/features/historias/components/historias/patient-ehr-consultation-date-editor";
+import { usePatientEhrStateContext } from "@/features/historias/components/historias/patient-ehr-state-context";
 import {
   extractConsultationFileName,
   formatPatientEhrSidebarDate,
@@ -40,6 +41,7 @@ type EditorProps = {
 };
 
 function EvolutionNotesEditor({ selected, onCancel, onSaved }: EditorProps) {
+  const { patchClinicalRecord } = usePatientEhrStateContext();
   const [chiefComplaint, setChiefComplaint] = useState(selected.chief_complaint ?? "");
   const [evolution, setEvolution] = useState(
     selected.evolution || patientEhrEvolutionBody(selected)
@@ -50,19 +52,29 @@ function EvolutionNotesEditor({ selected, onCancel, onSaved }: EditorProps) {
   async function handleSave() {
     setSaving(true);
     setError(null);
-    const result = await updateClinicalRecordNotes(selected.id, {
-      chief_complaint: chiefComplaint,
-      evolution,
-      diagnosis: selected.diagnosis,
-      indications: selected.indications,
-    });
-    setSaving(false);
-    if (result.error) {
-      setError(result.error);
-      return;
+    try {
+      const result = await updateClinicalRecordNotes(selected.id, {
+        chief_complaint: chiefComplaint,
+        evolution,
+        diagnosis: selected.diagnosis,
+        indications: selected.indications,
+      });
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      // Keep local EHR state in sync — router.refresh alone can remount with stale RSC props.
+      patchClinicalRecord(selected.id, {
+        chief_complaint: chiefComplaint,
+        evolution,
+      });
+      toast.success("Evolución actualizada");
+      onSaved();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo guardar la evolución.");
+    } finally {
+      setSaving(false);
     }
-    toast.success("Evolución actualizada");
-    onSaved();
   }
 
   return (
@@ -70,12 +82,14 @@ function EvolutionNotesEditor({ selected, onCancel, onSaved }: EditorProps) {
       <Textarea
         label="Motivo de consulta"
         rows={2}
+        preservePasteFormat
         value={chiefComplaint}
         onChange={(e) => setChiefComplaint(e.target.value)}
       />
       <Textarea
         label="Evolución"
         rows={10}
+        preservePasteFormat
         value={evolution}
         onChange={(e) => setEvolution(e.target.value)}
       />

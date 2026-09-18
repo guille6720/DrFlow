@@ -2,18 +2,18 @@ import type { LegalDocument } from "@/core/legal/content/types";
 
 export const cookiesPolicyDocument: LegalDocument = {
   id: "cookies",
-  title: "Política de Cookies de DrFlow",
+  title: "Política de Cookies de NexClinic",
   sections: [
     {
       title: "1. Objeto",
       blocks: [
         {
           type: "p",
-          text: "La presente Política de Cookies explica cómo DrFlow utiliza cookies y tecnologías similares para mejorar el funcionamiento de la plataforma y del sitio web, optimizar la experiencia del usuario y garantizar la seguridad del servicio.",
+          text: "La presente Política de Cookies explica cómo NexClinic utiliza cookies y tecnologías similares para mejorar el funcionamiento de la plataforma y del sitio web, optimizar la experiencia del usuario y garantizar la seguridad del servicio.",
         },
         {
           type: "p",
-          text: "Al continuar utilizando DrFlow, el usuario acepta el uso de cookies conforme a esta política, salvo que las deshabilite mediante la configuración de su navegador o dispositivo cuando ello sea posible.",
+          text: "Al continuar utilizando NexClinic, el usuario acepta el uso de cookies conforme a esta política, salvo que las deshabilite mediante la configuración de su navegador o dispositivo cuando ello sea posible.",
         },
       ],
     },
@@ -30,7 +30,7 @@ export const cookiesPolicyDocument: LegalDocument = {
     {
       title: "3. Tipos de cookies utilizadas",
       blocks: [
-        { type: "p", text: "DrFlow podrá utilizar las siguientes categorías de cookies:" },
+        { type: "p", text: "NexClinic podrá utilizar las siguientes categorías de cookies:" },
         { type: "h4", text: "Cookies esenciales" },
         {
           type: "p",
@@ -44,7 +44,7 @@ export const cookiesPolicyDocument: LegalDocument = {
         { type: "h4", text: "Cookies de análisis" },
         {
           type: "p",
-          text: "Podrán utilizarse para obtener información estadística sobre el uso de la plataforma, incluyendo páginas visitadas, tiempo de permanencia, errores de funcionamiento y rendimiento general del sistema. La información recopilada se utiliza para mejorar DrFlow y no tiene por finalidad identificar personalmente al usuario.",
+          text: "Podrán utilizarse para obtener información estadística sobre el uso de la plataforma, incluyendo páginas visitadas, tiempo de permanencia, errores de funcionamiento y rendimiento general del sistema. La información recopilada se utiliza para mejorar NexClinic y no tiene por finalidad identificar personalmente al usuario.",
         },
         { type: "h4", text: "Cookies de seguridad" },
         {
@@ -56,7 +56,7 @@ export const cookiesPolicyDocument: LegalDocument = {
     {
       title: "4. Tecnologías similares",
       blocks: [
-        { type: "p", text: "Además de cookies, DrFlow podrá utilizar otras tecnologías equivalentes, tales como:" },
+        { type: "p", text: "Además de cookies, NexClinic podrá utilizar otras tecnologías equivalentes, tales como:" },
         {
           type: "ul",
           items: [
@@ -77,11 +77,11 @@ export const cookiesPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow podrá utilizar servicios proporcionados por terceros para funcionalidades específicas, tales como autenticación, análisis de rendimiento, monitoreo técnico, protección contra ataques e infraestructura tecnológica.",
+          text: "NexClinic podrá utilizar servicios proporcionados por terceros para funcionalidades específicas, tales como autenticación, análisis de rendimiento, monitoreo técnico, protección contra ataques e infraestructura tecnológica.",
         },
         {
           type: "p",
-          text: "Cada proveedor tratará la información conforme a sus propias políticas de privacidad y a los acuerdos celebrados con DrFlow.",
+          text: "Cada proveedor tratará la información conforme a sus propias políticas de privacidad y a los acuerdos celebrados con NexClinic.",
         },
       ],
     },
@@ -94,7 +94,7 @@ export const cookiesPolicyDocument: LegalDocument = {
         },
         {
           type: "p",
-          text: "La desactivación de determinadas cookies podrá afectar el correcto funcionamiento de algunas funcionalidades de DrFlow.",
+          text: "La desactivación de determinadas cookies podrá afectar el correcto funcionamiento de algunas funcionalidades de NexClinic.",
         },
       ],
     },
@@ -116,11 +116,11 @@ export const cookiesPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Cuando las cookies permitan tratar datos personales, dicho tratamiento se realizará conforme a la Política de Privacidad de DrFlow y a la legislación aplicable.",
+          text: "Cuando las cookies permitan tratar datos personales, dicho tratamiento se realizará conforme a la Política de Privacidad de NexClinic y a la legislación aplicable.",
         },
         {
           type: "p",
-          text: "DrFlow no utiliza cookies para vender información personal ni para realizar publicidad basada en datos clínicos de los pacientes.",
+          text: "NexClinic no utiliza cookies para vender información personal ni para realizar publicidad basada en datos clínicos de los pacientes.",
         },
       ],
     },
@@ -129,7 +129,7 @@ export const cookiesPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow podrá actualizar esta Política de Cookies para incorporar nuevas funcionalidades, cambios tecnológicos o modificaciones legales.",
+          text: "NexClinic podrá actualizar esta Política de Cookies para incorporar nuevas funcionalidades, cambios tecnológicos o modificaciones legales.",
         },
         { type: "p", text: "La versión vigente será la publicada dentro de la plataforma o en el sitio web oficial." },
       ],
@@ -139,7 +139,7 @@ export const cookiesPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Las consultas relacionadas con esta Política de Cookies podrán realizarse mediante los canales oficiales de contacto publicados por DrFlow.",
+          text: "Las consultas relacionadas con esta Política de Cookies podrán realizarse mediante los canales oficiales de contacto publicados por NexClinic.",
         },
       ],
     },

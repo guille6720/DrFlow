@@ -12,7 +12,7 @@ export function LoginPageShell() {
             Turnos, pacientes, historias clínicas y reportes en una sola plataforma.
           </p>
         </div>
-        <p className="text-sm text-blue-300/80">© DrFlow — Software médico SaaS</p>
+        <p className="text-sm text-blue-300/80">© NexClinic — Software médico SaaS</p>
       </div>
 
       <main className="flex flex-1 items-center justify-center bg-gradient-to-br from-blue-50/50 to-white p-6">

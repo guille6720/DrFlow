@@ -19,11 +19,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   if (!(await isPublicPortalAllowedForSlug(slug))) {
-    return { title: "Instalar app | DrFlow" };
+    return { title: "Instalar app | NexClinic" };
   }
   const doctor = await resolvePortalDoctorInfo(slug);
   if (!doctor) {
-    return { title: "Instalar app | DrFlow" };
+    return { title: "Instalar app | NexClinic" };
   }
 
   const origin = getSiteUrl();
@@ -38,7 +38,7 @@ export async function generateMetadata({
       type: "website",
       locale: "es_AR",
       url: `${origin}/portal/${slug}/instalar`,
-      siteName: "DrFlow",
+      siteName: "NexClinic",
       title,
       description,
       images: [
@@ -46,7 +46,7 @@ export async function generateMetadata({
           url: ogImage,
           width: 512,
           height: 512,
-          alt: "DrFlow — App verde para pacientes",
+          alt: "NexClinic — App verde para pacientes",
         },
       ],
     },

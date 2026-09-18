@@ -1,14 +1,21 @@
 "use server";
 
-import { getActiveClinic, getSession } from "@/core/auth/session.server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { getActiveClinic } from "@/core/auth/session.server";
 import { hasPermission } from "@/core/permissions/roles";
+import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { createClient } from "@/core/supabase/server";
 import { searchQuerySchema } from "@/core/validations/params";
 
 import type { ClinicalDiagnosisCatalogHit } from "@/features/historias/types/clinical-diagnosis-catalog";
 
+import type { Database } from "@/types/supabase";
+
 const SELECT_FIELDS =
   "id,name,normalized_name,snomed_code,cie10_code,cie11_code,category,synonyms";
+
+type DbClient = SupabaseClient<Database>;
 
 function mapDiagnosisRows(rows: ClinicalDiagnosisCatalogHit[]): ClinicalDiagnosisCatalogHit[] {
   return rows.map((row) => ({
@@ -39,9 +46,8 @@ function rankDiagnosisHits(
     .map(({ row }) => row);
 }
 
-/** Fallback when RPC EXECUTE is missing but RLS SELECT on clinical_diagnoses works. */
-async function searchClinicalDiagnosesDirect(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+async function searchClinicalDiagnosesViaTable(
+  supabase: DbClient,
   query: string,
   limit: number
 ): Promise<{ data?: ClinicalDiagnosisCatalogHit[]; error?: string }> {
@@ -72,9 +78,11 @@ async function searchClinicalDiagnosesDirect(
   const firstError = byName.error ?? byCode.error ?? byNormalized.error;
   if (firstError) {
     console.error(
-      "[searchClinicalDiagnoses] direct query failed:",
+      "[searchClinicalDiagnoses] table query failed:",
       firstError.message,
-      firstError.code
+      firstError.code,
+      firstError.details,
+      firstError.hint
     );
     return { error: "No se pudo buscar en el catálogo de diagnósticos." };
   }
@@ -89,18 +97,43 @@ async function searchClinicalDiagnosesDirect(
   };
 }
 
+async function searchClinicalDiagnosesViaRpc(
+  supabase: DbClient,
+  query: string,
+  limit: number
+): Promise<{ data?: ClinicalDiagnosisCatalogHit[]; error?: string; rpcFailed?: boolean }> {
+  const { data, error } = await supabase.rpc("search_clinical_diagnoses", {
+    p_query: query,
+    p_limit: limit,
+  });
+
+  if (error) {
+    console.error(
+      "[searchClinicalDiagnoses] RPC failed:",
+      error.message,
+      error.code,
+      error.details,
+      error.hint
+    );
+    return { rpcFailed: true, error: "No se pudo buscar en el catálogo de diagnósticos." };
+  }
+
+  return { data: mapDiagnosisRows((data ?? []) as ClinicalDiagnosisCatalogHit[]) };
+}
+
 export async function searchClinicalDiagnoses(
   query: string,
   limit = 10
 ): Promise<{ data?: ClinicalDiagnosisCatalogHit[]; error?: string }> {
   try {
-    const [user, active, supabase] = await Promise.all([
-      getSession(),
-      getActiveClinic(),
-      createClient(),
-    ]);
-    if (!user) return { error: "Sesión requerida" };
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return { error: "Sesión requerida" };
 
+    const active = await getActiveClinic();
     const { role, isSuperadmin } = active;
     if (!hasPermission(role, "viewClinicalRecords", isSuperadmin)) {
       return { error: "Sin permisos para buscar diagnósticos" };
@@ -110,22 +143,33 @@ export async function searchClinicalDiagnoses(
     if (!queryParsed.success) return { data: [] };
 
     const boundedLimit = Math.min(Math.max(limit, 1), 25);
-    const { data, error } = await supabase.rpc("search_clinical_diagnoses", {
-      p_query: queryParsed.data,
-      p_limit: boundedLimit,
-    });
 
-    if (error) {
-      console.error(
-        "[searchClinicalDiagnoses] RPC failed:",
-        error.message,
-        error.code,
-        error.details
+    // Preferred path: service_role table read (global catalog, staff already authorized).
+    if (hasAdminClient()) {
+      const admin = createAdminClient();
+      const tableResult = await searchClinicalDiagnosesViaTable(
+        admin,
+        queryParsed.data,
+        boundedLimit
       );
-      return searchClinicalDiagnosesDirect(supabase, queryParsed.data, boundedLimit);
+      if (tableResult.data) return tableResult;
+      console.error("[searchClinicalDiagnoses] admin table search failed; trying RPC");
+      const rpcResult = await searchClinicalDiagnosesViaRpc(admin, queryParsed.data, boundedLimit);
+      if (rpcResult.data) return { data: rpcResult.data };
+      return tableResult.error ? tableResult : rpcResult;
     }
 
-    return { data: mapDiagnosisRows((data ?? []) as ClinicalDiagnosisCatalogHit[]) };
+    console.error(
+      "[searchClinicalDiagnoses] SUPABASE_SERVICE_ROLE_KEY missing — using session client"
+    );
+
+    const rpcResult = await searchClinicalDiagnosesViaRpc(supabase, queryParsed.data, boundedLimit);
+    if (rpcResult.data) return { data: rpcResult.data };
+    if (rpcResult.rpcFailed) {
+      return searchClinicalDiagnosesViaTable(supabase, queryParsed.data, boundedLimit);
+    }
+
+    return { error: "No se pudo buscar en el catálogo de diagnósticos." };
   } catch (err) {
     console.error("[searchClinicalDiagnoses] unexpected error:", err);
     return { error: "No se pudo buscar en el catálogo de diagnósticos." };

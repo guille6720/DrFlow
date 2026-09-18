@@ -73,7 +73,7 @@ export default async function SolicitarTurnoPage({
         <p className="mt-6 text-center text-xs text-slate-400">
           Powered by{" "}
           <Link href="/" className="text-blue-700 hover:underline">
-            DrFlow
+            NexClinic
           </Link>
         </p>
       </div>

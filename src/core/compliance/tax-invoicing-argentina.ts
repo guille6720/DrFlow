@@ -8,7 +8,7 @@
 export const TAX_INVOICING_REQUIERE_CONTADOR = "REQUIERE_CONTADOR" as const;
 
 export type TaxInvoicingScope =
-  /** DrFlow SaaS seller → clinic customer (subscription monetization). */
+  /** NexClinic SaaS seller → clinic customer (subscription monetization). */
   | "saas_seller_to_clinic"
   /** Clinic cash register → patient (product feature; not SaaS ARCA). */
   | "clinic_cash_to_patient";
@@ -25,7 +25,7 @@ export const SAAS_TAX_ACCOUNTANT_PREREQUISITES: AccountantPrerequisite[] = [
   {
     id: "legal_seller",
     label: "Vendedor legal",
-    description: "Persona humana o jurídica que factura el SaaS DrFlow.",
+    description: "Persona humana o jurídica que factura el SaaS NexClinic.",
     status: TAX_INVOICING_REQUIERE_CONTADOR,
   },
   {

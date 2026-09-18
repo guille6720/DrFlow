@@ -1,4 +1,4 @@
-/** Feature module identifiers — vertical slices of DrFlow (Phase 3). */
+/** Feature module identifiers — vertical slices of NexClinic (Phase 3). */
 export type FeatureModuleId =
   | "core"
   | "dashboard"
@@ -21,7 +21,8 @@ export type FeatureModuleId =
   | "voice"
   | "profesionales"
   | "reportes"
-  | "auditoria";
+  | "auditoria"
+  | "geriatria";
 
 export type FeatureModuleStatus = "ready" | "lab" | "planned";
 
@@ -187,6 +188,13 @@ export const FEATURE_MODULES: FeatureModuleDef[] = [
     routes: [],
     status: "ready",
     description: "Trazabilidad inmutable en workspace del paciente.",
+  },
+  {
+    id: "geriatria",
+    label: "Geriatría",
+    routes: ["/geriatria"],
+    status: "ready",
+    description: "Residencias e internación geriátrica (product.geriatrics).",
   },
 ];
 

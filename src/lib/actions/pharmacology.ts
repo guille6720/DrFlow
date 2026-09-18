@@ -2,6 +2,7 @@
 
 import { getActiveClinic, getSession } from "@/core/auth/session.server";
 import { hasPermission } from "@/core/permissions/roles";
+import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { createClient } from "@/core/supabase/server";
 import { entityIdArraySchema, entityIdSchema, searchQuerySchema } from "@/core/validations/params";
 
@@ -108,25 +109,31 @@ export async function getPathologiesBySymptoms(
 export async function searchMedicationCatalog(
   query: string
 ): Promise<{ data?: MedicationCatalogResult[]; error?: string }> {
-  const access = await assertPharmacologyAccess();
-  if (access.error) return access;
+  try {
+    const access = await assertPharmacologyAccess();
+    if (access.error) return access;
 
-  const queryParsed = searchQuerySchema.safeParse(query.trim());
-  if (!queryParsed.success) {
-    return { data: [] };
+    const queryParsed = searchQuerySchema.safeParse(query.trim());
+    if (!queryParsed.success) {
+      return { data: [] };
+    }
+
+    const client = hasAdminClient() ? createAdminClient() : await createClient();
+    const { data, error } = await client.rpc("search_medication_catalog", {
+      p_query: queryParsed.data,
+      p_limit: 24,
+    });
+
+    if (error) {
+      console.error("[searchMedicationCatalog] RPC failed:", error.message, error.code);
+      return { error: "No se pudo buscar el vademécum. ¿Corriste la migración 107?" };
+    }
+
+    return { data: (data ?? []) as MedicationCatalogResult[] };
+  } catch (err) {
+    console.error("[searchMedicationCatalog] unexpected error:", err);
+    return { error: "No se pudo buscar el vademécum." };
   }
-
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("search_medication_catalog", {
-    p_query: queryParsed.data,
-    p_limit: 24,
-  });
-
-  if (error) {
-    return { error: "No se pudo buscar el vademécum. ¿Corriste la migración 107?" };
-  }
-
-  return { data: (data ?? []) as MedicationCatalogResult[] };
 }
 
 export async function searchPamiVademecum(

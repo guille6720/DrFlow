@@ -24,11 +24,14 @@ export type { DatosFlujo };
 
 export function DataImportExportHub(props: DatosHubProps) {
   const params = useSearchParams();
-  const flujo = (params.get("flujo") ?? "") as DatosFlujo | "";
+  // Accept legacy `type=` bookmarks as alias of `flujo=`.
+  const flujo = (params.get("flujo") ?? params.get("type") ?? "") as DatosFlujo | "";
   const canUseFhir = useCanUseFeature(FEATURES.INTEGRATIONS);
   const canUseDataExport = useCanUseFeature(FEATURES.DATA_EXPORT);
   const importCards = IMPORT_CARDS.filter((card) => card.flujo !== "import-fhir" || canUseFhir);
   const exportCards = EXPORT_CARDS.filter((card) => {
+    // Bulk clinical export stays visible for admins; DATA_EXPORT is checked in-panel/server.
+    if (card.flujo === "export-masivo") return props.canBulkExport;
     const addon = addonFeatureForDatosExportFlujo(card.flujo);
     if (!addon) return true;
     return canUseDataExport;

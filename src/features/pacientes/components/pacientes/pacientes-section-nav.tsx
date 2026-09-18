@@ -39,7 +39,7 @@ export function PacientesSectionNav({ section, q = "", patologia = "", cobertura
             className={cn(
               "rounded-lg px-4 py-2 text-sm font-medium transition",
               active
-                ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900 shadow-md"
+                ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md"
                 : "text-slate-300 hover:bg-slate-700/80 hover:text-white"
             )}
           >

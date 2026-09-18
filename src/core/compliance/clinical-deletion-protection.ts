@@ -64,7 +64,7 @@ export const PRIVACY_VS_RETENTION = {
     "Correcciones vía versionado / lifecycle (corrected), no sobreescritura silenciosa",
   ],
   productRule:
-    "Un pedido de privacidad NO autoriza automáticamente el hard-delete de registros clínicos que DrFlow o el prestador deben conservar. Ver docs/compliance/CLINICAL-DELETION-PROTECTION-FASE-7.md.",
+    "Un pedido de privacidad NO autoriza automáticamente el hard-delete de registros clínicos que NexClinic o el prestador deben conservar. Ver docs/compliance/CLINICAL-DELETION-PROTECTION-FASE-7.md.",
 } as const;
 
 export function isClinicalHardDeleteError(message: string | null | undefined): boolean {

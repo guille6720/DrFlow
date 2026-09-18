@@ -5,11 +5,14 @@ import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-hea
 import { ManualHelpLink } from "@/core/components/superadmin/manual/manual-help-link";
 import { SuperadminClearOverrideButton } from "@/core/components/superadmin/superadmin-clear-override-button";
 import { SuperadminClinicPlanForm } from "@/core/components/superadmin/superadmin-clinic-plan-form";
+import { SuperadminClinicProductsForm } from "@/core/components/superadmin/superadmin-clinic-products-form";
 import { SuperadminOverrideForm } from "@/core/components/superadmin/superadmin-override-form";
 import { listEntitlementsAdminOverrides } from "@/core/entitlements/admin.server";
 import { ADMIN_ASSIGNABLE_PLAN_KEYS } from "@/core/entitlements/admin-constants";
 import { listSuperadminClinicCommercialRows } from "@/core/entitlements/superadmin-clinics.server";
 import { requireSuperadminPage } from "@/core/entitlements/superadmin-guard.server";
+import { logServerError } from "@/core/errors/log-error.server";
+import { loadClinicProducts } from "@/core/products/products.server";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -21,13 +24,52 @@ export default async function SuperadminClinicDetailPage({
 }) {
   await requireSuperadminPage();
   const { clinicId } = await params;
-  const [rows, overrides] = await Promise.all([
-    listSuperadminClinicCommercialRows(),
-    listEntitlementsAdminOverrides(),
-  ]);
-  const clinic = rows.find((r) => r.clinicId === clinicId);
+
+  let clinic: Awaited<ReturnType<typeof listSuperadminClinicCommercialRows>>[number] | undefined;
+  let clinicOverrides: Awaited<ReturnType<typeof listEntitlementsAdminOverrides>> = [];
+  let products = { clinic: true, geriatrics: false, catalogAvailable: false };
+  let loadError: string | null = null;
+
+  try {
+    const [rows, overrides, productsSnap] = await Promise.all([
+      listSuperadminClinicCommercialRows(),
+      listEntitlementsAdminOverrides(),
+      loadClinicProducts(clinicId),
+    ]);
+    clinic = rows.find((r) => r.clinicId === clinicId);
+    clinicOverrides = overrides.filter((o) => o.clinicId === clinicId);
+    products = {
+      clinic: productsSnap.clinic,
+      geriatrics: productsSnap.geriatrics,
+      catalogAvailable: productsSnap.catalogAvailable,
+    };
+  } catch (err) {
+    loadError = err instanceof Error ? err.message : "Error al cargar datos comerciales";
+    logServerError("superadmin.clinic-detail", err, { persist: false });
+  }
+
+  if (loadError) {
+    return (
+      <div className="space-y-4">
+        <DashboardPageHeader title="Clínica" subtitle="Detalle comercial" />
+        <Card title="No pudimos cargar esta clínica" description="El listado comercial falló">
+          <p className="text-sm text-slate-700 dark:text-slate-200">{loadError}</p>
+          <p className="mt-2 text-sm text-slate-500">
+            Probá volver al listado e ingresar de nuevo. Si persiste, revisá que el catálogo de planes
+            esté disponible en Staging.
+          </p>
+          <Link
+            href="/superadmin/clinics"
+            className="mt-4 inline-block text-sm font-medium text-teal-700 hover:underline"
+          >
+            ← Volver a clínicas
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
   if (!clinic) notFound();
-  const clinicOverrides = overrides.filter((o) => o.clinicId === clinicId);
 
   return (
     <div className="space-y-4">
@@ -52,19 +94,35 @@ export default async function SuperadminClinicDetailPage({
           <dl className="space-y-2 text-sm">
             <Row label="Plan" value={clinic.planKey ?? "—"} />
             <Row label="Estado" value={clinic.status ?? "—"} />
-            <Row label="Inicio" value={clinic.startsAt ? new Date(clinic.startsAt).toLocaleString("es-AR") : "—"} />
+            <Row
+              label="Inicio"
+              value={clinic.startsAt ? new Date(clinic.startsAt).toLocaleString("es-AR") : "—"}
+            />
             <Row
               label="Fin trial comercial"
               value={clinic.trialEndsAt ? new Date(clinic.trialEndsAt).toLocaleString("es-AR") : "—"}
             />
-            <Row label="Usuarios / Prof. / Pacientes" value={`${clinic.users} / ${clinic.professionals} / ${clinic.patients}`} />
+            <Row
+              label="Usuarios / Prof. / Pacientes"
+              value={`${clinic.users} / ${clinic.professionals} / ${clinic.patients}`}
+            />
             <Row label="Uso IA / WhatsApp (mes)" value={`${clinic.usageAi} / ${clinic.usageWhatsapp}`} />
           </dl>
         </Card>
 
+        <SuperadminClinicProductsForm
+          clinicId={clinic.clinicId}
+          clinicEnabled={products.clinic}
+          geriatricsEnabled={products.geriatrics}
+          catalogAvailable={products.catalogAvailable}
+        />
+
         <Card title="Recomendación" description="Motor centralizado — sin cambio automático">
           {clinic.planKey === "legacy" ? (
-            <p className="text-sm text-amber-800">Legacy — revisión comercial manual requerida.</p>
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              Legacy — revisión comercial manual requerida. Podés asignar Essential/Pro u otro plan
+              abajo.
+            </p>
           ) : clinic.shouldRecommendUpgrade ? (
             <div className="space-y-2 text-sm">
               <p>
@@ -73,14 +131,14 @@ export default async function SuperadminClinicDetailPage({
               <p>
                 Recomendado: <strong>{clinic.recommendedPlan}</strong> ({clinic.recommendationSeverity})
               </p>
-              <ul className="list-disc space-y-1 pl-5 text-slate-700">
-                {clinic.recommendationReasons.map((reason) => (
+              <ul className="list-disc space-y-1 pl-5 text-slate-700 dark:text-slate-300">
+                {(clinic.recommendationReasons ?? []).map((reason) => (
                   <li key={reason}>{reason}</li>
                 ))}
               </ul>
             </div>
           ) : (
-            <p className="text-sm text-slate-600">Sin upgrade recomendado.</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300">Sin upgrade recomendado.</p>
           )}
         </Card>
       </div>
@@ -95,9 +153,12 @@ export default async function SuperadminClinicDetailPage({
 
       <Card title="Overrides" description="Fuente efectiva: PLAN / OVERRIDE">
         <SuperadminOverrideForm clinicId={clinic.clinicId} />
-        <ul className="mt-4 divide-y divide-slate-100 text-sm">
+        <ul className="mt-4 divide-y divide-slate-100 text-sm dark:divide-slate-800">
           {clinicOverrides.map((ov) => (
-            <li key={`${ov.clinicId}-${ov.featureKey}`} className="flex items-center justify-between gap-3 py-2">
+            <li
+              key={`${ov.clinicId}-${ov.featureKey}`}
+              className="flex items-center justify-between gap-3 py-2"
+            >
               <div>
                 <p className="font-medium">{ov.featureKey}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -129,7 +190,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4">
       <dt className="text-slate-500">{label}</dt>
-      <dd className="text-right font-medium text-slate-900">{value}</dd>
+      <dd className="text-right font-medium text-slate-900 dark:text-slate-100">{value}</dd>
     </div>
   );
 }

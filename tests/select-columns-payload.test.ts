@@ -18,9 +18,12 @@ function columnCount(select: string): number {
 
 describe("select-columns payload reduction", () => {
   it("patient detail selects fewer columns than a full-row wildcard", () => {
-    const fullRowColumns = 24;
+    // patients Row currently has 29 columns (incl. Phase 2 identity fields).
+    const fullRowColumns = 29;
     const detailColumns = columnCount(PATIENT_DETAIL_COLUMNS);
     expect(detailColumns).toBeLessThan(fullRowColumns);
+    expect(PATIENT_DETAIL_COLUMNS).toContain("cuil");
+    expect(PATIENT_DETAIL_COLUMNS).toContain("document_type");
     expect((fullRowColumns - detailColumns) * AVG_OMITTED_COLUMN_BYTES).toBeGreaterThan(0);
   });
 

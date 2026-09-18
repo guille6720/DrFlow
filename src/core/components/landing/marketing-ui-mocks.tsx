@@ -111,7 +111,7 @@ export function MarketingHeroMock() {
   return (
     <div className="relative">
       <div
-        className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-cyan-400/20 to-teal-500/20 blur-2xl"
+        className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-[color-mix(in_srgb,var(--primary)_20%,transparent)] to-[color-mix(in_srgb,var(--secondary)_20%,transparent)] blur-2xl"
         aria-hidden
       />
       <div className="relative space-y-4">

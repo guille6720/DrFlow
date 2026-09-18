@@ -4,11 +4,16 @@ import { Suspense } from "react";
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { hasProduct } from "@/core/products/product-access";
+import { PRODUCTS } from "@/core/products/products";
+import { loadClinicProducts } from "@/core/products/products.server";
 import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
+import { isPatientOpenResident } from "@/features/geriatria/server/residents.server";
 import { PatientWorkspaceContent } from "@/features/pacientes";
 import { PatientWorkspaceSkeleton } from "@/features/pacientes";
+import { AddPatientToGeriatricsButton } from "@/features/pacientes/components/pacientes/add-patient-to-geriatrics-button";
 import { DeletePatientButton } from "@/features/pacientes/components/pacientes/delete-patient-button";
 import { PatientAdminDetailView } from "@/features/pacientes/components/pacientes/patient-admin-detail-view";
 import { PatientHeaderIdentity } from "@/features/pacientes/components/pacientes/patient-header-identity";
@@ -52,6 +57,10 @@ export default async function PacienteDetailPage({
   const canViewClinical = hasPermission(role, "viewClinicalRecords", isSuperadmin);
   const canIssue = hasPermission(role, "issuePrescriptions", isSuperadmin);
   const canManageAdminDocuments = hasPermission(role, "manageAdminDocuments", isSuperadmin);
+  const products = await loadClinicProducts(clinicId);
+  const geriatricsEnabled = hasProduct(products, PRODUCTS.GERIATRICS);
+  const isResident =
+    geriatricsEnabled ? await isPatientOpenResident(clinicId, patientRow.id) : false;
 
   const initialTabRaw = parsePatientWorkspaceTab(
     tabParam ? (LEGACY_TAB_ALIASES[tabParam] ?? tabParam) : null
@@ -89,10 +98,18 @@ export default async function PacienteDetailPage({
             />
           </Suspense>
           {canManagePatients && (
-            <DeletePatientButton
-              patientId={patientRow.id}
-              patientName={`${patientRow.last_name}, ${patientRow.first_name}`}
-            />
+            <>
+              <AddPatientToGeriatricsButton
+                patientId={patientRow.id}
+                geriatricsEnabled={geriatricsEnabled}
+                isResident={isResident}
+                hideWhenResident
+              />
+              <DeletePatientButton
+                patientId={patientRow.id}
+                patientName={`${patientRow.last_name}, ${patientRow.first_name}`}
+              />
+            </>
           )}
         </div>
 

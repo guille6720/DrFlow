@@ -86,7 +86,7 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
   {
     id: "plan",
     title: "Tu plan",
-    description: "Suscripción DrFlow, trial y pagos con Mercado Pago.",
+    description: "Suscripción NexClinic, trial y pagos con Mercado Pago.",
     icon: CreditCard,
   },
   {
@@ -98,7 +98,7 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
   {
     id: "apps",
     title: "Apps móviles",
-    description: "DrFlow en tu celular y app de pacientes (PWA).",
+    description: "NexClinic en tu celular y app de pacientes (PWA).",
     icon: Smartphone,
   },
   {
@@ -130,7 +130,7 @@ export const CONFIGURACION_SECTIONS: ConfiguracionSectionMeta[] = [
   {
     id: "ayuda",
     title: "Ayuda / Manual",
-    description: "Manual de uso de DrFlow y preguntas frecuentes.",
+    description: "Manual de uso de NexClinic y preguntas frecuentes.",
     icon: BookOpen,
     href: "/ayuda",
   },

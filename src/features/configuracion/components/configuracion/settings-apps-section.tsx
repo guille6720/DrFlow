@@ -26,9 +26,9 @@ export function SettingsAppsSection({ clinic, bookingSlug, onMessage }: Props) {
 
   return (
     <>
-      <Card title="DrFlow en tu celular (médico)">
+      <Card title="NexClinic en tu celular (médico)">
         <p className="mb-4 text-sm text-slate-600">
-          Agregá DrFlow a la pantalla de inicio de tu celular para acceder al dashboard y la agenda.
+          Agregá NexClinic a la pantalla de inicio de tu celular para acceder al dashboard y la agenda.
         </p>
         <AppInstallCard variant="clinic" />
       </Card>

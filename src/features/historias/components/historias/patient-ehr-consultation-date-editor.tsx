@@ -2,11 +2,12 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { toast } from "@/core/notifications/toast";
 
-import { updateClinicalRecordConsultationAt } from "@/features/historias/actions/clinical-records";
+import { updateClinicalRecordConsultationAt } from "@/features/historias/actions/update-consultation-at";
 import { usePatientEhrStateContext } from "@/features/historias/components/historias/patient-ehr-state-context";
 import { toPatientEhrDatetimeLocalValue } from "@/features/historias/components/historias/patient-ehr-utils";
 
@@ -19,6 +20,7 @@ type Props = {
 };
 
 export function PatientEhrConsultationDateEditor({ recordId, createdAt }: Props) {
+  const router = useRouter();
   const { patchConsultationDate } = usePatientEhrStateContext();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(() => toPatientEhrDatetimeLocalValue(createdAt));
@@ -28,16 +30,23 @@ export function PatientEhrConsultationDateEditor({ recordId, createdAt }: Props)
   async function handleSave() {
     setLoading(true);
     setError(null);
-    const iso = new Date(value).toISOString();
-    const result = await updateClinicalRecordConsultationAt(recordId, iso);
-    setLoading(false);
-    if (result.error) {
-      setError(result.error);
-      return;
+    try {
+      const iso = new Date(value).toISOString();
+      const result = await updateClinicalRecordConsultationAt(recordId, iso);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      patchConsultationDate(recordId, iso);
+      toast.success("Fecha guardada");
+      setEditing(false);
+      // Refresh after clearing loading so the button does not stay spinning.
+      queueMicrotask(() => router.refresh());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo guardar la fecha.");
+    } finally {
+      setLoading(false);
     }
-    patchConsultationDate(recordId, iso);
-    toast.success("Fecha guardada");
-    setEditing(false);
   }
 
   if (!editing) {

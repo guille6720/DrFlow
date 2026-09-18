@@ -75,6 +75,68 @@ export function PatientFormFields({
         required
         defaultValue={patient?.document_number ?? prefill?.document_number}
       />
+
+      <div className="sm:col-span-2 space-y-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+        <div>
+          <p className="text-sm font-semibold text-slate-900">
+            Identidad para receta electrónica (ReNaPDiS)
+          </p>
+          <p className="mt-1 text-xs text-slate-600">
+            Obligatoria solo para receta electrónica nacional. La ficha local sigue funcionando
+            sin estos datos.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Select
+            name="document_type"
+            label="Tipo de documento"
+            defaultValue={patient?.document_type ?? "dni"}
+            options={[
+              { value: "dni", label: "DNI" },
+              { value: "passport", label: "Pasaporte" },
+              { value: "cuit", label: "CUIT" },
+              { value: "cdi", label: "CDI" },
+              { value: "other", label: "Otro" },
+            ]}
+          />
+          <Input
+            name="cuil"
+            label="CUIL"
+            defaultValue={patient?.cuil ?? ""}
+            placeholder="XX-XXXXXXXX-X"
+          />
+          <Select
+            name="sex"
+            label="Sexo registral"
+            defaultValue={patient?.sex ?? ""}
+            options={[
+              { value: "", label: "Sin especificar" },
+              { value: "F", label: "Femenino" },
+              { value: "M", label: "Masculino" },
+              { value: "X", label: "X / no binario" },
+            ]}
+          />
+          <Select
+            name="alt_identifier_type"
+            label="ID alternativo (si no hay CUIL)"
+            defaultValue={patient?.alt_identifier_type ?? ""}
+            options={[
+              { value: "", label: "Ninguno" },
+              { value: "cuit", label: "CUIT" },
+              { value: "cdi", label: "CDI" },
+              { value: "passport", label: "Pasaporte" },
+              { value: "other", label: "Otro" },
+            ]}
+          />
+          <Input
+            name="alt_identifier_value"
+            label="Valor ID alternativo"
+            className="sm:col-span-2"
+            defaultValue={patient?.alt_identifier_value ?? ""}
+          />
+        </div>
+      </div>
+
       <Input
         name="birth_date"
         label="Fecha de nacimiento"

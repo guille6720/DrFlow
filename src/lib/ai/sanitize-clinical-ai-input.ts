@@ -65,7 +65,7 @@ export function hasResidualClinicalPii(text: string): boolean {
 
 /**
  * Centralized server-side sanitization for all external AI requests.
- * Detects and redacts common Argentine identifiers before data leaves DrFlow.
+ * Detects and redacts common Argentine identifiers before data leaves NexClinic.
  */
 export function sanitizeClinicalAIInput(
   text: string,

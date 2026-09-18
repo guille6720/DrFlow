@@ -123,7 +123,7 @@ describe("Phase 15 app wiring (static)", () => {
   it("auth login uses CSRF and rate limit", () => {
     const src = read("src/app/api/auth/login/route.ts");
     expect(src).toContain("isSameOriginPost");
-    expect(src).toContain("checkRateLimit");
+    expect(src).toContain("checkRateLimitAsync");
     expect(src).toContain("AUTH_LOGIN_RATE_LIMIT");
     expect(src).toContain("getRequestClientIp");
   });
@@ -132,7 +132,7 @@ describe("Phase 15 app wiring (static)", () => {
     const src = read("src/app/api/auth/reset-password/route.ts");
     expect(src).toContain("isSameOriginPost");
     expect(src).toContain("AUTH_RESET_RATE_LIMIT");
-    expect(src).toContain("checkRateLimit");
+    expect(src).toContain("checkRateLimitAsync");
   });
 
   it("billing checkout requires same-origin mutation", () => {

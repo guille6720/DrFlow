@@ -4,7 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { isSameOriginPost } from "@/core/security/csrf";
 import {
   AUTH_LOGIN_RATE_LIMIT,
-  checkRateLimit,
+  checkRateLimitAsync,
   getRequestClientIp,
 } from "@/core/security/rate-limit";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/core/supabase/env";
@@ -48,7 +48,8 @@ export async function POST(request: NextRequest) {
   }
 
   const clientIp = getRequestClientIp(request);
-  if (!checkRateLimit(`auth:login:${clientIp}`, AUTH_LOGIN_RATE_LIMIT)) {
+  const limited = await checkRateLimitAsync(`auth:login:${clientIp}`, AUTH_LOGIN_RATE_LIMIT);
+  if (!limited.allowed) {
     return redirectToLogin(request, "Demasiados intentos. Esperá unos minutos.");
   }
 

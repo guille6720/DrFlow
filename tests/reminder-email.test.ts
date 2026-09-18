@@ -21,7 +21,7 @@ describe("deliverReminderEmail", () => {
     expect(sendTransactionalEmail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: "paciente@example.com",
-        subject: "Recordatorio de turno — DrFlow",
+        subject: "Recordatorio de turno — NexClinic",
       })
     );
   });

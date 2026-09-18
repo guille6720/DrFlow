@@ -41,7 +41,45 @@ function SidebarNavLinkItem({
   onPrefetch: (href: string) => void;
   nested?: boolean;
 }) {
-  const active = isNavLinkActive(pathname, item.href);
+  const active = !item.disabled && isNavLinkActive(pathname, item.href);
+  const className = cn(
+    "flex items-center gap-3 rounded-2xl py-2.5 text-sm font-semibold transition-all",
+    nested ? "px-3 pl-9" : "px-3",
+    item.disabled
+      ? "cursor-not-allowed opacity-55 text-[var(--text-on-sidebar,#1e293b)]"
+      : active
+        ? "drflow-sidebar-nav-active bg-gradient-to-r text-white shadow-sm"
+        : "text-[var(--text-on-sidebar,#1e293b)] hover:bg-[var(--surface-hover,#f1f5f9)]"
+  );
+
+  const icon = (
+    <item.icon
+      className={cn(
+        "h-5 w-5 shrink-0",
+        active ? "text-white" : "text-[var(--sidebar-accent,#0f766e)]",
+        item.disabled && "opacity-70"
+      )}
+      strokeWidth={2.25}
+    />
+  );
+
+  if (item.disabled) {
+    return (
+      <span
+        role="link"
+        aria-disabled="true"
+        title="Geriatría aún no está habilitada para esta clínica"
+        className={className}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+      >
+        {icon}
+        {item.label}
+      </span>
+    );
+  }
 
   return (
     <Link
@@ -50,17 +88,9 @@ function SidebarNavLinkItem({
       onMouseEnter={() => onPrefetch(item.href)}
       onFocus={() => onPrefetch(item.href)}
       onClick={onNavigate}
-      className={cn(
-        "flex items-center gap-3 rounded-2xl py-2.5 text-sm font-medium transition-all",
-        nested ? "px-3 pl-9" : "px-3",
-        active
-          ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900 shadow-md shadow-teal-500/20"
-          : "text-slate-300 hover:bg-slate-800/90 hover:text-white"
-      )}
+      className={className}
     >
-      <item.icon
-        className={cn("h-5 w-5 shrink-0", active ? "text-slate-900" : "text-teal-400")}
-      />
+      {icon}
       {item.label}
     </Link>
   );
@@ -89,6 +119,7 @@ function SidebarNavGroupItem({
   useEffect(() => {
     if (!open) return;
     for (const child of group.children) {
+      if (child.disabled) continue;
       onPrefetch(child.href);
     }
   }, [open, group.children, onPrefetch]);
@@ -100,16 +131,27 @@ function SidebarNavGroupItem({
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         className={cn(
-          "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all",
+          "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all",
           childActive
-            ? "bg-slate-800/90 text-white"
-            : "text-slate-300 hover:bg-slate-800/90 hover:text-white"
+            ? "bg-[var(--sidebar-active-bg,#0f766e)] text-white"
+            : "text-[var(--text-on-sidebar,#1e293b)] hover:bg-[var(--surface-hover,#f1f5f9)]"
         )}
       >
-        <group.icon className="h-5 w-5 shrink-0 text-teal-400/90" />
+        <group.icon
+          className={cn(
+            "h-5 w-5 shrink-0",
+            childActive ? "text-white" : "text-[var(--sidebar-accent,#0f766e)]"
+          )}
+          strokeWidth={2.25}
+        />
         <span className="flex-1 text-left">{group.label}</span>
         <ChevronDown
-          className={cn("h-4 w-4 shrink-0 text-slate-400 transition-transform", open && "rotate-180")}
+          className={cn(
+            "h-4 w-4 shrink-0 transition-transform",
+            childActive ? "text-white" : "text-[var(--text-on-sidebar,#1e293b)]",
+            open && "rotate-180"
+          )}
+          strokeWidth={2.25}
           aria-hidden
         />
       </button>
@@ -165,9 +207,9 @@ export function SidebarNavContent({
 
   return (
     <>
-      <div className="border-b border-slate-700/80 px-4 py-5">
+      <div className="border-b border-[var(--border-default,#e2e8f0)] px-4 py-5">
         <DrFlowLogo size="lg" href="/dashboard" centered />
-        <p className="mt-2 truncate text-center text-xs font-medium text-slate-400">
+        <p className="mt-2 truncate text-center text-xs font-semibold tracking-normal text-[var(--text-on-sidebar,#1e293b)]">
           {clinicName?.trim() || (clinicId ? "Mi clínica" : "Sin clínica")}
         </p>
         {isInvitedMember ? (
@@ -210,35 +252,35 @@ export function SidebarNavContent({
         ))}
       </nav>
 
-      <div className="space-y-1 border-t border-slate-700/80 p-3">
+      <div className="space-y-1 border-t border-[var(--border-default,#e2e8f0)] p-3">
         {isInvitedMember ? (
           <button
             type="button"
             onClick={() => setAppearanceOpen(true)}
-            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-[var(--text-on-sidebar,#1e293b)] transition hover:bg-[var(--surface-hover,#f1f5f9)]"
           >
-            <Palette className="h-5 w-5 text-teal-400" />
+            <Palette className="h-5 w-5 text-[var(--sidebar-accent,#0f766e)]" strokeWidth={2.25} />
             Cambiar estilo
           </button>
         ) : null}
         <button
           type="button"
           onClick={onToggleSidebarHidden}
-          className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-slate-100"
+          className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-[var(--text-on-sidebar,#1e293b)] transition hover:bg-[var(--surface-hover,#f1f5f9)]"
         >
           {sidebarHidden ? (
-            <PanelLeftOpen className="h-5 w-5 text-teal-400" />
+            <PanelLeftOpen className="h-5 w-5 text-[var(--sidebar-accent,#0f766e)]" />
           ) : (
-            <PanelLeftClose className="h-5 w-5 text-teal-400" />
+            <PanelLeftClose className="h-5 w-5 text-[var(--sidebar-accent,#0f766e)]" />
           )}
           {sidebarHidden ? "Mostrar menú lateral" : "Ocultar menú lateral"}
         </button>
         <form action="/api/auth/signout" method="post">
           <button
             type="submit"
-            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-red-950/50 hover:text-red-300"
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-[var(--text-on-sidebar,#1e293b)] hover:bg-red-50 hover:text-red-700"
           >
-            <LogOut className="h-5 w-5" />
+            <LogOut className="h-5 w-5 text-[var(--sidebar-accent,#0f766e)]" strokeWidth={2.25} />
             Cerrar sesión
           </button>
         </form>

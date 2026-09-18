@@ -1,4 +1,5 @@
 import { subDays } from "date-fns";
+import { Suspense } from "react";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
@@ -31,7 +32,7 @@ export default async function TurnosAgendaPage() {
     ? getCachedClinicProfessionalsAgenda(clinicId)
     : Promise.resolve([] as ProfessionalAgendaRow[]);
 
-  const [appointmentRows, professionals, locations, specialties, blocks, bookingSlug, defaultProfessionalId] =
+  const [agendaResult, professionals, locations, specialties, blocks, bookingSlug, defaultProfessionalId] =
     clinicId
       ? await Promise.all([
           selectAppointmentAgendaRows(supabase, {
@@ -41,7 +42,7 @@ export default async function TurnosAgendaPage() {
             embedPatients: true,
             embedRelations: true,
             limit: APPOINTMENTS_AGENDA_MAX,
-          }).then((result) => result.rows),
+          }),
           professionalsPromise,
           getCachedClinicLocations(clinicId),
           getCachedClinicSpecialties(clinicId),
@@ -57,9 +58,11 @@ export default async function TurnosAgendaPage() {
             resolveDefaultProfessionalId(supabase, clinicId, pros as ProfessionalAgendaRow[])
           ),
         ])
-      : [[], [], [], [], { data: [] }, null, undefined];
+      : [{ rows: [], error: null }, [], [], [], { data: [] }, null, undefined];
 
   const professionalRows: ProfessionalAgendaRow[] = professionals as ProfessionalAgendaRow[];
+
+  const appointmentRows = agendaResult.rows;
 
   return (
     <>
@@ -71,21 +74,23 @@ export default async function TurnosAgendaPage() {
         role={role}
         userName={profile?.full_name}
       />
-      <AgendaView
-        appointments={appointmentRows}
-        patients={[]}
-        professionals={professionalRows}
-        locations={locations}
-        specialties={specialties}
-        clinicId={clinicId}
-        role={role}
-        defaultDuration={clinic?.default_appointment_duration ?? 30}
-        scheduleBlocks={blocks.data ?? []}
-        bookingSlug={bookingSlug ?? clinic?.slug ?? null}
-        defaultProfessionalId={defaultProfessionalId}
-        isSuperadmin={isSuperadmin}
-        permissionOverrides={permissionOverrides}
-      />
+      <Suspense fallback={<p className="p-4 text-sm text-slate-500">Cargando agenda…</p>}>
+        <AgendaView
+          appointments={appointmentRows}
+          patients={[]}
+          professionals={professionalRows}
+          locations={locations}
+          specialties={specialties}
+          clinicId={clinicId}
+          role={role}
+          defaultDuration={clinic?.default_appointment_duration ?? 30}
+          scheduleBlocks={blocks.data ?? []}
+          bookingSlug={bookingSlug ?? clinic?.slug ?? null}
+          defaultProfessionalId={defaultProfessionalId}
+          isSuperadmin={isSuperadmin}
+          permissionOverrides={permissionOverrides}
+        />
+      </Suspense>
     </>
   );
 }

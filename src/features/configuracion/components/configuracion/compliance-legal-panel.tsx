@@ -88,7 +88,7 @@ export async function ComplianceLegalPanel() {
         <ul className="list-disc space-y-2 pl-5 text-slate-700">
           <li>
             <strong className="text-slate-900">Responsable del tratamiento:</strong> este consultorio
-            ({clinic?.name}). DrFlow actúa como encargado de procesamiento técnico.
+            ({clinic?.name}). NexClinic actúa como encargado de procesamiento técnico.
           </li>
           <li>
             Consentimientos de pacientes registrados (turnos web):{" "}
@@ -135,7 +135,7 @@ export async function ComplianceLegalPanel() {
               meetsDefaultMinimum: true,
               autoPurgeEnabled: false,
               retentionNotes: [
-                "DrFlow no ejecuta jobs de destrucción automática de HC al vencer el plazo. La conservación es el comportamiento por defecto.",
+                "NexClinic no ejecuta jobs de destrucción automática de HC al vencer el plazo. La conservación es el comportamiento por defecto.",
               ],
             }}
             error={retentionSummary.error}

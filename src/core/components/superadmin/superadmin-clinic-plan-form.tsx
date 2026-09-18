@@ -32,10 +32,15 @@ export function SuperadminClinicPlanForm({
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const dirty = useMemo(() => planKey !== currentPlanKey, [planKey, currentPlanKey]);
+  const dirty = useMemo(() => planKey !== (currentPlanKey ?? ""), [planKey, currentPlanKey]);
 
   return (
     <div className="space-y-3 text-sm">
+      {!currentPlanKey ? (
+        <p className="rounded-md border border-amber-200 bg-amber-50 p-2 text-amber-900">
+          Esta clínica no tiene plan comercial asignado. Elegí uno y confirmá con motivo.
+        </p>
+      ) : null}
       <div className="flex flex-wrap gap-2">
         <select
           value={planKey}
@@ -44,7 +49,7 @@ export function SuperadminClinicPlanForm({
             setDiff(null);
             setMessage(null);
           }}
-          className="rounded-md border border-slate-300 px-2 py-2"
+          className="rounded-md border border-slate-300 px-2 py-2 dark:border-slate-600 dark:bg-slate-900"
         >
           {planKeys.map((key) => (
             <option key={key} value={key}>
@@ -56,15 +61,16 @@ export function SuperadminClinicPlanForm({
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder="Motivo (auditoría)"
-          className="min-w-[200px] flex-1 rounded-md border border-slate-300 px-3 py-2"
+          className="min-w-[200px] flex-1 rounded-md border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-900"
         />
         <button
           type="button"
-          disabled={!dirty || !currentPlanKey || pending}
-          className="rounded-md border border-slate-300 px-3 py-2 disabled:opacity-50"
+          disabled={!dirty || pending}
+          className="rounded-md border border-slate-300 px-3 py-2 disabled:opacity-50 dark:border-slate-600"
           onClick={() => {
             startTransition(async () => {
-              const result = await previewClinicPlanChangeAction(currentPlanKey!, planKey);
+              const fromKey = currentPlanKey ?? planKey;
+              const result = await previewClinicPlanChangeAction(fromKey, planKey);
               if (!result.ok || !result.diff) {
                 setMessage(result.error ?? "No se pudo comparar");
                 return;

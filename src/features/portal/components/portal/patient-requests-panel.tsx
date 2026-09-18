@@ -1,12 +1,11 @@
 "use client";
 
-import { Bell, RefreshCw } from "lucide-react";
+import { Bell, LogOut, RefreshCw } from "lucide-react";
 
 import { usePatientRequestsPanel } from "@/features/pacientes/hooks/use-patient-requests-panel";
 import { PatientRequestCard } from "@/features/portal/components/portal/patient-request-card";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 interface Props {
   slug: string;
@@ -28,30 +27,32 @@ export function PatientRequestsPanel({ slug, clinicName, refreshTrigger = 0 }: P
               Acá ves el estado de tus pedidos a {clinicName}. Podés cancelar turnos confirmados o
               pendientes.
             </p>
-            <p className="mt-2 text-xs text-slate-500">
-              Ingresá tu DNI para ver tus turnos online desde cualquier dispositivo.
-            </p>
+            <p className="mt-2 text-xs text-slate-500">Acceso protegido al Portal del Paciente.</p>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-        <Input
-          label="Tu DNI (para ver y cancelar turnos)"
-          value={panel.documentNumber}
-          onChange={(e) => panel.setDocumentNumber(e.target.value)}
-          placeholder="Ej: 30123456"
-          className="flex-1"
-        />
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
           variant="outline"
           onClick={panel.handleRefresh}
-          disabled={!panel.documentNumber.trim()}
+          disabled={panel.refreshing}
         >
           <RefreshCw className={`h-4 w-4 ${panel.refreshing ? "animate-spin" : ""}`} />
           Actualizar
         </Button>
+        {panel.authenticated ? (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={panel.handleLogout}
+            disabled={panel.loggingOut}
+          >
+            <LogOut className="h-4 w-4" />
+            Cerrar sesión
+          </Button>
+        ) : null}
       </div>
 
       {panel.loadError && (
@@ -60,19 +61,25 @@ export function PatientRequestsPanel({ slug, clinicName, refreshTrigger = 0 }: P
         </p>
       )}
 
-      {panel.items.length === 0 ? (
+      {!panel.authenticated && !panel.loadError ? (
         <p className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
-          {panel.documentNumber.trim()
-            ? "No encontramos turnos online con ese DNI."
-            : "Ingresá tu DNI para ver tus turnos o pedí uno nuevo."}
+          Para ver tus turnos necesitás ingresar desde el enlace seguro enviado por el consultorio.
         </p>
-      ) : (
+      ) : null}
+
+      {panel.authenticated && panel.items.length === 0 && !panel.loadError ? (
+        <p className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
+          No tenés turnos online para mostrar. Podés pedir uno nuevo desde Inicio.
+        </p>
+      ) : null}
+
+      {panel.items.length > 0 ? (
         <ul className="space-y-3">
           {panel.items.map((request) => (
             <PatientRequestCard key={request.id} request={request} panel={panel} />
           ))}
         </ul>
-      )}
+      ) : null}
     </div>
   );
 }

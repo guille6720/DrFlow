@@ -3,9 +3,9 @@
  * Source of truth: lista de enfermedades.pdf (CIE-10-ES 6ª ed. ene 2026, extracto).
  * Does NOT invent codes/names outside the PDF text.
  */
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { createHash } from "node:crypto";
 
 const ROOT = process.cwd();
 const RAW = path.join(ROOT, "data/lista-tabular-enfermedades.raw.txt");

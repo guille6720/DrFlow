@@ -23,7 +23,7 @@ export type ManualSection = {
   tips?: string[];
 };
 
-export const MANUAL_TITLE = "Manual de uso DrFlow — Consultorio";
+export const MANUAL_TITLE = "Manual de uso NexClinic — Consultorio";
 export const MANUAL_SUBTITLE =
   "Guía rápida para médicos y equipo. Se actualiza con cada nueva versión de la app.";
 
@@ -37,7 +37,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
     steps: [
       {
         title: "Entrá con tu cuenta",
-        body: "Usá email/contraseña o Continuar con Google en https://drflow.opusorg.com/login. Si olvidaste la clave: escribí tu email → «Enviar link para restablecer contraseña» → abrí el mail en Chrome o Edge (no en la app de Gmail embebida) → elegí una clave nueva de al menos 8 caracteres.",
+        body: "Usá email/contraseña o Continuar con Google en el login de NexClinic (NEXT_PUBLIC_APP_URL o NEXT_PUBLIC_SITE_URL + /login). Si olvidaste la clave: escribí tu email → «Enviar link para restablecer contraseña» → abrí el mail en Chrome o Edge (no en la app de Gmail embebida) → elegí una clave nueva de al menos 8 caracteres.",
       },
       {
         title: "Miriá el panel «Consultorio en vivo»",

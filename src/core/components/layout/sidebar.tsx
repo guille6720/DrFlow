@@ -14,9 +14,15 @@ import {
   SUPERADMIN_SIDEBAR_NAV_ENTRIES,
 } from "@/core/components/layout/sidebar-nav-config";
 import { SidebarNavContent } from "@/core/components/layout/sidebar-nav-content";
+import { useClinicProducts } from "@/core/components/products/products-provider";
 import { isHrefEntitledBySnapshot } from "@/core/entitlements/nav-features";
 import type { ClientEntitlementsSnapshot } from "@/core/entitlements/types";
 import { canAccessImportExport, hasPermission, isInvitedClinicMember, type PermissionOverrides } from "@/core/permissions/roles";
+import type { ClinicProductsSnapshot } from "@/core/products/products";
+import {
+  isHrefNavLockedByProducts,
+  isHrefVisibleInNav,
+} from "@/core/products/route-products";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -45,44 +51,52 @@ function isNavHrefEntitled(
   return isHrefEntitledBySnapshot(href, snapshot);
 }
 
-function filterNavLink(
+function resolveNavLink(
   item: SidebarNavLink,
   role: UserRole | null,
   isSuperadmin: boolean | undefined,
   clinicFeatures: ReturnType<typeof useClinicFeatures>,
   permissionOverrides?: PermissionOverrides,
-  entitlements?: ClientEntitlementsSnapshot | null
-): boolean {
+  entitlements?: ClientEntitlementsSnapshot | null,
+  products?: ClinicProductsSnapshot | null
+): SidebarNavLink | null {
   if (item.href === "/datos") {
-    return canAccessImportExport(role, isSuperadmin ?? false, permissionOverrides);
+    if (!canAccessImportExport(role, isSuperadmin ?? false, permissionOverrides)) {
+      return null;
+    }
   }
 
   if (item.href.startsWith("/superadmin")) {
-    return Boolean(isSuperadmin);
+    if (!isSuperadmin) return null;
   }
 
   if (
     item.permission &&
     !hasPermission(role, item.permission, isSuperadmin, permissionOverrides)
   ) {
-    return false;
+    return null;
   }
 
   const pluginId = NAV_PLUGIN_BY_FEATURE[item.featureId];
   if (pluginId && !isPluginEnabled(clinicFeatures.plugins, pluginId)) {
-    return false;
+    return null;
   }
 
   const flagId = NAV_FLAG_BY_HREF[item.href];
   if (flagId && !isFeatureFlagEnabled(clinicFeatures, flagId)) {
-    return false;
+    return null;
   }
 
   if (!isNavHrefEntitled(item.href, entitlements ?? null)) {
-    return false;
+    return null;
   }
 
-  return true;
+  if (!isHrefVisibleInNav(item.href, products ?? null)) {
+    return null;
+  }
+
+  const locked = isHrefNavLockedByProducts(item.href, products ?? null);
+  return locked ? { ...item, disabled: true } : { ...item, disabled: false };
 }
 
 function filterSidebarNavEntries(
@@ -91,35 +105,38 @@ function filterSidebarNavEntries(
   isSuperadmin: boolean | undefined,
   clinicFeatures: ReturnType<typeof useClinicFeatures>,
   permissionOverrides?: PermissionOverrides,
-  entitlements?: ClientEntitlementsSnapshot | null
+  entitlements?: ClientEntitlementsSnapshot | null,
+  products?: ClinicProductsSnapshot | null
 ): SidebarNavEntry[] {
   return entries
     .map((entry) => {
       if (isSidebarNavGroup(entry)) {
-        const children = entry.children.filter((child) =>
-          filterNavLink(
-            child,
-            role,
-            isSuperadmin,
-            clinicFeatures,
-            permissionOverrides,
-            entitlements
+        const children = entry.children
+          .map((child) =>
+            resolveNavLink(
+              child,
+              role,
+              isSuperadmin,
+              clinicFeatures,
+              permissionOverrides,
+              entitlements,
+              products
+            )
           )
-        );
+          .filter((child): child is SidebarNavLink => child != null);
         if (children.length === 0) return null;
         return { ...entry, children };
       }
 
-      return filterNavLink(
+      return resolveNavLink(
         entry,
         role,
         isSuperadmin,
         clinicFeatures,
         permissionOverrides,
-        entitlements
-      )
-        ? entry
-        : null;
+        entitlements,
+        products
+      );
     })
     .filter((entry): entry is SidebarNavEntry => entry != null);
 }
@@ -137,6 +154,7 @@ export function Sidebar({
   const { hidden: desktopHidden, toggleHidden } = useDashboardSidebar();
   const clinicFeatures = useClinicFeatures();
   const entitlements = useEntitlementsSnapshot();
+  const products = useClinicProducts();
 
   const visibleItems = useMemo(() => {
     const base = filterSidebarNavEntries(
@@ -145,7 +163,8 @@ export function Sidebar({
       isSuperadmin,
       clinicFeatures,
       permissionOverrides,
-      entitlements
+      entitlements,
+      products
     );
     if (!isSuperadmin) return base;
     const superadmin = filterSidebarNavEntries(
@@ -154,10 +173,11 @@ export function Sidebar({
       isSuperadmin,
       clinicFeatures,
       permissionOverrides,
-      entitlements
+      entitlements,
+      products
     );
     return [...base, ...superadmin];
-  }, [role, isSuperadmin, clinicFeatures, permissionOverrides, entitlements]);
+  }, [role, isSuperadmin, clinicFeatures, permissionOverrides, entitlements, products]);
 
   const isInvitedMember = isInvitedClinicMember(role, isSuperadmin);
 
@@ -177,7 +197,7 @@ export function Sidebar({
     <>
       <button
         type="button"
-        className="fixed left-4 top-4 z-50 rounded-2xl bg-gradient-to-r from-cyan-500 to-teal-500 p-2.5 text-white shadow-lg shadow-cyan-500/30 lg:hidden"
+        className="fixed left-4 top-4 z-50 rounded-2xl drflow-accent-fill p-2.5 text-white lg:hidden"
         onClick={() => setMobileOpen(!mobileOpen)}
         aria-label={mobileOpen ? "Cerrar menú de navegación" : "Abrir menú de navegación"}
         aria-expanded={mobileOpen}
@@ -199,7 +219,8 @@ export function Sidebar({
         id="drflow-sidebar"
         aria-label="Menú lateral"
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r drflow-ui-sidebar drflow-sidebar-gradient shadow-xl shadow-black/30 transition-transform duration-200 ease-out",
+          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r drflow-ui-sidebar drflow-sidebar-gradient transition-transform duration-200 ease-out",
+          "shadow-sm",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           desktopHidden ? "lg:-translate-x-full" : "lg:translate-x-0"
         )}

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
 import { hasPermission } from "@/core/permissions/roles";
+import { TURNOS_TODAY_SCAN_MAX } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
 
 import {
@@ -36,7 +37,8 @@ export default async function SalaEsperaPage() {
     .lt("start_at", endExclusiveIso)
     .neq("status", "cancelled")
     .not("waiting_room_entered_at", "is", null)
-    .order("start_at");
+    .order("start_at")
+    .limit(TURNOS_TODAY_SCAN_MAX);
 
   return (
     <>
@@ -49,7 +51,7 @@ export default async function SalaEsperaPage() {
         userName={profile?.full_name}
       />
       <div className="p-3 sm:p-4">
-        <Link href="/agenda" className="mb-4 inline-block">
+        <Link href="/turnos/agenda" className="mb-4 inline-block">
           <Button variant="outline" size="sm">
             Ir a agenda
           </Button>

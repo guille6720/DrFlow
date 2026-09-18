@@ -1,6 +1,7 @@
 import qrcode from "qrcode-generator";
 
 import { resolveRefepsDocumentLanguage } from "@/core/compliance/prescription-compliance";
+import { isOfficialCuirString } from "@/core/renapdis/cuir";
 
 import type { CoverageRuleConfig } from "@/features/recetas/engine/types";
 import {
@@ -70,6 +71,16 @@ export function buildPrescriptionQrPayload(input: {
   return parts.join("|");
 }
 
+/** Sandbox CUIR QR — explicitly non-legal; never implies Ministry validation. */
+export function buildSandboxCuirQrPayload(input: {
+  cuirFormatted: string;
+  prescriptionNumber: string | null;
+}): string {
+  return ["DRFLOW", "CUIR-SANDBOX", input.cuirFormatted.trim(), input.prescriptionNumber?.trim() || ""].join(
+    "|"
+  );
+}
+
 /** REFEPS verification payload when prescription was submitted. */
 export function buildRefepsQrPayload(input: {
   refepsId: string;
@@ -95,6 +106,9 @@ export function resolvePrescriptionDocumentQr(input: {
   issuedAt: string;
   coverageKind?: PrescriptionCoverageKind | null;
   clinicRuleOverride?: Partial<CoverageRuleConfig> | null;
+  nationalRxStatus?: string | null;
+  cuirStatus?: string | null;
+  cuirFormatted?: string | null;
 }): {
   showQr: boolean;
   qrPayload: string | null;
@@ -118,6 +132,37 @@ export function resolvePrescriptionDocumentQr(input: {
     };
   }
 
+  if (
+    input.cuirStatus === "sandbox" &&
+    input.cuirFormatted?.trim() &&
+    (input.nationalRxStatus === "sandbox" || input.nationalRxStatus === "national_ready")
+  ) {
+    return {
+      showQr: true,
+      qrPayload: buildSandboxCuirQrPayload({
+        cuirFormatted: input.cuirFormatted,
+        prescriptionNumber: input.prescriptionNumber,
+      }),
+      qrTitle: "CUIR SANDBOX — SIN VALIDEZ LEGAL",
+      qrHint:
+        "Identificador de prueba NexClinic. No implica validación del Ministerio ni homologación ReNaPDiS.",
+    };
+  }
+
+  if (
+    input.cuirStatus === "official" &&
+    input.cuirFormatted?.trim() &&
+    isOfficialCuirString(input.cuirFormatted) &&
+    input.nationalRxStatus === "national_ready"
+  ) {
+    return {
+      showQr: true,
+      qrPayload: input.cuirFormatted.trim(),
+      qrTitle: "CUIR",
+      qrHint: "CUIR oficial (concatenación numérica Anexo IV) tras validación estricta.",
+    };
+  }
+
   const showLocal = shouldShowPrescriptionDocumentQr(input.coverageKind, input.clinicRuleOverride);
   if (!showLocal) {
     return { showQr: false, qrPayload: null, qrTitle: "", qrHint: "" };
@@ -133,7 +178,7 @@ export function resolvePrescriptionDocumentQr(input: {
       coverageKind: input.coverageKind,
     }),
     qrTitle: "Verificación local",
-    qrHint: "Placeholder DrFlow — no constituye trazabilidad REFEPS.",
+    qrHint: "Placeholder NexClinic — no constituye trazabilidad REFEPS.",
   };
 }
 

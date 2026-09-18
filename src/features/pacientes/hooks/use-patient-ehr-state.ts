@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { toast } from "@/core/notifications/toast";
 
@@ -15,8 +15,9 @@ import {
   buildConsultationSidebarList,
   filterClinicalRowsByConsultationDay,
   formatPatientEhrSidebarDate,
-  isSameCalendarDay,
   resolveConsultationAttachment,
+  resolveDayPrintAnchorIso,
+  resolveDayPrintConsultations,
   resolveSelectedConsultation,
 } from "@/features/historias/components/historias/patient-ehr-utils";
 import { printEhrClinicalDocument } from "@/features/historias/utils/print-ehr-clinical-document";
@@ -86,6 +87,10 @@ export function usePatientEhrState(
   const [consultationDatePatches, setConsultationDatePatches] = useState<Record<string, string>>(
     {}
   );
+  const [consultationContentPatches, setConsultationContentPatches] = useState<
+    Record<string, Partial<PatientEhrConsultation>>
+  >({});
+  const [removedRecordIds, setRemovedRecordIds] = useState<Set<string>>(() => new Set());
   const [recordsPagination, setRecordsPagination] = useState<PatientEhrClinicalRecordsPagination>(
     options?.clinicalRecordsPagination ?? {
       total: consultations.length,
@@ -95,34 +100,79 @@ export function usePatientEhrState(
   );
   const [loadingMoreRecords, startLoadMoreRecords] = useTransition();
   const [printingFullHistory, setPrintingFullHistory] = useState(false);
+  const [dayPrintAnchorIso, setDayPrintAnchorIso] = useState<string | null>(null);
+  const [activeRecordId, setActiveRecordId] = useState<string | null>(null);
+  const beforePrintRef = useRef<(() => Promise<void> | void) | null>(null);
+  const activePatientId = options?.patientId ?? printBundle.patient.id;
+  const prevPatientIdRef = useRef(activePatientId);
+
+  // Soft-nav between patients can reuse this hook instance — clear patches/extras.
+  useEffect(() => {
+    if (prevPatientIdRef.current === activePatientId) {
+      return;
+    }
+    prevPatientIdRef.current = activePatientId;
+    setExtraConsultations([]);
+    setExtraDiagnosisRows([]);
+    setExtraTreatmentRows([]);
+    setConsultationDatePatches({});
+    setConsultationContentPatches({});
+    setRemovedRecordIds(new Set());
+    setDayPrintAnchorIso(null);
+    setActiveRecordId(null);
+    setRecordsPagination(
+      options?.clinicalRecordsPagination ?? {
+        total: consultations.length,
+        hasMore: false,
+        nextCursor: null,
+      }
+    );
+  }, [activePatientId, consultations.length, options?.clinicalRecordsPagination]);
 
   const mergedConsultations = useMemo(
     () =>
-      mergeById(consultations, extraConsultations).map((row) => {
-        const createdAt = consultationDatePatches[row.id];
-        return createdAt ? { ...row, created_at: createdAt } : row;
-      }),
-    [consultations, extraConsultations, consultationDatePatches]
+      mergeById(consultations, extraConsultations)
+        .filter((row) => !removedRecordIds.has(row.id))
+        .map((row) => {
+          const createdAt = consultationDatePatches[row.id];
+          const contentPatch = consultationContentPatches[row.id];
+          return {
+            ...row,
+            ...contentPatch,
+            ...(createdAt ? { created_at: createdAt } : {}),
+          };
+        }),
+    [
+      consultations,
+      extraConsultations,
+      consultationContentPatches,
+      consultationDatePatches,
+      removedRecordIds,
+    ]
   );
   const mergedDiagnosisRows = useMemo(
     () =>
-      mergeById(printBundle.diagnosisRows, extraDiagnosisRows).map((row) => {
-        const createdAt = consultationDatePatches[row.recordId];
-        return createdAt
-          ? { ...row, recordCreatedAt: createdAt, dateLabel: formatPatientEhrSidebarDate(createdAt) }
-          : row;
-      }),
-    [printBundle.diagnosisRows, extraDiagnosisRows, consultationDatePatches]
+      mergeById(printBundle.diagnosisRows, extraDiagnosisRows)
+        .filter((row) => !removedRecordIds.has(row.recordId))
+        .map((row) => {
+          const createdAt = consultationDatePatches[row.recordId];
+          return createdAt
+            ? { ...row, recordCreatedAt: createdAt, dateLabel: formatPatientEhrSidebarDate(createdAt) }
+            : row;
+        }),
+    [printBundle.diagnosisRows, extraDiagnosisRows, consultationDatePatches, removedRecordIds]
   );
   const mergedTreatmentRows = useMemo(
     () =>
-      mergeById(printBundle.treatmentRows, extraTreatmentRows).map((row) => {
-        const createdAt = consultationDatePatches[row.recordId];
-        return createdAt
-          ? { ...row, recordCreatedAt: createdAt, dateLabel: formatPatientEhrSidebarDate(createdAt) }
-          : row;
-      }),
-    [printBundle.treatmentRows, extraTreatmentRows, consultationDatePatches]
+      mergeById(printBundle.treatmentRows, extraTreatmentRows)
+        .filter((row) => !removedRecordIds.has(row.recordId))
+        .map((row) => {
+          const createdAt = consultationDatePatches[row.recordId];
+          return createdAt
+            ? { ...row, recordCreatedAt: createdAt, dateLabel: formatPatientEhrSidebarDate(createdAt) }
+            : row;
+        }),
+    [printBundle.treatmentRows, extraTreatmentRows, consultationDatePatches, removedRecordIds]
   );
 
   const sorted = useMemo(
@@ -202,21 +252,36 @@ export function usePatientEhrState(
     [selectedId, sidebarList, evolutionList, sorted]
   );
 
-  const dayPrintConsultations = useMemo(() => {
-    if (!selected) return [];
-    return evolutionList.filter((c) => isSameCalendarDay(c.created_at, selected.created_at));
-  }, [evolutionList, selected]);
+  const dayPrintAnchor = useMemo(
+    () =>
+      resolveDayPrintAnchorIso({
+        dayPrintAnchorIso,
+        activeRecordId,
+        evolutionList,
+        selected,
+      }),
+    [activeRecordId, dayPrintAnchorIso, evolutionList, selected]
+  );
+
+  const dayPrintConsultations = useMemo(
+    () => resolveDayPrintConsultations(evolutionList, dayPrintAnchor),
+    [dayPrintAnchor, evolutionList]
+  );
 
   const vitalsRows = useMemo(() => sorted.filter((c) => c.category === "vitals"), [sorted]);
 
   const loadMoreRecords = useCallback(() => {
     if (!options?.patientId || !recordsPagination.hasMore || loadingMoreRecords) return;
 
+    const requestedPatientId = options.patientId;
     startLoadMoreRecords(async () => {
       const result = await loadMorePatientClinicalRecords(
-        options.patientId!,
+        requestedPatientId,
         recordsPagination.nextCursor ?? undefined
       );
+      if (requestedPatientId !== (options?.patientId ?? printBundle.patient.id)) {
+        return;
+      }
       if (result.error) {
         toast.error(result.error);
         return;
@@ -231,7 +296,13 @@ export function usePatientEhrState(
         nextCursor: result.nextCursor ?? null,
       }));
     });
-  }, [loadingMoreRecords, options, recordsPagination.hasMore, recordsPagination.nextCursor]);
+  }, [
+    loadingMoreRecords,
+    options,
+    printBundle.patient.id,
+    recordsPagination.hasMore,
+    recordsPagination.nextCursor,
+  ]);
 
   const appendClinicalHistory = useCallback(
     (payload: {
@@ -266,18 +337,50 @@ export function usePatientEhrState(
     setConsultationDatePatches((current) => ({ ...current, [recordId]: createdAt }));
   }, []);
 
+  const patchClinicalRecord = useCallback(
+    (recordId: string, patch: Partial<PatientEhrConsultation> & { created_at?: string }) => {
+      if (patch.created_at) {
+        setConsultationDatePatches((current) => ({ ...current, [recordId]: patch.created_at! }));
+      }
+      const { created_at: _createdAt, ...contentPatch } = patch;
+      if (Object.keys(contentPatch).length > 0) {
+        setConsultationContentPatches((current) => ({
+          ...current,
+          [recordId]: { ...current[recordId], ...contentPatch },
+        }));
+      }
+    },
+    []
+  );
+
+  const removeClinicalRecord = useCallback((recordId: string) => {
+    setRemovedRecordIds((current) => new Set([...current, recordId]));
+    setRecordsPagination((pagination) => ({
+      ...pagination,
+      total: Math.max(0, pagination.total - 1),
+    }));
+  }, []);
+
   async function triggerPrint(scope: PatientEhrPrintScope) {
     if (scope === "day" && dayPrintConsultations.length === 0) return;
     if (printingFullHistory) return;
+
+    if (beforePrintRef.current) {
+      await beforePrintRef.current();
+    }
 
     let printConsultations = evolutionList;
     let printDiagnosisRows = mergedDiagnosisRows;
     let printTreatmentRows = mergedTreatmentRows;
 
     if (scope === "all" && recordsPagination.hasMore && options?.patientId) {
+      const requestedPatientId = options.patientId;
       setPrintingFullHistory(true);
       try {
-        const result = await loadPatientClinicalRecordsForPrint(options.patientId);
+        const result = await loadPatientClinicalRecordsForPrint(requestedPatientId);
+        if (requestedPatientId !== (options?.patientId ?? printBundle.patient.id)) {
+          return;
+        }
         if (result.error) {
           toast.error(result.error);
           return;
@@ -306,7 +409,7 @@ export function usePatientEhrState(
       }
     }
 
-    const dayCreatedAt = selected?.created_at ?? dayPrintConsultations[0]?.created_at ?? null;
+    const dayCreatedAt = dayPrintAnchor ?? selected?.created_at ?? dayPrintConsultations[0]?.created_at ?? null;
     const diagnosisRows =
       scope === "day"
         ? filterClinicalRowsByConsultationDay(printDiagnosisRows, dayCreatedAt)
@@ -344,6 +447,10 @@ export function usePatientEhrState(
     });
   }
 
+  const registerBeforePrint = useCallback((fn: (() => Promise<void> | void) | null) => {
+    beforePrintRef.current = fn;
+  }, []);
+
   return {
     evolutionList,
     sidebarList,
@@ -359,6 +466,7 @@ export function usePatientEhrState(
     consultationAttachmentById,
     vitalsRows,
     dayPrintConsultations,
+    dayPrintAnchorIso: dayPrintAnchor,
     triggerPrint,
     printingFullHistory,
     diagnosisRows: mergedDiagnosisRows,
@@ -368,7 +476,12 @@ export function usePatientEhrState(
     loadingMoreRecords,
     appendClinicalHistory,
     patchConsultationDate,
+    patchClinicalRecord,
+    removeClinicalRecord,
     resolveConsultationSignature,
+    setDayPrintAnchorIso,
+    setActiveRecordId,
+    registerBeforePrint,
     patientId: options?.patientId ?? printBundle.patient.id,
   };
 }

@@ -31,7 +31,11 @@ function resolveSiteUrl(): string | undefined {
   if (!configured) return undefined;
 
   try {
-    return normalizePublicUrl(configured);
+    const normalized = normalizePublicUrl(configured);
+    const parsed = new URL(normalized);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return undefined;
+    if (/\[SENSITIVE\]|your-project|example\.com/i.test(configured)) return undefined;
+    return normalized;
   } catch {
     return undefined;
   }

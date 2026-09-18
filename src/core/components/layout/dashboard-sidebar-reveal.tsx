@@ -14,7 +14,7 @@ export function DashboardSidebarReveal() {
     <button
       type="button"
       onClick={() => setHidden(false)}
-      className="fixed left-4 top-4 z-50 hidden items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-teal-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 transition hover:from-cyan-600 hover:to-teal-600 lg:inline-flex"
+      className="fixed left-4 top-4 z-50 hidden items-center gap-2 rounded-2xl drflow-accent-fill px-4 py-2.5 text-sm font-semibold text-white transition lg:inline-flex"
       aria-label="Mostrar menú de navegación"
     >
       <PanelLeftOpen className="h-4 w-4" />

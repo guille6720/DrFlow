@@ -8,23 +8,25 @@ import {
   getSalesWhatsAppPhone,
   TRIAL_DAYS_INCLUDED,
 } from "@/core/billing/plans";
+import { GeriatricsPricingSection } from "@/core/components/landing/geriatrics-pricing-section";
 import { MarketingFooter } from "@/core/components/landing/marketing-footer";
 import { MarketingHeader } from "@/core/components/landing/marketing-header";
 import { PlansModuleNotice } from "@/core/components/landing/plans-module-notice";
 import { PlansPricingSection } from "@/core/components/landing/plans-pricing-section";
+import { getPublicSiteUrl } from "@/core/supabase/env";
 
 import { buildWhatsAppUrl } from "@/shared/utils/whatsapp";
 
 import { ButtonLink } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Planes y precios | DrFlow",
+  title: "Planes y precios | NexClinic",
   description:
-    "Planes DrFlow Essential y Pro. Prueba 14 días gratis. Agenda, HC, recetas PAMI y app paciente.",
+    "Planes NexClinic Essential y Pro. Prueba 14 días gratis. Agenda, HC, recetas PAMI y app paciente.",
   openGraph: {
-    title: "Planes DrFlow — Essential y Pro",
-    url: "https://drflow.opusorg.com/planes",
-    siteName: "DrFlow",
+    title: "Planes NexClinic — Essential y Pro",
+    url: `${getPublicSiteUrl()}/planes`,
+    siteName: "NexClinic",
     locale: "es_AR",
     type: "website",
   },
@@ -41,8 +43,8 @@ export default async function PlanesPage({
   const { modulo } = await searchParams;
   const mercadoPagoEnabled = isMercadoPagoConfigured();
   const salesWhatsAppHref =
-    phone && buildWhatsAppUrl(phone, "Hola, quiero consultar planes DrFlow.")
-      ? buildWhatsAppUrl(phone, "Hola, quiero consultar planes DrFlow.")
+    phone && buildWhatsAppUrl(phone, "Hola, quiero consultar planes NexClinic.")
+      ? buildWhatsAppUrl(phone, "Hola, quiero consultar planes NexClinic.")
       : null;
 
   return (
@@ -53,7 +55,7 @@ export default async function PlanesPage({
           <ButtonLink href="/register?trial=14" size="lg">
             Empezar prueba gratis
           </ButtonLink>
-          <ButtonLink href={`mailto:${salesEmail}?subject=Consulta%20planes%20DrFlow`} variant="outline" size="lg">
+          <ButtonLink href={`mailto:${salesEmail}?subject=Consulta%20planes%20NexClinic`} variant="outline" size="lg">
             Escribinos
           </ButtonLink>
         </div>
@@ -62,6 +64,9 @@ export default async function PlanesPage({
           mercadoPagoEnabled={mercadoPagoEnabled}
           isAuthenticated={Boolean(session)}
         />
+        <div className="mt-16">
+          <GeriatricsPricingSection />
+        </div>
         <p className="mt-10 text-center text-xs text-slate-500">
           Consultas comerciales:{" "}
           <a href={`mailto:${salesEmail}`} className="text-teal-700 hover:underline">

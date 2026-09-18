@@ -9,7 +9,7 @@ import { ButtonLink } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Términos y condiciones",
   description:
-    "Términos del servicio, privacidad, cookies, seguridad y licencias de DrFlow para consultorios médicos.",
+    "Términos del servicio, privacidad, cookies, seguridad y licencias de NexClinic para consultorios médicos.",
   alternates: { canonical: "/terminos" },
   robots: { index: true, follow: true },
 };
@@ -29,7 +29,7 @@ export default function TerminosPage() {
           Versión {LEGAL_CONTENT_VERSION} · República Argentina
         </p>
         <p className="mt-4 text-sm leading-relaxed text-slate-700">
-          Documentación legal de DrFlow. Incluye los términos del servicio, políticas de privacidad,
+          Documentación legal de NexClinic. Incluye los términos del servicio, políticas de privacidad,
           cookies, seguridad, backups y licencias de software.
         </p>
 

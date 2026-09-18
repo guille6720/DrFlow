@@ -2,14 +2,14 @@ import type { LegalDocument } from "@/core/legal/content/types";
 
 export const securityPolicyDocument: LegalDocument = {
   id: "seguridad",
-  title: "Política de Seguridad de la Información de DrFlow",
+  title: "Política de Seguridad de la Información de NexClinic",
   sections: [
     {
       title: "1. Objetivo",
       blocks: [
         {
           type: "p",
-          text: "La presente Política de Seguridad de la Información establece las medidas técnicas y organizativas implementadas por DrFlow para proteger la confidencialidad, integridad, disponibilidad y trazabilidad de la información procesada mediante la plataforma.",
+          text: "La presente Política de Seguridad de la Información establece las medidas técnicas y organizativas implementadas por NexClinic para proteger la confidencialidad, integridad, disponibilidad y trazabilidad de la información procesada mediante la plataforma.",
         },
         {
           type: "p",
@@ -29,7 +29,7 @@ export const securityPolicyDocument: LegalDocument = {
             "Clínicas e instituciones.",
             "Secretarios y administrativos.",
             "Usuarios autorizados por el titular de la cuenta.",
-            "Personal técnico autorizado de DrFlow cuando sea necesario para tareas de soporte o mantenimiento.",
+            "Personal técnico autorizado de NexClinic cuando sea necesario para tareas de soporte o mantenimiento.",
           ],
         },
       ],
@@ -37,7 +37,7 @@ export const securityPolicyDocument: LegalDocument = {
     {
       title: "3. Principios de seguridad",
       blocks: [
-        { type: "p", text: "DrFlow basa su funcionamiento en los siguientes principios:" },
+        { type: "p", text: "NexClinic basa su funcionamiento en los siguientes principios:" },
         {
           type: "ul",
           items: [
@@ -55,7 +55,7 @@ export const securityPolicyDocument: LegalDocument = {
     {
       title: "4. Protección de la información",
       blocks: [
-        { type: "p", text: "DrFlow implementa medidas razonables de seguridad, entre ellas:" },
+        { type: "p", text: "NexClinic implementa medidas razonables de seguridad, entre ellas:" },
         {
           type: "ul",
           items: [
@@ -90,7 +90,7 @@ export const securityPolicyDocument: LegalDocument = {
             "evitar compartir contraseñas.",
           ],
         },
-        { type: "p", text: "DrFlow podrá suspender cuentas cuando detecte riesgos para la seguridad." },
+        { type: "p", text: "NexClinic podrá suspender cuentas cuando detecte riesgos para la seguridad." },
       ],
     },
     {
@@ -140,7 +140,7 @@ export const securityPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow puede registrar eventos relevantes para fines de seguridad y auditoría, incluyendo:",
+          text: "NexClinic puede registrar eventos relevantes para fines de seguridad y auditoría, incluyendo:",
         },
         {
           type: "ul",
@@ -166,7 +166,7 @@ export const securityPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow realiza copias de seguridad periódicas con el objetivo de reducir el riesgo de pérdida de información.",
+          text: "NexClinic realiza copias de seguridad periódicas con el objetivo de reducir el riesgo de pérdida de información.",
         },
         {
           type: "p",
@@ -183,7 +183,7 @@ export const securityPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "DrFlow realiza esfuerzos razonables para mantener una alta disponibilidad.",
+          text: "NexClinic realiza esfuerzos razonables para mantener una alta disponibilidad.",
         },
         { type: "p", text: "No obstante, podrán producirse interrupciones por:" },
         {
@@ -206,7 +206,7 @@ export const securityPolicyDocument: LegalDocument = {
     {
       title: "11. Incidentes de seguridad",
       blocks: [
-        { type: "p", text: "Ante un incidente de seguridad, DrFlow podrá:" },
+        { type: "p", text: "Ante un incidente de seguridad, NexClinic podrá:" },
         {
           type: "ul",
           items: [
@@ -228,7 +228,7 @@ export const securityPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Los usuarios son responsables de proteger los dispositivos utilizados para acceder a DrFlow.",
+          text: "Los usuarios son responsables de proteger los dispositivos utilizados para acceder a NexClinic.",
         },
         { type: "p", text: "Se recomienda:" },
         {
@@ -290,8 +290,8 @@ export const securityPolicyDocument: LegalDocument = {
             "utilizar la plataforma conforme a la legislación vigente.",
           ],
         },
-        { type: "h4", text: "De DrFlow" },
-        { type: "p", text: "DrFlow se compromete a:" },
+        { type: "h4", text: "De NexClinic" },
+        { type: "p", text: "NexClinic se compromete a:" },
         {
           type: "ul",
           items: [
@@ -310,7 +310,7 @@ export const securityPolicyDocument: LegalDocument = {
         { type: "p", text: "Ningún sistema informático puede garantizar seguridad absoluta." },
         {
           type: "p",
-          text: "En consecuencia, DrFlow no garantiza la inexistencia total de incidentes derivados de ataques informáticos, vulnerabilidades de terceros, fallas de Internet, fuerza mayor o circunstancias fuera de su control razonable.",
+          text: "En consecuencia, NexClinic no garantiza la inexistencia total de incidentes derivados de ataques informáticos, vulnerabilidades de terceros, fallas de Internet, fuerza mayor o circunstancias fuera de su control razonable.",
         },
       ],
     },
@@ -329,7 +329,7 @@ export const securityPolicyDocument: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "Las consultas relacionadas con la seguridad de la información podrán realizarse mediante los canales oficiales de soporte y contacto publicados en DrFlow.",
+          text: "Las consultas relacionadas con la seguridad de la información podrán realizarse mediante los canales oficiales de soporte y contacto publicados en NexClinic.",
         },
         {
           type: "p",

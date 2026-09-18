@@ -1,6 +1,6 @@
 "use client";
 
-import { format, parseISO } from "date-fns";
+import { format, isSameDay, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Globe, Plus } from "lucide-react";
 import Link from "next/link";
@@ -61,11 +61,13 @@ function emptyCounts(): Record<AgendaDayFilterBucket, number> {
 
 const AgendaDayListItem = memo(function AgendaDayListItem({
   appointment,
+  day,
   canManage,
   canStartClinical,
   onAppointmentClick,
 }: {
   appointment: AppointmentAgendaRow;
+  day: Date;
   canManage?: boolean;
   canStartClinical?: boolean;
   onAppointmentClick?: (appointment: AppointmentAgendaRow) => void;
@@ -132,7 +134,11 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
     <>
       <div className="flex w-16 shrink-0 flex-col items-start gap-0.5 sm:w-20">
         <p className="text-sm font-bold tabular-nums text-slate-900">{timeLabel}</p>
-        <WaitingRoomWaitTimer waitingRoomStatus={waitingStatus} enteredAt={enteredAt} />
+        <WaitingRoomWaitTimer
+          waitingRoomStatus={waitingStatus}
+          enteredAt={enteredAt}
+          enableLiveTimer={isSameDay(day, new Date())}
+        />
         <AppointmentLifecycleBadge
           status={appointment.status}
           waitingRoomStatus={waitingStatus}
@@ -266,7 +272,7 @@ export const AgendaDayList = memo(function AgendaDayList({
           <button
             type="button"
             onClick={onEmptySlotClick}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-600 px-3 py-2 text-sm font-semibold text-white shadow-md shadow-cyan-500/20 hover:from-cyan-600 hover:to-teal-700"
+            className="inline-flex items-center gap-2 rounded-xl drflow-accent-fill px-3 py-2 text-sm font-semibold text-white"
           >
             <Plus className="h-4 w-4" />
             Agregar turno
@@ -302,6 +308,7 @@ export const AgendaDayList = memo(function AgendaDayList({
             <AgendaDayListItem
               key={appointment.id}
               appointment={appointment}
+              day={day}
               canManage={canManage}
               canStartClinical={canStartClinical}
               onAppointmentClick={onAppointmentClick}

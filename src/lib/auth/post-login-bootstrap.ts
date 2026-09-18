@@ -51,6 +51,11 @@ export async function ensureActiveClinicCookie(
   supabase: SupabaseClient,
   userId: string
 ): Promise<string | null> {
+  const cookieStore = await cookies();
+  const current = cookieStore.get(CLINIC_COOKIE)?.value;
+  // Warm path: trust existing clinic cookie (avoids a clinic_members round-trip every nav).
+  if (current) return current;
+
   const { data: members, error } = await supabase
     .from("clinic_members")
     .select("clinic_id")
@@ -65,10 +70,6 @@ export async function ensureActiveClinicCookie(
 
   const clinicId = members?.[0]?.clinic_id ?? null;
   if (!clinicId) return null;
-
-  const cookieStore = await cookies();
-  const current = cookieStore.get(CLINIC_COOKIE)?.value;
-  if (current === clinicId) return clinicId;
 
   try {
     cookieStore.set(CLINIC_COOKIE, clinicId, {
@@ -100,13 +101,22 @@ export async function syncUserClinicMembership(
   await acceptPendingInvitationsForUser(supabase);
 }
 
-/** Ensures profile, invitations, and clinic cookie before dashboard shell loads. */
+/** Ensures profile, invitations, and clinic cookie before dashboard shell loads.
+ * Warm navigations (clinic cookie already set) skip membership bootstrap RPCs —
+ * those run on login / client DashboardSessionBootstrap instead.
+ */
 export async function prepareDashboardSession(
   supabase: SupabaseClient,
   user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }
 ) {
-  await syncUserClinicMembership(supabase, user);
-  await ensureActiveClinicCookie(supabase, user.id);
+  const cookieStore = await cookies();
+  const hasClinicCookie = Boolean(cookieStore.get(CLINIC_COOKIE)?.value);
+
+  if (!hasClinicCookie) {
+    await syncUserClinicMembership(supabase, user);
+    await ensureActiveClinicCookie(supabase, user.id);
+  }
+
   await enforceDeviceSessionOrSignOut(supabase);
 }
 

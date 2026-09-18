@@ -5,6 +5,7 @@ import {
   pickCurrentEntitlementSubscription,
 } from "@/core/entitlements/commercial-status";
 import { type FeatureKey, FEATURES, isFeatureKey } from "@/core/entitlements/features";
+import type { RecommendationSeverity } from "@/core/entitlements/plan-recommendation";
 import { getPlanRecommendation } from "@/core/entitlements/plan-recommendation";
 import { isOverrideActive } from "@/core/entitlements/resolve";
 import { requireSuperadminOrDeny } from "@/core/entitlements/superadmin-guard.server";
@@ -33,7 +34,7 @@ export type SuperadminClinicCommercialRow = {
   usageWhatsapp: number;
   limitPatients: number | null;
   recommendedPlan: string | null;
-  recommendationSeverity: string | null;
+  recommendationSeverity: RecommendationSeverity | null;
   recommendationReasons: string[];
   shouldRecommendUpgrade: boolean;
   /** Mercado Pago billing SKU if present. */
@@ -292,90 +293,129 @@ export async function listSuperadminClinicCommercialRows(): Promise<
     });
   }
 
-  return clinics.map((clinic) => {
-    const current = pickCurrentEntitlementSubscription(subsByClinic.get(clinic.id) ?? []);
-    const planKey = current?.planKey ?? null;
-    const status = current
-      ? effectiveCommercialStatus(current.status, current.trialEndsAt)
-      : null;
-    const planMap = planKey ? planFeatureMap.get(planKey) : undefined;
-    const enabledFeatures: Partial<Record<FeatureKey, boolean>> = {};
-    const limits: Partial<Record<FeatureKey, number | null>> = {};
-    const overrideGranted: Partial<Record<FeatureKey, boolean>> = {};
+  return clinics.flatMap((clinic) => {
+    try {
+      const current = pickCurrentEntitlementSubscription(subsByClinic.get(clinic.id) ?? []);
+      const planKey = current?.planKey ?? null;
+      const status = current
+        ? effectiveCommercialStatus(current.status, current.trialEndsAt)
+        : null;
+      const planMap = planKey ? planFeatureMap.get(planKey) : undefined;
+      const enabledFeatures: Partial<Record<FeatureKey, boolean>> = {};
+      const limits: Partial<Record<FeatureKey, number | null>> = {};
+      const overrideGranted: Partial<Record<FeatureKey, boolean>> = {};
 
-    if (planMap) {
-      for (const [key, val] of planMap) {
-        if (!isFeatureKey(key)) continue;
-        enabledFeatures[key] = val.enabled;
-        limits[key] = val.value;
+      if (planMap) {
+        for (const [key, val] of planMap) {
+          if (!isFeatureKey(key)) continue;
+          enabledFeatures[key] = val.enabled;
+          limits[key] = val.value;
+        }
       }
+
+      for (const ov of overridesByClinic.get(clinic.id) ?? []) {
+        if (
+          !isOverrideActive({
+            enabled: ov.enabled,
+            value: ov.value,
+            startsAt: ov.startsAt,
+            endsAt: ov.endsAt,
+          })
+        ) {
+          continue;
+        }
+        if (!isFeatureKey(ov.key)) continue;
+        enabledFeatures[ov.key] = ov.enabled;
+        if (ov.enabled && planMap?.get(ov.key)?.enabled !== true) {
+          overrideGranted[ov.key] = true;
+        }
+        if (typeof ov.value === "number") limits[ov.key] = ov.value;
+      }
+
+      const usage = usageByClinic.get(clinic.id) ?? { ai: 0, whatsapp: 0 };
+      const users = usersByClinic.get(clinic.id) ?? 0;
+      const professionals = prosByClinic.get(clinic.id) ?? 0;
+      const patients = patientsByClinic.get(clinic.id) ?? 0;
+
+      const recommendation = getPlanRecommendation({
+        currentPlanKey: planKey,
+        status,
+        enabledFeatures,
+        overrideGrantedFeatures: overrideGranted,
+        usage: {
+          [FEATURES.AI_MONTHLY_REQUESTS]: usage.ai,
+          [FEATURES.WHATSAPP_MONTHLY_MESSAGES]: usage.whatsapp,
+          [FEATURES.PATIENTS_MAX]: patients,
+          [FEATURES.USERS_MAX]: users,
+          [FEATURES.PROFESSIONALS_MAX]: professionals,
+        },
+        limits: {
+          [FEATURES.AI_MONTHLY_REQUESTS]: limits[FEATURES.AI_MONTHLY_REQUESTS] ?? null,
+          [FEATURES.WHATSAPP_MONTHLY_MESSAGES]: limits[FEATURES.WHATSAPP_MONTHLY_MESSAGES] ?? null,
+          [FEATURES.PATIENTS_MAX]: limits[FEATURES.PATIENTS_MAX] ?? null,
+          [FEATURES.USERS_MAX]: limits[FEATURES.USERS_MAX] ?? null,
+          [FEATURES.PROFESSIONALS_MAX]: limits[FEATURES.PROFESSIONALS_MAX] ?? null,
+        },
+        counts: { users, professionals, patients },
+        thresholds,
+      });
+
+      const billing = billingByClinic.get(clinic.id);
+      return [
+        {
+          clinicId: clinic.id,
+          clinicName: clinic.name,
+          ownerName: ownerByClinic.get(clinic.id)?.name ?? null,
+          ownerEmail: ownerByClinic.get(clinic.id)?.email ?? null,
+          planKey,
+          status,
+          trialEndsAt: current?.trialEndsAt ?? null,
+          startsAt: current?.startsAt ?? null,
+          users,
+          professionals,
+          patients,
+          usageAi: usage.ai,
+          usageWhatsapp: usage.whatsapp,
+          limitPatients: limits[FEATURES.PATIENTS_MAX] ?? null,
+          recommendedPlan: recommendation.recommendedPlan,
+          recommendationSeverity: recommendation.severity,
+          recommendationReasons: recommendation.reasons ?? [],
+          shouldRecommendUpgrade: recommendation.shouldRecommendUpgrade,
+          billingPlanId: billing?.planId ?? null,
+          promoPriceArs: billing?.promoPriceArs ?? null,
+          regularPriceArs: billing?.regularPriceArs ?? null,
+          promoEndsAt: billing?.promoEndsAt ?? null,
+        } satisfies SuperadminClinicCommercialRow,
+      ];
+    } catch (err) {
+      logServerError("superadmin.clinics.row", err, { persist: false });
+      return [
+        {
+          clinicId: clinic.id,
+          clinicName: clinic.name,
+          ownerName: null,
+          ownerEmail: null,
+          planKey: null,
+          status: null,
+          trialEndsAt: null,
+          startsAt: null,
+          users: 0,
+          professionals: 0,
+          patients: 0,
+          usageAi: 0,
+          usageWhatsapp: 0,
+          limitPatients: null,
+          recommendedPlan: null,
+          recommendationSeverity: "info" as RecommendationSeverity,
+          recommendationReasons: ["Error al calcular recomendación"],
+          shouldRecommendUpgrade: false,
+          billingPlanId: null,
+          promoPriceArs: null,
+          regularPriceArs: null,
+          promoEndsAt: null,
+        } satisfies SuperadminClinicCommercialRow,
+      ];
     }
-
-    for (const ov of overridesByClinic.get(clinic.id) ?? []) {
-      if (!isOverrideActive({ enabled: ov.enabled, value: ov.value, startsAt: ov.startsAt, endsAt: ov.endsAt })) {
-        continue;
-      }
-      if (!isFeatureKey(ov.key)) continue;
-      enabledFeatures[ov.key] = ov.enabled;
-      if (ov.enabled && planMap?.get(ov.key)?.enabled !== true) {
-        overrideGranted[ov.key] = true;
-      }
-      if (typeof ov.value === "number") limits[ov.key] = ov.value;
-    }
-
-    const usage = usageByClinic.get(clinic.id) ?? { ai: 0, whatsapp: 0 };
-    const users = usersByClinic.get(clinic.id) ?? 0;
-    const professionals = prosByClinic.get(clinic.id) ?? 0;
-    const patients = patientsByClinic.get(clinic.id) ?? 0;
-
-    const recommendation = getPlanRecommendation({
-      currentPlanKey: planKey,
-      status,
-      enabledFeatures,
-      overrideGrantedFeatures: overrideGranted,
-      usage: {
-        [FEATURES.AI_MONTHLY_REQUESTS]: usage.ai,
-        [FEATURES.WHATSAPP_MONTHLY_MESSAGES]: usage.whatsapp,
-        [FEATURES.PATIENTS_MAX]: patients,
-        [FEATURES.USERS_MAX]: users,
-        [FEATURES.PROFESSIONALS_MAX]: professionals,
-      },
-      limits: {
-        [FEATURES.AI_MONTHLY_REQUESTS]: limits[FEATURES.AI_MONTHLY_REQUESTS] ?? null,
-        [FEATURES.WHATSAPP_MONTHLY_MESSAGES]: limits[FEATURES.WHATSAPP_MONTHLY_MESSAGES] ?? null,
-        [FEATURES.PATIENTS_MAX]: limits[FEATURES.PATIENTS_MAX] ?? null,
-        [FEATURES.USERS_MAX]: limits[FEATURES.USERS_MAX] ?? null,
-        [FEATURES.PROFESSIONALS_MAX]: limits[FEATURES.PROFESSIONALS_MAX] ?? null,
-      },
-      counts: { users, professionals, patients },
-      thresholds,
-    });
-
-    const billing = billingByClinic.get(clinic.id);
-    return {
-      clinicId: clinic.id,
-      clinicName: clinic.name,
-      ownerName: ownerByClinic.get(clinic.id)?.name ?? null,
-      ownerEmail: ownerByClinic.get(clinic.id)?.email ?? null,
-      planKey,
-      status,
-      trialEndsAt: current?.trialEndsAt ?? null,
-      startsAt: current?.startsAt ?? null,
-      users,
-      professionals,
-      patients,
-      usageAi: usage.ai,
-      usageWhatsapp: usage.whatsapp,
-      limitPatients: limits[FEATURES.PATIENTS_MAX] ?? null,
-      recommendedPlan: recommendation.recommendedPlan,
-      recommendationSeverity: recommendation.severity,
-      recommendationReasons: recommendation.reasons,
-      shouldRecommendUpgrade: recommendation.shouldRecommendUpgrade,
-      billingPlanId: billing?.planId ?? null,
-      promoPriceArs: billing?.promoPriceArs ?? null,
-      regularPriceArs: billing?.regularPriceArs ?? null,
-      promoEndsAt: billing?.promoEndsAt ?? null,
-    };
   });
 }
 

@@ -25,9 +25,18 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "date-fns", "zod"],
+    /** Reduces peak RAM during `next build --webpack` on Vercel 8GB machines. */
+    webpackMemoryOptimizations: true,
     serverActions: {
       bodySizeLimit: "12mb",
     },
+  },
+  webpack: (config) => {
+    // Vercel Standard/Basic = 8GB; limit webpack concurrency to avoid SIGKILL OOM.
+    if (process.env.VERCEL === "1") {
+      config.parallelism = 1;
+    }
+    return config;
   },
   async headers() {
     return [

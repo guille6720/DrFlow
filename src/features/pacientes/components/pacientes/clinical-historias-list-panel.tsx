@@ -28,6 +28,9 @@ export function ClinicalHistoriasListPanel({
   singlePatientFromSearch,
   totalPages,
   safePage,
+  nextCursor,
+  prevCursor,
+  paginationError,
 }: Props) {
   return (
     <div className="space-y-4">
@@ -81,6 +84,17 @@ export function ClinicalHistoriasListPanel({
           title="Sin resultados"
           description={`No encontramos pacientes para “${q}”. Probá con otro nombre o DNI.`}
         />
+      ) : paginationError ? (
+        <EmptyState
+          icon={FileText}
+          title="Paginación no disponible"
+          description={paginationError}
+          action={
+            <Link href={buildPacientesHistoriasUrl({ q: q || undefined })}>
+              <Button variant="outline">Volver al inicio</Button>
+            </Link>
+          }
+        />
       ) : records.length === 0 ? (
         <EmptyState
           icon={FileText}
@@ -106,10 +120,20 @@ export function ClinicalHistoriasListPanel({
             />
           </Card>
 
-          {(totalPages > 1 || totalRecords > 0) && (
+          {(totalPages > 1 || totalRecords > 0 || nextCursor || prevCursor) && (
             <ListPagination>
-              {safePage > 1 && (
-                <Link href={buildPacientesHistoriasUrl({ q: q || undefined, page: safePage - 1 })}>
+              {(safePage > 1 || prevCursor) && (
+                <Link
+                  href={
+                    safePage <= 2
+                      ? buildPacientesHistoriasUrl({ q: q || undefined })
+                      : buildPacientesHistoriasUrl({
+                          q: q || undefined,
+                          page: safePage - 1,
+                          before: prevCursor,
+                        })
+                  }
+                >
                   <Button
                     variant="outline"
                     size="sm"
@@ -125,8 +149,14 @@ export function ClinicalHistoriasListPanel({
                 totalPages={totalPages}
                 suffix={`${totalRecords} consultas`}
               />
-              {safePage < totalPages && (
-                <Link href={buildPacientesHistoriasUrl({ q: q || undefined, page: safePage + 1 })}>
+              {(safePage < totalPages || nextCursor) && (
+                <Link
+                  href={buildPacientesHistoriasUrl({
+                    q: q || undefined,
+                    page: safePage + 1,
+                    cursor: nextCursor,
+                  })}
+                >
                   <Button
                     variant="outline"
                     size="sm"

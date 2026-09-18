@@ -1,12 +1,17 @@
 ﻿@import "tailwindcss";
+/* App appearance (Claro/Oscuro/Sistema) drives dark: — not OS prefers-color-scheme alone */
+@custom-variant dark (&:where([data-clinical-dark="1"], [data-clinical-dark="1"] *));
 @import "@fontsource-variable/plus-jakarta-sans/wght.css";
 @import "@fontsource/geist-mono/latin.css";
-@import "../core/theme/midnight-navy.css";
+@import "../core/theme/official-palettes.css";
 @import "../core/theme/semantic-tokens.css";
+/* Legacy Midnight component overrides remapped to Medical Slate */
+@import "../core/theme/midnight-navy.css";
 @import "../core/theme/a11y-contrast.css";
 @import "../core/theme/button-states.css";
 @import "../core/theme/form-states.css";
 @import "../core/theme/selected-states.css";
+@import "../core/theme/clinical-ops-surfaces.css";
 @import "../core/theme/modal-states.css";
 @import "../core/theme/typography-states.css";
 @import "../core/theme/manual-visual-states.css";
@@ -399,6 +404,9 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main .drflow-config
 
 .drflow-ui-sidebar {
   border-color: rgb(51 65 85 / 0.8);
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
 }
 
 /* Bento: Estilo 1 = columna; Estilo 2 = rejilla 12 cols */
@@ -417,82 +425,8 @@ html[data-ui-style="2"] {
   --radius: 0.75rem;
 }
 
-/* Style 2 â€” Clinical Blue + Teal (light) */
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --border: #d7e0e8;
-  --input: #cbd5e1;
-  --muted: #f1f5f9;
-  --muted-foreground: #334155;
-  --primary: #0f4c5c;
-  --primary-dark: #0c3d4a;
-  --primary-light: #0f766e;
-  --primary-foreground: #ffffff;
-  --secondary: #ffffff;
-  --secondary-foreground: #0f172a;
-  --accent: #0f766e;
-  --accent-foreground: #ffffff;
-  --accent-soft: #ecfdf5;
-  --destructive: #b91c1c;
-  --destructive-foreground: #ffffff;
-  --success: #15803d;
-  --warning: #b45309;
-  --ring: #0f766e;
-  --sidebar: #ffffff;
-  --sidebar-accent: #0f766e;
-  --sidebar-active-bg: #ecfdf5;
-  --table-hover: #f1f5f9;
-  --placeholder: #64748b;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #475569;
-  --text-on-selected: #0f172a;
-  --surface-selected: #ecfdf5;
-}
-
-/* Style 2 — Clinical Blue + Teal (dark) */
-html[data-ui-style="2"][data-clinical-dark="1"] {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --card: #1e293b;
-  --card-foreground: #f8fafc;
-  --border: #334155;
-  --input: #162032;
-  --muted: #2a3a4f;
-  --muted-foreground: #cbd5e1;
-  --primary: #2dd4bf;
-  --primary-dark: #14b8a6;
-  --primary-light: #5eead4;
-  --primary-foreground: #0b1220;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
-  --accent: #38bdf8;
-  --accent-foreground: #0b1220;
-  --accent-soft: #134e4a;
-  --destructive: #f87171;
-  --destructive-foreground: #0b1220;
-  --success: #4ade80;
-  --warning: #fbbf24;
-  --ring: #2dd4bf;
-  --sidebar: #111827;
-  --sidebar-accent: #2dd4bf;
-  --sidebar-active-bg: #134e4a;
-  --table-hover: #2a3a4f;
-  --placeholder: #94a3b8;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-on-selected: #f8fafc;
-  --surface-page: #0f172a;
-  --surface-card: #1e293b;
-  --surface-elevated: #334155;
-  --surface-input: #162032;
-  --surface-hover: #2a3a4f;
-  --surface-selected: #134e4a;
-}
+/* Palette chrome tokens: see official-palettes.css (Clinical Blue / Medical Slate).
+   Keep structural Style-2 rules below; do not redefine --primary/--background here. */
 
 html[data-ui-style="2"] .drflow-mesh {
   background-image: none;
@@ -670,34 +604,62 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-sidebar-gradient {
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar {
   border-color: var(--border);
+  background: var(--sidebar) !important;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.06);
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
 }
 
+/* Claro: white sidebar → dark nav ink (AA) */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar .text-slate-200,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar .text-slate-300,
-html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar .text-slate-400 {
-  color: var(--muted-foreground);
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar .text-slate-400,
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar .text-slate-500 {
+  color: var(--text-on-sidebar, #1e293b) !important;
 }
 
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.text-slate-200,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.text-slate-300 {
-  color: var(--foreground);
+  color: var(--text-on-sidebar, #1e293b) !important;
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r {
   background: var(--sidebar-active-bg) !important;
   background-image: none !important;
-  /* Soft Clinic saturated teal handled in selected-states.css */
-  color: var(--foreground) !important;
+  color: #ffffff !important;
   box-shadow: none !important;
 }
 
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r :is(svg, span) {
+  color: #ffffff !important;
+}
+
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar a.bg-gradient-to-r svg {
-  color: var(--sidebar-accent) !important;
+  color: #ffffff !important;
   opacity: 1 !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar button {
+  color: var(--text-on-sidebar, #1e293b) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar button:hover {
+  background: var(--surface-hover, #f1f5f9) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar button svg {
+  color: var(--sidebar-accent, #0f766e) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
+  background: var(--sidebar) !important;
 }
 
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar a.bg-gradient-to-r {
   background: var(--sidebar-active-bg) !important;
   background-image: none !important;
-  color: var(--foreground) !important;
+  color: var(--text-on-sidebar, #f8fafc) !important;
   box-shadow: none !important;
 }
 
@@ -1075,14 +1037,15 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-button.text-slate-800
   color: #f1f5f9 !important;
 }
 
+html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar .text-slate-200,
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar .text-slate-300,
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar .text-slate-400,
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar .text-slate-500 {
-  color: #94a3b8;
+  color: #e2e8f0 !important;
 }
 
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar a:not([class*="from-teal"]):not([class*="from-cyan"]) {
-  color: #cbd5e1;
+  color: #f1f5f9 !important;
 }
 
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-header-dark .text-slate-50,
@@ -1499,7 +1462,7 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-mesh main .drflow-
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar button.text-slate-400,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-sidebar button.text-slate-500 {
-  color: #64748b !important;
+  color: var(--text-secondary, #475569) !important;
 }
 
 /* No forzar texto claro sobre islas blancas dentro de tarjetas oscuras */
@@ -1551,6 +1514,16 @@ html:not([data-ui-style="2"]) .drflow-mesh main :is(.bg-white, .bg-white\/80, .b
   --muted: #64748b;
   --muted-foreground: #475569;
   --border: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --surface-hover: #f1f5f9;
+  --surface-card: #ffffff;
+  --surface-selected: #ccfbf1;
+  --border-default: #e2e8f0;
+  --accent-soft: #ccfbf1;
+  --sidebar-accent: #0f766e;
+  --sidebar-active-bg: #0f766e;
 }
 
 /* Tarjetas UI claras: muted legible (evita --muted-foreground claro sobre blanco) */
@@ -2150,6 +2123,7 @@ html[data-ui-style="2"][data-clinical-dark="1"] .bg-teal-100 {
 
 .drapp-consulta-composer {
   background: #fff8dc;
+  min-height: min(62vh, 42rem);
 }
 
 .drapp-consulta-actions {
@@ -2158,6 +2132,15 @@ html[data-ui-style="2"][data-clinical-dark="1"] .bg-teal-100 {
 
 .drapp-consulta-evolution {
   background: #fff8dc;
+}
+
+.drapp-consulta-panel-body {
+  min-height: min(52vh, 34rem);
+}
+
+.drapp-consulta-panel-body .drapp-consulta-evolution textarea,
+.drapp-consulta-panel-body .drapp-consulta-evolution-input {
+  min-height: min(48vh, 30rem) !important;
 }
 
 .drapp-consulta-evolution-input,

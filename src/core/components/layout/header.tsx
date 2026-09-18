@@ -9,7 +9,6 @@ import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-
 import { openGuestAppearanceModal } from "@/core/components/layout/guest-appearance-events";
 import { useUiThemeOptional } from "@/core/components/theme/ui-theme-provider";
 import { hasPermission, ROLE_LABELS } from "@/core/permissions/roles";
-import { isBentoStyle } from "@/core/theme/ui-theme";
 
 import { cn } from "@/shared/utils/cn";
 
@@ -50,7 +49,7 @@ export function Header({
   const theme = useUiThemeOptional();
   /** Cobalto usa chrome oscuro; Bento solo en clinical dark. */
   const shellDark = theme
-    ? theme.style === "4" || (isBentoStyle(theme.style) && theme.clinicalDark)
+    ? theme.clinicalDark
     : true;
 
   return (

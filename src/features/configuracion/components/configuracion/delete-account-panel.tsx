@@ -96,7 +96,7 @@ export function DeleteAccountPanel({
 
         <div className="space-y-3 text-sm leading-relaxed text-slate-700">
           <p>
-            Esta acción es <strong>permanente e irreversible</strong>. Perdés el acceso a DrFlow con
+            Esta acción es <strong>permanente e irreversible</strong>. Perdés el acceso a NexClinic con
             este email y no podés deshacerlo.
           </p>
           {isSoleClinicMember ? (

@@ -74,7 +74,7 @@ export function ImportClinicalPdfPanel({ canImport, embedded }: Props) {
   return (
     <PanelShell embedded={embedded} title="Importar historias PDF">
       <p className="mb-3 text-sm text-slate-600">
-        Subí historias exportadas desde otra app, de a una o en lote. DrFlow detecta el DNI,
+        Subí historias exportadas desde otra app, de a una o en lote. NexClinic detecta el DNI,
         completa datos del paciente y, en PDFs con evoluciones, crea las consultas en historias
         clínicas.
       </p>

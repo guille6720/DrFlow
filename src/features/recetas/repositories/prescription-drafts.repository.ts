@@ -25,7 +25,7 @@ export type PrescriptionDraftInsertRow = {
 };
 
 export const PRESCRIPTION_ISSUE_COLUMNS =
-  "id, clinic_id, patient_id, clinical_record_id, professional_id, prescription_type, diagnosis_cie10, diagnosis_text, patient_insurance, coverage_kind, insurance_number, insurance_plan, medications, notes, validity_days, disclaimer_accepted, status, prescription_number, issued_at, dispensed_at, refeps_status, refeps_id, refeps_submitted_at, refeps_error, refeps_payload, digital_signature_hash, idempotency_key, version, created_by, created_at, updated_at";
+  "id, clinic_id, patient_id, clinical_record_id, professional_id, prescription_type, diagnosis_cie10, diagnosis_text, patient_insurance, coverage_kind, insurance_number, insurance_plan, medications, notes, validity_days, disclaimer_accepted, status, prescription_number, issued_at, dispensed_at, refeps_status, refeps_id, refeps_submitted_at, refeps_error, refeps_payload, digital_signature_hash, idempotency_key, version, created_by, created_at, updated_at, validity_starts_at, prescription_category, prescription_subtype, national_rx_status, cuir_status, cuir_platform_id, cuir_repository_id, cuir_jurisdiction, cuir_type_subtype, cuir_group_id, cuir_item_number, cuir_formatted, diagnosis_coding, fhir_bundle_meta";
 
 export function formatPrescriptionDbError(error: {
   message?: string;
@@ -170,12 +170,25 @@ export async function updatePrescriptionRefepsState(
   prescriptionId: string,
   clinicId: string,
   patch: {
-    refeps_status: string;
+    refeps_status?: string;
     refeps_id?: string | null;
     refeps_submitted_at?: string | null;
     refeps_error?: string | null;
     refeps_payload?: Record<string, unknown> | null;
     digital_signature_hash?: string | null;
+    national_rx_status?: string;
+    cuir_status?: string;
+    cuir_platform_id?: string | null;
+    cuir_repository_id?: string | null;
+    cuir_jurisdiction?: string | null;
+    cuir_type_subtype?: string | null;
+    cuir_group_id?: string | null;
+    cuir_item_number?: string | null;
+    cuir_formatted?: string | null;
+    prescription_category?: string;
+    prescription_subtype?: string | null;
+    diagnosis_coding?: Record<string, unknown> | null;
+    fhir_bundle_meta?: Record<string, unknown> | null;
   }
 ): Promise<RepoResult<ElectronicPrescription>> {
   const { data, error } = await db

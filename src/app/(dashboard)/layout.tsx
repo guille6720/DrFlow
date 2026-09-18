@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "DrFlow",
+    title: "NexClinic",
     statusBarStyle: "default",
   },
   icons: {

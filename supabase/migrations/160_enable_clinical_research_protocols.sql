@@ -10,4 +10,4 @@ ON CONFLICT (clinic_id, flag_id) DO UPDATE SET
   updated_at = now();
 
 COMMENT ON TABLE clinic_feature_flags IS
-  'Feature flags granulares por clínica. clinical_research_protocols habilitado por migración 158.';
+  'Feature flags granulares por clínica. clinical_research_protocols habilitado por migración 160.';

@@ -410,7 +410,7 @@ function printStyles(patientLabel: string, generatedAt: string): string {
       size: A4 portrait;
       margin: 16mm 15mm 18mm 15mm;
       @bottom-left {
-        content: "DrFlow — Historia Clínica · ${safePatient}";
+        content: "NexClinic — Historia Clínica · ${safePatient}";
         font-size: 8pt;
         color: #64748b;
       }

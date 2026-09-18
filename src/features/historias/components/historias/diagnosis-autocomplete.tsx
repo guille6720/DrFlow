@@ -5,7 +5,6 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 
 import { cn } from "@/shared/utils/cn";
 
-import { searchClinicalDiagnoses } from "@/features/historias/actions/clinical-diagnoses";
 import { useClinicalFavoritesOptional } from "@/features/historias/components/historias/clinical-favorites-provider";
 import { ClinicalFavoritesQuickList } from "@/features/historias/components/historias/clinical-favorites-quick-list";
 import { ClinicalRecentUsageQuickList } from "@/features/historias/components/historias/clinical-recent-usage-quick-list";
@@ -151,13 +150,25 @@ export function DiagnosisAutocomplete({
       setLoading(true);
       setError(null);
       try {
-        const res = await searchClinicalDiagnoses(trimmed, maxResults);
-        if (res.error) {
-          setError(res.error);
+        const params = new URLSearchParams({
+          q: trimmed,
+          limit: String(maxResults),
+        });
+        const response = await fetch(`/api/clinical-diagnoses/search?${params.toString()}`, {
+          method: "GET",
+          credentials: "same-origin",
+          cache: "no-store",
+        });
+        const payload = (await response.json().catch(() => null)) as {
+          data?: ClinicalDiagnosisCatalogHit[];
+          error?: string;
+        } | null;
+        if (!response.ok) {
+          setError(payload?.error ?? "No se pudo buscar en el catálogo de diagnósticos.");
           setResults([]);
           return;
         }
-        setResults(res.data ?? []);
+        setResults(payload?.data ?? []);
         setHighlight(0);
       } catch {
         setError("No se pudo buscar en el catálogo de diagnósticos.");

@@ -131,7 +131,7 @@ export function UpdateBanner() {
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-[var(--foreground)]">
-              Nueva versión DrFlow {release.version}
+              Nueva versión NexClinic {release.version}
             </p>
             <p className="mt-0.5 text-xs text-[var(--muted-foreground)]">{release.title}</p>
             {release.highlights[0] ? (

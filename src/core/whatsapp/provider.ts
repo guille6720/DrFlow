@@ -97,7 +97,7 @@ export async function sendWhatsAppTextMessage(
 }
 
 export const WHATSAPP_MANUAL_DISCLAIMER =
-  "Modo manual DrFlow: se abre WhatsApp con el mensaje prellenado — tenés que tocar Enviar.";
+  "Modo manual NexClinic: se abre WhatsApp con el mensaje prellenado — tenés que tocar Enviar.";
 
 export const WHATSAPP_API_DISCLAIMER =
   "Mensaje enviado vía WhatsApp Business Cloud API (Meta).";

@@ -62,7 +62,7 @@ export function ExportInformedConsentPdfButton({
     doc.text("CONSENTIMIENTO INFORMADO", 105, y, { align: "center" });
     y += 7;
     doc.setFontSize(9);
-    doc.text(`Ley 26.529 · DrFlow · v${consent.documentVersion ?? INFORMED_CONSENT_DOCUMENT_VERSION}`, 105, y, {
+    doc.text(`Ley 26.529 · NexClinic · v${consent.documentVersion ?? INFORMED_CONSENT_DOCUMENT_VERSION}`, 105, y, {
       align: "center",
     });
     y += 10;

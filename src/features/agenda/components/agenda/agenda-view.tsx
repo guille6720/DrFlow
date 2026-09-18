@@ -13,6 +13,7 @@ import { AgendaDateStrip } from "@/features/agenda/components/agenda/agenda-date
 import { AgendaDayList } from "@/features/agenda/components/agenda/agenda-day-list";
 import { AgendaSummaryCards } from "@/features/agenda/components/agenda/agenda-summary-cards";
 import { AgendaToolbar } from "@/features/agenda/components/agenda/agenda-toolbar";
+import { CalendarGrid } from "@/features/agenda/components/agenda/calendar-grid";
 import { MonthOverviewGrid } from "@/features/agenda/components/agenda/month-overview-grid";
 import { useAgendaView } from "@/features/agenda/hooks/use-agenda-view";
 
@@ -89,6 +90,7 @@ export function AgendaView({
     currentDate,
     setCurrentDate,
     weekDays,
+    viewMode,
     editingAppointment,
     setEditingAppointment,
     openNewAppointmentForm,
@@ -96,6 +98,7 @@ export function AgendaView({
     goToMonth,
     canPrevMonth,
     canNextMonth,
+    handleSlotClick,
   } = agenda;
 
   const canManage = hasPermission(role, "manageAppointments", isSuperadmin, permissionOverrides);
@@ -134,34 +137,66 @@ export function AgendaView({
     <div className="drflow-agenda-view drflow-surface-light mx-3 mb-3 space-y-3 rounded-2xl bg-white p-3 shadow-xl ring-1 ring-slate-200/90 sm:mx-4 sm:p-4">
       <AgendaToolbar agenda={agenda} professionals={professionals} specialties={specialties} locations={locations} />
 
-      <AgendaDateStrip selectedDay={selectedDay} onSelectDay={setCurrentDate} />
+      {viewMode === "day" ? (
+        <AgendaDateStrip selectedDay={selectedDay} onSelectDay={setCurrentDate} />
+      ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <AgendaDayList
-          day={selectedDay}
+      {viewMode === "week" ? (
+        <CalendarGrid
+          weekDays={weekDays}
           appointments={filtered}
+          blocks={scheduleBlocks}
+          onSlotClick={canManage ? handleSlotClick : undefined}
+          onAppointmentClick={canManage || canStartClinical ? handleAppointmentClick : undefined}
+          canOpenClinical={canStartClinical}
           canManage={canManage}
-          canStartClinical={canStartClinical}
-          onAppointmentClick={canManage ? handleAppointmentClick : undefined}
-          onEmptySlotClick={canManage ? openNewAppointmentForm : undefined}
         />
+      ) : (
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+          {viewMode === "day" ? (
+            <AgendaDayList
+              day={selectedDay}
+              appointments={filtered}
+              canManage={canManage}
+              canStartClinical={canStartClinical}
+              onAppointmentClick={canManage || canStartClinical ? handleAppointmentClick : undefined}
+              onEmptySlotClick={canManage ? openNewAppointmentForm : undefined}
+            />
+          ) : (
+            <div className="min-w-0">
+              <MonthOverviewGrid
+                monthDate={currentDate}
+                selectedDay={selectedDay}
+                appointments={filtered}
+                onDayClick={handleDayClick}
+                onPrevMonth={() => shiftMonth(true)}
+                onNextMonth={() => shiftMonth(false)}
+                onSelectMonth={goToMonth}
+                canPrevMonth={canPrevMonth}
+                canNextMonth={canNextMonth}
+              />
+            </div>
+          )}
 
-        <aside aria-label="Calendario mensual">
-          <MonthOverviewGrid
-            monthDate={currentDate}
-            selectedDay={selectedDay}
-            appointments={filtered}
-            onDayClick={handleDayClick}
-            onPrevMonth={() => shiftMonth(true)}
-            onNextMonth={() => shiftMonth(false)}
-            onSelectMonth={goToMonth}
-            canPrevMonth={canPrevMonth}
-            canNextMonth={canNextMonth}
-          />
-        </aside>
-      </div>
+          {viewMode === "day" ? (
+            <aside aria-label="Calendario mensual">
+              <MonthOverviewGrid
+                monthDate={currentDate}
+                selectedDay={selectedDay}
+                appointments={filtered}
+                onDayClick={handleDayClick}
+                onPrevMonth={() => shiftMonth(true)}
+                onNextMonth={() => shiftMonth(false)}
+                onSelectMonth={goToMonth}
+                canPrevMonth={canPrevMonth}
+                canNextMonth={canNextMonth}
+              />
+            </aside>
+          ) : null}
+        </div>
+      )}
 
-      <AgendaSummaryCards appointments={filtered} anchorDay={selectedDay} />
+      {viewMode === "day" ? <AgendaSummaryCards appointments={filtered} anchorDay={selectedDay} /> : null}
 
       {canManage ? (
         <p className="text-sm font-medium text-slate-600">

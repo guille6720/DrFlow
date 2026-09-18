@@ -1,5 +1,5 @@
 /**
- * Phase 23 — Configurable subprocessor register (DrFlow Argentina).
+ * Phase 23 — Configurable subprocessor register (NexClinic Argentina).
  * Only providers discovered in the codebase are listed.
  * Unknown jurisdiction / DPA / privacy values stay REQUIERE VERIFICACIÓN.
  * Not legal advice.
@@ -238,7 +238,7 @@ export const SUBPROCESSOR_REGISTER: SubprocessorEntry[] = [
     processingJurisdiction: `${SUBPROCESSOR_REQUIERE_VERIFICACION} (según proveedor elegido por la clínica)`,
     dpaStatus: "not_applicable",
     internationalTransferReview:
-      "Responsabilidad compartida: la clínica elige el proveedor; DrFlow sanitiza antes del envío.",
+      "Responsabilidad compartida: la clínica elige el proveedor; NexClinic sanitiza antes del envío.",
     privacyDocStatus: SUBPROCESSOR_REQUIERE_VERIFICACION,
     activation: "byok",
     codeEvidence: [

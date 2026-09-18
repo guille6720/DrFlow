@@ -31,7 +31,7 @@ export async function buildClinicalExportPdf(snapshot: ClinicalExportSnapshot): 
   const patient = snapshot.patient;
 
   doc.setFontSize(16);
-  doc.text("DrFlow — Historia clinica", 20, 20);
+  doc.text("NexClinic — Historia clinica", 20, 20);
   doc.setFontSize(11);
   let y = 32;
   y = appendWrapped(

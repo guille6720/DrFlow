@@ -50,5 +50,5 @@ export function buildAppointmentReminderMessage(
   date: string,
   professionalName: string
 ): string {
-  return `Hola ${patientName}, te recordamos tu turno el ${date} con ${professionalName}. DrFlow — Centro Médico.`;
+  return `Hola ${patientName}, te recordamos tu turno el ${date} con ${professionalName}. NexClinic — Centro Médico.`;
 }

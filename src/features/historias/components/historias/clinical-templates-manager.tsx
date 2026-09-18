@@ -217,14 +217,14 @@ export function ClinicalTemplatesManager({ templates, specialties }: Props) {
                     className={cn(
                       "flex w-full items-start gap-2 rounded-xl px-3 py-2.5 text-left transition",
                       active
-                        ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-900 shadow-md"
+                        ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md"
                         : "text-slate-900 hover:bg-slate-50"
                     )}
                   >
                     <ScrollText
                       className={cn(
                         "mt-0.5 h-4 w-4 shrink-0",
-                        active ? "text-slate-900" : "text-teal-700"
+                        active ? "text-[var(--primary-foreground)]" : "text-[var(--primary)]"
                       )}
                     />
                     <span className="min-w-0 flex-1">

@@ -1,3 +1,4 @@
+import { BRAND_NAME, BRAND_SEO_DESCRIPTION } from "@/core/brand/brand";
 import { getPublicSiteUrl } from "@/core/supabase/env";
 
 /** Organization JSON-LD for homepage SEO. */
@@ -7,7 +8,7 @@ export function MarketingJsonLd() {
   const schema = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "DrFlow",
+    name: BRAND_NAME,
     applicationCategory: "HealthApplication",
     operatingSystem: "Web",
     offers: {
@@ -16,12 +17,11 @@ export function MarketingJsonLd() {
       priceCurrency: "ARS",
     },
     url,
-    description:
-      "Gestión clínica para consultorios argentinos: agenda, historia clínica, recetas y app para pacientes.",
+    description: BRAND_SEO_DESCRIPTION,
     inLanguage: "es-AR",
     publisher: {
       "@type": "Organization",
-      name: "DrFlow",
+      name: BRAND_NAME,
       url,
     },
   };

@@ -14,13 +14,118 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.36",
+    date: "2026-09-02",
+    title: "Superadmin Planes legible en Claro",
+    highlights: [
+      "Inputs de Planes usan tokens de superficie (ya no dark: del SO sobre modo Claro)",
+      "Variante Tailwind dark: sigue data-clinical-dark de la app",
+    ],
+  },
+  {
+    version: "0.2.35",
+    date: "2026-09-02",
+    title: "Medical Slate Oscuro: dashboard ops legible",
+    highlights: [
+      "Cards del centro de operaciones dejan de mezclar fondo oscuro con texto negro",
+      "Ops usa clinical-ops-card con tokens de tema (claro y oscuro) en ambas paletas",
+    ],
+  },
+  {
+    version: "0.2.34",
+    date: "2026-09-02",
+    title: "Dashboard oscuro: chips y rail operativo legibles",
+    highlights: [
+      "Contadores de secciones dejan de verse negros sobre negro en modo Oscuro",
+      "Ítem activo de Operaciones (En espera, etc.) mantiene texto blanco sobre teal",
+      "Islas claras del dashboard usan tokens de superficie claros anidados",
+    ],
+  },
+  {
+    version: "0.2.33",
+    date: "2026-09-02",
+    title: "HC: datos de nacimiento/edad/afiliado legibles en Claro",
+    highlights: [
+      "Valores del encabezado de paciente dejan de usar texto casi blanco",
+      "Nacimiento, edad y N° afiliado visibles sobre fondo claro",
+    ],
+  },
+  {
+    version: "0.2.32",
+    date: "2026-09-02",
+    title: "Dashboard claro: cards y rail sin gris oscuro",
+    highlights: [
+      "Centro de operaciones clínicas usa superficies blancas en modo Claro",
+      "Rail operativo, métricas y secciones dejan de hardcodear slate-900",
+      "Sidebar y labels de clínica legibles sobre fondo blanco",
+    ],
+  },
+  {
+    version: "0.2.31",
+    date: "2026-09-02",
+    title: "Apariencia: Clinical Blue + Medical Slate",
+    highlights: [
+      "Únicas paletas oficiales: Clinical Blue (default) y Medical Slate",
+      "Modo Claro / Oscuro / Sistema en Configuración → Apariencia",
+      "Preferencias antiguas migran automáticamente a Clinical Blue",
+    ],
+  },
+  {
+    version: "0.2.24",
+    date: "2026-09-01",
+    title: "Consultas: HC actualizada al guardar evolución",
+    highlights: [
+      "Historia clínica del paciente muestra evoluciones recién guardadas desde Consultas",
+      "Varias evoluciones del mismo día aparecen en el panel lateral",
+      "Al ir a Historia clínica se guarda y recarga con datos frescos",
+    ],
+  },
+  {
+    version: "0.2.23",
+    date: "2026-09-01",
+    title: "Consultas: calendario de fecha sin recorte",
+    highlights: [
+      "El selector de fecha de evolución se muestra completo al hacer clic en Cambiar",
+      "Corrección de ancho del calendario cuando el botón de fecha es angosto",
+    ],
+  },
+  {
+    version: "0.2.22",
+    date: "2026-09-01",
+    title: "Consultas: calendario junto a la fecha de evolución",
+    highlights: [
+      "El selector de fecha se abre al lado del campo, no al pie de la pantalla",
+      "Calendario y hora integrados para cargar evoluciones de fechas anteriores",
+    ],
+  },
+  {
+    version: "0.2.21",
+    date: "2026-09-01",
+    title: "Consultas: fecha de evoluciones anteriores",
+    highlights: [
+      "Selector de fecha visible al cargar una nueva evolución",
+      "La fecha elegida se guarda y actualiza la historia clínica e impresión del día",
+      "Podés registrar consultas de fechas pasadas sin perder el autoguardado",
+    ],
+  },
+  {
+    version: "0.2.20",
+    date: "2026-09-01",
+    title: "Consultas: impresión del día y autoguardado al navegar",
+    highlights: [
+      "Imprimir «Historia del día» usa la consulta en curso, no una evolución anterior",
+      "Autoguardado antes de imprimir y al salir de Consultas hacia Historias clínicas",
+      "Mismo formato de impresión en toda la historia clínica",
+    ],
+  },
+  {
     version: "0.2.19",
     date: "2026-08-21",
     title: "Entregables a11y/tema (staging review)",
     highlights: [
       "Informe §15: arquitectura, causas, archivos, tokens, patrones, tests — sin deploy a producción",
       "Gate lint/typecheck/build + suite tema; commits de tema aislados del WIP comercial",
-      "DrFlow Staging (develop) listo para revisión visual humana",
+      "NexClinic Staging (develop) listo para revisión visual humana",
     ],
   },
   {
@@ -217,7 +322,7 @@ export const CHANGELOG: ChangelogItem[] = [
   {
     version: "0.1.0",
     date: "2026-06-01",
-    title: "MVP DrFlow para consultorio",
+    title: "MVP NexClinic para consultorio",
     highlights: [
       "Agenda, pacientes, historia clínica y recetas",
       "Portal paciente PWA y turnos públicos",

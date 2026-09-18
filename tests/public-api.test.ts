@@ -42,11 +42,11 @@ describe("apiCreateAppointmentSchema", () => {
 });
 
 describe("checkPublicApiRateLimit", () => {
-  it("allows burst then blocks", () => {
-    const keyId = "test-key-rate";
+  it("allows burst then blocks", async () => {
+    const keyId = `test-key-rate-${Date.now()}`;
     for (let i = 0; i < 120; i++) {
-      expect(checkPublicApiRateLimit(keyId)).toBe(true);
+      expect(await checkPublicApiRateLimit(keyId)).toBe(true);
     }
-    expect(checkPublicApiRateLimit(keyId)).toBe(false);
+    expect(await checkPublicApiRateLimit(keyId)).toBe(false);
   });
 });

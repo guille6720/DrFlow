@@ -8,7 +8,7 @@ export type WcagFeature = {
   criterion?: string;
 };
 
-/** WCAG 2.1 AA features implemented or tracked in DrFlow. */
+/** WCAG 2.1 AA features implemented or tracked in NexClinic. */
 export const WCAG_AA_FEATURES: WcagFeature[] = [
   {
     id: "lang",

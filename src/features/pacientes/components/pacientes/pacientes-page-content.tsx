@@ -16,6 +16,8 @@ type Props = PacientesPageData & {
   canIssuePrescriptions: boolean;
   canViewClinical: boolean;
   historiasData: HistoriasPageData | null;
+  geriatricsEnabled?: boolean;
+  residentPatientIds?: ReadonlySet<string>;
 };
 
 export function PacientesPageContent({
@@ -33,6 +35,8 @@ export function PacientesPageContent({
   canIssuePrescriptions,
   canViewClinical,
   historiasData,
+  geriatricsEnabled,
+  residentPatientIds,
 }: Props) {
   const hasSearch = Boolean(q || patologia);
   const showHistorias = seccion === "historias" && canViewClinical;
@@ -95,6 +99,8 @@ export function PacientesPageContent({
             cobertura={cobertura}
             canIssuePrescriptions={canIssuePrescriptions}
             hasSearch={hasSearch}
+            geriatricsEnabled={geriatricsEnabled}
+            residentPatientIds={residentPatientIds}
           />
         </>
       )}

@@ -6,7 +6,7 @@ export function buildPatientContactMessage(
   const who = professionalName ? `${professionalName} de su consultorio` : "su consultorio";
   return (
     `Hola ${patientName}, le escribe ${who}. ` +
-    `¿En qué puedo ayudarlo/a? — DrFlow`
+    `¿En qué puedo ayudarlo/a? — NexClinic`
   );
 }
 

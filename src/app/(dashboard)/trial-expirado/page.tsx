@@ -22,7 +22,7 @@ export default async function TrialExpiradoPage() {
     <>
       <DashboardPageHeader
         title="Prueba finalizada"
-        subtitle="Tu periodo de prueba de DrFlow terminó"
+        subtitle="Tu periodo de prueba de NexClinic terminó"
       />
       <div className="mx-auto max-w-lg space-y-6 p-4 sm:p-6">
         <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">

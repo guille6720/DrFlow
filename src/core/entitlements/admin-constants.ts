@@ -22,6 +22,7 @@ export type EntitlementsAdminOverrideRow = {
 
 export const ADMIN_ASSIGNABLE_PLAN_KEYS: PlanKey[] = [
   PLAN_KEYS.TRIAL,
+  PLAN_KEYS.ESSENTIAL,
   PLAN_KEYS.BASIC,
   PLAN_KEYS.PRO,
   PLAN_KEYS.PREMIUM,

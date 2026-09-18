@@ -15,9 +15,9 @@ import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
 import { ButtonLink, buttonSurfaceClassName } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Probar DrFlow gratis",
+  title: "Probar NexClinic gratis",
   description:
-    "Guía paso a paso para probar agenda, pacientes, historia clínica y app para pacientes en DrFlow.",
+    "Guía paso a paso para probar agenda, pacientes, historia clínica y app para pacientes en NexClinic.",
   alternates: { canonical: "/demo" },
 };
 
@@ -81,7 +81,7 @@ export default function DemoPage() {
         <div className="text-center">
           <p className="text-sm font-medium text-blue-700">Prueba sin instalar nada</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Probá DrFlow en 5 minutos
+            Probá NexClinic en 5 minutos
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-slate-600">
             Consultorio digital para médicos argentinos: agenda, historia clínica, PAMI, recetas y
@@ -161,7 +161,7 @@ export default function DemoPage() {
         <div className="mt-14 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-6">
           <h2 className="font-semibold text-slate-900">Mensaje para WhatsApp</h2>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
-            {`Hola, te comparto DrFlow para que pruebes el consultorio digital.
+            {`Hola, te comparto NexClinic para que pruebes el consultorio digital.
 
 1. Entrá a ${PRODUCTION_URL}/demo
 2. Registrate con tu email

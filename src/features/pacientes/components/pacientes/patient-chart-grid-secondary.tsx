@@ -11,6 +11,7 @@ import { PatientAppShareControl } from "@/features/pacientes/components/paciente
 import { ChartSection, VaccineIcon } from "@/features/pacientes/components/pacientes/patient-chart-primitives";
 import type { PatientChartAppointment, PatientChartPatient } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { PatientChartPayload } from "@/features/pacientes/utils/patient-chart-model-types";
+import { GeneratePatientPortalAccessControl } from "@/features/portal/components/generate-patient-portal-access-control";
 
 import { appointmentStatusBadge, Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -206,6 +207,12 @@ export function PatientChartGridSecondary({
           </Card>
         </div>
       )}
+
+      <div className="drflow-patient-chart-span-full">
+        <Card title="Portal del paciente (acceso seguro)">
+          <GeneratePatientPortalAccessControl patientId={patientId} />
+        </Card>
+      </div>
     </>
   );
 }

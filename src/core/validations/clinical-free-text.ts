@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-/** Límite histórico alineado con `sanitizeText` — no reducir para no bloquear ediciones. */
-export const CLINICAL_TEXT_MAX = 10_000;
+/** Límite histórico para notas clínicas (informes extensos). */
+export const CLINICAL_TEXT_MAX = 50_000;
 
 /** Rechaza payloads crudos inflados antes de normalizar (DoS / campos enormes). */
-export const CLINICAL_TEXT_RAW_MAX = 12_000;
+export const CLINICAL_TEXT_RAW_MAX = 60_000;
 
 export const MEDICAL_ORDER_TEXT_MAX = CLINICAL_TEXT_MAX;
 export const MEDICAL_ORDER_NOTES_MAX = CLINICAL_TEXT_MAX;
