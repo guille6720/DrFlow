@@ -293,4 +293,54 @@ describe("resolveDayPrintAnchorIso", () => {
     const dayRows = resolveDayPrintConsultations(list, anchor);
     expect(dayRows.map((row) => row.id)).toEqual(["new-today"]);
   });
+
+  it("dedupes identical same-day evolutions for day print", () => {
+    const report = "Historia clínica completa. Presenta signos vitales estables.";
+    const dayRows = resolveDayPrintConsultations(
+      [
+        {
+          id: "a",
+          created_at: "2026-08-28T20:30:00.000Z",
+          professional_name: "Dr. A",
+          chief_complaint: "",
+          diagnosis: "",
+          evolution: report,
+          indications: "",
+          category: "evolution",
+        },
+        {
+          id: "b",
+          created_at: "2026-08-28T20:29:00.000Z",
+          professional_name: "Dr. A",
+          chief_complaint: "",
+          diagnosis: "",
+          evolution: report,
+          indications: "",
+          category: "evolution",
+        },
+        {
+          id: "c",
+          created_at: "2026-08-28T20:28:00.000Z",
+          professional_name: "Dr. A",
+          chief_complaint: "",
+          diagnosis: "",
+          evolution: `  ${report}  `,
+          indications: "",
+          category: "evolution",
+        },
+        {
+          id: "vitals",
+          created_at: "2026-08-28T20:31:00.000Z",
+          professional_name: "Dr. A",
+          chief_complaint: "Signos vitales",
+          diagnosis: "",
+          evolution: "Signos vitales: TA 120/80",
+          indications: "",
+          category: "vitals",
+        },
+      ],
+      "2026-08-28T20:30:00.000Z"
+    );
+    expect(dayRows.map((row) => row.id)).toEqual(["a"]);
+  });
 });

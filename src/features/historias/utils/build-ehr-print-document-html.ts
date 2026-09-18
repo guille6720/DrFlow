@@ -118,7 +118,12 @@ function renderVitalsTable(vitals: Record<string, string>): string {
     </section>`;
 }
 
-function renderHeader(patient: PatientEhrPatientInfo, clinical: EhrPrintClinicalContext, generatedAt: string): string {
+function renderHeader(
+  patient: PatientEhrPatientInfo,
+  clinical: EhrPrintClinicalContext,
+  generatedAt: string,
+  title = "Historia Clínica Completa"
+): string {
   const name = `${patient.last_name}, ${patient.first_name}`;
   const birth = formatPrintBirthDate(patient.birth_date);
   const age = formatPrintDetailedAge(patient.birth_date) ?? patient.age_label ?? null;
@@ -149,7 +154,7 @@ function renderHeader(patient: PatientEhrPatientInfo, clinical: EhrPrintClinical
     <header class="doc-header">
       <div class="brand">
         <p class="brand-name">DRFLOW</p>
-        <h1>Historia Clínica Completa</h1>
+        <h1>${escapeHtml(title)}</h1>
       </div>
       <p class="generated">Generado: ${escapeHtml(generatedAt)}</p>
       <div class="meta-grid">${cells}</div>
@@ -573,6 +578,8 @@ export function buildEhrPrintDocumentHtml(input: EhrPrintDocumentInput): string 
     input.scope === "all"
       ? renderClinicalSummary(clinical, input.diagnosisRows, input.treatmentRows)
       : "";
+  const title =
+    input.scope === "day" ? "Historia Clínica del Día" : "Historia Clínica Completa";
 
   const evolutions = sorted
     .map((consultation) =>
@@ -596,7 +603,7 @@ export function buildEhrPrintDocumentHtml(input: EhrPrintDocumentInput): string 
   <style>${printStyles(patientLabel, generatedAt)}</style>
 </head>
 <body>
-  ${renderHeader(input.patient, clinical, generatedAt)}
+  ${renderHeader(input.patient, clinical, generatedAt, title)}
   ${summary}
   <section class="evolutions">
     <h2 class="section-heading">Evoluciones</h2>

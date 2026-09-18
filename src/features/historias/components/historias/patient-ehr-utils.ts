@@ -99,6 +99,39 @@ export function filterConsultationsByConsultationDay(
   return consultations.filter((row) => isSameCalendarDay(row.created_at, consultationCreatedAt));
 }
 
+function normalizeEvolutionFingerprint(consultation: PatientEhrConsultation): string {
+  const body = (consultation.evolution ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+  return `${consultation.category ?? "evolution"}|${body}`;
+}
+
+/**
+ * Collapse duplicate same-day notes (common after repeated autosaves) keeping the newest.
+ * Prefers narrative evolutions over diagnosis/treatment/vitals satellite rows.
+ */
+export function dedupeDayPrintConsultations(
+  consultations: PatientEhrConsultation[]
+): PatientEhrConsultation[] {
+  const sorted = [...consultations].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  const narrative = sorted.filter((row) => row.category === "evolution");
+  const source = narrative.length > 0 ? narrative : sorted;
+  const seen = new Set<string>();
+  const out: PatientEhrConsultation[] = [];
+  for (const row of source) {
+    const key = normalizeEvolutionFingerprint(row);
+    if (!key.endsWith("|") && seen.has(key)) continue;
+    if (!key.endsWith("|")) seen.add(key);
+    out.push(row);
+  }
+  return out;
+}
+
 /** Prefer in-progress / active consultation date for "Historia del día" print. */
 export function resolveDayPrintAnchorIso(options: {
   dayPrintAnchorIso?: string | null;
@@ -118,7 +151,7 @@ export function resolveDayPrintConsultations(
   evolutionList: PatientEhrConsultation[],
   anchorIso: string | null | undefined
 ): PatientEhrConsultation[] {
-  return filterConsultationsByConsultationDay(evolutionList, anchorIso);
+  return dedupeDayPrintConsultations(filterConsultationsByConsultationDay(evolutionList, anchorIso));
 }
 
 export function extractConsultationFileName(consultation: PatientEhrConsultation): string | null {
