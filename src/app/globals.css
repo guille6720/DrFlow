@@ -2123,7 +2123,7 @@ html[data-ui-style="2"][data-clinical-dark="1"] .bg-teal-100 {
 
 .drapp-consulta-composer {
   background: #fff8dc;
-  min-height: min(62vh, 42rem);
+  min-height: min(78vh, 48rem);
 }
 
 .drapp-consulta-actions {
@@ -2132,15 +2132,22 @@ html[data-ui-style="2"][data-clinical-dark="1"] .bg-teal-100 {
 
 .drapp-consulta-evolution {
   background: #fff8dc;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
 .drapp-consulta-panel-body {
-  min-height: min(52vh, 34rem);
+  min-height: min(60vh, 40rem);
 }
 
 .drapp-consulta-panel-body .drapp-consulta-evolution textarea,
 .drapp-consulta-panel-body .drapp-consulta-evolution-input {
-  min-height: min(48vh, 30rem) !important;
+  min-height: min(56vh, 36rem) !important;
+}
+
+.drapp-consulta-composer .drapp-consulta-evolution textarea,
+.drapp-consulta-composer .drapp-consulta-evolution-input {
+  min-height: min(56vh, 36rem) !important;
 }
 
 .drapp-consulta-evolution-input,

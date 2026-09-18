@@ -125,15 +125,8 @@ function FullConsultaForm({
 
       <div className="max-h-[75vh] space-y-3 overflow-y-auto px-4 py-4">
         <Textarea
-          label="Motivo de consulta"
-          rows={2}
-          preservePasteFormat
-          value={values.chiefComplaint}
-          onChange={(e) => setValues((v) => ({ ...v, chiefComplaint: e.target.value }))}
-        />
-        <Textarea
           label="Evolución"
-          rows={5}
+          rows={10}
           preservePasteFormat
           value={values.evolution}
           onChange={(e) => setValues((v) => ({ ...v, evolution: e.target.value }))}

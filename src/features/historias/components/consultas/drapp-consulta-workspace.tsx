@@ -386,7 +386,6 @@ function DrappConsultaWorkspaceInner({
     consultationAt,
     setConsultationAt,
     chiefComplaint,
-    setChiefComplaint,
     evolution,
     setEvolution,
     diagnoses,
@@ -732,7 +731,7 @@ function DrappConsultaWorkspaceInner({
             <input type="hidden" name="patient_id" value={patient.id} />
             <input type="hidden" name="professional_id" value={formProfessionalId} />
 
-            <section className="drapp-consulta-composer relative flex min-h-[min(70vh,640px)] flex-col overflow-hidden rounded-sm border border-[var(--border,#e8e0b8)]">
+            <section className="drapp-consulta-composer relative flex min-h-[min(78vh,720px)] flex-1 flex-col overflow-hidden rounded-sm border border-[var(--border,#e8e0b8)]">
               <div className="drapp-consulta-actions flex flex-wrap items-center gap-1 border-b border-[var(--border,#efe6b8)] px-2 py-1.5">
                 <DrappActionLink
                   active={openPanel === "evolucion" || openPanel === null}
@@ -848,33 +847,24 @@ function DrappConsultaWorkspaceInner({
                 </div>
               </div>
 
-              {/* Evolution always fills the composer; tools open as overlays from the buttons. */}
-              <div className="drapp-consulta-evolution flex min-h-0 flex-1 flex-col space-y-2 p-3">
-                <Textarea
-                  name="chief_complaint"
-                  label="Motivo de consulta"
-                  rows={2}
-                  voiceInput
-                  value={chiefComplaint}
-                  onChange={(e) => setChiefComplaint(e.target.value)}
-                  placeholder="Motivo de la consulta…"
-                  className="drapp-consulta-evolution-input shrink-0 border-[var(--input,#e8d98a)] bg-transparent text-[var(--foreground,#0f172a)]"
-                />
+              {/* Evolution fills the composer; diagnosis/treatment/vitals/protocols open from action buttons. */}
+              <div className="drapp-consulta-evolution flex min-h-0 flex-1 flex-col p-3">
+                <input type="hidden" name="chief_complaint" value={chiefComplaint} />
                 <Textarea
                   ref={evolutionRef}
                   name="evolution"
                   label="Evolución"
                   required
-                  rows={16}
+                  rows={20}
                   grow
                   voiceInput
                   value={evolution}
                   onChange={(e) => setEvolution(e.target.value)}
                   placeholder="Escribe aquí la evolución"
-                  className="drapp-consulta-evolution-input min-h-[min(52vh,420px)] border-[var(--input,#e8d98a)] bg-transparent text-[14px] leading-relaxed text-[var(--foreground,#0f172a)]"
+                  className="drapp-consulta-evolution-input min-h-0 flex-1 border-[var(--input,#e8d98a)] bg-transparent text-[14px] leading-relaxed text-[var(--foreground,#0f172a)]"
                 />
 
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 pt-2">
                   <label className="inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-[var(--foreground,#0f172a)]">
                     <CalendarDays className="h-4 w-4 text-[var(--primary,#0F4C5C)]" aria-hidden />
                     <span className="font-medium text-[var(--primary,#0F4C5C)]">
