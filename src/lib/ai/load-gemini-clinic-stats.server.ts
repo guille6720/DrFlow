@@ -218,13 +218,12 @@ export async function loadGeminiClinicStats(
   const supabase = await createClient();
   const useScreening = query.htaDiureticRiskScreening;
 
-  const selectCols = useScreening
-    ? "created_at, diagnosis, chief_complaint, evolution, indications, treatments_json, patient_id, patients(id, first_name, last_name, insurance_provider, birth_date, regular_medication, medical_history, notes)"
-    : "created_at, diagnosis, chief_complaint, evolution, patient_id, patients(id, first_name, last_name, insurance_provider)";
-
+  // Single select shape so PostgREST typings stay valid (dynamic select → ParserError).
   const { data, error } = await supabase
     .from("clinical_records")
-    .select(selectCols)
+    .select(
+      "created_at, diagnosis, chief_complaint, evolution, indications, treatments_json, patient_id, patients(id, first_name, last_name, insurance_provider, birth_date, regular_medication, medical_history, notes)"
+    )
     .eq("clinic_id", clinicId)
     .gte("created_at", start.toISOString())
     .lt("created_at", end.toISOString())
@@ -235,7 +234,7 @@ export async function loadGeminiClinicStats(
     return emptyStatsResult(query, label);
   }
 
-  const rows = (data ?? []) as RecordRow[];
+  const rows = (data ?? []) as unknown as RecordRow[];
   const truncated = rows.length >= RECORD_LIMIT;
 
   const filtered = rows.filter((row) => {
