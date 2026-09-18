@@ -73,7 +73,7 @@ export function extractClinicalSection(
 
   const headerPattern = headers.map((h) => h.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
   const regex = new RegExp(
-    `(?:^|\\n)\\s*(?:#{1,6}\\s*)?(?:${headerPattern})\\b\\s*[:.\\-]?\\s*([\\s\\S]*?)(?=\\n\\s*(?:#{1,6}\\s*)?(?:laboratorio|estudios?\\s+complementarios?|diagn[oó]stic|tratamiento|indicacion|evoluci[oó]n|signos?\\s+vital)|$)`,
+    `(?:^|\\n)\\s*(?:#{1,6}\\s*)?(?:${headerPattern})\\b\\s*[:.\\-]?\\s*([\\s\\S]*?)(?=\\n\\s*(?:#{1,6}\\s*)?(?:laboratorio|estudios?\\s+complementarios?|diagn[oó]stic|tratamiento|indicacion|evoluci[oó]n|conducta|antecedentes?|signos?\\s+vital|motivo)|$)`,
     "i"
   );
   const match = raw.match(regex);
@@ -235,16 +235,27 @@ export function formatCompactMatricula(consultation: PatientEhrConsultation): st
   return null;
 }
 
+const PRINT_SIDE_BLOCK_HEADERS =
+  "signos?\\s+vitales?|laboratorio|estudios?\\s+complementarios?";
+
+/** Headers that end a side-block when notes use plain clinical titles (no markdown #). */
+const CLINICAL_SECTION_BOUNDARY =
+  "antecedentes?|evoluci[oó]n(?:es)?|conducta(?:\\s+y\\s+seguimiento)?|diagn[oó]stic(?:o|os)|tratamiento(?:s)?|indicacion(?:es)?|motivo(?:\\s+de\\s+(?:la\\s+)?consulta)?|examen\\s+f[ií]sico|plan(?:\\s+de\\s+seguimiento)?|laboratorio|estudios?\\s+complementarios?|signos?\\s+vitales?";
+
+/**
+ * Removes vitals/lab/studies blocks that are re-rendered as structured sections,
+ * without deleting the rest of a plain-text evolution (EVOLUCION, CONDUCTA, etc.).
+ */
 export function evolutionBodyWithoutExtractedBlocks(text: string): string {
+  const boundary =
+    `(?=\\n\\s*(?:#{1,6}\\s*)?(?:${CLINICAL_SECTION_BOUNDARY})\\b|\\n\\s*#{1,6}\\s|$)`;
+  const sideBlock = new RegExp(
+    `(?:^|\\n)\\s*(?:#{0,6}\\s*)?(?:${PRINT_SIDE_BLOCK_HEADERS})\\b\\s*[:.\\-]?[\\s\\S]*?${boundary}`,
+    "gi"
+  );
+
   return text
-    .replace(
-      /(?:^|\n)\s*#{0,6}\s*signos?\s+vitales?\b\s*[:.\-]?[\s\S]*?(?=\n\s*#{1,6}\s|$)/gi,
-      "\n"
-    )
-    .replace(
-      /(?:^|\n)\s*#{0,6}\s*(?:laboratorio|estudios?\s+complementarios?)\b\s*[:.\-]?[\s\S]*?(?=\n\s*#{1,6}\s|$)/gi,
-      "\n"
-    )
+    .replace(sideBlock, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }

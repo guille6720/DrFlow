@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CLINICAL_RESEARCH_PROTOCOLS_FLAG } from "@/core/compliance/clinical-research-ai";
 import { SafeInternalLink } from "@/core/components/safe-link";
 
+import { ResearchProtocolsEnableBanner } from "@/features/ia/components/clinical-workflow/research-protocols-enable-banner";
 import { useClinicalCopilotChat } from "@/features/ia/hooks/use-clinical-copilot-chat";
 import {
   clearGeminiWorkspaceSnapshot,
@@ -34,8 +35,11 @@ const STATS_SUGGESTED_PROMPTS = [
 ];
 
 const RESEARCH_SUGGESTED_PROMPTS = [
+  "Candidatos ZENITH",
   "Candidatos para MARITIME-CV",
   "Criterios del estudio PRESTO (EPOC)",
+  "Riesgo de primer evento ASCVD (Muvalaplin)",
+  "Candidatos ATTAIN-NOW",
 ];
 
 function engineLabel(
@@ -337,13 +341,19 @@ export function GeminiWorkspace() {
           ) : null}
         </div>
 
+        {!researchEnabled ? (
+          <div className="mb-4">
+            <ResearchProtocolsEnableBanner />
+          </div>
+        ) : null}
+
         <div className="mb-4 max-h-[28rem] space-y-3 overflow-y-auto rounded-lg border border-slate-100 bg-slate-50/60 p-3">
           {turns.length === 0 ? (
             <div className="space-y-3">
               <p className="text-sm text-slate-600">
                 {researchEnabled
-                  ? "Preguntá estadísticas o candidatos a protocolos (flag de investigación activo). Los resultados quedan guardados acá y en el historial de la izquierda."
-                  : "Preguntá estadísticas del consultorio. El matching de candidatos a protocolos de investigación está desactivado hasta revisión legal/privacidad."}
+                  ? "Preguntá estadísticas o candidatos a protocolos. Los resultados quedan guardados acá y en el historial de la izquierda."
+                  : "Preguntá estadísticas del consultorio. Activá protocolos de investigación arriba para buscar candidatos a ensayos."}
               </p>
               <div className="flex flex-wrap gap-2">
                 {suggestedPrompts.map((prompt) => (

@@ -33,6 +33,7 @@ export type ParsedPostgresError = {
   missingColumnKey: string | undefined;
   undefinedRelationName: string | undefined;
   checkConstraintName: string | undefined;
+  uniqueConstraintName: string | undefined;
 };
 
 const RPC_CODE_PATTERN = /^[A-Z][A-Z0-9_]{2,}$/;
@@ -178,6 +179,17 @@ export function extractCheckConstraintName(message: string): string | undefined 
   return match?.[1];
 }
 
+/** Extracts unique constraint name from unique_violation (23505) errors. */
+export function extractUniqueConstraintName(message: string): string | undefined {
+  const match = message.match(/unique constraint "([^"]+)"/i);
+  return match?.[1];
+}
+
+const UNIQUE_CONSTRAINT_HINTS: Record<string, string> = {
+  patients_clinic_id_document_number_key:
+    "Ya existe un paciente con ese DNI en este consultorio. Buscalo en Pacientes o abrí su ficha en lugar de crear uno nuevo.",
+};
+
 export function parsePostgresError(
   error: PostgresErrorLike | null | undefined
 ): ParsedPostgresError {
@@ -201,6 +213,7 @@ export function parsePostgresError(
     missingColumnKey: extractMissingColumnKey(message),
     undefinedRelationName: extractUndefinedRelationName(message),
     checkConstraintName: extractCheckConstraintName(message),
+    uniqueConstraintName: extractUniqueConstraintName(message),
   };
 }
 
@@ -265,6 +278,18 @@ export function resolvePostgresUserMessage(
   if (parsed.pgCode === PG_ERROR_CODES.CHECK_VIOLATION && parsed.checkConstraintName) {
     const hint = CHECK_CONSTRAINT_HINTS[parsed.checkConstraintName];
     if (hint) return hint;
+  }
+
+  if (parsed.pgCode === PG_ERROR_CODES.UNIQUE_VIOLATION && parsed.uniqueConstraintName) {
+    const hint = UNIQUE_CONSTRAINT_HINTS[parsed.uniqueConstraintName];
+    if (hint) return hint;
+  }
+
+  if (
+    parsed.pgCode === PG_ERROR_CODES.UNIQUE_VIOLATION &&
+    parsed.message.includes("patients_clinic_id_document_number_key")
+  ) {
+    return UNIQUE_CONSTRAINT_HINTS.patients_clinic_id_document_number_key;
   }
 
   if (parsed.message?.includes("clinical_record_audit_changed_by_fkey")) {

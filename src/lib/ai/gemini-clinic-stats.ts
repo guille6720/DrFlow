@@ -7,6 +7,10 @@ import {
   type GeminiClinicalProtocol,
   type GeminiLexiconCondition,
 } from "@/lib/ai/gemini-medical-lexicon";
+import {
+  type HtaDiureticRiskFactorId,
+  messageWantsHtaDiureticRiskScreening,
+} from "@/lib/ai/hta-diuretic-risk-eligibility";
 
 export type GeminiStatsPeriodId =
   | "daily"
@@ -30,6 +34,11 @@ export type GeminiClinicStatsQuery = {
   wantTopDiagnoses: boolean;
   protocol: GeminiClinicalProtocol | null;
   wantProtocolCriteria: boolean;
+  /**
+   * Screening determinístico: ≥2 antihipertensivos (con diurético) + ≥2 factores
+   * (edad>70, tabaquista, FA, diabetes, IMC≥30, TFG<60). Ordena primero los que tienen todos.
+   */
+  htaDiureticRiskScreening: boolean;
 };
 
 export type GeminiStatsPatientRow = {
@@ -38,6 +47,11 @@ export type GeminiStatsPatientRow = {
   date: string;
   diagnosis: string;
   coverage: string | null;
+  /** Resumen de elegibilidad multi-factor (si aplica). */
+  matchSummary?: string | null;
+  factorCount?: number;
+  factors?: HtaDiureticRiskFactorId[];
+  hasAllFactors?: boolean;
 };
 
 export type GeminiClinicStatsResult = {
@@ -54,7 +68,7 @@ export type GeminiClinicStatsResult = {
 };
 
 const STATS_HINT =
-  /cu[aá]nt[oa]s?|cantidad|listad[oa]|lista\s+de|estad[ií]st|ranking|promedio|porcentaje|atendid|consultas?\s+(este|esta|hoy|del|de\s+este)|pacientes?\s+con|este\s+mes|esta\s+semana|hoy\b|ayer\b|este\s+a[nñ]o|mes\s+pasado|m[aá]s\s+frecuentes|diagn[oó]sticos?\s+m[aá]s|candidat|protocolo|estudio\s+|deriv(ar|aci[oó]n)|maritime|gzmr|gzpw|presto|theseus|ekgb|muvalaplin|bax.?d[uú]o|bronquiect|polaris|zenagamtide|zenith|nct07181109|hta\s+no\s+control|azure|orforglipr|cagrisema|ascvd|hfpef|hfmref|lp\(?a\)?/i;
+  /cu[aá]nt[oa]s?|cantidad|listad[oa]|lista\s+de|estad[ií]st|ranking|promedio|porcentaje|atendid|consultas?\s+(este|esta|hoy|del|de\s+este)|pacientes?\s+con|este\s+mes|esta\s+semana|hoy\b|ayer\b|este\s+a[nñ]o|mes\s+pasado|m[aá]s\s+frecuentes|diagn[oó]sticos?\s+m[aá]s|candidat|protocolo|estudio\s+|deriv(ar|aci[oó]n)|maritime|gzmr|gzpw|presto|theseus|endura|ekgb|muvalaplin|bax.?d[uú]o|bronquiect|polaris|zenagamtide|zenith|nct07181109|hta\s+no\s+control|azure|orforglipr|cagrisema|ascvd|hfpef|hfmref|lp\(?a\)?|antihipertens|diur[eé]tico|tabaquist|fibrilaci[oó]n|filtrado\s+glomerular|ydao|eloralint|kt621|kymera|apnea|attain.?now|prediabetes|primer\s+evento\s+ascvd/i;
 
 const CLINICAL_ONLY_HINT =
   /evoluci[oó]n|resumen\s+del\s+paciente|motivo\s+de\s+consulta|redact[aá]|soap|alertas?\s+de\s+seguimiento/i;
@@ -176,15 +190,50 @@ export function parseGeminiClinicStatsQuery(
     }
   }
 
-  const hasConditionOrProtocol = Boolean(condition || protocol);
+  const htaDiureticRiskScreening =
+    protocol?.id === "zenith" || messageWantsHtaDiureticRiskScreening(folded);
+
+  const hasConditionOrProtocol = Boolean(condition || protocol || htaDiureticRiskScreening);
+
+  // Si piden el perfil multi-factor sin protocolo explícito, anclar a ZENITH solo si research está permitido.
+  let resolvedProtocol = protocol;
+  let resolvedCondition = condition;
+  if (htaDiureticRiskScreening && !resolvedProtocol) {
+    if (allowResearch) {
+      resolvedProtocol = GEMINI_CLINICAL_PROTOCOLS.find((p) => p.id === "zenith") ?? null;
+      if (!resolvedCondition && resolvedProtocol) {
+        resolvedCondition = conditionFromProtocol(resolvedProtocol);
+      }
+    } else if (!resolvedCondition) {
+      resolvedCondition = {
+        id: "hta_diuretic_risk",
+        label: "≥2 antihipertensivos (con diurético) + ≥2 factores de riesgo",
+        needles: [
+          "hipertens",
+          "hta",
+          "antihipertens",
+          "diuretico",
+          "diabetes",
+          "tabaquismo",
+          "fibrilacion",
+          "obesidad",
+          "imc",
+          "egfr",
+          "tfg",
+        ],
+      };
+    }
+  }
 
   return {
     period: matchPeriod(folded, hasConditionOrProtocol),
-    condition,
+    condition: resolvedCondition,
     coverageNeedle: matchCoverage(folded),
     wantTopDiagnoses: /mas\s+frecuentes|ranking|diagnosticos?\s+mas|top\s+diagn/.test(folded),
-    protocol,
-    wantProtocolCriteria: wantProtocolCriteria || Boolean(protocol && !conditionFromText),
+    protocol: resolvedProtocol,
+    wantProtocolCriteria:
+      wantProtocolCriteria || Boolean(resolvedProtocol && !conditionFromText) || htaDiureticRiskScreening,
+    htaDiureticRiskScreening,
   };
 }
 
@@ -203,6 +252,9 @@ export function formatGeminiClinicStatsContextForAI(result: GeminiClinicStatsRes
     date: row.date,
     diagnosis: row.diagnosis,
     coverage: row.coverage,
+    matchSummary: row.matchSummary ?? null,
+    factorCount: row.factorCount,
+    hasAllFactors: row.hasAllFactors,
   }));
 
   const header = [
@@ -213,6 +265,9 @@ export function formatGeminiClinicStatsContextForAI(result: GeminiClinicStatsRes
     `Consultas: ${result.visitCount}`,
     `Pacientes únicos: ${result.patientCount}`,
     result.truncated ? "Listado recortado al máximo permitido." : null,
+    anonymizedPatients.some((p) => p.factorCount != null)
+      ? "Orden: primero quienes cumplen TODOS los factores de riesgo; luego por cantidad de factores."
+      : null,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -227,10 +282,18 @@ export function formatGeminiClinicStatsContextForAI(result: GeminiClinicStatsRes
   const patients =
     anonymizedPatients.length > 0
       ? `Pacientes (anonimizados):\n${anonymizedPatients
-          .map(
-            (row) =>
-              `• ${row.token} (${row.date})${row.diagnosis ? ` — ${row.diagnosis}` : ""}${row.coverage ? ` [${row.coverage}]` : ""}`
-          )
+          .map((row) => {
+            const bits = [
+              row.token,
+              `(${row.date})`,
+              row.hasAllFactors ? "[TODOS LOS FACTORES]" : null,
+              row.factorCount != null ? `[${row.factorCount}/6 factores]` : null,
+              row.diagnosis ? `— ${row.diagnosis}` : null,
+              row.matchSummary ? `· ${row.matchSummary}` : null,
+              row.coverage ? `[${row.coverage}]` : null,
+            ].filter(Boolean);
+            return `• ${bits.join(" ")}`;
+          })
           .join("\n")}`
       : "Pacientes: ninguno en el período con esos términos en la HC de DrFlow.";
 
@@ -260,7 +323,17 @@ export function formatGeminiClinicStatsContext(result: GeminiClinicStatsResult):
   const patients =
     result.patients.length > 0
       ? `Pacientes:\n${result.patients
-          .map((row) => `• ${row.name} (${row.date})${row.diagnosis ? ` — ${row.diagnosis}` : ""}`)
+          .map((row) => {
+            const bits = [
+              row.name,
+              `(${row.date})`,
+              row.hasAllFactors ? "[TODOS LOS FACTORES]" : null,
+              row.factorCount != null ? `[${row.factorCount}/6]` : null,
+              row.diagnosis ? `— ${row.diagnosis}` : null,
+              row.matchSummary ? `· ${row.matchSummary}` : null,
+            ].filter(Boolean);
+            return `• ${bits.join(" ")}`;
+          })
           .join("\n")}`
       : "Pacientes: ninguno en el período con esos términos en la HC de DrFlow.";
 

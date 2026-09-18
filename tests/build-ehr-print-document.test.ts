@@ -257,6 +257,34 @@ describe("ehr-print-document-helpers", () => {
     expect(evolutionBodyWithoutExtractedBlocks(report)).toContain("Control ambulatorio estable.");
   });
 
+  it("keeps EVOLUCION and CONDUCTA after stripping Signos vitales in plain notes", () => {
+    const note = [
+      "Antonia Pavluk | 83 años",
+      "",
+      "ANTECEDENTES",
+      "Hipertensión arterial, demencia en enfermedad de Alzheimer.",
+      "",
+      "SIGNOS VITALES",
+      "Fecha | TA | FC | SpO2",
+      "17/09/24 | 140/80 | 72 | 97%",
+      "",
+      "EVOLUCION",
+      "Paciente estable. FC fluctuante. Confirmar ritmo cardíaco.",
+      "",
+      "CONDUCTA Y SEGUIMIENTO",
+      "Revisar bisoprolol y apixaban. Control en 7 días.",
+    ].join("\n");
+
+    const body = evolutionBodyWithoutExtractedBlocks(note);
+    expect(body).toContain("ANTECEDENTES");
+    expect(body).toContain("Hipertensión arterial");
+    expect(body).toContain("EVOLUCION");
+    expect(body).toContain("Paciente estable");
+    expect(body).toContain("CONDUCTA Y SEGUIMIENTO");
+    expect(body).toContain("bisoprolol");
+    expect(body).not.toMatch(/SIGNOS VITALES[\s\S]*140\/80/);
+  });
+
   it("parses vitals without inventing values", () => {
     expect(parseVitalsFromText("Signos vitales: TA 170/70 FC 67 Peso 60 kg")).toMatchObject({
       TA: "170/70",

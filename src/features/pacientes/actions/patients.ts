@@ -52,7 +52,16 @@ export async function createPatient(formData: FormData) {
     insurancePlan: parsed.data.insurance_plan ?? null,
   });
 
-  if (!result.ok) return { error: result.error };
+  if (!result.ok) {
+    if ("conflict" in result && result.conflict) {
+      return {
+        error: result.error,
+        existingPatientId: result.conflict.existingPatientId,
+        existingPatientName: result.conflict.existingPatientName,
+      };
+    }
+    return { error: result.error };
+  }
 
   await logAudit({
     clinicId,

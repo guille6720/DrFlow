@@ -6,6 +6,10 @@ import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
 import { getActiveClinicId, getSession } from "@/core/auth/session.server";
 import { revalidateClinicFeatureFlagsCache } from "@/core/cache/revalidate-clinic-cache";
+import {
+  CLINICAL_RESEARCH_PRIVACY_LEGAL_REVIEW,
+  CLINICAL_RESEARCH_PROTOCOLS_FLAG,
+} from "@/core/compliance/clinical-research-ai";
 import { requireAddonFeatureAccess } from "@/core/entitlements/entitlements.server";
 import { addonFeatureForClinicFeatureFlag } from "@/core/entitlements/flag-features";
 import { createClient } from "@/core/supabase/server";
@@ -17,6 +21,39 @@ import {
 } from "@/features/flags/lib/registry";
 
 import { getCachedClinicFeatureFlags } from "@/lib/server/cached-clinic-queries";
+
+export async function enableClinicalResearchProtocols(input: {
+  acknowledgedLegalReview: boolean;
+}): Promise<{ success?: true; error?: string }> {
+  if (!input.acknowledgedLegalReview) {
+    return {
+      error:
+        "Confirmá que completaste la revisión legal y de privacidad documentada antes de activar protocolos de investigación.",
+    };
+  }
+
+  const result = await updateClinicFeatureFlag(CLINICAL_RESEARCH_PROTOCOLS_FLAG, true);
+  if (result.error) return result;
+
+  const clinicId = await getActiveClinicId();
+  if (clinicId) {
+    await logAudit({
+      clinicId,
+      entityType: "feature_flag",
+      action: "update",
+      metadata: {
+        flag_id: CLINICAL_RESEARCH_PROTOCOLS_FLAG,
+        enabled: true,
+        legal_review_acknowledged: true,
+        review_checklist: CLINICAL_RESEARCH_PRIVACY_LEGAL_REVIEW.filter(
+          (item) => item.status === "required_before_activation"
+        ).map((item) => item.id),
+      },
+    });
+  }
+
+  return { success: true };
+}
 
 export async function updateClinicFeatureFlag(
   flagId: FeatureFlagId,

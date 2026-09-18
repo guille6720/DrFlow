@@ -84,4 +84,14 @@ describe("resolvePostgresUserMessage", () => {
       })
     ).toContain("018");
   });
+
+  it("maps patient DNI unique violation to a clear Spanish message", () => {
+    expect(
+      resolvePostgresUserMessage({
+        code: "23505",
+        message:
+          'duplicate key value violates unique constraint "patients_clinic_id_document_number_key"',
+      })
+    ).toMatch(/Ya existe un paciente con ese DNI/i);
+  });
 });

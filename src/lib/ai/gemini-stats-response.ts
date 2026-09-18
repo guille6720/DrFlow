@@ -21,6 +21,10 @@ export function geminiStatsToStructured(
     `Período: ${result.periodLabel}`,
     `Pacientes únicos: ${result.patientCount}`,
     `Consultas: ${result.visitCount}`,
+    ...result.patients
+      .filter((row) => row.hasAllFactors)
+      .slice(0, 3)
+      .map((row) => `${row.name}: cumple TODOS los factores`),
     ...result.topDiagnoses.slice(0, 5).map((row) => `${row.label}: ${row.count}`),
   ].filter((item): item is string => Boolean(item));
 
@@ -30,7 +34,9 @@ export function geminiStatsToStructured(
       : []),
     ...(result.protocolLabel
       ? [
-          "Coincidencia por texto de HC en DrFlow (diagnóstico/motivo/evolución). No reemplaza elegibilidad completa del protocolo.",
+          result.patients.some((p) => p.factorCount != null)
+            ? "Screening multi-factor sobre medicación, edad, hábitos y texto de HC en DrFlow. No reemplaza elegibilidad completa del protocolo."
+            : "Coincidencia por texto de HC en DrFlow (diagnóstico/motivo/evolución). No reemplaza elegibilidad completa del protocolo.",
         ]
       : []),
   ];
@@ -43,7 +49,9 @@ export function geminiStatsToStructured(
       id: row.id,
       name: row.name,
       date: row.date,
-      diagnosis: row.diagnosis,
+      diagnosis: row.matchSummary
+        ? `${row.diagnosis}${row.hasAllFactors ? " · TODOS LOS FACTORES" : ""}`
+        : row.diagnosis,
     })),
   };
 }
