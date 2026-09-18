@@ -30,7 +30,8 @@ export function useDrappQuickPanel(initial: DrappQuickPanelId = "evolucion") {
           if (!window.confirm(panelDirtyMessage(openPanel))) return;
         }
         setDirty(false);
-        setOpenPanel(next === "evolucion" ? "evolucion" : null);
+        // Evolution stays the home surface; toggling a tool panel closes back to it.
+        setOpenPanel("evolucion");
         return;
       }
 
@@ -48,13 +49,13 @@ export function useDrappQuickPanel(initial: DrappQuickPanelId = "evolucion") {
       if (!window.confirm(panelDirtyMessage(openPanel))) return false;
     }
     setDirty(false);
-    setOpenPanel(null);
+    setOpenPanel("evolucion");
     return true;
   }, [dirty, openPanel]);
 
   const markCleanAndClose = useCallback(() => {
     setDirty(false);
-    setOpenPanel(null);
+    setOpenPanel("evolucion");
   }, []);
 
   return {

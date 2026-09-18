@@ -634,17 +634,10 @@ function DrappConsultaWorkspaceInner({
             <input type="hidden" name="patient_id" value={patient.id} />
             <input type="hidden" name="professional_id" value={formProfessionalId} />
 
-            <section
-              className={cn(
-                "drapp-consulta-composer rounded-sm border border-[var(--border,#e8e0b8)]",
-                openPanel === "tratamiento" || openPanel === "diagnostico"
-                  ? "overflow-visible"
-                  : "overflow-hidden"
-              )}
-            >
+            <section className="drapp-consulta-composer relative flex min-h-[min(70vh,640px)] flex-col overflow-hidden rounded-sm border border-[var(--border,#e8e0b8)]">
               <div className="drapp-consulta-actions flex flex-wrap items-center gap-1 border-b border-[var(--border,#efe6b8)] px-2 py-1.5">
                 <DrappActionLink
-                  active={openPanel === "evolucion"}
+                  active={openPanel === "evolucion" || openPanel === null}
                   onClick={() => {
                     requestOpen("evolucion");
                     queueMicrotask(() => evolutionRef.current?.focus());
@@ -757,103 +750,129 @@ function DrappConsultaWorkspaceInner({
                 </div>
               </div>
 
-              {openPanel === "diagnostico" ? (
-                <DrappDiagnosisQuickForm
-                  saving={quickSaving}
-                  onDirtyChange={setDirty}
-                  onCancel={() => {
+              {/* Evolution always fills the composer; tools open as overlays from the buttons. */}
+              <div className="drapp-consulta-evolution flex min-h-0 flex-1 flex-col space-y-2 p-3">
+                <Textarea
+                  name="chief_complaint"
+                  label="Motivo de consulta"
+                  rows={2}
+                  voiceInput
+                  value={chiefComplaint}
+                  onChange={(e) => setChiefComplaint(e.target.value)}
+                  placeholder="Motivo de la consulta…"
+                  className="drapp-consulta-evolution-input shrink-0 border-[var(--input,#e8d98a)] bg-transparent text-[var(--foreground,#0f172a)]"
+                />
+                <Textarea
+                  ref={evolutionRef}
+                  name="evolution"
+                  label="Evolución"
+                  required
+                  rows={16}
+                  grow
+                  voiceInput
+                  value={evolution}
+                  onChange={(e) => setEvolution(e.target.value)}
+                  placeholder="Escribe aquí la evolución"
+                  className="drapp-consulta-evolution-input min-h-[min(52vh,420px)] border-[var(--input,#e8d98a)] bg-transparent text-[14px] leading-relaxed text-[var(--foreground,#0f172a)]"
+                />
+
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                  <label className="inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-[var(--foreground,#0f172a)]">
+                    <CalendarDays className="h-4 w-4 text-[var(--primary,#0F4C5C)]" aria-hidden />
+                    <span className="font-medium text-[var(--primary,#0F4C5C)]">
+                      {formatConsultationDateLabel(consultationAt)}
+                    </span>
+                    <input
+                      ref={dateInputRef}
+                      type="datetime-local"
+                      value={consultationAt}
+                      onChange={(e) => setConsultationAt(e.target.value)}
+                      className="sr-only"
+                      tabIndex={-1}
+                    />
+                    <button
+                      type="button"
+                      className="text-[12px] text-slate-500 underline-offset-2 hover:underline"
+                      onClick={() =>
+                        dateInputRef.current?.showPicker?.() ?? dateInputRef.current?.click()
+                      }
+                    >
+                      Cambiar
+                    </button>
+                  </label>
+                </div>
+              </div>
+
+              {openPanel === "diagnostico" ||
+              openPanel === "tratamiento" ||
+              openPanel === "vitales" ||
+              openPanel === "protocolos" ? (
+                <div
+                  className="absolute inset-0 z-30 flex items-start justify-center bg-black/25 p-3 sm:p-4"
+                  role="presentation"
+                  onClick={() => {
                     void closePanel();
                   }}
-                  onSave={handleSaveDiagnosis}
-                />
-              ) : null}
-
-              {openPanel === "tratamiento" ? (
-                <DrappTreatmentQuickForm
-                  saving={quickSaving}
-                  onDirtyChange={setDirty}
-                  onCancel={() => {
-                    void closePanel();
-                  }}
-                  onSave={handleSaveTreatment}
-                />
-              ) : null}
-
-              {openPanel === "vitales" ? (
-                <DrappVitalsQuickForm
-                  saving={quickSaving}
-                  onDirtyChange={setDirty}
-                  onCancel={() => {
-                    void closePanel();
-                  }}
-                  onSave={handleSaveVitals}
-                />
-              ) : null}
-
-              {openPanel === "protocolos" ? (
-                <DrappProtocolsQuickPanel
-                  onCancel={() => {
-                    void closePanel();
-                  }}
-                  onInsertIntoEvolution={(text) => {
-                    const trimmed = evolution.trim();
-                    setEvolution(trimmed ? `${trimmed}\n\n${text}` : text);
-                    requestOpen("evolucion");
-                    queueMicrotask(() => evolutionRef.current?.focus());
-                    toast.success("Protocolo insertado en evolución");
-                  }}
-                />
-              ) : null}
-
-              {openPanel === "evolucion" || openPanel === null ? (
-                <div className="drapp-consulta-evolution space-y-2 p-3">
-                  <Textarea
-                    name="chief_complaint"
-                    label="Motivo de consulta"
-                    rows={2}
-                    voiceInput
-                    value={chiefComplaint}
-                    onChange={(e) => setChiefComplaint(e.target.value)}
-                    placeholder="Motivo de la consulta…"
-                    className="drapp-consulta-evolution-input border-[var(--input,#e8d98a)] bg-transparent text-[var(--foreground,#0f172a)]"
-                  />
-                  <Textarea
-                    ref={evolutionRef}
-                    name="evolution"
-                    label="Evolución"
-                    required
-                    rows={8}
-                    voiceInput
-                    value={evolution}
-                    onChange={(e) => setEvolution(e.target.value)}
-                    placeholder="Escribe aquí la evolución"
-                    className="drapp-consulta-evolution-input min-h-[180px] border-[var(--input,#e8d98a)] bg-transparent text-[14px] leading-relaxed text-[var(--foreground,#0f172a)]"
-                  />
-
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                    <label className="inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-[var(--foreground,#0f172a)]">
-                      <CalendarDays className="h-4 w-4 text-[var(--primary,#0F4C5C)]" aria-hidden />
-                      <span className="font-medium text-[var(--primary,#0F4C5C)]">
-                        {formatConsultationDateLabel(consultationAt)}
-                      </span>
-                      <input
-                        ref={dateInputRef}
-                        type="datetime-local"
-                        value={consultationAt}
-                        onChange={(e) => setConsultationAt(e.target.value)}
-                        className="sr-only"
-                        tabIndex={-1}
+                >
+                  <div
+                    className="mt-10 w-full max-w-xl max-h-[min(80vh,720px)] overflow-y-auto rounded-md border border-[var(--border,#e8e0b8)] bg-[var(--card,#fff)] shadow-xl"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={
+                      openPanel === "diagnostico"
+                        ? "Diagnóstico"
+                        : openPanel === "tratamiento"
+                          ? "Tratamiento"
+                          : openPanel === "vitales"
+                            ? "Signos vitales"
+                            : "Protocolos"
+                    }
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {openPanel === "diagnostico" ? (
+                      <DrappDiagnosisQuickForm
+                        saving={quickSaving}
+                        onDirtyChange={setDirty}
+                        onCancel={() => {
+                          void closePanel();
+                        }}
+                        onSave={handleSaveDiagnosis}
                       />
-                      <button
-                        type="button"
-                        className="text-[12px] text-slate-500 underline-offset-2 hover:underline"
-                        onClick={() =>
-                          dateInputRef.current?.showPicker?.() ?? dateInputRef.current?.click()
-                        }
-                      >
-                        Cambiar
-                      </button>
-                    </label>
+                    ) : null}
+                    {openPanel === "tratamiento" ? (
+                      <DrappTreatmentQuickForm
+                        saving={quickSaving}
+                        onDirtyChange={setDirty}
+                        onCancel={() => {
+                          void closePanel();
+                        }}
+                        onSave={handleSaveTreatment}
+                      />
+                    ) : null}
+                    {openPanel === "vitales" ? (
+                      <DrappVitalsQuickForm
+                        saving={quickSaving}
+                        onDirtyChange={setDirty}
+                        onCancel={() => {
+                          void closePanel();
+                        }}
+                        onSave={handleSaveVitals}
+                      />
+                    ) : null}
+                    {openPanel === "protocolos" ? (
+                      <DrappProtocolsQuickPanel
+                        onCancel={() => {
+                          void closePanel();
+                        }}
+                        onInsertIntoEvolution={(text) => {
+                          const trimmed = evolution.trim();
+                          setEvolution(trimmed ? `${trimmed}\n\n${text}` : text);
+                          requestOpen("evolucion");
+                          queueMicrotask(() => evolutionRef.current?.focus());
+                          toast.success("Protocolo insertado en evolución");
+                        }}
+                      />
+                    ) : null}
                   </div>
                 </div>
               ) : null}
