@@ -5,7 +5,7 @@
  *
  * Usage: node scripts/qa-staging-patient-mismatch-auth.mjs
  */
-import { existsSync,readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { createClient } from "@supabase/supabase-js";

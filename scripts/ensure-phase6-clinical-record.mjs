@@ -2,7 +2,7 @@
 /**
  * Ensures a synthetic clinical record exists for Phase 6 patient A (staging QA only).
  */
-import { existsSync,readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { createClient } from "@supabase/supabase-js";
