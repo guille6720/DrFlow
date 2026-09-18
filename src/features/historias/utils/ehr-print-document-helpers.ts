@@ -235,16 +235,27 @@ export function formatCompactMatricula(consultation: PatientEhrConsultation): st
   return null;
 }
 
+/**
+ * Next clinical section after a stripped block.
+ * Must recognize plain headers (EVOLUCION, CONDUCTA…) — not only markdown `#` —
+ * or stripping SIGNOS VITALES / laboratorio eats the rest of the note.
+ */
+const PRINT_SECTION_STOP_LOOKAHEAD =
+  "(?=\\n\\s*(?:#{1,6}\\s*)?(?:signos?\\s+vitales?|laboratorio|estudios?\\s+complementarios?|diagn[oó]stic|tratamiento|indicacion(?:es)?|evoluci[oó]n|antecedentes|conducta(?:\\s+y\\s+seguimiento)?|motivo(?:\\s+de\\s+consulta)?)\\b|$)";
+
 export function evolutionBodyWithoutExtractedBlocks(text: string): string {
+  const stripVitals = new RegExp(
+    `(?:^|\\n)\\s*#{0,6}\\s*signos?\\s+vitales?\\b\\s*[:.\\-]?[\\s\\S]*?${PRINT_SECTION_STOP_LOOKAHEAD}`,
+    "gi"
+  );
+  const stripLabOrStudies = new RegExp(
+    `(?:^|\\n)\\s*#{0,6}\\s*(?:laboratorio|estudios?\\s+complementarios?)\\b\\s*[:.\\-]?[\\s\\S]*?${PRINT_SECTION_STOP_LOOKAHEAD}`,
+    "gi"
+  );
+
   return text
-    .replace(
-      /(?:^|\n)\s*#{0,6}\s*signos?\s+vitales?\b\s*[:.\-]?[\s\S]*?(?=\n\s*#{1,6}\s|$)/gi,
-      "\n"
-    )
-    .replace(
-      /(?:^|\n)\s*#{0,6}\s*(?:laboratorio|estudios?\s+complementarios?)\b\s*[:.\-]?[\s\S]*?(?=\n\s*#{1,6}\s|$)/gi,
-      "\n"
-    )
+    .replace(stripVitals, "\n")
+    .replace(stripLabOrStudies, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }

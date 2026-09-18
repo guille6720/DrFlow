@@ -242,6 +242,71 @@ describe("buildEhrPrintDocumentHtml", () => {
     expect(html).toContain('class="block evo-body"');
     expect(html).not.toMatch(/<h3 class="block-title">Evolución<\/h3><div class="prose">##<\/div>/);
   });
+
+  it("prints full plain-header evolution after SIGNOS VITALES (not only first paragraph)", () => {
+    const note = [
+      "Antonia Pavluk",
+      "83 años | DNI: 9.986.162",
+      "",
+      "ANTECEDENTES",
+      "Hipertensión arterial y demencia en enfermedad de Alzheimer.",
+      "",
+      "SIGNOS VITALES",
+      "TA 123/77 FC 45 SpO2 96 Temp 36",
+      "",
+      "EVOLUCION",
+      "En el control del 14/09 se registra FC de 45 lpm.",
+      "",
+      "CONDUCTA Y SEGUIMIENTO",
+      "Confirmar frecuencia y ritmo actuales mediante pulso manual.",
+    ].join("\n");
+
+    const html = buildEhrPrintDocumentHtml({
+      scope: "selected",
+      generatedAt: new Date("2026-09-17T21:53:00.000Z"),
+      patient: {
+        id: "p-pavluk",
+        first_name: "Antonia",
+        last_name: "Pavluk",
+        document_number: "9986162",
+        birth_date: "1943-04-12",
+        age_label: "83 años",
+        insurance_provider: "PAMI",
+        insurance_number: null,
+        phone: null,
+        email: null,
+      },
+      clinicalContext: {
+        allergies: null,
+        medicalHistory: null,
+        regularMedication: null,
+        problemList: [],
+      },
+      consultations: [
+        {
+          id: "c-pavluk",
+          created_at: "2026-09-17T21:53:00.000Z",
+          professional_name: "Leonardi, Oscar",
+          professional_license_national: "455344",
+          chief_complaint: "",
+          diagnosis: "",
+          evolution: note,
+          indications: "",
+          category: "evolution",
+        },
+      ],
+      dayConsultations: [],
+      diagnosisRows: [],
+      treatmentRows: [],
+      professionals: [],
+    });
+
+    expect(html).toContain("Hipertensión arterial");
+    expect(html).toContain("En el control del 14/09");
+    expect(html).toContain("Confirmar frecuencia y ritmo");
+    expect(html).toContain("Signos vitales");
+    expect(html).toMatch(/123\/77/);
+  });
 });
 
 describe("ehr-print-document-helpers", () => {
@@ -255,6 +320,38 @@ describe("ehr-print-document-helpers", () => {
 
     expect(evolutionBodyWithoutExtractedBlocks(report)).toContain("INFORME MÉDICO EXTENSO");
     expect(evolutionBodyWithoutExtractedBlocks(report)).toContain("Control ambulatorio estable.");
+  });
+
+  it("keeps EVOLUCION and CONDUCTA after stripping plain SIGNOS VITALES header", () => {
+    const note = [
+      "Antonia Pavluk",
+      "83 años | Nacimiento: 12/04/1943 | DNI: 9.986.162",
+      "",
+      "ANTECEDENTES",
+      "Hipertensión arterial, enfermedad vascular periférica.",
+      "",
+      "SIGNOS VITALES",
+      "Fecha | TA (mmHg) | FC (lpm) | SpO2",
+      "14/09 | 123/77 | 45 | 96",
+      "En OX con dos numeros, SpO2 se interpreta del primero.",
+      "",
+      "EVOLUCION",
+      "En el control del 14/09 se registra FC de 45 lpm con TA 123/77 mmHg.",
+      "",
+      "CONDUCTA Y SEGUIMIENTO",
+      "Confirmar frecuencia y ritmo actuales mediante pulso manual y valorar ECG.",
+    ].join("\n");
+
+    const body = evolutionBodyWithoutExtractedBlocks(note);
+
+    expect(body).toContain("ANTECEDENTES");
+    expect(body).toContain("Hipertensión arterial");
+    expect(body).toContain("EVOLUCION");
+    expect(body).toContain("FC de 45 lpm");
+    expect(body).toContain("CONDUCTA Y SEGUIMIENTO");
+    expect(body).toContain("valorar ECG");
+    expect(body).not.toMatch(/SIGNOS\s+VITALES/i);
+    expect(body).not.toContain("14/09 | 123/77");
   });
 
   it("parses vitals without inventing values", () => {
