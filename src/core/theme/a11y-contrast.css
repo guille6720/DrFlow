@@ -301,8 +301,13 @@ html:not([data-clinical-dark="1"])
 }
 
 /* Empty / helper copy */
-.drflow-mesh main :is(.text-muted-foreground, [class*="muted-foreground"]) {
+html[data-clinical-dark="1"] .drflow-mesh main :is(.text-muted-foreground, [class*="muted-foreground"]) {
   color: var(--text-muted) !important;
+  opacity: 1 !important;
+}
+
+html:not([data-clinical-dark="1"]) .drflow-mesh main :is(.text-muted-foreground, [class*="muted-foreground"]) {
+  color: #475569 !important;
   opacity: 1 !important;
 }
 
