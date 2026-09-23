@@ -47,10 +47,8 @@ export function Header({
   const showAppearance = Boolean(role) || isSuperadmin;
   const { hidden: sidebarHidden } = useDashboardSidebar();
   const theme = useUiThemeOptional();
-  /** Cobalto usa chrome oscuro; Bento solo en clinical dark. */
-  const shellDark = theme
-    ? theme.clinicalDark
-    : true;
+  /** Prefer light chrome until theme hydrates — avoids pale ink on white topbar. */
+  const shellDark = theme?.clinicalDark ?? false;
 
   return (
     <header

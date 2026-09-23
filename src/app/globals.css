@@ -598,9 +598,10 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light :i
   .text-slate-200,
   .text-slate-300,
   .text-slate-400,
-  .text-slate-500
+  .text-slate-500,
+  .text-slate-600
 ) {
-  color: var(--text-secondary, var(--muted-foreground)) !important;
+  color: #334155 !important;
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light :is(
@@ -609,12 +610,13 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light :i
   [class*="bg-slate-700"]
 ) {
   background-color: #ffffff !important;
-  border-color: var(--border-default, var(--border)) !important;
-  color: var(--text-secondary, var(--muted-foreground)) !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
 }
 
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light .drflow-command-palette-trigger,
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light .drflow-command-palette-trigger :is(span, kbd, svg) {
-  color: inherit !important;
+  color: #334155 !important;
 }
 
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
@@ -4505,13 +4507,15 @@ html[data-ui-palette="cobalt"]:not([data-clinical-dark="1"]) {
   --card: #ffffff;
   --border: #93c5fd;
   --muted: #dbeafe;
-  --muted-foreground: #eff6ff;
+  /* Cards are white — muted ink must stay dark (not near-white shell ink). */
+  --muted-foreground: #334155;
   --primary: #1d4ed8;
   --primary-light: #60a5fa;
   --primary-foreground: #ffffff;
-  --text-primary: #ffffff;
-  --text-secondary: #f1f5f9;
-  --text-muted: #eff6ff;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --placeholder: #475569;
 }
 
 html[data-ui-palette="cobalt"][data-clinical-dark="1"] {
@@ -4520,13 +4524,14 @@ html[data-ui-palette="cobalt"][data-clinical-dark="1"] {
   --card: #ffffff;
   --border: #3b82f6;
   --muted: #93c5fd;
-  --muted-foreground: #eff6ff;
+  --muted-foreground: #334155;
   --primary: #3b82f6;
   --primary-light: #60a5fa;
   --primary-foreground: #0f172a;
-  --text-primary: #ffffff;
-  --text-secondary: #f1f5f9;
-  --text-muted: #eff6ff;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --placeholder: #475569;
 }
 
 html[data-ui-palette="cobalt"] .drflow-mesh {

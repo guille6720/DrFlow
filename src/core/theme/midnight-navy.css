@@ -106,9 +106,9 @@ html[data-ui-palette="medical-slate"]:not([data-clinical-dark="1"]) {
   --border-default: #e1e5eb;
   --border-strong: #cdd3dc;
   --text-primary: #182230;
-  --text-secondary: #667085;
-  --text-muted: #667085;
-  --text-disabled: #98a2b3;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-disabled: #64748b;
   --text-on-primary: #ffffff;
   --text-on-secondary: #ffffff;
   --text-on-accent: #ffffff;
@@ -137,7 +137,7 @@ html[data-ui-palette="medical-slate"]:not([data-clinical-dark="1"]) {
   --sidebar-accent: #5b8cff;
   --sidebar-active-bg: #243447;
   --table-hover: #eef1f5;
-  --placeholder: #667085;
+  --placeholder: #475569;
   --popover-foreground: #182230;
   --overlay: rgb(24 34 48 / 0.55);
   --destructive: #cf3038;
@@ -239,25 +239,18 @@ html[data-ui-palette="medical-slate"]:not([data-clinical-dark="1"]) .drflow-ui-h
   [class*="bg-slate-700"]
 ) {
   background-color: #ffffff !important;
-  border-color: var(--border-default, #e1e5eb) !important;
-  color: var(--text-secondary, #667085) !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
 }
 
 html[data-ui-palette="medical-slate"]:not([data-clinical-dark="1"]) .drflow-ui-header :is(
   .text-slate-200,
   .text-slate-300,
   .text-slate-400,
-  .text-slate-500
+  .text-slate-500,
+  .text-slate-600
 ) {
-  color: var(--text-secondary, #667085) !important;
-}
-
-html[data-ui-palette="medical-slate"]:not([data-clinical-dark="1"]) .drflow-ui-header .drflow-command-palette-trigger {
-  color: var(--text-secondary, #667085) !important;
-}
-
-html[data-ui-palette="medical-slate"]:not([data-clinical-dark="1"]) .drflow-ui-header .drflow-command-palette-trigger :is(span, kbd, svg) {
-  color: inherit !important;
+  color: #334155 !important;
 }
 
 /* ——— Cards & surfaces ——— */

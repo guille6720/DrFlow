@@ -6,16 +6,16 @@
 
 :root {
   --text-primary: #172033;
-  --text-secondary: #667085;
-  --text-muted: #667085;
-  --text-disabled: #98a2b3;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-disabled: #64748b;
   --text-on-primary: #ffffff;
   --text-on-secondary: #ffffff;
   --text-on-accent: #ffffff;
   --text-on-card: #172033;
   --text-on-sidebar: #1e293b;
   --text-on-selected: #0f172a;
-  --placeholder: #667085;
+  --placeholder: #475569;
 
   --surface-page: #f5f7f9;
   --surface-card: #ffffff;

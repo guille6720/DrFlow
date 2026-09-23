@@ -35,13 +35,13 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette]) {
   --sidebar-accent: #0f766e;
   --sidebar-active-bg: #0f766e;
   --table-hover: #eef3f8;
-  --placeholder: #64748b;
+  --placeholder: #475569;
   --radius: 0.75rem;
 
   --text-primary: #172033;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --text-disabled: #94a3b8;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-disabled: #64748b;
   --text-on-primary: #ffffff;
   --text-on-secondary: #ffffff;
   --text-on-accent: #ffffff;
@@ -149,13 +149,13 @@ html[data-ui-style="2"][data-ui-palette="medical-slate"]:not([data-clinical-dark
   --sidebar-accent: #0f766e;
   --sidebar-active-bg: #0f766e;
   --table-hover: #eef1f5;
-  --placeholder: #64748b;
+  --placeholder: #475569;
   --radius: 0.75rem;
 
   --text-primary: #182230;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --text-disabled: #94a3b8;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-disabled: #64748b;
   --text-on-primary: #ffffff;
   --text-on-secondary: #ffffff;
   --text-on-accent: #ffffff;

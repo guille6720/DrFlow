@@ -5,6 +5,33 @@
 /* Placeholders / disabled / selected / anti-patterns below.
    Token definitions: ../semantic-tokens.css */
 
+/*
+ * Light themes: keep muted/secondary/placeholder ink ≥ ~4.5:1 on white cards.
+ * Loaded after palette files so this wins over washed legacy/cobalt values.
+ */
+html[data-ui-style="2"]:not([data-clinical-dark="1"]),
+html[data-ui-palette="clinical-blue"]:not([data-clinical-dark="1"]),
+html[data-ui-palette="medical-slate"]:not([data-clinical-dark="1"]) {
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --placeholder: #475569;
+  --muted-foreground: #475569;
+}
+
+/* Header search / chrome labels in claro — never near-white ink on white topbar */
+html:not([data-clinical-dark="1"]) .drflow-ui-header .drflow-command-palette-trigger {
+  color: #334155 !important;
+}
+
+html:not([data-clinical-dark="1"]) .drflow-ui-header .drflow-command-palette-trigger :is(span, kbd, svg) {
+  color: #334155 !important;
+}
+
+html:not([data-clinical-dark="1"]) .drflow-ui-header .drflow-command-palette-trigger kbd {
+  color: #475569 !important;
+  border-color: #cbd5e1 !important;
+}
+
 /* ——— Appearance / selected option cards (any theme) ——— */
 .drflow-theme-option {
   color: var(--text-on-card, var(--foreground));
@@ -243,19 +270,19 @@ html[data-clinical-dark="1"]
   color: var(--text-secondary) !important;
 }
 
-/* Light themes: pale slate utilities → muted/secondary dark ink */
-html[data-ui-style="2"]:not([data-clinical-dark="1"])
+html:not([data-clinical-dark="1"])
   .drflow-mesh
   main
   :is(.text-slate-400, .text-slate-500, .text-gray-400, .text-gray-500):not(button):not(.drflow-ui-button) {
-  color: var(--text-muted) !important;
+  color: #475569 !important;
 }
 
-html[data-ui-style="2"]:not([data-clinical-dark="1"])
+html:not([data-clinical-dark="1"])
   .drflow-mesh
   main
-  :is(.text-slate-600, .text-slate-700):not(button):not(.drflow-ui-button) {
-  color: var(--text-secondary) !important;
+  :is(.text-muted-foreground, [class*="muted-foreground"]) {
+  color: #475569 !important;
+  opacity: 1 !important;
 }
 
 /* Sidebar nav: never look “disabled” when active/selectable */
