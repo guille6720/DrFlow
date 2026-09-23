@@ -15,20 +15,38 @@ export type SendTransactionalEmailResult =
   | { sent: true; provider: "resend" | "smtp" }
   | { sent: false; reason: string };
 
-function getFromAddress(): string | null {
+function getSmtpPassword(): string | null {
+  return process.env.SMTP_PASSWORD?.trim() ?? process.env.SMTP_PASS?.trim() ?? null;
+}
+
+/** Prefer EMAIL_FROM; else SMTP_USER / known opusorg sender when transport exists. */
+export function getFromAddress(): string | null {
   const configured = process.env.EMAIL_FROM?.trim();
   if (configured) return configured;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() ?? "";
-  if (siteUrl.includes("opusorg.com")) {
+  const smtpUser = process.env.SMTP_USER?.trim();
+  if (smtpUser?.includes("@")) {
+    return `NexClinic <${smtpUser}>`;
+  }
+
+  const siteUrl =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    "";
+  if (siteUrl.includes("opusorg.com") || siteUrl.includes("nexclinic")) {
     return "NexClinic <noreply@opusorg.com>";
   }
 
-  return null;
-}
+  // Preview/staging often omit EMAIL_FROM but share Hostinger SMTP with Auth.
+  if (process.env.SMTP_HOST?.trim() && smtpUser) {
+    return `NexClinic <${smtpUser}>`;
+  }
 
-function getSmtpPassword(): string | null {
-  return process.env.SMTP_PASSWORD?.trim() ?? process.env.SMTP_PASS?.trim() ?? null;
+  if (process.env.RESEND_API_KEY?.trim()) {
+    return "NexClinic <onboarding@resend.dev>";
+  }
+
+  return null;
 }
 
 async function sendViaResend(
@@ -125,12 +143,12 @@ export function formatEmailSendError(reason: string): string {
 }
 
 export function getEmailConfigurationHint(): string {
-  return "Configurá RESEND_API_KEY o SMTP_HOST + EMAIL_FROM en Vercel (Settings → Environment Variables). Ver .env.example.";
+  return "Configurá RESEND_API_KEY o SMTP_HOST + SMTP_USER + SMTP_PASSWORD (+ EMAIL_FROM) en Vercel. Ver .env.example.";
 }
 
-/** True when EMAIL_FROM and Resend or SMTP credentials are present (server env). */
+/** True when a transport can send (Resend or SMTP), with or without explicit EMAIL_FROM. */
 export function isTransactionalEmailConfigured(): boolean {
-  if (!process.env.EMAIL_FROM?.trim()) return false;
+  if (!getFromAddress()) return false;
   if (process.env.RESEND_API_KEY?.trim()) return true;
   const host = process.env.SMTP_HOST?.trim();
   const user = process.env.SMTP_USER?.trim();
@@ -170,13 +188,21 @@ export async function sendTransactionalEmail(
   };
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 export function buildClinicInviteEmailContent(input: {
   fullName: string;
   clinicName: string;
   email: string;
   password: string;
   credentialsPath?: string;
-}): { subject: string; text: string } {
+}): { subject: string; text: string; html: string } {
   const loginUrl = `${getPublicSiteUrl()}/login`;
   const credentialsUrl = input.credentialsPath
     ? `${getPublicSiteUrl()}${input.credentialsPath}`
@@ -194,12 +220,47 @@ export function buildClinicInviteEmailContent(input: {
     `Usuario: ${input.email}`,
     `Contraseña: ${input.password}`,
     "",
-    `Después podés iniciar sesión en: ${loginUrl}`,
+    `Iniciá sesión acá: ${loginUrl}`,
     "",
-    "Por seguridad, cambiá la contraseña después del primer acceso desde Configuración.",
+    "Por seguridad, cambiá la contraseña después del primer acceso.",
     "",
     "NexClinic",
   ].join("\n");
 
-  return { subject, text };
+  const safeName = escapeHtml(input.fullName);
+  const safeClinic = escapeHtml(input.clinicName);
+  const safeEmail = escapeHtml(input.email);
+  const safePassword = escapeHtml(input.password);
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<body style="margin:0;padding:24px;background:#f5f7f9;font-family:Segoe UI,Arial,sans-serif;color:#172033;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;">
+    <tr><td style="padding:28px 28px 8px;">
+      <p style="margin:0 0 12px;font-size:18px;font-weight:700;">Hola ${safeName},</p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.5;color:#334155;">
+        Te dieron acceso al consultorio <strong>${safeClinic}</strong> en NexClinic.
+      </p>
+      <p style="margin:0 0 8px;font-size:14px;color:#475569;">Datos para ingresar:</p>
+      <p style="margin:0 0 4px;font-size:14px;"><strong>Usuario:</strong> ${safeEmail}</p>
+      <p style="margin:0 0 20px;font-size:14px;"><strong>Contraseña:</strong> ${safePassword}</p>
+      <p style="margin:0 0 24px;">
+        <a href="${loginUrl}" style="display:inline-block;background:#0f766e;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;font-weight:600;font-size:14px;">
+          Iniciar sesión
+        </a>
+      </p>
+      <p style="margin:0 0 8px;font-size:13px;color:#475569;">
+        También podés ver tus credenciales acá:<br />
+        <a href="${credentialsUrl}" style="color:#0f766e;">${credentialsUrl}</a>
+      </p>
+      <p style="margin:16px 0 0;font-size:12px;color:#64748b;">
+        Por seguridad, cambiá la contraseña después del primer acceso.
+      </p>
+    </td></tr>
+  </table>
+</body>
+</html>`.trim();
+
+  return { subject, text, html };
 }

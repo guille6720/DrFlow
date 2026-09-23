@@ -47,9 +47,8 @@ export function TeamInviteFormSection({
         </Button>
       </div>
       <p className="text-xs text-slate-600 sm:col-span-2">
-        Se creará la cuenta automáticamente. Compartí el enlace de credenciales con la persona
-        invitada para que vea su usuario y contraseña. Si el correo está configurado, también
-        intentamos enviárselos por email.
+        Se crea la cuenta y le enviamos un email con usuario, contraseña y enlace para iniciar
+        sesión. Si el mail no llega, revisá spam o usá «Restablecer acceso» / «Reenviar mail».
       </p>
     </form>
   );

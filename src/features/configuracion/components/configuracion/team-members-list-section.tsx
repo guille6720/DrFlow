@@ -10,11 +10,19 @@ import type { UserRole } from "@/types/database";
 type Props = {
   activeMembers: TeamMember[];
   acting: string | null;
-  runAction: (id: string, action: () => Promise<{ error?: string }>) => void;
+  runAction: (
+    id: string,
+    action: () => Promise<{ error?: string; message?: string; success?: boolean }>
+  ) => void;
   handleRemoveMember: (m: TeamMember) => void;
   updateClinicMemberRole: (id: string, role: UserRole) => Promise<{ error?: string }>;
   deactivateClinicMember: (id: string) => Promise<{ error?: string }>;
-  restoreClinicMemberLoginAccess: (id: string) => Promise<{ error?: string; message?: string }>;
+  restoreClinicMemberLoginAccess: (
+    id: string
+  ) => Promise<{ error?: string; message?: string; success?: boolean }>;
+  resendClinicMemberInviteEmail: (
+    id: string
+  ) => Promise<{ error?: string; message?: string; success?: boolean }>;
 };
 
 export function TeamMembersListSection({
@@ -25,6 +33,7 @@ export function TeamMembersListSection({
   updateClinicMemberRole,
   deactivateClinicMember,
   restoreClinicMemberLoginAccess,
+  resendClinicMemberInviteEmail,
 }: Props) {
   return (
     <div className="mb-6">
@@ -56,17 +65,30 @@ export function TeamMembersListSection({
                   className="min-w-[140px]"
                 />
                 {m.role !== "clinic_admin" ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    loading={acting === `${m.id}-restore`}
-                    onClick={() =>
-                      runAction(`${m.id}-restore`, () => restoreClinicMemberLoginAccess(m.id))
-                    }
-                  >
-                    Restablecer acceso
-                  </Button>
+                  <>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      loading={acting === `${m.id}-resend`}
+                      onClick={() =>
+                        runAction(`${m.id}-resend`, () => resendClinicMemberInviteEmail(m.id))
+                      }
+                    >
+                      Reenviar mail
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      loading={acting === `${m.id}-restore`}
+                      onClick={() =>
+                        runAction(`${m.id}-restore`, () => restoreClinicMemberLoginAccess(m.id))
+                      }
+                    >
+                      Restablecer acceso
+                    </Button>
+                  </>
                 ) : null}
                 <Button
                   type="button"

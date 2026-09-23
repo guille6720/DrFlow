@@ -131,6 +131,7 @@ async function linkInvitedUserToClinic(input: {
     to: email,
     subject: emailContent.subject,
     text: emailContent.text,
+    html: emailContent.html,
   });
 
   await recordAudit({
@@ -139,7 +140,15 @@ async function linkInvitedUserToClinic(input: {
     entityType: via === "new_user" ? "clinic_invitation" : "clinic_member",
     entityId: userId,
     action: "create",
-    metadata: { email, role, full_name: fullName, via },
+    metadata: {
+      email,
+      role,
+      full_name: fullName,
+      via,
+      email_sent: emailResult.sent,
+      email_provider: emailResult.sent ? emailResult.provider : null,
+      email_error: emailResult.sent ? null : emailResult.reason,
+    },
   });
 
   revalidatePath("/configuracion");
@@ -150,11 +159,17 @@ async function linkInvitedUserToClinic(input: {
       ? `${fullName} ya tenía cuenta y fue agregado al equipo.`
       : `Usuario creado para ${email}.`;
 
+  if (emailResult.sent) {
+    return {
+      success: true as const,
+      message: `${linkedMessage} Le enviamos un email a ${email} con usuario, contraseña y enlace para ingresar.`,
+      credentialsPath,
+    };
+  }
+
   return {
     success: true as const,
-    message: emailResult.sent
-      ? `${linkedMessage} Se enviaron las credenciales por email.`
-      : `${linkedMessage} Compartí el enlace de credenciales con la persona invitada.`,
+    message: `${linkedMessage} No pudimos enviar el email (${formatEmailSendError(emailResult.reason)}). Usá «Reenviar mail» o compartí el enlace de credenciales.`,
     credentialsPath,
   };
 }
@@ -495,6 +510,7 @@ export async function resendClinicMemberInviteEmail(memberId: string) {
     to: email,
     subject: emailContent.subject,
     text: emailContent.text,
+    html: emailContent.html,
   });
 
   if (!emailResult.sent) {
@@ -608,7 +624,7 @@ export async function updateClinicMemberRole(memberId: string, role: UserRole) {
 export async function restoreClinicMemberLoginAccess(memberId: string) {
   const access = await requireStaffManager();
   if (!access.ok) return { error: access.error };
-  const { clinicId } = access;
+  const { clinicId, user } = access;
 
   const idParsed = parseEntityId(memberId, "Miembro");
   if (!idParsed.ok) return { error: idParsed.error };
@@ -622,12 +638,22 @@ export async function restoreClinicMemberLoginAccess(memberId: string) {
 
   const { data: target } = await supabase
     .from("clinic_members")
-    .select("user_id, role, is_active, profiles(email)")
+    .select("user_id, role, is_active, profiles(full_name, email)")
     .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .maybeSingle();
 
   if (!target?.user_id) return { error: "Miembro no encontrado" };
+
+  const profile = (() => {
+    const p = target.profiles as
+      | { full_name?: string; email?: string }
+      | { full_name?: string; email?: string }[]
+      | null;
+    return Array.isArray(p) ? p[0] : p;
+  })();
+  const email = profile?.email?.trim().toLowerCase();
+  if (!email) return { error: "El usuario no tiene email de acceso." };
 
   const { error: memberError } = await supabase
     .from("clinic_members")
@@ -637,14 +663,77 @@ export async function restoreClinicMemberLoginAccess(memberId: string) {
 
   if (memberError) return { error: memberError.message };
 
+  const initialPassword = generateInitialPassword();
+
   const { error: authError } = await admin.auth.admin.updateUserById(target.user_id, {
     ban_duration: "none",
     email_confirm: true,
+    password: initialPassword,
   });
 
   if (authError) {
     return { error: `No se pudo restablecer el login: ${authError.message}` };
   }
+
+  const { data: invitation } = await supabase
+    .from("clinic_invitations")
+    .select("id, full_name")
+    .eq("clinic_id", clinicId)
+    .ilike("email", email)
+    .maybeSingle();
+
+  if (invitation?.id) {
+    await supabase
+      .from("clinic_invitations")
+      .update({ initial_password: initialPassword, status: "accepted" })
+      .eq("id", invitation.id);
+  } else {
+    await supabase.from("clinic_invitations").upsert(
+      {
+        clinic_id: clinicId,
+        email,
+        full_name: profile?.full_name?.trim() || email,
+        role: (target.role as UserRole) ?? "secretary",
+        invited_by: user!.id,
+        status: "accepted",
+        initial_password: initialPassword,
+      },
+      { onConflict: "clinic_id,email" }
+    );
+  }
+
+  const { data: invitationAfter } = await supabase
+    .from("clinic_invitations")
+    .select("id, full_name")
+    .eq("clinic_id", clinicId)
+    .ilike("email", email)
+    .maybeSingle();
+
+  const { data: clinicRow } = await supabase
+    .from("clinics")
+    .select("name")
+    .eq("id", clinicId)
+    .maybeSingle();
+
+  const fullName =
+    profile?.full_name?.trim() || invitationAfter?.full_name?.trim() || email;
+  const credentialsPath = invitationAfter?.id
+    ? invitationCredentialsPath(invitationAfter.id)
+    : undefined;
+
+  const emailContent = buildClinicInviteEmailContent({
+    fullName,
+    clinicName: clinicRow?.name ?? "tu consultorio",
+    email,
+    password: initialPassword,
+    credentialsPath,
+  });
+  const emailResult = await sendTransactionalEmail({
+    to: email,
+    subject: emailContent.subject,
+    text: emailContent.text,
+    html: emailContent.html,
+  });
 
   await recordAudit({
     clinicId,
@@ -652,12 +741,30 @@ export async function restoreClinicMemberLoginAccess(memberId: string) {
     entityType: "clinic_member",
     entityId: idParsed.data,
     action: "update",
-    metadata: { user_id: target.user_id, reason: "restore_login_access" },
+    metadata: {
+      user_id: target.user_id,
+      reason: "restore_login_access",
+      email_sent: emailResult.sent,
+      email_provider: emailResult.sent ? emailResult.provider : null,
+      email_error: emailResult.sent ? null : emailResult.reason,
+    },
   });
 
   revalidatePath("/configuracion");
   revalidatePath("/ingreso-profesionales");
-  return { success: true, message: "Acceso restablecido. La persona ya puede ingresar al dashboard." };
+
+  if (emailResult.sent) {
+    return {
+      success: true,
+      message: `Acceso restablecido. Enviamos a ${email} un mail con la nueva contraseña y el enlace de ingreso.`,
+    };
+  }
+
+  return {
+    success: true,
+    message: `Acceso restablecido, pero el email no salió (${formatEmailSendError(emailResult.reason)}). Usá «Reenviar mail» o el enlace de credenciales.`,
+    credentialsPath: credentialsPath ?? null,
+  };
 }
 
 export async function deactivateClinicMember(memberId: string) {

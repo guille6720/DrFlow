@@ -7,6 +7,7 @@ import {
   deactivateClinicMember,
   inviteClinicMember,
   removeClinicMemberPermanently,
+  resendClinicMemberInviteEmail,
   restoreClinicMemberLoginAccess,
   revokeClinicInvitation,
   updateClinicMemberRole,
@@ -29,6 +30,13 @@ interface Invitation {
   status: string;
   created_at: string;
 }
+
+type ActionResult = {
+  error?: string;
+  message?: string;
+  success?: boolean;
+  credentialsPath?: string | null;
+};
 
 export function useTeamInvitePanel(members: Member[], invitations: Invitation[]) {
   const router = useRouter();
@@ -56,13 +64,19 @@ export function useTeamInvitePanel(members: Member[], invitations: Invitation[])
     }
   }
 
-  async function runAction(id: string, action: () => Promise<{ error?: string }>) {
+  async function runAction(id: string, action: () => Promise<ActionResult>) {
     setActing(id);
     setErr(null);
+    setMsg(null);
     const result = await action();
     setActing(null);
-    if (result.error) setErr(result.error);
-    else router.refresh();
+    if (result.error) {
+      setErr(result.error);
+      return;
+    }
+    if (result.message) setMsg(result.message);
+    if (result.credentialsPath) setCredentialsPath(result.credentialsPath);
+    router.refresh();
   }
 
   function handleRemoveMember(m: Member) {
@@ -94,6 +108,7 @@ export function useTeamInvitePanel(members: Member[], invitations: Invitation[])
     updateClinicMemberRole,
     deactivateClinicMember,
     restoreClinicMemberLoginAccess,
+    resendClinicMemberInviteEmail,
     revokeClinicInvitation,
   };
 }
