@@ -21,12 +21,14 @@ export function isBentoStyle(_style: UiStyleId): boolean {
 }
 
 /**
- * Rutas que fuerzan tema claro de marketing / portal paciente.
- * Login y onboarding clínico usan el tema de app (Clinical Blue).
+ * Rutas que fuerzan tema claro de marketing / auth / portal paciente.
+ * Login e invitaciones no deben heredar clinical-dark (inputs negros, labels invisibles).
  */
 export function isPublicLightPath(pathname: string): boolean {
   if (pathname === "/" || pathname === "/planes") return true;
-  return /^\/(privacidad|terminos|probar|aviso-paciente|portal|solicitar-turno)(\/|$)/.test(pathname);
+  return /^\/(privacidad|terminos|probar|aviso-paciente|portal|solicitar-turno|login|register|acceso-invitado|auth)(\/|$)/.test(
+    pathname
+  );
 }
 
 /** Map legacy style ids / palette names → official palettes. Never throws. */
@@ -98,4 +100,4 @@ export function applyUiThemeToDocument(style: UiStyleId, clinicalDark: boolean) 
   root.style.colorScheme = clinicalDark ? "dark" : "light";
 }
 
-export const UI_THEME_BOOTSTRAP_SCRIPT = `(function(){try{var p=location.pathname;var isPublic=p==="/"||p==="/planes"||/^\\/(privacidad|terminos|probar|aviso-paciente|portal|solicitar-turno)(\\/|$)/.test(p);if(isPublic){document.documentElement.setAttribute("data-ui-style", "1");document.documentElement.removeAttribute("data-ui-palette");document.documentElement.removeAttribute("data-clinical-dark");document.documentElement.style.colorScheme="light";return;}var raw=localStorage.getItem("${UI_STYLE_STORAGE_KEY}");var s=(raw==="clinical-blue"||raw==="2"||raw==="clinical")?"clinical-blue":(raw==="medical-slate"||raw==="6"||raw==="midnight")?"medical-slate":"clinical-blue";var modeRaw=localStorage.getItem("${APPEARANCE_MODE_STORAGE_KEY}");var dRaw=localStorage.getItem("${CLINICAL_DARK_STORAGE_KEY}");var mode=(modeRaw==="light"||modeRaw==="dark"||modeRaw==="system")?modeRaw:(dRaw==="1"?"dark":dRaw==="0"?"light":"system");var dark=mode==="dark"?true:mode==="light"?false:window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.setAttribute("data-ui-style","2");document.documentElement.setAttribute("data-ui-palette",s);document.documentElement.setAttribute("data-clinical-dark",dark?"1":"0");document.documentElement.style.colorScheme=dark?"dark":"light";}catch(e){}})();`;
+export const UI_THEME_BOOTSTRAP_SCRIPT = `(function(){try{var p=location.pathname;var isPublic=p==="/"||p==="/planes"||/^\\/(privacidad|terminos|probar|aviso-paciente|portal|solicitar-turno|login|register|acceso-invitado|auth)(\\/|$)/.test(p);if(isPublic){document.documentElement.setAttribute("data-ui-style", "1");document.documentElement.removeAttribute("data-ui-palette");document.documentElement.removeAttribute("data-clinical-dark");document.documentElement.style.colorScheme="light";return;}var raw=localStorage.getItem("${UI_STYLE_STORAGE_KEY}");var s=(raw==="clinical-blue"||raw==="2"||raw==="clinical")?"clinical-blue":(raw==="medical-slate"||raw==="6"||raw==="midnight")?"medical-slate":"clinical-blue";var modeRaw=localStorage.getItem("${APPEARANCE_MODE_STORAGE_KEY}");var dRaw=localStorage.getItem("${CLINICAL_DARK_STORAGE_KEY}");var mode=(modeRaw==="light"||modeRaw==="dark"||modeRaw==="system")?modeRaw:(dRaw==="1"?"dark":dRaw==="0"?"light":"system");var dark=mode==="dark"?true:mode==="light"?false:window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.setAttribute("data-ui-style","2");document.documentElement.setAttribute("data-ui-palette",s);document.documentElement.setAttribute("data-clinical-dark",dark?"1":"0");document.documentElement.style.colorScheme=dark?"dark":"light";}catch(e){}})();`;

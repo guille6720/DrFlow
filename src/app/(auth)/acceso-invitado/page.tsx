@@ -14,19 +14,19 @@ export const metadata: Metadata = {
 
 export default function AccesoInvitadoPage() {
   return (
-    <div className="flex min-h-screen">
+    <div className="drflow-auth-page flex min-h-[100dvh]">
       <LoginBrandPanel />
       <main
         id="main-content"
-        className="flex flex-1 items-center justify-center bg-gradient-to-br from-blue-50/50 to-white p-6"
+        className="flex flex-1 items-center justify-center bg-[#eef2f6] px-4 py-10 sm:px-6"
       >
-        <div className="w-full max-w-md">
-          <div className="mb-8 flex justify-center lg:hidden">
-            <DrFlowLogo size="lg" href="/" centered />
+        <div className="drflow-auth-surface w-full max-w-[420px] rounded-2xl border border-slate-200/80 p-6 shadow-[0_18px_50px_-24px_rgb(15_23_42_/_0.35)] sm:p-8">
+          <div className="mb-6 flex justify-center">
+            <DrFlowLogo size="lg" href="/" centered withTagline />
           </div>
           <InvitationCredentialsLookupForm />
-          <p className="mt-6 text-center text-xs text-slate-500">
-            <Link href="/login" className="hover:underline">
+          <p className="mt-6 text-center text-xs text-slate-600">
+            <Link href="/login" className="font-medium text-teal-700 underline-offset-2 hover:underline">
               Volver al inicio de sesión
             </Link>
           </p>

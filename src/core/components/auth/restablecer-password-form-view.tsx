@@ -23,22 +23,28 @@ export function RestablecerPasswordFormView() {
   } = useRestablecerPassword();
 
   return (
-    <div className="flex min-h-screen">
-      <div className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 p-12 text-white lg:flex">
-        <div className="flex w-full justify-center pt-2">
-          <DrFlowLogo size="xl" href="/" />
+    <div className="drflow-auth-page flex min-h-[100dvh]">
+      <div className="drflow-auth-brand relative hidden w-[46%] flex-col justify-between overflow-hidden p-12 text-white lg:flex">
+        <div className="relative z-10 flex w-full justify-start pt-1">
+          <DrFlowLogo size="xl" href="/" variant="onDark" withTagline />
         </div>
-        <div>
-          <h1 className="text-4xl font-bold leading-tight">Nueva contraseña</h1>
-          <p className="mt-4 text-lg text-blue-100">
+        <div className="relative z-10 max-w-lg">
+          <h1 className="text-4xl font-bold leading-tight tracking-tight text-white">
+            Nueva contraseña
+          </h1>
+          <p className="mt-5 text-lg leading-relaxed text-slate-200">
             Elegí una contraseña segura para tu cuenta.
           </p>
         </div>
+        <p className="relative z-10 text-sm text-slate-300/90">© NexClinic — OpusOrg</p>
       </div>
 
-      <div className="flex flex-1 items-center justify-center bg-gradient-to-br from-blue-50/50 to-white p-6">
-        <div className="w-full max-w-md">
-          <h2 className="text-2xl font-bold text-slate-900">Restablecer contraseña</h2>
+      <div className="flex flex-1 items-center justify-center bg-[#eef2f6] px-4 py-10 sm:px-6">
+        <div className="drflow-auth-surface w-full max-w-[420px] rounded-2xl border border-slate-200/80 p-6 shadow-[0_18px_50px_-24px_rgb(15_23_42_/_0.35)] sm:p-8">
+          <div className="mb-6 flex justify-center lg:hidden">
+            <DrFlowLogo size="lg" href="/" centered withTagline />
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Restablecer contraseña</h2>
 
           {loading && (
             <div className="mt-8 space-y-2">

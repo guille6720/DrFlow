@@ -15,6 +15,7 @@
 @import "../core/theme/modal-states.css";
 @import "../core/theme/typography-states.css";
 @import "../core/theme/manual-visual-states.css";
+@import "../core/theme/auth-surface.css";
 
 :root {
   --font-jakarta: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;

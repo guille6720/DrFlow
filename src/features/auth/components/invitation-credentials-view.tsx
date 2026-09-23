@@ -23,8 +23,8 @@ export function InvitationCredentialsViewPanel({ credentials }: Props) {
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-xl font-bold text-slate-900">Tus credenciales de acceso</h2>
+    <div className="rounded-none border-0 bg-transparent p-0 shadow-none">
+      <h2 className="text-xl font-bold tracking-tight text-slate-900">Tus credenciales de acceso</h2>
       <p className="mt-2 text-sm text-slate-600">
         Hola <strong>{credentials.full_name}</strong>
         {credentials.clinic_name ? (

@@ -1,0 +1,114 @@
+/**
+ * Auth / invite login surfaces — always light clinical chrome.
+ * Login inherits clinical-dark tokens from the app shell; this island overrides them.
+ */
+
+.drflow-auth-page {
+  min-height: 100dvh;
+  color: #0f172a;
+  background: #f5f7f9;
+}
+
+.drflow-auth-surface {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
+  --border-default: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --input: #ffffff;
+  --surface-input: #ffffff;
+  --surface-card: #ffffff;
+  --surface-hover: #f1f5f9;
+  --muted: #f1f5f9;
+  --muted-foreground: #475569;
+  --placeholder: #64748b;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-on-card: #0f172a;
+  --text-on-primary: #ffffff;
+  --text-on-secondary: #ffffff;
+  --primary: #0f766e;
+  --primary-dark: #0d9488;
+  --primary-foreground: #ffffff;
+  --secondary: #f8fafc;
+  --secondary-foreground: #0f172a;
+  --ring: #0f766e;
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.drflow-auth-surface .drflow-ui-label,
+.drflow-auth-surface label {
+  color: #334155 !important;
+  font-weight: 600;
+}
+
+.drflow-auth-surface .drflow-ui-required {
+  color: #b91c1c !important;
+}
+
+.drflow-auth-surface .drflow-ui-input,
+.drflow-auth-surface input:not([type="checkbox"]):not([type="radio"]),
+.drflow-auth-surface textarea,
+.drflow-auth-surface select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  -webkit-text-fill-color: #0f172a;
+}
+
+.drflow-auth-surface .drflow-ui-input::placeholder,
+.drflow-auth-surface input::placeholder,
+.drflow-auth-surface textarea::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b;
+  opacity: 1 !important;
+}
+
+.drflow-auth-surface .drflow-ui-input:focus,
+.drflow-auth-surface input:focus {
+  border-color: #0f766e !important;
+  box-shadow: 0 0 0 3px rgb(15 118 110 / 0.18);
+  outline: none;
+}
+
+.drflow-auth-surface .drflow-ui-button.drflow-btn-primary,
+.drflow-auth-surface .drflow-btn-primary {
+  background: #0f766e !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+.drflow-auth-surface .drflow-ui-button.drflow-btn-primary:hover,
+.drflow-auth-surface .drflow-btn-primary:hover {
+  background: #0d9488 !important;
+  color: #ffffff !important;
+}
+
+.drflow-auth-surface .drflow-ui-button.drflow-btn-outline,
+.drflow-auth-surface .drflow-btn-outline {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.drflow-auth-surface .drflow-ui-button.drflow-btn-outline:hover,
+.drflow-auth-surface .drflow-btn-outline:hover {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}
+
+.drflow-auth-brand {
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 20%, rgb(45 212 191 / 0.18), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 90% 80%, rgb(37 99 235 / 0.22), transparent 50%),
+    linear-gradient(160deg, #0b1220 0%, #0f2744 48%, #0b3b3a 100%);
+}
