@@ -232,6 +232,34 @@ html[data-ui-palette="medical-slate"] .drflow-ui-header :is(.text-slate-300, .te
   color: var(--text-secondary) !important;
 }
 
+/* Claro: residual dark chrome (search / chips) must not keep pale slate ink */
+html[data-ui-palette="medical-slate"]:not([data-clinical-dark="1"]) .drflow-ui-header :is(
+  [class*="bg-slate-800"],
+  [class*="bg-slate-900"],
+  [class*="bg-slate-700"]
+) {
+  background-color: #ffffff !important;
+  border-color: var(--border-default, #e1e5eb) !important;
+  color: var(--text-secondary, #667085) !important;
+}
+
+html[data-ui-palette="medical-slate"]:not([data-clinical-dark="1"]) .drflow-ui-header :is(
+  .text-slate-200,
+  .text-slate-300,
+  .text-slate-400,
+  .text-slate-500
+) {
+  color: var(--text-secondary, #667085) !important;
+}
+
+html[data-ui-palette="medical-slate"]:not([data-clinical-dark="1"]) .drflow-ui-header .drflow-command-palette-trigger {
+  color: var(--text-secondary, #667085) !important;
+}
+
+html[data-ui-palette="medical-slate"]:not([data-clinical-dark="1"]) .drflow-ui-header .drflow-command-palette-trigger :is(span, kbd, svg) {
+  color: inherit !important;
+}
+
 /* ——— Cards & surfaces ——— */
 html[data-ui-palette="medical-slate"] .drflow-ui-card,
 html[data-ui-palette="medical-slate"] .drflow-ui-stat,

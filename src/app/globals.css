@@ -594,6 +594,29 @@ html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light .t
   color: var(--muted-foreground) !important;
 }
 
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light :is(
+  .text-slate-200,
+  .text-slate-300,
+  .text-slate-400,
+  .text-slate-500
+) {
+  color: var(--text-secondary, var(--muted-foreground)) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light :is(
+  [class*="bg-slate-800"],
+  [class*="bg-slate-900"],
+  [class*="bg-slate-700"]
+) {
+  background-color: #ffffff !important;
+  border-color: var(--border-default, var(--border)) !important;
+  color: var(--text-secondary, var(--muted-foreground)) !important;
+}
+
+html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ui-header-light .drflow-command-palette-trigger :is(span, kbd, svg) {
+  color: inherit !important;
+}
+
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-sidebar-gradient {
   background: var(--sidebar);
 }

@@ -90,7 +90,7 @@ export function CommandPaletteDialog({
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
             placeholder="Buscar paciente, ir a una sección o ejecutar acción…"
-            className="w-full bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
+            className="w-full bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-400"
             autoComplete="off"
             spellCheck={false}
           />

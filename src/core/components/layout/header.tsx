@@ -131,7 +131,14 @@ export function Header({
                 {userName}
               </p>
               {role && (
-                <p className="text-xs font-medium text-teal-400">{ROLE_LABELS[role]}</p>
+                <p
+                  className={cn(
+                    "text-xs font-medium",
+                    shellDark ? "text-teal-300" : "text-teal-700"
+                  )}
+                >
+                  {ROLE_LABELS[role]}
+                </p>
               )}
             </button>
           )}
