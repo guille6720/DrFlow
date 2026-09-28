@@ -48,18 +48,19 @@ export function useTeamInvitePanel(members: Member[], invitations: Invitation[])
 
   async function handleInvite(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const form = e.currentTarget;
     setLoading(true);
     setMsg(null);
     setErr(null);
     setCredentialsPath(null);
-    const result = await inviteClinicMember(new FormData(e.currentTarget));
+    const result = await inviteClinicMember(new FormData(form));
     setLoading(false);
     if ("error" in result) {
       setErr(result.error);
     } else {
       setMsg(result.message ?? "Invitación enviada.");
       setCredentialsPath(result.credentialsPath ?? null);
-      e.currentTarget.reset();
+      form.reset();
       router.refresh();
     }
   }
