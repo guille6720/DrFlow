@@ -1548,7 +1548,10 @@ html:not([data-ui-style="2"]) .drflow-mesh main :is(.bg-white, .bg-white\/80, .b
   --text-muted: #475569;
   --surface-hover: #f1f5f9;
   --surface-card: #ffffff;
+  --surface-elevated: #ffffff;
   --surface-selected: #ccfbf1;
+  --table-hover: #f1f5f9;
+  --text-on-selected: #0f172a;
   --border-default: #e2e8f0;
   --accent-soft: #ccfbf1;
   --sidebar-accent: #0f766e;

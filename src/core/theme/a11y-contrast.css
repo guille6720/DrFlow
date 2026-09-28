@@ -149,6 +149,7 @@ html[data-clinical-dark="1"] .drflow-surface-light {
   --surface-card: #ffffff;
   --surface-selected: #ccfbf1;
   --surface-elevated: #ffffff;
+  --table-hover: #f1f5f9;
   --border-default: #e2e8f0;
   --border-strong: #cbd5e1;
   --accent-soft: #ccfbf1;

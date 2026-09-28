@@ -31,6 +31,9 @@
   --surface-input: #ffffff;
   --surface-hover: #f1f5f9;
   --surface-selected: #ecfdf5;
+  --surface-elevated: #ffffff;
+  --card: #ffffff;
+  --table-hover: #f1f5f9;
 }
 
 /* Title / subtitle / section / description hierarchy */

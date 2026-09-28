@@ -174,6 +174,23 @@ html:not([data-clinical-dark="1"]) .drflow-mesh main [data-highlighted="true"] {
   color: #0f172a;
 }
 
+/* Hardcoded pale hovers follow the surface they sit on (dark shell vs light island) */
+html[data-clinical-dark="1"] :is(
+    .hover\:bg-white,
+    .hover\:bg-slate-50,
+    .hover\:bg-slate-100,
+    .hover\:bg-gray-50,
+    .hover\:bg-gray-100
+  ):hover:not(:disabled) {
+  background-color: var(--surface-hover) !important;
+}
+
+/* Keyboard / pointer highlighted options in menus and listboxes */
+html[data-clinical-dark="1"] :is([role="option"], [role="menuitem"], [cmdk-item]):is([data-highlighted], [data-selected="true"], [aria-selected="true"]) {
+  background-color: var(--surface-hover);
+  color: var(--text-primary) !important;
+}
+
 /* ——— EHR sidebar active (often pale cyan/blue) ——— */
 html[data-ui-style="2"]:not([data-clinical-dark="1"]) .drflow-ehr-sidebar-active {
   color: #0f172a !important;
