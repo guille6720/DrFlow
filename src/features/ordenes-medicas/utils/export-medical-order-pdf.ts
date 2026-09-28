@@ -112,7 +112,7 @@ export async function buildMedicalOrderPdf(order: MedicalOrderDetail, verifyUrl:
   const age = computeAge(patient.birth_date);
   const half = CONTENT_WIDTH / 2;
   const yA = field(doc, "Nombre", fullName || order.patient_name, MARGIN_X, y, half);
-  const yB = field(doc, patient.document_type ?? "DNI", patient.document_number ?? order.patient_document, MARGIN_X + half, y, half);
+  const yB = field(doc, (patient.document_type || "DNI").toUpperCase(), patient.document_number ?? order.patient_document, MARGIN_X + half, y, half);
   y = Math.max(yA, yB);
   const yC = field(
     doc,

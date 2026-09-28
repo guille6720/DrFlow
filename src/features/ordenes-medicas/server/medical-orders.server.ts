@@ -214,7 +214,7 @@ export async function queryMedicalOrderCatalog(
 ): Promise<MedicalOrderCatalogEntry[]> {
   const { data, error } = await db
     .from("medical_order_catalog")
-    .select("id, clinic_id, order_category, group_label, code, name, sort_order")
+    .select("id, clinic_id, order_category, group_label, code, name, metadata, sort_order")
     .eq("is_active", true)
     .or(`clinic_id.is.null,clinic_id.eq.${clinicId}`)
     .order("order_category", { ascending: true })
@@ -227,5 +227,9 @@ export async function queryMedicalOrderCatalog(
     group_label: str(r.group_label),
     code: str(r.code),
     name: String(r.name),
+    detail:
+      r.metadata && typeof r.metadata === "object" && typeof (r.metadata as Record<string, unknown>).detail === "string"
+        ? String((r.metadata as Record<string, unknown>).detail)
+        : null,
   }));
 }

@@ -106,6 +106,8 @@ export type MedicalOrderCatalogEntry = {
   group_label: string | null;
   code: string | null;
   name: string;
+  /** Determinations included in a panel (e.g. hepatograma); prefilled as the item detail. */
+  detail: string | null;
 };
 
 export type MedicalOrderVerification =

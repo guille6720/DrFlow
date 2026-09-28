@@ -27,7 +27,7 @@ import {
   type MedicalOrderPriority,
   type MedicalOrderStatusV2,
 } from "@/features/ordenes-medicas/constants";
-import type { MedicalOrderDetail } from "@/features/ordenes-medicas/types";
+import type { MedicalOrderCatalogEntry, MedicalOrderDetail } from "@/features/ordenes-medicas/types";
 import { computeAge, formatDateAr } from "@/features/ordenes-medicas/utils/medical-order-format";
 
 import { Button } from "@/components/ui/button";
@@ -66,8 +66,25 @@ function defaultValidUntil(): string {
   return d.toISOString().slice(0, 10);
 }
 
-function toDraftItem(name: string, code: string | null = null): DraftItem {
-  return { key: newKey(), code, name, description: "", body_region: "", contrast: "", indication: "", observations: "" };
+function toDraftItem(name: string, code: string | null = null, detail: string | null = null): DraftItem {
+  return {
+    key: newKey(),
+    code,
+    name,
+    description: detail ?? "",
+    body_region: "",
+    contrast: "",
+    indication: "",
+    observations: "",
+  };
+}
+
+function normalizeSearch(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
 function draftItemsFrom(detail: MedicalOrderDetail): DraftItem[] {
@@ -137,20 +154,27 @@ export function MedicalOrderForm({ patientId, clinicalRecordId, draft, onDone, o
   }, [catalogForCategory]);
 
   const suggestions = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return [];
+    const tokens = normalizeSearch(search).split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) return [];
     return (ctx?.catalog ?? [])
-      .filter((c) => c.order_category === category && c.name.toLowerCase().includes(q))
+      .filter((c) => {
+        if (c.order_category !== category) return false;
+        const name = normalizeSearch(c.name);
+        const haystack = `${name} ${normalizeSearch(c.group_label ?? "")} ${normalizeSearch(c.detail ?? "")}`;
+        return tokens.every((t) => haystack.includes(t));
+      })
+      .sort((a, b) => Number(normalizeSearch(b.name).includes(tokens[0])) - Number(normalizeSearch(a.name).includes(tokens[0])))
       .slice(0, 8);
   }, [ctx, category, search]);
 
   const selectedNames = new Set(items.map((i) => i.name.toLowerCase()));
 
-  function toggleCatalog(name: string, code: string | null) {
+  function toggleCatalog(entry: Pick<MedicalOrderCatalogEntry, "name" | "code" | "detail">) {
+    const key = entry.name.toLowerCase();
     setItems((prev) =>
-      prev.some((i) => i.name.toLowerCase() === name.toLowerCase())
-        ? prev.filter((i) => i.name.toLowerCase() !== name.toLowerCase())
-        : [...prev, toDraftItem(name, code)]
+      prev.some((i) => i.name.toLowerCase() === key)
+        ? prev.filter((i) => i.name.toLowerCase() !== key)
+        : [...prev, toDraftItem(entry.name, entry.code, entry.detail)]
     );
   }
 
@@ -298,8 +322,8 @@ export function MedicalOrderForm({ patientId, clinicalRecordId, draft, onDone, o
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
-                if (suggestions[0] && suggestions[0].name.toLowerCase() === search.trim().toLowerCase()) {
-                  toggleCatalog(suggestions[0].name, suggestions[0].code);
+                if (suggestions[0] && normalizeSearch(suggestions[0].name) === normalizeSearch(search)) {
+                  toggleCatalog(suggestions[0]);
                   setSearch("");
                 } else addFreeText();
               }
@@ -313,7 +337,7 @@ export function MedicalOrderForm({ patientId, clinicalRecordId, draft, onDone, o
                   type="button"
                   className={cn("block w-full px-3 py-2 text-left text-sm hover:bg-[var(--surface-hover,var(--muted))]", moText)}
                   onClick={() => {
-                    if (!selectedNames.has(s.name.toLowerCase())) toggleCatalog(s.name, s.code);
+                    if (!selectedNames.has(s.name.toLowerCase())) toggleCatalog(s);
                     setSearch("");
                   }}
                 >
@@ -345,7 +369,8 @@ export function MedicalOrderForm({ patientId, clinicalRecordId, draft, onDone, o
                         key={e.id}
                         type="button"
                         aria-pressed={active}
-                        onClick={() => toggleCatalog(e.name, e.code)}
+                        title={e.detail ?? undefined}
+                        onClick={() => toggleCatalog(e)}
                         className={cn(moChip, "px-2.5 py-1 text-xs", moText, active && moChipActive)}
                       >
                         {e.name}
@@ -403,7 +428,7 @@ export function MedicalOrderForm({ patientId, clinicalRecordId, draft, onDone, o
                 ) : (
                   <Input
                     aria-label={`Detalle de ${item.name}`}
-                    placeholder="Detalle opcional (cantidad de sesiones, especialidad, etc.)"
+                    placeholder="Detalle opcional (determinaciones, cantidad de sesiones, etc.)"
                     value={item.description}
                     className="mt-2"
                     onChange={(e) => updateItem(item.key, { description: e.target.value })}
