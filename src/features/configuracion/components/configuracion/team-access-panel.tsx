@@ -39,7 +39,7 @@ export function TeamAccessPanel({
   }
 
   const errorBox = err ? (
-    <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+    <div className="drflow-card-light mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
       {err}
     </div>
   ) : null;
@@ -51,7 +51,7 @@ export function TeamAccessPanel({
       </FeatureGate>
 
       <Card title="Permisos por rol">
-        <div className="mb-4 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+        <div className="drflow-card-light mb-4 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-slate-600" />
           <p className="text-sm text-slate-700">
             Definí qué puede hacer cada rol en este consultorio. Marcá un módulo completo o permisos

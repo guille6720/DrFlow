@@ -140,7 +140,9 @@ html[data-clinical-dark="1"] .drflow-surface-light {
   --text-secondary: #334155;
   --text-muted: #475569;
   --foreground: #0f172a;
+  --card: #ffffff;
   --card-foreground: #0f172a;
+  --text-on-card: #0f172a;
   --muted-foreground: #334155;
   /* Nested chips/hovers must stay light-surface tokens, not shell dark surfaces */
   --surface-hover: #f1f5f9;

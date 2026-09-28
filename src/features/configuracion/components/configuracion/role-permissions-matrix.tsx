@@ -95,7 +95,7 @@ export function RolePermissionsMatrix({ roleOverrides, acting, onActingChange, o
   const customized = (role: EditableRole) => Object.keys(roleOverrides[role] ?? {}).length > 0;
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200">
+    <div className="drflow-card-light overflow-x-auto rounded-xl border border-slate-200 bg-white">
       <table className="min-w-full text-left text-sm">
         <thead className="bg-slate-50">
           <tr className="border-b border-slate-200">

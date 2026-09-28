@@ -1537,6 +1537,9 @@ html:not([data-ui-style="2"]) .drflow-mesh main :is(.bg-white, .bg-white\/80, .b
   background-color: #ffffff !important;
   color: #0f172a !important;
   --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --text-on-card: #0f172a;
   --muted: #64748b;
   --muted-foreground: #475569;
   --border: #e2e8f0;
