@@ -15,17 +15,29 @@ import {
   defaultFeatureConfig,
   FEATURE_KEYS,
   featureConfigKeys,
+  type FeatureKey,
   getFeatureDefinition,
 } from "@/core/customizations/registry";
 import type { FeatureMap, FeatureSettingRow } from "@/core/customizations/resolve";
 import { requireSuperadminPage } from "@/core/entitlements/superadmin-guard.server";
+import { loadClinicProducts } from "@/core/products/products.server";
 
 import { Card } from "@/components/ui/card";
+
+type ProductGates = { clinic: boolean; geriatrics: boolean; clinicId: string };
+
+function gateFor(key: FeatureKey, products: ProductGates): CustomizationRowView["gate"] {
+  const href = `/superadmin/clinics/${products.clinicId}`;
+  if (key === "clinic_module") return { label: "El producto Clínica", active: products.clinic, href };
+  if (key === "geriatrics_module") return { label: "El producto Geriatría", active: products.geriatrics, href };
+  return null;
+}
 
 function buildRows(
   scope: "clinic" | "user",
   settings: FeatureSettingRow[],
-  resolved: FeatureMap
+  resolved: FeatureMap,
+  products: ProductGates
 ): CustomizationRowView[] {
   const byKey = new Map(settings.map((s) => [s.feature_key, s]));
   return FEATURE_KEYS.map((key) => {
@@ -42,6 +54,7 @@ function buildRows(
       configKeys: featureConfigKeys(key),
       defaultEnabled: def.defaultEnabled,
       defaultConfigJson: JSON.stringify(defaultFeatureConfig(key)),
+      gate: gateFor(key, products),
       setting: setting
         ? {
             enabled: setting.enabled,
@@ -63,13 +76,21 @@ export default async function SuperadminCustomizationsPage({
 }: {
   searchParams: Promise<{ clinicId?: string; userId?: string }>;
 }) {
-  await requireSuperadminPage();
+  const { userId: superadminId } = await requireSuperadminPage();
   const params = await searchParams;
   const clinics = await listCustomizationClinics();
   const clinicId = clinics.some((c) => c.id === params.clinicId) ? params.clinicId! : null;
   const members = clinicId ? await listCustomizationMembers(clinicId) : [];
   const userId = clinicId && members.some((m) => m.userId === params.userId) ? params.userId! : null;
-  const state = clinicId ? await loadAdminCustomizationState(clinicId, userId) : null;
+  const [state, productsSnap] = clinicId
+    ? await Promise.all([loadAdminCustomizationState(clinicId, userId), loadClinicProducts(clinicId)])
+    : [null, null];
+  const products: ProductGates = {
+    clinicId: clinicId ?? "",
+    clinic: productsSnap?.clinic ?? true,
+    geriatrics: productsSnap?.geriatrics ?? false,
+  };
+  const superadminIsMember = members.some((m) => m.userId === superadminId);
   const environment = getCustomizationEnvironment();
   const clinicName = clinics.find((c) => c.id === clinicId)?.name;
   const member = members.find((m) => m.userId === userId);
@@ -114,6 +135,23 @@ export default async function SuperadminCustomizationsPage({
 
       {clinicId && state ? (
         <>
+          <div className="rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-sm text-sky-950">
+            <p className="font-semibold">¿Cómo ver el efecto?</p>
+            <p>
+              Los cambios aplican a los usuarios de <strong>{clinicName}</strong> la próxima vez que carguen una
+              página. {superadminIsMember
+                ? "Para verlo con tu cuenta, cambiá la clínica activa a esta desde el selector de clínica."
+                : "Tu cuenta Superadmin no es miembro de esta clínica, así que tu panel no cambia: iniciá sesión (en otra ventana privada) con un usuario de la clínica."}
+            </p>
+            {members.length > 0 ? (
+              <p className="mt-1 text-xs">
+                Usuarios de la clínica: {members.map((m) => `${m.fullName} (${m.role})`).join(", ")}
+              </p>
+            ) : (
+              <p className="mt-1 text-xs">Esta clínica todavía no tiene usuarios activos: invitá uno desde Equipo.</p>
+            )}
+          </div>
+
           <Card
             title={`Nivel clínica · ${clinicName ?? ""}`}
             description="Override para toda la clínica. «Heredar default» mantiene el comportamiento actual."
@@ -123,7 +161,7 @@ export default async function SuperadminCustomizationsPage({
               userId={null}
               scope="clinic"
               available={state.available}
-              rows={buildRows("clinic", state.clinicRows, state.clinicResolved)}
+              rows={buildRows("clinic", state.clinicRows, state.clinicResolved, products)}
             />
           </Card>
 
@@ -165,7 +203,7 @@ export default async function SuperadminCustomizationsPage({
                   userId={userId}
                   scope="user"
                   available={state.available}
-                  rows={buildRows("user", state.userRows, state.userResolved)}
+                  rows={buildRows("user", state.userRows, state.userResolved, products)}
                 />
               </>
             ) : (

@@ -22,6 +22,8 @@ export interface CustomizationRowView {
   configKeys: string[];
   defaultEnabled: boolean;
   defaultConfigJson: string;
+  /** Existing gate (product/plan) that must also be ON; customizations never grant it. */
+  gate: { label: string; active: boolean; href: string } | null;
   setting: { enabled: boolean | null; configJson: string | null } | null;
   effective: {
     enabled: boolean;
@@ -150,6 +152,8 @@ function CustomizationRow({
   }
 
   const inheritLabel = scope === "user" ? "Heredar de la clínica" : "Heredar default";
+  const blockedByGate = row.gate != null && !row.gate.active;
+  const finalEnabled = row.effective.enabled && !blockedByGate;
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-950">
@@ -166,14 +170,25 @@ function CustomizationRow({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {row.critical ? <Badge variant="warning">Crítico</Badge> : null}
-          <Badge variant={row.effective.enabled ? "success" : "danger"}>
-            {row.effective.enabled ? "Efectivo: ON" : "Efectivo: OFF"}
+          <Badge variant={finalEnabled ? "success" : "danger"}>
+            {finalEnabled ? "Efectivo: ON" : "Efectivo: OFF"}
           </Badge>
           <Badge variant={SOURCE_VARIANT[row.effective.source]}>
             Origen: {SOURCE_LABEL[row.effective.source]}
           </Badge>
         </div>
       </div>
+
+      {blockedByGate && row.gate ? (
+        <p className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-2 py-1.5 text-xs text-amber-900">
+          {row.gate.label} está <strong>desactivado</strong> para esta clínica. Esta personalización solo
+          restringe: para habilitar el módulo activalo en{" "}
+          <a href={row.gate.href} className="font-semibold underline">
+            Productos habilitados
+          </a>
+          .
+        </p>
+      ) : null}
 
       {!row.configurable ? (
         <p className="mt-2 text-xs text-slate-500">
