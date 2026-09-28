@@ -1,6 +1,7 @@
 "use client";
 
 import type { ManageablePermissionKey } from "@/core/permissions/member-permissions";
+import type { RolePermissionOverrides } from "@/core/permissions/role-permissions";
 
 import { CopyCredentialsLinkButton } from "@/features/configuracion/components/configuracion/copy-credentials-link-button";
 import { TeamAccessPanel } from "@/features/configuracion/components/configuracion/team-access-panel";
@@ -34,6 +35,7 @@ interface Props {
   teamAccess?: {
     members: TeamPermissionMember[];
     permissionOverrides: Record<string, Partial<Record<ManageablePermissionKey, boolean>>>;
+    roleOverrides?: RolePermissionOverrides;
     hasSharedCredentials: boolean;
   };
 }
@@ -90,6 +92,7 @@ export function TeamInvitePanel({ members, invitations, teamAccess }: Props) {
         <TeamAccessPanel
           members={teamAccess.members}
           permissionOverrides={teamAccess.permissionOverrides}
+          roleOverrides={teamAccess.roleOverrides ?? {}}
           hasSharedCredentials={teamAccess.hasSharedCredentials}
         />
       ) : null}

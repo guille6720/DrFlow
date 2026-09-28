@@ -1,4 +1,9 @@
 import {
+  mergePermissionOverrides,
+  roleEffective,
+  type RolePermissionOverrides,
+} from "@/core/permissions/role-permissions";
+import {
   hasPermission,
   MANAGEABLE_PERMISSION_KEYS,
   type ManageablePermissionKey,
@@ -86,25 +91,33 @@ export function resolveMemberPermissionOverrides(
 
 export function getEffectivePermissionsForRole(
   role: UserRole,
-  memberOverrides?: Partial<Record<ManageablePermissionKey, boolean>>
+  memberOverrides?: Partial<Record<ManageablePermissionKey, boolean>>,
+  roleOverrides?: RolePermissionOverrides | null
 ): Record<ManageablePermissionKey, boolean> {
+  const merged = mergePermissionOverrides(role, roleOverrides, memberOverrides);
   const result = {} as Record<ManageablePermissionKey, boolean>;
   for (const key of MANAGEABLE_PERMISSION_KEYS) {
-    result[key] = resolveEffectivePermission(role, key, false, memberOverrides);
+    result[key] = resolveEffectivePermission(role, key, false, merged);
   }
   return result;
 }
 
-export function roleDefaultForPermission(role: UserRole, permission: ManageablePermissionKey): boolean {
-  return PERMISSIONS[permission].includes(role);
+/** Baseline for a member = clinic role setting, else code default. */
+export function roleDefaultForPermission(
+  role: UserRole,
+  permission: ManageablePermissionKey,
+  roleOverrides?: RolePermissionOverrides | null
+): boolean {
+  return roleOverrides ? roleEffective(role, permission, roleOverrides) : PERMISSIONS[permission].includes(role);
 }
 
 export function computeOverrideOnToggle(
   role: UserRole,
   permission: ManageablePermissionKey,
-  nextGranted: boolean
+  nextGranted: boolean,
+  roleOverrides?: RolePermissionOverrides | null
 ): boolean | null {
-  const roleDefault = roleDefaultForPermission(role, permission);
+  const roleDefault = roleDefaultForPermission(role, permission, roleOverrides);
   if (nextGranted === roleDefault) return null;
   return nextGranted;
 }

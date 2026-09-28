@@ -113,6 +113,7 @@ export const TABLES_REQUIRING_RLS = [
   "feature_definitions",
   "clinic_feature_settings",
   "user_feature_settings",
+  "clinic_role_permissions",
 ] as const;
 
 /** RPC SECURITY DEFINER que deben acotar tenant (nombre → migración de referencia). */
@@ -170,6 +171,7 @@ export const SECURITY_DEFINER_RPC_CHECKS: { name: string; migrationHint: string 
   { name: "clear_clinic_feature_setting", migrationHint: "20260928120000" },
   { name: "set_user_feature_setting", migrationHint: "20260928120000" },
   { name: "clear_user_feature_setting", migrationHint: "20260928120000" },
+  { name: "set_clinic_role_permissions", migrationHint: "20260928203000" },
   // Phase 10 — public API tenant gate
   { name: "assert_public_api_clinic_access", migrationHint: "133" },
   { name: "api_list_appointments", migrationHint: "104/133" },

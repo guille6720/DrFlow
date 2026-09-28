@@ -8,8 +8,16 @@ import { FEATURES } from "@/core/entitlements/features";
 import {
   computeOverrideOnToggle,
   isManageablePermissionKey,
+  MANAGEABLE_PERMISSION_KEYS,
   type ManageablePermissionKey,
 } from "@/core/permissions/member-permissions";
+import {
+  buildRoleChanges,
+  buildRoleOverrides,
+  isEditableRole,
+  type RolePermissionOverrides,
+} from "@/core/permissions/role-permissions";
+import { asStagingSchemaClient } from "@/core/products/staging-schema-client";
 import { recordAudit } from "@/core/security/audit-service";
 import { createClient } from "@/core/supabase/server";
 import { parseEntityId } from "@/core/validations/params";
@@ -18,6 +26,20 @@ import type { UserRole } from "@/types/database";
 
 async function requireTeamAdmin() {
   return requireStaffManagerWithUser();
+}
+
+async function loadRoleOverrides(clinicId: string): Promise<RolePermissionOverrides> {
+  try {
+    const supabase = asStagingSchemaClient(await createClient());
+    const { data, error } = await supabase
+      .from("clinic_role_permissions")
+      .select("role, permission_key, granted")
+      .eq("clinic_id", clinicId);
+    if (error) return {};
+    return buildRoleOverrides(data as unknown as { role: string; permission_key: string; granted: boolean }[]);
+  } catch {
+    return {};
+  }
 }
 
 export async function updateClinicMemberPermission(
@@ -48,10 +70,12 @@ export async function updateClinicMemberPermission(
     return { error: "No podés modificar permisos del administrador" };
   }
 
+  const roleOverrides = await loadRoleOverrides(access.clinicId);
   const overrideValue = computeOverrideOnToggle(
     member.role as UserRole,
     permissionKeyRaw,
-    granted
+    granted,
+    roleOverrides
   );
 
   if (overrideValue === null) {
@@ -90,6 +114,70 @@ export async function updateClinicMemberPermission(
       member_role: member.role,
     },
   });
+
+  revalidatePath("/configuracion");
+  return {};
+}
+
+const ROLE_RPC_ERRORS: Record<string, string> = {
+  FORBIDDEN: "Solo el administrador de la clínica puede cambiar permisos por rol.",
+  INVALID_ROLE: "Rol inválido.",
+  INVALID_PERMISSION: "Permiso inválido.",
+  EMPTY_CHANGES: "No hay cambios para guardar.",
+};
+
+function mapRoleRpcError(message: string | undefined): string {
+  const msg = message ?? "";
+  if (/clinic_role_permissions|set_clinic_role_permissions|does not exist|schema cache/i.test(msg)) {
+    return "Los permisos por rol todavía no están disponibles en esta base de datos.";
+  }
+  for (const [code, text] of Object.entries(ROLE_RPC_ERRORS)) {
+    if (msg.includes(code)) return text;
+  }
+  return "No se pudieron guardar los permisos del rol.";
+}
+
+/** Sets one or many permissions (a whole module group) for a role inside the active clinic. */
+export async function updateClinicRolePermissions(
+  roleRaw: string,
+  permissionKeys: string[],
+  granted: boolean
+): Promise<{ error?: string }> {
+  const access = await requireTeamAdmin();
+  if (!access.ok) return { error: access.error };
+  if (!isEditableRole(roleRaw)) return { error: "Rol inválido" };
+  if (!Array.isArray(permissionKeys) || permissionKeys.length === 0 || permissionKeys.length > 32) {
+    return { error: "Permiso inválido" };
+  }
+  if (!permissionKeys.every((k) => isManageablePermissionKey(k))) return { error: "Permiso inválido" };
+
+  const changes = buildRoleChanges(roleRaw, permissionKeys, granted);
+  const supabase = asStagingSchemaClient(await createClient());
+  const { error } = await supabase.rpc("set_clinic_role_permissions", {
+    p_clinic_id: access.clinicId,
+    p_role: roleRaw,
+    p_changes: changes,
+  });
+  if (error) return { error: mapRoleRpcError(error.message) };
+
+  revalidatePath("/configuracion");
+  return {};
+}
+
+/** Back to the application defaults for a role (removes every clinic role row). */
+export async function resetClinicRolePermissions(roleRaw: string): Promise<{ error?: string }> {
+  const access = await requireTeamAdmin();
+  if (!access.ok) return { error: access.error };
+  if (!isEditableRole(roleRaw)) return { error: "Rol inválido" };
+
+  const changes = Object.fromEntries(MANAGEABLE_PERMISSION_KEYS.map((k) => [k, null]));
+  const supabase = asStagingSchemaClient(await createClient());
+  const { error } = await supabase.rpc("set_clinic_role_permissions", {
+    p_clinic_id: access.clinicId,
+    p_role: roleRaw,
+    p_changes: changes,
+  });
+  if (error) return { error: mapRoleRpcError(error.message) };
 
   revalidatePath("/configuracion");
   return {};
@@ -155,6 +243,7 @@ export type TeamPermissionMember = {
 export type TeamPermissionsPanelData = {
   members: TeamPermissionMember[];
   permissionOverrides: Record<string, Partial<Record<ManageablePermissionKey, boolean>>>;
+  roleOverrides?: RolePermissionOverrides;
 };
 
 export async function loadTeamPermissionsPanelData(
@@ -162,7 +251,7 @@ export async function loadTeamPermissionsPanelData(
 ): Promise<TeamPermissionsPanelData> {
   const supabase = await createClient();
 
-  const [membersResult, overridesResult] = await Promise.all([
+  const [membersResult, overridesResult, roleOverrides] = await Promise.all([
     supabase
       .from("clinic_members")
       .select("id, role, uses_shared_ai, is_active, profiles(full_name, email)")
@@ -172,6 +261,7 @@ export async function loadTeamPermissionsPanelData(
       .from("clinic_member_permissions")
       .select("member_id, permission_key, granted")
       .eq("clinic_id", clinicId),
+    loadRoleOverrides(clinicId),
   ]);
 
   const { buildPermissionOverridesByMember } = await import(
@@ -181,5 +271,6 @@ export async function loadTeamPermissionsPanelData(
   return {
     members: (membersResult.data ?? []) as unknown as TeamPermissionMember[],
     permissionOverrides: buildPermissionOverridesByMember(overridesResult.data ?? []),
+    roleOverrides,
   };
 }

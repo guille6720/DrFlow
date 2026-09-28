@@ -12,6 +12,7 @@ import {
   MANAGEABLE_PERMISSION_LABELS,
   type ManageablePermissionKey,
 } from "@/core/permissions/member-permissions";
+import type { RolePermissionOverrides } from "@/core/permissions/role-permissions";
 import { ROLE_LABELS } from "@/core/permissions/roles";
 
 import { cn } from "@/shared/utils/cn";
@@ -26,6 +27,7 @@ import type { UserRole } from "@/types/database";
 type Props = {
   members: TeamPermissionMember[];
   permissionOverrides: Record<string, Partial<Record<ManageablePermissionKey, boolean>>>;
+  roleOverrides?: RolePermissionOverrides;
   hasSharedCredentials: boolean;
   acting: string | null;
   onActingChange: (id: string | null) => void;
@@ -35,6 +37,7 @@ type Props = {
 export function TeamPermissionsMatrix({
   members,
   permissionOverrides,
+  roleOverrides,
   hasSharedCredentials,
   acting,
   onActingChange,
@@ -107,7 +110,11 @@ export function TeamPermissionsMatrix({
         <tbody className="divide-y divide-slate-100 bg-white">
           {editableMembers.map((member) => {
             const overrides = permissionOverrides[member.id];
-            const effective = getEffectivePermissionsForRole(member.role as UserRole, overrides);
+            const effective = getEffectivePermissionsForRole(
+              member.role as UserRole,
+              overrides,
+              roleOverrides
+            );
             const roleLabel = ROLE_LABELS[member.role as UserRole] ?? member.role;
 
             return (
@@ -137,8 +144,8 @@ export function TeamPermissionsMatrix({
                         )}
                         title={
                           hasOverride
-                            ? "Permiso personalizado (distinto al rol por defecto)"
-                            : "Según rol por defecto"
+                            ? "Excepción personal (distinta a la configuración del rol)"
+                            : "Según la configuración del rol"
                         }
                         onChange={(e) =>
                           void togglePermission(member, permission, e.target.checked)
@@ -170,7 +177,7 @@ export function TeamPermissionsMatrix({
         </tbody>
       </table>
       <p className="border-t border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-500">
-        Los recuadros con borde ámbar indican un permiso personalizado. El administrador siempre
+        Los recuadros con borde ámbar indican una excepción personal. El administrador siempre
         tiene acceso total y usa credenciales propias.
       </p>
     </div>

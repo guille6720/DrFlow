@@ -4,7 +4,13 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 
 import { resolveMemberPermissionOverrides } from "@/core/permissions/member-permissions";
+import {
+  buildRoleOverrides,
+  isEditableRole,
+  mergePermissionOverrides,
+} from "@/core/permissions/role-permissions";
 import type { PermissionOverrides } from "@/core/permissions/roles";
+import { asStagingSchemaClient } from "@/core/products/staging-schema-client";
 import { CLINIC_COLUMNS, CLINIC_MINIMAL_COLUMNS, CLINIC_SHELL_COLUMNS, PROFILE_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
@@ -210,6 +216,26 @@ export const getActiveClinic = cache(async (): Promise<{
   };
 });
 
+/** Missing table/RPC (e.g. DB without the migration) → no role layer = code defaults. */
+async function loadRolePermissionRows(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  clinicId: string | null,
+  role: UserRole | null
+): Promise<{ role: string; permission_key: string; granted: boolean }[]> {
+  if (!clinicId || !role || !isEditableRole(role)) return [];
+  try {
+    const { data, error } = await asStagingSchemaClient(supabase)
+      .from("clinic_role_permissions")
+      .select("role, permission_key, granted")
+      .eq("clinic_id", clinicId)
+      .eq("role", role);
+    if (error) return [];
+    return (data ?? []) as unknown as { role: string; permission_key: string; granted: boolean }[];
+  } catch {
+    return [];
+  }
+}
+
 export const getPermissionContext = cache(async (): Promise<{
   role: UserRole | null;
   isSuperadmin: boolean;
@@ -223,15 +249,23 @@ export const getPermissionContext = cache(async (): Promise<{
     return { role, isSuperadmin, permissionOverrides: {} };
   }
 
-  const { data } = await supabase
-    .from("clinic_member_permissions")
-    .select("permission_key, granted")
-    .eq("member_id", memberId);
+  const clinicId = await getActiveClinicId();
+  const [{ data }, roleRows] = await Promise.all([
+    supabase
+      .from("clinic_member_permissions")
+      .select("permission_key, granted")
+      .eq("member_id", memberId),
+    loadRolePermissionRows(supabase, clinicId, role),
+  ]);
 
   return {
     role,
     isSuperadmin,
-    permissionOverrides: resolveMemberPermissionOverrides(data ?? []),
+    permissionOverrides: mergePermissionOverrides(
+      role,
+      buildRoleOverrides(roleRows),
+      resolveMemberPermissionOverrides(data ?? [])
+    ),
   };
 });
 

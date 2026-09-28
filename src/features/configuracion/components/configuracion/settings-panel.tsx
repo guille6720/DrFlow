@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import type { ManageablePermissionKey } from "@/core/permissions/member-permissions";
+import type { RolePermissionOverrides } from "@/core/permissions/role-permissions";
 import type { NestedRow } from "@/core/supabase/query-types";
 
 import {
@@ -50,6 +51,7 @@ export interface SettingsPanelProps {
   teamAccess?: {
     members: TeamPermissionMember[];
     permissionOverrides: Record<string, Partial<Record<ManageablePermissionKey, boolean>>>;
+    roleOverrides?: RolePermissionOverrides;
     hasSharedCredentials: boolean;
   };
 }
