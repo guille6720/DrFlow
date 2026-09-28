@@ -82,32 +82,32 @@ export function TeamPermissionsMatrix({
   return (
     <div className="space-y-3">
       {!canUseAi ? <AddonUpgradeNotice feature={FEATURES.AI} /> : null}
-      <div className="drflow-card-light overflow-x-auto rounded-xl border border-slate-200 bg-white">
-      <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-        <thead className="bg-slate-50">
+      <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--surface-card,var(--card))]">
+      <table className="min-w-full divide-y divide-[var(--border)] text-left text-sm">
+        <thead className="bg-[var(--surface-elevated,var(--muted))]">
           <tr>
-            <th className="sticky left-0 z-10 bg-slate-50 px-3 py-2 font-semibold text-slate-800">
+            <th className="sticky left-0 z-10 bg-[var(--surface-elevated,var(--muted))] px-3 py-2 font-semibold text-[var(--text-primary,var(--foreground))]">
               Usuario
             </th>
-            <th className="px-2 py-2 font-semibold text-slate-700">Rol</th>
+            <th className="px-2 py-2 font-semibold text-[var(--text-primary,var(--foreground))]">Rol</th>
             {MANAGEABLE_PERMISSION_KEYS.map((key) => (
               <th
                 key={key}
-                className="min-w-[7rem] px-2 py-2 text-center text-xs font-semibold text-slate-700"
+                className="min-w-[7rem] px-2 py-2 text-center text-xs font-semibold text-[var(--text-primary,var(--foreground))]"
                 title={MANAGEABLE_PERMISSION_LABELS[key]}
               >
                 <span className="line-clamp-2">{MANAGEABLE_PERMISSION_LABELS[key]}</span>
               </th>
             ))}
             <th
-              className="min-w-[6rem] px-2 py-2 text-center text-xs font-semibold text-slate-700"
+              className="min-w-[6rem] px-2 py-2 text-center text-xs font-semibold text-[var(--text-primary,var(--foreground))]"
               title="Usa las credenciales de IA compartidas del consultorio"
             >
               IA compartida
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 bg-white">
+        <tbody className="divide-y divide-[var(--border)]">
           {editableMembers.map((member) => {
             const overrides = permissionOverrides[member.id];
             const effective = getEffectivePermissionsForRole(
@@ -119,13 +119,17 @@ export function TeamPermissionsMatrix({
 
             return (
               <tr key={member.id}>
-                <td className="sticky left-0 z-10 bg-white px-3 py-2">
-                  <p className="font-medium text-slate-900">
+                <td className="sticky left-0 z-10 bg-[var(--surface-card,var(--card))] px-3 py-2">
+                  <p className="font-medium text-[var(--text-primary,var(--foreground))]">
                     {member.profiles?.full_name ?? "Usuario"}
                   </p>
-                  <p className="text-xs text-slate-500">{member.profiles?.email}</p>
+                  <p className="text-xs text-[var(--text-muted,var(--muted-foreground))]">
+                    {member.profiles?.email}
+                  </p>
                 </td>
-                <td className="px-2 py-2 text-xs text-slate-600">{roleLabel}</td>
+                <td className="px-2 py-2 text-xs text-[var(--text-secondary,var(--foreground))]">
+                  {roleLabel}
+                </td>
                 {MANAGEABLE_PERMISSION_KEYS.map((permission) => {
                   const checked = effective[permission];
                   const actionId = `${member.id}-${permission}`;
@@ -176,7 +180,7 @@ export function TeamPermissionsMatrix({
           })}
         </tbody>
       </table>
-      <p className="border-t border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+      <p className="border-t border-[var(--border)] px-3 py-2 text-xs text-[var(--text-muted,var(--muted-foreground))]">
         Los recuadros con borde ámbar indican una excepción personal. El administrador siempre
         tiene acceso total y usa credenciales propias.
       </p>

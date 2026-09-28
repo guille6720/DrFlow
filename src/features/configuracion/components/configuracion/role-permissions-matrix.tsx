@@ -16,8 +16,6 @@ import {
 } from "@/core/permissions/role-permissions";
 import { type ManageablePermissionKey, ROLE_LABELS } from "@/core/permissions/roles";
 
-import { cn } from "@/shared/utils/cn";
-
 import {
   resetClinicRolePermissions,
   updateClinicRolePermissions,
@@ -61,7 +59,7 @@ function TriStateCheckbox({
 function LockedCheck() {
   return (
     <span
-      className="inline-flex h-4 w-4 items-center justify-center rounded bg-slate-300 text-white"
+      className="inline-flex h-4 w-4 items-center justify-center rounded bg-[var(--muted-foreground)] text-[var(--surface-card,var(--card))] opacity-60"
       title="El administrador siempre tiene acceso total"
     >
       <Check className="h-3 w-3" strokeWidth={3} />
@@ -95,19 +93,19 @@ export function RolePermissionsMatrix({ roleOverrides, acting, onActingChange, o
   const customized = (role: EditableRole) => Object.keys(roleOverrides[role] ?? {}).length > 0;
 
   return (
-    <div className="drflow-card-light overflow-x-auto rounded-xl border border-slate-200 bg-white">
+    <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--surface-card,var(--card))]">
       <table className="min-w-full text-left text-sm">
-        <thead className="bg-slate-50">
-          <tr className="border-b border-slate-200">
-            <th className="px-3 py-3 font-semibold text-slate-800">Permiso</th>
-            <th className="w-32 px-3 py-3 text-center font-semibold text-slate-800">
+        <thead className="bg-[var(--surface-elevated,var(--muted))]">
+          <tr className="border-b border-[var(--border)]">
+            <th className="px-3 py-3 font-semibold text-[var(--text-primary,var(--foreground))]">Permiso</th>
+            <th className="w-32 px-3 py-3 text-center font-semibold text-[var(--text-primary,var(--foreground))]">
               <span className="inline-flex items-center gap-1">
                 {ROLE_LABELS.clinic_admin}
-                <Lock className="h-3 w-3 text-slate-400" aria-hidden />
+                <Lock className="h-3 w-3 opacity-60" aria-hidden />
               </span>
             </th>
             {EDITABLE_ROLES.map((role) => (
-              <th key={role} className="w-32 px-3 py-3 text-center font-semibold text-slate-800">
+              <th key={role} className="w-32 px-3 py-3 text-center font-semibold text-[var(--text-primary,var(--foreground))]">
                 <div className="flex flex-col items-center gap-1">
                   <span>{ROLE_LABELS[role]}</span>
                   {customized(role) ? (
@@ -115,7 +113,7 @@ export function RolePermissionsMatrix({ roleOverrides, acting, onActingChange, o
                       type="button"
                       disabled={acting !== null}
                       onClick={() => void reset(role)}
-                      className="inline-flex items-center gap-1 text-[11px] font-normal text-slate-500 hover:text-teal-700 disabled:opacity-50"
+                      className="inline-flex items-center gap-1 text-[11px] font-normal text-[var(--text-muted,var(--muted-foreground))] hover:text-[var(--primary)] disabled:opacity-50"
                       title="Volver a los permisos por defecto de la aplicación"
                     >
                       <RotateCcw className="h-3 w-3" aria-hidden />
@@ -127,7 +125,7 @@ export function RolePermissionsMatrix({ roleOverrides, acting, onActingChange, o
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white">
+        <tbody>
           {PERMISSION_GROUPS.map((group) => {
             const isCollapsed = collapsed[group.id] ?? false;
             return (
@@ -146,7 +144,7 @@ export function RolePermissionsMatrix({ roleOverrides, acting, onActingChange, o
           })}
         </tbody>
       </table>
-      <p className="border-t border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+      <p className="border-t border-[var(--border)] px-3 py-2 text-xs text-[var(--text-muted,var(--muted-foreground))]">
         Los puntos ámbar marcan permisos distintos a los valores por defecto de la aplicación. Los
         cambios aplican a todos los miembros de ese rol en este consultorio.
       </p>
@@ -171,12 +169,12 @@ function GroupRows({
 }) {
   return (
     <>
-      <tr className="border-b border-slate-200 bg-slate-100/70">
+      <tr className="border-b border-[var(--border)] bg-[var(--surface-hover,var(--muted))]">
         <td className="px-3 py-2">
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="inline-flex items-center gap-1 font-semibold text-slate-800"
+            className="inline-flex items-center gap-1 font-semibold text-[var(--text-primary,var(--foreground))]"
             aria-expanded={!isCollapsed}
           >
             {isCollapsed ? (
@@ -207,8 +205,10 @@ function GroupRows({
       {isCollapsed
         ? null
         : group.keys.map((key) => (
-            <tr key={key} className="border-b border-slate-100">
-              <td className="py-2 pl-9 pr-3 text-slate-700">{MANAGEABLE_PERMISSION_LABELS[key]}</td>
+            <tr key={key} className="border-b border-[var(--border)]">
+              <td className="py-2 pl-9 pr-3 text-[var(--text-secondary,var(--foreground))]">
+                {MANAGEABLE_PERMISSION_LABELS[key]}
+              </td>
               <td className="px-3 py-2 text-center">
                 <LockedCheck />
               </td>
@@ -224,7 +224,7 @@ function GroupRows({
                         checked={checked}
                         disabled={acting !== null}
                         aria-label={`${MANAGEABLE_PERMISSION_LABELS[key]} para ${ROLE_LABELS[role]}`}
-                        className={cn("h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500")}
+                        className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                         title={differs ? "Distinto al valor por defecto" : "Valor por defecto"}
                         onChange={(e) => void onApply(role, [key], e.target.checked, id)}
                       />

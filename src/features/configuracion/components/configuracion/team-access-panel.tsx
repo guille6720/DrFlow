@@ -51,9 +51,9 @@ export function TeamAccessPanel({
       </FeatureGate>
 
       <Card title="Permisos por rol">
-        <div className="drflow-card-light mb-4 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-slate-600" />
-          <p className="text-sm text-slate-700">
+        <div className="mb-4 flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated,var(--muted))] p-3">
+          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[var(--primary)]" />
+          <p className="text-sm text-[var(--text-primary,var(--foreground))]">
             Definí qué puede hacer cada rol en este consultorio. Marcá un módulo completo o permisos
             individuales. Los cambios aplican al menú, rutas y acciones de todos los miembros con
             ese rol.
@@ -69,7 +69,7 @@ export function TeamAccessPanel({
       </Card>
 
       <Card title="Excepciones por usuario">
-        <p className="mb-4 text-sm text-slate-600">
+        <p className="mb-4 text-sm text-[var(--text-secondary,var(--muted-foreground))]">
           Si un miembro necesita algo distinto a su rol, ajustalo acá. Las excepciones tienen
           prioridad sobre la configuración del rol.
         </p>
