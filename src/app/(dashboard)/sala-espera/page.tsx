@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
+import { requireFeaturePage } from "@/core/customizations/customizations.server";
 import { hasPermission } from "@/core/permissions/roles";
 import { TURNOS_TODAY_SCAN_MAX } from "@/core/supabase/pagination";
 import { createClient } from "@/core/supabase/server";
@@ -22,6 +23,7 @@ export default async function SalaEsperaPage() {
   if (!hasPermission(role, "manageWaitingRoom", isSuperadmin) || !clinicId) {
     redirect("/dashboard");
   }
+  await requireFeaturePage(clinicId, "waiting_room");
 
   const supabase = await createClient();
   const timeZone = clinic?.timezone?.trim() || DEFAULT_CLINIC_TIMEZONE;

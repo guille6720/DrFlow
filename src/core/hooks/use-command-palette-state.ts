@@ -3,7 +3,9 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useFeatureCustomizations } from "@/core/components/customizations/feature-customizations-provider";
 import { useEntitlementsSnapshot } from "@/core/components/entitlements/entitlements-provider";
+import { isHrefAllowedByCustomizations } from "@/core/customizations/resolve";
 import { useCommandPaletteKeyboard } from "@/core/hooks/use-command-palette-keyboard";
 import { useCommandPalettePatientSearch } from "@/core/hooks/use-command-palette-patient-search";
 import type { PermissionOverrides } from "@/core/permissions/roles";
@@ -33,6 +35,7 @@ export function useCommandPaletteState({
   const router = useRouter();
   const pathname = usePathname();
   const entitlements = useEntitlementsSnapshot();
+  const customizations = useFeatureCustomizations();
   const activePatientId = parsePatientIdFromPath(pathname);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -69,8 +72,10 @@ export function useCommandPaletteState({
       permissionOverrides,
       entitlements
     );
-    return [...ctx, ...actions, ...nav];
-  }, [activePatientId, query, role, isSuperadmin, permissionOverrides, entitlements]);
+    return [...ctx, ...actions, ...nav].filter((item) =>
+      isHrefAllowedByCustomizations(item.href, customizations.features)
+    );
+  }, [activePatientId, query, role, isSuperadmin, permissionOverrides, entitlements, customizations]);
 
   const flatResults = useMemo(
     () => [

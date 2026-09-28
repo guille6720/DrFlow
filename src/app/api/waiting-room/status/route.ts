@@ -2,6 +2,10 @@ import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { resolveApiClinicAccess } from "@/core/auth/resolve-api-clinic-access";
+import {
+  checkFeatureAccess,
+  featureDisabledResponse,
+} from "@/core/customizations/customizations.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { createClient } from "@/core/supabase/server";
 import { waitingRoomStatusSchema } from "@/core/validations/cash-schemas";
@@ -108,6 +112,11 @@ export async function POST(request: NextRequest) {
       );
     }
     const clinicId = access.clinicId;
+
+    const feature = await checkFeatureAccess(clinicId, "waiting_room");
+    if (!feature.ok) {
+      return featureDisabledResponse(feature.feature, { v: "waiting-room-v1" });
+    }
 
     const { data, error } = await supabase.rpc("update_waiting_room_status_atomic", {
       p_clinic_id: clinicId,

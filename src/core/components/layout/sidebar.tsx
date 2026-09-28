@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
+import { useFeatureCustomizations } from "@/core/components/customizations/feature-customizations-provider";
 import { useEntitlementsSnapshot } from "@/core/components/entitlements/entitlements-provider";
 import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-context";
 import {
@@ -15,6 +16,7 @@ import {
 } from "@/core/components/layout/sidebar-nav-config";
 import { SidebarNavContent } from "@/core/components/layout/sidebar-nav-content";
 import { useClinicProducts } from "@/core/components/products/products-provider";
+import { type FeatureMap, isHrefAllowedByCustomizations } from "@/core/customizations/resolve";
 import { isHrefEntitledBySnapshot } from "@/core/entitlements/nav-features";
 import type { ClientEntitlementsSnapshot } from "@/core/entitlements/types";
 import { canAccessImportExport, hasPermission, isInvitedClinicMember, type PermissionOverrides } from "@/core/permissions/roles";
@@ -141,6 +143,23 @@ function filterSidebarNavEntries(
     .filter((entry): entry is SidebarNavEntry => entry != null);
 }
 
+function filterByCustomizations(
+  entries: SidebarNavEntry[],
+  features: FeatureMap
+): SidebarNavEntry[] {
+  return entries
+    .map((entry) => {
+      if (isSidebarNavGroup(entry)) {
+        const children = entry.children.filter((child) =>
+          isHrefAllowedByCustomizations(child.href, features)
+        );
+        return children.length > 0 ? { ...entry, children } : null;
+      }
+      return isHrefAllowedByCustomizations(entry.href, features) ? entry : null;
+    })
+    .filter((entry): entry is SidebarNavEntry => entry != null);
+}
+
 export function Sidebar({
   clinicId,
   clinicName,
@@ -155,16 +174,20 @@ export function Sidebar({
   const clinicFeatures = useClinicFeatures();
   const entitlements = useEntitlementsSnapshot();
   const products = useClinicProducts();
+  const customizations = useFeatureCustomizations();
 
   const visibleItems = useMemo(() => {
-    const base = filterSidebarNavEntries(
-      SIDEBAR_NAV_ENTRIES,
-      role,
-      isSuperadmin,
-      clinicFeatures,
-      permissionOverrides,
-      entitlements,
-      products
+    const base = filterByCustomizations(
+      filterSidebarNavEntries(
+        SIDEBAR_NAV_ENTRIES,
+        role,
+        isSuperadmin,
+        clinicFeatures,
+        permissionOverrides,
+        entitlements,
+        products
+      ),
+      customizations.features
     );
     if (!isSuperadmin) return base;
     const superadmin = filterSidebarNavEntries(
@@ -177,7 +200,7 @@ export function Sidebar({
       products
     );
     return [...base, ...superadmin];
-  }, [role, isSuperadmin, clinicFeatures, permissionOverrides, entitlements, products]);
+  }, [role, isSuperadmin, clinicFeatures, permissionOverrides, entitlements, products, customizations]);
 
   const isInvitedMember = isInvitedClinicMember(role, isSuperadmin);
 

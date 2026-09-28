@@ -19,6 +19,7 @@ export default async function SuperadminLayout({
           { href: "/superadmin/clinics", label: "Clínicas" },
           { href: "/superadmin/plans", label: "Planes" },
           { href: "/superadmin/features", label: "Features" },
+          { href: "/superadmin/customizations", label: "Personalizaciones" },
           { href: "/superadmin/usage", label: "Consumo" },
           { href: "/superadmin/recommendations", label: "Recomendaciones" },
           { href: "/superadmin/renapdis-readiness", label: "ReNaPDiS Ops" },

@@ -84,6 +84,12 @@ export default async function SuperadminClinicDetailPage({
           <Badge variant="warning">Recomienda {clinic.recommendedPlan}</Badge>
         ) : null}
         <span className="ml-auto flex flex-wrap gap-3">
+          <Link
+            href={`/superadmin/customizations?clinicId=${clinic.clinicId}`}
+            className="text-sm font-medium text-teal-700 hover:underline"
+          >
+            Personalizaciones
+          </Link>
           <ManualHelpLink anchor="change-plan" label="Ayuda · Cambiar plan" />
           <ManualHelpLink anchor="overrides" label="Ayuda · Overrides" />
         </span>

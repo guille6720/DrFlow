@@ -26,6 +26,9 @@ export async function updateWaitingRoomRequest(
   }
 
   if ("error" in data) {
+    if (data.error === "FEATURE_DISABLED") {
+      return { error: "La sala de espera está deshabilitada para esta clínica.", v: data.v };
+    }
     return {
       error: data.error || `No se pudo actualizar la asistencia (HTTP ${response.status})`,
       v: data.v,

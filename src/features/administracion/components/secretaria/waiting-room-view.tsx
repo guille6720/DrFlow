@@ -5,6 +5,7 @@ import { es } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useState, useTransition } from "react";
 
+import { useFeature } from "@/core/components/customizations/feature-customizations-provider";
 import { createClient } from "@/core/supabase/client";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,11 @@ export type WaitingRoomRow = {
   waiting_room_entered_at?: string | null;
   patients: { first_name: string; last_name: string; document_number: string } | null;
   professionals: { display_name: string | null; profiles: { full_name: string } | null } | null;
+};
+
+type WaitingRoomConfig = {
+  show_document_number?: boolean;
+  show_cancelled_section?: boolean;
 };
 
 /** Sin columna "En consultorio": confirmado abre Consultas para evolucionar. */
@@ -63,12 +69,14 @@ const WaitingRoomCard = memo(function WaitingRoomCard({
   row,
   columnValue,
   pending,
+  showDocumentNumber,
   onMove,
   onGoToConsultas,
 }: {
   row: WaitingRoomRow;
   columnValue: string;
   pending: boolean;
+  showDocumentNumber: boolean;
   onMove: (id: string, status: WaitingRoomStatus) => void;
   onGoToConsultas: (id: string) => void;
 }) {
@@ -84,7 +92,8 @@ const WaitingRoomCard = memo(function WaitingRoomCard({
         {patient ? `${patient.last_name}, ${patient.first_name}` : "—"}
       </p>
       <p className="text-xs text-slate-600">
-        {format(new Date(row.start_at), "HH:mm", { locale: es })} · DNI {patient?.document_number} ·{" "}
+        {format(new Date(row.start_at), "HH:mm", { locale: es })} ·{" "}
+        {showDocumentNumber ? <>DNI {patient?.document_number} · </> : null}
         {professional}
       </p>
       <div className="mt-2 flex flex-wrap gap-1">
@@ -122,6 +131,9 @@ export function WaitingRoomView({
   initialRows: WaitingRoomRow[];
 }) {
   const router = useRouter();
+  const { config } = useFeature<WaitingRoomConfig>("waiting_room");
+  const showDocumentNumber = config.show_document_number !== false;
+  const showCancelledSection = config.show_cancelled_section !== false;
   const [rows, setRows] = useState(initialRows);
   const [pending, startTransition] = useTransition();
   const [prevInitialRows, setPrevInitialRows] = useState(initialRows);
@@ -203,6 +215,7 @@ export function WaitingRoomView({
                     row={row}
                     columnValue={col.value}
                     pending={pending}
+                    showDocumentNumber={showDocumentNumber}
                     onMove={move}
                     onGoToConsultas={goToConsultas}
                   />
@@ -216,7 +229,7 @@ export function WaitingRoomView({
         })}
       </div>
 
-      {issues.length > 0 ? (
+      {showCancelledSection && issues.length > 0 ? (
         <Card title="Cancelados / Ausentes">
           <ul className="text-sm">
             {issues.map((row) => (

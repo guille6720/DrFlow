@@ -93,6 +93,7 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
   "/superadmin/clinics": Building2,
   "/superadmin/plans": BarChart3,
   "/superadmin/features": ClipboardList,
+  "/superadmin/customizations": ClipboardList,
   "/superadmin/usage": BarChart3,
   "/superadmin/recommendations": Sparkles,
   "/superadmin/manual": BookOpen,

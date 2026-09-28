@@ -225,6 +225,12 @@ export const SUPERADMIN_NAV_ENTRIES: FeatureNavEntry[] = [
       { featureId: "administracion", href: "/superadmin/clinics", label: "Clínicas", permission: null },
       { featureId: "administracion", href: "/superadmin/plans", label: "Planes", permission: null },
       { featureId: "administracion", href: "/superadmin/features", label: "Features", permission: null },
+      {
+        featureId: "administracion",
+        href: "/superadmin/customizations",
+        label: "Personalizaciones",
+        permission: null,
+      },
       { featureId: "administracion", href: "/superadmin/usage", label: "Consumo", permission: null },
       {
         featureId: "administracion",

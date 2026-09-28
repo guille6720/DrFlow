@@ -9,6 +9,7 @@ import { AccessibilityProvider } from "@/core/components/accessibility/accessibi
 import { RouteAnnouncer } from "@/core/components/accessibility/route-announcer";
 import { SkipToContent } from "@/core/components/accessibility/skip-to-content";
 import { CommandPaletteProvider } from "@/core/components/command-palette/command-palette-provider";
+import { FeatureCustomizationsProvider } from "@/core/components/customizations/feature-customizations-provider";
 import { CommercialStatusBanner } from "@/core/components/entitlements/commercial-status-banner";
 import { EntitlementsProvider } from "@/core/components/entitlements/entitlements-provider";
 import { ClinicalTopNav } from "@/core/components/layout/clinical-top-nav";
@@ -25,6 +26,12 @@ import { PwaRegister } from "@/core/components/pwa/pwa-register";
 import { UiThemeProvider } from "@/core/components/theme/ui-theme-provider";
 import { TrialBanner } from "@/core/components/trial/trial-banner";
 import { UpdateBanner } from "@/core/components/updates/update-banner";
+import { loadFeatureCustomizations } from "@/core/customizations/customizations.server";
+import {
+  customizationFeatureForPath,
+  defaultCustomizationsSnapshot,
+  isFeatureEnabledInMap,
+} from "@/core/customizations/resolve";
 import { getClinicEntitlements } from "@/core/entitlements/entitlements.server";
 import { emptyEntitlements, toClientEntitlementsSnapshot } from "@/core/entitlements/resolve";
 import { isVoiceInputEntitledBySnapshot } from "@/core/entitlements/voice-features";
@@ -102,7 +109,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
 
   const path = (await headers()).get("x-drflow-path") ?? "";
 
-  const [clinicFeatures, entitlementsSnapshot, productsSnapshot] = await Promise.all([
+  const [clinicFeatures, entitlementsSnapshot, productsSnapshot, customizationsSnapshot] = await Promise.all([
     (async () => {
       if (!clinicId) return emptyClinicFeaturesContext();
       try {
@@ -128,6 +135,13 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
       } catch (err) {
         console.error("[dashboard-shell] loadClinicProducts failed:", err);
         return toClientProductsSnapshot(emptyClinicProducts(clinicId));
+      }
+    })(),
+    (async () => {
+      try {
+        return await loadFeatureCustomizations(clinicId);
+      } catch {
+        return defaultCustomizationsSnapshot(clinicId, true);
       }
     })(),
   ]);
@@ -180,6 +194,17 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
     redirect("/dashboard");
   }
 
+  const pathFeature = path ? customizationFeatureForPath(path) : null;
+  if (pathFeature && clinicId && !isFeatureEnabledInMap(customizationsSnapshot.features, pathFeature)) {
+    await logAudit({
+      clinicId,
+      entityType: "route_access",
+      action: "view",
+      metadata: { path, feature: pathFeature, reason: "feature_disabled" },
+    });
+    redirect("/dashboard");
+  }
+
   if (
     !isSuperadmin &&
     clinic &&
@@ -216,6 +241,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
       <DashboardSidebarProvider>
         <EntitlementsProvider snapshot={entitlementsSnapshot}>
           <ProductsProvider snapshot={productsSnapshot}>
+          <FeatureCustomizationsProvider snapshot={customizationsSnapshot}>
           <CommercialStatusBanner />
           <ClinicFeaturesProvider plugins={clinicFeatures.plugins} flags={clinicFeatures.flags}>
             <LazyDashboardInteractionHosts role={role} isSuperadmin={isSuperadmin} />
@@ -260,6 +286,7 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
               </AdminOpsCopilotProvider>
             </ClinicalCopilotProvider>
           </ClinicFeaturesProvider>
+          </FeatureCustomizationsProvider>
           </ProductsProvider>
         </EntitlementsProvider>
       </DashboardSidebarProvider>

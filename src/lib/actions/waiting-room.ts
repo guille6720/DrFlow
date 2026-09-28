@@ -2,6 +2,7 @@
 
 import { requireClinicPermission } from "@/core/actions/clinic-guard";
 import { logAudit } from "@/core/auth/session.actions";
+import { checkFeatureAccess } from "@/core/customizations/customizations.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import { createClient } from "@/core/supabase/server";
 import { waitingRoomStatusSchema } from "@/core/validations/cash-schemas";
@@ -19,6 +20,9 @@ export async function updateWaitingRoomStatus(
   ]);
   if (!access.ok) return { error: access.error };
   const { clinicId } = access;
+
+  const feature = await checkFeatureAccess(clinicId, "waiting_room");
+  if (!feature.ok) return { error: feature.error, feature: feature.feature };
 
   const parsed = waitingRoomStatusSchema.safeParse(status);
   if (!parsed.success) return { error: "Estado inválido" };
