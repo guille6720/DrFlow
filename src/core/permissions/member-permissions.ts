@@ -34,6 +34,8 @@ export const MANAGEABLE_PERMISSION_LABELS: Record<ManageablePermissionKey, strin
   importClinicalRecords: "Importar historias",
   exportClinicalRecords: "Exportar historias",
   bulkExportData: "Exportación masiva",
+  viewGeriatrics: "Ver Geriatría",
+  manageGeriatrics: "Gestionar residentes",
 };
 
 export type PermissionOverrideRow = {

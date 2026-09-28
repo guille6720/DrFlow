@@ -21,6 +21,7 @@ import { isHrefEntitledBySnapshot } from "@/core/entitlements/nav-features";
 import type { ClientEntitlementsSnapshot } from "@/core/entitlements/types";
 import { canAccessImportExport, hasPermission, isInvitedClinicMember, type PermissionOverrides } from "@/core/permissions/roles";
 import type { ClinicProductsSnapshot } from "@/core/products/products";
+import { isGeriatricsHref } from "@/core/products/route-products";
 import {
   isHrefNavLockedByProducts,
   isHrefVisibleInNav,
@@ -70,6 +71,13 @@ function resolveNavLink(
 
   if (item.href.startsWith("/superadmin")) {
     if (!isSuperadmin) return null;
+  }
+
+  if (
+    isGeriatricsHref(item.href) &&
+    !hasPermission(role, "viewGeriatrics", isSuperadmin, permissionOverrides)
+  ) {
+    return null;
   }
 
   if (

@@ -16,7 +16,7 @@ import {
   PERMISSION_GROUPS,
   roleEffective,
 } from "@/core/permissions/role-permissions";
-import { hasPermission, PERMISSIONS } from "@/core/permissions/roles";
+import { canAccessRoute, hasPermission, PERMISSIONS } from "@/core/permissions/roles";
 
 describe("role permissions layer", () => {
   it("groups cover every manageable permission exactly once", () => {
@@ -92,6 +92,49 @@ describe("role permissions layer", () => {
     ]);
     expect(computeOverrideOnToggle("secretary", "viewReports", true, roleOverrides)).toBeNull();
     expect(computeOverrideOnToggle("secretary", "viewReports", false, roleOverrides)).toBe(false);
+  });
+});
+
+describe("geriatrics permissions", () => {
+  it("defaults keep today's behavior for every staff role", () => {
+    for (const role of ["clinic_admin", "doctor", "secretary"] as const) {
+      expect(hasPermission(role, "viewGeriatrics")).toBe(true);
+      expect(hasPermission(role, "manageGeriatrics")).toBe(
+        PERMISSIONS.managePatients.includes(role)
+      );
+    }
+    expect(hasPermission("patient", "viewGeriatrics")).toBe(false);
+  });
+
+  it("revoking viewGeriatrics blocks the /geriatria routes", () => {
+    const overrides = mergePermissionOverrides(
+      "secretary",
+      buildRoleOverrides([{ role: "secretary", permission_key: "viewGeriatrics", granted: false }]),
+      null
+    );
+    expect(canAccessRoute("secretary", "/geriatria", false, overrides)).toBe(false);
+    expect(canAccessRoute("secretary", "/geriatria/residentes", false, overrides)).toBe(false);
+    expect(canAccessRoute("secretary", "/geriatria", false, {})).toBe(true);
+    expect(
+      canAccessRoute(
+        "clinic_admin",
+        "/geriatria",
+        false,
+        mergePermissionOverrides("clinic_admin", buildRoleOverrides([]), null)
+      )
+    ).toBe(true);
+  });
+
+  it("migration allows the new keys through a single helper", () => {
+    const sql = readFileSync(
+      path.join(process.cwd(), "supabase/migrations/20260928220000_clinic_role_permissions_geriatrics.sql"),
+      "utf8"
+    );
+    for (const key of MANAGEABLE_PERMISSION_KEYS) expect(sql).toContain(`'${key}'`);
+    expect(sql).toMatch(/permission_key = ANY \(public\.clinic_manageable_permission_keys\(\)\)/);
+    expect(sql).toMatch(/v_allowed TEXT\[\] := public\.clinic_manageable_permission_keys\(\)/);
+    expect(sql).toMatch(/SECURITY DEFINER/);
+    expect(sql).toMatch(/FORBIDDEN/);
   });
 });
 

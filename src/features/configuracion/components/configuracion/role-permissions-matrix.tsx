@@ -59,7 +59,7 @@ function TriStateCheckbox({
 function LockedCheck() {
   return (
     <span
-      className="inline-flex h-4 w-4 items-center justify-center rounded bg-[var(--muted-foreground)] text-[var(--surface-card,var(--card))] opacity-60"
+      className="inline-flex h-4 w-4 items-center justify-center rounded bg-[var(--primary)] text-[var(--text-on-primary,var(--primary-foreground))] opacity-70"
       title="El administrador siempre tiene acceso total"
     >
       <Check className="h-3 w-3" strokeWidth={3} />

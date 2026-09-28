@@ -18,6 +18,10 @@ export type AdmitResidentResult =
 async function requireGeriatricsWrite() {
   const access = await requireClinicPermission("managePatients");
   if (!access.ok) return { ok: false as const, error: access.error };
+  const geriatricsAccess = await requireClinicPermission("manageGeriatrics");
+  if (!geriatricsAccess.ok) return { ok: false as const, error: geriatricsAccess.error };
+  const viewAccess = await requireClinicPermission("viewGeriatrics");
+  if (!viewAccess.ok) return { ok: false as const, error: viewAccess.error };
 
   const products = await loadClinicProducts(access.clinicId);
   if (!hasProduct(products, PRODUCTS.GERIATRICS)) {

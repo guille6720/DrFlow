@@ -43,6 +43,7 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
       "bulkExportData",
     ],
   },
+  { id: "geriatria", label: "Geriatría", keys: ["viewGeriatrics", "manageGeriatrics"] },
 ];
 
 export function isEditableRole(role: unknown): role is EditableRole {

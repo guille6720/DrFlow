@@ -33,6 +33,9 @@ export const PERMISSIONS = {
   importClinicalRecords: ["superadmin", "clinic_admin", "doctor"] as UserRole[],
   exportClinicalRecords: ["superadmin", "clinic_admin", "doctor"] as UserRole[],
   bulkExportData: ["superadmin", "clinic_admin"] as UserRole[],
+  /** Producto Geriatría: defaults = comportamiento previo (todo el staff; escritura como managePatients) */
+  viewGeriatrics: ["superadmin", "clinic_admin", "secretary", "doctor"] as UserRole[],
+  manageGeriatrics: ["superadmin", "clinic_admin", "secretary", "doctor"] as UserRole[],
 };
 
 export const MANAGEABLE_PERMISSION_KEYS = [
@@ -53,6 +56,8 @@ export const MANAGEABLE_PERMISSION_KEYS = [
   "importClinicalRecords",
   "exportClinicalRecords",
   "bulkExportData",
+  "viewGeriatrics",
+  "manageGeriatrics",
 ] as const satisfies readonly PermissionKey[];
 
 export type ManageablePermissionKey = (typeof MANAGEABLE_PERMISSION_KEYS)[number];
@@ -131,6 +136,10 @@ export function canAccessRoute(
     "/telemedicina": "viewClinicalRecords",
     "/gemini": "viewClinicalRecords",
   };
+
+  if (route === "/geriatria" || route.startsWith("/geriatria/")) {
+    return hasPermission(role, "viewGeriatrics", isSuperadmin, overrides);
+  }
 
   if (route.startsWith("/datos")) {
     return canAccessImportExport(role, isSuperadmin, overrides);

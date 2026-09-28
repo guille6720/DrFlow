@@ -1,6 +1,7 @@
 import "server-only";
 
-import { getActiveClinicId } from "@/core/auth/session.server";
+import { getActiveClinicId, getPermissionContext } from "@/core/auth/session.server";
+import { hasPermission } from "@/core/permissions/roles";
 import { PRODUCTS } from "@/core/products/products";
 import { requireProduct } from "@/core/products/products.server";
 import { asStagingSchemaClient } from "@/core/products/staging-schema-client";
@@ -28,6 +29,10 @@ export async function requireGeriatricsClinic(): Promise<{ clinicId: string }> {
     throw new Error("CLINIC_REQUIRED");
   }
   await requireProduct(clinicId, PRODUCTS.GERIATRICS);
+  const perm = await getPermissionContext();
+  if (!hasPermission(perm.role, "viewGeriatrics", perm.isSuperadmin, perm.permissionOverrides)) {
+    throw new Error("GERIATRICS_FORBIDDEN");
+  }
   return { clinicId };
 }
 
