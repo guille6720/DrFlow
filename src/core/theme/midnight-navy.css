@@ -403,6 +403,21 @@ html[data-ui-palette="medical-slate"] table tbody tr:hover {
   background: var(--surface-hover) !important;
 }
 
+html[data-ui-palette="medical-slate"] :is(.drflow-card-light, .drflow-surface-light) table thead,
+html[data-ui-palette="medical-slate"] :is(.drflow-card-light, .drflow-surface-light) table th {
+  background: #f8fafc !important;
+  color: #334155 !important;
+}
+
+html[data-ui-palette="medical-slate"] :is(.drflow-card-light, .drflow-surface-light) table tbody tr {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+html[data-ui-palette="medical-slate"] :is(.drflow-card-light, .drflow-surface-light) table tbody tr:hover {
+  background: #f1f5f9 !important;
+}
+
 html[data-ui-palette="medical-slate"] .drflow-ehr-table tbody tr[aria-selected="true"],
 html[data-ui-palette="medical-slate"] table tbody tr[data-selected="true"] {
   background: rgb(92 184 246 / 0.12) !important;

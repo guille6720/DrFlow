@@ -1446,6 +1446,11 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-card-body .bg-slate-50 {
   color: #f1f5f9;
 }
 
+html[data-ui-style="2"][data-clinical-dark="1"] :is(.drflow-card-light, .drflow-surface-light) .bg-slate-50 {
+  background-color: #f8fafc !important;
+  color: #0f172a;
+}
+
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar button.text-slate-400,
 html[data-ui-style="2"][data-clinical-dark="1"] .drflow-ui-sidebar button.text-slate-500 {
   color: #94a3b8 !important;
