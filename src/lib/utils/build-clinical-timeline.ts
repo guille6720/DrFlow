@@ -1,3 +1,4 @@
+import { MEDICAL_ORDER_CATEGORY_LABELS } from "@/features/ordenes-medicas/constants";
 import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
 import type { PatientEhrAttachment, PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
@@ -154,12 +155,25 @@ export function buildClinicalTimeline(input: ClinicalTimelineInput): ClinicalTim
   for (const order of input.orders) {
     if (order.status === "draft") continue;
     const type = orderEventType(order.order_type);
+    const v2Label = order.order_category
+      ? (MEDICAL_ORDER_CATEGORY_LABELS as Record<string, string>)[order.order_category]
+      : undefined;
+    const baseTitle = v2Label ? `Orden: ${v2Label}` : orderTypeLabel(order.order_type);
+    const title = [
+      order.status === "void" ? "ANULADA ·" : null,
+      baseTitle,
+      order.order_number ? `(${order.order_number})` : null,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const body = v2Label ? order.order_text.replace(/^[^\n]*\n/, "") : order.order_text;
     events.push({
       id: `o-${order.id}`,
       type,
       at: order.issued_at,
-      title: orderTypeLabel(order.order_type),
-      subtitle: order.order_text.trim().slice(0, 120) || undefined,
+      title,
+      subtitle: body.replace(/^- /gm, "").trim().slice(0, 120) || undefined,
+      meta: order.professional_name ?? undefined,
       href:
         type === "referral"
           ? patientWorkspacePath(patientId, "ordenes")

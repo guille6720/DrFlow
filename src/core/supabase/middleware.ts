@@ -124,6 +124,7 @@ export async function updateSession(request: NextRequest) {
     path === "/planes" ||
     path === "/onboarding" ||
     path.startsWith("/acceso-invitado") ||
+    path.startsWith("/verify/") ||
     path.startsWith("/auth/");
 
   if (isFullyPublic && !isAuthRoute) {

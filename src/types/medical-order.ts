@@ -16,6 +16,10 @@ export interface MedicalOrder {
   updated_at: string;
   /** Optimistic lock token — incrementa en cada mutación. */
   version: number;
+  /** Órdenes médicas v2 (null en órdenes previas o si el esquema no está migrado). */
+  order_number?: string | null;
+  order_category?: string | null;
+  professional_name?: string | null;
 }
 
 /** Subset loaded in lists and used by the edit form (no clinic_id / created_by). */

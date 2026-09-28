@@ -36,6 +36,11 @@ export const PERMISSIONS = {
   /** Producto Geriatría: defaults = comportamiento previo (todo el staff; escritura como managePatients) */
   viewGeriatrics: ["superadmin", "clinic_admin", "secretary", "doctor"] as UserRole[],
   manageGeriatrics: ["superadmin", "clinic_admin", "secretary", "doctor"] as UserRole[],
+  /** Órdenes médicas v2. Emitir exige además perfil profesional propio (validado en DB). */
+  viewMedicalOrders: ["superadmin", "clinic_admin", "doctor"] as UserRole[],
+  issueMedicalOrders: ["clinic_admin", "doctor"] as UserRole[],
+  cancelMedicalOrders: ["clinic_admin", "doctor"] as UserRole[],
+  shareMedicalOrders: ["superadmin", "clinic_admin", "doctor"] as UserRole[],
 };
 
 export const MANAGEABLE_PERMISSION_KEYS = [
@@ -58,6 +63,10 @@ export const MANAGEABLE_PERMISSION_KEYS = [
   "bulkExportData",
   "viewGeriatrics",
   "manageGeriatrics",
+  "viewMedicalOrders",
+  "issueMedicalOrders",
+  "cancelMedicalOrders",
+  "shareMedicalOrders",
 ] as const satisfies readonly PermissionKey[];
 
 export type ManageablePermissionKey = (typeof MANAGEABLE_PERMISSION_KEYS)[number];
@@ -119,6 +128,7 @@ export function canAccessRoute(
     "/reportes": "viewReports",
     "/historias": "viewClinicalRecords",
     "/recetas": "issuePrescriptions",
+    "/ordenes-medicas": "viewMedicalOrders",
     "/herramientas": "viewPharmacology",
     "/caja": "manageCashRegister",
     "/facturacion/liquidacion": "manageCashRegister",

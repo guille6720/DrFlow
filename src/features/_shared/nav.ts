@@ -21,6 +21,7 @@ export type FeatureNavPermission =
   | "importClinicalRecords"
   | "exportClinicalRecords"
   | "bulkExportData"
+  | "viewMedicalOrders"
   | null;
 
 export type FeatureNavItem = {
@@ -88,6 +89,12 @@ export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
         href: "/plantillas-recetas",
         label: "Plantillas recetas",
         permission: "issuePrescriptions",
+      },
+      {
+        featureId: "recetas",
+        href: "/ordenes-medicas",
+        label: "Órdenes médicas",
+        permission: "viewMedicalOrders",
       },
       {
         featureId: "profesionales",

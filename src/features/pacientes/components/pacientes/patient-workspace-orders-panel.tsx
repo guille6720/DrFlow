@@ -1,63 +1,49 @@
-import { Plus } from "lucide-react";
+"use client";
 
-import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
-import type { PatientWorkspaceProfessional } from "@/features/pacientes/server/load-patient-workspace-page";
+import { useEffect, useState } from "react";
+
+import { getMedicalOrderPermissions } from "@/features/ordenes-medicas/actions/medical-orders-v2";
+import type { MedicalOrderPermissions } from "@/features/ordenes-medicas/components/medical-order-detail";
+import { MedicalOrdersBrowser } from "@/features/ordenes-medicas/components/medical-orders-browser";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
-import { MedicalOrderList } from "@/features/recetas/components/recetas/medical-order-list";
 
-import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 type Props = {
-  ehr: PatientEhrWorkspaceData;
   patientId: string;
   patient: {
     first_name: string;
     last_name: string;
-    document_number: string;
-    birth_date?: string | null;
-    insurance_provider?: string | null;
-    insurance_number?: string | null;
   };
-  clinic: {
-    name: string;
-    address?: string | null;
-    phone?: string | null;
-  };
-  professionals: PatientWorkspaceProfessional[];
-  canIssue: boolean;
 };
 
-export function PatientWorkspaceOrdersPanel({
-  ehr,
-  patientId,
-  patient,
-  clinic,
-  professionals,
-  canIssue,
-}: Props) {
+export function PatientWorkspaceOrdersPanel({ patientId, patient }: Props) {
+  const [permissions, setPermissions] = useState<MedicalOrderPermissions | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getMedicalOrderPermissions().then((p) => {
+      if (!cancelled) setPermissions(p);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
-    <Card
-      title="Órdenes médicas"
-      action={
-        canIssue ? (
-          <ButtonLink href={buildPatientWorkspaceUrl(patientId, { tab: "ordenes", action: "nueva" })} size="sm">
-            <Plus className="h-4 w-4" />
-            Nueva orden
-          </ButtonLink>
-        ) : null
-      }
-    >
-      {ehr.orders.length === 0 ? (
-        <p className="text-sm text-slate-500">Sin órdenes emitidas.</p>
+    <Card title="Órdenes médicas">
+      {!permissions ? (
+        <p className="text-sm text-[var(--text-muted,var(--muted-foreground))]">Cargando…</p>
+      ) : !permissions.canView ? (
+        <p className="text-sm text-[var(--text-muted,var(--muted-foreground))]">
+          Tu rol no tiene permiso para ver órdenes médicas.
+        </p>
       ) : (
-        <MedicalOrderList
-          orders={ehr.orders}
-          patient={patient}
+        <MedicalOrdersBrowser
+          permissions={permissions}
           patientId={patientId}
-          clinic={clinic}
-          professionals={professionals}
-          canManage={canIssue}
+          patientLabel={`${patient.last_name}, ${patient.first_name}`}
+          newOrderHref={buildPatientWorkspaceUrl(patientId, { tab: "ordenes", action: "nueva" })}
         />
       )}
     </Card>

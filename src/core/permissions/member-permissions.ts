@@ -36,6 +36,10 @@ export const MANAGEABLE_PERMISSION_LABELS: Record<ManageablePermissionKey, strin
   bulkExportData: "Exportación masiva",
   viewGeriatrics: "Ver Geriatría",
   manageGeriatrics: "Gestionar residentes",
+  viewMedicalOrders: "Ver órdenes médicas",
+  issueMedicalOrders: "Emitir órdenes médicas",
+  cancelMedicalOrders: "Anular órdenes médicas",
+  shareMedicalOrders: "Imprimir / compartir órdenes",
 };
 
 export type PermissionOverrideRow = {

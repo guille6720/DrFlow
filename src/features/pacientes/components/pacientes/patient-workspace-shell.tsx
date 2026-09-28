@@ -239,14 +239,7 @@ export function PatientWorkspaceShell({
         );
       case "ordenes":
         return (
-          <PatientWorkspaceOrdersPanel
-            ehr={current.ehr}
-            patientId={patientId}
-            patient={patient}
-            clinic={clinic}
-            professionals={current.professionals}
-            canIssue={canIssue}
-          />
+          <PatientWorkspaceOrdersPanel patientId={patientId} patient={patient} />
         );
       case "timeline":
         return <PatientWorkspaceTimelinePanel ehr={current.ehr} />;

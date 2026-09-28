@@ -130,7 +130,13 @@ describe("geriatrics permissions", () => {
       path.join(process.cwd(), "supabase/migrations/20260928220000_clinic_role_permissions_geriatrics.sql"),
       "utf8"
     );
-    for (const key of MANAGEABLE_PERMISSION_KEYS) expect(sql).toContain(`'${key}'`);
+    // Latest definition of the helper (medical orders migration extends the list).
+    const latest = readFileSync(
+      path.join(process.cwd(), "supabase/migrations/20260929100000_medical_orders_v2.sql"),
+      "utf8"
+    );
+    const helper = latest.slice(latest.indexOf("FUNCTION public.clinic_manageable_permission_keys()"));
+    for (const key of MANAGEABLE_PERMISSION_KEYS) expect(helper).toContain(`'${key}'`);
     expect(sql).toMatch(/permission_key = ANY \(public\.clinic_manageable_permission_keys\(\)\)/);
     expect(sql).toMatch(/v_allowed TEXT\[\] := public\.clinic_manageable_permission_keys\(\)/);
     expect(sql).toMatch(/SECURITY DEFINER/);

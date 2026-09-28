@@ -43,6 +43,11 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
       "bulkExportData",
     ],
   },
+  {
+    id: "ordenes",
+    label: "Órdenes médicas",
+    keys: ["viewMedicalOrders", "issueMedicalOrders", "cancelMedicalOrders", "shareMedicalOrders"],
+  },
   { id: "geriatria", label: "Geriatría", keys: ["viewGeriatrics", "manageGeriatrics"] },
 ];
 

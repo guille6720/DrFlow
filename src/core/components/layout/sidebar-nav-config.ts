@@ -70,6 +70,7 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
   "/historias": FileText,
   "/datos": ArrowDownUp,
   "/recetas": ScrollText,
+  "/ordenes-medicas": ClipboardPlus,
   "/herramientas/farmacologia": Pill,
   "/guia-pami": HeartPulse,
   "/pami/planillas": ClipboardList,

@@ -8,6 +8,7 @@ import type {
   ClinicalDiagnosisEntry,
   ClinicalTreatmentEntry,
 } from "@/features/historias/utils/clinical-structured-entries";
+import { enrichOrdersForTimeline } from "@/features/ordenes-medicas/utils/timeline-extras";
 import {
   attachStructuredChildrenToRecords,
   loadClinicalRecordChildrenForPatient,
@@ -479,7 +480,7 @@ export async function loadPatientEhrWorkspaceData(
   const records = recordsResult.data;
 
   const mappedBase = mapClinicalRecordsForEhr(records);
-  const [{ diagnosesByRecord, treatmentsByRecord }, problemList] = await Promise.all([
+  const [{ diagnosesByRecord, treatmentsByRecord }, problemList, enrichedOrders] = await Promise.all([
     loadClinicalRecordChildrenForPatient(
       supabase,
       clinicId,
@@ -487,6 +488,12 @@ export async function loadPatientEhrWorkspaceData(
       mappedBase.map((r) => r.id)
     ),
     loadPatientProblemList(supabase, clinicId, patientId),
+    enrichOrdersForTimeline(
+      supabase,
+      clinicId,
+      patientId,
+      (orders ?? []) as (MedicalOrder & { order_type?: string })[]
+    ),
   ]);
   const mappedRecords = attachStructuredChildrenToRecords(
     mappedBase,
@@ -503,7 +510,7 @@ export async function loadPatientEhrWorkspaceData(
     mappedRecords,
     attachments,
     rxList,
-    orders: (orders ?? []) as (MedicalOrder & { order_type?: string })[],
+    orders: enrichedOrders,
     timelineAppointments: mapTimelineAppointments(appointments),
     hceRows,
     problemList,

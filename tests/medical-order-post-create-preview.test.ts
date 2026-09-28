@@ -11,10 +11,11 @@ describe("patient order sheet post-create preview", () => {
       ),
       "utf8"
     );
-    expect(sheet).toMatch(/MedicalOrderPreviewSheet/);
+    // v2: after create/issue the sheet shows the order detail (PDF, print, QR link) until "Listo".
+    expect(sheet).toMatch(/MedicalOrderDetail/);
     expect(sheet).toMatch(/handleCreated/);
-    expect(sheet).toMatch(/buildMedicalOrderDocumentData/);
-    expect(sheet).toMatch(/Orden guardada/);
+    expect(sheet).toMatch(/Orden médica guardada/);
+    expect(sheet).toMatch(/Listo/);
   });
 
   it("preview sheet exposes print and done actions", async () => {
