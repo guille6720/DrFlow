@@ -1,10 +1,6 @@
 import type { z } from "zod";
 
-import {
-  loadClinicRefepsRow,
-  mapClinicRefepsSettings,
-  submitIssuedPrescriptionToRefeps,
-} from "@/core/refeps/submission-service";
+import { loadClinicRefepsRow, mapClinicRefepsSettings } from "@/core/refeps/submission-service";
 import type { DbClient } from "@/core/repositories/types";
 import type { ServiceResult } from "@/core/services/types";
 import { fromRepo, serviceErr, serviceOk } from "@/core/services/types";
@@ -382,22 +378,20 @@ export async function issuePrescriptionRecord(
     },
   });
 
-  let finalPrescription = issued.data;
-
   if (refepsSettings?.enabled && refepsSettings.autoSubmit) {
-    const submitResult = await submitIssuedPrescriptionToRefeps(db, {
-      clinicId,
-      userId,
-      prescription: issued.data,
-    });
-    if (submitResult.ok) {
-      finalPrescription = submitResult.data;
-    } else if (submitResult.data) {
-      finalPrescription = submitResult.data;
+    // National flow re-checks session, RBAC, plan, feature flag, MFA and readiness; any block leaves
+    // the local prescription exactly as issued.
+    try {
+      const { submitNationalPrescriptionForSession } = await import(
+        "@/core/renapdis/national-prescription/national-prescription.server"
+      );
+      await submitNationalPrescriptionForSession(issued.data.id);
+    } catch {
+      // Local issuance must never fail because of the national integration.
     }
   }
 
-  return { ok: true, data: finalPrescription, created: true };
+  return { ok: true, data: issued.data, created: true };
 }
 
 export async function voidPrescriptionRecord(

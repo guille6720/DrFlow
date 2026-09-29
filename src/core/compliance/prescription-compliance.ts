@@ -16,7 +16,7 @@ export const REFEPS_SANDBOX_DISCLAIMER =
   "Modo sandbox NexClinic: el identificador REFEPS generado es de prueba hasta homologación MSN y credenciales API reales. No constituye aprobación gubernamental ni validez oficial ante farmacias.";
 
 export const REFEPS_SUBMITTED_DISCLAIMER =
-  "Identificador enviado vía adapter REFEPS/RENaPDiS según configuración del consultorio. La validez ante farmacias depende de la homologación MSN y firma digital habilitante del profesional — no es una certificación automática de NexClinic.";
+  "Identificador histórico del adapter REFEPS legacy. No es un CUIR ni un registro en un repositorio ReNaPDiS; no constituye receta electrónica nacional ni certificación de NexClinic.";
 
 export type PrescriptionComplianceCapability = {
   id: string;
@@ -59,9 +59,10 @@ export const PRESCRIPTION_INTERNAL_CAPABILITIES: PrescriptionComplianceCapabilit
   },
   {
     id: "refeps_adapter",
-    label: "Adapter REFEPS (sandbox o API)",
+    label: "Validación profesional REFEPS + capa de repositorio ReNaPDiS (preparado para integración)",
     allowed: true,
-    notes: "No simula aprobación MSN; sandbox genera IDs REFEPS-SBX-*.",
+    notes:
+      "No simula aprobación MSN. El sandbox usa sandbox_reference (SBX-*), nunca el campo CUIR. Los IDs REFEPS-SBX-* son históricos (adapter legacy).",
   },
   {
     id: "legal_digital_signature",
@@ -145,7 +146,7 @@ export function resolveRefepsDocumentLanguage(input: {
   }
 
   return {
-    qrTitle: "Verificación REFEPS (adapter)",
+    qrTitle: "Adapter REFEPS legacy — sin validez oficial",
     qrHint: REFEPS_SUBMITTED_DISCLAIMER,
   };
 }

@@ -95,11 +95,11 @@ export function resolvePrescriptionDisplayStatus(row: Pick<ElectronicPrescriptio
 }
 
 export const REFEPS_STATUS_LABELS: Record<RefepsStatus, string> = {
-  local: "Local (sin REFEPS)",
-  pending_refeps: "Pendiente REFEPS",
-  /** Adapter result — not a claim of MSN homologation / government approval. */
-  submitted: "Enviada (adapter REFEPS)",
-  failed: "Error REFEPS",
+  local: "Receta local (sin REFEPS)",
+  pending_refeps: "Marcada para envío nacional",
+  /** Legacy adapter result (pre-repository refactor) — not a registration, CUIR or government approval. */
+  submitted: "Adapter legacy (sin validez oficial)",
+  failed: "Error adapter legacy",
 };
 
 export const ARGENTINA_PRESCRIPTION_DISCLAIMER =

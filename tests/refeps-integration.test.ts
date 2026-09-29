@@ -1,9 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
-import {
-  buildUnsignedRefepsPayload,
-  validateRefepsSubmissionPrerequisites,
-} from "@/core/refeps/payload";
 import {
   getRefepsConfigurationHint,
   isRefepsApiConfigured,
@@ -16,124 +12,35 @@ import {
   resolvePrescriptionDocumentQr,
 } from "@/features/recetas/utils/prescription-document-coverage";
 
-import type { ElectronicPrescription } from "@/types/prescription";
+const REFEPS_ENV_KEYS = [
+  "REFEPS_API_URL",
+  "REFEPS_API_KEY",
+  "REFEPS_VALIDATION_API_URL",
+  "REFEPS_VALIDATION_API_KEY",
+  "REFEPS_VALIDATION_MODE",
+] as const;
 
-const basePrescription = {
-  id: "550e8400-e29b-41d4-a716-446655440099",
-  clinic_id: "clinic-1",
-  patient_id: "patient-1",
-  clinical_record_id: null,
-  professional_id: "pro-1",
-  prescription_type: "ambulatoria" as const,
-  diagnosis_cie10: "I10",
-  diagnosis_text: "Hipertensión",
-  patient_insurance: "PAMI",
-  coverage_kind: "PAMI" as const,
-  insurance_number: "12345678901",
-  insurance_plan: null,
-  medications: [{ generic_name: "Losartán", quantity: 1, posology: "1/día" }],
-  notes: null,
-  validity_days: 30,
-  disclaimer_accepted: true,
-  status: "issued" as const,
-  prescription_number: "RX-2026-001",
-  issued_at: "2026-08-11T12:05:00.000Z",
-  refeps_status: "pending_refeps" as const,
-  refeps_id: null,
-  created_at: "2026-08-11T12:00:00.000Z",
-  updated_at: "2026-08-11T12:05:00.000Z",
-  version: 1,
-  idempotency_key: null,
-};
+describe("refeps integration (validation-only after 0.2.19)", () => {
+  const original = { ...process.env };
 
-describe("refeps integration phase 2E", () => {
-  it("resolves sandbox mode without API env", () => {
+  afterEach(() => {
+    process.env = { ...original };
+  });
+
+  it("is unavailable (not silently sandbox) without env", () => {
+    for (const key of REFEPS_ENV_KEYS) delete process.env[key];
     expect(isRefepsApiConfigured()).toBe(false);
-    expect(resolveRefepsSubmissionMode()).toBe("sandbox");
+    expect(resolveRefepsSubmissionMode()).toBe("unavailable");
     expect(getRefepsConfigurationHint()).toContain("REFEPS_API_URL");
   });
 
-  it("builds stable payload hash", () => {
-    const { payload, signatureHash } = buildUnsignedRefepsPayload({
-      mode: "sandbox",
-      clinic: { id: "c1", name: "Consultorio", establishmentCode: "EST-1" },
-      professional: {
-        id: "p1",
-        fullName: "Dr. Test",
-        licenseNational: "12345",
-        licenseProvincial: null,
-        licenseNumber: null,
-        specialtyName: "Clínica",
-        signatureText: "Dr. Test MN 12345",
-      },
-      patient: {
-        id: "pat1",
-        documentNumber: "30123456",
-        firstName: "Juan",
-        lastName: "Pérez",
-        insuranceProvider: "PAMI",
-        insuranceNumber: "123",
-      },
-      prescription: basePrescription as ElectronicPrescription,
-    });
-
-    expect(signatureHash).toHaveLength(64);
-    expect(payload.digital_signature_hash).toBe(signatureHash);
-    expect(payload.mode).toBe("sandbox");
-    expect(payload.source).toBe("drflow");
+  it("reports explicit sandbox only when REFEPS_VALIDATION_MODE=sandbox", () => {
+    for (const key of REFEPS_ENV_KEYS) delete process.env[key];
+    process.env.REFEPS_VALIDATION_MODE = "sandbox";
+    expect(resolveRefepsSubmissionMode()).toBe("sandbox");
   });
 
-  it("validates submission prerequisites", () => {
-    expect(
-      validateRefepsSubmissionPrerequisites({
-        prescription: { ...basePrescription, status: "draft" } as ElectronicPrescription,
-        professional: {
-          id: "p1",
-          fullName: "Dr.",
-          licenseNational: "1",
-          licenseProvincial: null,
-          licenseNumber: null,
-          specialtyName: null,
-          signatureText: null,
-        },
-        patient: {
-          id: "pat1",
-          documentNumber: "30123456",
-          firstName: "Juan",
-          lastName: "Pérez",
-          insuranceProvider: null,
-          insuranceNumber: null,
-        },
-        clinicSettings: { enabled: true, establishmentCode: "EST-1" },
-      })
-    ).toContain("emitidas");
-
-    expect(
-      validateRefepsSubmissionPrerequisites({
-        prescription: basePrescription as ElectronicPrescription,
-        professional: {
-          id: "p1",
-          fullName: "Dr.",
-          licenseNational: "12345",
-          licenseProvincial: null,
-          licenseNumber: null,
-          specialtyName: null,
-          signatureText: null,
-        },
-        patient: {
-          id: "pat1",
-          documentNumber: "",
-          firstName: "Juan",
-          lastName: "Pérez",
-          insuranceProvider: null,
-          insuranceNumber: null,
-        },
-        clinicSettings: { enabled: true, establishmentCode: "EST-1" },
-      })
-    ).toContain("documento");
-  });
-
-  it("prefers REFEPS QR when submitted", () => {
+  it("legacy REFEPS-SBX ids keep sandbox disclaimer language", () => {
     const qr = resolvePrescriptionDocumentQr({
       refepsStatus: "submitted",
       refepsId: "REFEPS-SBX-ABC123",
@@ -149,6 +56,19 @@ describe("refeps integration phase 2E", () => {
     expect(qr.qrTitle).toBe("Verificación REFEPS (sandbox / prueba)");
     expect(qr.qrPayload).toContain("REFEPS-SBX-ABC123");
     expect(qr.qrHint).toMatch(/No constituye aprobación gubernamental/i);
+  });
+
+  it("legacy non-sandbox ids are labeled without official validity", () => {
+    const qr = resolvePrescriptionDocumentQr({
+      refepsStatus: "submitted",
+      refepsId: "LEGACY-123",
+      prescriptionNumber: "RX-1",
+      patientDocumentNumber: "30123456",
+      issuedAt: "2026-08-11T12:00:00.000Z",
+      coverageKind: "PAMI",
+    });
+    expect(qr.qrTitle).toMatch(/sin validez oficial/i);
+    expect(qr.qrHint).toMatch(/No es un CUIR/);
   });
 
   it("builds local QR when not submitted", () => {

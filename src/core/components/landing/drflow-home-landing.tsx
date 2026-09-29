@@ -163,7 +163,7 @@ const FAQ = [
   },
   {
     q: "¿Incluye receta electrónica REFEPS?",
-    a: "NexClinic emite recetas locales Ley 25.649. Incluye adapter REFEPS/RENaPDiS (sandbox o API); la homologación MSN del consultorio sigue siendo requisito legal.",
+    a: "NexClinic emite recetas locales Ley 25.649. Está preparado para integrarse con un repositorio ReNaPDiS homologado (validación de profesionales vía REFEPS); hoy no emite recetas electrónicas nacionales con CUIR. La homologación MSN y del repositorio son requisitos externos.",
   },
   {
     q: "¿Dónde obtengo soporte técnico?",

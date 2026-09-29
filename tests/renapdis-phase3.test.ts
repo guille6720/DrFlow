@@ -3,7 +3,8 @@ import { resolve } from "path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { sanitizeMonitoringPayload } from "@/core/observability/sanitize-monitoring-payload";
-import { isRefepsApiConfigured, submitPrescriptionToRefepsProvider } from "@/core/refeps/provider";
+import { validateProfessionalWithRefeps } from "@/core/refeps/professional-validation";
+import { isRefepsApiConfigured } from "@/core/refeps/provider";
 import {
   getRefepsDependencyStatus,
   isRefepsForcedOutage,
@@ -72,73 +73,15 @@ describe("ReNaPDiS Phase 3 — external outage", () => {
     expect(blocked?.legalValidity).toBe("none");
   });
 
-  it("provider returns failure on forced outage without marking submitted", async () => {
-    process.env.REFEPS_FORCE_OUTAGE = "true";
-    process.env.REFEPS_API_URL = "";
-    process.env.REFEPS_API_KEY = "";
+  it("REFEPS validation reports unavailable on forced outage (never validates silently)", async () => {
+    const result = await validateProfessionalWithRefeps(
+      { documentNumber: "90000001", licenseNumber: "MN1", profession: null, jurisdiction: null },
+      { env: { REFEPS_FORCE_OUTAGE: "true", REFEPS_VALIDATION_MODE: "sandbox" } }
+    );
     expect(isRefepsApiConfigured()).toBe(false);
-
-    const result = await submitPrescriptionToRefepsProvider({
-      clinic: { id: "c1", name: "Test", establishmentCode: "EST" },
-      clinicSettings: { enabled: true, establishmentCode: "EST", autoSubmit: false },
-      professional: {
-        id: "p1",
-        fullName: "Dra Test",
-        licenseNational: "MN1",
-        licenseProvincial: null,
-        licenseNumber: null,
-        specialtyName: null,
-        signatureText: "sig",
-      },
-      patient: {
-        id: "pat1",
-        documentNumber: "90000001",
-        firstName: "A",
-        lastName: "B",
-        insuranceProvider: null,
-        insuranceNumber: null,
-      },
-      prescription: {
-        id: "00000000-0000-4000-8000-000000000099",
-        clinic_id: "c1",
-        patient_id: "pat1",
-        clinical_record_id: null,
-        professional_id: "p1",
-        medications: [
-          {
-            generic_name: "Enalapril",
-            quantity: 1,
-            posology: "1/día",
-          },
-        ],
-        notes: null,
-        disclaimer_accepted: true,
-        prescription_type: "ambulatoria",
-        diagnosis_cie10: "I10",
-        diagnosis_text: "HTA",
-        status: "issued",
-        prescription_number: "RX-TEST",
-        issued_at: new Date().toISOString(),
-        validity_days: 30,
-        refeps_status: "pending_refeps",
-        refeps_id: null,
-        patient_insurance: null,
-        coverage_kind: "PARTICULAR",
-        insurance_number: null,
-        insurance_plan: null,
-        idempotency_key: null,
-        dispensed_at: null,
-        version: 1,
-        created_by: "u1",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    });
-
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error.toLowerCase()).toMatch(/no disponible|outage|force/i);
-    }
+    expect(result.valid).toBe(false);
+    expect(result.status).toBe("unavailable");
+    expect(result.reason).toBe("forced_outage");
   });
 });
 

@@ -3,25 +3,16 @@
 import { revalidatePath } from "next/cache";
 
 import { requireSettingsAccess } from "@/core/actions/clinic-guard";
-import { requireElevatedPrescriberSession } from "@/core/auth/prescriber-mfa.server";
-import { revalidatePrescriptionSurfaces } from "@/core/cache/revalidate-prescription-surfaces";
 import {
   getRefepsConfigurationHint,
   isRefepsApiConfigured,
   resolveRefepsSubmissionMode,
 } from "@/core/refeps/provider";
-import {
-  loadClinicRefepsRow,
-  submitIssuedPrescriptionToRefeps,
-} from "@/core/refeps/submission-service";
+import { loadClinicRefepsRow } from "@/core/refeps/submission-service";
+import { submitNationalPrescriptionForSession } from "@/core/renapdis/national-prescription/national-prescription.server";
 import { recordAuditChange } from "@/core/security/audit-service";
-import { requireClinicalIssueAccess } from "@/core/services/clinical-access.service";
 import { createClient } from "@/core/supabase/server";
 import { parseEntityId } from "@/core/validations/params";
-
-import { PRESCRIPTION_ISSUE_COLUMNS } from "@/features/recetas/repositories/prescription-drafts.repository";
-
-import { toElectronicPrescription } from "@/types/prescription";
 
 export type RefepsClinicSettingsView = {
   enabled: boolean;
@@ -114,65 +105,18 @@ export async function updateRefepsClinicSettings(formData: FormData): Promise<{
   return {
     success: true,
     message: enabled
-      ? autoSubmit
-        ? "REFEPS habilitado — envío al emitir vía adapter (sandbox o API). No implica homologación MSN automática."
-        : "REFEPS habilitado — envío manual desde cada receta emitida (adapter). No implica homologación MSN automática."
-      : "REFEPS deshabilitado — las recetas quedan en modo local / borrador.",
+      ? "Configuración guardada. El envío nacional solo ocurre si la funcionalidad está habilitada y la integración está lista (REFEPS + repositorio ReNaPDiS). No implica homologación."
+      : "Envío nacional desactivado — las recetas siguen emitiéndose como recetas locales.",
   };
 }
 
-export async function submitPrescriptionToRefeps(prescriptionId: string) {
-  const access = await requireClinicalIssueAccess();
-  if (!access.ok) return { error: access.error };
-
-  const mfa = await requireElevatedPrescriberSession({
-    clinicId: access.data.clinicId,
-    userId: access.data.userId,
-  });
-  if (!mfa.ok) return { error: mfa.error };
-
+/**
+ * @deprecated Kept for existing callers. Delegates to the national flow
+ * (REFEPS validation → ReNaPDiS repository), which enforces RBAC, plan, feature flag, MFA and readiness.
+ */
+export async function submitPrescriptionToRefeps(prescriptionId: string): Promise<{ error?: string; data?: null }> {
   const idParsed = parseEntityId(prescriptionId, "Receta");
   if (!idParsed.ok) return { error: idParsed.error };
-
-  const supabase = await createClient();
-  const { data: prescription, error } = await supabase
-    .from("prescription_drafts")
-    .select(PRESCRIPTION_ISSUE_COLUMNS)
-    .eq("id", idParsed.data)
-    .eq("clinic_id", access.data.clinicId)
-    .eq("status", "issued")
-    .maybeSingle();
-
-  if (error || !prescription) {
-    return { error: "Receta emitida no encontrada." };
-  }
-
-  if (prescription.refeps_status === "submitted") {
-    return { error: "Esta receta ya fue registrada en REFEPS." };
-  }
-
-  const mapped = toElectronicPrescription(prescription);
-  if (!mapped) {
-    return { error: "Receta emitida con formato inválido." };
-  }
-
-  const result = await submitIssuedPrescriptionToRefeps(supabase, {
-    clinicId: access.data.clinicId,
-    userId: access.data.userId,
-    prescription: mapped,
-  });
-
-  if (!result.ok) {
-    revalidatePrescriptionSurfaces({
-      patientId: prescription.patient_id,
-      clinicalRecordId: prescription.clinical_record_id,
-    });
-    return { error: result.error, data: result.data ?? null };
-  }
-
-  revalidatePrescriptionSurfaces({
-    patientId: prescription.patient_id,
-    clinicalRecordId: prescription.clinical_record_id,
-  });
-  return { data: result.data };
+  const result = await submitNationalPrescriptionForSession(idParsed.data);
+  return result.ok ? { data: null } : { error: result.message };
 }

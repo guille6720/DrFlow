@@ -8,6 +8,7 @@ import { type ReactNode, useMemo, useState } from "react";
 import { cn } from "@/shared/utils/cn";
 
 import type { HistoriaPrescriptionSummary } from "@/features/historias/types/historia-clinical-summaries";
+import { NationalPrescriptionPanel } from "@/features/recetas/components/recetas/national-prescription-panel";
 import { PrescriptionDocumentActions } from "@/features/recetas/components/recetas/prescription-document-actions";
 import { PrescriptionPreviewSheet } from "@/features/recetas/components/recetas/prescription-preview-sheet";
 import { PrescriptionRefepsActions } from "@/features/recetas/components/recetas/prescription-refeps-actions";
@@ -257,6 +258,7 @@ export function PrescriptionList({
                         refepsError={rx.refeps_error}
                         refepsEnabled={refepsEnabled}
                       />
+                      <NationalPrescriptionPanel prescriptionId={rx.id} />
                       {shareSlot?.(rx)}
                     </>
                   ) : null}

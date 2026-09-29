@@ -30,6 +30,7 @@ const REQUIRED_KEYS = [
   "custom_branding",
   "custom_fields",
   "ai_assistant",
+  "national_electronic_prescription",
 ];
 
 describe("feature customization registry", () => {
@@ -39,7 +40,12 @@ describe("feature customization registry", () => {
 
   it("defaults preserve current behavior (existing modules ON, non-existent modules OFF)", () => {
     const off = FEATURE_KEYS.filter((k) => !FEATURE_CUSTOMIZATION_REGISTRY[k].defaultEnabled).sort();
-    expect(off).toEqual(["custom_branding", "custom_fields", "home_hospitalization_module"]);
+    expect(off).toEqual([
+      "custom_branding",
+      "custom_fields",
+      "home_hospitalization_module",
+      "national_electronic_prescription",
+    ]);
   });
 
   it("billing-sensitive features keep their existing gate and require confirmation", () => {

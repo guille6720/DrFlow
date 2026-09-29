@@ -1,142 +1,35 @@
 import "server-only";
 
-import {
-  buildUnsignedRefepsPayload,
-  validateRefepsSubmissionPrerequisites,
-} from "@/core/refeps/payload";
-import type {
-  RefepsClinicContext,
-  RefepsClinicSettings,
-  RefepsPatientContext,
-  RefepsProfessionalContext,
-  RefepsSubmissionMode,
-  RefepsSubmitResult,
-} from "@/core/refeps/types";
-import {
-  getRefepsDependencyStatus,
-  nationalSubmitBlockedByOutage,
-} from "@/core/renapdis/external-outage";
+import { resolveRefepsValidationConfig } from "@/core/renapdis/repository/repository-config";
 
-import type { ElectronicPrescription } from "@/types/prescription";
+/**
+ * REFEPS = professional validation only. Prescription registration and CUIR belong to the
+ * ReNaPDiS repository layer (`src/core/renapdis/repository`). The former generic
+ * `POST {REFEPS_API_URL}/prescriptions` submission was removed: REFEPS is not a prescription repository.
+ */
 
-const REFEPS_API_TIMEOUT_MS = 20_000;
+export type RefepsValidationModeView = "sandbox" | "api" | "unavailable";
 
+/** True when REFEPS validation credentials are present (REFEPS_VALIDATION_* or legacy REFEPS_API_*). */
 export function isRefepsApiConfigured(): boolean {
-  return Boolean(process.env.REFEPS_API_URL?.trim() && process.env.REFEPS_API_KEY?.trim());
+  const url = process.env.REFEPS_VALIDATION_API_URL?.trim() || process.env.REFEPS_API_URL?.trim();
+  const key = process.env.REFEPS_VALIDATION_API_KEY?.trim() || process.env.REFEPS_API_KEY?.trim();
+  return Boolean(url && key);
 }
 
-export function resolveRefepsSubmissionMode(): RefepsSubmissionMode {
+export function resolveRefepsSubmissionMode(): RefepsValidationModeView {
+  const config = resolveRefepsValidationConfig();
+  if (config.mode === "sandbox") return "sandbox";
   if (isRefepsApiConfigured()) return "api";
-  return "sandbox";
+  return "unavailable";
 }
 
 export function getRefepsConfigurationHint(): string {
-  return "Configurá REFEPS_API_URL y REFEPS_API_KEY en Vercel cuando la clínica tenga homologación MSN.";
-}
-
-async function submitViaApi(payload: ReturnType<typeof buildUnsignedRefepsPayload>["payload"]): Promise<{
-  refepsId: string;
-  verificationUrl?: string | null;
-}> {
-  const baseUrl = process.env.REFEPS_API_URL!.trim().replace(/\/$/, "");
-  const apiKey = process.env.REFEPS_API_KEY!.trim();
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REFEPS_API_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(`${baseUrl}/prescriptions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-
-    if (!response.ok) {
-      const body = await response.text().catch(() => "");
-      throw new Error(body || `REFEPS API respondió HTTP ${response.status}`);
-    }
-
-    const data = (await response.json()) as {
-      id?: string;
-      refeps_id?: string;
-      verification_url?: string | null;
-    };
-
-    const refepsId = data.refeps_id ?? data.id;
-    if (!refepsId?.trim()) {
-      throw new Error("REFEPS API no devolvió identificador de receta.");
-    }
-
-    return { refepsId: refepsId.trim(), verificationUrl: data.verification_url ?? null };
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-function submitViaSandbox(payload: ReturnType<typeof buildUnsignedRefepsPayload>["payload"]): {
-  refepsId: string;
-  verificationUrl: null;
-} {
-  const suffix = payload.prescription.id.replace(/-/g, "").slice(0, 12).toUpperCase();
-  return {
-    refepsId: `REFEPS-SBX-${suffix}`,
-    verificationUrl: null,
-  };
-}
-
-export async function submitPrescriptionToRefepsProvider(input: {
-  clinic: RefepsClinicContext;
-  clinicSettings: RefepsClinicSettings;
-  professional: RefepsProfessionalContext;
-  patient: RefepsPatientContext;
-  prescription: ElectronicPrescription;
-}): Promise<RefepsSubmitResult> {
-  const validationError = validateRefepsSubmissionPrerequisites({
-    prescription: input.prescription,
-    professional: input.professional,
-    patient: input.patient,
-    clinicSettings: input.clinicSettings,
-  });
-  if (validationError) {
-    return { ok: false, error: validationError };
-  }
-
-  const outage = nationalSubmitBlockedByOutage(getRefepsDependencyStatus());
-  if (outage) {
-    return {
-      ok: false,
-      error: outage.error,
-    };
-  }
-
-  const mode = resolveRefepsSubmissionMode();
-  const { payload, signatureHash } = buildUnsignedRefepsPayload({
-    mode,
-    clinic: input.clinic,
-    professional: input.professional,
-    patient: input.patient,
-    prescription: input.prescription,
-  });
-
-  try {
-    const result = mode === "api" ? await submitViaApi(payload) : submitViaSandbox(payload);
-    return {
-      ok: true,
-      refepsId: result.refepsId,
-      mode,
-      verificationUrl: result.verificationUrl,
-      payload,
-      signatureHash,
-    };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Error al enviar a REFEPS.";
-    return { ok: false, error: message };
-  }
+  return (
+    "La validación de profesionales usa REFEPS_VALIDATION_API_URL / REFEPS_VALIDATION_API_KEY " +
+    "(compatibilidad: REFEPS_API_URL / REFEPS_API_KEY). El registro de la receta y el CUIR los provee " +
+    "un repositorio ReNaPDiS homologado (RENAPDIS_REPOSITORY_*), no REFEPS."
+  );
 }
 
 export {

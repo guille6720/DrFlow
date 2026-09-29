@@ -1,50 +1,42 @@
-# REFEPS / RENaPDiS — Fase 2E
+# REFEPS — validación profesional (histórico Fase 2E)
 
-Integración **adapter** para receta electrónica nacional. No sustituye la homologación MSN ni credenciales oficiales del Ministerio de Salud.
+> **Actualización (0.2.19):** REFEPS se usa **solo para validar profesionales**. El registro de la receta
+> y el CUIR corresponden a un **repositorio ReNaPDiS homologado** externo. La arquitectura vigente está
+> en [`RENAPDIS-INTEGRATION-ARCHITECTURE.md`](./RENAPDIS-INTEGRATION-ARCHITECTURE.md).
 
-## Modos
+## Qué cambió
 
-| Modo | Condición | Comportamiento |
-|------|-----------|----------------|
-| **Sandbox** | Sin `REFEPS_API_URL` + `REFEPS_API_KEY` | Genera `REFEPS-SBX-{suffix}` local, payload JSON y hash SHA-256 |
-| **API** | Variables configuradas en Vercel | POST a `{REFEPS_API_URL}/prescriptions` con Bearer token |
+- Se eliminó el adapter legacy que hacía `POST {REFEPS_API_URL}/prescriptions` (endpoint no oficial, nunca
+  documentado por el Ministerio) y que generaba identificadores `REFEPS-SBX-*` al emitir.
+- Los registros históricos con `refeps_status = submitted` y `refeps_id = REFEPS-SBX-*` se conservan y se
+  muestran como **"Adapter legacy (sin validez oficial)"**. No son CUIR ni registros nacionales.
+- `submitPrescriptionToRefeps` (server action) quedó como wrapper deprecado que delega en el flujo nacional
+  (`submitNationalPrescriptionForSession`), que respeta feature flag, plan, RBAC, MFA y validación REFEPS.
 
-## Configuración por clínica
+## Configuración por clínica (sin cambios de esquema)
 
-En **Configuración → Coberturas → REFEPS / RENaPDiS**:
+En **Configuración → Coberturas → Receta electrónica nacional**:
 
-- `refeps_enabled` — habilita trazabilidad REFEPS (status `pending_refeps` al emitir)
-- `refeps_establishment_code` — código MSN del establecimiento
-- `refeps_auto_submit` — envío automático al emitir (si no, envío manual desde la receta)
+- `refeps_enabled` — marca la receta como pendiente de envío nacional (`pending_refeps`) al emitir.
+- `refeps_establishment_code` — código de establecimiento (requerido por el flujo nacional).
+- `refeps_auto_submit` — intenta el envío nacional al emitir **solo si** la funcionalidad
+  `national_electronic_prescription` está habilitada para la clínica y la integración está lista.
 
-## Flujo de emisión
-
-1. Usuario emite receta (motor Ley 25.649 + disclaimer local)
-2. Si REFEPS habilitado → `refeps_status = pending_refeps`
-3. Si auto-submit → `submitIssuedPrescriptionToRefeps()`
-4. Éxito → `submitted` + `refeps_id` + `digital_signature_hash` + evento `refeps_submitted`
-5. Error → `failed` + `refeps_error` + evento `refeps_failed`
-
-## Firma digital (preparación)
-
-El payload canónico se serializa con claves ordenadas (`stableStringify`) y se hashea con SHA-256 antes del envío. El hash se persiste en `prescription_drafts.digital_signature_hash`.
-
-## Migración
-
-- Desarrollo: `supabase/migrations/102_refeps_integration.sql`
-- Producción: `supabase/scripts/prod-fix-refeps-integration.sql`
-
-## Variables de entorno
+## Variables de entorno (server-only, sin valores en el repo)
 
 ```env
-REFEPS_API_URL=https://api.refeps.example.gov.ar/v1
-REFEPS_API_KEY=...
+REFEPS_VALIDATION_API_URL=
+REFEPS_VALIDATION_API_KEY=
+REFEPS_VALIDATION_MODE=
+# Legacy aceptadas como fallback:
+REFEPS_API_URL=
+REFEPS_API_KEY=
 ```
 
-Sin estas variables el sistema opera en sandbox de forma explícita (UI + docs).
+Aunque existan URL y clave, la validación oficial permanece **no disponible** hasta implementar un cliente
+contra el contrato oficial documentado de REFEPS. Nunca se valida a un profesional en silencio.
 
-## Limitaciones
+## Migraciones
 
-- Homologación MSN y contrato con REFEPS/RENaPDiS son responsabilidad del consultorio
-- El QR REFEPS en PDF/vista previa codifica el identificador registrado; la validación en farmacia depende del servicio nacional
-- Recetas emitidas antes de habilitar REFEPS conservan `refeps_status = local`
+- `supabase/migrations/102_refeps_integration.sql` (no se modifica).
+- `supabase/migrations/20260929120000_national_eprescription_repository.sql` (columnas del ciclo nacional/CUIR).

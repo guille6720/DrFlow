@@ -157,10 +157,11 @@ describe("Phase 17 wiring (static)", () => {
     );
   });
 
-  it("sandbox submit does not invent government approval in provider", () => {
+  it("REFEPS provider no longer submits prescriptions nor invents government approval", () => {
     const provider = read("src/core/refeps/provider.ts");
-    expect(provider).toContain("REFEPS-SBX-");
-    expect(provider).toContain("submitViaSandbox");
+    expect(provider).not.toContain("submitViaSandbox");
+    expect(provider).not.toMatch(/fetch\(/);
+    expect(provider).toMatch(/professional validation only/i);
     expect(provider.toLowerCase()).not.toContain("aprobación gubernamental concedida");
   });
 });

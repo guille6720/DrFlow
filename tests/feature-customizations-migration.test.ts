@@ -10,6 +10,10 @@ const down = readFileSync(
   resolve(process.cwd(), `supabase/migrations/rollback/${MIGRATION}.down.sql`),
   "utf8"
 );
+/** Features added by later migrations seed `feature_definitions` there. */
+const laterFeatureSeeds = ["20260929120000_national_eprescription_repository"]
+  .map((m) => readFileSync(resolve(process.cwd(), `supabase/migrations/${m}.sql`), "utf8"))
+  .join("\n");
 
 function fnBody(name: string): string {
   const start = sql.indexOf(`CREATE OR REPLACE FUNCTION public.${name}(`);
@@ -41,10 +45,11 @@ describe("feature customizations migration — schema", () => {
   });
 
   it("seeds feature_definitions matching the code registry defaults, and no clinic/user rows", () => {
+    const seeds = `${sql}\n${laterFeatureSeeds}`;
     for (const key of FEATURE_KEYS) {
       const def = FEATURE_CUSTOMIZATION_REGISTRY[key];
       const row = new RegExp(`\\('${key}',[^\\n]*?, ${def.defaultEnabled}, ${def.configurableByClinic}, ${def.configurableByUser}, ${def.critical}\\)`);
-      expect(sql, `seed row for ${key}`).toMatch(row);
+      expect(seeds, `seed row for ${key}`).toMatch(row);
     }
     expect(sql).not.toMatch(/INSERT INTO public\.clinic_feature_settings[^;]*SELECT/);
     expect(sql).not.toMatch(/INSERT INTO public\.user_feature_settings[^;]*SELECT/);

@@ -107,16 +107,26 @@ export function getRenapdisOperationalReadiness(): ReadinessItem[] {
     {
       id: "refeps_adapter",
       state: "partial",
-      label: "REFEPS adapter",
-      evidence: "Sandbox adapter + optional API mode; forced outage mode via REFEPS_FORCE_OUTAGE.",
-      actionNeeded: "Official Ministry credentials remain external.",
+      label: "REFEPS professional validation",
+      evidence:
+        "Dedicated validation service (validated/not_found/inactive/unavailable); explicit sandbox; forced outage via REFEPS_FORCE_OUTAGE. REFEPS is no longer used as a prescription repository.",
+      actionNeeded: "Official REFEPS lookup contract and credentials remain external.",
+    },
+    {
+      id: "repository",
+      state: "blocked_external",
+      label: "ReNaPDiS repository provider",
+      evidence:
+        "Provider-agnostic repository layer (sandbox / external plug-in / fail-closed). No vendor selected; no endpoint invented.",
+      actionNeeded: "Select a ReNaPDiS-approved repository and obtain official API docs + credentials.",
     },
     {
       id: "cuir",
       state: "partial",
       label: "CUIR",
-      evidence: "Phase 2 official numeric Anexo IV model; sandbox clearly non-legal.",
-      actionNeeded: "DNSISA platform/repository IDs + M4 mapping still external.",
+      evidence:
+        "CUIR is only persisted when returned by an external repository and validated as Anexo IV numeric; sandbox uses sandbox_reference (separate column).",
+      actionNeeded: "Repository registration + DNSISA identifiers remain external.",
     },
     {
       id: "backup_pitr",

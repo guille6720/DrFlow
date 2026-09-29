@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
+import { NationalRxReadinessCard } from "@/core/components/superadmin/national-rx-readiness-card";
 import {
   type CustomizationRowView,
   SuperadminCustomizationsTable,
@@ -21,8 +22,16 @@ import {
 import type { FeatureMap, FeatureSettingRow } from "@/core/customizations/resolve";
 import { requireSuperadminPage } from "@/core/entitlements/superadmin-guard.server";
 import { loadClinicProducts } from "@/core/products/products.server";
+import { evaluateNationalRxReadiness } from "@/core/renapdis/national-readiness";
+import { createClient } from "@/core/supabase/server";
 
 import { Card } from "@/components/ui/card";
+
+async function loadClinicEstablishmentCode(clinicId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("clinics").select("refeps_establishment_code").eq("id", clinicId).maybeSingle();
+  return data?.refeps_establishment_code ?? null;
+}
 
 type ProductGates = { clinic: boolean; geriatrics: boolean; clinicId: string };
 
@@ -90,6 +99,14 @@ export default async function SuperadminCustomizationsPage({
     clinic: productsSnap?.clinic ?? true,
     geriatrics: productsSnap?.geriatrics ?? false,
   };
+  const nationalRx =
+    clinicId && state
+      ? evaluateNationalRxReadiness({
+          featureEnabled: state.clinicResolved.national_electronic_prescription?.enabled ?? false,
+          productEntitled: products.clinic,
+          establishmentCode: await loadClinicEstablishmentCode(clinicId),
+        })
+      : null;
   const superadminIsMember = members.some((m) => m.userId === superadminId);
   const environment = getCustomizationEnvironment();
   const clinicName = clinics.find((c) => c.id === clinicId)?.name;
@@ -164,6 +181,15 @@ export default async function SuperadminCustomizationsPage({
               rows={buildRows("clinic", state.clinicRows, state.clinicResolved, products)}
             />
           </Card>
+
+          {nationalRx ? (
+            <Card
+              title="Receta electrónica nacional"
+              description="Estado de integración (preparado para ReNaPDiS). Detalle en ReNaPDiS Readiness."
+            >
+              <NationalRxReadinessCard readiness={nationalRx} />
+            </Card>
+          ) : null}
 
           <Card
             title="Overrides por usuario"

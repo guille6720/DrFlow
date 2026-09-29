@@ -44,19 +44,25 @@ export function RefepsSettingsPanel({ settings }: Props) {
   }
 
   return (
-    <Card title="REFEPS / RENaPDiS">
+    <Card title="Receta electrónica nacional (preparado para integración ReNaPDiS)">
       <div className="mb-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
         <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
         <div>
-          <p className="font-medium">Integración adapter — no es homologación MSN automática</p>
+          <p className="font-medium">Preparado para integración — sin homologación oficial</p>
           <p className="mt-1">
-            NexClinic prepara el payload canónico, hash de firma digital y envío a REFEPS cuando la
-            clínica completó el trámite nacional. Sin credenciales API, opera en{" "}
-            <strong>modo sandbox</strong> con identificadores de prueba.
+            REFEPS valida al profesional. El registro de la receta y el CUIR los otorga un repositorio
+            ReNaPDiS homologado, no NexClinic. Hasta contar con credenciales oficiales, el envío nacional
+            permanece bloqueado (o en modo de prueba en staging, sin validez para dispensa).
           </p>
           <p className="mt-2 text-xs text-amber-900">
-            Modo actual del servidor:{" "}
-            <strong>{settings.submissionMode === "api" ? "API real" : "Sandbox"}</strong>
+            Validación REFEPS en el servidor:{" "}
+            <strong>
+              {settings.submissionMode === "sandbox"
+                ? "Sandbox (prueba)"
+                : settings.submissionMode === "api"
+                  ? "Credenciales presentes (adaptador oficial pendiente)"
+                  : "No configurada"}
+            </strong>
             {!settings.apiConfigured ? ` — ${settings.configurationHint}` : null}
           </p>
         </div>
@@ -71,17 +77,17 @@ export function RefepsSettingsPanel({ settings }: Props) {
             onChange={(e) => setEnabled(e.target.checked)}
           />
           <span>
-            <span className="font-medium">Habilitar REFEPS para este consultorio</span>
+            <span className="font-medium">Marcar recetas para envío nacional</span>
             <span className="mt-0.5 block text-slate-600">
-              Las recetas emitidas quedarán pendientes de envío o se enviarán automáticamente según
-              la opción inferior.
+              Solo tiene efecto si el Superadmin habilitó la receta electrónica nacional para la
+              clínica y la integración está lista. La receta local sigue funcionando igual.
             </span>
           </span>
         </label>
 
         <div>
           <label htmlFor="refeps_establishment_code" className="mb-1 block text-sm font-medium">
-            Código de establecimiento (MSN)
+            Código de establecimiento (asignado oficialmente)
           </label>
           <Input
             id="refeps_establishment_code"
@@ -112,7 +118,7 @@ export function RefepsSettingsPanel({ settings }: Props) {
         {msg ? <p className="text-sm text-emerald-700">{msg}</p> : null}
 
         <Button type="submit" loading={loading}>
-          Guardar REFEPS
+          Guardar
         </Button>
       </form>
     </Card>

@@ -151,6 +151,17 @@ export const FEATURE_CUSTOMIZATION_REGISTRY = {
     gatedBy: "entitlements",
     configSchema: EMPTY_CONFIG,
   },
+  /** ON only allows the national flow to be evaluated; READY still requires REFEPS + repository + credentials. */
+  national_electronic_prescription: {
+    label: "Receta electrónica nacional",
+    category: "compliance",
+    defaultEnabled: false,
+    configurableByClinic: true,
+    configurableByUser: false,
+    critical: true,
+    gatedBy: "product.clinic + rbac.issuePrescriptions + national_readiness",
+    configSchema: EMPTY_CONFIG,
+  },
 } as const satisfies Record<string, FeatureDefinition>;
 
 export interface FeatureDefinition {
