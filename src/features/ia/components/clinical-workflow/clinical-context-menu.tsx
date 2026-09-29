@@ -11,6 +11,8 @@ export type ClinicalContextMenuItem = {
   id: string;
   label: string;
   href?: string;
+  /** Opens `href` in a new tab (e.g. RCTA) instead of client navigation. */
+  external?: boolean;
   onSelect?: () => void;
   destructive?: boolean;
   disabled?: boolean;
@@ -73,7 +75,8 @@ export function ClinicalContextMenuHost() {
             item.destructive ? "text-red-700 hover:bg-red-50" : "text-slate-800"
           )}
           onClick={() => {
-            if (item.href) router.push(item.href);
+            if (item.href && item.external) window.open(item.href, "_blank", "noopener,noreferrer");
+            else if (item.href) router.push(item.href);
             item.onSelect?.();
             close();
           }}
@@ -99,7 +102,13 @@ export function openClinicalContextMenu(
 
 export function buildPatientContextMenuItems(
   patientId: string,
-  opts?: { canIssue?: boolean; canEditClinical?: boolean; canAdmitGeriatrics?: boolean }
+  opts?: {
+    canIssue?: boolean;
+    canEditClinical?: boolean;
+    canAdmitGeriatrics?: boolean;
+    /** When set, "Nueva receta" opens this external URL (RCTA) in a new tab. */
+    rctaPrescriptionsHref?: string | null;
+  }
 ): ClinicalContextMenuItem[] {
   const items: ClinicalContextMenuItem[] = [
     { id: "chart", label: "Abrir ficha", href: patientWorkflowHref(patientId, "chart") },
@@ -109,7 +118,9 @@ export function buildPatientContextMenuItems(
   }
   if (opts?.canIssue) {
     items.push(
-      { id: "rx", label: "Nueva receta", href: patientWorkflowHref(patientId, "prescription") },
+      opts.rctaPrescriptionsHref
+        ? { id: "rx", label: "Nueva receta", href: opts.rctaPrescriptionsHref, external: true }
+        : { id: "rx", label: "Nueva receta", href: patientWorkflowHref(patientId, "prescription") },
       { id: "order", label: "Nueva orden", href: patientWorkflowHref(patientId, "order") }
     );
   }

@@ -5,6 +5,7 @@ import { useCallback, useEffect } from "react";
 
 import { clearConsultationTimer } from "@/features/historias/components/historias/consultation-timer";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { openRctaPrescriptions, useRctaPrescriptions } from "@/features/recetas/hooks/use-rcta-prescriptions";
 
 import { finalizeConsultation } from "@/lib/actions/appointments";
 import {
@@ -19,6 +20,7 @@ export function ClinicalWorkflowShortcuts() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const patientId = parsePatientIdFromPath(pathname);
+  const { enabled: rctaEnabled, href: rctaHref } = useRctaPrescriptions();
 
   const finalizeActiveConsult = useCallback(async () => {
     const appointmentId = searchParams.get("appointment");
@@ -45,7 +47,8 @@ export function ClinicalWorkflowShortcuts() {
 
       if (patientId && e.shiftKey && e.key.toLowerCase() === "r") {
         e.preventDefault();
-        router.push(patientWorkflowHref(patientId, "prescription"));
+        if (rctaEnabled) openRctaPrescriptions({ href: rctaHref });
+        else router.push(patientWorkflowHref(patientId, "prescription"));
         return;
       }
 
@@ -67,7 +70,7 @@ export function ClinicalWorkflowShortcuts() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [patientId, router, searchParams, finalizeActiveConsult]);
+  }, [patientId, router, searchParams, finalizeActiveConsult, rctaEnabled, rctaHref]);
 
   return null;
 }

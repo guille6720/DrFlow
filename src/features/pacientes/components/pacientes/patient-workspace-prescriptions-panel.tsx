@@ -10,12 +10,13 @@ import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-p
 import type { PatientWorkspaceProfessional } from "@/features/pacientes/server/load-patient-workspace-page";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { markPrescriptionDispensed } from "@/features/recetas/actions/prescriptions";
+import { PrescriptionEntryLink } from "@/features/recetas/components/recetas/prescription-entry-link";
 import { PrescriptionList } from "@/features/recetas/components/recetas/prescription-list";
 import { SharePrescriptionButtons } from "@/features/recetas/components/recetas/share-prescription-buttons";
 import type { CoverageRuleOverridesMap } from "@/features/recetas/utils/coverage-rules-admin";
 import { storePrescriptionReusePrefill } from "@/features/recetas/utils/prescription-reuse-prefill";
 
-import { ButtonLink } from "@/components/ui/button";
+import { buttonSurfaceClassName } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { PrescriptionMedication } from "@/types/prescription";
 
@@ -92,10 +93,14 @@ export function PatientWorkspacePrescriptionsPanel({
       title="Recetas"
       action={
         canIssue ? (
-          <ButtonLink href={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })} size="sm">
+          <PrescriptionEntryLink
+            fallbackHref={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}
+            prefetch
+            className={buttonSurfaceClassName("primary", "sm")}
+          >
             <Plus className="h-4 w-4" />
             Nueva receta
-          </ButtonLink>
+          </PrescriptionEntryLink>
         ) : null
       }
     >

@@ -13,8 +13,9 @@ import {
   buildConsultaSessionUrl,
   buildPatientWorkspaceUrl,
 } from "@/features/pacientes/utils/patient-workspace-actions";
+import { PrescriptionEntryLink } from "@/features/recetas/components/recetas/prescription-entry-link";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonSurfaceClassName } from "@/components/ui/button";
 
 type Props = {
   patientId: string;
@@ -40,12 +41,13 @@ export function PatientChartStickyBar({ patientId, arcoExport }: Props) {
             SOAP
           </Button>
         </Link>
-        <Link href={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}>
-          <Button size="sm" variant="outline" type="button">
-            <Pill className="h-4 w-4" />
-            Recetas
-          </Button>
-        </Link>
+        <PrescriptionEntryLink
+          fallbackHref={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}
+          className={buttonSurfaceClassName("outline", "sm")}
+        >
+          <Pill className="h-4 w-4" />
+          Recetas
+        </PrescriptionEntryLink>
         <Link href={buildPatientWorkspaceUrl(patientId, { tab: "ordenes", action: "nueva" })}>
           <Button size="sm" variant="outline" type="button">
             <ClipboardList className="h-4 w-4" />

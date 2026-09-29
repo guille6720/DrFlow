@@ -10,6 +10,8 @@ import { useCommandPaletteKeyboard } from "@/core/hooks/use-command-palette-keyb
 import { useCommandPalettePatientSearch } from "@/core/hooks/use-command-palette-patient-search";
 import type { PermissionOverrides } from "@/core/permissions/roles";
 
+import { openRctaPrescriptions, useRctaPrescriptions } from "@/features/recetas/hooks/use-rcta-prescriptions";
+
 import {
   buildPatientContextPaletteActions,
   COMMAND_PALETTE_ACTIONS,
@@ -18,6 +20,8 @@ import {
 import { parsePatientIdFromPath } from "@/lib/utils/clinical-workflow-context";
 import { filterCommandPaletteItems } from "@/lib/utils/command-palette-search";
 import type { UserRole } from "@/types/database";
+
+const RCTA_PRESCRIPTION_ITEM_IDS = new Set(["action-new-prescription", "ctx-rx"]);
 
 type Options = {
   role: UserRole | null;
@@ -37,6 +41,7 @@ export function useCommandPaletteState({
   const entitlements = useEntitlementsSnapshot();
   const customizations = useFeatureCustomizations();
   const activePatientId = parsePatientIdFromPath(pathname);
+  const { enabled: rctaEnabled, href: rctaHref } = useRctaPrescriptions();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -72,10 +77,22 @@ export function useCommandPaletteState({
       permissionOverrides,
       entitlements
     );
-    return [...ctx, ...actions, ...nav].filter((item) =>
-      isHrefAllowedByCustomizations(item.href, customizations.features)
-    );
-  }, [activePatientId, query, role, isSuperadmin, permissionOverrides, entitlements, customizations]);
+    return [...ctx, ...actions, ...nav]
+      .filter((item) => isHrefAllowedByCustomizations(item.href, customizations.features))
+      .map((item) =>
+        rctaEnabled && RCTA_PRESCRIPTION_ITEM_IDS.has(item.id) ? { ...item, href: rctaHref } : item
+      );
+  }, [
+    activePatientId,
+    query,
+    role,
+    isSuperadmin,
+    permissionOverrides,
+    entitlements,
+    customizations,
+    rctaEnabled,
+    rctaHref,
+  ]);
 
   const flatResults = useMemo(
     () => [
@@ -93,9 +110,10 @@ export function useCommandPaletteState({
       setQuery("");
       setPatientHits([]);
       setSelectedIndex(0);
-      router.push(href);
+      if (href === rctaHref) openRctaPrescriptions({ href });
+      else router.push(href);
     },
-    [router, setPatientHits]
+    [router, setPatientHits, rctaHref]
   );
 
   useEffect(() => {

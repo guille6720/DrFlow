@@ -21,8 +21,9 @@ import {
   buildConsultaSessionUrl,
   buildPatientWorkspaceUrl,
 } from "@/features/pacientes/utils/patient-workspace-actions";
+import { PrescriptionEntryLink } from "@/features/recetas/components/recetas/prescription-entry-link";
 
-import { ButtonLink } from "@/components/ui/button";
+import { ButtonLink, buttonSurfaceClassName } from "@/components/ui/button";
 import { insuranceNumberLabel } from "@/lib/constants/coverages";
 
 type Props = {
@@ -137,14 +138,14 @@ export function ClinicalWorkspaceHeader({
           </ButtonLink>
         ) : null}
         {canIssue ? (
-          <ButtonLink
-            href={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}
-            size="sm"
-            variant="outline"
+          <PrescriptionEntryLink
+            fallbackHref={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}
+            prefetch
+            className={buttonSurfaceClassName("outline", "sm")}
           >
             <Pill className="h-4 w-4" aria-hidden />
             Receta
-          </ButtonLink>
+          </PrescriptionEntryLink>
         ) : null}
         {canIssue ? (
           <ButtonLink

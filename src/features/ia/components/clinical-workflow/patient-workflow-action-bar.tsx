@@ -3,8 +3,9 @@
 import { CheckCircle2, ClipboardList, FileText, FlaskConical, LogOut, MessageSquare, Pill, Sparkles, Stethoscope } from "lucide-react";
 
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { PrescriptionEntryLink } from "@/features/recetas/components/recetas/prescription-entry-link";
 
-import { Button, ButtonLink } from "@/components/ui/button";
+import { Button, ButtonLink, buttonSurfaceClassName } from "@/components/ui/button";
 import { CLINICAL_WORKFLOW_SHORTCUTS } from "@/lib/constants/clinical-workflow-shortcuts";
 import { patientWorkflowHref } from "@/lib/utils/clinical-workflow-context";
 
@@ -49,15 +50,15 @@ export function PatientWorkflowActionBar({
       ) : null}
       {canIssue ? (
         <>
-          <ButtonLink
-            href={patientWorkflowHref(patientId, "prescription")}
-            size="sm"
-            variant="outline"
+          <PrescriptionEntryLink
+            fallbackHref={patientWorkflowHref(patientId, "prescription")}
+            prefetch
+            className={buttonSurfaceClassName("outline", "sm")}
             title="Nueva receta (Ctrl+Shift+R)"
           >
             <Pill className="h-4 w-4" />
             Receta
-          </ButtonLink>
+          </PrescriptionEntryLink>
           <ButtonLink
             href={patientWorkflowHref(patientId, "order")}
             size="sm"

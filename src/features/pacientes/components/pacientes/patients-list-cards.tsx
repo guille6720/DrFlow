@@ -20,6 +20,8 @@ import { formatPatientConsultationCountShort } from "@/features/pacientes/utils/
 import { buildPatientContactMessage } from "@/features/pacientes/utils/patient-messages";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 import { GeneratePatientPortalAccessControl } from "@/features/portal/components/generate-patient-portal-access-control";
+import { PrescriptionEntryLink } from "@/features/recetas/components/recetas/prescription-entry-link";
+import { useRctaPrescriptions } from "@/features/recetas/hooks/use-rcta-prescriptions";
 
 import { Badge } from "@/components/ui/badge";
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
@@ -74,6 +76,8 @@ const PatientListCard = memo(function PatientListCard({
     p.insurance_provider ?? "Sin obra social",
   ].filter(Boolean);
   const contactMessage = buildPatientContactMessage(`${p.first_name} ${p.last_name}`);
+  const rcta = useRctaPrescriptions();
+  const rctaHref = rcta.enabled ? rcta.href : null;
 
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -82,10 +86,11 @@ const PatientListCard = memo(function PatientListCard({
         buildPatientContextMenuItems(p.id, {
           canIssue: canIssuePrescriptions,
           canAdmitGeriatrics: hasGeriatrics && !isResident,
+          rctaPrescriptionsHref: rctaHref,
         })
       );
     },
-    [p.id, canIssuePrescriptions, hasGeriatrics, isResident]
+    [p.id, canIssuePrescriptions, hasGeriatrics, isResident, rctaHref]
   );
 
   return (
@@ -133,14 +138,14 @@ const PatientListCard = memo(function PatientListCard({
             isResident={isResident}
           />
           {canIssuePrescriptions ? (
-            <Link
-              href={buildPatientWorkspaceUrl(p.id, { tab: "recetas", action: "nueva" })}
+            <PrescriptionEntryLink
+              fallbackHref={buildPatientWorkspaceUrl(p.id, { tab: "recetas", action: "nueva" })}
               prefetch
               className="inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800 hover:bg-teal-100"
             >
               <ScrollText className="h-3.5 w-3.5" />
               Receta
-            </Link>
+            </PrescriptionEntryLink>
           ) : null}
           <Link
             href={patientFichaPath(p.id)}

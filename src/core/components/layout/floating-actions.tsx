@@ -20,6 +20,7 @@ import { FEATURES } from "@/core/entitlements/features";
 import { cn } from "@/shared/utils/cn";
 
 import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+import { useRctaPrescriptions } from "@/features/recetas/hooks/use-rcta-prescriptions";
 
 import {
   parsePatientIdFromPath,
@@ -31,6 +32,7 @@ type FabAction = {
   label: string;
   icon: typeof Calendar;
   color: string;
+  external?: boolean;
 };
 
 const globalActions: FabAction[] = [
@@ -60,7 +62,7 @@ const globalActions: FabAction[] = [
   },
 ];
 
-function patientActions(patientId: string): FabAction[] {
+function patientActions(patientId: string, rctaHref: string | null): FabAction[] {
   return [
     {
       href: patientWorkflowHref(patientId, "soap"),
@@ -69,10 +71,11 @@ function patientActions(patientId: string): FabAction[] {
       color: "drflow-accent-fill",
     },
     {
-      href: patientWorkflowHref(patientId, "prescription"),
+      href: rctaHref ?? patientWorkflowHref(patientId, "prescription"),
       label: "Nueva receta",
       icon: Pill,
       color: "drflow-accent-fill-secondary",
+      external: rctaHref !== null,
     },
     {
       href: patientWorkflowHref(patientId, "order"),
@@ -89,9 +92,10 @@ export function FloatingActions() {
   const enabled = useFeatureFlag("floating_actions");
   const copilotFabVisible = useCopilotFabVisible();
   const canUsePharmacology = useCanUseFeature(FEATURES.PHARMACOLOGY);
+  const rcta = useRctaPrescriptions();
   const patientId = parsePatientIdFromPath(pathname);
   const actions = patientId
-    ? patientActions(patientId)
+    ? patientActions(patientId, rcta.enabled ? rcta.href : null)
     : globalActions.filter(
         (action) =>
           action.href !== "/herramientas/farmacologia" || canUsePharmacology
@@ -110,22 +114,39 @@ export function FloatingActions() {
     >
       {open && (
         <div className="flex flex-col items-end gap-2">
-          {actions.map((action, i) => (
-            <Link
-              key={action.href}
-              href={action.href}
-              prefetch
-              onClick={() => setOpen(false)}
-              className={cn(
-                "animate-fab-in flex items-center gap-2 rounded-full py-2 pl-3 pr-4 text-sm font-medium text-white shadow-lg",
-                action.color
-              )}
-              style={{ animationDelay: `${i * 40}ms` }}
-            >
-              <action.icon className="h-4 w-4" />
-              {action.label}
-            </Link>
-          ))}
+          {actions.map((action, i) => {
+            const className = cn(
+              "animate-fab-in flex items-center gap-2 rounded-full py-2 pl-3 pr-4 text-sm font-medium text-white shadow-lg",
+              action.color
+            );
+            const style = { animationDelay: `${i * 40}ms` };
+            return action.external ? (
+              <a
+                key={action.href}
+                href={action.href}
+                target={rcta.target}
+                rel={rcta.rel}
+                onClick={() => setOpen(false)}
+                className={className}
+                style={style}
+              >
+                <action.icon className="h-4 w-4" />
+                {action.label}
+              </a>
+            ) : (
+              <Link
+                key={action.href}
+                href={action.href}
+                prefetch
+                onClick={() => setOpen(false)}
+                className={className}
+                style={style}
+              >
+                <action.icon className="h-4 w-4" />
+                {action.label}
+              </Link>
+            );
+          })}
         </div>
       )}
 

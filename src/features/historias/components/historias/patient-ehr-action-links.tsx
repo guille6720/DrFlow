@@ -13,6 +13,7 @@ import {
   type PatientWorkspaceFocus,
   type PatientWorkspaceSheet,
 } from "@/features/pacientes/utils/patient-workspace-actions";
+import { PrescriptionEntryLink } from "@/features/recetas/components/recetas/prescription-entry-link";
 
 import { Button } from "@/components/ui/button";
 import { EHR_NEW_CONSULT_FORM_ID } from "@/lib/utils/clinical-history-filename";
@@ -90,8 +91,8 @@ export function PatientEhrActionLinks({
       ) : null}
 
       {canIssue ? (
-        <Link
-          href={recetaHref}
+        <PrescriptionEntryLink
+          fallbackHref={recetaHref}
           prefetch
           onClick={onBeforeRecetaOpen}
           className={cn(
@@ -103,7 +104,7 @@ export function PatientEhrActionLinks({
         >
           <Plus className="h-4 w-4" />
           Nueva receta
-        </Link>
+        </PrescriptionEntryLink>
       ) : null}
 
       {!historyOnly ? (

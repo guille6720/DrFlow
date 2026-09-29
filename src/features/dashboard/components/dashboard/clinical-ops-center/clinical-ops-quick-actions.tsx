@@ -18,12 +18,13 @@ import { useCommandPalette } from "@/core/components/command-palette/command-pal
 import { cn } from "@/shared/utils/cn";
 
 import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+import { useRctaPrescriptions } from "@/features/recetas/hooks/use-rcta-prescriptions";
 
 const ACTIONS = [
   { href: "/pacientes/nuevo", label: "Nuevo paciente", icon: Users },
   { href: "/turnos/nuevo", label: "Nuevo turno", icon: Calendar },
   { href: "#", label: "Buscar paciente", icon: Search, palette: true },
-  { href: "/recetas", label: "Nueva receta", icon: Pill },
+  { href: "/recetas", label: "Nueva receta", icon: Pill, prescription: true },
   { href: "/historias/nueva", label: "Nueva SOAP", icon: Stethoscope },
   { href: "/recetas?tipo=orden", label: "Nueva orden", icon: ClipboardList },
 ] as const;
@@ -31,6 +32,7 @@ const ACTIONS = [
 export function ClinicalOpsQuickActions() {
   const enabled = useFeatureFlag("floating_actions");
   const { setOpen: openPalette } = useCommandPalette();
+  const rcta = useRctaPrescriptions();
   const [open, setOpen] = useState(false);
 
   if (!enabled) return null;
@@ -60,6 +62,26 @@ export function ClinicalOpsQuickActions() {
                   <Icon className="h-4 w-4" aria-hidden />
                   {action.label}
                 </button>
+              );
+            }
+            if ("prescription" in action && rcta.enabled) {
+              return (
+                <a
+                  key={action.label}
+                  href={rcta.href}
+                  target={rcta.target}
+                  rel={rcta.rel}
+                  role="menuitem"
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "animate-fab-in flex items-center gap-2 rounded-full py-2 pl-3 pr-4 text-sm font-medium text-white shadow-lg",
+                    "drflow-accent-fill"
+                  )}
+                  style={{ animationDelay: `${i * 40}ms` }}
+                >
+                  <Icon className="h-4 w-4" aria-hidden />
+                  {action.label}
+                </a>
               );
             }
             return (

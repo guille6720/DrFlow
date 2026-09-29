@@ -56,6 +56,7 @@ import type {
   PatientEhrTreatmentRow,
 } from "@/features/pacientes/utils/patient-ehr-model";
 import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
+import { openRctaPrescriptions, useRctaPrescriptions } from "@/features/recetas/hooks/use-rcta-prescriptions";
 
 import { buttonSurfaceClassName } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -345,6 +346,7 @@ function DrappConsultaWorkspaceInner({
   | "embedded"
   | "headerSlot"
 >) {
+  const rcta = useRctaPrescriptions();
   const {
     filters,
     toggleFilter,
@@ -688,7 +690,20 @@ function DrappConsultaWorkspaceInner({
         totalConsultations={sidebarList.length}
         trailingActions={
           <>
-            {canIssue && onOpenSheet ? (
+            {canIssue && rcta.enabled ? (
+              <a
+                href={rcta.href}
+                target={rcta.target}
+                rel={rcta.rel}
+                onClick={flushEvolutionDraft}
+                title="Abrir RCTA en una nueva pestaña"
+                className={buttonSurfaceClassName("primary", "sm", "gap-1.5")}
+                data-testid="ehr-new-prescription"
+              >
+                <ScrollText className="h-4 w-4" aria-hidden />
+                Nueva receta
+              </a>
+            ) : canIssue && onOpenSheet ? (
               <button
                 type="button"
                 onClick={() => {
@@ -814,7 +829,8 @@ function DrappConsultaWorkspaceInner({
                   <DrappActionLink
                     onClick={() => {
                       flushEvolutionDraft();
-                      onOpenSheet?.("receta");
+                      if (rcta.enabled) openRctaPrescriptions(rcta);
+                      else onOpenSheet?.("receta");
                     }}
                   >
                     Receta

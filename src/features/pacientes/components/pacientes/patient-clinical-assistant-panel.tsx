@@ -8,9 +8,10 @@ import { patientWorkspacePath } from "@/features/pacientes/constants/patient-wor
 import { usePatientClinicalAssistant } from "@/features/pacientes/hooks/use-patient-clinical-assistant";
 import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
+import { PrescriptionEntryLink } from "@/features/recetas/components/recetas/prescription-entry-link";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonSurfaceClassName } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 type Props = Pick<PatientChartViewProps, "chart" | "patient" | "patientId" | "canIssue"> & {
@@ -150,12 +151,13 @@ export function PatientClinicalAssistantPanel({ chart, patient, patientId, ehr, 
             </Button>
           </Link>
           {canIssue ? (
-            <Link href={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}>
-              <Button type="button" size="sm" variant="outline">
-                <ScrollText className="h-4 w-4" />
-                Nueva receta
-              </Button>
-            </Link>
+            <PrescriptionEntryLink
+              fallbackHref={buildPatientWorkspaceUrl(patientId, { tab: "recetas", action: "nueva" })}
+              className={buttonSurfaceClassName("outline", "sm")}
+            >
+              <ScrollText className="h-4 w-4" />
+              Nueva receta
+            </PrescriptionEntryLink>
           ) : null}
           <Link href={patientWorkspacePath(patientId, "timeline")}>
             <Button type="button" size="sm" variant="ghost">

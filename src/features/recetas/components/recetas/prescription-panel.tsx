@@ -9,6 +9,7 @@ import { issuePrescription, voidPrescription } from "@/features/recetas/actions/
 import { PrescriptionForm } from "@/features/recetas/components/recetas/prescription-form";
 import { PrescriptionList } from "@/features/recetas/components/recetas/prescription-list";
 import { SharePrescriptionButtons } from "@/features/recetas/components/recetas/share-prescription-buttons";
+import { openRctaPrescriptions, useRctaPrescriptions } from "@/features/recetas/hooks/use-rcta-prescriptions";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -53,6 +54,7 @@ export function PrescriptionPanel({
   canIssue,
 }: Props) {
   const router = useRouter();
+  const rcta = useRctaPrescriptions();
   const [showForm, setShowForm] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
   const [, startRefresh] = useTransition();
@@ -85,7 +87,12 @@ export function PrescriptionPanel({
     <Card title="Receta local (Argentina — sin homologación REFEPS)">
       {canIssue && (
         <div className="mb-4">
-          <Button type="button" size="sm" variant="outline" onClick={() => setShowForm(!showForm)}>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => (rcta.enabled ? openRctaPrescriptions(rcta) : setShowForm(!showForm))}
+          >
             <Plus className="h-4 w-4" />
             {showForm ? "Ocultar formulario" : "Nueva receta"}
           </Button>
