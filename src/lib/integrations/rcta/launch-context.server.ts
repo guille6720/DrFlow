@@ -1,4 +1,4 @@
-"use server";
+import "server-only";
 
 import { getActiveClinicId, getPermissionContext, getSession } from "@/core/auth/session.server";
 import { isFeatureEnabled } from "@/core/customizations/customizations.server";
@@ -12,22 +12,13 @@ import { parseEntityId } from "@/core/validations/params";
 import { hasAnyRctaAccess, RCTA_FEATURE_KEYS, resolveRctaAccess } from "@/lib/integrations/rcta/access";
 import { getRctaLaunchUrl } from "@/lib/integrations/rcta/client";
 import { buildRctaPatientContext, type RctaPatientRow } from "@/lib/integrations/rcta/patient-context";
-import type { RctaAccess, RctaPatientContext } from "@/lib/integrations/rcta/types";
-
-export type RctaLaunchContextResult =
-  | {
-      ok: true;
-      launchUrl: string;
-      access: RctaAccess;
-      patient: RctaPatientContext;
-    }
-  | { ok: false; reason: "invalid_patient" | "unauthenticated" | "not_allowed" | "not_found" };
+import type { RctaLaunchContextResult } from "@/lib/integrations/rcta/types";
 
 /**
  * Clinic and user come from the session (never from the client). The patient is loaded only after
  * access is confirmed, filtered by the active clinic and by RLS. Nothing is logged or sent to RCTA.
  */
-export async function getRctaLaunchContextAction(patientId: string): Promise<RctaLaunchContextResult> {
+export async function loadRctaLaunchContext(patientId: string): Promise<RctaLaunchContextResult> {
   const id = parseEntityId(patientId, "Paciente");
   if (!id.ok) return { ok: false, reason: "invalid_patient" };
 

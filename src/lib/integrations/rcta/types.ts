@@ -34,6 +34,10 @@ export type RctaAccess = {
   medicalOrders: boolean;
 };
 
+export type RctaLaunchContextResult =
+  | { ok: true; launchUrl: string; access: RctaAccess; patient: RctaPatientContext }
+  | { ok: false; reason: "invalid_patient" | "unauthenticated" | "not_allowed" | "not_found" };
+
 // ---------------------------------------------------------------------------
 // Future API (server-side only). NexClinic-normalized shapes; vendor mapping will live in a provider adapter.
 // ---------------------------------------------------------------------------

@@ -10,9 +10,20 @@ import { cn } from "@/shared/utils/cn";
 
 import { buttonSurfaceClassName } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { getRctaLaunchContextAction, type RctaLaunchContextResult } from "@/lib/actions/rcta";
 import { RCTA_LINK_REL, RCTA_LINK_TARGET } from "@/lib/integrations/rcta/config";
 import { formatRctaPatientClipboard } from "@/lib/integrations/rcta/patient-context";
+import type { RctaLaunchContextResult } from "@/lib/integrations/rcta/types";
+
+const DENIED: RctaLaunchContextResult = { ok: false, reason: "not_allowed" };
+
+async function fetchRctaLaunchContext(patientId: string): Promise<RctaLaunchContextResult> {
+  const res = await fetch(`/api/rcta/launch-context?patientId=${encodeURIComponent(patientId)}`, {
+    cache: "no-store",
+    credentials: "same-origin",
+  });
+  if (!res.ok) return DENIED;
+  return (await res.json()) as RctaLaunchContextResult;
+}
 
 const muted = "text-[var(--text-muted,var(--muted-foreground))]";
 const text = "text-[var(--text-on-card,var(--foreground))]";
@@ -76,12 +87,12 @@ export function RctaLaunchCard({ patientId }: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    void getRctaLaunchContextAction(patientId)
+    void fetchRctaLaunchContext(patientId)
       .then((res) => {
         if (!cancelled) setState(res);
       })
       .catch(() => {
-        if (!cancelled) setState({ ok: false, reason: "not_allowed" });
+        if (!cancelled) setState(DENIED);
       });
     return () => {
       cancelled = true;

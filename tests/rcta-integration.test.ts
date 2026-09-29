@@ -48,6 +48,8 @@ const state = {
   patientQueries: 0,
 };
 
+vi.mock("server-only", () => ({}));
+
 vi.mock("@/core/auth/session.server", () => ({
   getActiveClinicId: async () => state.clinicId,
   getSession: async () => state.user,
@@ -95,7 +97,7 @@ vi.mock("@/core/supabase/server", () => ({
 
 import { FEATURE_CUSTOMIZATION_REGISTRY } from "@/core/customizations/registry";
 
-import { getRctaLaunchContextAction } from "@/lib/actions/rcta";
+import { GET as launchContextRoute } from "@/app/api/rcta/launch-context/route";
 import { resolveRctaAccess } from "@/lib/integrations/rcta/access";
 import { createExternalRctaIntegration, getRctaLaunchUrl } from "@/lib/integrations/rcta/client";
 import {
@@ -105,6 +107,7 @@ import {
   RCTA_LINK_TARGET,
   resolveRctaExternalUrl,
 } from "@/lib/integrations/rcta/config";
+import { loadRctaLaunchContext } from "@/lib/integrations/rcta/launch-context.server";
 import { buildRctaPatientContext, formatRctaPatientClipboard } from "@/lib/integrations/rcta/patient-context";
 
 beforeEach(() => {
@@ -237,9 +240,9 @@ describe("patient context + clipboard helper", () => {
   });
 });
 
-describe("server action — authorization and isolation", () => {
+describe("server-side launch context — authorization and isolation", () => {
   it("A — authorized doctor receives launch context for own-clinic patient", async () => {
-    const res = await getRctaLaunchContextAction(PATIENT_A);
+    const res = await loadRctaLaunchContext(PATIENT_A);
     expect(res.ok).toBe(true);
     if (res.ok) {
       expect(res.launchUrl).toBe("https://app.rcta.me/");
@@ -251,40 +254,59 @@ describe("server action — authorization and isolation", () => {
 
   it("B — secretary (no clinical/prescribing permission) gets nothing and no patient query runs", async () => {
     state.role = "secretary";
-    const res = await getRctaLaunchContextAction(PATIENT_A);
+    const res = await loadRctaLaunchContext(PATIENT_A);
     expect(res).toEqual({ ok: false, reason: "not_allowed" });
     expect(state.patientQueries).toBe(0);
   });
 
   it("B — per-user override revoking prescribing removes the prescription action only", async () => {
     state.overrides = { issuePrescriptions: false };
-    const res = await getRctaLaunchContextAction(PATIENT_A);
+    const res = await loadRctaLaunchContext(PATIENT_A);
     expect(res.ok && res.access).toEqual({ prescriptions: false, medicalOrders: true });
   });
 
   it("I — rcta_integration disabled (user/clinic customization) returns not_allowed", async () => {
     state.features.rcta_integration = false;
-    const res = await getRctaLaunchContextAction(PATIENT_A);
+    const res = await loadRctaLaunchContext(PATIENT_A);
     expect(res).toEqual({ ok: false, reason: "not_allowed" });
     expect(state.patientQueries).toBe(0);
   });
 
   it("J — clinic A cannot load clinic B patient context", async () => {
-    const res = await getRctaLaunchContextAction(PATIENT_B);
+    const res = await loadRctaLaunchContext(PATIENT_B);
     expect(res).toEqual({ ok: false, reason: "not_found" });
   });
 
   it("K — unauthenticated user / no active clinic gets nothing", async () => {
     state.user = null;
-    expect(await getRctaLaunchContextAction(PATIENT_A)).toEqual({ ok: false, reason: "unauthenticated" });
+    expect(await loadRctaLaunchContext(PATIENT_A)).toEqual({ ok: false, reason: "unauthenticated" });
     state.user = { id: "user-1" };
     state.clinicId = null;
-    expect(await getRctaLaunchContextAction(PATIENT_A)).toEqual({ ok: false, reason: "unauthenticated" });
+    expect(await loadRctaLaunchContext(PATIENT_A)).toEqual({ ok: false, reason: "unauthenticated" });
   });
 
   it("rejects malformed patient ids before any query", async () => {
-    expect(await getRctaLaunchContextAction("../etc")).toEqual({ ok: false, reason: "invalid_patient" });
+    expect(await loadRctaLaunchContext("../etc")).toEqual({ ok: false, reason: "invalid_patient" });
     expect(state.patientQueries).toBe(0);
+  });
+});
+
+describe("GET /api/rcta/launch-context", () => {
+  const call = (patientId: string) =>
+    launchContextRoute(new Request(`https://staging.test/api/rcta/launch-context?patientId=${patientId}`));
+
+  it("returns the context without caching", async () => {
+    const res = await call(PATIENT_A);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toContain("no-store");
+    expect((await res.json()).ok).toBe(true);
+  });
+
+  it("returns 401 when unauthenticated and not_found across clinics", async () => {
+    state.user = null;
+    expect((await call(PATIENT_A)).status).toBe(401);
+    state.user = { id: "user-1" };
+    expect(await (await call(PATIENT_B)).json()).toEqual({ ok: false, reason: "not_found" });
   });
 });
 
@@ -296,16 +318,20 @@ describe("static security checks", () => {
     "src/lib/integrations/rcta/types.ts",
     "src/lib/integrations/rcta/access.ts",
     "src/lib/integrations/rcta/patient-context.ts",
-    "src/lib/actions/rcta.ts",
+    "src/lib/integrations/rcta/launch-context.server.ts",
+    "src/app/api/rcta/launch-context/route.ts",
     "src/features/pacientes/components/pacientes/rcta-launch-card.tsx",
   ];
+  const CARD = "src/features/pacientes/components/pacientes/rcta-launch-card.tsx";
 
   it("no localStorage/sessionStorage, console logging, analytics or fetch to RCTA", () => {
     for (const f of files) {
       const src = read(f);
       expect(src, f).not.toMatch(/localStorage|sessionStorage|console\.|posthog|gtag|analytics|track\(/);
-      expect(src, f).not.toMatch(/fetch\(/);
+      if (f !== CARD) expect(src, f).not.toMatch(/fetch\(/);
     }
+    const cardFetches = [...read(CARD).matchAll(/fetch\(\s*`([^`]*)`/g)].map((m) => m[1]);
+    expect(cardFetches).toEqual(["/api/rcta/launch-context?patientId=${encodeURIComponent(patientId)}"]);
   });
 
   it("no RCTA secrets or invented API endpoints", () => {
@@ -321,9 +347,9 @@ describe("static security checks", () => {
     expect(occurrences).toEqual(["src/lib/integrations/rcta/config.ts"]);
   });
 
-  it("the server action is a server module and loads patients scoped by clinic", () => {
-    const src = read("src/lib/actions/rcta.ts");
-    expect(src.startsWith('"use server"')).toBe(true);
+  it("the launch context is server-only and loads patients scoped by clinic", () => {
+    const src = read("src/lib/integrations/rcta/launch-context.server.ts");
+    expect(src.startsWith('import "server-only"')).toBe(true);
     expect(src).toMatch(/\.eq\("clinic_id", clinicId\)/);
   });
 });

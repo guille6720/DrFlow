@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RctaLaunchContextResult } from "@/lib/actions/rcta";
+import type { RctaLaunchContextResult } from "@/lib/integrations/rcta/types";
 
 const mocks = vi.hoisted(() => ({
   action: vi.fn<(patientId: string) => Promise<RctaLaunchContextResult>>(),
@@ -10,7 +10,6 @@ const mocks = vi.hoisted(() => ({
   error: vi.fn(),
 }));
 
-vi.mock("@/lib/actions/rcta", () => ({ getRctaLaunchContextAction: mocks.action }));
 vi.mock("@/core/browser/copy-to-clipboard", () => ({ copyTextToClipboard: mocks.copy }));
 vi.mock("@/core/notifications/toast", () => ({ toast: { copySuccess: mocks.copySuccess, error: mocks.error } }));
 
@@ -34,13 +33,25 @@ const allowed = (access = { prescriptions: true, medicalOrders: true }): RctaLau
   },
 });
 
+const fetchMock = vi.fn(async (input: string, _init?: RequestInit) => {
+  const url = new URL(input, "https://staging.test");
+  expect(url.pathname).toBe("/api/rcta/launch-context");
+  const body = await mocks.action(url.searchParams.get("patientId") ?? "");
+  return new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
+});
+
 beforeEach(() => {
+  vi.stubGlobal("fetch", fetchMock);
+  fetchMock.mockClear();
   mocks.action.mockReset();
   mocks.copy.mockClear();
   mocks.copySuccess.mockClear();
 });
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe("RctaLaunchCard", () => {
   it("A — authorized clinician sees the section, both actions and the patient panel", async () => {
@@ -53,6 +64,14 @@ describe("RctaLaunchCard", () => {
     expect(screen.getByText("OSDE")).toBeInTheDocument();
     expect(screen.getByText(/RCTA se abrirá en una nueva pestaña/)).toBeInTheDocument();
     expect(mocks.action).toHaveBeenCalledWith(PATIENT_ID);
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ cache: "no-store", credentials: "same-origin" });
+  });
+
+  it("renders nothing when the context request fails", async () => {
+    fetchMock.mockResolvedValueOnce(new Response("", { status: 500 }));
+    const { container } = render(<RctaLaunchCard patientId={PATIENT_ID} />);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(container.querySelector("[data-testid=rcta-prescription-link]")).toBeNull();
   });
 
   it("B/I — renders nothing when not allowed (unauthorized or feature disabled)", async () => {
