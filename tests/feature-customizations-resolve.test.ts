@@ -31,6 +31,9 @@ const REQUIRED_KEYS = [
   "custom_fields",
   "ai_assistant",
   "national_electronic_prescription",
+  "rcta_integration",
+  "rcta_prescriptions",
+  "rcta_medical_orders",
 ];
 
 describe("feature customization registry", () => {

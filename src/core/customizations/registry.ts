@@ -162,6 +162,37 @@ export const FEATURE_CUSTOMIZATION_REGISTRY = {
     gatedBy: "product.clinic + rbac.issuePrescriptions + national_readiness",
     configSchema: EMPTY_CONFIG,
   },
+  /** External RCTA launch (link only). Restricts visibility; RBAC/plan still decide who may prescribe. */
+  rcta_integration: {
+    label: "Integración RCTA",
+    category: "compliance",
+    defaultEnabled: true,
+    configurableByClinic: true,
+    configurableByUser: true,
+    critical: false,
+    gatedBy: "product.clinic + rbac.viewClinicalRecords",
+    configSchema: EMPTY_CONFIG,
+  },
+  rcta_prescriptions: {
+    label: "RCTA — Recetas electrónicas",
+    category: "compliance",
+    defaultEnabled: true,
+    configurableByClinic: true,
+    configurableByUser: true,
+    critical: false,
+    gatedBy: "rcta_integration + rbac.issuePrescriptions",
+    configSchema: EMPTY_CONFIG,
+  },
+  rcta_medical_orders: {
+    label: "RCTA — Órdenes médicas",
+    category: "compliance",
+    defaultEnabled: true,
+    configurableByClinic: true,
+    configurableByUser: true,
+    critical: false,
+    gatedBy: "rcta_integration + rbac.issueMedicalOrders",
+    configSchema: EMPTY_CONFIG,
+  },
 } as const satisfies Record<string, FeatureDefinition>;
 
 export interface FeatureDefinition {

@@ -11,7 +11,10 @@ const down = readFileSync(
   "utf8"
 );
 /** Features added by later migrations seed `feature_definitions` there. */
-const laterFeatureSeeds = ["20260929120000_national_eprescription_repository"]
+const laterFeatureSeeds = [
+  "20260929120000_national_eprescription_repository",
+  "20260929130000_rcta_integration_feature",
+]
   .map((m) => readFileSync(resolve(process.cwd(), `supabase/migrations/${m}.sql`), "utf8"))
   .join("\n");
 

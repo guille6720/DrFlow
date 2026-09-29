@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import type { HistoriaPrescriptionSummary } from "@/features/historias/types/historia-clinical-summaries";
+import { RctaLaunchCard } from "@/features/pacientes/components/pacientes/rcta-launch-card";
 import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
 import type { PatientWorkspaceProfessional } from "@/features/pacientes/server/load-patient-workspace-page";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
@@ -85,6 +86,8 @@ export function PatientWorkspacePrescriptionsPanel({
   }
 
   return (
+    <>
+    <RctaLaunchCard patientId={patientId} />
     <Card
       title="Recetas"
       action={
@@ -114,5 +117,6 @@ export function PatientWorkspacePrescriptionsPanel({
         refepsEnabled={clinic.refepsEnabled ?? false}
       />
     </Card>
+    </>
   );
 }
