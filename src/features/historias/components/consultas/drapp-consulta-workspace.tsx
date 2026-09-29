@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, CheckCircle2, Plus } from "lucide-react";
+import { CalendarDays, CheckCircle2, Plus, ScrollText } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CLINICAL_RESEARCH_PROTOCOLS_FLAG } from "@/core/compliance/clinical-research-ai";
@@ -57,6 +57,7 @@ import type {
 } from "@/features/pacientes/utils/patient-ehr-model";
 import { useFeatureFlag } from "@/features/plugins/components/plugins/clinic-features-provider";
 
+import { buttonSurfaceClassName } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { EHR_NEW_CONSULT_FORM_ID } from "@/lib/utils/clinical-history-filename";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
@@ -685,7 +686,25 @@ function DrappConsultaWorkspaceInner({
         filters={filters}
         onToggleFilter={toggleFilter}
         totalConsultations={sidebarList.length}
-        trailingActions={<PatientEhrPrintMenu triggerLabel="Imprimir historia" />}
+        trailingActions={
+          <>
+            {canIssue && onOpenSheet ? (
+              <button
+                type="button"
+                onClick={() => {
+                  flushEvolutionDraft();
+                  onOpenSheet("receta");
+                }}
+                className={buttonSurfaceClassName("primary", "sm", "gap-1.5")}
+                data-testid="ehr-new-prescription"
+              >
+                <ScrollText className="h-4 w-4" aria-hidden />
+                Nueva receta
+              </button>
+            ) : null}
+            <PatientEhrPrintMenu triggerLabel="Imprimir historia" />
+          </>
+        }
       />
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
