@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { getMedicalOrderPermissions } from "@/features/ordenes-medicas/actions/medical-orders-v2";
 import type { MedicalOrderPermissions } from "@/features/ordenes-medicas/components/medical-order-detail";
 import { MedicalOrdersBrowser } from "@/features/ordenes-medicas/components/medical-orders-browser";
-import { RctaLaunchCard } from "@/features/pacientes/components/pacientes/rcta-launch-card";
+import { ClinicalIntegrationsCard } from "@/features/pacientes/components/pacientes/clinical-integrations/clinical-integrations-card";
 import { buildPatientWorkspaceUrl } from "@/features/pacientes/utils/patient-workspace-actions";
 
 import { Card } from "@/components/ui/card";
@@ -33,7 +33,7 @@ export function PatientWorkspaceOrdersPanel({ patientId, patient }: Props) {
 
   return (
     <>
-    <RctaLaunchCard patientId={patientId} />
+    <ClinicalIntegrationsCard patientId={patientId} section="medicalOrders" />
     <Card title="Órdenes médicas">
       {!permissions ? (
         <p className="text-sm text-[var(--text-muted,var(--muted-foreground))]">Cargando…</p>

@@ -14,6 +14,7 @@ const down = readFileSync(
 const laterFeatureSeeds = [
   "20260929120000_national_eprescription_repository",
   "20260929130000_rcta_integration_feature",
+  "20260930120000_pami_integration_feature",
 ]
   .map((m) => readFileSync(resolve(process.cwd(), `supabase/migrations/${m}.sql`), "utf8"))
   .join("\n");

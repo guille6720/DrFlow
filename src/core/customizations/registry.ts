@@ -193,6 +193,37 @@ export const FEATURE_CUSTOMIZATION_REGISTRY = {
     gatedBy: "rcta_integration + rbac.issueMedicalOrders",
     configSchema: EMPTY_CONFIG,
   },
+  /** External launch of the official PAMI pages (link only). Restricts visibility; never grants permissions. */
+  pami_integration: {
+    label: "Integración PAMI",
+    category: "compliance",
+    defaultEnabled: true,
+    configurableByClinic: true,
+    configurableByUser: true,
+    critical: false,
+    gatedBy: "product.clinic + rbac.viewClinicalRecords",
+    configSchema: EMPTY_CONFIG,
+  },
+  pami_prescriptions: {
+    label: "PAMI — Receta electrónica",
+    category: "compliance",
+    defaultEnabled: true,
+    configurableByClinic: true,
+    configurableByUser: true,
+    critical: false,
+    gatedBy: "pami_integration + rbac.issuePrescriptions",
+    configSchema: EMPTY_CONFIG,
+  },
+  pami_medical_orders: {
+    label: "PAMI — Orden médica electrónica (OME)",
+    category: "compliance",
+    defaultEnabled: true,
+    configurableByClinic: true,
+    configurableByUser: true,
+    critical: false,
+    gatedBy: "pami_integration + rbac.issueMedicalOrders",
+    configSchema: EMPTY_CONFIG,
+  },
 } as const satisfies Record<string, FeatureDefinition>;
 
 export interface FeatureDefinition {

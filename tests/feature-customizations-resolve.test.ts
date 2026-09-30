@@ -34,6 +34,9 @@ const REQUIRED_KEYS = [
   "rcta_integration",
   "rcta_prescriptions",
   "rcta_medical_orders",
+  "pami_integration",
+  "pami_prescriptions",
+  "pami_medical_orders",
 ];
 
 describe("feature customization registry", () => {
