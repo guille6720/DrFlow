@@ -367,17 +367,19 @@ describe("static security checks", () => {
     ...readdirSync(resolve(process.cwd(), UI)).map((f) => `${UI}/${f}`),
     "src/app/api/pami/launch-context/route.ts",
   ];
-  const CARD = `${UI}/clinical-integrations-card.tsx`;
+  const FETCHER = `${UI}/integration-context-fetch.ts`;
 
   it("no browser storage, cookies, logging, analytics or fetch to PAMI", () => {
     for (const f of files) {
       const src = read(f);
       expect(src, f).not.toMatch(/localStorage|sessionStorage|document\.cookie|console\.|posthog|gtag|analytics|track\(/);
-      if (f !== CARD) expect(src, f).not.toMatch(/fetch\(/);
+      if (f !== FETCHER) expect(src, f).not.toMatch(/fetch\(/);
     }
-    const fetches = [...read(CARD).matchAll(/fetchContext<\w+>\(`([^`]*)`\)/g)].map((m) => m[1]);
-    expect(fetches).toEqual(["/api/rcta/launch-context?${query}", "/api/pami/launch-context?${query}"]);
-    expect(read(CARD)).not.toMatch(/pami\.org\.ar/);
+    const src = read(FETCHER);
+    expect([...src.matchAll(/fetch\(/g)]).toHaveLength(1);
+    const paths = [...src.matchAll(/fetchContext<\w+>\(`([^`?]*)\?/g)].map((m) => m[1]);
+    expect(paths).toEqual(["/api/rcta/launch-context", "/api/pami/launch-context"]);
+    for (const f of files.filter((x) => x.startsWith(UI))) expect(read(f), f).not.toMatch(/pami\.org\.ar/);
   });
 
   it("H — no credential, password, OTP or token fields/handling", () => {

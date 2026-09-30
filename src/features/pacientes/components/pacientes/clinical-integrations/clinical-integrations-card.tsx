@@ -7,6 +7,10 @@ import { cn } from "@/shared/utils/cn";
 
 import { ExternalClinicalIntegrationButton } from "@/features/pacientes/components/pacientes/clinical-integrations/external-clinical-integration-button";
 import {
+  fetchPamiLaunchContext,
+  fetchRctaLaunchContext,
+} from "@/features/pacientes/components/pacientes/clinical-integrations/integration-context-fetch";
+import {
   integrationMutedText,
   PatientIntegrationContext,
 } from "@/features/pacientes/components/pacientes/clinical-integrations/patient-integration-context";
@@ -22,24 +26,8 @@ export type ClinicalIntegrationSection = "prescriptions" | "medicalOrders";
 
 type Contexts = { rcta: RctaLaunchContextResult; pami: PamiLaunchContextResult };
 
-const DENIED = { ok: false, reason: "not_allowed" } as const;
-
-async function fetchContext<T>(path: string): Promise<T | typeof DENIED> {
-  try {
-    const res = await fetch(path, { cache: "no-store", credentials: "same-origin" });
-    if (!res.ok) return DENIED;
-    return (await res.json()) as T;
-  } catch {
-    return DENIED;
-  }
-}
-
 async function fetchContexts(patientId: string): Promise<Contexts> {
-  const query = `patientId=${encodeURIComponent(patientId)}`;
-  const [rcta, pami] = await Promise.all([
-    fetchContext<RctaLaunchContextResult>(`/api/rcta/launch-context?${query}`),
-    fetchContext<PamiLaunchContextResult>(`/api/pami/launch-context?${query}`),
-  ]);
+  const [rcta, pami] = await Promise.all([fetchRctaLaunchContext(patientId), fetchPamiLaunchContext(patientId)]);
   return { rcta, pami };
 }
 

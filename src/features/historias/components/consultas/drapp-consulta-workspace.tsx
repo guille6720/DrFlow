@@ -48,6 +48,7 @@ import {
   type VitalsFormValues,
 } from "@/features/historias/utils/vitals-form";
 import { uploadPatientClinicalDocument } from "@/features/pacientes/actions/patient-attachments";
+import { PamiQuickActions } from "@/features/pacientes/components/pacientes/clinical-integrations/pami-quick-actions";
 import type { PatientChartProfessional } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { PatientEhrClinicalRecordsPagination } from "@/features/pacientes/server/load-patient-ehr-data";
 import type {
@@ -717,6 +718,7 @@ function DrappConsultaWorkspaceInner({
                 Nueva receta
               </button>
             ) : null}
+            <PamiQuickActions patientId={patient.id} onBeforeOpen={flushEvolutionDraft} />
             <PatientEhrPrintMenu triggerLabel="Imprimir historia" />
           </>
         }
