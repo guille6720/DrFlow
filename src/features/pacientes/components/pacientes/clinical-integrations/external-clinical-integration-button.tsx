@@ -34,11 +34,7 @@ export function ExternalClinicalIntegrationButton({
       rel={rel}
       aria-label={ariaLabel}
       title={ariaLabel}
-      className={buttonSurfaceClassName(
-        prioritized ? "primary" : "outline",
-        "md",
-        "w-full focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 sm:w-auto lg:w-full"
-      )}
+      className={buttonSurfaceClassName(prioritized ? "primary" : "outline", "md", "w-full sm:w-auto lg:w-full")}
       data-testid={testId}
       data-prioritized={prioritized ? "true" : "false"}
     >

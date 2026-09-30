@@ -176,6 +176,14 @@ html[data-ui-style="2"] .drflow-ui-button.drflow-btn-primary:hover:not(:disabled
   color: var(--text-on-primary, var(--primary-foreground)) !important;
 }
 
+/* Style/palette overrides force `box-shadow: none|… !important` on buttons; keep the keyboard focus ring. */
+html[data-ui-style] .drflow-ui-button.drflow-ui-button:focus-visible,
+html[data-ui-palette] .drflow-ui-button.drflow-ui-button:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--btn-focus-offset),
+    0 0 0 4px var(--btn-focus-ring) !important;
+}
+
 /* Tokenized accent fill for FABs / chrome CTAs that previously used cyan-teal gradients */
 .drflow-accent-fill {
   background: var(--primary) !important;
