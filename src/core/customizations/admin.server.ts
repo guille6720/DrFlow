@@ -8,11 +8,12 @@ import {
   validateFeatureConfig,
 } from "@/core/customizations/resolve";
 import { requireSuperadminOrDeny } from "@/core/entitlements/superadmin-guard.server";
+import { KNOWN_SUPABASE_PROJECTS } from "@/core/environment/isolation.mjs";
 import { asStagingSchemaClient } from "@/core/products/staging-schema-client";
 import { createClient } from "@/core/supabase/server";
 
-const PRODUCTION_SUPABASE_REF = "nipqdarduknydqptqzup";
-const STAGING_SUPABASE_REF = "gprmsufvhabntbrytwyi";
+const PRODUCTION_SUPABASE_REF = KNOWN_SUPABASE_PROJECTS.production;
+const STAGING_SUPABASE_REF = KNOWN_SUPABASE_PROJECTS.staging;
 const MAX_CONFIG_BYTES = 8192;
 
 export type CustomizationEnvironment = "production" | "staging" | "preview" | "development" | "unknown";

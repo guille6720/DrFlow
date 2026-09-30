@@ -1,8 +1,11 @@
 import { type NextRequest } from "next/server";
 
+import { environmentLockResponse } from "@/core/environment/guard";
 import { updateSession } from "@/core/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
+  const locked = environmentLockResponse(request.nextUrl.pathname);
+  if (locked) return locked;
   return updateSession(request);
 }
 

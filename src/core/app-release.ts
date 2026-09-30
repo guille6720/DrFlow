@@ -345,6 +345,12 @@ export function getBuildId(): string {
   );
 }
 
+/** Full git SHA of the deployed build — used to prove version parity between production and fiscalization. */
+export function getCommitSha(): string | null {
+  const sha = (process.env.VERCEL_GIT_COMMIT_SHA || process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || "").trim();
+  return /^[0-9a-f]{7,40}$/i.test(sha) ? sha.toLowerCase() : null;
+}
+
 export function getLatestChangelog(): ChangelogItem {
   return CHANGELOG[0];
 }
@@ -354,6 +360,7 @@ export function getReleasePayload() {
   return {
     version: getAppVersion(),
     buildId: getBuildId(),
+    commit: getCommitSha(),
     releasedAt: latest.date,
     title: latest.title,
     highlights: latest.highlights,

@@ -1,5 +1,16 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
+    const { getEnvironmentIsolation } = await import("@/core/environment/runtime");
+    const isolation = getEnvironmentIsolation();
+    if (!isolation.ok) {
+      console.error(
+        `[nexclinic] ENVIRONMENT ISOLATION FAILED (env=${isolation.environment}): ${isolation.errors.join(", ")}. ` +
+          "All requests are refused with 503 and the service-role client is disabled."
+      );
+    }
+  }
+
+  if (process.env.NEXT_RUNTIME === "nodejs") {
     const { initSentryServer } = await import("@/core/observability/sentry.server");
     await initSentryServer();
   }

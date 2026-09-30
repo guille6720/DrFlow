@@ -56,6 +56,11 @@ jobs:
       - name: RLS static audit
         run: npm run test:rls:static
 
+      - name: Environment isolation check
+        run: npm run check:environment
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+
       - name: Production build
         run: npm run build
         env:

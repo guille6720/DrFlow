@@ -1,4 +1,5 @@
 import { getReleasePayload } from "@/core/app-release";
+import { type AppEnvironment, getEnvironmentIsolation } from "@/core/environment/runtime";
 import {
   alertOnDbUnavailable,
   alertOnReadinessFailure,
@@ -7,10 +8,18 @@ import { sanitizeMonitoringPayload } from "@/core/observability/sanitize-monitor
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { toJson } from "@/core/supabase/json";
 
+export type HealthDatabaseStatus = "connected" | "unreachable" | "not_configured" | "blocked_by_isolation";
+
 export type PublicHealthStatus = {
   ok: boolean;
+  status: "ok" | "degraded" | "locked";
+  environment: AppEnvironment | "unknown";
   version: string;
   buildId?: string;
+  commit: string | null;
+  database: HealthDatabaseStatus;
+  /** Error codes only — never refs, URLs or key material. */
+  environmentIsolation: { ok: boolean; errors: string[] };
   timestamp: string;
   checks: {
     supabase: { ok: boolean; latencyMs?: number; error?: string };
@@ -113,17 +122,51 @@ async function probeSchemaCompatibility(): Promise<{ ok: boolean; error?: string
   }
 }
 
-/** Public probe — no infra secrets or heap details. */
+const SKIPPED_BY_ISOLATION = { ok: false, error: "skipped_environment_isolation_failed" } as const;
+
+function databaseStatus(
+  isolationOk: boolean,
+  supabase: PublicHealthStatus["checks"]["supabase"]
+): HealthDatabaseStatus {
+  if (!isolationOk) return "blocked_by_isolation";
+  if (supabase.ok) return "connected";
+  return process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ? "unreachable" : "not_configured";
+}
+
+function releaseIdentity() {
+  const release = getReleasePayload();
+  const isolation = getEnvironmentIsolation();
+  return {
+    release,
+    isolation,
+    identity: {
+      environment: isolation.environment,
+      version: release.version,
+      buildId: release.buildId,
+      commit: release.commit,
+      environmentIsolation: { ok: isolation.ok, errors: isolation.errors },
+    },
+  };
+}
+
+function overallStatus(isolationOk: boolean, ok: boolean): PublicHealthStatus["status"] {
+  if (!isolationOk) return "locked";
+  return ok ? "ok" : "degraded";
+}
+
+/** Public probe — no infra secrets or heap details. Never probes a database the isolation layer rejected. */
 export async function getPublicHealthStatus(options?: {
   includeSchema?: boolean;
 }): Promise<PublicHealthStatus> {
-  const release = getReleasePayload();
+  const { isolation, identity } = releaseIdentity();
   const mem = process.memoryUsage();
   const heapUsedMb = Math.round(mem.heapUsed / 1024 / 1024);
-  const supabaseCheck = await probeSupabase();
-  const schemaCheck = options?.includeSchema ? await probeSchemaCompatibility() : undefined;
+  const supabaseCheck = isolation.ok ? await probeSupabase() : SKIPPED_BY_ISOLATION;
+  const schemaCheck =
+    options?.includeSchema && isolation.ok ? await probeSchemaCompatibility() : undefined;
   const envCheck = probePublicEnv();
   const ok =
+    isolation.ok &&
     supabaseCheck.ok &&
     envCheck.publishableKeyConfigured &&
     heapUsedMb < 512 &&
@@ -131,8 +174,9 @@ export async function getPublicHealthStatus(options?: {
 
   return {
     ok,
-    version: release.version,
-    buildId: release.buildId,
+    status: overallStatus(isolation.ok, ok),
+    ...identity,
+    database: databaseStatus(isolation.ok, supabaseCheck),
     timestamp: new Date().toISOString(),
     checks: {
       supabase: supabaseCheck,
@@ -145,18 +189,19 @@ export async function getPublicHealthStatus(options?: {
 
 /** Internal probe — admin dashboards and cron persistence only. */
 export async function getHealthStatus(): Promise<InternalHealthStatus> {
-  const release = getReleasePayload();
+  const { isolation, identity } = releaseIdentity();
   const mem = process.memoryUsage();
   const heapUsedMb = Math.round(mem.heapUsed / 1024 / 1024);
   const heapTotalMb = Math.round(mem.heapTotal / 1024 / 1024);
-  const supabaseCheck = await probeSupabase();
-  const schemaCheck = await probeSchemaCompatibility();
-  const ok = supabaseCheck.ok && heapUsedMb < 512 && schemaCheck.ok;
+  const supabaseCheck = isolation.ok ? await probeSupabase() : SKIPPED_BY_ISOLATION;
+  const schemaCheck = isolation.ok ? await probeSchemaCompatibility() : SKIPPED_BY_ISOLATION;
+  const ok = isolation.ok && supabaseCheck.ok && heapUsedMb < 512 && schemaCheck.ok;
 
   return {
     ok,
-    version: release.version,
-    buildId: release.buildId,
+    status: overallStatus(isolation.ok, ok),
+    ...identity,
+    database: databaseStatus(isolation.ok, supabaseCheck),
     timestamp: new Date().toISOString(),
     checks: {
       supabase: supabaseCheck,
@@ -185,7 +230,7 @@ export async function recordHealthCheckEvent(): Promise<InternalHealthStatus> {
     });
   }
 
-  if (hasAdminClient()) {
+  if (hasAdminClient() && status.environmentIsolation.ok) {
     const supabase = createAdminClient();
     await supabase.from("clinic_observability_events").insert({
       clinic_id: null,

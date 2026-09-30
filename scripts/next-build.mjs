@@ -25,6 +25,12 @@ console.log(
   `[next-build] vercel=${onVercel ? "yes" : "no"} args=${args.join(" ")} heap=${maxOldSpace}MB`
 );
 
+const envCheck = spawnSync(process.execPath, ["./scripts/check-environment.mjs"], { stdio: "inherit", env });
+if (envCheck.status !== 0) {
+  console.error("[next-build] Aborted: environment isolation check failed.");
+  process.exit(envCheck.status ?? 1);
+}
+
 const result = spawnSync("npx", ["next", ...args], {
   stdio: "inherit",
   env,

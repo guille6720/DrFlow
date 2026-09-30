@@ -9,6 +9,7 @@ import {
   BRAND_SEO_DESCRIPTION,
   BRAND_SEO_TITLE,
 } from "@/core/brand/brand";
+import { EnvironmentBadge } from "@/core/components/layout/environment-badge";
 import { ToastProvider } from "@/core/components/notifications/toast-provider";
 import { SentryInit } from "@/core/components/observability/sentry-init";
 import { UiThemeBootstrapScript } from "@/core/components/theme/ui-theme-bootstrap-script";
@@ -97,6 +98,7 @@ export default function RootLayout({
         <UiThemeBootstrapScript />
         <SentryInit />
         {children}
+        <EnvironmentBadge />
         <ToastProvider />
       </body>
     </html>

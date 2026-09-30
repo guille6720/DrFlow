@@ -114,7 +114,8 @@
     "analyze:bundle": "node scripts/analyze-bundle.mjs",
     "lighthouse:audit": "node scripts/lighthouse-audit.mjs",
     "performance:audit": "node scripts/performance-audit.mjs",
-    "prepare": "husky"
+    "prepare": "husky",
+    "check:environment": "node scripts/check-environment.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

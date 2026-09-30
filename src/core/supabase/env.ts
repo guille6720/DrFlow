@@ -1,3 +1,5 @@
+import { isNonProductionByPublicEnv, PRODUCTION_PUBLIC_HOSTS } from "@/core/environment/isolation.mjs";
+
 /**
  * Supabase soporta claves legacy (anon) y nuevas (publishable sb_publishable_...).
  * @see https://supabase.com/docs/guides/api/api-keys
@@ -66,6 +68,22 @@ export function isValidPublicSiteUrl(url: string): boolean {
  * Prefer APP_URL (nexclinic.com cutover) then SITE_URL (staging/preview).
  * Does not force nexclinic.com while staging still points at Vercel.
  */
+function isNonProductionDeployment(): boolean {
+  return isNonProductionByPublicEnv({
+    NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  });
+}
+
+/** Non-production must never send users (auth emails, redirects, metadata) to a production host. */
+export function isProductionPublicHost(url: string): boolean {
+  try {
+    return PRODUCTION_PUBLIC_HOSTS.includes(new URL(normalizePublicUrl(url)).hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
 function readConfiguredPublicUrl(): string | undefined {
   const candidates = [
     process.env.NEXT_PUBLIC_APP_URL?.trim(),
@@ -73,10 +91,11 @@ function readConfiguredPublicUrl(): string | undefined {
     process.env.SITE_URL?.trim(),
     process.env.APP_URL?.trim(),
   ];
+  const nonProduction = isNonProductionDeployment();
   for (const configured of candidates) {
-    if (configured && isValidPublicSiteUrl(configured)) {
-      return normalizePublicUrl(configured);
-    }
+    if (!configured || !isValidPublicSiteUrl(configured)) continue;
+    if (nonProduction && isProductionPublicHost(configured)) continue;
+    return normalizePublicUrl(configured);
   }
   return undefined;
 }
@@ -111,5 +130,5 @@ export function getPublicSiteUrl(fallbackOrigin?: string): string {
     return `https://${process.env.VERCEL_URL}`;
   }
 
-  return PUBLIC_SITE_FALLBACK;
+  return isNonProductionDeployment() ? "http://localhost:3000" : PUBLIC_SITE_FALLBACK;
 }
