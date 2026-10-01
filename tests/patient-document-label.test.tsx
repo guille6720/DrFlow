@@ -2,11 +2,15 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
+
 import { formatLabeledPatientDocument, formatPatientDocument, patientDocumentLabel } from "@/shared/utils/patient-display";
 
+import { CalendarGrid } from "@/features/agenda/components/agenda/calendar-grid";
 import { PatientEhrDemographics } from "@/features/historias/components/historias/patient-ehr-demographics";
 import { PatientEhrPrintDemographics } from "@/features/historias/components/historias/patient-ehr-print-demographics";
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
+import { buildEhrPrintDocumentHtml } from "@/features/historias/utils/build-ehr-print-document-html";
 import { PatientSearchCombobox } from "@/features/pacientes/components/pacientes/patient-search-combobox";
 import { searchPatientsForClinic } from "@/features/pacientes/server/search-patients";
 
@@ -49,6 +53,30 @@ describe("patient document labels", () => {
   it.each([PatientEhrDemographics, PatientEhrPrintDemographics])("uses the same label on screen and print", (Component) => {
     const view = render(<Component patient={patient} />);
     expect(screen.getByText("Documento", { exact: true })).toBeInTheDocument();
+    expect(view.container).not.toHaveTextContent("DNI");
+  });
+
+  it.each(["other", "passport", "dni"])("keeps %s identity in the generated print document", (document_type) => {
+    const html = buildEhrPrintDocumentHtml({
+      scope: "all", patient: { ...patient, document_type }, consultations: [],
+      dayConsultations: [], diagnosisRows: [], treatmentRows: [],
+    });
+    expect(html).toContain(patientDocumentLabel(document_type));
+    if (document_type !== "dni") expect(html).not.toContain("DNI");
+  });
+
+  it.each([false, true])("keeps the typed identity on agenda cards and tooltips (array=%s)", (array) => {
+    const start = new Date(2026, 9, 2, 9);
+    const appointment: AppointmentAgendaRow = {
+      id: "synthetic-appointment", clinic_id: "test-a", patient_id: patient.id,
+      professional_id: "synthetic-professional", location_id: null, specialty_id: null,
+      start_at: start.toISOString(), end_at: new Date(2026, 9, 2, 9, 30).toISOString(),
+      status: "pending", notes: null, cancellation_reason: null, cancelled_at: null,
+      cancelled_by: null, cancelled_by_type: null, patients: array ? [patient] : patient,
+    };
+    const view = render(<CalendarGrid weekDays={[start]} appointments={[appointment]} />);
+    expect(screen.getByText("Documento RENAPDIS-TEST-A-001")).toBeInTheDocument();
+    expect(view.container.querySelector('[title*="Documento RENAPDIS-TEST-A-001"]')).not.toBeNull();
     expect(view.container).not.toHaveTextContent("DNI");
   });
 });

@@ -10,6 +10,8 @@ import { loadClinicProducts } from "@/core/products/products.server";
 import { PATIENT_DETAIL_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 
+import { formatLabeledPatientDocument } from "@/shared/utils/patient-display";
+
 import { isPatientOpenResident } from "@/features/geriatria/server/residents.server";
 import { PatientWorkspaceContent } from "@/features/pacientes";
 import { PatientWorkspaceSkeleton } from "@/features/pacientes";
@@ -74,7 +76,7 @@ export default async function PacienteDetailPage({
     <>
       <Header
         title={`${patientRow.last_name}, ${patientRow.first_name}`}
-        subtitle={`DNI ${patientRow.document_number}`}
+        subtitle={formatLabeledPatientDocument(patientRow) ?? undefined}
         meta={
           <PatientHeaderIdentity
             birthDate={patientRow.birth_date}

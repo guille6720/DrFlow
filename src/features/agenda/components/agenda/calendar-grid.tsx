@@ -10,7 +10,7 @@ import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { cn } from "@/shared/utils/cn";
 import {
-  formatPatientDocument,
+  formatLabeledPatientDocument,
   formatPatientName,
   resolveAppointmentPatient,
 } from "@/shared/utils/patient-display";
@@ -122,9 +122,9 @@ function buildClinicalHref(appt: AppointmentAgendaRow): string {
 
 function appointmentCardTitle(appt: AppointmentAgendaRow): string {
   const name = formatPatientName(appt.patients);
-  const dni = formatPatientDocument(resolveAppointmentPatient(appt.patients)?.document_number);
+  const document = formatLabeledPatientDocument(resolveAppointmentPatient(appt.patients) ?? {});
   const time = format(parseISO(appt.start_at), "HH:mm");
-  return dni ? `${name} · DNI ${dni} · ${time} hs` : `${name} · ${time} hs`;
+  return document ? `${name} · ${document} · ${time} hs` : `${name} · ${time} hs`;
 }
 
 const CalendarAppointmentCard = memo(function CalendarAppointmentCard({
@@ -142,7 +142,7 @@ const CalendarAppointmentCard = memo(function CalendarAppointmentCard({
   const online = isOnlineBooking(appt);
   const patient = resolveAppointmentPatient(appt.patients);
   const fullName = formatPatientName(appt.patients);
-  const dni = formatPatientDocument(patient?.document_number);
+  const document = formatLabeledPatientDocument(patient ?? {});
   const isCancelled = appt.status === "cancelled";
   const timeLabel = format(parseISO(appt.start_at), "HH:mm");
   const cardTitle = appointmentCardTitle(appt);
@@ -160,10 +160,10 @@ const CalendarAppointmentCard = memo(function CalendarAppointmentCard({
             {online ? <Globe className="mr-0.5 inline h-3 w-3 shrink-0 opacity-90" /> : null}
             {fullName}
           </p>
-          {dni ? (
-            <p className="mt-0.5 truncate text-[10px] font-medium opacity-85">DNI {dni}</p>
+          {document ? (
+            <p className="mt-0.5 truncate text-[10px] font-medium opacity-85">{document}</p>
           ) : (
-            <p className="mt-0.5 truncate text-[10px] italic opacity-60">Sin DNI</p>
+            <p className="mt-0.5 truncate text-[10px] italic opacity-60">Sin documento</p>
           )}
         </div>
         <div className="flex shrink-0 flex-col items-end gap-0.5">

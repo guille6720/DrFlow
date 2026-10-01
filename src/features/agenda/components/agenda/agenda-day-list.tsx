@@ -10,7 +10,7 @@ import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { cn } from "@/shared/utils/cn";
 import {
-  formatPatientDocument,
+  formatLabeledPatientDocument,
   formatPatientName,
   resolveAppointmentPatient,
 } from "@/shared/utils/patient-display";
@@ -76,7 +76,7 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
   const [localWaiting, setLocalWaiting] = useState<WaitingRoomStatus | null>(null);
   const patient = resolveAppointmentPatient(appointment.patients);
   const fullName = formatPatientName(appointment.patients);
-  const dni = formatPatientDocument(patient?.document_number);
+  const document = formatLabeledPatientDocument(patient ?? {});
   const phone = patient?.phone?.trim() || null;
   const insurance = patient?.insurance_provider?.trim() || null;
   const online = isOnlineBooking(appointment);
@@ -156,7 +156,7 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
         {phone ? (
           <p className="truncate text-xs font-medium text-slate-700">{phone}</p>
         ) : null}
-        <p className="truncate text-xs text-slate-600">{dni ? `DNI ${dni}` : "Sin DNI"}</p>
+        <p className="truncate text-xs text-slate-600">{document ?? "Sin documento"}</p>
       </div>
 
       <div className="hidden min-w-0 flex-1 sm:block">

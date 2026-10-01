@@ -8,7 +8,7 @@ import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 import {
-  formatPatientDocument,
+  formatLabeledPatientDocument,
   formatPatientName,
   resolveAppointmentPatient,
 } from "@/shared/utils/patient-display";
@@ -44,7 +44,7 @@ function CalendarAppointmentDialogContent({
 
   const patient = resolveAppointmentPatient(appointment.patients);
   const patientName = formatPatientName(appointment.patients);
-  const patientDni = formatPatientDocument(patient?.document_number);
+  const patientDocument = formatLabeledPatientDocument(patient ?? {});
   const professionalName =
     (appointment.professionals as { profiles?: { full_name?: string } } | undefined)?.profiles
       ?.full_name ?? null;
@@ -84,8 +84,8 @@ function CalendarAppointmentDialogContent({
           <div className="mb-4 flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1 overflow-hidden">
               <h2 className="truncate text-lg font-semibold text-slate-900">{patientName}</h2>
-              {patientDni ? (
-                <p className="mt-0.5 text-sm font-medium text-slate-600">DNI {patientDni}</p>
+              {patientDocument ? (
+                <p className="mt-0.5 text-sm font-medium text-slate-600">{patientDocument}</p>
               ) : null}
               <p className="mt-1 text-sm text-slate-600">
                 {formatClinicDateTime(appointment.start_at, "EEE d MMM yyyy · HH:mm 'hs'")}

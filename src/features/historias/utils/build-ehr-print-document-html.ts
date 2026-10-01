@@ -1,6 +1,8 @@
 import { BRAND_NAME } from "@/core/brand/brand";
 import { escapeHtml } from "@/core/security/xss";
 
+import { patientDocumentLabel } from "@/shared/utils/patient-display";
+
 import {
   formatPrintBirthDate,
   formatPrintDetailedAge,
@@ -130,7 +132,7 @@ function renderHeader(
   const age = formatPrintDetailedAge(patient.birth_date) ?? patient.age_label ?? null;
   const rows: Array<[string, string]> = [
     ["Paciente", name],
-    ["DNI", formatPrintDocumentNumber(patient.document_number)],
+    [patientDocumentLabel(patient.document_type), formatPrintDocumentNumber(patient.document_number)],
   ];
   if (birth) rows.push(["Fecha de nacimiento", birth]);
   if (age) rows.push(["Edad", age]);
@@ -574,7 +576,7 @@ export function buildEhrPrintDocumentHtml(input: EhrPrintDocumentInput): string 
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
-  const patientLabel = `${input.patient.last_name}, ${input.patient.first_name} — DNI ${formatPrintDocumentNumber(input.patient.document_number)}`;
+  const patientLabel = `${input.patient.last_name}, ${input.patient.first_name} — ${patientDocumentLabel(input.patient.document_type)} ${formatPrintDocumentNumber(input.patient.document_number)}`;
   const summary =
     input.scope === "all"
       ? renderClinicalSummary(clinical, input.diagnosisRows, input.treatmentRows)
