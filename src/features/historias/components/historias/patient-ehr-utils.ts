@@ -1,13 +1,16 @@
+import { formatClinicDateTime, isSameClinicCalendarDay } from "@/shared/utils/clinic-timezone";
+
 import type { PatientEhrAttachment, PatientEhrConsultation } from "@/features/pacientes/utils/patient-ehr-model";
 
 import { looksLikeClinicalFileName } from "@/lib/utils/ehr-clinical-category";
 import { sanitizeClinicalDisplayText } from "@/lib/utils/sanitize-clinical-display";
 
 export function formatPatientEhrSidebarDate(iso: string): string {
-  const d = new Date(iso);
-  const months = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
-  const yy = String(d.getFullYear()).slice(-2);
-  return `${d.getDate()}-${months[d.getMonth()]}-${yy}`;
+  return formatClinicDateTime(iso, "d-MMM-yy").replace(".", "").toUpperCase();
+}
+
+export function formatPatientEhrSidebarTime(iso: string): string {
+  return formatClinicDateTime(iso, "HH:mm");
 }
 
 export function toPatientEhrDatetimeLocalValue(iso: string): string {
@@ -18,21 +21,11 @@ export function toPatientEhrDatetimeLocalValue(iso: string): string {
 }
 
 export function isSameCalendarDay(aIso: string, bIso: string): boolean {
-  const a = new Date(aIso);
-  const b = new Date(bIso);
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
+  return isSameClinicCalendarDay(aIso, bIso);
 }
 
 export function calendarDayKey(iso: string): string {
-  const d = new Date(iso);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+  return formatClinicDateTime(iso, "yyyy-MM-dd");
 }
 
 /** One sidebar row per day for DX/TX/vitals; every evolution stays visible. */

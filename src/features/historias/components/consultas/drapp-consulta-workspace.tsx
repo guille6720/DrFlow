@@ -28,6 +28,7 @@ import {
 import type { PatientEhrViewProps } from "@/features/historias/components/historias/patient-ehr-types";
 import {
   formatPatientEhrSidebarDate,
+  formatPatientEhrSidebarTime,
   isDedicatedVitalsConsultation,
   isSameCalendarDay,
   patientEhrEvolutionBody,
@@ -209,10 +210,7 @@ function DrappHistorySidebar({
                 .filter((t) => isSameCalendarDay(t.recordCreatedAt, c.created_at))
                 .slice(0, 8);
               const body = truncate(patientEhrEvolutionBody(c), 220);
-              const timeLabel = new Date(c.created_at).toLocaleTimeString("es-AR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
+              const timeLabel = formatPatientEhrSidebarTime(c.created_at);
               const isEditing = editingRecordId === c.id;
               return (
                 <li

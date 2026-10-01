@@ -6,6 +6,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Header } from "@/core/components/layout/header";
 import { PrintPageButton } from "@/core/components/ui/print-page-button";
 
+import { PatientEhrSidebar } from "@/features/historias/components/historias/patient-ehr-sidebar";
+import { calendarDayKey, formatPatientEhrSidebarDate, formatPatientEhrSidebarTime, isSameCalendarDay } from "@/features/historias/components/historias/patient-ehr-utils";
 import { ClinicalWorkspaceLastConsultSection } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-last-consult-section";
 import { ClinicalWorkspaceStudiesSection } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-studies-section";
 import { ClinicalWorkspaceTimelinePreview } from "@/features/pacientes/components/pacientes/clinical-workspace/clinical-workspace-timeline-preview";
@@ -93,6 +95,48 @@ describe("patient workspace server/client dates", () => {
       await act(async () => root?.unmount());
       container.remove();
     }
+  });
+});
+
+describe("clinical history sidebar dates", () => {
+  it.each(["UTC", "America/Argentina/Buenos_Aires", "Asia/Tokyo"])("uses the clinic day and hour under host timezone %s", (timezone) => {
+    vi.stubEnv("TZ", timezone);
+    expect(formatPatientEhrSidebarTime(consultation.created_at)).toBe("15:05");
+    expect(formatPatientEhrSidebarDate("2026-10-02T01:05:00Z")).toBe("1-OCT-26");
+    expect(calendarDayKey("2026-10-02T01:05:00Z")).toBe("2026-10-01");
+    expect(isSameCalendarDay("2026-10-02T01:05:00Z", "2026-10-01T18:05:00Z")).toBe(true);
+    expect(isSameCalendarDay("2026-10-02T01:05:00Z", "2026-10-02T04:05:00Z")).toBe(false);
+  });
+
+  it("hydrates clinical history sidebar day and saved hour across host zones", async () => {
+    const midnightConsultation = { ...consultation, created_at: "2026-10-02T01:05:00Z" };
+    function HistorySidebar() {
+      return <><PatientEhrSidebar sidebarList={[midnightConsultation]} selectedId={null} onSelect={() => {}} /><span>{formatPatientEhrSidebarTime(consultation.created_at)}</span></>;
+    }
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    vi.stubEnv("TZ", "UTC");
+    container.innerHTML = renderToString(<HistorySidebar />);
+    const serverText = container.textContent;
+    vi.stubEnv("TZ", "America/Argentina/Buenos_Aires");
+    const onRecoverableError = vi.fn();
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    try {
+      await act(async () => { root = hydrateRoot(container, <HistorySidebar />, { onRecoverableError }); });
+      expect(onRecoverableError).not.toHaveBeenCalled();
+      expect(container.textContent).toBe(serverText);
+      expect(container.textContent).toContain("1-OCT-26");
+      expect(container.textContent).toContain("15:05");
+    } finally {
+      await act(async () => root?.unmount());
+      container.remove();
+    }
+  });
+
+  it("returns stable placeholders for invalid history timestamps", () => {
+    expect(formatPatientEhrSidebarDate("invalid")).toBe("—");
+    expect(formatPatientEhrSidebarTime("invalid")).toBe("—");
+    expect(isSameCalendarDay("invalid", consultation.created_at)).toBe(false);
   });
 });
 
