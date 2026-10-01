@@ -1,3 +1,5 @@
+import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
+
 import {
   addAllergyAlerts,
   addCriticalDiagnosisAlerts,
@@ -61,13 +63,7 @@ export function buildLastConsultSummary(
 
   return {
     id: consultation.id,
-    dateLabel: new Date(consultation.created_at).toLocaleDateString("es-AR", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
+    dateLabel: formatClinicDateTime(consultation.created_at, "d 'de' MMM 'de' yyyy, HH:mm"),
     professionalName: consultation.professional_name ?? "Profesional",
     chiefComplaint: consultation.chief_complaint?.trim() || "—",
     assessment: consultation.evolution?.trim() || consultation.diagnosis?.trim() || "—",

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { type ReactNode, useState } from "react";
 
 import { CommandPaletteTrigger } from "@/core/components/command-palette/command-palette-trigger";
-import { useDashboardSidebar } from "@/core/components/layout/dashboard-sidebar-context";
 import { openGuestAppearanceModal } from "@/core/components/layout/guest-appearance-events";
 import { useUiThemeOptional } from "@/core/components/theme/ui-theme-provider";
 import { hasPermission, ROLE_LABELS } from "@/core/permissions/roles";
@@ -45,7 +44,6 @@ export function Header({
   const [profileOpen, setProfileOpen] = useState(false);
   const showSettings = hasPermission(role, "manageSettings", isSuperadmin);
   const showAppearance = Boolean(role) || isSuperadmin;
-  const { hidden: sidebarHidden } = useDashboardSidebar();
   const theme = useUiThemeOptional();
   /** Prefer light chrome until theme hydrates — avoids pale ink on white topbar. */
   const shellDark = theme?.clinicalDark ?? false;
@@ -54,29 +52,28 @@ export function Header({
     <header
       className={cn(
         "drflow-ui-header border-b px-4 py-2.5 backdrop-blur-sm sm:px-6",
-        shellDark ? "drflow-ui-header-dark" : "drflow-ui-header-light",
-        sidebarHidden ? "lg:pl-6" : "lg:pl-72"
+        shellDark ? "drflow-ui-header-dark" : "drflow-ui-header-light"
       )}
     >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="pl-12 lg:pl-0">
+      <div className="grid min-w-0 grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
+        <div className="min-w-0 pl-12 lg:pl-0">
           <h1
             id={titleId}
             className={cn(
-              "text-lg font-bold tracking-tight sm:text-xl",
+              "break-words text-lg font-bold tracking-normal sm:text-xl",
               shellDark ? "text-slate-50" : "text-slate-900"
             )}
           >
             {title}
           </h1>
           {subtitle && (
-            <p className={cn("mt-0.5 text-sm", shellDark ? "text-slate-300" : "text-slate-500")}>
+            <p className={cn("mt-0.5 break-words text-sm", shellDark ? "text-slate-300" : "text-slate-500")}>
               {subtitle}
             </p>
           )}
+          {meta ? <div className="mt-2 min-w-0">{meta}</div> : null}
         </div>
-        {meta ? <div className="min-w-0 flex-1 pl-12 sm:pl-4 lg:pl-0">{meta}</div> : null}
-        <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3 xl:max-w-[32rem] xl:justify-end">
           {showAppearance && (
             <button
               type="button"
@@ -117,7 +114,7 @@ export function Header({
               type="button"
               onClick={() => setProfileOpen(true)}
               className={cn(
-                "rounded-2xl border px-4 py-2 text-right shadow-sm transition focus:outline-none focus:ring-2 focus:ring-teal-500/30",
+                "min-w-0 max-w-full rounded-2xl border px-4 py-2 text-right shadow-sm transition focus:outline-none focus:ring-2 focus:ring-teal-500/30",
                 shellDark
                   ? "border-slate-600 bg-slate-800 hover:border-teal-500/40 hover:bg-slate-700"
                   : "border-slate-200 bg-white hover:border-teal-200 hover:bg-teal-50/80"
@@ -125,7 +122,7 @@ export function Header({
               title="Mi cuenta y permisos"
               aria-label="Abrir mi cuenta"
             >
-              <p className={cn("text-sm font-semibold", shellDark ? "text-slate-100" : "text-slate-900")}>
+              <p className={cn("break-words text-sm font-semibold", shellDark ? "text-slate-100" : "text-slate-900")}>
                 {userName}
               </p>
               {role && (

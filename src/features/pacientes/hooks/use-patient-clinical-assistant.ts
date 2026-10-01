@@ -1,8 +1,8 @@
 "use client";
 
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { useEffect, useMemo, useState } from "react";
+
+import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 
 import type { PatientChartViewProps } from "@/features/pacientes/components/pacientes/patient-chart-view-types";
 import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
@@ -24,7 +24,7 @@ export function usePatientClinicalAssistant({ chart, ehr }: Options) {
   const [drugs, setDrugs] = useState<PathologyDrug[]>([]);
 
   const lastConsultLabel = ehr.consultations[0]?.created_at
-    ? format(new Date(ehr.consultations[0].created_at), "dd/MM/yyyy", { locale: es })
+    ? formatClinicDateTime(ehr.consultations[0].created_at, "dd/MM/yyyy")
     : null;
 
   const summaryLines = useMemo(

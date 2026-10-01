@@ -72,13 +72,13 @@ export function PrintPageButton({
   }
 
   return (
-    <button type={type} onClick={handlePrint} className={cn("inline-flex print:hidden", className)}>
+    <Button type={type} onClick={handlePrint} size="sm" variant="ghost" className={cn("print:hidden", className)}>
       {children ?? (
-        <Button size="sm" variant="ghost" type="button">
-          <Printer className="h-4 w-4" aria-hidden />
+        <>
+          <Printer className={cn("h-4 w-4", iconClassName)} aria-hidden />
           {label}
-        </Button>
+        </>
       )}
-    </button>
+    </Button>
   );
 }

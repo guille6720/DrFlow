@@ -1,9 +1,9 @@
 "use client";
 
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+
+import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 
 import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
 import type { PatientEhrWorkspaceData } from "@/features/pacientes/server/load-patient-ehr-data";
@@ -72,7 +72,7 @@ export function ClinicalWorkspaceTimelinePreview({ ehr, patientId }: Props) {
               </span>
               <p className="truncate text-sm font-medium">{ev.title}</p>
               <p className="drflow-patient-chart-muted text-[11px]">
-                {format(new Date(ev.at), "d MMM yyyy HH:mm", { locale: es })}
+                {formatClinicDateTime(ev.at, "d MMM yyyy HH:mm")}
               </p>
               {ev.href ? (
                 <Link href={ev.href} className="drflow-patient-chart-link text-[11px]">

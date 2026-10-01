@@ -1,8 +1,7 @@
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { FlaskConical } from "lucide-react";
 import Link from "next/link";
 
+import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 import { cn } from "@/shared/utils/cn";
 
 import { patientWorkspacePath } from "@/features/pacientes/constants/patient-workspace-tabs";
@@ -51,7 +50,7 @@ export function ClinicalWorkspaceStudiesSection({
                     {s.file_name}
                   </p>
                   <p className="drflow-patient-chart-muted text-[11px]">
-                    {format(new Date(s.created_at), "d MMM yyyy", { locale: es })} ·{" "}
+                    {formatClinicDateTime(s.created_at, "d MMM yyyy")} ·{" "}
                     {kind === "lab" ? "Laboratorio" : kind === "imaging" ? "Imagen" : "Estudio"}
                   </p>
                 </div>
