@@ -17,6 +17,7 @@ import { toast } from "@/core/notifications/toast";
 import type { AppointmentAgendaRow, ProfessionalAgendaRow } from "@/core/supabase/query-types";
 
 import { cn } from "@/shared/utils/cn";
+import { patientDocumentLabel } from "@/shared/utils/patient-display";
 
 import { RescheduleAppointmentDialog } from "@/features/agenda/components/agenda/reschedule-appointment-dialog";
 import { cancelAppointmentRequest } from "@/features/agenda/utils/cancel-appointment-request";
@@ -54,10 +55,10 @@ import type { Patient } from "@/types/database";
 type Slot = { start_at: string; end_at: string; label: string };
 
 type Props = {
-  patients: Pick<Patient, "id" | "first_name" | "last_name" | "document_number" | "insurance_provider" | "insurance_plan">[];
+  patients: Pick<Patient, "id" | "first_name" | "last_name" | "document_number" | "document_type" | "insurance_provider" | "insurance_plan">[];
   initialPatient?: Pick<
     Patient,
-    "id" | "first_name" | "last_name" | "document_number" | "insurance_provider" | "insurance_plan"
+    "id" | "first_name" | "last_name" | "document_number" | "document_type" | "insurance_provider" | "insurance_plan"
   > | null;
   professionals: ProfessionalAgendaRow[];
   locations: { id: string; name: string }[];
@@ -91,6 +92,7 @@ function mergePatientSelection(
     first_name: picked?.first_name ?? fromList?.first_name ?? "",
     last_name: picked?.last_name ?? fromList?.last_name ?? "",
     document_number: picked?.document_number ?? fromList?.document_number ?? "",
+    document_type: picked?.document_type ?? fromList?.document_type ?? null,
     insurance_provider: picked?.insurance_provider ?? fromList?.insurance_provider ?? null,
     insurance_plan: picked?.insurance_plan ?? fromList?.insurance_plan ?? null,
   };
@@ -564,6 +566,7 @@ export function TurnosNuevoWizard({
             first_name: string;
             last_name: string;
             document_number?: string;
+            document_type?: string | null;
             insurance_provider?: string | null;
             insurance_plan?: string | null;
           }
@@ -576,6 +579,7 @@ export function TurnosNuevoWizard({
               first_name: apptPatient.first_name,
               last_name: apptPatient.last_name,
               document_number: apptPatient.document_number ?? "",
+              document_type: apptPatient.document_type ?? null,
               insurance_provider: apptPatient.insurance_provider ?? null,
               insurance_plan: apptPatient.insurance_plan ?? null,
             }
@@ -743,7 +747,7 @@ export function TurnosNuevoWizard({
                   </dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="font-semibold text-slate-700">DNI</dt>
+                  <dt className="font-semibold text-slate-700">{patientDocumentLabel(displayedPatient.document_type)}</dt>
                   <dd className="font-bold text-slate-950">{displayedPatient.document_number || "—"}</dd>
                 </div>
                 <div className="flex justify-between gap-2">

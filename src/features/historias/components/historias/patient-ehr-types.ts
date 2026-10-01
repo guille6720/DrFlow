@@ -41,6 +41,7 @@ export type PatientEhrPatientInfo = {
   first_name: string;
   last_name: string;
   document_number: string;
+  document_type?: string | null;
   birth_date: string | null;
   age_label: string | null;
   insurance_provider: string | null;

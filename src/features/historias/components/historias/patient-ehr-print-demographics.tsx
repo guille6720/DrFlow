@@ -1,3 +1,5 @@
+import { patientDocumentLabel } from "@/shared/utils/patient-display";
+
 import {
   formatPrintBirthDate,
   formatPrintDetailedAge,
@@ -44,7 +46,7 @@ export function PatientEhrPrintDemographics({ patient, totalConsultations }: Pro
           <p className="drflow-ehr-print-demo-value drflow-ehr-print-demo-name">{patientFormal}</p>
         </div>
         <div className="drflow-ehr-print-demo-field">
-          <p className="drflow-ehr-print-demo-label">DNI</p>
+          <p className="drflow-ehr-print-demo-label">{patientDocumentLabel(patient.document_type)}</p>
           <p className="drflow-ehr-print-demo-value">
             {formatPrintDocumentNumber(patient.document_number)}
           </p>

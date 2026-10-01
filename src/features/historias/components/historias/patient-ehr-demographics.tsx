@@ -1,3 +1,5 @@
+import { patientDocumentLabel } from "@/shared/utils/patient-display";
+
 import { PatientEhrDemographicCell } from "@/features/historias/components/historias/patient-ehr-demographic-cell";
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
 import { PatientWhatsAppButton } from "@/features/pacientes/components/pacientes/patient-whatsapp-button";
@@ -16,7 +18,10 @@ export function PatientEhrDemographics({ patient, totalConsultations }: Props) {
   return (
     <div className="drflow-ehr-demographics flex flex-wrap border-b border-[var(--border)]">
       <PatientEhrDemographicCell label="Nombre" value={patientFormal} />
-      <PatientEhrDemographicCell label="DNI" value={patient.document_number} />
+      <PatientEhrDemographicCell
+        label={patientDocumentLabel(patient.document_type)}
+        value={patient.document_number}
+      />
       <PatientEhrDemographicCell label="Edad" value={patient.age_label ?? "Sin definir"} />
       <PatientEhrDemographicCell label="Sexo" value="Sin definir" />
       <PatientEhrDemographicCell

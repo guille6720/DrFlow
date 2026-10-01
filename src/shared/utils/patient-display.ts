@@ -5,6 +5,7 @@ export type PatientNameRef = {
 
 export type PatientDocumentRef = PatientNameRef & {
   document_number?: string | null;
+  document_type?: string | null;
 };
 
 /** Unwrap PostgREST nested patient relation (object or single-element array). */
@@ -24,8 +25,30 @@ export function formatPatientName(
   return patient ? `${patient.last_name}, ${patient.first_name}` : fallback;
 }
 
-/** DNI/document label for agenda and lists. */
+export function patientDocumentLabel(documentType?: string | null): string {
+  switch (documentType?.trim().toLowerCase()) {
+    case "dni":
+      return "DNI";
+    case "passport":
+      return "Pasaporte";
+    case "cuit":
+      return "CUIT";
+    case "cdi":
+      return "CDI";
+    default:
+      return "Documento";
+  }
+}
+
+/** Document number without a label, for existing agenda callers. */
 export function formatPatientDocument(documentNumber?: string | null): string | null {
   const trimmed = documentNumber?.trim();
   return trimmed ? trimmed : null;
+}
+
+export function formatLabeledPatientDocument(
+  patient: Pick<PatientDocumentRef, "document_number" | "document_type">
+): string | null {
+  const number = formatPatientDocument(patient.document_number);
+  return number ? `${patientDocumentLabel(patient.document_type)} ${number}` : null;
 }

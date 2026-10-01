@@ -10,6 +10,8 @@ import {
 
 import { PrintPageButton } from "@/core/components/ui/print-page-button";
 
+import { patientDocumentLabel } from "@/shared/utils/patient-display";
+
 import { patientInitials } from "@/features/dashboard/components/dashboard/clinical-ops-center/clinical-ops-shared";
 import type {
   PatientChartAppointment,
@@ -79,7 +81,7 @@ export function ClinicalWorkspaceHeader({
           </h2>
           <dl className="drflow-clinical-workspace-meta">
             <div>
-              <dt>DNI</dt>
+              <dt>{patientDocumentLabel(patient.document_type)}</dt>
               <dd>{patient.document_number}</dd>
             </div>
             <div>

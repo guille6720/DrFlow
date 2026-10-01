@@ -7,6 +7,7 @@ import { memo, useCallback } from "react";
 import { useHasGeriatrics } from "@/core/components/products/products-provider";
 
 import { patientClinicalHistoryPath, patientFichaPath } from "@/shared/utils/clinical-navigation";
+import { formatLabeledPatientDocument } from "@/shared/utils/patient-display";
 
 import {
   buildPatientContextMenuItems,
@@ -31,6 +32,7 @@ export type PatientListRow = {
   first_name: string;
   last_name: string;
   document_number: string;
+  document_type?: string | null;
   birth_date: string | null;
   phone: string | null;
   email: string | null;
@@ -70,7 +72,7 @@ const PatientListCard = memo(function PatientListCard({
   const patientDisplay = `${p.last_name}, ${p.first_name}`;
   const contact = p.phone ?? p.email ?? null;
   const metaParts = [
-    `DNI ${p.document_number}`,
+    formatLabeledPatientDocument(p),
     p.ageLabel ?? null,
     contact,
     p.insurance_provider ?? "Sin obra social",

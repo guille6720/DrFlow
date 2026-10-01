@@ -71,7 +71,7 @@ export function PatientFormFields({
       />
       <Input
         name="document_number"
-        label="DNI"
+        label="Documento"
         required
         defaultValue={patient?.document_number ?? prefill?.document_number}
       />

@@ -87,7 +87,7 @@ export async function loadWaitingListPageData(
     .select(
       `id, status, notes, consultation_modality, preferred_date_from, preferred_date_to,
        preferred_time_from, preferred_time_to, created_at,
-       patients(first_name, last_name, document_number, phone),
+       patients(first_name, last_name, document_number, document_type, phone),
        professionals(display_name, profiles(full_name)),
        specialties(name)`,
       { count: "exact" }

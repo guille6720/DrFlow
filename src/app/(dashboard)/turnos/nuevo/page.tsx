@@ -70,7 +70,7 @@ export default async function TurnosNuevoPage({
       ? (
           await supabase
             .from("patients")
-            .select("id, first_name, last_name, document_number, insurance_provider, insurance_plan")
+            .select("id, first_name, last_name, document_number, document_type, insurance_provider, insurance_plan")
             .eq("clinic_id", clinicId)
             .eq("id", patientParam)
             .eq("is_active", true)

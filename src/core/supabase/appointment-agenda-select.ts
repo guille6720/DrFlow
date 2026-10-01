@@ -20,9 +20,9 @@ const OPTIONAL_AGENDA_COLUMNS = [
 ] as const;
 
 const PATIENT_AGENDA_EMBED =
-  "patients(first_name, last_name, document_number, phone, insurance_provider, insurance_plan)";
+  "patients(first_name, last_name, document_number, document_type, phone, insurance_provider, insurance_plan)";
 const PATIENT_AGENDA_EMBED_MIN =
-  "patients(first_name, last_name, document_number, phone, insurance_provider)";
+  "patients(first_name, last_name, document_number, document_type, phone, insurance_provider)";
 const AGENDA_RELATION_EMBEDS =
   "professionals(profiles(full_name)), locations(name), specialties(name)";
 

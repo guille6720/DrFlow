@@ -185,6 +185,7 @@ export type PatientEhrPatientRow = {
   first_name: string;
   last_name: string;
   document_number: string;
+  document_type?: string | null;
   phone: string | null;
   email: string | null;
   birth_date: string | null;
@@ -389,6 +390,7 @@ export function buildPatientEhrWorkspaceData(input: {
       first_name: patient.first_name,
       last_name: patient.last_name,
       document_number: patient.document_number,
+      document_type: patient.document_type,
       birth_date: patient.birth_date,
       age_label: formatAgeLabel(patient.birth_date),
       insurance_provider: patient.insurance_provider,

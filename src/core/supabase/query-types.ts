@@ -11,6 +11,7 @@ export type PatientPickerRow = {
   first_name: string;
   last_name: string;
   document_number?: string;
+  document_type?: string | null;
 };
 
 export type ConsultPatientPickerRow = PatientPickerRow & {
@@ -92,6 +93,7 @@ export type AppointmentAgendaRow = {
     first_name: string;
     last_name: string;
     document_number?: string;
+    document_type?: string | null;
     phone?: string | null;
     insurance_provider?: string | null;
     insurance_plan?: string | null;

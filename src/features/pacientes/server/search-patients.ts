@@ -9,6 +9,7 @@ export type PatientSearchRow = {
   first_name: string;
   last_name: string;
   document_number: string;
+  document_type?: string | null;
   birth_date?: string | null;
   insurance_provider?: string | null;
   insurance_plan?: string | null;
@@ -58,7 +59,23 @@ export async function searchPatientsForClinic(
     return { patients: [], error: error.message };
   }
 
-  return { patients: (data ?? []) as PatientSearchRow[] };
+  const rows = (data ?? []) as PatientSearchRow[];
+  if (rows.length === 0) return { patients: [] };
+
+  // The legacy search RPC omits document_type. Enrich through the same RLS client.
+  const { data: identities, error: identityError } = await supabase
+    .from("patients")
+    .select("id, document_type")
+    .eq("clinic_id", options.clinicId)
+    .in("id", rows.map((row) => row.id));
+  if (identityError) return { patients: [], error: identityError.message };
+  const byId = new Map((identities ?? []).map((row) => [row.id, row.document_type]));
+  return {
+    patients: rows.filter((row) => byId.has(row.id)).map((row) => ({
+      ...row,
+      document_type: byId.get(row.id) ?? null,
+    })),
+  };
 }
 
 /** Total matches for list pagination (RPC 091). Falls back to result length when RPC missing. */

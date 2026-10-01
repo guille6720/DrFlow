@@ -20,12 +20,14 @@ function mapSearchRow(patient: {
   first_name: string;
   last_name: string;
   document_number: string;
+  document_type?: string | null;
 }): PatientPickerRow {
   return {
     id: patient.id,
     first_name: patient.first_name,
     last_name: patient.last_name,
     document_number: patient.document_number,
+    document_type: patient.document_type,
   };
 }
 
@@ -87,7 +89,7 @@ export async function loadPatientPickerList(
     const { data, count } = await supabase
       .from("patients")
       .select(
-        "id, first_name, last_name, document_number, allergies, regular_medication, medical_history",
+        "id, first_name, last_name, document_number, document_type, allergies, regular_medication, medical_history",
         { count: "exact" }
       )
       .eq("clinic_id", clinicId)
@@ -100,7 +102,7 @@ export async function loadPatientPickerList(
 
   const { data, count } = await supabase
     .from("patients")
-    .select("id, first_name, last_name, document_number", { count: "exact" })
+    .select("id, first_name, last_name, document_number, document_type", { count: "exact" })
     .eq("clinic_id", clinicId)
     .eq("is_active", true)
     .order("last_name")

@@ -29,6 +29,7 @@ export type PacientesPagePatient = {
   first_name: string;
   last_name: string;
   document_number: string;
+  document_type?: string | null;
   birth_date: string | null;
   phone: string | null;
   email: string | null;
@@ -83,6 +84,7 @@ type RawPatientRow = {
   first_name: string;
   last_name: string;
   document_number: string;
+  document_type?: string | null;
   birth_date: string | null;
   phone: string | null;
   email: string | null;
@@ -95,6 +97,7 @@ function mapSearchRow(row: PatientSearchRow): RawPatientRow {
     first_name: row.first_name,
     last_name: row.last_name,
     document_number: row.document_number,
+    document_type: row.document_type,
     birth_date: row.birth_date ?? null,
     phone: row.phone ?? null,
     email: row.email ?? null,
@@ -233,7 +236,7 @@ async function loadPacientesPageDataInner(
   let query = supabase
     .from("patients")
     .select(
-      "id, first_name, last_name, document_number, birth_date, phone, email, insurance_provider",
+      "id, first_name, last_name, document_number, document_type, birth_date, phone, email, insurance_provider",
       { count: "exact" }
     )
     .eq("clinic_id", clinicId)

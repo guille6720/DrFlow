@@ -9,6 +9,7 @@ import { useAsyncPatientSearch } from "@/core/hooks/use-async-patient-search";
 import { PATIENT_SEARCH_API_LIMIT } from "@/core/supabase/pagination";
 
 import { cn } from "@/shared/utils/cn";
+import { formatLabeledPatientDocument } from "@/shared/utils/patient-display";
 
 import { formatAgeLabel, isPamiPatient } from "@/features/pacientes/utils/patient-age";
 import {
@@ -24,6 +25,7 @@ export type PatientSearchOption = {
   first_name: string;
   last_name: string;
   document_number: string;
+  document_type?: string | null;
   birth_date?: string | null;
   phone?: string | null;
   insurance_provider?: string | null;
@@ -48,7 +50,7 @@ interface Props {
   searchResultLimit?: number;
   /** When set, shows a create-patient link if there are no matches. */
   createPatientHref?: (query: string) => string;
-  /** Rich rows (name + DNI/edad/tel/obra social) like the Pacientes list. */
+  /** Rich rows (name + documento/edad/tel/obra social) like the Pacientes list. */
   displayMode?: "compact" | "detailed";
 }
 
@@ -69,7 +71,7 @@ function optionId(listboxId: string, patientId: string) {
 
 function buildPatientOptionMeta(p: PatientSearchOption): string {
   const parts = [
-    `DNI ${p.document_number}`,
+    formatLabeledPatientDocument(p),
     formatAgeLabel(p.birth_date),
     p.phone,
     p.insurance_provider ?? "Sin obra social",
@@ -84,7 +86,7 @@ export function PatientSearchCombobox({
   name = "patient_id",
   label = "Paciente",
   required,
-  placeholder = "Escribí nombre, apellido o DNI…",
+  placeholder = "Escribí nombre, apellido o documento…",
   defaultPatientId,
   onPatientChange,
   searchMode = "remote",
@@ -369,7 +371,7 @@ export function PatientSearchCombobox({
                         {p.last_name}, {p.first_name}
                       </span>
                       <span className="ml-2 text-xs text-[var(--text-muted,var(--muted-foreground))]">
-                        DNI {p.document_number}
+                        {formatLabeledPatientDocument(p)}
                       </span>
                     </>
                   )}

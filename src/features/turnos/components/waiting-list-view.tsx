@@ -9,6 +9,8 @@ import { useState } from "react";
 
 import type { PageMeta } from "@/core/supabase/pagination";
 
+import { formatLabeledPatientDocument } from "@/shared/utils/patient-display";
+
 import { updateWaitingListStatus } from "@/features/turnos/actions/waiting-list";
 
 import { Button } from "@/components/ui/button";
@@ -26,7 +28,7 @@ export type WaitingListRow = {
   preferred_time_from: string | null;
   preferred_time_to: string | null;
   created_at: string;
-  patients: { first_name: string; last_name: string; document_number: string; phone: string | null } | null;
+  patients: { first_name: string; last_name: string; document_number: string; document_type?: string | null; phone: string | null } | null;
   professionals: { display_name: string | null; profiles: { full_name: string | null } | null } | null;
   specialties: { name: string } | null;
 };
@@ -132,7 +134,7 @@ export function WaitingListView({
                 <div className="space-y-1 text-sm">
                   <p className="font-semibold">
                     {patient ? `${patient.last_name}, ${patient.first_name}` : "Paciente"}
-                    {patient?.document_number ? ` · DNI ${patient.document_number}` : ""}
+                    {patient?.document_number ? ` · ${formatLabeledPatientDocument(patient)}` : ""}
                   </p>
                   <p className="text-[var(--muted-foreground)]">
                     {entry.specialties?.name ?? "Sin especialidad"} · {profName}
