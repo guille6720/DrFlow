@@ -1,5 +1,6 @@
 import qrcode from "qrcode-generator";
 
+import { BRAND_NAME } from "@/core/brand/brand";
 import { resolveRefepsDocumentLanguage } from "@/core/compliance/prescription-compliance";
 import { isOfficialCuirString } from "@/core/renapdis/cuir";
 
@@ -61,7 +62,7 @@ export function buildPrescriptionQrPayload(input: {
   coverageKind?: PrescriptionCoverageKind | null;
 }): string {
   const parts = [
-    "DRFLOW",
+    BRAND_NAME.toUpperCase(),
     "RX",
     input.prescriptionNumber?.trim() || input.prescriptionId?.slice(0, 8) || "LOCAL",
     input.patientDocumentNumber.trim(),
@@ -76,9 +77,12 @@ export function buildSandboxCuirQrPayload(input: {
   cuirFormatted: string;
   prescriptionNumber: string | null;
 }): string {
-  return ["DRFLOW", "CUIR-SANDBOX", input.cuirFormatted.trim(), input.prescriptionNumber?.trim() || ""].join(
-    "|"
-  );
+  return [
+    BRAND_NAME.toUpperCase(),
+    "CUIR-SANDBOX",
+    input.cuirFormatted.trim(),
+    input.prescriptionNumber?.trim() || "",
+  ].join("|");
 }
 
 /** REFEPS verification payload when prescription was submitted. */

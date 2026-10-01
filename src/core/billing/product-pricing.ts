@@ -4,6 +4,8 @@
  * Checkout automático de Geriatría: NO activado (requiere Superadmin).
  */
 
+import { BRAND_NAME } from "@/core/brand/brand";
+
 export const PRODUCT_PROMO_BILLING_MONTHS = 6 as const;
 
 export type PlatformProductSkuId = "geriatrics" | "clinic_geriatrics_bundle";
@@ -80,14 +82,14 @@ export function formatProductPriceArs(amount: number): string {
 
 export function getGeriatricsDemoMessage(): string {
   return (
-    "Hola, quiero solicitar una demo del módulo Geriatría de DrFlow " +
+    `Hola, quiero solicitar una demo del módulo Geriatría de ${BRAND_NAME} ` +
     `(promo ${formatProductPriceArs(59_000)}/mes × 6 meses, luego ${formatProductPriceArs(79_000)}/mes, hasta 30 residentes).`
   );
 }
 
 export function getClinicGeriatricsBundleDemoMessage(): string {
   return (
-    "Hola, quiero información sobre Clínica + Geriatría de DrFlow " +
+    `Hola, quiero información sobre Clínica + Geriatría de ${BRAND_NAME} ` +
     `(${formatProductPriceArs(99_000)}/mes).`
   );
 }

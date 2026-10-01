@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BRAND_NAME } from "@/core/brand/brand";
 import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
 
 import { ButtonLink } from "@/components/ui/button";
@@ -15,7 +16,7 @@ export default function SinProductosPage() {
       <Card title="Qué significa esto" description="Habilitación exclusiva del Superadmin">
         <p className="text-sm text-slate-700 dark:text-slate-200">
           Los administradores y propietarios de la institución no pueden activar productos por sí
-          mismos. Pedile al equipo DrFlow (Superadmin) que habilite <strong>Clínica</strong>,{" "}
+          mismos. Pedile al equipo {BRAND_NAME} (Superadmin) que habilite <strong>Clínica</strong>,{" "}
           <strong>Geriatría</strong>, o ambos.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">

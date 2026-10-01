@@ -63,7 +63,7 @@ describe("prescription document Etapa 4", () => {
     expect(data.coverage.insuranceNumber).toBe("12345678901");
     expect(data.coverage.insurancePlan).toBe("PMO");
     expect(data.showQr).toBe(true);
-    expect(data.qrPayload).toContain("DRFLOW|RX|RX-2026-001");
+    expect(data.qrPayload).toContain("NEXCLINIC|RX|RX-2026-001");
   });
 
   it("builds REFEPS QR when submitted", () => {
@@ -97,7 +97,8 @@ describe("prescription document Etapa 4", () => {
     expect(html).toContain("Cobertura");
     expect(html).toContain("N° beneficio");
     expect(html).toContain("Verificación local");
-    expect(html).toContain("DRFLOW|RX");
+    expect(html).toContain("NEXCLINIC|RX");
+    expect(html).not.toContain("DRFLOW");
   });
 
   it("renders PAMI vademecum code in print HTML", () => {
@@ -136,11 +137,11 @@ describe("prescription document Etapa 4", () => {
       issuedAt: "2026-08-11T12:00:00.000Z",
       coverageKind: "PAMI",
     });
-    expect(payload).toBe("DRFLOW|RX|RX-1|30123456|2026-08-11|PAMI");
+    expect(payload).toBe("NEXCLINIC|RX|RX-1|30123456|2026-08-11|PAMI");
   });
 
   it("generates local QR data URL without third-party host", () => {
-    const url = buildPrescriptionQrImageUrl("DRFLOW|RX|TEST");
+    const url = buildPrescriptionQrImageUrl("NEXCLINIC|RX|TEST");
     expect(url.startsWith("data:image/")).toBe(true);
     expect(url).not.toContain("qrserver.com");
   });

@@ -111,7 +111,8 @@ describe("buildEhrPrintDocumentHtml", () => {
     });
 
     expect(html).toContain("<!DOCTYPE html>");
-    expect(html).toContain("DRFLOW");
+    expect(html).toContain('<p class="brand-name">NexClinic</p>');
+    expect(html).not.toContain("DRFLOW");
     expect(html).toContain("Historia Clínica Completa");
     expect(html).toContain("abalo, jorge guillermo");
     expect(html).toContain("Resumen clínico");

@@ -1,3 +1,4 @@
+import { BRAND_NAME } from "@/core/brand/brand";
 import { escapeHtml } from "@/core/security/xss";
 
 import {
@@ -153,7 +154,7 @@ function renderHeader(
   return `
     <header class="doc-header">
       <div class="brand">
-        <p class="brand-name">DRFLOW</p>
+        <p class="brand-name">${escapeHtml(BRAND_NAME)}</p>
         <h1>${escapeHtml(title)}</h1>
       </div>
       <p class="generated">Generado: ${escapeHtml(generatedAt)}</p>

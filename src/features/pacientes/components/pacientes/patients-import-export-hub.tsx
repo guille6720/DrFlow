@@ -3,6 +3,7 @@
 import { Download } from "lucide-react";
 import { useState } from "react";
 
+import { BRAND_NAME } from "@/core/brand/brand";
 import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
 import { useCanUseFeature } from "@/core/components/entitlements/entitlements-provider";
 import { FEATURES } from "@/core/entitlements/features";
@@ -48,7 +49,7 @@ export function PatientsImportExportHub({
   function handleExport() {
     if (!exportKind || exportPatients.length === 0) return;
     if (exportKind === "patients-csv") {
-      downloadPatientsCsv("pacientes-drflow.csv", exportPatients);
+      downloadPatientsCsv(`pacientes-${BRAND_NAME.toLowerCase()}.csv`, exportPatients);
     } else if (exportKind === "patients-pdf") {
       void downloadPatientsPdf(exportPatients);
     }

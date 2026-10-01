@@ -1,6 +1,8 @@
-# DrFlow
+# NexClinic
 
-**DrFlow** es un MVP SaaS original para gestión de consultorios y clínicas médicas. Permite administrar turnos, pacientes, historias clínicas digitales, recordatorios, telemedicina base, pagos mock y reportes operativos.
+**NexClinic** es un MVP SaaS original para gestión de consultorios y clínicas médicas. Permite administrar turnos, pacientes, historias clínicas digitales, recordatorios, telemedicina base, pagos mock y reportes operativos.
+
+El producto se llama NexClinic. DrFlow es el nombre técnico legado del repositorio, algunos enlaces e identificadores de compatibilidad; no es otro producto. Los documentos históricos conservan su identidad original.
 
 > Identidad visual, marca y textos propios — no copia de sistemas existentes.
 
@@ -17,7 +19,7 @@
 ## Estructura de carpetas
 
 ```
-DrFlow/
+NexClinic/
 ├── supabase/migrations/     # SQL: schema, RLS, seed
 ├── src/
 │   ├── app/
@@ -162,4 +164,4 @@ Los servicios en `src/lib/services/` están diseñados para reemplazo:
 
 ## Licencia
 
-Proyecto privado — DrFlow MVP.
+Proyecto privado — NexClinic MVP.

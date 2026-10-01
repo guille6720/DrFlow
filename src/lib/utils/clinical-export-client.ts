@@ -1,5 +1,7 @@
 "use client";
 
+import { BRAND_NAME } from "@/core/brand/brand";
+
 import { toCsvDocument } from "@/features/integraciones/lib/spreadsheet-export-safety";
 
 import { buildClinicalHistoryFilename } from "@/lib/utils/clinical-history-filename";
@@ -95,7 +97,7 @@ export async function downloadClinicalHistoryPdf(
   const jsPDF = await loadJsPdf();
   const doc = new jsPDF();
   doc.setFontSize(16);
-  doc.text("NexClinic — Historia clínica", 20, 20);
+  doc.text(`${BRAND_NAME} — Historia clínica`, 20, 20);
   doc.setFontSize(11);
   doc.text(`Paciente: ${patient.last_name}, ${patient.first_name}`, 20, 32);
   doc.text(`DNI: ${patient.document_number}`, 20, 40);
@@ -134,7 +136,7 @@ export async function downloadPatientsPdf(patients: PatientExportRow[]) {
   const jsPDF = await loadJsPdf();
   const doc = new jsPDF();
   doc.setFontSize(16);
-  doc.text("NexClinic — Listado de pacientes", 20, 20);
+  doc.text(`${BRAND_NAME} — Listado de pacientes`, 20, 20);
   doc.setFontSize(10);
   let y = 32;
   for (const p of patients) {
@@ -147,14 +149,14 @@ export async function downloadPatientsPdf(patients: PatientExportRow[]) {
     doc.text(lines, 20, y);
     y += lines.length * 5 + 4;
   }
-  doc.save("pacientes-drflow.pdf");
+  doc.save(`pacientes-${BRAND_NAME.toLowerCase()}.pdf`);
 }
 
 export async function downloadClinicalRecordsListPdf(records: ClinicalRecordExportRow[], title: string) {
   const jsPDF = await loadJsPdf();
   const doc = new jsPDF();
   doc.setFontSize(16);
-  doc.text("NexClinic — Consultas clínicas", 20, 20);
+  doc.text(`${BRAND_NAME} — Consultas clínicas`, 20, 20);
   doc.setFontSize(11);
   doc.text(title, 20, 30);
   let y = 40;
@@ -171,5 +173,5 @@ export async function downloadClinicalRecordsListPdf(records: ClinicalRecordExpo
     y = appendWrappedText(doc, r.diagnosis || r.chief_complaint, 20, y, 170, 5);
     y += 6;
   }
-  doc.save("consultas-clinicas-drflow.pdf");
+  doc.save(`consultas-clinicas-${BRAND_NAME.toLowerCase()}.pdf`);
 }

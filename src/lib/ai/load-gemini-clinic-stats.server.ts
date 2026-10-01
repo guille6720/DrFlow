@@ -4,6 +4,7 @@ import { addMonths } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz";
 
+import { BRAND_NAME } from "@/core/brand/brand";
 import { createClient } from "@/core/supabase/server";
 
 import { DEFAULT_CLINIC_TIMEZONE } from "@/shared/utils/clinic-timezone";
@@ -149,7 +150,7 @@ function screeningProtocolContext(query: GeminiClinicStatsQuery): string | null 
       : null;
   if (!query.htaDiureticRiskScreening) return base;
   const screeningNote = [
-    "Screening multi-factor DrFlow (determinístico):",
+    `Screening multi-factor ${BRAND_NAME} (determinístico):`,
     "Gate: ≥ 2 antihipertensivos incluyendo ≥ 1 diurético.",
     "Factores (≥ 2): edad > 70; tabaquista; fibrilación auricular; diabetes; IMC ≥ 30; filtrado glomerular < 60.",
     "Orden del listado: primero quienes tienen TODOS los factores; luego por cantidad de factores.",
