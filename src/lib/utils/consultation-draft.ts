@@ -1,3 +1,7 @@
+import type { ClinicalDiagnosisEntry, ClinicalTreatmentEntry } from "@/features/historias/utils/clinical-structured-entries";
+
+import type { PrescriptionMedication } from "@/types/prescription";
+
 export type ConsultationDraftContext = {
   patientId: string;
   appointmentId?: string;
@@ -14,6 +18,11 @@ export type ConsultationDraftPayload = {
   diagnosis: string;
   indications: string;
   vitals: string;
+  consultationAt?: string;
+  diagnoses?: ClinicalDiagnosisEntry[];
+  clinicalTreatments?: ClinicalTreatmentEntry[];
+  treatmentMedications?: PrescriptionMedication[];
+  savedFingerprint?: string;
   /** ID del clinical_record ya persistido (autosave / edición). */
   recordId?: string | null;
   updatedAt: string;

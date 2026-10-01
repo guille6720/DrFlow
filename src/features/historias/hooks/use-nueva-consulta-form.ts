@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "@/core/notifications/toast";
+import { createClient } from "@/core/supabase/client";
 import type { ConsultPatientPickerRow } from "@/core/supabase/query-types";
 
 import { backHrefFromClinicalSubpage } from "@/shared/utils/clinical-navigation";
@@ -115,6 +116,9 @@ type ConsultFormDraft = {
   clinicalTreatments: ClinicalTreatmentEntry[];
   treatmentMedications: PrescriptionMedication[];
   vitals: string;
+  consultationAt: string;
+  savedFingerprint: string;
+  contextKey: string | null;
   isDirty: boolean;
 };
 
@@ -160,6 +164,8 @@ export function useNuevaConsultaForm({
   /** clinical_record id for autosave updates / in-session edit */
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [restoredDraftKey, setRestoredDraftKey] = useState<string | null>(null);
+  const restoreGenerationRef = useRef(0);
   const savingRef = useRef(false);
   const editingRecordIdRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -172,6 +178,9 @@ export function useNuevaConsultaForm({
     clinicalTreatments: [],
     treatmentMedications: [],
     vitals: "",
+    consultationAt,
+    savedFingerprint: "",
+    contextKey: null,
     isDirty: false,
   });
 
@@ -237,6 +246,9 @@ export function useNuevaConsultaForm({
       clinicalTreatments: [],
       treatmentMedications: [],
       vitals: "",
+      consultationAt: toDatetimeLocalValue(new Date()),
+      savedFingerprint: "",
+      contextKey: null,
       isDirty: false,
     };
   }
@@ -327,6 +339,9 @@ export function useNuevaConsultaForm({
       clinicalTreatments: [],
       treatmentMedications: [],
       vitals: "",
+      consultationAt: toDatetimeLocalValue(new Date()),
+      savedFingerprint: "",
+      contextKey: null,
       isDirty: false,
     };
   }, [workspace, workspaceIdentity]);
@@ -337,6 +352,22 @@ export function useNuevaConsultaForm({
 
   const activeProfessionalId = fromAppointment ? defaultProfessional : professionalId;
   const activeProfessional = professionals.find((p) => p.id === activeProfessionalId);
+
+  const consultationContext = useMemo(() => {
+    if (!patientId) return null;
+    const proId = fromAppointment ? defaultProfessional : professionalId;
+    return {
+      patientId,
+      appointmentId: appointmentId || undefined,
+      professionalId: proId || undefined,
+    };
+  }, [patientId, appointmentId, fromAppointment, defaultProfessional, professionalId]);
+
+  const draftKey = useMemo(
+    () => (consultationContext ? consultationDraftKey(consultationContext) : null),
+    [consultationContext]
+  );
+  const draftReady = restoredDraftKey === draftKey;
 
   const contentFingerprint = useMemo(
     () =>
@@ -373,9 +404,11 @@ export function useNuevaConsultaForm({
     clinicalTreatments.length > 0 ||
     treatmentMedications.length > 0 ||
     vitals.trim().length > 0;
-  const isDirty = editingRecordId
-    ? contentFingerprint !== savedFingerprint
-    : hasContent && contentFingerprint !== savedFingerprint;
+  const isDirty =
+    draftReady &&
+    (editingRecordId
+      ? contentFingerprint !== savedFingerprint
+      : hasContent && contentFingerprint !== savedFingerprint);
 
   useEffect(() => {
     formDraftRef.current = {
@@ -387,6 +420,9 @@ export function useNuevaConsultaForm({
       clinicalTreatments,
       treatmentMedications,
       vitals,
+      consultationAt,
+      savedFingerprint,
+      contextKey: draftReady ? draftKey : null,
       isDirty,
     };
   }, [
@@ -398,6 +434,10 @@ export function useNuevaConsultaForm({
     clinicalTreatments,
     treatmentMedications,
     vitals,
+    consultationAt,
+    savedFingerprint,
+    draftKey,
+    draftReady,
     isDirty,
   ]);
 
@@ -418,21 +458,6 @@ export function useNuevaConsultaForm({
     );
   }
 
-  const consultationContext = useMemo(() => {
-    if (!patientId) return null;
-    const proId = fromAppointment ? defaultProfessional : professionalId;
-    return {
-      patientId,
-      appointmentId: appointmentId || undefined,
-      professionalId: proId || undefined,
-    };
-  }, [patientId, appointmentId, fromAppointment, defaultProfessional, professionalId]);
-
-  const draftKey = useMemo(
-    () => (consultationContext ? consultationDraftKey(consultationContext) : null),
-    [consultationContext]
-  );
-
   useEffect(() => {
     if (!appointmentId) return;
     startConsultationFromAppointment(appointmentId).then((result) => {
@@ -442,9 +467,45 @@ export function useNuevaConsultaForm({
 
   useEffect(() => {
     if (!draftKey) return;
+    const generation = ++restoreGenerationRef.current;
+    let cancelled = false;
     const saved = readConsultationDraft(draftKey);
-    if (!saved) return;
-    queueMicrotask(() => {
+    async function restoreDraft() {
+      if (cancelled || generation !== restoreGenerationRef.current) return;
+      if (!saved) {
+        if (!cancelled && generation === restoreGenerationRef.current) setRestoredDraftKey(draftKey);
+        return;
+      }
+      let nextConsultationAt = saved.consultationAt;
+      if (!nextConsultationAt || !Number.isFinite(new Date(nextConsultationAt).getTime())) {
+        if (saved.recordId) {
+          // Legacy drafts have no date: recover only the record visible under the user's RLS.
+          try {
+            const { data, error: lookupError } = await createClient()
+              .from("clinical_records")
+              .select("created_at")
+              .eq("id", saved.recordId)
+              .eq("patient_id", patientId)
+              .maybeSingle();
+            if (lookupError || !data?.created_at || !Number.isFinite(new Date(data.created_at).getTime())) {
+              throw new Error("No se pudo recuperar la fecha de la evolución. Volvé a abrirla desde la historia clínica.");
+            }
+            nextConsultationAt = toDatetimeLocalValue(new Date(data.created_at));
+          } catch {
+            if (!cancelled && generation === restoreGenerationRef.current) {
+              setError("No se pudo recuperar la fecha de la evolución. Volvé a abrirla desde la historia clínica.");
+            }
+            return;
+          }
+        } else {
+          nextConsultationAt = toDatetimeLocalValue(new Date());
+        }
+      }
+      if (cancelled || generation !== restoreGenerationRef.current) return;
+      setConsultationAt(nextConsultationAt);
+      setDiagnoses(saved.diagnoses ?? []);
+      setClinicalTreatments(saved.clinicalTreatments ?? []);
+      setTreatmentMedications(saved.treatmentMedications ?? []);
       if (saved.evolution.trim()) {
         setEvolution((prev) => (prev.trim().length === 0 ? saved.evolution : prev));
       }
@@ -464,15 +525,16 @@ export function useNuevaConsultaForm({
         setEditingRecordId((prev) => prev ?? saved.recordId ?? null);
         editingRecordIdRef.current = saved.recordId;
         setSavedFingerprint(
-          JSON.stringify({
+          saved.savedFingerprint ?? JSON.stringify({
             evolution: saved.evolution,
             chiefComplaint: saved.chiefComplaint,
             diagnosis: saved.diagnosis,
-            diagnoses: [],
+            diagnoses: saved.diagnoses ?? [],
             indications: saved.indications,
-            clinicalTreatments: [],
-            treatmentMedications: [],
+            clinicalTreatments: saved.clinicalTreatments ?? [],
+            treatmentMedications: saved.treatmentMedications ?? [],
             vitals: saved.vitals,
+            consultationAt: nextConsultationAt,
           })
         );
       } else {
@@ -487,18 +549,23 @@ export function useNuevaConsultaForm({
             clinicalTreatments: [],
             treatmentMedications: [],
             vitals: "",
+            consultationAt: nextConsultationAt,
           })
         );
       }
-    });
-  }, [draftKey]);
+      setRestoredDraftKey(draftKey);
+    }
+    queueMicrotask(() => { void restoreDraft(); });
+    return () => { cancelled = true; };
+  }, [draftKey, patientId]);
 
   useEffect(() => {
-    if (!draftKey) return;
+    if (!draftKey || !draftReady) return;
     const storageKey: string = draftKey;
 
     function flushDraft() {
       const draft = formDraftRef.current;
+      if (draft.contextKey !== storageKey) return;
       saveConsultationDraft(storageKey, {
         v: 1,
         evolution: draft.evolution,
@@ -506,6 +573,11 @@ export function useNuevaConsultaForm({
         diagnosis: draft.diagnosis,
         indications: draft.indications,
         vitals: draft.vitals,
+        consultationAt: draft.consultationAt,
+        diagnoses: draft.diagnoses,
+        clinicalTreatments: draft.clinicalTreatments,
+        treatmentMedications: draft.treatmentMedications,
+        savedFingerprint: draft.savedFingerprint,
         recordId: editingRecordIdRef.current,
         updatedAt: new Date().toISOString(),
       });
@@ -523,11 +595,12 @@ export function useNuevaConsultaForm({
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       flushDraft();
     };
-  }, [evolution, chiefComplaint, diagnosis, indications, vitals, editingRecordId, draftKey]);
+  }, [contentFingerprint, savedFingerprint, editingRecordId, draftKey, draftReady]);
 
   const persistConsultation = useCallback(
     async (form: HTMLFormElement, options?: { silent?: boolean }) => {
       const draft = formDraftRef.current;
+      if (!draftReady) return { ok: false as const, error: "Recuperando la evolución..." };
       if (savingRef.current) return { ok: false as const, error: "Guardando..." };
       if (!draft.isDirty && !editingRecordIdRef.current) {
         return { ok: false as const, error: null };
@@ -565,7 +638,7 @@ export function useNuevaConsultaForm({
         formData.set("indications", indicationsText);
         formData.set("evolution", evolutionText);
         formData.set("professional_signature", professionalSignature);
-        formData.set("consultation_at", new Date(consultationAt).toISOString());
+        formData.set("consultation_at", new Date(draft.consultationAt).toISOString());
 
         const recordId = editingRecordIdRef.current;
         const appointmentRaw = formData.get("appointment_id");
@@ -604,19 +677,18 @@ export function useNuevaConsultaForm({
         if (savedId) {
           setEditingRecordId(savedId);
           editingRecordIdRef.current = savedId;
-          setSavedFingerprint(
-            JSON.stringify({
-              evolution: draft.evolution,
-              chiefComplaint: draft.chiefComplaint,
-              diagnosis: draft.diagnosis,
-              diagnoses: draft.diagnoses,
-              indications: draft.indications,
-              clinicalTreatments: draft.clinicalTreatments,
-              treatmentMedications: draft.treatmentMedications,
-              vitals: draft.vitals,
-              consultationAt,
-            })
-          );
+          const nextSavedFingerprint = JSON.stringify({
+            evolution: draft.evolution,
+            chiefComplaint: draft.chiefComplaint,
+            diagnosis: draft.diagnosis,
+            diagnoses: draft.diagnoses,
+            indications: draft.indications,
+            clinicalTreatments: draft.clinicalTreatments,
+            treatmentMedications: draft.treatmentMedications,
+            vitals: draft.vitals,
+            consultationAt: draft.consultationAt,
+          });
+          setSavedFingerprint(nextSavedFingerprint);
           if (draftKey) {
             saveConsultationDraft(draftKey, {
               v: 1,
@@ -625,6 +697,11 @@ export function useNuevaConsultaForm({
               diagnosis: draft.diagnosis,
               indications: draft.indications,
               vitals: draft.vitals,
+              consultationAt: draft.consultationAt,
+              diagnoses: draft.diagnoses,
+              clinicalTreatments: draft.clinicalTreatments,
+              treatmentMedications: draft.treatmentMedications,
+              savedFingerprint: nextSavedFingerprint,
               recordId: savedId,
               updatedAt: new Date().toISOString(),
             });
@@ -633,7 +710,7 @@ export function useNuevaConsultaForm({
           if (workspace) {
             const pro = professionals.find((p) => p.id === professionalIdValue);
             workspace.onSaved(savedId, options?.silent, {
-              consultationAtIso: new Date(consultationAt).toISOString(),
+              consultationAtIso: new Date(draft.consultationAt).toISOString(),
               snapshot: {
                 chief_complaint: draft.chiefComplaint,
                 evolution: evolutionText,
@@ -664,7 +741,7 @@ export function useNuevaConsultaForm({
     },
     [
       appointmentId,
-      consultationAt,
+      draftReady,
       draftKey,
       professionalSignature,
       professionals,
@@ -677,7 +754,7 @@ export function useNuevaConsultaForm({
     const draft = formDraftRef.current;
     const form = formRef.current;
     if (!form || savingRef.current) return;
-    if (!draft.isDirty && !editingRecordIdRef.current) return;
+    if (!draft.isDirty || draft.contextKey !== draftKey) return;
     if (!patientId || !activeProfessionalId) return;
 
     const diagnosisText = buildDiagnosisText(draft.diagnoses, draft.diagnosis);
@@ -700,7 +777,7 @@ export function useNuevaConsultaForm({
           draft.clinicalTreatments
         ),
         professional_signature: professionalSignature,
-        consultation_at: new Date(consultationAt).toISOString(),
+        consultation_at: new Date(draft.consultationAt).toISOString(),
         diagnosis_cie10: draft.diagnoses.find((d) => d.cie10_code?.trim())?.cie10_code ?? null,
         diagnoses_json: JSON.stringify(draft.diagnoses),
         treatments_json: JSON.stringify(mergedTreatments),
@@ -710,7 +787,7 @@ export function useNuevaConsultaForm({
   }, [
     activeProfessionalId,
     appointmentId,
-    consultationAt,
+    draftKey,
     patientId,
     professionalSignature,
   ]);
@@ -738,10 +815,15 @@ export function useNuevaConsultaForm({
     return () => window.clearTimeout(timer);
   }, [isDirty, contentFingerprint]);
 
+  const flushKeepaliveSaveRef = useRef(flushKeepaliveSave);
+  useEffect(() => {
+    flushKeepaliveSaveRef.current = flushKeepaliveSave;
+  }, [flushKeepaliveSave]);
+
   useEffect(() => {
     function handleBeforeUnload(event: BeforeUnloadEvent) {
       if (!formDraftRef.current.isDirty) return;
-      flushKeepaliveSave();
+      flushKeepaliveSaveRef.current();
       event.preventDefault();
       event.returnValue = "";
     }
@@ -749,9 +831,9 @@ export function useNuevaConsultaForm({
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      flushKeepaliveSave();
+      flushKeepaliveSaveRef.current();
     };
-  }, [flushKeepaliveSave]);
+  }, []);
 
   const prevPathnameRef = useRef(pathname);
   useEffect(() => {
@@ -770,7 +852,7 @@ export function useNuevaConsultaForm({
   }
 
   function flushEvolutionDraft() {
-    if (draftKey) {
+    if (draftKey && draftReady) {
       saveConsultationDraft(draftKey, {
         v: 1,
         evolution,
@@ -778,6 +860,11 @@ export function useNuevaConsultaForm({
         diagnosis,
         indications,
         vitals,
+        consultationAt,
+        diagnoses,
+        clinicalTreatments,
+        treatmentMedications,
+        savedFingerprint,
         recordId: editingRecordIdRef.current,
         updatedAt: new Date().toISOString(),
       });
@@ -805,6 +892,8 @@ export function useNuevaConsultaForm({
     indications?: string | null;
     professional_signature?: string | null;
   }) {
+    ++restoreGenerationRef.current;
+    setRestoredDraftKey(draftKey);
     clearTemplateVariables();
     setEditingRecordId(record.id);
     editingRecordIdRef.current = record.id;
@@ -840,6 +929,8 @@ export function useNuevaConsultaForm({
   }
 
   function startNewConsultation() {
+    ++restoreGenerationRef.current;
+    setRestoredDraftKey(draftKey);
     if (draftKey) clearConsultationEvolution(draftKey);
     resetConsultFields();
     setSavedFingerprint(
