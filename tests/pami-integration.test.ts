@@ -147,9 +147,9 @@ beforeEach(() => {
 });
 
 describe("PAMI config", () => {
-  it("uses the official PAMI entry pages by default", () => {
-    expect(PAMI_DEFAULT_PRESCRIPTION_URL).toBe("https://prestadores.pami.org.ar/receta-electronica.php");
-    expect(PAMI_DEFAULT_OME_URL).toBe("https://prestadores.pami.org.ar/ome.php");
+  it("uses the same official CUP access for prescriptions and medical orders", () => {
+    expect(PAMI_DEFAULT_PRESCRIPTION_URL).toBe("https://cup.pami.org.ar/controllers/loginController.php");
+    expect(PAMI_DEFAULT_OME_URL).toBe(PAMI_DEFAULT_PRESCRIPTION_URL);
     expect(PAMI_PRESCRIPTION_URL).toBe(PAMI_DEFAULT_PRESCRIPTION_URL);
     expect(PAMI_OME_URL).toBe(PAMI_DEFAULT_OME_URL);
     expect(PAMI_LINK_TARGET).toBe("_blank");
@@ -157,6 +157,9 @@ describe("PAMI config", () => {
   });
 
   it("accepts an official https PAMI override (future deep link)", () => {
+    expect(resolvePamiUrl("https://cup.pami.org.ar/controllers/loginController.php", "x")).toBe(
+      "https://cup.pami.org.ar/controllers/loginController.php"
+    );
     expect(resolvePamiUrl("https://prestadores.pami.org.ar/nueva-receta.php", "x")).toBe(
       "https://prestadores.pami.org.ar/nueva-receta.php"
     );
@@ -172,6 +175,9 @@ describe("PAMI config", () => {
     "https://prestadores.pami.org.ar/ome.php#p=1",
     "https://user:pass@prestadores.pami.org.ar/ome.php",
     "https://prestadores.pami.org.ar:8443/ome.php",
+    "https://cup.pami.org.ar/controllers/loginController.php?password=example",
+    "https://user:pass@cup.pami.org.ar/controllers/loginController.php",
+    "https://cup.pami.org.ar.evil.com/controllers/loginController.php",
     "javascript:alert(1)",
     "not a url",
     "   ",
@@ -392,10 +398,13 @@ describe("static security checks", () => {
     }
   });
 
-  it("the PAMI URLs are defined in a single place and no undocumented CUP routes exist", () => {
+  it("the only PAMI URL is the official CUP access, with no undocumented API or launch parameters", () => {
     const occurrences = files.filter((f) => read(f).includes("pami.org.ar/"));
     expect(occurrences).toEqual([`${LIB}/config.ts`]);
-    expect(read(`${LIB}/config.ts`)).not.toMatch(/cup\.pami|\/api\/|\.php\?/);
+    const config = read(`${LIB}/config.ts`);
+    const urls = [...config.matchAll(/https:\/\/[^"'\s]+/g)].map((match) => match[0]);
+    expect(urls).toEqual(["https://cup.pami.org.ar/controllers/loginController.php"]);
+    expect(config.replace(urls[0], "")).not.toMatch(/cup\.pami|\/api\/|\.php\?/);
   });
 
   it("the launch context is server-only and loads patients scoped by clinic", () => {
