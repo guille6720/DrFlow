@@ -82,6 +82,7 @@ type Props = PatientEhrViewProps & {
   defaultProfessionalId?: string | null;
   clinicalRecordsPagination?: PatientEhrClinicalRecordsPagination;
   canIssue?: boolean;
+  compactHeader?: boolean;
   appointmentId?: string | null;
   professionalId?: string | null;
   onOpenSheet?: (sheet: "receta" | "orden" | "archivo") => void;
@@ -328,6 +329,7 @@ function DrappConsultaWorkspaceInner({
   templates,
   defaultProfessionalId,
   canIssue = false,
+  compactHeader = false,
   appointmentId = null,
   professionalId = null,
   onOpenSheet,
@@ -682,10 +684,11 @@ function DrappConsultaWorkspaceInner({
 
   return (
     <>
-      <div className="sticky top-0 z-20 bg-[var(--card,#fff)]">
-        <PatientEhrDemographics patient={patient} totalConsultations={sidebarList.length} />
+      <div className={cn(!compactHeader && "sticky top-0 z-20", "bg-[var(--card,#fff)]")}>
+        <PatientEhrDemographics patient={patient} totalConsultations={sidebarList.length} compact={compactHeader} />
       </div>
       <PatientEhrFiltersBar
+        compact={compactHeader}
         filters={filters}
         onToggleFilter={toggleFilter}
         totalConsultations={sidebarList.length}
@@ -1083,7 +1086,7 @@ export function DrappConsultaWorkspace(props: Props) {
     >
       {headerSlot ? <div className="mb-3">{headerSlot}</div> : null}
       <PatientEhrShellFrame>
-        <div className="drapp-consulta-shell flex min-h-[min(85vh,56rem)] flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] shadow-sm">
+        <div className={cn("drapp-consulta-shell flex min-h-[min(85vh,56rem)] flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] shadow-sm", rest.compactHeader && "nexclinic-consulta-compact")}>
           <DrappConsultaWorkspaceInner
             key={`${patient.id}:${rest.appointmentId ?? ""}`}
             {...rest}

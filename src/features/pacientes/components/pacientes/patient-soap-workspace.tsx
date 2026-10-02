@@ -72,6 +72,7 @@ export function PatientSoapWorkspace({
 
   return (
     <DrappConsultaWorkspace
+      compactHeader
       patient={patient}
       consultations={consultations}
       diagnosisRows={diagnosisRows}

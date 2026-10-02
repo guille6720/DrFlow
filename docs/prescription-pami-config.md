@@ -64,3 +64,9 @@ Los overrides se aplican:
 ## Planillas PAMI
 
 Las planillas (internación, estudios, etc.) siguen en el módulo `features/pami/` como `medical_orders.order_type = 'pami_form'`. No forman parte del motor de recetas medicamentosas.
+
+## Acceso externo a CUP
+
+Los botones **Receta PAMI** y **Orden PAMI / OME**, incluidos los accesos de la historia clínica, abren por defecto [el acceso oficial de CUP](https://cup.pami.org.ar/controllers/loginController.php) en otra pestaña. Conservan los permisos de NexClinic y no envían datos del paciente, credenciales ni parámetros en la URL. Las variables públicas `NEXT_PUBLIC_PAMI_PRESCRIPTION_URL` y `NEXT_PUBLIC_PAMI_OME_URL` permiten un destino oficial alternativo; no son campos para contraseñas.
+
+El médico se identifica directamente en PAMI. Las pestañas normales del mismo perfil de navegador comparten la sesión que PAMI permita conservar, pero NexClinic no controla su vencimiento ni puede garantizar que CUP omita el acceso en cada visita. Guardar una contraseña en el gestor del navegador, por decisión del médico y solo en un dispositivo personal, facilita completar el formulario; no equivale a mantener una sesión indefinida. NexClinic no captura, almacena ni renueva contraseñas, códigos, cookies o tokens de PAMI. En equipos compartidos se debe evitar guardar credenciales y cerrar la sesión al finalizar.

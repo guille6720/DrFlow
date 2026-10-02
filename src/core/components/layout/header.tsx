@@ -1,6 +1,6 @@
 "use client";
 
-import { Palette, Settings } from "lucide-react";
+import { Palette, Settings, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
 
@@ -29,6 +29,7 @@ interface HeaderProps {
   role: UserRole | null;
   userName?: string;
   isSuperadmin?: boolean;
+  compact?: boolean;
 }
 
 export function Header({
@@ -41,6 +42,7 @@ export function Header({
   role,
   userName,
   isSuperadmin = false,
+  compact = false,
 }: HeaderProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const showSettings = hasPermission(role, "manageSettings", isSuperadmin);
@@ -55,28 +57,38 @@ export function Header({
       className={cn(
         "drflow-ui-header border-b px-4 py-2.5 backdrop-blur-sm sm:px-6",
         shellDark ? "drflow-ui-header-dark" : "drflow-ui-header-light",
-        sidebarHidden ? "lg:pl-6" : "lg:pl-72"
+        !compact && (sidebarHidden ? "lg:pl-6" : "lg:pl-72"),
+        compact && "nexclinic-patient-header-compact"
       )}
     >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="pl-12 lg:pl-0">
+      <div className={compact ? "grid min-w-0 grid-cols-1 gap-3" : "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"}>
+        <div className={compact ? "min-w-0 pl-12 lg:pl-0" : "pl-12 lg:pl-0"}>
           <h1
             id={titleId}
             className={cn(
-              "text-lg font-bold tracking-tight sm:text-xl",
+              compact ? "break-words text-lg font-bold tracking-normal sm:text-xl" : "text-lg font-bold tracking-tight sm:text-xl",
               shellDark ? "text-slate-50" : "text-slate-900"
             )}
           >
             {title}
           </h1>
           {subtitle && (
-            <p className={cn("mt-0.5 text-sm", shellDark ? "text-slate-300" : "text-slate-500")}>
+            <p className={cn("mt-0.5 text-sm", compact && "break-words", shellDark ? "text-slate-300" : "text-slate-500")}>
               {subtitle}
             </p>
           )}
+          {compact && meta ? <div className="mt-2 min-w-0">{meta}</div> : null}
         </div>
-        {meta ? <div className="min-w-0 flex-1 pl-12 sm:pl-4 lg:pl-0">{meta}</div> : null}
-        <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
+        {!compact && meta ? <div className="min-w-0 flex-1 pl-12 sm:pl-4 lg:pl-0">{meta}</div> : null}
+        <details open={compact ? undefined : true} className={cn("nexclinic-header-tools min-w-0", !compact && "sm:ml-auto")}>
+          <summary
+            className={compact ? "inline-flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-md border border-[var(--border)] text-[var(--foreground)]" : "hidden"}
+            aria-label="Cuenta y herramientas"
+            title="Cuenta y herramientas"
+          >
+            <SlidersHorizontal className="h-4 w-4" aria-hidden />
+          </summary>
+        <div className={compact ? "nexclinic-header-tools-content flex min-w-0 max-w-full flex-wrap items-center gap-3 xl:max-w-[32rem] xl:justify-end" : "flex flex-wrap items-center gap-3 sm:ml-auto"}>
           {showAppearance && (
             <button
               type="button"
@@ -118,6 +130,7 @@ export function Header({
               onClick={() => setProfileOpen(true)}
               className={cn(
                 "rounded-2xl border px-4 py-2 text-right shadow-sm transition focus:outline-none focus:ring-2 focus:ring-teal-500/30",
+                compact && "min-w-0 max-w-full",
                 shellDark
                   ? "border-slate-600 bg-slate-800 hover:border-teal-500/40 hover:bg-slate-700"
                   : "border-slate-200 bg-white hover:border-teal-200 hover:bg-teal-50/80"
@@ -125,7 +138,7 @@ export function Header({
               title="Mi cuenta y permisos"
               aria-label="Abrir mi cuenta"
             >
-              <p className={cn("text-sm font-semibold", shellDark ? "text-slate-100" : "text-slate-900")}>
+              <p className={cn("text-sm font-semibold", compact && "break-words", shellDark ? "text-slate-100" : "text-slate-900")}>
                 {userName}
               </p>
               {role && (
@@ -141,6 +154,7 @@ export function Header({
             </button>
           )}
         </div>
+        </details>
       </div>
       <UserAccountModal open={profileOpen} onClose={() => setProfileOpen(false)} role={role} />
     </header>

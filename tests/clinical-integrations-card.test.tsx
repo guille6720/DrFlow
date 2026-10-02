@@ -18,8 +18,8 @@ vi.mock("@/core/notifications/toast", () => ({ toast: { copySuccess: mocks.copyS
 import { ClinicalIntegrationsCard } from "@/features/pacientes/components/pacientes/clinical-integrations/clinical-integrations-card";
 
 const PATIENT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
-const PAMI_RX = "https://prestadores.pami.org.ar/receta-electronica.php";
-const PAMI_OME = "https://prestadores.pami.org.ar/ome.php";
+const PAMI_RX = "https://cup.pami.org.ar/controllers/loginController.php";
+const PAMI_OME = PAMI_RX;
 
 const basePatient = {
   fullName: "Juan Pérez",

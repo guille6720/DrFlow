@@ -85,7 +85,7 @@ export function PatientWorkspaceView(props: Props) {
   const lastConsultAt = ehr.consultations[0]?.created_at ?? null;
 
   return (
-    <div className="drflow-patient-workspace">
+    <div className="drflow-patient-workspace" data-clinical-layout={activeTab === "soap" ? "compact" : undefined}>
       {activeTab !== "soap" ? (
         <PatientWorkflowActionBarHost
           patientId={chartProps.patientId}

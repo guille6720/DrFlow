@@ -1,3 +1,5 @@
+import { ChevronDown, UserRound } from "lucide-react";
+
 import { PatientEhrDemographicCell } from "@/features/historias/components/historias/patient-ehr-demographic-cell";
 import type { PatientEhrPatientInfo } from "@/features/historias/components/historias/patient-ehr-types";
 import { PatientWhatsAppButton } from "@/features/pacientes/components/pacientes/patient-whatsapp-button";
@@ -7,13 +9,14 @@ import { buildPatientContactMessage } from "@/features/pacientes/utils/patient-m
 type Props = {
   patient: PatientEhrPatientInfo;
   totalConsultations?: number;
+  compact?: boolean;
 };
 
-export function PatientEhrDemographics({ patient, totalConsultations }: Props) {
+export function PatientEhrDemographics({ patient, totalConsultations, compact = false }: Props) {
   const patientFormal = `${patient.last_name}, ${patient.first_name}`;
   const patientDisplay = `${patient.first_name} ${patient.last_name}`;
 
-  return (
+  const demographics = (
     <div className="drflow-ehr-demographics flex flex-wrap border-b border-[var(--border)]">
       <PatientEhrDemographicCell label="Nombre" value={patientFormal} />
       <PatientEhrDemographicCell label="DNI" value={patient.document_number} />
@@ -53,4 +56,15 @@ export function PatientEhrDemographics({ patient, totalConsultations }: Props) {
       ) : null}
     </div>
   );
+
+  return compact ? (
+    <details className="nexclinic-patient-demographics border-b border-[var(--border)]">
+      <summary className="inline-flex min-h-8 cursor-pointer list-none items-center gap-1.5 px-3 text-xs font-medium text-[var(--foreground)]">
+        <UserRound className="h-3.5 w-3.5" aria-hidden />
+        Datos del paciente
+        <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+      </summary>
+      {demographics}
+    </details>
+  ) : demographics;
 }

@@ -9,8 +9,8 @@ const PATIENT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 
 const allowed = (access = { prescriptions: true, medicalOrders: true }): PamiLaunchContextResult => ({
   ok: true,
-  prescriptionUrl: "https://prestadores.pami.org.ar/receta-electronica.php",
-  medicalOrderUrl: "https://prestadores.pami.org.ar/ome.php",
+  prescriptionUrl: "https://cup.pami.org.ar/controllers/loginController.php",
+  medicalOrderUrl: "https://cup.pami.org.ar/controllers/loginController.php",
   access,
   patient: {
     fullName: "Juan Pérez",
@@ -49,8 +49,8 @@ describe("PamiQuickActions (clinical history header)", () => {
     render(<PamiQuickActions patientId={PATIENT_ID} />);
     const rx = await screen.findByTestId("ehr-pami-prescription");
     const ome = screen.getByTestId("ehr-pami-medical-order");
-    expect(rx).toHaveAttribute("href", "https://prestadores.pami.org.ar/receta-electronica.php");
-    expect(ome).toHaveAttribute("href", "https://prestadores.pami.org.ar/ome.php");
+    expect(rx).toHaveAttribute("href", "https://cup.pami.org.ar/controllers/loginController.php");
+    expect(ome).toHaveAttribute("href", "https://cup.pami.org.ar/controllers/loginController.php");
     for (const a of [rx, ome]) {
       expect(a).toHaveAttribute("target", "_blank");
       expect(a).toHaveAttribute("rel", "noopener noreferrer");
