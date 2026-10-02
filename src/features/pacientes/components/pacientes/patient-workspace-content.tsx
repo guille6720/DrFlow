@@ -1,4 +1,3 @@
-import { PatientArcoExportButton } from "@/core/components/legal/patient-arco-export-button";
 import { voidRecordSensitiveAccess } from "@/core/security/sensitive-access-audit";
 import { createClient } from "@/core/supabase/server";
 
@@ -40,7 +39,6 @@ export async function PatientWorkspaceContent({
   initialTab,
   canEditClinical,
   canIssue,
-  canManagePatients,
   canManageAdminDocuments,
 }: Props) {
   const supabase = await createClient();
@@ -72,11 +70,6 @@ export async function PatientWorkspaceContent({
 
   return (
     <>
-      {canManagePatients ? (
-        <div className="mb-3 flex justify-end">
-          <PatientArcoExportButton patientId={patient.id} fileLabel={`${patient.document_number}`} />
-        </div>
-      ) : null}
       <PatientWorkspaceShell
         key={patientId}
         clinicId={clinicId}

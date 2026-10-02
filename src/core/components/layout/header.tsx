@@ -1,6 +1,6 @@
 "use client";
 
-import { Palette, Settings } from "lucide-react";
+import { Palette, Settings, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
 
@@ -28,6 +28,7 @@ interface HeaderProps {
   role: UserRole | null;
   userName?: string;
   isSuperadmin?: boolean;
+  compact?: boolean;
 }
 
 export function Header({
@@ -40,6 +41,7 @@ export function Header({
   role,
   userName,
   isSuperadmin = false,
+  compact = false,
 }: HeaderProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const showSettings = hasPermission(role, "manageSettings", isSuperadmin);
@@ -52,7 +54,8 @@ export function Header({
     <header
       className={cn(
         "drflow-ui-header border-b px-4 py-2.5 backdrop-blur-sm sm:px-6",
-        shellDark ? "drflow-ui-header-dark" : "drflow-ui-header-light"
+        shellDark ? "drflow-ui-header-dark" : "drflow-ui-header-light",
+        compact && "nexclinic-patient-header-compact"
       )}
     >
       <div className="grid min-w-0 grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
@@ -73,7 +76,15 @@ export function Header({
           )}
           {meta ? <div className="mt-2 min-w-0">{meta}</div> : null}
         </div>
-        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3 xl:max-w-[32rem] xl:justify-end">
+        <details open={compact ? undefined : true} className="nexclinic-header-tools min-w-0">
+          <summary
+            className={compact ? "inline-flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-md border border-[var(--border)] text-[var(--foreground)]" : "hidden"}
+            aria-label="Cuenta y herramientas"
+            title="Cuenta y herramientas"
+          >
+            <SlidersHorizontal className="h-4 w-4" aria-hidden />
+          </summary>
+        <div className="nexclinic-header-tools-content flex min-w-0 max-w-full flex-wrap items-center gap-3 xl:max-w-[32rem] xl:justify-end">
           {showAppearance && (
             <button
               type="button"
@@ -138,6 +149,7 @@ export function Header({
             </button>
           )}
         </div>
+        </details>
       </div>
       <UserAccountModal open={profileOpen} onClose={() => setProfileOpen(false)} role={role} />
     </header>

@@ -1,8 +1,10 @@
+import { ChevronDown, Settings2 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { getDashboardPageContext } from "@/core/auth/dashboard-page";
 import { Header } from "@/core/components/layout/header";
+import { PatientArcoExportButton } from "@/core/components/legal/patient-arco-export-button";
 import { hasPermission } from "@/core/permissions/roles";
 import { hasProduct } from "@/core/products/product-access";
 import { PRODUCTS } from "@/core/products/products";
@@ -75,6 +77,7 @@ export default async function PacienteDetailPage({
   return (
     <>
       <Header
+        compact
         title={`${patientRow.last_name}, ${patientRow.first_name}`}
         subtitle={formatLabeledPatientDocument(patientRow) ?? undefined}
         meta={
@@ -90,8 +93,8 @@ export default async function PacienteDetailPage({
         userName={profile?.full_name}
       />
 
-      <div className="drflow-page-fill p-3 sm:p-4">
-        <div className="mb-3 flex flex-wrap items-center gap-2">
+      <div className="drflow-page-fill nexclinic-patient-page p-2 sm:px-3">
+        <div className="nexclinic-patient-admin-toolbar mb-1 flex flex-wrap items-start justify-between gap-2">
           <Suspense fallback={null}>
             <PatientWorkspaceBackLink
               patientId={id}
@@ -100,7 +103,13 @@ export default async function PacienteDetailPage({
             />
           </Suspense>
           {canManagePatients && (
-            <>
+            <details className="min-w-0 max-w-full">
+              <summary className="inline-flex min-h-8 cursor-pointer list-none items-center gap-1.5 rounded-md px-2 text-xs text-[var(--muted-foreground)] hover:bg-[var(--muted)]">
+                <Settings2 className="h-3.5 w-3.5" aria-hidden />
+                Administración
+                <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+              </summary>
+              <div className="flex flex-wrap items-center gap-2 py-2">
               <AddPatientToGeriatricsButton
                 patientId={patientRow.id}
                 geriatricsEnabled={geriatricsEnabled}
@@ -111,7 +120,9 @@ export default async function PacienteDetailPage({
                 patientId={patientRow.id}
                 patientName={`${patientRow.last_name}, ${patientRow.first_name}`}
               />
-            </>
+              {canViewClinical ? <PatientArcoExportButton patientId={patientRow.id} fileLabel={patientRow.document_number} /> : null}
+              </div>
+            </details>
           )}
         </div>
 
