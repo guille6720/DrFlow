@@ -208,7 +208,12 @@ export function SidebarNavContent({
   return (
     <>
       <div className="border-b border-[var(--border-default,#e2e8f0)] px-4 py-5">
-        <DrFlowLogo size="lg" href="/dashboard" centered />
+        <div
+          data-testid="sidebar-brand-logo"
+          className="dark:rounded-xl dark:bg-white dark:px-3 dark:py-2 dark:shadow-sm dark:ring-1 dark:ring-black/5"
+        >
+          <DrFlowLogo size="lg" href="/dashboard" centered />
+        </div>
         <p className="mt-2 truncate text-center text-xs font-semibold tracking-normal text-[var(--text-on-sidebar,#1e293b)]">
           {clinicName?.trim() || (clinicId ? "Mi clínica" : "Sin clínica")}
         </p>
