@@ -158,7 +158,7 @@ export function useNuevaConsultaForm({
   const [clinicalTreatments, setClinicalTreatments] = useState<ClinicalTreatmentEntry[]>([]);
   const [treatmentMedications, setTreatmentMedications] = useState<PrescriptionMedication[]>([]);
   const [vitals, setVitals] = useState("");
-  const [consultationAt, setConsultationAt] = useState(() => toDatetimeLocalValue(new Date()));
+  const [consultationAt, setConsultationAt] = useState("");
   const [templateBases, setTemplateBases] = useState<ClinicalTemplateFieldSet | null>(null);
   const [templateVariableValues, setTemplateVariableValues] = useState<Record<string, string>>({});
   /** clinical_record id for autosave updates / in-session edit */
@@ -473,6 +473,8 @@ export function useNuevaConsultaForm({
     async function restoreDraft() {
       if (cancelled || generation !== restoreGenerationRef.current) return;
       if (!saved) {
+        // Initialize the browser-local clock only after hydration and draft lookup.
+        setConsultationAt((current) => current || toDatetimeLocalValue(new Date()));
         if (!cancelled && generation === restoreGenerationRef.current) setRestoredDraftKey(draftKey);
         return;
       }

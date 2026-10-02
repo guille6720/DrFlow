@@ -461,11 +461,12 @@ function DrappConsultaWorkspaceInner({
   }, [activeProfessionalId, professionals]);
 
   const pendingDateIso = useMemo(
-    () => new Date(consultationAt).toISOString(),
+    () => consultationAt ? new Date(consultationAt).toISOString() : "",
     [consultationAt]
   );
 
   useEffect(() => {
+    if (!pendingDateIso) return;
     setDayPrintAnchorIso(pendingDateIso);
     setActiveRecordId(editingRecordId);
   }, [editingRecordId, pendingDateIso, setActiveRecordId, setDayPrintAnchorIso]);
@@ -521,7 +522,7 @@ function DrappConsultaWorkspaceInner({
   );
 
   const quickCtx = useMemo((): QuickClinicalSaveContext | null => {
-    if (!activeProfessionalId) return null;
+    if (!activeProfessionalId || !consultationAt) return null;
     return {
       patientId: patient.id,
       professionalId: activeProfessionalId,

@@ -1,4 +1,7 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
+import { createElement } from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
@@ -95,9 +98,43 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
+  vi.unstubAllEnvs();
 });
 
 describe('consultation draft date regression', () => {
+  it('hydrates a new consultation across host day boundaries without a clock mismatch', async () => {
+    vi.setSystemTime(new Date('2026-10-02T01:05:00Z'));
+    function Clock() {
+      return createElement('span', null, useNuevaConsultaForm(options).consultationAt);
+    }
+    const container = document.createElement('div');
+    document.body.append(container);
+    vi.stubEnv('TZ', 'UTC');
+    container.innerHTML = renderToString(createElement(Clock));
+    expect(container.textContent).toBe('');
+    vi.stubEnv('TZ', 'America/Argentina/Buenos_Aires');
+    const onRecoverableError = vi.fn();
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    try {
+      await act(async () => { root = hydrateRoot(container, createElement(Clock), { onRecoverableError }); });
+      expect(onRecoverableError).not.toHaveBeenCalled();
+      expect(container.textContent).toBe('2026-10-01T22:05');
+      expect(mocks.persist).not.toHaveBeenCalled();
+    } finally {
+      await act(async () => root?.unmount());
+      container.remove();
+    }
+  });
+
+  it('initializes the browser clock without making an empty consultation dirty', async () => {
+    const hook = await mount();
+    expect(hook.result.current.consultationAt).not.toBe('');
+    expect(hook.result.current.isDirty).toBe(false);
+    await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
+    expect(mocks.persist).not.toHaveBeenCalled();
+    hook.unmount();
+  });
+
   it('restores a saved date without autosaving on reload or unmount', async () => {
     storeDraft();
     const hook = await mount();
