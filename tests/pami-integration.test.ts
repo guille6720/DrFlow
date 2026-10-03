@@ -148,8 +148,9 @@ beforeEach(() => {
 
 describe("PAMI config", () => {
   it("uses the official PAMI entry pages by default", () => {
-    expect(PAMI_DEFAULT_PRESCRIPTION_URL).toBe("https://prestadores.pami.org.ar/receta-electronica.php");
-    expect(PAMI_DEFAULT_OME_URL).toBe("https://prestadores.pami.org.ar/ome.php");
+    expect(PAMI_DEFAULT_PRESCRIPTION_URL).toBe("https://cup.pami.org.ar/controllers/loginController.php");
+    expect(PAMI_DEFAULT_OME_URL).toBe("https://cup.pami.org.ar/controllers/loginController.php");
+    expect(resolvePamiUrl(PAMI_DEFAULT_PRESCRIPTION_URL, "x")).toBe(PAMI_DEFAULT_PRESCRIPTION_URL);
     expect(PAMI_PRESCRIPTION_URL).toBe(PAMI_DEFAULT_PRESCRIPTION_URL);
     expect(PAMI_OME_URL).toBe(PAMI_DEFAULT_OME_URL);
     expect(PAMI_LINK_TARGET).toBe("_blank");
@@ -395,7 +396,10 @@ describe("static security checks", () => {
   it("the PAMI URLs are defined in a single place and no undocumented CUP routes exist", () => {
     const occurrences = files.filter((f) => read(f).includes("pami.org.ar/"));
     expect(occurrences).toEqual([`${LIB}/config.ts`]);
-    expect(read(`${LIB}/config.ts`)).not.toMatch(/cup\.pami|\/api\/|\.php\?/);
+    const config = read(`${LIB}/config.ts`);
+    expect(config).not.toMatch(/\/api\/|\.php\?/);
+    const cupRoutes = config.match(/cup\.pami\.org\.ar\/[^"'\s]*/g) ?? [];
+    expect(new Set(cupRoutes)).toEqual(new Set(["cup.pami.org.ar/controllers/loginController.php"]));
   });
 
   it("the launch context is server-only and loads patients scoped by clinic", () => {

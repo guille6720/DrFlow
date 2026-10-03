@@ -6,8 +6,9 @@
  * stored or handled by NexClinic: authentication belongs exclusively to PAMI/CUP.
  */
 
-export const PAMI_DEFAULT_PRESCRIPTION_URL = "https://prestadores.pami.org.ar/receta-electronica.php";
-export const PAMI_DEFAULT_OME_URL = "https://prestadores.pami.org.ar/ome.php";
+export const PAMI_CUP_LOGIN_URL = "https://cup.pami.org.ar/controllers/loginController.php";
+export const PAMI_DEFAULT_PRESCRIPTION_URL = PAMI_CUP_LOGIN_URL;
+export const PAMI_DEFAULT_OME_URL = PAMI_CUP_LOGIN_URL;
 
 /** Approved PAMI domains (exact host or subdomain). */
 export const PAMI_ALLOWED_DOMAINS = ["pami.org.ar"] as const;
