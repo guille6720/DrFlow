@@ -14,6 +14,17 @@ export type ChangelogItem = {
 
 export const CHANGELOG: ChangelogItem[] = [
   {
+    version: "0.2.37",
+    date: "2026-10-03",
+    title: "Recetas en RCTA y PAMI (Plataforma CUP)",
+    highlights: [
+      "«Receta» y «Nueva receta» abren RCTA en una pestaña nueva",
+      "«Receta PAMI» y «Orden PAMI / OME» abren el acceso de la Plataforma CUP de PAMI",
+      "Copiar datos del paciente (DNI, CUIL, afiliado) para pegarlos en RCTA o PAMI",
+      "Modo oscuro: el logo se muestra sobre un recuadro claro",
+    ],
+  },
+  {
     version: "0.2.36",
     date: "2026-09-02",
     title: "Superadmin Planes legible en Claro",

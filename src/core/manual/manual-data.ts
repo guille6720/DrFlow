@@ -128,25 +128,32 @@ export const MANUAL_SECTIONS: ManualSection[] = [
   },
   {
     id: "recetas",
-    title: "5. Recetas electrónicas",
-    summary: "Receta local Ley 25.649. No es homologación REFEPS hasta que la clínica complete ese trámite.",
+    title: "5. Recetas y órdenes (RCTA y PAMI)",
+    summary:
+      "Las recetas se emiten en sistemas externos oficiales: RCTA para recetas en general y la Plataforma CUP de PAMI para afiliados PAMI. NexClinic abre esos sistemas y te ayuda a copiar los datos del paciente.",
     illustration: "recetas",
     steps: [
       {
-        title: "Cargá medicación",
-        body: "A mano o desde la guía farmacológica (patología / síntomas).",
+        title: "Receta / Nueva receta → RCTA",
+        body: "Los botones «Receta» o «Nueva receta» (en Recetas y órdenes, en la ficha del paciente y en la historia clínica) abren RCTA en una pestaña nueva. Ingresá con tu usuario de RCTA y emití la receta ahí.",
       },
       {
-        title: "Aceptá el aviso legal",
-        body: "Debés marcar el checkbox de receta local / borrador (no REFEPS).",
+        title: "Receta PAMI y Orden PAMI / OME → Plataforma CUP",
+        body: "Para afiliados PAMI usá «Receta PAMI» u «Orden PAMI / OME». Ambos abren la página de acceso de la Plataforma CUP de PAMI (cup.pami.org.ar). Ingresá con tu Usuario y contraseña CUP y elegí receta electrónica u OME dentro del sistema de PAMI.",
       },
       {
-        title: "Emití y compartí",
-        body: "Guardá borrador o emití. Descargá PDF y enviá por WhatsApp al paciente.",
+        title: "Copiá los datos del paciente",
+        body: "En la tarjeta del paciente, «Copiar datos del paciente» y los botones de copiar DNI, CUIL y N° de afiliado te permiten pegarlos en RCTA o en PAMI sin tipear.",
+      },
+      {
+        title: "Volvé a NexClinic",
+        body: "Al terminar, cerrá la pestaña externa: la historia clínica del paciente sigue abierta en NexClinic.",
       },
     ],
     tips: [
-      "Sin el checkbox aceptado no se puede guardar ni emitir.",
+      "NexClinic nunca guarda tus claves de RCTA ni de PAMI/CUP, no inicia sesión por vos y no envía datos del paciente automáticamente.",
+      "Los botones PAMI aparecen solo si tu consultorio tiene habilitada la integración PAMI.",
+      "PAMI bloquea el acceso tras varios intentos fallidos de clave: si te pasa, usá «Olvidé mi contraseña» o la Mesa de Ayuda a Médicos desde la misma página de CUP.",
     ],
   },
   {
@@ -206,6 +213,10 @@ export const MANUAL_SECTIONS: ManualSection[] = [
       {
         title: "Accesibilidad",
         body: "Configuración → Accesibilidad: atajos de teclado, criterios WCAG y opción «Reducir animaciones».",
+      },
+      {
+        title: "Apariencia (Claro / Oscuro)",
+        body: "Configuración → Apariencia: elegí modo Claro, Oscuro o Sistema. En modo Oscuro el logo de NexClinic se muestra sobre un recuadro claro para que se lea nítido.",
       },
       {
         title: "Datos demo",
