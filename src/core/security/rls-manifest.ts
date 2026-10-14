@@ -114,6 +114,10 @@ export const TABLES_REQUIRING_RLS = [
   "clinic_feature_settings",
   "user_feature_settings",
   "clinic_role_permissions",
+  // Medical orders v2 (20260929100000)
+  "medical_order_items",
+  "medical_order_catalog",
+  "medical_order_counters",
 ] as const;
 
 /**
@@ -123,6 +127,8 @@ export const TABLES_REQUIRING_RLS = [
 export const RLS_DENY_ALL_TABLES: readonly (typeof TABLES_REQUIRING_RLS)[number][] = [
   // Tokens hasheados del portal paciente (20260826123241); acceso solo por RPC.
   "patient_portal_sessions",
+  // Correlativo OM-AAAA-NNNNNNNN (20260929100000); solo next_medical_order_number (service_role).
+  "medical_order_counters",
 ];
 
 /** RPC SECURITY DEFINER que deben acotar tenant (nombre → migración de referencia). */
