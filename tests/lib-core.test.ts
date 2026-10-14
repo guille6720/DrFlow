@@ -2,9 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import {
   backHrefFromClinicalSubpage,
+  consultaSessionReturnPath,
   FROM_CLINICAL_HISTORY,
+  FROM_CONSULTA,
   isFromClinicalHistory,
+  isFromConsulta,
+  patientClinicalHistoryFromConsultaPath,
   patientClinicalHistoryPath,
+  patientFichaPath,
   withClinicalHistoryReturn,
 } from "@/shared/utils/clinical-navigation";
 import { cn } from "@/shared/utils/cn";
@@ -40,6 +45,35 @@ describe("clinical-navigation", () => {
       "/pacientes/abc?tab=soap"
     );
     expect(backHrefFromClinicalSubpage(null, "abc", "/dashboard")).toBe("/dashboard");
+  });
+
+  it("builds the patient ficha edit path", () => {
+    expect(patientFichaPath("abc")).toBe("/pacientes/abc/editar");
+  });
+
+  it("builds HC path that returns to the Consultas session", () => {
+    expect(
+      patientClinicalHistoryFromConsultaPath({
+        patientId: "abc",
+        appointmentId: "apt-1",
+        professionalId: "pro-1",
+      })
+    ).toBe("/pacientes/abc?tab=soap&from=consulta&appointment=apt-1&professional=pro-1");
+    expect(patientClinicalHistoryFromConsultaPath({ patientId: "abc" })).toBe(
+      "/pacientes/abc?tab=soap&from=consulta"
+    );
+    expect(isFromConsulta(FROM_CONSULTA)).toBe(true);
+    expect(isFromConsulta(FROM_CLINICAL_HISTORY)).toBe(false);
+  });
+
+  it("resolves the Consultas return path by appointment, patient or default", () => {
+    expect(consultaSessionReturnPath({ appointmentId: "apt-1", professionalId: "pro-1" })).toBe(
+      "/consultas?appointment=apt-1&action=nueva&professional=pro-1"
+    );
+    expect(consultaSessionReturnPath({ patientId: "abc" })).toBe(
+      "/consultas?patient=abc&action=nueva"
+    );
+    expect(consultaSessionReturnPath({})).toBe("/consultas");
   });
 });
 

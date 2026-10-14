@@ -23,6 +23,60 @@ describe("buildEhrPayloadFromRecords", () => {
     expect(treatmentRows).toHaveLength(0);
   });
 
+  it("builds diagnosis rows from structured entries with CIE-10 and dedupes repeats", () => {
+    const base = {
+      chief_complaint: "Consulta",
+      diagnosis: "HTA",
+      evolution: "Estable",
+      indications: "",
+      professional_name: "Dr. Test",
+    };
+    const { diagnosisRows } = buildEhrPayloadFromRecords([
+      {
+        ...base,
+        id: "r1",
+        created_at: "2022-11-10T12:00:00.000Z",
+        diagnoses_rows: [
+          { name: "Hipertensión arterial", cie10_code: "I10", is_chronic: true },
+          { name: "Cefalea" },
+        ],
+      },
+      {
+        ...base,
+        id: "r2",
+        created_at: "2022-12-10T12:00:00.000Z",
+        diagnoses_rows: [{ name: "Hipertensión arterial", cie10_code: "I10" }],
+      },
+    ]);
+
+    expect(diagnosisRows).toEqual([
+      {
+        id: "d-json-r1-0",
+        dateLabel: expect.any(String),
+        recordCreatedAt: "2022-11-10T12:00:00.000Z",
+        name: "Hipertensión arterial (CIE-10: I10)",
+        chronic: true,
+        recordId: "r1",
+      },
+      expect.objectContaining({ id: "d-json-r1-1", name: "Cefalea", chronic: false }),
+    ]);
+  });
+
+  it("classifies records whose fields look like clinical files as documents", () => {
+    const { consultations } = buildEhrPayloadFromRecords([
+      {
+        id: "f1",
+        created_at: "2022-11-10T12:00:00.000Z",
+        chief_complaint: "Consulta",
+        diagnosis: "laboratorio_2022.pdf",
+        evolution: "",
+        indications: "",
+        professional_name: "Dr. Test",
+      },
+    ]);
+    expect(consultations[0].category).toBe("document");
+  });
+
   it("builds treatment rows from structured JSON only", () => {
     const { treatmentRows } = buildEhrPayloadFromRecords([
       {
