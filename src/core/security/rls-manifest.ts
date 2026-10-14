@@ -116,6 +116,15 @@ export const TABLES_REQUIRING_RLS = [
   "clinic_role_permissions",
 ] as const;
 
+/**
+ * Tablas con RLS activo y sin políticas a propósito (deny-all para anon/authenticated):
+ * solo se acceden vía funciones SECURITY DEFINER. El audit exige que sigan sin políticas.
+ */
+export const RLS_DENY_ALL_TABLES: readonly (typeof TABLES_REQUIRING_RLS)[number][] = [
+  // Tokens hasheados del portal paciente (20260826123241); acceso solo por RPC.
+  "patient_portal_sessions",
+];
+
 /** RPC SECURITY DEFINER que deben acotar tenant (nombre → migración de referencia). */
 export const SECURITY_DEFINER_RPC_CHECKS: { name: string; migrationHint: string }[] = [
   { name: "setup_user_clinic", migrationHint: "024" },
