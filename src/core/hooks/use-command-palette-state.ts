@@ -5,23 +5,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFeatureCustomizations } from "@/core/components/customizations/feature-customizations-provider";
 import { useEntitlementsSnapshot } from "@/core/components/entitlements/entitlements-provider";
-import { isHrefAllowedByCustomizations } from "@/core/customizations/resolve";
 import { useCommandPaletteKeyboard } from "@/core/hooks/use-command-palette-keyboard";
 import { useCommandPalettePatientSearch } from "@/core/hooks/use-command-palette-patient-search";
 import type { PermissionOverrides } from "@/core/permissions/roles";
 
 import { openRctaPrescriptions, useRctaPrescriptions } from "@/features/recetas/hooks/use-rcta-prescriptions";
 
-import {
-  buildPatientContextPaletteActions,
-  COMMAND_PALETTE_ACTIONS,
-  COMMAND_PALETTE_NAV,
-} from "@/lib/constants/command-palette-items";
 import { parsePatientIdFromPath } from "@/lib/utils/clinical-workflow-context";
-import { filterCommandPaletteItems } from "@/lib/utils/command-palette-search";
+import { buildCommandPaletteStaticItems } from "@/lib/utils/command-palette-static-items";
 import type { UserRole } from "@/types/database";
-
-const RCTA_PRESCRIPTION_ITEM_IDS = new Set(["action-new-prescription", "ctx-rx"]);
 
 type Options = {
   role: UserRole | null;
@@ -50,49 +42,30 @@ export function useCommandPaletteState({
     query
   );
 
-  const staticItems = useMemo(() => {
-    const ctx = activePatientId
-      ? filterCommandPaletteItems(
-          buildPatientContextPaletteActions(activePatientId),
-          query,
-          role,
-          isSuperadmin,
-          permissionOverrides,
-          entitlements
-        )
-      : [];
-    const actions = filterCommandPaletteItems(
-      COMMAND_PALETTE_ACTIONS,
+  const staticItems = useMemo(
+    () =>
+      buildCommandPaletteStaticItems({
+        activePatientId,
+        query,
+        role,
+        isSuperadmin,
+        permissionOverrides,
+        entitlements,
+        customizationFeatures: customizations.features,
+        rcta: { enabled: rctaEnabled, href: rctaHref },
+      }),
+    [
+      activePatientId,
       query,
       role,
       isSuperadmin,
       permissionOverrides,
-      entitlements
-    );
-    const nav = filterCommandPaletteItems(
-      COMMAND_PALETTE_NAV,
-      query,
-      role,
-      isSuperadmin,
-      permissionOverrides,
-      entitlements
-    );
-    return [...ctx, ...actions, ...nav]
-      .filter((item) => isHrefAllowedByCustomizations(item.href, customizations.features))
-      .map((item) =>
-        rctaEnabled && RCTA_PRESCRIPTION_ITEM_IDS.has(item.id) ? { ...item, href: rctaHref } : item
-      );
-  }, [
-    activePatientId,
-    query,
-    role,
-    isSuperadmin,
-    permissionOverrides,
-    entitlements,
-    customizations,
-    rctaEnabled,
-    rctaHref,
-  ]);
+      entitlements,
+      customizations,
+      rctaEnabled,
+      rctaHref,
+    ]
+  );
 
   const flatResults = useMemo(
     () => [

@@ -47,3 +47,4 @@ What problem / feature drove this change?
 | 007 | Bulk clinical export (import / export phase 4) |
 | 008 | Geriatría — auditoría Fase 1 |
 | 009 | Geriatría — entrega staging (productos + módulo) |
+| 010 | Production branch divergence + baseline repair (inherited triggers, Phase 0B/0C) |

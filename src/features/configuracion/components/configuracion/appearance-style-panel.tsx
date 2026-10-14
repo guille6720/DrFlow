@@ -1,11 +1,8 @@
 "use client";
 
-import { Mic, Monitor, Moon, Palette, Sparkles, Sun } from "lucide-react";
+import { Monitor, Moon, Palette, Sparkles, Sun } from "lucide-react";
 
-import { AddonUpgradeNotice } from "@/core/components/entitlements/addon-upgrade-notice";
-import { useCanUseVoiceInput } from "@/core/components/entitlements/entitlements-provider";
 import { useUiTheme } from "@/core/components/theme/ui-theme-provider";
-import { FEATURES } from "@/core/entitlements/features";
 import {
   type AppearanceMode,
   UI_STYLE_IDS,
@@ -15,9 +12,8 @@ import {
 
 import { cn } from "@/shared/utils/cn";
 
-import { useVoiceInputOptional } from "@/features/voice/components/voice/voice-input-provider";
+import { VoiceDictationPreferenceCard } from "@/features/configuracion/components/configuracion/voice-dictation-preference-card";
 
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 const STYLE_ICONS: Record<UiStyleId, typeof Sparkles> = {
@@ -42,8 +38,6 @@ const APPEARANCE_MODES: Array<{
 
 function AppearanceStyleControls() {
   const { style, appearanceMode, setStyle, setAppearanceMode } = useUiTheme();
-  const voice = useVoiceInputOptional();
-  const canUseVoice = useCanUseVoiceInput();
 
   return (
     <div className="space-y-6">
@@ -136,47 +130,7 @@ function AppearanceStyleControls() {
         </p>
       </div>
 
-      {voice ? (
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="flex items-center gap-2 font-semibold text-[var(--text-primary,var(--foreground))]">
-                <Mic className="h-4 w-4 text-[var(--accent)]" />
-                Dictado por voz (historias clínicas)
-              </p>
-              <p className="mt-1 text-xs text-[var(--text-secondary,var(--muted-foreground))]">
-                {!canUseVoice
-                  ? "El dictado por voz no está incluido en el plan comercial del consultorio."
-                  : voice.clinicEnabled
-                    ? voice.userEnabled
-                      ? "Activo en este navegador. Usá el botón Dictar junto a cada campo de texto."
-                      : "Desactivado en este navegador. Podés volver a activarlo cuando quieras."
-                    : "El administrador del consultorio desactivó el dictado por voz."}
-                {canUseVoice && !voice.browserSupported && voice.clinicEnabled ? (
-                  <span className="mt-1 block text-[var(--warning)]">
-                    Tu navegador no soporta reconocimiento de voz (probá Chrome o Edge).
-                  </span>
-                ) : null}
-              </p>
-              {!canUseVoice ? (
-                <div className="mt-3 space-y-2">
-                  <AddonUpgradeNotice feature={FEATURES.VOICE} />
-                  <AddonUpgradeNotice feature={FEATURES.AI_TRANSCRIPTION} />
-                </div>
-              ) : null}
-            </div>
-            <Button
-              type="button"
-              variant={voice.userEnabled ? "primary" : "outline"}
-              size="sm"
-              disabled={!canUseVoice || !voice.clinicEnabled || !voice.envEnabled}
-              onClick={() => voice.setUserEnabled(!voice.userEnabled)}
-            >
-              {voice.userEnabled ? "Desactivar dictado" : "Activar dictado"}
-            </Button>
-          </div>
-        </div>
-      ) : null}
+      <VoiceDictationPreferenceCard />
 
       <p className="text-xs text-[var(--text-secondary,var(--muted-foreground))]">
         La preferencia se guarda solo en este navegador. No modifica datos clínicos ni de

@@ -19,7 +19,7 @@ import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { cn } from "@/shared/utils/cn";
 
-import { listAppointmentHorizonMonths } from "@/lib/utils/appointment-booking-horizon";
+import { HorizonMonthSelect } from "@/features/agenda/components/agenda/horizon-month-select";
 
 interface MonthOverviewGridProps {
   monthDate: Date;
@@ -106,7 +106,6 @@ export function MonthOverviewGrid({
   canPrevMonth = false,
   canNextMonth = false,
 }: MonthOverviewGridProps) {
-  const horizonMonths = useMemo(() => listAppointmentHorizonMonths(), []);
   const days = useMemo(() => {
     const monthStart = startOfMonth(monthDate);
     return eachDayOfInterval({
@@ -132,26 +131,13 @@ export function MonthOverviewGrid({
           </button>
           <div className="min-w-0 text-center">
             {onSelectMonth ? (
-              <label className="sr-only" htmlFor="agenda-month-jump">
-                Ir a un mes
-              </label>
-            ) : null}
-            {onSelectMonth ? (
-              <select
+              <HorizonMonthSelect
                 id="agenda-month-jump"
+                label="Ir a un mes"
+                value={monthDate}
+                onChange={onSelectMonth}
                 className="w-full max-w-[14rem] rounded-lg border border-slate-300 bg-white px-2 py-1 text-center text-sm font-bold capitalize text-slate-900"
-                value={format(monthDate, "yyyy-MM")}
-                onChange={(event) => {
-                  const next = horizonMonths.find((month) => format(month, "yyyy-MM") === event.target.value);
-                  if (next) onSelectMonth(next);
-                }}
-              >
-                {horizonMonths.map((month) => (
-                  <option key={format(month, "yyyy-MM")} value={format(month, "yyyy-MM")}>
-                    {format(month, "MMMM yyyy", { locale: es })}
-                  </option>
-                ))}
-              </select>
+              />
             ) : (
               <h2 className="text-base font-bold capitalize text-slate-900">
                 {format(monthDate, "MMMM yyyy", { locale: es })}

@@ -6,13 +6,13 @@ import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
 
 import { cn } from "@/shared/utils/cn";
 
+import { HorizonMonthSelect } from "@/features/agenda/components/agenda/horizon-month-select";
 import { useAppointmentDatetimePicker } from "@/features/agenda/hooks/use-appointment-datetime-picker";
 
 import {
   getAppointmentHorizonEnd,
   isDateWithinAppointmentHorizon,
   isMonthWithinAppointmentHorizon,
-  listAppointmentHorizonMonths,
 } from "@/lib/utils/appointment-booking-horizon";
 import { APPOINTMENT_TIME_SLOTS } from "@/lib/utils/appointment-datetime";
 
@@ -68,7 +68,6 @@ export function AppointmentDatetimePicker({
   const canPrevMonth = isMonthWithinAppointmentHorizon(subMonths(month, 1));
   const canNextMonth = isMonthWithinAppointmentHorizon(addMonths(month, 1));
   const horizonEnd = getAppointmentHorizonEnd();
-  const horizonMonths = listAppointmentHorizonMonths();
 
   return (
     <div className="space-y-1 sm:col-span-2">
@@ -91,24 +90,13 @@ export function AppointmentDatetimePicker({
             <ChevronLeft className="h-4 w-4" />
           </button>
           <div className="text-sm font-semibold capitalize text-slate-100">
-            <label className="sr-only" htmlFor="appointment-month-jump">
-              Mes
-            </label>
-            <select
+            <HorizonMonthSelect
               id="appointment-month-jump"
+              label="Mes"
+              value={month}
+              onChange={setMonth}
               className="rounded-lg border border-slate-600 bg-slate-800 px-2 py-1 text-center text-sm font-semibold capitalize text-slate-100"
-              value={format(month, "yyyy-MM")}
-              onChange={(event) => {
-                const next = horizonMonths.find((item) => format(item, "yyyy-MM") === event.target.value);
-                if (next) setMonth(next);
-              }}
-            >
-              {horizonMonths.map((item) => (
-                <option key={format(item, "yyyy-MM")} value={format(item, "yyyy-MM")}>
-                  {format(item, "MMMM yyyy", { locale: es })}
-                </option>
-              ))}
-            </select>
+            />
           </div>
           <button
             type="button"
