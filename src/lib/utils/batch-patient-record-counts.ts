@@ -100,12 +100,27 @@ async function batchClinicalRecordsByPatient(
   }
   if (patientIds.length === 0) return byPatient;
 
-  const { data: records } = await supabase
-    .from("clinical_records")
-    .select(CLINICAL_RECORD_COUNT_COLUMNS)
-    .eq("clinic_id", clinicId)
-    .in("patient_id", patientIds)
-    .order("created_at", { ascending: true });
+  const fetchRecords = (activeOnly: boolean) => {
+    let query = supabase
+      .from("clinical_records")
+      .select(CLINICAL_RECORD_COUNT_COLUMNS)
+      .eq("clinic_id", clinicId)
+      .in("patient_id", patientIds);
+    if (activeOnly) {
+      query = query.eq("lifecycle_status", "active");
+    }
+    return query.order("created_at", { ascending: true });
+  };
+
+  // Archived/superseded/corrected rows are excluded, matching the HC sidebar loader.
+  const activeResult = await fetchRecords(true);
+  let records = activeResult.data;
+  if (
+    activeResult.error &&
+    /lifecycle_status|column|schema cache|does not exist/i.test(activeResult.error.message)
+  ) {
+    records = (await fetchRecords(false)).data;
+  }
 
   const rawByPatient = new Map<string, ClinicalRecordRow[]>();
   for (const patientId of patientIds) {
@@ -159,7 +174,8 @@ async function batchHceRowsByPatient(
 /**
  * Listados (/pacientes, historias): conteo rápido vía RPC.
  * Evita bajar todos los clinical_records + CSV HCE en cada página.
- * La paridad exacta del sidebar HC se calcula al abrir el paciente.
+ * Cuenta filas crudas de clinical_records (incluye satélites y archivados), así que puede
+ * diferir del sidebar HC; la paridad exacta se calcula al abrir el paciente.
  */
 export async function batchPatientConsultationCounts(
   supabase: SupabaseClient,

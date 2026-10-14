@@ -128,6 +128,57 @@ describe("batchPatientConsultationCountsDetailed", () => {
     };
   }
 
+  type RecordRow = Record<string, unknown> & { lifecycle_status?: string };
+
+  /** Mimics PostgREST: `.eq("lifecycle_status", v)` filters rows; `lifecycleError` simulates a pre-131 schema. */
+  function clinicalRecordsTable(
+    rows: RecordRow[],
+    options: { lifecycleError?: string; filters?: Array<[string, unknown]> } = {}
+  ) {
+    const finalOrder = (filtered: RecordRow[]) => ({
+      order: async () => ({ data: filtered.map(({ lifecycle_status: _ls, ...rest }) => rest), error: null }),
+    });
+    return {
+      select: () => ({
+        eq: () => ({
+          in: () => ({
+            ...finalOrder(rows),
+            eq: (column: string, value: unknown) => {
+              options.filters?.push([column, value]);
+              if (column === "lifecycle_status" && options.lifecycleError) {
+                return { order: async () => ({ data: null, error: { message: options.lifecycleError } }) };
+              }
+              return finalOrder(rows.filter((row) => (row.lifecycle_status ?? "active") === value));
+            },
+          }),
+        }),
+      }),
+    };
+  }
+
+  const noHceAttachments = {
+    select: () => ({
+      eq: () => ({
+        eq: () => ({
+          in: async () => ({ data: [] }),
+        }),
+      }),
+    }),
+  };
+
+  function evolutionRow(id: string, createdAt: string, extra: Partial<RecordRow> = {}): RecordRow {
+    return {
+      patient_id: "p1",
+      id,
+      created_at: createdAt,
+      chief_complaint: "Control",
+      diagnosis: "HTA",
+      evolution: `Evolución ${id} con texto clínico suficiente para el sidebar.`,
+      indications: "",
+      ...extra,
+    };
+  }
+
   it("uses HCE sidebar counts when clinical_records are empty", async () => {
     const csv = [
       "paciente_id,last_name,first_name,document_number,tipo_registro,fecha_inicio,fecha_fin,estado,diagnostico,cie10,notas",
@@ -137,15 +188,7 @@ describe("batchPatientConsultationCountsDetailed", () => {
 
     const supabase = {
       from: mockClinicalRecordsFrom({
-        clinical_records: {
-          select: () => ({
-            eq: () => ({
-              in: () => ({
-                order: async () => ({ data: [] }),
-              }),
-            }),
-          }),
-        },
+        clinical_records: clinicalRecordsTable([]),
         patient_attachments: {
           select: () => ({
             eq: () => ({
@@ -179,50 +222,14 @@ describe("batchPatientConsultationCountsDetailed", () => {
     expect(counts.get("p1")).toBe(2);
   });
 
-  it("dedupes multiple records on the same calendar day", async () => {
+  it("counts each evolution on the same calendar day separately", async () => {
     const supabase = {
       from: mockClinicalRecordsFrom({
-        clinical_records: {
-          select: () => ({
-            eq: () => ({
-              in: () => ({
-                order: async () => ({
-                  data: [
-                    {
-                      patient_id: "p1",
-                      id: "r1",
-                      created_at: "2023-03-14T10:00:00.000Z",
-                      chief_complaint: "Control",
-                      diagnosis: "HTA",
-                      evolution: "Primera evolución del día con texto clínico suficiente.",
-                      indications: "",
-                      professionals: null,
-                    },
-                    {
-                      patient_id: "p1",
-                      id: "r2",
-                      created_at: "2023-03-14T18:00:00.000Z",
-                      chief_complaint: "Control",
-                      diagnosis: "HTA",
-                      evolution: "Segunda evolución del mismo día con texto clínico.",
-                      indications: "",
-                      professionals: null,
-                    },
-                  ],
-                }),
-              }),
-            }),
-          }),
-        },
-        patient_attachments: {
-          select: () => ({
-            eq: () => ({
-              eq: () => ({
-                in: async () => ({ data: [] }),
-              }),
-            }),
-          }),
-        },
+        clinical_records: clinicalRecordsTable([
+          evolutionRow("r1", "2023-03-14T10:00:00.000Z"),
+          evolutionRow("r2", "2023-03-14T18:00:00.000Z"),
+        ]),
+        patient_attachments: noHceAttachments,
       }),
       rpc: async () => ({
         data: [{ patient_id: "p1", count: 2 }],
@@ -239,54 +246,69 @@ describe("batchPatientConsultationCountsDetailed", () => {
       "p1",
     ]);
 
-    expect(consultationCounts.get("p1")).toBe(1);
+    expect(consultationCounts.get("p1")).toBe(2);
     expect(recordCounts.get("p1")).toBe(2);
+  });
+
+  it("excludes archived, superseded and corrected records", async () => {
+    const filters: Array<[string, unknown]> = [];
+    const supabase = {
+      from: mockClinicalRecordsFrom({
+        clinical_records: clinicalRecordsTable(
+          [
+            evolutionRow("r1", "2023-03-14T10:00:00.000Z", { lifecycle_status: "active" }),
+            evolutionRow("r2", "2023-03-14T11:00:00.000Z", { lifecycle_status: "archived" }),
+            evolutionRow("r3", "2023-03-15T10:00:00.000Z", { lifecycle_status: "superseded" }),
+            evolutionRow("r4", "2023-03-16T10:00:00.000Z", { lifecycle_status: "corrected" }),
+            evolutionRow("r5", "2023-03-17T10:00:00.000Z", { lifecycle_status: "active" }),
+          ],
+          { filters }
+        ),
+        patient_attachments: noHceAttachments,
+      }),
+    };
+
+    const counts = await batchPatientConsultationCountsDetailed(
+      createSupabaseTestDouble(supabase),
+      "clinic-1",
+      ["p1"]
+    );
+
+    expect(filters).toContainEqual(["lifecycle_status", "active"]);
+    expect(counts.get("p1")).toBe(2);
+  });
+
+  it("falls back to unfiltered records when lifecycle_status is missing (pre-131 schema)", async () => {
+    const supabase = {
+      from: mockClinicalRecordsFrom({
+        clinical_records: clinicalRecordsTable(
+          [
+            evolutionRow("r1", "2023-03-14T10:00:00.000Z"),
+            evolutionRow("r2", "2023-03-15T10:00:00.000Z"),
+          ],
+          { lifecycleError: "column clinical_records.lifecycle_status does not exist" }
+        ),
+        patient_attachments: noHceAttachments,
+      }),
+    };
+
+    const counts = await batchPatientConsultationCountsDetailed(
+      createSupabaseTestDouble(supabase),
+      "clinic-1",
+      ["p1"]
+    );
+
+    expect(counts.get("p1")).toBe(2);
   });
 
   it("counts consultations from clinical_records without HCE attachment", async () => {
     const supabase = {
       from: mockClinicalRecordsFrom({
-        clinical_records: {
-          select: () => ({
-            eq: () => ({
-              in: () => ({
-                order: async () => ({
-                  data: [
-                    {
-                      patient_id: "p1",
-                      id: "r1",
-                      created_at: "2023-03-14T10:00:00.000Z",
-                      chief_complaint: "Control",
-                      diagnosis: "HTA",
-                      evolution: "Evolución clínica con texto suficiente para el sidebar.",
-                      indications: "",
-                      professionals: { profiles: { full_name: "Dr. López" } },
-                    },
-                    {
-                      patient_id: "p1",
-                      id: "r2",
-                      created_at: "2021-12-02T10:00:00.000Z",
-                      chief_complaint: "Control",
-                      diagnosis: "HTA",
-                      evolution: "Segunda evolución con texto clínico suficiente.",
-                      indications: "",
-                      professionals: { profiles: { full_name: "Dr. López" } },
-                    },
-                  ],
-                }),
-              }),
-            }),
-          }),
-        },
-        patient_attachments: {
-          select: () => ({
-            eq: () => ({
-              eq: () => ({
-                in: async () => ({ data: [] }),
-              }),
-            }),
-          }),
-        },
+        clinical_records: clinicalRecordsTable([
+          evolutionRow("r1", "2023-03-14T10:00:00.000Z"),
+          evolutionRow("r2", "2021-12-02T10:00:00.000Z"),
+        ]),
+        patient_attachments: noHceAttachments,
       }),
     };
 

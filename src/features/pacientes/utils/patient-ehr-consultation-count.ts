@@ -16,7 +16,13 @@ function buildEvolutionList(sorted: PatientEhrConsultation[]): PatientEhrConsult
   return sorted;
 }
 
-/** Cantidad de consultas = días de evolución visibles en el sidebar de la HC. */
+/**
+ * Cantidad de consultas = entradas visibles en el sidebar de la HC.
+ * Cada evolución cuenta por separado, aunque haya varias el mismo día.
+ * Las filas satélite (DX/TX/signos vitales/documentos) se agrupan en una por día y no cuentan
+ * si ese día ya tiene una evolución. Recibe solo registros activos (el loader excluye
+ * archivados/superseded/corrected); los borradores viven en el cliente y nunca llegan acá.
+ */
 export function countEhrConsultations(consultations: PatientEhrConsultation[]): number {
   if (consultations.length === 0) return 0;
 

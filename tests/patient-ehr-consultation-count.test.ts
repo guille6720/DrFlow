@@ -23,14 +23,38 @@ function consultation(
 }
 
 describe("countEhrConsultations", () => {
-  it("deduplicates consultations on the same calendar day", () => {
+  it("counts each evolution separately, including several on the same day", () => {
     const count = countEhrConsultations([
       consultation({ id: "1", created_at: "2023-03-14T10:00:00Z" }),
       consultation({ id: "2", created_at: "2023-03-14T15:00:00Z" }),
       consultation({ id: "3", created_at: "2021-12-02T10:00:00Z" }),
     ]);
 
+    expect(count).toBe(3);
+  });
+
+  it("does not count satellite rows on a day that already has an evolution", () => {
+    const count = countEhrConsultations([
+      consultation({ id: "1", created_at: "2023-03-14T10:00:00Z" }),
+      consultation({ id: "2", created_at: "2023-03-14T10:05:00Z", category: "diagnostic" }),
+      consultation({ id: "3", created_at: "2023-03-14T10:06:00Z", category: "vitals" }),
+    ]);
+
+    expect(count).toBe(1);
+  });
+
+  it("collapses satellite-only rows to one entry per day", () => {
+    const count = countEhrConsultations([
+      consultation({ id: "1", created_at: "2023-03-14T10:00:00Z", category: "diagnostic" }),
+      consultation({ id: "2", created_at: "2023-03-14T11:00:00Z", category: "treatment" }),
+      consultation({ id: "3", created_at: "2021-12-02T10:00:00Z", category: "document" }),
+    ]);
+
     expect(count).toBe(2);
+  });
+
+  it("returns 0 for no records", () => {
+    expect(countEhrConsultations([])).toBe(0);
   });
 });
 
