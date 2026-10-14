@@ -7,6 +7,7 @@ import {
   featureDisabledResponse,
 } from "@/core/customizations/customizations.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
+import { isSameOriginRequest } from "@/core/security/csrf";
 import { createClient } from "@/core/supabase/server";
 import { waitingRoomStatusSchema } from "@/core/validations/cash-schemas";
 
@@ -18,34 +19,12 @@ const UUID_RE =
 
 const WAITING_ROOM_ROLES = new Set(["superadmin", "clinic_admin", "doctor", "secretary"]);
 
-function sameOrigin(request: NextRequest): boolean {
-  const host = request.headers.get("host")?.toLowerCase().replace(/:\d+$/, "");
-  if (!host) return false;
-  const origin = request.headers.get("origin");
-  if (origin) {
-    try {
-      return new URL(origin).host.toLowerCase().replace(/:\d+$/, "") === host;
-    } catch {
-      return false;
-    }
-  }
-  const referer = request.headers.get("referer");
-  if (referer) {
-    try {
-      return new URL(referer).host.toLowerCase().replace(/:\d+$/, "") === host;
-    } catch {
-      return false;
-    }
-  }
-  return false;
-}
-
 /**
  * Minimal waiting-room status endpoint — no server actions, no revalidatePath.
  * Avoids post-action RSC refresh that crashes /turnos/agenda in production.
  */
 export async function POST(request: NextRequest) {
-  if (!sameOrigin(request)) {
+  if (!isSameOriginRequest(request)) {
     return NextResponse.json({ error: "Forbidden", v: "waiting-room-v1" }, { status: 403 });
   }
 

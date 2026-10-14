@@ -22,9 +22,7 @@ describe("parsePatientIdFromPath", () => {
 
 describe("patientWorkflowHref", () => {
   it("builds deep links for clinical actions", () => {
-    expect(patientWorkflowHref("p1", "soap")).toContain("/pacientes/p1");
-    expect(patientWorkflowHref("p1", "soap")).toContain("tab=soap");
-    expect(patientWorkflowHref("p1", "soap")).toContain("action=nueva");
+    expect(patientWorkflowHref("p1", "soap")).toBe("/consultas?patient=p1&action=nueva");
     expect(patientWorkflowHref("p1", "prescription")).toContain("tab=recetas");
     expect(patientWorkflowHref("p1", "order")).toContain("tab=ordenes");
   });

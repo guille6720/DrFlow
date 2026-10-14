@@ -107,7 +107,7 @@ describe("ownership-guard", () => {
     const db = mockDb({
       [`patients:${patientId}`]: { id: patientId },
       [`professionals:${professionalId}`]: { id: professionalId },
-      [`clinical_records:${recordId}`]: { id: recordId },
+      [`clinical_records:${recordId}`]: { id: recordId, patient_id: patientId },
     });
 
     const result = await verifyPrescriptionForeignKeys(db, clinicId, {
@@ -116,5 +116,24 @@ describe("ownership-guard", () => {
       clinicalRecordId: recordId,
     });
     expect(result).toEqual({ ok: true });
+  });
+
+  it("rejects prescription linked to another patient's consultation", async () => {
+    const recordId = "66666666-6666-4666-8666-666666666666";
+    const db = mockDb({
+      [`patients:${patientId}`]: { id: patientId },
+      [`professionals:${professionalId}`]: { id: professionalId },
+      [`clinical_records:${recordId}`]: { id: recordId, patient_id: otherPatientId },
+    });
+
+    const result = await verifyPrescriptionForeignKeys(db, clinicId, {
+      patientId,
+      professionalId,
+      clinicalRecordId: recordId,
+    });
+    expect(result).toEqual({
+      ok: false,
+      error: "La consulta no corresponde al paciente indicado",
+    });
   });
 });

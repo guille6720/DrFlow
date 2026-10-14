@@ -5,7 +5,7 @@
  *
  * Usage: node scripts/phase7b-post-write-validate.mjs
  */
-import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { createClient } from "@supabase/supabase-js";

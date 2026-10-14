@@ -8,6 +8,7 @@ import { userFacingErrorMessage } from "@/core/observability/correlation-id";
 import { observeCriticalOperation } from "@/core/observability/observe-critical-operation";
 import { getRequestTraceId } from "@/core/observability/request-trace";
 import { getAuditRequestContext } from "@/core/security/audit-context";
+import { isSameOriginRequest } from "@/core/security/csrf";
 import { verifyClinicalRecordForeignKeys } from "@/core/security/ownership-guard";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
@@ -25,28 +26,6 @@ const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const CLINICAL_WRITE_ROLES = new Set(["superadmin", "clinic_admin", "doctor"]);
-
-function sameOrigin(request: NextRequest): boolean {
-  const host = request.headers.get("host")?.toLowerCase().replace(/:\d+$/, "");
-  if (!host) return false;
-  const origin = request.headers.get("origin");
-  if (origin) {
-    try {
-      return new URL(origin).host.toLowerCase().replace(/:\d+$/, "") === host;
-    } catch {
-      return false;
-    }
-  }
-  const referer = request.headers.get("referer");
-  if (referer) {
-    try {
-      return new URL(referer).host.toLowerCase().replace(/:\d+$/, "") === host;
-    } catch {
-      return false;
-    }
-  }
-  return false;
-}
 
 type PersistBody = {
   recordId?: unknown;
@@ -70,7 +49,7 @@ type PersistBody = {
  * Revalidates patient HC and Consultas after save so navigation sees fresh data.
  */
 export async function POST(request: NextRequest) {
-  if (!sameOrigin(request)) {
+  if (!isSameOriginRequest(request)) {
     return NextResponse.json({ error: "Forbidden", v: "clinical-persist-v1" }, { status: 403 });
   }
 

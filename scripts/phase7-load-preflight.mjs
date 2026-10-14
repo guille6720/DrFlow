@@ -7,9 +7,9 @@
  *   node scripts/phase7-load-preflight.mjs
  *   node scripts/phase7-load-preflight.mjs --base-url=https://...
  */
-import { mkdirSync, writeFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 import { loadEnv, readArg } from "./_env.mjs";
 import { PRODUCTION_REF, STAGING_REF } from "./supabase-project-refs.mjs";

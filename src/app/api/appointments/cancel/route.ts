@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { resolveApiClinicAccess } from "@/core/auth/resolve-api-clinic-access";
+import { isSameOriginRequest } from "@/core/security/csrf";
 import { createClient } from "@/core/supabase/server";
 
 import type { Database } from "@/types/supabase";
@@ -24,34 +25,12 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const MANAGE_ROLES = new Set(["superadmin", "clinic_admin", "doctor", "secretary"]);
 
-function sameOrigin(request: NextRequest): boolean {
-  const host = request.headers.get("host")?.toLowerCase().replace(/:\d+$/, "");
-  if (!host) return false;
-  const origin = request.headers.get("origin");
-  if (origin) {
-    try {
-      return new URL(origin).host.toLowerCase().replace(/:\d+$/, "") === host;
-    } catch {
-      return false;
-    }
-  }
-  const referer = request.headers.get("referer");
-  if (referer) {
-    try {
-      return new URL(referer).host.toLowerCase().replace(/:\d+$/, "") === host;
-    } catch {
-      return false;
-    }
-  }
-  return false;
-}
-
 /**
  * Minimal cancel endpoint — no session.cache helpers, no audit, no history,
  * no "use server" imports. Keeps the mutation path free of contaminated graphs.
  */
 export async function POST(request: NextRequest) {
-  if (!sameOrigin(request)) {
+  if (!isSameOriginRequest(request)) {
     return NextResponse.json({ error: "Forbidden", v: "cancel-v4" }, { status: 403 });
   }
 

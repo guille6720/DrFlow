@@ -40,7 +40,7 @@ describe("patientWorkspacePath", () => {
 
 describe("patientClinicalHistoryPath", () => {
   it("points to soap workspace tab", () => {
-    expect(patientClinicalHistoryPath("xyz")).toBe("/pacientes/xyz?tab=soap&action=nueva");
+    expect(patientClinicalHistoryPath("xyz")).toBe("/pacientes/xyz?tab=soap");
   });
 });
 

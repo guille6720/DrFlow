@@ -14,7 +14,7 @@
  *   node scripts/geriatrics-production-apply-linked.mjs verify
  */
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, unlinkSync } from "node:fs";
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import {
