@@ -188,9 +188,17 @@ export function PrescriptionTemplatesManager({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(220px,280px)_1fr]">
+      <div data-tour="plantillas-recetas-lista">
       <Card title="Plantillas guardadas">
         <div className="space-y-2">
-          <Button type="button" size="sm" variant="outline" className="w-full" onClick={startNew}>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="w-full"
+            onClick={startNew}
+            data-tour="plantillas-recetas-nueva"
+          >
             <Plus className="h-4 w-4" />
             Nueva plantilla
           </Button>
@@ -226,6 +234,7 @@ export function PrescriptionTemplatesManager({
           )}
         </div>
       </Card>
+      </div>
 
       <Card title={editor.id ? "Editar plantilla" : "Nueva plantilla de receta"}>
         <form className="space-y-4" onSubmit={handleSubmit}>

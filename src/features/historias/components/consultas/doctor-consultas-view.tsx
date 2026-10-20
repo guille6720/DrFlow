@@ -84,23 +84,27 @@ export function DoctorConsultasView({ rows }: Props) {
 
   if (ordered.length === 0) {
     return (
-      <Card title="Consultas del día">
-        <p className="text-sm text-slate-600">
-          No hay pacientes en espera, confirmados ni en consulta. En Agenda marcá{" "}
-          <strong>Presente</strong> o <strong>En espera</strong>, o confirmá desde Sala de espera.
-        </p>
-        <Link href="/sala-espera" className="mt-3 inline-block">
-          <Button type="button" variant="outline" size="sm">
-            Ir a sala de espera
-          </Button>
-        </Link>
-      </Card>
+      <div data-tour="consultas-card-dia">
+        <Card title="Consultas del día">
+          <p className="text-sm text-slate-600">
+            No hay pacientes en espera, confirmados ni en consulta. En Agenda marcá{" "}
+            <strong>Presente</strong> o <strong>En espera</strong>, o confirmá desde Sala de espera.
+          </p>
+          <div data-tour="consultas-finalizar" className="mt-3">
+            <Link href="/sala-espera" className="inline-block">
+              <Button type="button" variant="outline" size="sm">
+                Ir a sala de espera
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {ordered.map((row) => {
+    <div className="space-y-3" data-tour="consultas-card-dia">
+      {ordered.map((row, index) => {
         const patient = row.patients;
         const professional =
           row.professionals?.display_name ??
@@ -153,6 +157,7 @@ export function DoctorConsultasView({ rows }: Props) {
                   loading={busy}
                   pendingLabel="Guardando..."
                   onClick={() => void handleFinalize(row.id)}
+                  data-tour={index === 0 ? "consultas-finalizar" : undefined}
                 >
                   <CheckCircle2 className="h-4 w-4" />
                   Finalizar consulta

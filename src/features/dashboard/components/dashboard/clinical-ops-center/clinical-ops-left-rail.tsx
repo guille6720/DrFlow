@@ -48,6 +48,7 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
   return (
     <nav
       aria-label="Navegación operativa del día"
+      data-tour="dashboard-ops-nav"
       className="clinical-ops-card drflow-sticky-rail flex flex-col gap-3 rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] p-3"
     >
       <p className="px-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted,#64748b)]">
@@ -74,6 +75,7 @@ export function ClinicalOpsLeftRail({ ops }: Props) {
             <Link
               href="/turnos/nuevo"
               prefetch
+              data-tour="dashboard-quick-nuevo-turno"
               className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-[var(--text-primary,#172033)] hover:bg-[var(--surface-hover,#f1f5f9)] hover:text-[var(--sidebar-accent,#0f766e)]"
             >
               <CalendarDays className="h-3.5 w-3.5 text-[var(--sidebar-accent,#0f766e)]" aria-hidden />

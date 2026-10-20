@@ -684,6 +684,7 @@ export function TurnosNuevoWizard({
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-12 lg:items-stretch">
         <div className="turnos-nuevo-card-stack flex min-h-0 flex-col gap-3 overflow-y-auto lg:col-span-3">
+          <div data-tour="turnos-nuevo-profesional">
           <Card title="1 · Profesional" className={TURNOS_CARD_CLASS}>
             <div className="space-y-3">
               <Select
@@ -722,7 +723,9 @@ export function TurnosNuevoWizard({
               />
             </div>
           </Card>
+          </div>
 
+          <div data-tour="turnos-nuevo-paciente">
           <Card title="2 · Paciente" className={TURNOS_CARD_CLASS}>
             <PatientSearchCombobox
               patients={patientOptions}
@@ -763,9 +766,11 @@ export function TurnosNuevoWizard({
               </dl>
             ) : null}
           </Card>
+          </div>
         </div>
 
-        <Card title="3 · Horarios" className={cn(TURNOS_CARD_CLASS, "lg:col-span-6")}>
+        <div data-tour="turnos-nuevo-horarios" className="lg:col-span-6">
+        <Card title="3 · Horarios" className={TURNOS_CARD_CLASS}>
           <div className="space-y-3">
             {!professionalId ? (
               <p className={MUTED_CLASS}>Seleccioná un profesional para ver la disponibilidad.</p>
@@ -937,8 +942,10 @@ export function TurnosNuevoWizard({
             ) : null}
           </div>
         </Card>
+        </div>
 
         <div className="turnos-nuevo-card-stack flex min-h-0 flex-col gap-3 overflow-y-auto lg:col-span-3">
+          <div data-tour="turnos-nuevo-confirmar">
           <Card
             title={isExistingMode ? "4 · Turno existente" : "4 · Confirmación"}
             className={TURNOS_CARD_CLASS}
@@ -1003,6 +1010,7 @@ export function TurnosNuevoWizard({
               Limpiar selección
             </Button>
           </Card>
+          </div>
 
           {!isExistingMode ? (
             <Card title="Modificación" className={TURNOS_CARD_CLASS}>

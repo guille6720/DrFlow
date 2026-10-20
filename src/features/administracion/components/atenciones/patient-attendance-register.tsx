@@ -57,10 +57,17 @@ export function PatientAttendanceRegister({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div
+        className="flex flex-wrap items-center justify-between gap-3"
+        data-tour={items.length === 0 ? "atenciones-exportar-csv" : undefined}
+      >
         <div className="flex flex-wrap gap-2">
           {PERIOD_TABS.map((tab) => (
-            <Link key={tab.id} href={`/atenciones?period=${tab.id}`}>
+            <Link
+              key={tab.id}
+              href={`/atenciones?period=${tab.id}`}
+              data-tour={tab.id === "daily" ? "atenciones-periodo-hoy" : undefined}
+            >
               <Button
                 type="button"
                 size="sm"
@@ -72,10 +79,12 @@ export function PatientAttendanceRegister({
           ))}
         </div>
         {items.length > 0 && (
-          <ExportCsvButton
-            rows={csvRows}
-            filename={`atenciones-${period}-${periodLabel.replace(/\s+/g, "-")}.csv`}
-          />
+          <div data-tour="atenciones-exportar-csv">
+            <ExportCsvButton
+              rows={csvRows}
+              filename={`atenciones-${period}-${periodLabel.replace(/\s+/g, "-")}.csv`}
+            />
+          </div>
         )}
       </div>
 
@@ -132,6 +141,7 @@ export function PatientAttendanceRegister({
         </Card>
       )}
 
+      <div data-tour="atenciones-detalle">
       <Card title="Detalle de atenciones">
         {items.length === 0 ? (
           <p className="text-sm text-slate-500">
@@ -203,6 +213,7 @@ export function PatientAttendanceRegister({
           </ListPagination>
         )}
       </Card>
+      </div>
     </div>
   );
 }

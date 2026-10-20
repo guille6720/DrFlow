@@ -104,6 +104,7 @@ const WaitingRoomCard = memo(function WaitingRoomCard({
             loading={pending}
             pendingLabel="Confirmando..."
             onClick={() => onMove(row.id, "confirmed")}
+            data-tour="sala-espera-confirmar-consultas"
           >
             Confirmar → Consultas
           </Button>
@@ -207,24 +208,36 @@ export function WaitingRoomView({
         {COLUMNS.map((col) => {
           const columnRows = byStatus.get(col.value) ?? [];
           return (
-            <Card key={col.value} title={col.label} className="min-h-[200px]">
-              <ul className="space-y-2">
-                {columnRows.map((row) => (
-                  <WaitingRoomCard
-                    key={row.id}
-                    row={row}
-                    columnValue={col.value}
-                    pending={pending}
-                    showDocumentNumber={showDocumentNumber}
-                    onMove={move}
-                    onGoToConsultas={goToConsultas}
-                  />
-                ))}
-                {columnRows.length === 0 ? (
-                  <p className="text-xs text-slate-500">Sin pacientes</p>
-                ) : null}
-              </ul>
-            </Card>
+            <div
+              key={col.value}
+              data-tour={col.value === "waiting" ? "sala-espera-columna-esperando" : undefined}
+            >
+              <Card title={col.label} className="min-h-[200px]">
+                <ul
+                  className="space-y-2"
+                  data-tour={
+                    col.value === "waiting" && columnRows.length === 0
+                      ? "sala-espera-confirmar-consultas"
+                      : undefined
+                  }
+                >
+                  {columnRows.map((row) => (
+                    <WaitingRoomCard
+                      key={row.id}
+                      row={row}
+                      columnValue={col.value}
+                      pending={pending}
+                      showDocumentNumber={showDocumentNumber}
+                      onMove={move}
+                      onGoToConsultas={goToConsultas}
+                    />
+                  ))}
+                  {columnRows.length === 0 ? (
+                    <p className="text-xs text-slate-500">Sin pacientes</p>
+                  ) : null}
+                </ul>
+              </Card>
+            </div>
           );
         })}
       </div>

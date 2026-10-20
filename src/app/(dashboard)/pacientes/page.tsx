@@ -102,6 +102,7 @@ export default async function PacientesPage({
         activeClinicId={clinicId}
         role={role}
         userName={profile?.full_name}
+        tourId="pacientes-header"
       />
       <PacientesPageContent
         seccion={seccion}

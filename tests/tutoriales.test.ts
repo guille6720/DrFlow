@@ -31,6 +31,28 @@ describe("tutoriales registry", () => {
     expect(targets).toContain(TOUR_TARGETS.AGENDA_NEW_BUTTON);
   });
 
+  it("registers clinic modules except superadmin and keeps safe demos", () => {
+    const all = listTutorials();
+    expect(all.length).toBeGreaterThanOrEqual(20);
+    expect(all.some((t) => t.id === "pacientes-basico")).toBe(true);
+    expect(all.some((t) => t.id === "dashboard-basico")).toBe(true);
+    expect(all.some((t) => t.id === "caja-basico")).toBe(true);
+    expect(all.every((t) => !t.startRoute.startsWith("/superadmin"))).toBe(true);
+    expect(all.every((t) => !/superadmin/i.test(t.moduleId))).toBe(true);
+    expect(JSON.stringify(all)).not.toMatch(/SyncVete|veterinar|mascota|canino/i);
+
+    for (const tutorial of all) {
+      expect(tutorial.steps.some((s) => s.id === "welcome")).toBe(true);
+      expect(tutorial.steps.some((s) => s.id === "closing")).toBe(true);
+      expect(tutorial.steps.length).toBeGreaterThanOrEqual(3);
+      const headerTarget = `${tutorial.moduleId}-header`;
+      const welcome = tutorial.steps.find((s) => s.id === "welcome");
+      expect(welcome?.target).toBe(
+        tutorial.moduleId === "agenda" ? TOUR_TARGETS.AGENDA_HEADER : headerTarget
+      );
+    }
+  });
+
   it("filters by role and excludes patient audience", () => {
     expect(listTutorialsForRole("doctor").length).toBeGreaterThan(0);
     expect(listTutorialsForRole("secretary").some((t) => t.id === "agenda-basico")).toBe(true);
@@ -49,8 +71,10 @@ describe("tutoriales registry", () => {
         updatedAt: "2026-01-01T00:00:00.000Z",
       },
     });
-    expect(cards[0]?.stepTitles.length).toBe(listTutorials()[0]?.steps.length);
-    expect(cards[0]?.progress?.status).toBe("in_progress");
+    const agendaCard = cards.find((c) => c.tutorialId === "agenda-basico");
+    expect(agendaCard?.stepTitles.length).toBe(AGENDA_BASICO_TUTORIAL.steps.length);
+    expect(agendaCard?.progress?.status).toBe("in_progress");
+    expect(cards.length).toBe(listTutorialsForRole("clinic_admin").length);
   });
 });
 

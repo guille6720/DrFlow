@@ -49,6 +49,7 @@ export default async function PlantillasRecetasPage() {
         activeClinicId={clinicId}
         role={role}
         userName={profile?.full_name}
+        tourId="plantillas-recetas-header"
       />
       <div className="p-4 sm:p-6">
         <p className="mb-4 text-sm text-slate-700">

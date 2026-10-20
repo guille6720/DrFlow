@@ -157,7 +157,7 @@ export function ExportManualPdfButton() {
   }
 
   return (
-    <Button type="button" onClick={() => void exportPdf()} className="gap-2">
+    <Button type="button" onClick={() => void exportPdf()} className="gap-2" data-tour="ayuda-descargar-pdf">
       <Download className="h-4 w-4" />
       Descargar manual PDF
     </Button>

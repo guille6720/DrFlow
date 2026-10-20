@@ -30,12 +30,12 @@ export function LiquidacionListView({ batches, pending }: Props) {
           Armá lotes de liquidación desde atenciones realizadas y exportá CSV para presentar a la obra social.
         </p>
         <div className="flex flex-wrap gap-2">
-          <Link href="/facturacion/tarifas">
+          <Link href="/facturacion/tarifas" data-tour="liquidacion-tarifas-os">
             <Button variant="outline" size="sm">
               Tarifas OS
             </Button>
           </Link>
-          <Link href="/facturacion/liquidacion/nueva">
+          <Link href="/facturacion/liquidacion/nueva" data-tour="liquidacion-nuevo-lote">
             <Button size="sm">
               <Plus className="mr-1 h-4 w-4" />
               Nuevo lote
@@ -45,20 +45,23 @@ export function LiquidacionListView({ batches, pending }: Props) {
       </div>
 
       {pending.length > 0 ? (
-        <Card title="Pendientes de liquidar">
-          <ul className="divide-y divide-slate-100 text-sm">
-            {pending.map((row) => (
-              <li key={row.insurance_provider} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                <span className="font-medium text-slate-900">{row.insurance_provider}</span>
-                <span className="text-slate-600">
-                  {row.pending_count} ítems · {formatOsAmount(row.pending_amount)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Card>
+        <div data-tour="liquidacion-pendientes">
+          <Card title="Pendientes de liquidar">
+            <ul className="divide-y divide-slate-100 text-sm">
+              {pending.map((row) => (
+                <li key={row.insurance_provider} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                  <span className="font-medium text-slate-900">{row.insurance_provider}</span>
+                  <span className="text-slate-600">
+                    {row.pending_count} ítems · {formatOsAmount(row.pending_amount)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </div>
       ) : null}
 
+      <div data-tour={pending.length === 0 ? "liquidacion-pendientes" : undefined}>
       <Card title="Lotes de liquidación">
         {batches.length === 0 ? (
           <p className="text-sm text-slate-500">
@@ -102,6 +105,7 @@ export function LiquidacionListView({ batches, pending }: Props) {
           </div>
         )}
       </Card>
+      </div>
     </div>
   );
 }

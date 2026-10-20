@@ -25,6 +25,7 @@ export default async function TurnosConfiguracionPage() {
           role={role}
           userName={profile?.full_name}
           isSuperadmin={isSuperadmin}
+          tourId="agenda-config-header"
         />
         <p className="p-4 text-sm text-red-600">Seleccioná una clínica activa.</p>
       </>
@@ -42,6 +43,7 @@ export default async function TurnosConfiguracionPage() {
         role={role}
         userName={profile?.full_name}
         isSuperadmin={isSuperadmin}
+        tourId="agenda-config-header"
       />
       <div className="p-4">
         <TurnosConfigView {...data} />

@@ -145,6 +145,13 @@ export function HubCard({
   return (
     <Link
       href={`/datos?flujo=${flujo}`}
+      data-tour={
+        flujo === "import-pacientes"
+          ? "datos-importar-pacientes"
+          : flujo === "export-pacientes"
+            ? "datos-exportar-pacientes"
+            : undefined
+      }
       className={`drflow-card-light rounded-xl border p-4 text-left text-slate-900 shadow-sm transition ${
         active ? "border-teal-600 bg-teal-50" : "border-slate-200 bg-white hover:border-teal-400"
       }`}

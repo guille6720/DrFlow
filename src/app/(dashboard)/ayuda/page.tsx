@@ -10,6 +10,7 @@ export default async function AyudaPage() {
       <DashboardPageHeader
         title="Ayuda y manual"
         subtitle={`Versión ${getAppVersion()} · Actualizado ${latest.date}`}
+        tourId="ayuda-header"
       />
       <div className="p-4 sm:p-6">
         <ManualView />

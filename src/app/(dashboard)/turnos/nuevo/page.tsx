@@ -31,7 +31,7 @@ export default async function TurnosNuevoPage({
   if (!hasPermission(role, "manageAppointments", isSuperadmin, permissionOverrides)) {
     return (
       <>
-        <Header title="Nuevo turno" clinics={clinics} role={role} userName={profile?.full_name} isSuperadmin={isSuperadmin} />
+        <Header title="Nuevo turno" clinics={clinics} role={role} userName={profile?.full_name} isSuperadmin={isSuperadmin} tourId="turnos-nuevo-header" />
         <p className="p-4 text-sm text-red-600">No tenés permiso para crear turnos.</p>
       </>
     );
@@ -91,6 +91,7 @@ export default async function TurnosNuevoPage({
         role={role}
         userName={profile?.full_name}
         isSuperadmin={isSuperadmin}
+        tourId="turnos-nuevo-header"
       />
       <div className="flex h-full min-h-0 flex-col p-3 lg:p-3">
         <TurnosNuevoWizard

@@ -59,15 +59,23 @@ export default async function GeriatriaPanelPage() {
       <DashboardPageHeader
         title="Geriatría"
         subtitle="Panel operativo de residencia e internación geriátrica."
+        tourId="geriatria-header"
       />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {KPI_LINKS.map((item) => {
           const value = kpis[item.key];
           const display = item.key === "occupancyPercent" ? `${value}%` : String(value);
+          const tourId =
+            item.key === "activeResidents"
+              ? "geriatria-kpi-residentes"
+              : item.key === "occupiedBeds"
+                ? "geriatria-kpi-camas"
+                : undefined;
           return (
             <Link
               key={item.key}
               href={item.href}
+              data-tour={tourId}
               className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-teal-400 hover:shadow-md dark:border-slate-700 dark:bg-slate-900"
             >
               <p className="text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-50">
@@ -78,12 +86,14 @@ export default async function GeriatriaPanelPage() {
           );
         })}
       </div>
-      <Card title="Capacidad" description="Resumen de camas">
-        <p className="text-sm text-slate-700 dark:text-slate-200">
-          {kpis.activeResidents} residentes · {kpis.occupiedBeds}/{kpis.totalBeds} camas ocupadas ·{" "}
-          {kpis.freeBeds} libres
-        </p>
-      </Card>
+      <div data-tour="geriatria-capacidad">
+        <Card title="Capacidad" description="Resumen de camas">
+          <p className="text-sm text-slate-700 dark:text-slate-200">
+            {kpis.activeResidents} residentes · {kpis.occupiedBeds}/{kpis.totalBeds} camas ocupadas ·{" "}
+            {kpis.freeBeds} libres
+          </p>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -53,6 +53,7 @@ export default async function FirmasPage() {
         activeClinicId={clinicId}
         role={role}
         userName={profile?.full_name}
+        tourId="firmas-header"
       />
       <div className="p-4 sm:p-6">
         <p className="mb-4 text-sm text-slate-700">

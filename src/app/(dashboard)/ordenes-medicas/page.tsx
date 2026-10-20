@@ -22,6 +22,7 @@ export default async function OrdenesMedicasPage() {
         activeClinicId={clinicId}
         role={role}
         userName={profile?.full_name}
+        tourId="ordenes-header"
       />
       <div className="p-4 sm:p-6">
         <MedicalOrdersBrowser permissions={permissions} />

@@ -35,6 +35,7 @@ export default async function PlantillasPage() {
         activeClinicId={clinicId}
         role={role}
         userName={profile?.full_name}
+        tourId="plantillas-header"
       />
       <div className="p-4 sm:p-6">
         <p className="mb-4 text-sm font-medium text-slate-800">

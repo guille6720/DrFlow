@@ -114,7 +114,13 @@ export function CashChargeFormSection({
         </div>
 
         <div className="flex items-end lg:col-span-2">
-          <Button type="submit" size="lg" loading={pending} className="min-h-12 w-full sm:w-auto">
+          <Button
+            type="submit"
+            size="lg"
+            loading={pending}
+            className="min-h-12 w-full sm:w-auto"
+            data-tour="caja-cobrar"
+          >
             <Banknote className="h-5 w-5" />
             Cobrar
           </Button>

@@ -23,17 +23,25 @@ export function TurnosReportesView({ metrics }: Props) {
           <h1 className="text-xl font-bold text-slate-900">Reportes de turnos</h1>
           <p className="text-sm text-slate-600">Indicadores operativos de la agenda médica.</p>
         </div>
-        <Link href="/turnos/agenda" className="text-sm font-medium text-teal-700 hover:underline">
+        <Link
+          href="/turnos/agenda"
+          data-tour="turnos-reportes-link-agenda"
+          className="text-sm font-medium text-teal-700 hover:underline"
+        >
           Ir a la agenda →
         </Link>
       </div>
 
-      <TurnosReportesPeriodTabs activePeriod={metrics.period} />
+      <div data-tour="turnos-reportes-periodo">
+        <TurnosReportesPeriodTabs activePeriod={metrics.period} />
+      </div>
 
-      <TurnosPeriodSummarySection
-        title={`Resumen (${metrics.periodLabel} · últimos ${periodDaysLabel})`}
-        summary={metrics.summary}
-      />
+      <div data-tour="turnos-reportes-resumen">
+        <TurnosPeriodSummarySection
+          title={`Resumen (${metrics.periodLabel} · últimos ${periodDaysLabel})`}
+          summary={metrics.summary}
+        />
+      </div>
 
       <TurnosOccupancySection
         title={`Ocupación (${metrics.periodLabel})`}

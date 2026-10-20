@@ -187,12 +187,16 @@ export function ClinicalTemplatesManager({ templates, specialties }: Props) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
-      <aside className="drflow-card-light drflow-light-sidebar-panel rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+      <aside
+        data-tour="plantillas-lista"
+        className="drflow-card-light drflow-light-sidebar-panel rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
+      >
         <div className="flex items-center justify-between gap-2 px-1 pb-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-800">Plantillas</p>
           <button
             type="button"
             onClick={startNew}
+            data-tour="plantillas-nueva"
             className="inline-flex items-center gap-1 rounded-lg border border-teal-200 bg-teal-50 px-2 py-1 text-xs font-semibold text-teal-800 hover:bg-teal-100"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -383,7 +387,7 @@ export function ClinicalTemplatesManager({ templates, specialties }: Props) {
           />
 
           <div className="flex flex-wrap gap-2">
-            <Button type="submit" loading={loading} pendingLabel="Guardando...">
+            <Button type="submit" loading={loading} pendingLabel="Guardando..." data-tour="plantillas-guardar">
               {editor.id ? "Guardar cambios" : "Crear plantilla"}
             </Button>
             {editor.id ? (

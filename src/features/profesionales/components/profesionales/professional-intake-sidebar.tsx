@@ -53,6 +53,7 @@ export function ProfessionalIntakeSidebar({
         <button
           type="button"
           onClick={onNew}
+          data-tour="equipo-nuevo-profesional"
           className={cn(
             "mt-3 flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition",
             isNew

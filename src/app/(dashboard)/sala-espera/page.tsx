@@ -51,9 +51,10 @@ export default async function SalaEsperaPage() {
         activeClinicId={clinicId}
         role={role}
         userName={profile?.full_name}
+        tourId="sala-espera-header"
       />
       <div className="p-3 sm:p-4">
-        <Link href="/turnos/agenda" className="mb-4 inline-block">
+        <Link href="/turnos/agenda" className="mb-4 inline-block" data-tour="sala-espera-link-agenda">
           <Button variant="outline" size="sm">
             Ir a agenda
           </Button>

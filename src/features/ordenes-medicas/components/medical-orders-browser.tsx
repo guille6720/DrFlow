@@ -178,7 +178,10 @@ export function MedicalOrdersBrowser({ permissions, patientId, patientLabel, new
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-end gap-2">
+      <div
+        className="flex flex-wrap items-end gap-2"
+        data-tour={!hasFilters ? "ordenes-limpiar-filtros" : undefined}
+      >
         <form
           className="relative min-w-[220px] flex-1"
           onSubmit={(e) => {
@@ -192,6 +195,7 @@ export function MedicalOrdersBrowser({ permissions, patientId, patientLabel, new
             placeholder={patientId ? "Buscar por N.º, estudio o diagnóstico…" : "Buscar por N.º, paciente, DNI o estudio…"}
             value={filters.q}
             className="pl-9"
+            data-tour="ordenes-buscar"
             onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))}
           />
         </form>
@@ -247,6 +251,7 @@ export function MedicalOrdersBrowser({ permissions, patientId, patientLabel, new
           <Button
             variant="ghost"
             size="sm"
+            data-tour="ordenes-limpiar-filtros"
             onClick={() => {
               setFilters(EMPTY_FILTERS);
               setAppliedQ("");
@@ -257,11 +262,13 @@ export function MedicalOrdersBrowser({ permissions, patientId, patientLabel, new
         ) : null}
         {permissions.canIssue ? (
           newOrderHref ? (
-            <ButtonLink href={newOrderHref} size="sm">
-              <Plus className="h-4 w-4" /> Nueva orden médica
-            </ButtonLink>
+            <span data-tour="ordenes-nueva">
+              <ButtonLink href={newOrderHref} size="sm">
+                <Plus className="h-4 w-4" /> Nueva orden médica
+              </ButtonLink>
+            </span>
           ) : (
-            <Button size="sm" onClick={startNewOrder} disabled={!schemaReady}>
+            <Button size="sm" onClick={startNewOrder} disabled={!schemaReady} data-tour="ordenes-nueva">
               <Plus className="h-4 w-4" /> Nueva orden médica
             </Button>
           )

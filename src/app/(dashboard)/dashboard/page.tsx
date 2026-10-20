@@ -30,6 +30,7 @@ export default async function DashboardPage() {
         role={role}
         userName={profile?.full_name}
         isSuperadmin={isSuperadmin}
+        tourId="dashboard-header"
       />
 
       <div className="p-3 sm:p-4">

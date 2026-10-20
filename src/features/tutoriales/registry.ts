@@ -1,4 +1,5 @@
 import { AGENDA_BASICO_TUTORIAL } from "@/features/tutoriales/definitions/agenda";
+import { CLINIC_MODULE_TUTORIALS } from "@/features/tutoriales/definitions/clinic-modules";
 import type {
   AcademyModuleCard,
   TutorialAudienceRole,
@@ -7,10 +8,10 @@ import type {
 } from "@/features/tutoriales/types";
 
 /**
- * Registered tutorials. Only modules that exist and are authorized for the role.
- * Stage 1: Agenda. More modules can reuse buildStandardModuleTutorial later.
+ * Registered tutorials for operational clinic modules.
+ * Superadmin and empty Geriatría shells are intentionally excluded.
  */
-const TUTORIALS: TutorialDefinition[] = [AGENDA_BASICO_TUTORIAL];
+const TUTORIALS: TutorialDefinition[] = [AGENDA_BASICO_TUTORIAL, ...CLINIC_MODULE_TUTORIALS];
 
 const byId = new Map(TUTORIALS.map((t) => [t.id, t]));
 
@@ -51,4 +52,4 @@ export function buildAcademyCards(
     }));
 }
 
-export { AGENDA_BASICO_TUTORIAL };
+export { AGENDA_BASICO_TUTORIAL, CLINIC_MODULE_TUTORIALS };

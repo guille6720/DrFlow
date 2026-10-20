@@ -135,17 +135,27 @@ export function ProfessionalSignaturesManager({ professionals, canManageAll }: P
 
   if (sorted.length === 0) {
     return (
-      <Card>
-        <p className="text-sm text-slate-700">
-          No hay profesionales activos. Agregá el equipo en{" "}
-          <span className="font-medium">Médicos → Equipo</span>.
-        </p>
-      </Card>
+      <div
+        data-tour="firmas-select-profesional"
+        className="space-y-2"
+      >
+        <div data-tour="firmas-guardar-texto">
+          <div data-tour="firmas-subir-imagen">
+            <Card>
+              <p className="text-sm text-slate-700">
+                No hay profesionales activos. Agregá el equipo en{" "}
+                <span className="font-medium">Médicos → Equipo</span>.
+              </p>
+            </Card>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
     <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+      <div data-tour="firmas-select-profesional">
       <Card className="drflow-light-sidebar-panel drflow-card-light h-fit border-slate-200 bg-white">
         <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-800">
           Profesionales
@@ -180,6 +190,7 @@ export function ProfessionalSignaturesManager({ professionals, canManageAll }: P
           })}
         </ul>
       </Card>
+      </div>
 
       {selected ? (
         <Card title={`Firma — ${getProfessionalDisplayName(selected)}`}>
@@ -216,7 +227,7 @@ export function ProfessionalSignaturesManager({ professionals, canManageAll }: P
             />
 
             <div className="flex flex-wrap gap-2">
-              <Button type="button" loading={loading} onClick={handleSaveText}>
+              <Button type="button" loading={loading} onClick={handleSaveText} data-tour="firmas-guardar-texto">
                 Guardar texto
               </Button>
             </div>
@@ -230,7 +241,10 @@ export function ProfessionalSignaturesManager({ professionals, canManageAll }: P
                 PNG, JPEG o WebP con fondo transparente recomendado. Máximo 2 MB.
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50">
+                <label
+                  data-tour="firmas-subir-imagen"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
+                >
                   <Upload className="h-4 w-4" />
                   Subir imagen
                   <input

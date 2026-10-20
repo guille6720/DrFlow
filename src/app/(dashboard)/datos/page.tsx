@@ -140,6 +140,7 @@ export default async function DatosPage() {
         activeClinicId={clinicId}
         role={role}
         userName={profile?.full_name}
+        tourId="datos-header"
       />
 
       <div className="flex flex-col gap-4 p-3 lg:p-4">
@@ -186,7 +187,7 @@ export default async function DatosPage() {
           <ClearClinicalHistoryPanel clinicName={clinic.name} />
         )}
 
-        <div className="mt-6">
+        <div className="mt-6" data-tour="datos-volver-configuracion">
           <Link href="/configuracion?grupo=sistema">
             <Button variant="outline">Volver a Configuración</Button>
           </Link>

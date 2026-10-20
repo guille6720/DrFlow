@@ -34,6 +34,7 @@ export default async function TurnosReportesPage({
           role={role}
           userName={profile?.full_name}
           isSuperadmin={isSuperadmin}
+          tourId="turnos-reportes-header"
         />
         <p className="p-4 text-sm text-red-600">Seleccioná una clínica activa.</p>
       </>
@@ -51,6 +52,7 @@ export default async function TurnosReportesPage({
         role={role}
         userName={profile?.full_name}
         isSuperadmin={isSuperadmin}
+        tourId="turnos-reportes-header"
       />
       <div className="p-4">
         <TurnosReportesView metrics={metrics} />

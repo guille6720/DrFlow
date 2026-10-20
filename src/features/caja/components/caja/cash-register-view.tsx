@@ -32,22 +32,26 @@ export function CashRegisterView({
 
   return (
     <div className="space-y-6">
-      <Card title="Registrar cobro" className="drflow-caja-quick">
-        <p className="mb-4 text-sm text-slate-500">
-          Paciente → tipo → importe → cobrar. Máximo 3 clics.
-        </p>
-        <CashChargeFormSection
-          professionals={professionals}
-          defaultProfessionalId={defaultProfessionalId}
-          patientId={register.patientId}
-          setPatientId={register.setPatientId}
-          pending={register.pending}
-          error={register.error}
-          onSubmit={register.handleCharge}
-        />
-      </Card>
+      <div data-tour="caja-registrar-cobro">
+        <Card title="Registrar cobro" className="drflow-caja-quick">
+          <p className="mb-4 text-sm text-slate-500">
+            Paciente → tipo → importe → cobrar. Máximo 3 clics.
+          </p>
+          <CashChargeFormSection
+            professionals={professionals}
+            defaultProfessionalId={defaultProfessionalId}
+            patientId={register.patientId}
+            setPatientId={register.setPatientId}
+            pending={register.pending}
+            error={register.error}
+            onSubmit={register.handleCharge}
+          />
+        </Card>
+      </div>
 
-      <CashChargesListSection recentCharges={recentCharges} onVoid={register.handleVoid} />
+      <div data-tour="caja-movimientos-hoy">
+        <CashChargesListSection recentCharges={recentCharges} onVoid={register.handleVoid} />
+      </div>
     </div>
   );
 }

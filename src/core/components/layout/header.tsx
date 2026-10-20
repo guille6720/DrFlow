@@ -24,6 +24,8 @@ interface HeaderProps {
   meta?: ReactNode;
   /** Links page main landmark to the visible page title (WCAG 2.4.6). */
   titleId?: string;
+  /** Stable Tutoriales NexClinic anchor (`data-tour`). */
+  tourId?: string;
   clinics: { clinic_id: string; clinic?: Clinic }[];
   activeClinicId?: string | null;
   role: UserRole | null;
@@ -36,6 +38,7 @@ export function Header({
   subtitle,
   meta,
   titleId,
+  tourId,
   clinics,
   activeClinicId,
   role,
@@ -52,6 +55,7 @@ export function Header({
 
   return (
     <header
+      data-tour={tourId}
       className={cn(
         "drflow-ui-header border-b px-4 py-2.5 backdrop-blur-sm sm:px-6",
         shellDark ? "drflow-ui-header-dark" : "drflow-ui-header-light",

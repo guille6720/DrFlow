@@ -59,7 +59,7 @@ export function PacientesListPanel({
                 {cobertura === "pami" ? "Todos" : "Solo PAMI"}
               </Button>
             </Link>
-            <Link href="/pacientes/nuevo">
+            <Link href="/pacientes/nuevo" data-tour="pacientes-nuevo">
               <Button>
                 <Plus className="h-4 w-4" />
                 Nuevo paciente

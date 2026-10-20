@@ -74,6 +74,7 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
         </p>
       </div>
 
+      <div data-tour="agenda-config-horarios">
       <Card title="Horarios semanales" className="drflow-card-light border-slate-200 bg-white">
         {rules.length === 0 ? (
           <p className="text-sm text-slate-600">No hay horarios cargados.</p>
@@ -138,7 +139,13 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
                       options={sedeOptions}
                     />
                     <div className="flex flex-wrap items-end gap-2">
-                      <Button type="submit" size="sm" loading={busyId === rule.id} pendingLabel="Guardando...">
+                      <Button
+                        type="submit"
+                        size="sm"
+                        loading={busyId === rule.id}
+                        pendingLabel="Guardando..."
+                        data-tour="agenda-config-guardar"
+                      >
                         Guardar
                       </Button>
                       <Button
@@ -212,6 +219,7 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
 
         <form
           className="mt-4 grid gap-3 border-t border-slate-200 pt-4 sm:grid-cols-2 lg:grid-cols-3"
+          data-tour={editingRuleId ? undefined : "agenda-config-guardar"}
           onSubmit={(e) => {
             e.preventDefault();
             void runAction("new-rule", () => createTurnosAvailabilityRule(new FormData(e.currentTarget)));
@@ -236,12 +244,18 @@ export function TurnosConfigView({ rules, blocks, professionals, locations, defa
           />
           <Select name="location_id" label="Sede (opcional)" options={sedeOptions} />
           <div className="flex items-end">
-            <Button type="submit" loading={busyId === "new-rule"} pendingLabel="Guardando...">
+            <Button
+              type="submit"
+              loading={busyId === "new-rule"}
+              pendingLabel="Guardando..."
+              data-tour="agenda-config-agregar-horario"
+            >
               Agregar horario
             </Button>
           </div>
         </form>
       </Card>
+      </div>
 
       <Card title="Bloqueos de agenda" className="drflow-card-light border-slate-200 bg-white">
         {blocks.length === 0 ? (

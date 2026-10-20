@@ -40,6 +40,7 @@ export function ManualView() {
         <ExportManualPdfButton />
       </div>
 
+      <div data-tour="ayuda-novedades">
       <Card title="Qué hay de nuevo">
         <ul className="space-y-4">
           {CHANGELOG.map((entry) => (
@@ -57,8 +58,9 @@ export function ManualView() {
           ))}
         </ul>
       </Card>
+      </div>
 
-      <nav className="flex flex-wrap gap-2">
+      <nav className="flex flex-wrap gap-2" data-tour="ayuda-indice-secciones">
         {MANUAL_SECTIONS.map((s) => (
           <a
             key={s.id}

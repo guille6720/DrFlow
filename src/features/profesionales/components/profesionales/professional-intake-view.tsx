@@ -77,6 +77,7 @@ export function ProfessionalIntakeView({
         activeClinicId={clinicId}
         role={role}
         userName={userName}
+        tourId="equipo-header"
       />
 
       <div className="flex flex-col gap-4 p-4 lg:flex-row lg:gap-6 lg:p-6">
@@ -96,35 +97,43 @@ export function ProfessionalIntakeView({
 
         <div className="min-w-0 flex-1 space-y-4">
           {selectedMember ? (
-            <ClinicTeamMemberDetailPanel
-              member={selectedMember}
-              acting={memberPanel.acting}
-              loading={memberPanel.loading}
-              passwordLoading={memberPanel.passwordLoading}
-              resendLoading={memberPanel.resendLoading}
-              error={memberPanel.error}
-              success={memberPanel.success}
-              onSubmitProfile={memberPanel.handleSubmitProfile}
-              onSubmitPassword={memberPanel.handleSubmitPassword}
-              onResendInviteEmail={memberPanel.handleResendInviteEmail}
-              onRoleChange={memberPanel.handleRoleChange}
-              onDeactivate={memberPanel.handleDeactivate}
-              onRemove={memberPanel.handleRemove}
-            />
+            <div data-tour="equipo-tab-perfil">
+              <div data-tour="equipo-tab-horarios">
+                <ClinicTeamMemberDetailPanel
+                  member={selectedMember}
+                  acting={memberPanel.acting}
+                  loading={memberPanel.loading}
+                  passwordLoading={memberPanel.passwordLoading}
+                  resendLoading={memberPanel.resendLoading}
+                  error={memberPanel.error}
+                  success={memberPanel.success}
+                  onSubmitProfile={memberPanel.handleSubmitProfile}
+                  onSubmitPassword={memberPanel.handleSubmitPassword}
+                  onResendInviteEmail={memberPanel.handleResendInviteEmail}
+                  onRoleChange={memberPanel.handleRoleChange}
+                  onDeactivate={memberPanel.handleDeactivate}
+                  onRemove={memberPanel.handleRemove}
+                />
+              </div>
+            </div>
           ) : isNew ? (
-            <ProfessionalIntakeNewForm
-              locations={locations}
-              newStep={newStep}
-              onStepChange={setNewStep}
-              fieldErrors={fieldErrors}
-              onClearError={clearError}
-              agendaRules={agendaRules}
-              onAgendaRulesChange={setAgendaRules}
-              loading={loading}
-              error={error}
-              success={success}
-              onSubmit={handleCreateSubmit}
-            />
+            <div data-tour="equipo-tab-perfil">
+              <div data-tour="equipo-tab-horarios">
+                <ProfessionalIntakeNewForm
+                  locations={locations}
+                  newStep={newStep}
+                  onStepChange={setNewStep}
+                  fieldErrors={fieldErrors}
+                  onClearError={clearError}
+                  agendaRules={agendaRules}
+                  onAgendaRulesChange={setAgendaRules}
+                  loading={loading}
+                  error={error}
+                  success={success}
+                  onSubmit={handleCreateSubmit}
+                />
+              </div>
+            </div>
           ) : selected ? (
             <>
               <ProfessionalIntakeDetailHeader
@@ -138,11 +147,11 @@ export function ProfessionalIntakeView({
                 locations={locations}
                 fieldErrors={fieldErrors}
                 onClearError={clearError}
-                agendaRules={agendaRules}
-                onAgendaRulesChange={setAgendaRules}
                 loading={loading}
                 error={error}
                 success={success}
+                agendaRules={agendaRules}
+                onAgendaRulesChange={setAgendaRules}
                 onUpdateProfile={handleUpdateProfile}
                 onUpdateBankDetails={handleUpdateBankDetails}
                 onSaveSchedule={handleSaveSchedule}
@@ -151,12 +160,16 @@ export function ProfessionalIntakeView({
               />
             </>
           ) : (
-            <Card title="Seleccioná un profesional o usuario">
-              <p className="text-sm text-slate-600">
-                Elegí un profesional o un usuario invitado del panel izquierdo para editar sus
-                datos, o creá un profesional nuevo.
-              </p>
-            </Card>
+            <div data-tour="equipo-tab-perfil">
+              <div data-tour="equipo-tab-horarios">
+                <Card title="Seleccioná un profesional o usuario">
+                  <p className="text-sm text-slate-600">
+                    Elegí un profesional o un usuario invitado del panel izquierdo para editar sus
+                    datos, o creá un profesional nuevo.
+                  </p>
+                </Card>
+              </div>
+            </div>
           )}
 
           {!selectedMember ? (

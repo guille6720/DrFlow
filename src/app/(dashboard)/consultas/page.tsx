@@ -133,6 +133,7 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
           activeClinicId={clinicId}
           role={role}
           userName={profile?.full_name}
+          tourId="consultas-header"
         />
         <div className="space-y-4 p-3 sm:p-4">
           <Suspense fallback={<p className="text-sm text-slate-500">Cargando consulta…</p>}>
@@ -222,10 +223,11 @@ export default async function ConsultasPage({ searchParams }: PageProps) {
         activeClinicId={clinicId}
         role={role}
         userName={profile?.full_name}
+        tourId="consultas-header"
       />
       <div className="space-y-4 p-3 sm:p-4">
         <div className="flex flex-wrap items-center gap-2">
-          <Link href="/sala-espera">
+          <Link href="/sala-espera" data-tour="consultas-link-sala-espera">
             <Button type="button" variant="outline" size="sm">
               Sala de espera
             </Button>

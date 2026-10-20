@@ -877,6 +877,7 @@ function DrappConsultaWorkspaceInner({
                       type="button"
                       disabled={finalizing || formLoading || quickSaving}
                       onClick={() => void handleFinalizeClick()}
+                      data-tour="consultas-finalizar"
                       className="inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--primary)] hover:underline disabled:opacity-60"
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />

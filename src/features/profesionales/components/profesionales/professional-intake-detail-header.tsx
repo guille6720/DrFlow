@@ -44,6 +44,13 @@ export function ProfessionalIntakeDetailHeader({ selected, detailTab, onTabChang
             key={tab.id}
             type="button"
             onClick={() => onTabChange(tab.id)}
+            data-tour={
+              tab.id === "perfil"
+                ? "equipo-tab-perfil"
+                : tab.id === "horarios"
+                  ? "equipo-tab-horarios"
+                  : undefined
+            }
             className={cn(
               "rounded-t-lg px-4 py-2 text-sm font-semibold transition",
               detailTab === tab.id

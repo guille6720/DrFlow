@@ -65,6 +65,7 @@ export function TelemedicinaView({ sessions, appointments, clinics, clinicId, ro
   }
 
   const virtualAppointments = appointments.filter((a) => a.consultation_modality === "virtual");
+  const hasPatientLink = sessions.some((s) => Boolean(s.patient_join_url));
 
   return (
     <>
@@ -75,6 +76,7 @@ export function TelemedicinaView({ sessions, appointments, clinics, clinicId, ro
         activeClinicId={clinicId}
         role={role}
         userName={userName}
+        tourId="telemedicina-header"
       />
 
       <div className="space-y-6 p-4 sm:p-6">
@@ -84,76 +86,95 @@ export function TelemedicinaView({ sessions, appointments, clinics, clinicId, ro
           login.
         </div>
 
-        <Card title="Turnos virtuales próximos">
-          {virtualAppointments.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              No hay turnos virtuales próximos. Marcá un turno como Virtual al reservarlo.
-            </p>
-          ) : (
-            <ul className="divide-y divide-slate-100">
-              {virtualAppointments.map((a) => (
-                <li key={a.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="font-medium">{formatPatientName(a.patients)}</p>
-                    <p className="text-sm text-slate-500">
-                      {format(new Date(a.start_at), "PPp", { locale: es })}
-                    </p>
-                    <Badge variant="info" className="mt-1">
-                      {consultationModalityLabel(a.consultation_modality)}
-                    </Badge>
-                  </div>
-                  <TelemedicineJoinButton appointmentId={a.id} compact />
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card title="Sesiones recientes">
-          {sessions.length === 0 ? (
-            <EmptyState
-              icon={Video}
-              title="Sin videoconsultas"
-              description="Creá una sala desde un turno virtual en la agenda o arriba."
-            />
-          ) : (
-            <ul className="divide-y divide-slate-100">
-              {sessions.map((s) => {
-                const appt = unwrapJoin(s.appointments ?? null);
-                return (
-                  <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+        <div data-tour="telemedicina-turnos-virtuales">
+          <Card title="Turnos virtuales próximos">
+            {virtualAppointments.length === 0 ? (
+              <p className="text-sm text-slate-500">
+                No hay turnos virtuales próximos. Marcá un turno como Virtual al reservarlo.
+              </p>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {virtualAppointments.map((a) => (
+                  <li key={a.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="font-medium">{formatPatientName(appt?.patients)}</p>
-                      <div className="mt-1 flex flex-wrap gap-2">
-                        <Badge variant="info">{s.status}</Badge>
-                        {s.provider ? <Badge variant="default">{s.provider}</Badge> : null}
-                      </div>
+                      <p className="font-medium">{formatPatientName(a.patients)}</p>
+                      <p className="text-sm text-slate-500">
+                        {format(new Date(a.start_at), "PPp", { locale: es })}
+                      </p>
+                      <Badge variant="info" className="mt-1">
+                        {consultationModalityLabel(a.consultation_modality)}
+                      </Badge>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Link href={`/telemedicina/sala/${s.id}`}>
-                        <Button size="sm" type="button">
-                          <Video className="h-4 w-4" /> Unirse
-                        </Button>
-                      </Link>
-                      {s.patient_join_url ? (
-                        <SafeExternalLink href={s.patient_join_url}>
-                          <Button size="sm" variant="outline" type="button">
-                            <ExternalLink className="h-4 w-4" /> Link paciente
-                          </Button>
-                        </SafeExternalLink>
-                      ) : null}
-                    </div>
+                    <TelemedicineJoinButton appointmentId={a.id} compact />
                   </li>
-                );
-              })}
-            </ul>
-          )}
-          <div className="mt-4">
-            <Button type="button" variant="ghost" size="sm" loading={refreshing} onClick={handleRefresh}>
-              Actualizar
-            </Button>
-          </div>
-        </Card>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </div>
+
+        <div
+          data-tour={
+            sessions.length === 0
+              ? "telemedicina-unirse"
+              : !hasPatientLink
+                ? "telemedicina-link-paciente"
+                : undefined
+          }
+        >
+          <Card title="Sesiones recientes">
+            {sessions.length === 0 ? (
+              <div data-tour="telemedicina-link-paciente">
+                <EmptyState
+                  icon={Video}
+                  title="Sin videoconsultas"
+                  description="Creá una sala desde un turno virtual en la agenda o arriba."
+                />
+              </div>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {sessions.map((s, index) => {
+                  const appt = unwrapJoin(s.appointments ?? null);
+                  return (
+                    <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                      <div>
+                        <p className="font-medium">{formatPatientName(appt?.patients)}</p>
+                        <div className="mt-1 flex flex-wrap gap-2">
+                          <Badge variant="info">{s.status}</Badge>
+                          {s.provider ? <Badge variant="default">{s.provider}</Badge> : null}
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          href={`/telemedicina/sala/${s.id}`}
+                          data-tour={index === 0 ? "telemedicina-unirse" : undefined}
+                        >
+                          <Button size="sm" type="button">
+                            <Video className="h-4 w-4" /> Unirse
+                          </Button>
+                        </Link>
+                        {s.patient_join_url ? (
+                          <span data-tour={index === 0 ? "telemedicina-link-paciente" : undefined}>
+                            <SafeExternalLink href={s.patient_join_url}>
+                              <Button size="sm" variant="outline" type="button">
+                                <ExternalLink className="h-4 w-4" /> Link paciente
+                              </Button>
+                            </SafeExternalLink>
+                          </span>
+                        ) : null}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <div className="mt-4">
+              <Button type="button" variant="ghost" size="sm" loading={refreshing} onClick={handleRefresh}>
+                Actualizar
+              </Button>
+            </div>
+          </Card>
+        </div>
       </div>
     </>
   );

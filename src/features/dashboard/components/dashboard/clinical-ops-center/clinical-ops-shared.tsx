@@ -49,6 +49,7 @@ export function OpsSection({
   action,
   children,
   className,
+  "data-tour": dataTour,
 }: {
   id?: string;
   title: string;
@@ -56,10 +57,12 @@ export function OpsSection({
   action?: ReactNode;
   children: ReactNode;
   className?: string;
+  "data-tour"?: string;
 }) {
   return (
     <section
       id={id}
+      data-tour={dataTour}
       aria-labelledby={id ? `${id}-title` : undefined}
       className={cn(
         "clinical-ops-card scroll-mt-24 rounded-xl border border-[var(--border-default,#e2e8f0)] bg-[var(--surface-card,#fff)] p-4 shadow-sm",

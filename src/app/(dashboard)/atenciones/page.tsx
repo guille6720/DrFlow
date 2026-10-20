@@ -41,6 +41,7 @@ export default async function AtencionesPage({
         activeClinicId={clinicId}
         role={role}
         userName={profile?.full_name}
+        tourId="atenciones-header"
       />
 
       <div className="p-3 sm:p-4">

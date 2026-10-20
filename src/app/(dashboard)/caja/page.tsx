@@ -68,6 +68,7 @@ export default async function CajaPage() {
         activeClinicId={clinicId}
         role={role}
         userName={profile?.full_name}
+        tourId="caja-header"
       />
       <div className="p-3 sm:p-4">
         <AdminOpsAnalyticsBridge
@@ -77,7 +78,7 @@ export default async function CajaPage() {
           canViewReports={hasPermission(role, "viewReports", isSuperadmin)}
         />
         <div className="mb-4 flex flex-wrap gap-2">
-          <Link href="/caja/cierre">
+          <Link href="/caja/cierre" data-tour="caja-link-cierre">
             <Button variant="outline" size="sm">
               Cierre diario
             </Button>

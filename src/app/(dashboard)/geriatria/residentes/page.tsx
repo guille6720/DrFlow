@@ -30,15 +30,21 @@ export default async function ResidentesPage() {
       <DashboardPageHeader
         title="Residentes"
         subtitle="Ingresos geriátricos vinculados a pacientes de la clínica (sin duplicar identidad)."
+        tourId="geriatria-residentes-header"
       />
 
       <div className="flex flex-wrap items-center gap-3">
-        <ButtonLink href="/geriatria/residentes/nuevo">Nuevo residente</ButtonLink>
-        <ButtonLink href="/pacientes" variant="outline">
-          Ver pacientes
-        </ButtonLink>
+        <span data-tour="geriatria-residentes-nuevo">
+          <ButtonLink href="/geriatria/residentes/nuevo">Nuevo residente</ButtonLink>
+        </span>
+        <span data-tour="geriatria-residentes-ver-pacientes">
+          <ButtonLink href="/pacientes" variant="outline">
+            Ver pacientes
+          </ButtonLink>
+        </span>
       </div>
 
+      <div data-tour="geriatria-residentes-listado">
       <Card title="Listado" description={`${residents.length} ficha(s)`}>
         {residents.length === 0 ? (
           <div className="space-y-3 text-sm text-slate-700 dark:text-slate-200">
@@ -122,6 +128,7 @@ export default async function ResidentesPage() {
           </div>
         )}
       </Card>
+      </div>
     </div>
   );
 }

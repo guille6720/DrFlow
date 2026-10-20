@@ -28,6 +28,7 @@ export default async function LiquidacionPage() {
         role={role}
         userName={profile?.full_name}
         isSuperadmin={isSuperadmin}
+        tourId="liquidacion-header"
       />
       <div className="p-4 sm:p-6">
         <LiquidacionListView batches={data.batches} pending={data.pending} />

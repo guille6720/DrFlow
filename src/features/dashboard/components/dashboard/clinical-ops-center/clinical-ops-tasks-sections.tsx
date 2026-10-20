@@ -14,7 +14,12 @@ export function TodayScheduleSection({
   canManageAppointments: boolean;
 }) {
   return (
-    <OpsSection id="ops-schedule" title="Agenda de hoy" count={appointments.length}>
+    <OpsSection
+      id="ops-schedule"
+      title="Agenda de hoy"
+      count={appointments.length}
+      data-tour="dashboard-section-agenda-hoy"
+    >
       {appointments.length === 0 ? (
         <ClinicalOpsEmpty message="Sin turnos programados para hoy." />
       ) : (
