@@ -115,6 +115,7 @@ export async function updateSession(request: NextRequest) {
   const isFullyPublic =
     path.startsWith("/solicitar-turno") ||
     path.startsWith("/portal") ||
+    path.startsWith("/tutoriales/narration/") ||
     path === "/privacidad" ||
     path === "/terminos" ||
     path === "/aviso-paciente" ||

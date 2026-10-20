@@ -8,6 +8,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sw.js|sw-portal.js|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Static tutorial narration WAVs must bypass auth redirects.
+    "/((?!_next/static|_next/image|favicon.ico|sw.js|sw-portal.js|manifest.webmanifest|tutoriales/narration/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|wav|mp3|ogg)$).*)",
   ],
 };
