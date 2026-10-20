@@ -1,6 +1,6 @@
 /**
  * Browser Web Speech API narration for Tutoriales NexClinic (fallback).
- * Prefers male Spanish voices to match Brian C / Horacio.
+ * Prefers male Spanish voices to match Kokoro Alex / Santa.
  */
 
 import {
@@ -24,7 +24,7 @@ const NARRATION_PREF_KEY_V1 = "nexclinic.tutoriales.narration.v1";
 export const DEFAULT_NARRATION_PREFS: NarrationPreferences = {
   muted: false,
   rate: 1,
-  voiceProfile: "brian",
+  voiceProfile: "alex",
 };
 
 export function clampNarrationRate(rate: number): number {
@@ -84,7 +84,7 @@ export class SpeechNarrationEngine {
   private generation = 0;
   private rate = 1;
   private muted = false;
-  private voiceProfile: StoredVoiceProfile = "brian";
+  private voiceProfile: StoredVoiceProfile = "alex";
   private voices: SpeechSynthesisVoice[] = [];
   private currentUtterance: SpeechSynthesisUtterance | null = null;
 
@@ -154,8 +154,8 @@ export class SpeechNarrationEngine {
     utterance.lang = "es-AR";
     utterance.rate = this.rate;
     utterance.pitch = 1;
-    // Brian / Horacio are male — prefer male Spanish browser voices when falling back.
-    const voice = pickVoiceForProfile(this.voices, "es-AR", this.voiceProfile === "horacio");
+    // Alex / Santa are male — prefer male Spanish browser voices when falling back.
+    const voice = pickVoiceForProfile(this.voices, "es-AR", this.voiceProfile === "santa");
     if (voice) utterance.voice = voice;
     this.currentUtterance = utterance;
     this.setStatus("speaking");

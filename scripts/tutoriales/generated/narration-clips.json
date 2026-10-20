@@ -1,0 +1,1426 @@
+{
+  "generatedAt": "2026-10-20T18:57:03.606Z",
+  "clipCount": 128,
+  "voices": [
+    {
+      "id": "alex",
+      "kokoroId": "em_alex",
+      "label": "Alex"
+    },
+    {
+      "id": "santa",
+      "kokoroId": "em_santa",
+      "label": "Santa"
+    }
+  ],
+  "clips": [
+    {
+      "textHash": "0001ef1982787ae8",
+      "text": "Desde Cierre diario cerrás la caja del período.",
+      "refs": [
+        {
+          "tutorialId": "caja-basico",
+          "clipId": "link-cierre",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "0094d047aa8e64c2",
+      "text": "El resumen muestra los indicadores clave de turnos para el período elegido.",
+      "refs": [
+        {
+          "tutorialId": "turnos-reportes-basico",
+          "clipId": "resumen",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "00d0dd4e63e04f00",
+      "text": "Ver pacientes te lleva al padrón general cuando necesitás cruzar información.",
+      "refs": [
+        {
+          "tutorialId": "geriatria-residentes-basico",
+          "clipId": "ver-pacientes",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "012b9d30a1cc1693",
+      "text": "Las flechas te llevan al período anterior o siguiente, y el botón Hoy vuelve a la fecha actual. Así revisás la agenda sin perder el contexto.",
+      "refs": [
+        {
+          "tutorialId": "agenda-basico",
+          "clipId": "week-nav",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "0175989715ee094f",
+      "text": "Listo. Practicá Importar y exportar cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "datos-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "01b6ecabb12ccd8b",
+      "text": "Bienvenido a Equipo de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "equipo-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "08c60100468914b5",
+      "text": "Listo. Practicá Dashboard cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "dashboard-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "0f9aac59a0e3bbdd",
+      "text": "El botón Cobrar confirma la operación. En la demo no se cobra nada.",
+      "refs": [
+        {
+          "tutorialId": "caja-basico",
+          "clipId": "cobrar",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "105f9c5d436762e7",
+      "text": "Las pestañas de período cambian el alcance del resumen de turnos.",
+      "refs": [
+        {
+          "tutorialId": "turnos-reportes-basico",
+          "clipId": "periodo",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "192d44e44aa38d0e",
+      "text": "En Registrar cobro cargás el importe y el medio de pago. Esta demostración no registra ningún cobro real.",
+      "refs": [
+        {
+          "tutorialId": "caja-basico",
+          "clipId": "registrar-cobro",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "1a6220d4edea759f",
+      "text": "Subir imagen permite adjuntar una firma gráfica. Esta demostración no carga ningún archivo.",
+      "refs": [
+        {
+          "tutorialId": "firmas-basico",
+          "clipId": "subir-imagen",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "1de29088a5047d51",
+      "text": "La columna Esperando agrupa a quienes todavía no fueron llamados.",
+      "refs": [
+        {
+          "tutorialId": "sala-espera-basico",
+          "clipId": "columna-esperando",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "1e96509424751eb1",
+      "text": "Con el buscador encontrás órdenes médicas ya emitidas o en borrador.",
+      "refs": [
+        {
+          "tutorialId": "ordenes-basico",
+          "clipId": "buscar",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "1ec9a11fc752c8d4",
+      "text": "Esta es una demostración segura de Geriatría en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "geriatria-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "20c19f4336223acd",
+      "text": "Descargar manual PDF genera el documento para leerlo fuera de la app.",
+      "refs": [
+        {
+          "tutorialId": "ayuda-basico",
+          "clipId": "descargar-pdf",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "282f47c9500169f7",
+      "text": "Esta es una demostración segura de Caja en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "caja-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "30a4a8b0bc064875",
+      "text": "Confirmar turno guarda la cita. En esta demostración solo señalamos el botón: no se crea ningún turno real.",
+      "refs": [
+        {
+          "tutorialId": "turnos-nuevo-basico",
+          "clipId": "confirmar",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "30dec08650539a69",
+      "text": "Listo. Practicá Consultas cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "consultas-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "31bb5db48a1b6847",
+      "text": "Guardar texto deja listo el bloque de firma para documentos. En la demo no se guarda nada real.",
+      "refs": [
+        {
+          "tutorialId": "firmas-basico",
+          "clipId": "guardar-texto",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "337ea574f2ef6be4",
+      "text": "Esta es una demostración segura de Consultas en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "consultas-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "34722ed61b10c380",
+      "text": "El link del paciente le permite ingresar a la consulta virtual.",
+      "refs": [
+        {
+          "tutorialId": "telemedicina-basico",
+          "clipId": "link-paciente",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "3624146e2e5d11e8",
+      "text": "Listo. Practicá Sala de espera cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "sala-espera-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "3981c4f3705e161c",
+      "text": "Este es el centro de operaciones de Nex Clinic. A la izquierda tenés la navegación operativa del día, con accesos a la agenda y otros atajos.",
+      "refs": [
+        {
+          "tutorialId": "dashboard-basico",
+          "clipId": "ops-nav",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "3a2a22c6ebc94102",
+      "text": "Listo. Practicá Liquidación OS cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "liquidacion-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "3b4b71dc4b12e71d",
+      "text": "Esta es una demostración segura de Firmas en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "firmas-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "3e2e7758c1b69395",
+      "text": "Cuando tu perfil tiene permiso de agenda, el botón Nuevo turno inicia el asistente de creación. En esta demostración solo lo señalamos: no se guarda ningún turno real.",
+      "refs": [
+        {
+          "tutorialId": "agenda-basico",
+          "clipId": "new-button",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "3e8d2a14b0a3ebf9",
+      "text": "Exportar pacientes genera un archivo del padrón. Solo lo señalamos; no descargamos información.",
+      "refs": [
+        {
+          "tutorialId": "datos-basico",
+          "clipId": "exportar-pacientes",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "3e94aed3d8e59ff2",
+      "text": "Esta es una demostración segura de Ayuda y manual en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "ayuda-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "4223cf80980c305b",
+      "text": "Bienvenido a Reportes de turnos de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "turnos-reportes-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "43183f356191a115",
+      "text": "Esta es una demostración segura de Sala de espera en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "sala-espera-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "43a59ff1c6708f26",
+      "text": "Esta es una demostración segura de Configuración de agenda en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "agenda-config-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "4405af59d0f0d467",
+      "text": "Listo. Practicá Agenda de turnos cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "agenda-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "4531e0d293abaf19",
+      "text": "Listo. Practicá Plantillas de recetas cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "plantillas-recetas-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "466459b12bac84e2",
+      "text": "La pestaña Perfil concentra los datos del profesional seleccionado.",
+      "refs": [
+        {
+          "tutorialId": "equipo-basico",
+          "clipId": "tab-perfil",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "487081a937c033e8",
+      "text": "Esta es una demostración segura de Telemedicina en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "telemedicina-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "48c35a6121356acb",
+      "text": "Desde acá podés volver a la agenda para actuar sobre los turnos del día.",
+      "refs": [
+        {
+          "tutorialId": "turnos-reportes-basico",
+          "clipId": "link-agenda",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "4c376ef5b785f8c1",
+      "text": "Nueva plantilla abre el editor para armar textos y estructuras que después aplicás en la historia clínica.",
+      "refs": [
+        {
+          "tutorialId": "plantillas-basico",
+          "clipId": "nueva",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "4f33b3271d3f8909",
+      "text": "Esta es una demostración segura de Pacientes en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "pacientes-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "528c92f0dffdad4d",
+      "text": "Camas ocupadas te muestra la capacidad utilizada del servicio.",
+      "refs": [
+        {
+          "tutorialId": "geriatria-basico",
+          "clipId": "kpi-camas",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "529ea09d0ecef618",
+      "text": "La tarjeta Capacidad resume plazas y ocupación del módulo Geriatría.",
+      "refs": [
+        {
+          "tutorialId": "geriatria-basico",
+          "clipId": "capacidad",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "552d63946f4be6f3",
+      "text": "Esta es una demostración segura de Importar y exportar en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "datos-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "55ff7ba2f46fe5ba",
+      "text": "Bienvenido a Órdenes médicas de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "ordenes-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "564584c9691f24dd",
+      "text": "Listo. Practicá Firmas cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "firmas-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "564761f282d872d3",
+      "text": "El acceso a Sala de espera te lleva a la cola de pacientes que aguardan ser llamados.",
+      "refs": [
+        {
+          "tutorialId": "consultas-basico",
+          "clipId": "link-sala-espera",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "596af9de4dfb72a3",
+      "text": "Esta es una demostración segura de Nuevo turno en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "turnos-nuevo-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "5a5dd5c45e707f14",
+      "text": "Movimientos de hoy muestra lo cobrado y anulado en la jornada.",
+      "refs": [
+        {
+          "tutorialId": "caja-basico",
+          "clipId": "movimientos-hoy",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "5dcf9466c0adca86",
+      "text": "Esta es una demostración segura de Agenda de turnos en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "agenda-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "61df2eaac4885bfb",
+      "text": "Listo. Practicá Reportes de turnos cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "turnos-reportes-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "6aa6740ff9fd8a07",
+      "text": "En la barra superior de la agenda están las vistas Día, Semana y Mes. Elegí la que te resulte más cómoda para organizar la atención del día.",
+      "refs": [
+        {
+          "tutorialId": "agenda-basico",
+          "clipId": "view-toggle",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "703a28a238f646c2",
+      "text": "Desde acá podés volver a Configuración cuando termines el trabajo de datos.",
+      "refs": [
+        {
+          "tutorialId": "datos-basico",
+          "clipId": "volver-configuracion",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "70b26cadae864997",
+      "text": "Bienvenido a Geriatría de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "geriatria-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "781f4066ae071fd7",
+      "text": "El botón Nuevo paciente abre el formulario de alta. En la demostración no se crea ningún registro real.",
+      "refs": [
+        {
+          "tutorialId": "pacientes-basico",
+          "clipId": "nuevo",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "797d881c80818869",
+      "text": "En Pacientes, el buscador te permite encontrar a una persona por nombre o documento sin recorrer toda la lista.",
+      "refs": [
+        {
+          "tutorialId": "pacientes-basico",
+          "clipId": "buscar",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "798d759fb9af037f",
+      "text": "Bienvenido a Consultas de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "consultas-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "7b6caedbf266c850",
+      "text": "Listo. Practicá Ayuda y manual cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "ayuda-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "7d95cb64ffc5ebba",
+      "text": "Después asociás el paciente que va a asistir a la consulta.",
+      "refs": [
+        {
+          "tutorialId": "turnos-nuevo-basico",
+          "clipId": "paciente",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "7dd949d645e9a29c",
+      "text": "Desde Sala de espera también podés volver a la agenda operativa.",
+      "refs": [
+        {
+          "tutorialId": "sala-espera-basico",
+          "clipId": "link-agenda",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "7e5783579ad13b3b",
+      "text": "Limpiar filtros vuelve el listado al estado completo sin criterios aplicados.",
+      "refs": [
+        {
+          "tutorialId": "ordenes-basico",
+          "clipId": "limpiar-filtros",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "7fd86d855f8ba54b",
+      "text": "En Consultas ves el listado del día. Desde acá el médico retoma cada atención sin perder el contexto clínico.",
+      "refs": [
+        {
+          "tutorialId": "consultas-basico",
+          "clipId": "card-dia",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "804d8ac2944a6dc4",
+      "text": "El control Finalizar consulta cierra la atención en curso. En esta demostración solo lo señalamos.",
+      "refs": [
+        {
+          "tutorialId": "consultas-basico",
+          "clipId": "finalizar",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "83234e6afd27d417",
+      "text": "Bienvenido a Nuevo turno de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "turnos-nuevo-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "847706eaddcaa949",
+      "text": "Importar pacientes abre el flujo para cargar un archivo. En la demostración no se importa nada.",
+      "refs": [
+        {
+          "tutorialId": "datos-basico",
+          "clipId": "importar-pacientes",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "84fa37289fae7a15",
+      "text": "Esta es una demostración segura de Órdenes médicas en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "ordenes-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "8568db76d48e8f10",
+      "text": "Listo. Practicá Telemedicina cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "telemedicina-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "860bb136f7bc9765",
+      "text": "Listo. Practicá Geriatría cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "geriatria-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "86c259d42a33d3e3",
+      "text": "Listo. Practicá Residentes cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "geriatria-residentes-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "8bc3386c0f9858a5",
+      "text": "Bienvenido a Sala de espera de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "sala-espera-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "90f566f8e56e3121",
+      "text": "Exportar CSV genera un archivo del período. En la demostración solo indicamos dónde está el control.",
+      "refs": [
+        {
+          "tutorialId": "atenciones-basico",
+          "clipId": "exportar-csv",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "923e88b4367aca1e",
+      "text": "Bienvenido a Atenciones de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "atenciones-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "92966be3d0a16713",
+      "text": "Listo. Practicá Órdenes médicas cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "ordenes-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "9482b8eb3714653a",
+      "text": "Unirse abre la sesión de telemedicina. En esta demostración no iniciamos ninguna llamada.",
+      "refs": [
+        {
+          "tutorialId": "telemedicina-basico",
+          "clipId": "unirse",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "95823bffbc11d5b1",
+      "text": "Nuevo residente inicia el alta. En esta demostración no se crea ningún residente real.",
+      "refs": [
+        {
+          "tutorialId": "geriatria-residentes-basico",
+          "clipId": "nuevo",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "9aa22198ffbb4cfc",
+      "text": "El filtro de médico te permite concentrarte en la agenda de un profesional. Si lo dejás en Todos, ves el consultorio completo.",
+      "refs": [
+        {
+          "tutorialId": "agenda-basico",
+          "clipId": "filter-professional",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "9e34f9bdf45a70e4",
+      "text": "Listo. Practicá Configuración de agenda cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "agenda-config-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "a8a24fe9bbdb7f8e",
+      "text": "Bienvenido a Firmas de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "firmas-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "a8acd2593269144d",
+      "text": "Acá ves las plantillas ya guardadas para reutilizarlas en la consulta.",
+      "refs": [
+        {
+          "tutorialId": "plantillas-basico",
+          "clipId": "lista",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "a97f00a1113b9e64",
+      "text": "Nuevo lote inicia una liquidación a obra social. En la demo no se genera ningún lote real.",
+      "refs": [
+        {
+          "tutorialId": "liquidacion-basico",
+          "clipId": "nuevo-lote",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "aa6181b234daf9f9",
+      "text": "Esta es una demostración segura de Dashboard en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "dashboard-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "aaf7282b174ce973",
+      "text": "En Horarios ves la grilla de disponibilidad para confirmar el momento del turno.",
+      "refs": [
+        {
+          "tutorialId": "turnos-nuevo-basico",
+          "clipId": "horarios",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "ae6428e44c3d4c0f",
+      "text": "El bloque Agenda de hoy resume los turnos del día. Desde acá podés orientar la atención sin salir del dashboard.",
+      "refs": [
+        {
+          "tutorialId": "dashboard-basico",
+          "clipId": "section-agenda-hoy",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "b03a3bf687b93c74",
+      "text": "Guardar confirma los cambios de configuración. Esta demostración no los aplica.",
+      "refs": [
+        {
+          "tutorialId": "agenda-config-basico",
+          "clipId": "guardar",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "b1b4996b0ba0dc7a",
+      "text": "En Configuración de agenda definís los horarios semanales que alimentan la disponibilidad.",
+      "refs": [
+        {
+          "tutorialId": "agenda-config-basico",
+          "clipId": "horarios",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "b276268de5dbb3b9",
+      "text": "Confirmar hacia Consultas mueve al paciente al flujo clínico. En la demo no cambiamos estados reales.",
+      "refs": [
+        {
+          "tutorialId": "sala-espera-basico",
+          "clipId": "confirmar-consultas",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "bd89ca6fb58b42c4",
+      "text": "Bienvenido a Residentes de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "geriatria-residentes-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "bfa6b15143463f37",
+      "text": "Esta es una demostración segura de Equipo en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "equipo-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "bff1d50aaa2093f2",
+      "text": "Nuevo profesional abre el flujo de ingreso del equipo médico. En la demo no se guarda ningún profesional.",
+      "refs": [
+        {
+          "tutorialId": "equipo-basico",
+          "clipId": "nuevo-profesional",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "c0c278a3e5f79a14",
+      "text": "Bienvenido a Agenda de turnos de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "agenda-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "c1fffc7850dd49f4",
+      "text": "Bienvenido a Configuración de agenda de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "agenda-config-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "c36974d317cb1b48",
+      "text": "Bienvenido a Importar y exportar de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "datos-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "c58508ca4b70e282",
+      "text": "Listo. Practicá Equipo cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "equipo-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "c73f3a1467a712b1",
+      "text": "El atajo Nuevo turno te lleva al asistente de creación. En esta demostración solo lo señalamos: no se guarda ningún turno real.",
+      "refs": [
+        {
+          "tutorialId": "dashboard-basico",
+          "clipId": "quick-nuevo-turno",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "c748ea1c0bc57fc6",
+      "text": "Bienvenido a Ayuda y manual de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "ayuda-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "c884d18726338186",
+      "text": "El detalle muestra cada atención registrada para revisar o exportar.",
+      "refs": [
+        {
+          "tutorialId": "atenciones-basico",
+          "clipId": "detalle",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "c93725de46089cc0",
+      "text": "Bienvenido a Caja de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "caja-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "c9ed1797ee1ba0c3",
+      "text": "Desde Tarifas OS consultás o ajustás los valores por obra social.",
+      "refs": [
+        {
+          "tutorialId": "liquidacion-basico",
+          "clipId": "tarifas-os",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "cbb6d2c658360829",
+      "text": "Bienvenido a Pacientes de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "pacientes-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "cf994e51019d447c",
+      "text": "Primero elegís el profesional cuya firma vas a configurar.",
+      "refs": [
+        {
+          "tutorialId": "firmas-basico",
+          "clipId": "select-profesional",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "d035409da7ca9b2c",
+      "text": "Bienvenido a Plantillas de recetas de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "plantillas-recetas-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "d24231874414c363",
+      "text": "Listo. Practicá Plantillas clínicas cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "plantillas-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "d3b983f2cafda522",
+      "text": "Nueva plantilla te permite armar esquemas de receta que después reutilizás al prescribir.",
+      "refs": [
+        {
+          "tutorialId": "plantillas-recetas-basico",
+          "clipId": "nueva",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "d4533f5d55f9ea7e",
+      "text": "Acá ves los turnos virtuales próximos de la clínica.",
+      "refs": [
+        {
+          "tutorialId": "telemedicina-basico",
+          "clipId": "turnos-virtuales",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "d4dad4cbadf7343d",
+      "text": "Bienvenido a Telemedicina de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "telemedicina-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "d670bf0393d66615",
+      "text": "Esta es una demostración segura de Residentes en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "geriatria-residentes-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "d8b98a2a05e3ea47",
+      "text": "Con el filtro Hoy ves solo las atenciones del día corriente.",
+      "refs": [
+        {
+          "tutorialId": "atenciones-basico",
+          "clipId": "periodo-hoy",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "daef77aaf792065f",
+      "text": "Esta es una demostración segura de Reportes de turnos en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "turnos-reportes-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "dbb0313d0587d653",
+      "text": "Bienvenido a Liquidación OS de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "liquidacion-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "dd3e3655f912d27b",
+      "text": "Listo. Practicá Atenciones cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "atenciones-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "e10f632ce8be1ed2",
+      "text": "Cuando terminás de editar, Guardar deja la plantilla lista para usarla. En la demo no se guarda nada real.",
+      "refs": [
+        {
+          "tutorialId": "plantillas-basico",
+          "clipId": "guardar",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "e219105291aa7b67",
+      "text": "Esta es una demostración segura de Plantillas clínicas en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "plantillas-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "e69f88cd518a220f",
+      "text": "Esta es una demostración segura de Liquidación OS en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "liquidacion-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "e78fb9db6e60c61a",
+      "text": "El contador de pacientes activos te da una lectura rápida del volumen de la clínica.",
+      "refs": [
+        {
+          "tutorialId": "pacientes-basico",
+          "clipId": "contador-activos",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "e8b5d751041ce7e5",
+      "text": "La pestaña Horarios define cuándo el profesional puede recibir turnos en la agenda.",
+      "refs": [
+        {
+          "tutorialId": "equipo-basico",
+          "clipId": "tab-horarios",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "ea1ede1116a9a927",
+      "text": "Agregar horario crea un nuevo bloque de disponibilidad. En la demo no se guarda ningún cambio.",
+      "refs": [
+        {
+          "tutorialId": "agenda-config-basico",
+          "clipId": "agregar-horario",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "ea6e9fc4a430585d",
+      "text": "Listo. Practicá Nuevo turno cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "turnos-nuevo-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "ebf21d55578d2337",
+      "text": "El listado muestra las plantillas de receta disponibles en tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "plantillas-recetas-basico",
+          "clipId": "lista",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "edd9e48ff403174c",
+      "text": "Bienvenido a Dashboard de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "dashboard-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "ef05ce528fc7ea98",
+      "text": "Bienvenido a Plantillas clínicas de Nex Clinic. Ahora te voy a mostrar cómo realizar cada acción del módulo, paso a paso.",
+      "refs": [
+        {
+          "tutorialId": "plantillas-basico",
+          "clipId": "welcome",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "f1d966f3f10d06ec",
+      "text": "Listo. Practicá Caja cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "caja-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "f2bda98b1f622d96",
+      "text": "Pendientes de liquidar muestra lo que todavía no entró en un lote.",
+      "refs": [
+        {
+          "tutorialId": "liquidacion-basico",
+          "clipId": "pendientes",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "f43c904e68afed0f",
+      "text": "En Novedades ves los cambios recientes de la aplicación.",
+      "refs": [
+        {
+          "tutorialId": "ayuda-basico",
+          "clipId": "novedades",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "f4c6914ec1c293fe",
+      "text": "Listo. Practicá Pacientes cuando lo necesites desde Tutoriales Nex Clinic. Gracias por usar Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "pacientes-basico",
+          "clipId": "closing",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "f597ebca5c89bb3f",
+      "text": "Nueva orden médica abre el flujo de emisión. En esta demostración no se genera ninguna orden real.",
+      "refs": [
+        {
+          "tutorialId": "ordenes-basico",
+          "clipId": "nueva",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "f60c406fba2ed471",
+      "text": "Esta es una demostración segura de Atenciones en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "atenciones-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "f6dc1c5de7421cca",
+      "text": "El indicador de residentes activos resume la ocupación actual.",
+      "refs": [
+        {
+          "tutorialId": "geriatria-basico",
+          "clipId": "kpi-residentes",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "f7fb847a914e5019",
+      "text": "Esta es una demostración segura de Plantillas de recetas en Tutoriales Nex Clinic. Todo lo que vas a ver es ficticio: no se crea ni se modifica ningún dato real de tu clínica.",
+      "refs": [
+        {
+          "tutorialId": "plantillas-recetas-basico",
+          "clipId": "demo-welcome",
+          "kind": "demo"
+        }
+      ]
+    },
+    {
+      "textHash": "f9f31703c4ef300c",
+      "text": "El primer paso del asistente es elegir el profesional que atenderá el turno.",
+      "refs": [
+        {
+          "tutorialId": "turnos-nuevo-basico",
+          "clipId": "profesional",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "fbdeb5d2103516e5",
+      "text": "El listado concentra a los residentes para abrir resumen o ficha.",
+      "refs": [
+        {
+          "tutorialId": "geriatria-residentes-basico",
+          "clipId": "listado",
+          "kind": "step"
+        }
+      ]
+    },
+    {
+      "textHash": "ff6cbf9b85db601d",
+      "text": "El índice te lleva a cada sección del manual de Nex Clinic.",
+      "refs": [
+        {
+          "tutorialId": "ayuda-basico",
+          "clipId": "indice-secciones",
+          "kind": "step"
+        }
+      ]
+    }
+  ]
+}

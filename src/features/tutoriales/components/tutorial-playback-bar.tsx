@@ -24,7 +24,6 @@ interface TutorialPlaybackBarProps {
   muted: boolean;
   rate: number;
   voiceProfile: StoredVoiceProfile;
-  elevenLabsAvailable?: boolean;
   onTogglePause: () => void;
   onToggleMute: () => void;
   onRateChange: (rate: number) => void;
@@ -42,7 +41,6 @@ export function TutorialPlaybackBar({
   muted,
   rate,
   voiceProfile,
-  elevenLabsAvailable = false,
   onTogglePause,
   onToggleMute,
   onRateChange,
@@ -127,25 +125,19 @@ export function TutorialPlaybackBar({
             <span>Voz</span>
             <select
               className="h-8 rounded-md border border-[var(--border-default,var(--border))] bg-[var(--surface-card,var(--card))] px-1.5 text-xs text-[var(--text-primary,var(--foreground))]"
-              value={voiceProfile === "horacio" ? "horacio" : "brian"}
+              value={voiceProfile === "santa" ? "santa" : "alex"}
               onChange={(event) =>
                 onVoiceProfileChange(event.target.value as StoredVoiceProfile)
               }
               aria-label="Voz de narración"
               disabled={muted}
             >
-              <option value="brian">Brian C</option>
-              <option value="horacio">Horacio</option>
+              <option value="alex">Alex</option>
+              <option value="santa">Santa</option>
             </select>
-            {!elevenLabsAvailable ? (
-              <span className="text-[10px] text-amber-700 dark:text-amber-400">
-                Falta ELEVENLABS_API_KEY (usando voz masculina del navegador)
-              </span>
-            ) : (
-              <span className="text-[10px] text-[var(--text-muted,var(--muted-foreground))]">
-                ElevenLabs · Brian C / Horacio
-              </span>
-            )}
+            <span className="text-[10px] text-[var(--text-muted,var(--muted-foreground))]">
+              Kokoro · voces masculinas en español
+            </span>
           </label>
 
           <label className="flex flex-col gap-1 text-[11px] text-[var(--text-muted,var(--muted-foreground))]">

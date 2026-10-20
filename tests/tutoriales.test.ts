@@ -4,7 +4,6 @@ import { canAccessRoute } from "@/core/permissions/roles";
 
 import { FEATURE_NAV_ITEMS, getFeatureModule } from "@/features/_shared";
 import { buildStandardModuleTutorial } from "@/features/tutoriales/definitions/build-module-tutorial";
-import { resolveElevenLabsVoiceId } from "@/features/tutoriales/lib/elevenlabs-voices";
 import { buildProgressPatch } from "@/features/tutoriales/lib/local-progress";
 import {
   migrateLegacyVoiceProfile,
@@ -111,14 +110,14 @@ describe("tutoriales generators and helpers", () => {
     expect(normalizeSpokenText("Abrí /turnos/agenda en NexClinic")).toContain("agenda de turnos");
   });
 
-  it("uses Brian C and Horacio voice profiles from tutorials worktree", () => {
-    expect([...NARRATION_VOICE_PROFILES]).toEqual(["brian", "horacio"]);
-    expect(NARRATION_VOICE_LABELS.brian).toBe("Brian C");
-    expect(NARRATION_VOICE_LABELS.horacio).toBe("Horacio");
-    expect(migrateLegacyVoiceProfile("browser-es")).toBe("brian");
-    expect(migrateLegacyVoiceProfile("browser-es-alt")).toBe("horacio");
-    expect(resolveElevenLabsVoiceId("brian")).toBe("XgQWNZcJ8SRkxXwwhPTo");
-    expect(resolveElevenLabsVoiceId("horacio")).toBe("57D8YIbQSuE3REDPO6Vm");
+  it("uses Kokoro Alex and Santa voice profiles", () => {
+    expect([...NARRATION_VOICE_PROFILES]).toEqual(["alex", "santa"]);
+    expect(NARRATION_VOICE_LABELS.alex).toBe("Alex");
+    expect(NARRATION_VOICE_LABELS.santa).toBe("Santa");
+    expect(migrateLegacyVoiceProfile("browser-es")).toBe("alex");
+    expect(migrateLegacyVoiceProfile("browser-es-alt")).toBe("santa");
+    expect(migrateLegacyVoiceProfile("brian")).toBe("alex");
+    expect(migrateLegacyVoiceProfile("horacio")).toBe("santa");
   });
 
   it("tourSelector and pathsMatch behave", () => {

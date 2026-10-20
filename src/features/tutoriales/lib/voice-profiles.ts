@@ -1,6 +1,6 @@
 /**
  * Browser Web Speech voice helpers (fallback only).
- * Tutoriales primary voices are ElevenLabs Brian C / Horacio (male).
+ * Tutoriales primary voices are offline Kokoro em_alex / em_santa.
  */
 
 /** Strong female cues only — avoid broad matches like "Google español". */
@@ -9,22 +9,29 @@ const FEMALE_VOICE_HINTS =
 
 /** Strong male cues only. */
 const MALE_VOICE_HINTS =
-  /\b(male|hombre|masculin[oa]?|pablo|jorge|diego|ra[uú]l|tom[aá]s|tomas|carlos|enrique|miguel|antonio|juan|pedro|david|mark|matthew|justin|joey|brian|arthur|george|james|ravi|raul|alvaro|álvaro|javi|javier)\b/i;
+  /\b(male|hombre|masculin[oa]?|pablo|jorge|diego|ra[uú]l|tom[aá]s|tomas|carlos|enrique|miguel|antonio|juan|pedro|david|mark|matthew|justin|joey|brian|arthur|george|james|ravi|raul|alvaro|álvaro|javi|javier|alex|santa)\b/i;
 
 export type BrowserVoiceGender = "female" | "male" | "unknown";
-export type NarrationVoiceProfileId = "brian" | "horacio";
+/** UI / player voice ids (Kokoro: em_alex, em_santa). */
+export type NarrationVoiceProfileId = "alex" | "santa";
 
-export const NARRATION_VOICE_PROFILES: readonly NarrationVoiceProfileId[] = ["brian", "horacio"];
+export const NARRATION_VOICE_PROFILES: readonly NarrationVoiceProfileId[] = ["alex", "santa"];
 
 export const NARRATION_VOICE_LABELS: Record<NarrationVoiceProfileId, string> = {
-  brian: "Brian C",
-  horacio: "Horacio",
+  alex: "Alex",
+  santa: "Santa",
+};
+
+export const KOKORO_VOICE_IDS: Record<NarrationVoiceProfileId, string> = {
+  alex: "em_alex",
+  santa: "em_santa",
 };
 
 export function migrateLegacyVoiceProfile(value: unknown): NarrationVoiceProfileId {
-  if (value === "brian" || value === "horacio") return value;
-  if (value === "browser-es-alt" || value === "female") return "horacio";
-  return "brian";
+  if (value === "alex" || value === "santa") return value;
+  // Legacy ElevenLabs / browser labels → Kokoro Spanish male voices.
+  if (value === "horacio" || value === "browser-es-alt" || value === "female") return "santa";
+  return "alex";
 }
 
 export function classifySpeechVoiceGender(
@@ -74,9 +81,8 @@ export function scoreSpanishVoiceQuality(
 }
 
 /**
- * Browser fallback voice picker.
- * Brian C / Horacio are male — never return a female voice for male/default.
- * `alt` picks the second-best male voice when available (Horacio fallback).
+ * Browser fallback voice picker (male Spanish).
+ * `alt` picks the second-best male voice when available (Santa fallback).
  */
 export function pickVoiceForProfile(
   voices: SpeechSynthesisVoice[],

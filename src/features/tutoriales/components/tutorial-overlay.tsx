@@ -13,7 +13,6 @@ import {
   type ContinuousNarrationClip,
   getContinuousNarrationSession,
 } from "@/features/tutoriales/lib/continuous-narration-session";
-import { getElevenLabsAudioEngine } from "@/features/tutoriales/lib/elevenlabs-audio";
 import { prefersReducedMotion } from "@/features/tutoriales/lib/prefers-reduced-motion";
 import {
   clampNarrationRate,
@@ -60,7 +59,6 @@ export function TutorialOverlay({ engine }: TutorialOverlayProps) {
     migrateLegacyVoiceProfile(initialPrefs.voiceProfile)
   );
   const [status, setStatus] = useState<SpeechNarrationStatus>("idle");
-  const [elevenLabsAvailable, setElevenLabsAvailable] = useState(false);
   const narrationPrefsRef = useRef({
     muted: initialPrefs.muted,
     rate: initialPrefs.rate,
@@ -74,18 +72,6 @@ export function TutorialOverlay({ engine }: TutorialOverlayProps) {
   useEffect(() => {
     narrationPrefsRef.current = { muted, rate, voiceProfile };
   }, [muted, rate, voiceProfile]);
-
-  useEffect(() => {
-    let cancelled = false;
-    void getElevenLabsAudioEngine()
-      .isAvailable()
-      .then((available) => {
-        if (!cancelled) setElevenLabsAvailable(available);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const tutorialId = state.tutorial?.id ?? null;
 
@@ -225,7 +211,6 @@ export function TutorialOverlay({ engine }: TutorialOverlayProps) {
             muted={muted}
             rate={rate}
             voiceProfile={voiceProfile}
-            elevenLabsAvailable={elevenLabsAvailable}
             onTogglePause={() => {
               if (state.paused) resume();
               else pause();
