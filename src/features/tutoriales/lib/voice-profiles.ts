@@ -110,4 +110,4 @@ export function pickVoiceForProfile(
 }
 
 export const VOICE_PREVIEW_SAMPLE =
-  "Hola, qué gusto. Así se escucha la narración de Tutoriales Nex Clinic, con calma y claridad.";
+  "Hola. Qué bueno tenerte acá. Así se escucha Tutoriales Nex Clinic: con calma, cercanía y confianza.";

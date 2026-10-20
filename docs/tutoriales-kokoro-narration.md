@@ -2,7 +2,7 @@
 
 ## Qué es
 
-Los tutoriales reproducen audios **pregenerados** con [Kokoro-82M](https://github.com/hexgrad/kokoro) (`pip install kokoro`), tono suave/cordial (`speed≈0.88`):
+Los tutoriales reproducen audios **pregenerados** con [Kokoro-82M](https://github.com/hexgrad/kokoro) (`pip install kokoro`), tono joven/cálido (`speed≈0.80` + ligero pitch y calidez):
 
 | UI     | Kokoro id  | Género   | Archivos                                      |
 |--------|------------|----------|-----------------------------------------------|

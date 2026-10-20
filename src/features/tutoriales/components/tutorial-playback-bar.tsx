@@ -143,7 +143,7 @@ export function TutorialPlaybackBar({
               <option value="santa">Santa</option>
             </select>
             <span className="text-[10px] text-[var(--text-muted,var(--muted-foreground))]">
-              Kokoro · suaves y cordiales (Dora femenina)
+              Kokoro · jóvenes y cálidas · paz y confianza
             </span>
           </label>
 

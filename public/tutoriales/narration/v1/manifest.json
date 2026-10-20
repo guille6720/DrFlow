@@ -1,11 +1,21 @@
 {
-  "version": 2,
+  "version": 3,
   "engine": "kokoro",
   "sampleRate": 24000,
   "langCode": "e",
-  "synthesisSpeed": 0.88,
-  "tone": "soft-cordial",
-  "generatedAt": "2026-10-20T19:44:35.363647+00:00",
+  "synthesisSpeed": 0.8,
+  "tone": "young-warm-trust",
+  "processing": {
+    "pitchSemitones": {
+      "dora": 0.7,
+      "alex": 1.15,
+      "santa": 1.05
+    },
+    "warmthAlpha": 0.14,
+    "peakTarget": 0.78,
+    "fadeMs": 40
+  },
+  "generatedAt": "2026-10-20T20:34:45.965214+00:00",
   "license": {
     "model": "Kokoro-82M (Apache-2.0 weights via hexgrad/kokoro)",
     "package": "https://pypi.org/project/kokoro/",

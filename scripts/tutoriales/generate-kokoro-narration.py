@@ -2,7 +2,8 @@
 """
 Generate offline Kokoro narration for Tutoriales NexClinic.
 
-Voices (softer pace): ef_dora (Dora), em_alex (Alex), em_santa (Santa).
+Tone target: younger, warm, peaceful, trustworthy.
+Voices: ef_dora (Dora), em_alex (Alex), em_santa (Santa).
 Spanish lang_code='e'. Run outside Vercel. No API keys.
 
 Usage:
@@ -28,21 +29,100 @@ MANIFEST_PATH = PUBLIC_DIR / "manifest.json"
 SAMPLE_DIR = ROOT / "scripts" / "tutoriales" / "generated" / "samples"
 
 VOICES = [
-    {"id": "dora", "kokoroId": "ef_dora", "label": "Dora", "gender": "female"},
-    {"id": "alex", "kokoroId": "em_alex", "label": "Alex", "gender": "male"},
-    {"id": "santa", "kokoroId": "em_santa", "label": "Santa", "gender": "male"},
+    {
+        "id": "dora",
+        "kokoroId": "ef_dora",
+        "label": "Dora",
+        "gender": "female",
+        # Slight lift keeps Dora bright/young without sounding thin.
+        "pitchSemitones": 0.7,
+    },
+    {
+        "id": "alex",
+        "kokoroId": "em_alex",
+        "label": "Alex",
+        "gender": "male",
+        "pitchSemitones": 1.15,
+    },
+    {
+        "id": "santa",
+        "kokoroId": "em_santa",
+        "label": "Santa",
+        "gender": "male",
+        "pitchSemitones": 1.05,
+    },
 ]
 
-# Softer, more cordial delivery (slightly under real-time).
-SOFT_SPEED = 0.88
+# Calm pace: peace + trust (under real-time).
+SOFT_SPEED = 0.8
+# Soft peak so delivery feels closer, not shouty.
+PEAK_TARGET = 0.78
+# Gentle warmth (one-pole low-pass, higher = brighter; ~0.12 keeps air soft).
+WARMTH_ALPHA = 0.14
+FADE_MS = 40
 
 SAMPLE_TEXT = (
-    "Hola, qué gusto. Así se escucha la narración de Tutoriales Nex Clinic. "
-    "Te acompaño con calma: esta demostración es segura y no modifica ningún dato real."
+    "Hola. Qué bueno tenerte acá. Así se escucha Tutoriales Nex Clinic: "
+    "con calma, cercanía y confianza. Esta demostración es segura y no modifica ningún dato real."
 )
 
 SAMPLE_RATE = 24000
-MANIFEST_VERSION = 2
+MANIFEST_VERSION = 3
+
+
+def pitch_shift_preserve_length(audio: np.ndarray, semitones: float) -> np.ndarray:
+    """Naive pitch shift (resample + stretch). Enough for mild youthful lift."""
+    if abs(semitones) < 0.01 or audio.size < 16:
+        return audio
+    factor = float(2 ** (semitones / 12.0))
+    # Higher pitch → shorter buffer
+    pitched_len = max(8, int(round(audio.size / factor)))
+    x = np.arange(audio.size, dtype=np.float64)
+    xp = np.linspace(0, audio.size - 1, pitched_len)
+    pitched = np.interp(xp, x, audio.astype(np.float64))
+    # Stretch back to original duration
+    x2 = np.arange(pitched.size, dtype=np.float64)
+    xp2 = np.linspace(0, pitched.size - 1, audio.size)
+    return np.interp(xp2, x2, pitched).astype(np.float32)
+
+
+def apply_warmth(audio: np.ndarray, alpha: float = WARMTH_ALPHA) -> np.ndarray:
+    """One-pole low-pass for a warmer, less harsh spectrum."""
+    if audio.size == 0:
+        return audio
+    out = np.empty_like(audio, dtype=np.float32)
+    y = float(audio[0])
+    a = float(np.clip(alpha, 0.01, 0.95))
+    for i, sample in enumerate(audio):
+        y = y + a * (float(sample) - y)
+        out[i] = y
+    return out
+
+
+def soft_normalize(audio: np.ndarray, peak: float = PEAK_TARGET) -> np.ndarray:
+    max_abs = float(np.max(np.abs(audio))) if audio.size else 0.0
+    if max_abs < 1e-6:
+        return audio
+    return (audio * (peak / max_abs)).astype(np.float32)
+
+
+def apply_fades(audio: np.ndarray, fade_ms: int = FADE_MS) -> np.ndarray:
+    n = int(SAMPLE_RATE * fade_ms / 1000)
+    if n <= 0 or audio.size < n * 2:
+        return audio
+    out = audio.copy()
+    ramp = np.linspace(0.0, 1.0, n, dtype=np.float32)
+    out[:n] *= ramp
+    out[-n:] *= ramp[::-1]
+    return out
+
+
+def make_warm_young(audio: np.ndarray, pitch_semitones: float) -> np.ndarray:
+    shaped = pitch_shift_preserve_length(audio, pitch_semitones)
+    shaped = apply_warmth(shaped)
+    shaped = soft_normalize(shaped)
+    shaped = apply_fades(shaped)
+    return np.clip(shaped, -1.0, 1.0).astype(np.float32)
 
 
 def synthesize(pipeline, text: str, voice_id: str) -> np.ndarray:
@@ -68,16 +148,21 @@ def public_url(voice: str, text_hash: str) -> str:
     return f"/tutoriales/narration/v1/{voice}/{text_hash}.wav"
 
 
+def render_clip(pipeline, text: str, voice: dict) -> np.ndarray:
+    raw = synthesize(pipeline, text, voice["kokoroId"])
+    return make_warm_young(raw, float(voice["pitchSemitones"]))
+
+
 def generate_sample(pipeline) -> None:
     SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
     for voice in VOICES:
         path = SAMPLE_DIR / f"sample-{voice['id']}.wav"
         print(
             f"[sample] {voice['label']} ({voice['kokoroId']}) "
-            f"speed={SOFT_SPEED} -> {path}",
+            f"speed={SOFT_SPEED} pitch=+{voice['pitchSemitones']}st -> {path}",
             flush=True,
         )
-        audio = synthesize(pipeline, SAMPLE_TEXT, voice["kokoroId"])
+        audio = render_clip(pipeline, SAMPLE_TEXT, voice)
         write_wav(path, audio)
         print(
             f"  bytes={path.stat().st_size} duration~{len(audio)/SAMPLE_RATE:.1f}s",
@@ -112,7 +197,7 @@ def generate_all(pipeline, force: bool = False) -> None:
                     f"{text_hash} ({len(text)} chars)",
                     flush=True,
                 )
-                audio = synthesize(pipeline, text, voice["kokoroId"])
+                audio = render_clip(pipeline, text, voice)
                 write_wav(out, audio)
             files[voice["id"]] = rel
         manifest_clips.append(
@@ -130,14 +215,30 @@ def generate_all(pipeline, force: bool = False) -> None:
         "sampleRate": SAMPLE_RATE,
         "langCode": "e",
         "synthesisSpeed": SOFT_SPEED,
-        "tone": "soft-cordial",
+        "tone": "young-warm-trust",
+        "processing": {
+            "pitchSemitones": {
+                voice["id"]: voice["pitchSemitones"] for voice in VOICES
+            },
+            "warmthAlpha": WARMTH_ALPHA,
+            "peakTarget": PEAK_TARGET,
+            "fadeMs": FADE_MS,
+        },
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "license": {
             "model": "Kokoro-82M (Apache-2.0 weights via hexgrad/kokoro)",
             "package": "https://pypi.org/project/kokoro/",
             "voices": "ef_dora, em_alex, em_santa (Spanish)",
         },
-        "voices": VOICES,
+        "voices": [
+            {
+                "id": v["id"],
+                "kokoroId": v["kokoroId"],
+                "label": v["label"],
+                "gender": v["gender"],
+            }
+            for v in VOICES
+        ],
         "clips": manifest_clips,
     }
     PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
@@ -158,7 +259,8 @@ def main() -> None:
     args = parser.parse_args()
 
     print(
-        f"Loading Kokoro KPipeline(lang_code='e') soft_speed={SOFT_SPEED}…",
+        f"Loading Kokoro KPipeline(lang_code='e') "
+        f"tone=young-warm-trust speed={SOFT_SPEED}…",
         flush=True,
     )
     from kokoro import KPipeline
