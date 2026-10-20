@@ -60,6 +60,7 @@ export function flattenNavEntries(entries: FeatureNavEntry[]): FeatureNavItem[] 
 /** Sidebar navigation — maps routes to feature modules (Phase 3). */
 export const FEATURE_NAV_ENTRIES: FeatureNavEntry[] = [
   { featureId: "dashboard", href: "/dashboard", label: "Dashboard", permission: null },
+  { featureId: "tutoriales", href: "/tutoriales", label: "Tutoriales", permission: null },
   {
     type: "group",
     id: "medicos",

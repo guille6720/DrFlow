@@ -52,7 +52,10 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
   const visibleDay = weekDays[0];
 
   return (
-    <div className="drflow-card-light rounded-2xl bg-white p-4 text-slate-900 ring-1 ring-slate-200 sm:p-5">
+    <div
+      data-tour="agenda-header"
+      className="drflow-card-light rounded-2xl bg-white p-4 text-slate-900 ring-1 ring-slate-200 sm:p-5"
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 items-center gap-3">
           <span className="shrink-0 rounded-2xl drflow-accent-fill p-3 text-white">
@@ -70,6 +73,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
 
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           <div
+            data-tour="agenda-view-toggle"
             className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-0.5"
             role="group"
             aria-label="Vista de agenda"
@@ -96,53 +100,64 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            className="drflow-agenda-nav-btn"
-            onClick={() => shiftCalendar(true)}
-            aria-label={viewMode === "week" ? "Semana anterior" : "Día anterior"}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <button type="button" className="drflow-agenda-nav-btn min-w-[4.5rem]" onClick={() => setCurrentDate(new Date())}>
-            Hoy
-          </button>
-          <button
-            type="button"
-            className="drflow-agenda-nav-btn"
-            onClick={() => shiftCalendar(false)}
-            aria-label={viewMode === "week" ? "Semana siguiente" : "Día siguiente"}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
+          <div data-tour="agenda-week-nav" className="inline-flex items-center gap-2">
+            <button
+              type="button"
+              className="drflow-agenda-nav-btn"
+              onClick={() => shiftCalendar(true)}
+              aria-label={viewMode === "week" ? "Semana anterior" : "Día anterior"}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              data-tour="agenda-week-nav-today"
+              className="drflow-agenda-nav-btn min-w-[4.5rem]"
+              onClick={() => setCurrentDate(new Date())}
+            >
+              Hoy
+            </button>
+            <button
+              type="button"
+              className="drflow-agenda-nav-btn"
+              onClick={() => shiftCalendar(false)}
+              aria-label={viewMode === "week" ? "Semana siguiente" : "Día siguiente"}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="mt-4 flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:flex-wrap sm:items-center">
-        <Select
-          label="Médico"
-          options={[
-            { value: "", label: "Todos los médicos" },
-            ...professionals.map((p) => ({
-              value: p.id,
-              label: getProfessionalDisplayName(p),
-            })),
-          ]}
-          value={filterProfessional}
-          onChange={(e) => setFilterProfessional(e.target.value)}
-          className="w-full sm:w-52"
-        />
+        <div data-tour="agenda-filter-professional" className="w-full sm:w-52">
+          <Select
+            label="Médico"
+            options={[
+              { value: "", label: "Todos los médicos" },
+              ...professionals.map((p) => ({
+                value: p.id,
+                label: getProfessionalDisplayName(p),
+              })),
+            ]}
+            value={filterProfessional}
+            onChange={(e) => setFilterProfessional(e.target.value)}
+            className="w-full"
+          />
+        </div>
 
-        <Select
-          label="Especialidad"
-          options={[
-            { value: "", label: "Todas las especialidades" },
-            ...specialties.map((s) => ({ value: s.id, label: s.name })),
-          ]}
-          value={filterSpecialty}
-          onChange={(e) => setFilterSpecialty(e.target.value)}
-          className="w-full sm:w-52"
-        />
+        <div data-tour="agenda-filter-specialty" className="w-full sm:w-52">
+          <Select
+            label="Especialidad"
+            options={[
+              { value: "", label: "Todas las especialidades" },
+              ...specialties.map((s) => ({ value: s.id, label: s.name })),
+            ]}
+            value={filterSpecialty}
+            onChange={(e) => setFilterSpecialty(e.target.value)}
+            className="w-full"
+          />
+        </div>
 
         {locations.length > 0 ? (
           <Select
@@ -159,6 +174,7 @@ export function AgendaToolbar({ agenda, professionals, specialties, locations }:
 
         <Link
           href="/turnos/nuevo"
+          data-tour="agenda-new-button"
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl drflow-accent-fill px-4 py-2.5 text-sm font-semibold text-white sm:ml-auto sm:w-auto"
         >
           <Plus className="h-4 w-4" />

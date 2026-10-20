@@ -16,6 +16,7 @@ export const TRIAL_EXPIRED_WHITELIST = [
   "/trial-expirado",
   "/configuracion",
   "/ayuda",
+  "/tutoriales",
 ] as const;
 
 export function isTrialWhitelistedPath(path: string): boolean {

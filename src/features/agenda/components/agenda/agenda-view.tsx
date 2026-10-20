@@ -134,7 +134,10 @@ export function AgendaView({
   }, [setEditingAppointment]);
 
   return (
-    <div className="drflow-agenda-view drflow-surface-light mx-3 mb-3 space-y-3 rounded-2xl bg-white p-3 shadow-xl ring-1 ring-slate-200/90 sm:mx-4 sm:p-4">
+    <div
+      data-tour="agenda-root"
+      className="drflow-agenda-view drflow-surface-light mx-3 mb-3 space-y-3 rounded-2xl bg-white p-3 shadow-xl ring-1 ring-slate-200/90 sm:mx-4 sm:p-4"
+    >
       <AgendaToolbar agenda={agenda} professionals={professionals} specialties={specialties} locations={locations} />
 
       {viewMode === "day" ? (

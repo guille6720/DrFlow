@@ -2,6 +2,7 @@
 export type FeatureModuleId =
   | "core"
   | "dashboard"
+  | "tutoriales"
   | "agenda"
   | "pacientes"
   | "historias"
@@ -48,6 +49,13 @@ export const FEATURE_MODULES: FeatureModuleDef[] = [
     routes: ["/dashboard"],
     status: "ready",
     description: "Centro de operaciones clínicas.",
+  },
+  {
+    id: "tutoriales",
+    label: "Tutoriales",
+    routes: ["/tutoriales"],
+    status: "ready",
+    description: "Recorridos guiados sobre pantallas reales (demostración segura).",
   },
   {
     id: "agenda",

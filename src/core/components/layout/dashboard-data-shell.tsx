@@ -50,6 +50,8 @@ import {
 import { AdminOpsCopilotProvider } from "@/features/ia/components/admin-ops/admin-ops-copilot-context";
 import { ClinicalCopilotProvider } from "@/features/ia/components/clinical-workflow/clinical-copilot-context";
 import { ClinicFeaturesProvider } from "@/features/plugins/components/plugins/clinic-features-provider";
+import { TutorialProvider } from "@/features/tutoriales";
+import { listGrantedPermissionKeys } from "@/features/tutoriales/lib/permission-keys";
 import { VoiceInputProvider } from "@/features/voice";
 
 import { prepareDashboardSession } from "@/lib/auth/post-login-bootstrap";
@@ -264,21 +266,32 @@ async function DashboardDataShellInner({ children }: { children: React.ReactNode
                       >
                         <SkipToContent />
                         <RouteAnnouncer />
-                        <Sidebar
-                          clinicId={clinicId}
-                          clinicName={clinicDisplayName}
-                          role={role}
-                          isSuperadmin={isSuperadmin}
-                          permissionOverrides={permissionOverrides}
-                        />
-                        <DashboardSidebarReveal />
-                        <DashboardMain>
-                          <Suspense fallback={null}>
-                            <ClinicalTopNav />
-                          </Suspense>
-                          {children}
-                        </DashboardMain>
-                        <LazyDashboardCopilotHosts />
+                        <TutorialProvider
+                          organizationId={clinicId}
+                          userId={profile?.id ?? null}
+                          permissions={listGrantedPermissionKeys(
+                            role,
+                            isSuperadmin,
+                            permissionOverrides
+                          )}
+                          enabled={Boolean(clinicId && profile?.id)}
+                        >
+                          <Sidebar
+                            clinicId={clinicId}
+                            clinicName={clinicDisplayName}
+                            role={role}
+                            isSuperadmin={isSuperadmin}
+                            permissionOverrides={permissionOverrides}
+                          />
+                          <DashboardSidebarReveal />
+                          <DashboardMain>
+                            <Suspense fallback={null}>
+                              <ClinicalTopNav />
+                            </Suspense>
+                            {children}
+                          </DashboardMain>
+                          <LazyDashboardCopilotHosts />
+                        </TutorialProvider>
                       </VoiceInputProvider>
                     </UiThemeProvider>
                   </AccessibilityProvider>

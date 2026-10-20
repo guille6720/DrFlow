@@ -77,6 +77,7 @@ const NAV_ICONS: Record<string, typeof LayoutDashboard> = {
   "/recordatorios": Bell,
   "/reportes": BarChart3,
   "/ayuda": BookOpen,
+  "/tutoriales": BookOpen,
   "/configuracion": Settings,
   "/geriatria": Home,
   "/geriatria/residentes": Users,

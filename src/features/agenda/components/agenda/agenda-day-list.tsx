@@ -256,7 +256,10 @@ export const AgendaDayList = memo(function AgendaDayList({
   }, [dayAppointments, filter]);
 
   return (
-    <section className="drflow-card-light overflow-hidden rounded-2xl bg-white text-slate-900 ring-1 ring-slate-200">
+    <section
+      data-tour="agenda-day-list"
+      className="drflow-card-light overflow-hidden rounded-2xl bg-white text-slate-900 ring-1 ring-slate-200"
+    >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-4 py-3">
         <div>
           <h2 className="text-base font-bold capitalize text-slate-900">

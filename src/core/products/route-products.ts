@@ -31,6 +31,7 @@ export const PRODUCT_WHITELIST_PREFIXES = [
   "/ingreso-profesionales",
   "/firmas",
   "/ayuda",
+  "/tutoriales",
   "/pacientes",
   "/reportes",
   "/datos",
