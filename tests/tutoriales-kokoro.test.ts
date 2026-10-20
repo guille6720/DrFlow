@@ -23,6 +23,7 @@ function sampleManifest(): KokoroManifest {
     engine: "kokoro",
     sampleRate: 24000,
     voices: [
+      { id: "dora", kokoroId: "ef_dora", label: "Dora" },
       { id: "alex", kokoroId: "em_alex", label: "Alex" },
       { id: "santa", kokoroId: "em_santa", label: "Santa" },
     ],
@@ -31,13 +32,14 @@ function sampleManifest(): KokoroManifest {
 }
 
 describe("kokoro voice profiles", () => {
-  it("exposes Alex and Santa only (not Brian/Horacio)", () => {
-    expect([...NARRATION_VOICE_PROFILES]).toEqual(["alex", "santa"]);
+  it("exposes Dora, Alex and Santa (soft cordial set)", () => {
+    expect([...NARRATION_VOICE_PROFILES]).toEqual(["dora", "alex", "santa"]);
+    expect(NARRATION_VOICE_LABELS.dora).toBe("Dora");
     expect(NARRATION_VOICE_LABELS.alex).toBe("Alex");
     expect(NARRATION_VOICE_LABELS.santa).toBe("Santa");
-    expect(migrateLegacyVoiceProfile("brian")).toBe("alex");
+    expect(migrateLegacyVoiceProfile("brian")).toBe("dora");
+    expect(migrateLegacyVoiceProfile("female")).toBe("dora");
     expect(migrateLegacyVoiceProfile("horacio")).toBe("santa");
-    expect(migrateLegacyVoiceProfile("alex")).toBe("alex");
   });
 });
 
@@ -55,6 +57,7 @@ describe("kokoro manifest lookup", () => {
         textHash,
         text,
         files: {
+          dora: `/tutoriales/narration/v1/dora/${textHash}.wav`,
           alex: `/tutoriales/narration/v1/alex/${textHash}.wav`,
           santa: `/tutoriales/narration/v1/santa/${textHash}.wav`,
         },
@@ -62,11 +65,11 @@ describe("kokoro manifest lookup", () => {
     ];
     __setKokoroManifestForTests(manifest);
 
+    await expect(resolveKokoroAudioUrl(text, "dora")).resolves.toBe(
+      `/tutoriales/narration/v1/dora/${textHash}.wav`
+    );
     await expect(resolveKokoroAudioUrl(text, "alex")).resolves.toBe(
       `/tutoriales/narration/v1/alex/${textHash}.wav`
-    );
-    await expect(resolveKokoroAudioUrl(text, "santa")).resolves.toBe(
-      `/tutoriales/narration/v1/santa/${textHash}.wav`
     );
   });
 

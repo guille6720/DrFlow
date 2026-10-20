@@ -30,7 +30,7 @@ function estimateHoldMs(text: string): number {
 export class ContinuousNarrationSession {
   private clips: ContinuousNarrationClip[] = [];
   private index = -1;
-  private voice: StoredVoiceProfile = "alex";
+  private voice: StoredVoiceProfile = "dora";
   private rate = 1;
   private muted = false;
   private paused = false;

@@ -2,12 +2,11 @@
 """
 Generate offline Kokoro narration for Tutoriales NexClinic.
 
-Voices: em_alex (Alex), em_santa (Santa). Spanish lang_code='e'.
-Run outside Vercel. Does not use API keys.
+Voices (softer pace): ef_dora (Dora), em_alex (Alex), em_santa (Santa).
+Spanish lang_code='e'. Run outside Vercel. No API keys.
 
 Usage:
   python scripts/tutoriales/generate-kokoro-narration.py --sample
-  python scripts/tutoriales/generate-kokoro-narration.py
   python scripts/tutoriales/generate-kokoro-narration.py --force
 """
 
@@ -29,22 +28,26 @@ MANIFEST_PATH = PUBLIC_DIR / "manifest.json"
 SAMPLE_DIR = ROOT / "scripts" / "tutoriales" / "generated" / "samples"
 
 VOICES = [
-    {"id": "alex", "kokoroId": "em_alex", "label": "Alex"},
-    {"id": "santa", "kokoroId": "em_santa", "label": "Santa"},
+    {"id": "dora", "kokoroId": "ef_dora", "label": "Dora", "gender": "female"},
+    {"id": "alex", "kokoroId": "em_alex", "label": "Alex", "gender": "male"},
+    {"id": "santa", "kokoroId": "em_santa", "label": "Santa", "gender": "male"},
 ]
 
+# Softer, more cordial delivery (slightly under real-time).
+SOFT_SPEED = 0.88
+
 SAMPLE_TEXT = (
-    "Hola. Así se escucha la narración de Tutoriales Nex Clinic. "
-    "Esta es una demostración segura: no se crea ni se modifica ningún dato real."
+    "Hola, qué gusto. Así se escucha la narración de Tutoriales Nex Clinic. "
+    "Te acompaño con calma: esta demostración es segura y no modifica ningún dato real."
 )
 
 SAMPLE_RATE = 24000
-MANIFEST_VERSION = 1
+MANIFEST_VERSION = 2
 
 
 def synthesize(pipeline, text: str, voice_id: str) -> np.ndarray:
     chunks: list[np.ndarray] = []
-    for _gs, _ps, audio in pipeline(text, voice=voice_id):
+    for _gs, _ps, audio in pipeline(text, voice=voice_id, speed=SOFT_SPEED):
         if audio is None:
             continue
         arr = np.asarray(audio, dtype=np.float32)
@@ -69,10 +72,17 @@ def generate_sample(pipeline) -> None:
     SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
     for voice in VOICES:
         path = SAMPLE_DIR / f"sample-{voice['id']}.wav"
-        print(f"[sample] {voice['label']} ({voice['kokoroId']}) -> {path}")
+        print(
+            f"[sample] {voice['label']} ({voice['kokoroId']}) "
+            f"speed={SOFT_SPEED} -> {path}",
+            flush=True,
+        )
         audio = synthesize(pipeline, SAMPLE_TEXT, voice["kokoroId"])
         write_wav(path, audio)
-        print(f"  bytes={path.stat().st_size} duration~{len(audio)/SAMPLE_RATE:.1f}s")
+        print(
+            f"  bytes={path.stat().st_size} duration~{len(audio)/SAMPLE_RATE:.1f}s",
+            flush=True,
+        )
 
 
 def generate_all(pipeline, force: bool = False) -> None:
@@ -119,30 +129,38 @@ def generate_all(pipeline, force: bool = False) -> None:
         "engine": "kokoro",
         "sampleRate": SAMPLE_RATE,
         "langCode": "e",
+        "synthesisSpeed": SOFT_SPEED,
+        "tone": "soft-cordial",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "license": {
             "model": "Kokoro-82M (Apache-2.0 weights via hexgrad/kokoro)",
             "package": "https://pypi.org/project/kokoro/",
-            "voices": "em_alex, em_santa (Spanish male)",
+            "voices": "ef_dora, em_alex, em_santa (Spanish)",
         },
         "voices": VOICES,
         "clips": manifest_clips,
     }
     PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
-    MANIFEST_PATH.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    MANIFEST_PATH.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     print(
         f"Wrote manifest -> {MANIFEST_PATH} "
-        f"({len(manifest_clips)} clips x {len(VOICES)} voices)"
+        f"({len(manifest_clips)} clips x {len(VOICES)} voices)",
+        flush=True,
     )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--sample", action="store_true", help="Generate pronunciation samples only")
-    parser.add_argument("--force", action="store_true", help="Regenerate existing wav files")
+    parser.add_argument("--sample", action="store_true")
+    parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
 
-    print("Loading Kokoro KPipeline(lang_code='e')…", flush=True)
+    print(
+        f"Loading Kokoro KPipeline(lang_code='e') soft_speed={SOFT_SPEED}…",
+        flush=True,
+    )
     from kokoro import KPipeline
 
     pipeline = KPipeline(lang_code="e")

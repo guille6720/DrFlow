@@ -125,18 +125,25 @@ export function TutorialPlaybackBar({
             <span>Voz</span>
             <select
               className="h-8 rounded-md border border-[var(--border-default,var(--border))] bg-[var(--surface-card,var(--card))] px-1.5 text-xs text-[var(--text-primary,var(--foreground))]"
-              value={voiceProfile === "santa" ? "santa" : "alex"}
+              value={
+                voiceProfile === "santa"
+                  ? "santa"
+                  : voiceProfile === "alex"
+                    ? "alex"
+                    : "dora"
+              }
               onChange={(event) =>
                 onVoiceProfileChange(event.target.value as StoredVoiceProfile)
               }
               aria-label="Voz de narración"
               disabled={muted}
             >
+              <option value="dora">Dora</option>
               <option value="alex">Alex</option>
               <option value="santa">Santa</option>
             </select>
             <span className="text-[10px] text-[var(--text-muted,var(--muted-foreground))]">
-              Kokoro · voces masculinas en español
+              Kokoro · suaves y cordiales (Dora femenina)
             </span>
           </label>
 

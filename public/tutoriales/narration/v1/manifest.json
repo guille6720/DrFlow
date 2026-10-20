@@ -1,24 +1,34 @@
 {
-  "version": 1,
+  "version": 2,
   "engine": "kokoro",
   "sampleRate": 24000,
   "langCode": "e",
-  "generatedAt": "2026-10-20T19:06:52.602693+00:00",
+  "synthesisSpeed": 0.88,
+  "tone": "soft-cordial",
+  "generatedAt": "2026-10-20T19:44:35.363647+00:00",
   "license": {
     "model": "Kokoro-82M (Apache-2.0 weights via hexgrad/kokoro)",
     "package": "https://pypi.org/project/kokoro/",
-    "voices": "em_alex, em_santa (Spanish male)"
+    "voices": "ef_dora, em_alex, em_santa (Spanish)"
   },
   "voices": [
     {
+      "id": "dora",
+      "kokoroId": "ef_dora",
+      "label": "Dora",
+      "gender": "female"
+    },
+    {
       "id": "alex",
       "kokoroId": "em_alex",
-      "label": "Alex"
+      "label": "Alex",
+      "gender": "male"
     },
     {
       "id": "santa",
       "kokoroId": "em_santa",
-      "label": "Santa"
+      "label": "Santa",
+      "gender": "male"
     }
   ],
   "clips": [
@@ -33,6 +43,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/0001ef1982787ae8.wav",
         "alex": "/tutoriales/narration/v1/alex/0001ef1982787ae8.wav",
         "santa": "/tutoriales/narration/v1/santa/0001ef1982787ae8.wav"
       }
@@ -48,6 +59,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/0094d047aa8e64c2.wav",
         "alex": "/tutoriales/narration/v1/alex/0094d047aa8e64c2.wav",
         "santa": "/tutoriales/narration/v1/santa/0094d047aa8e64c2.wav"
       }
@@ -63,6 +75,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/00d0dd4e63e04f00.wav",
         "alex": "/tutoriales/narration/v1/alex/00d0dd4e63e04f00.wav",
         "santa": "/tutoriales/narration/v1/santa/00d0dd4e63e04f00.wav"
       }
@@ -78,6 +91,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/012b9d30a1cc1693.wav",
         "alex": "/tutoriales/narration/v1/alex/012b9d30a1cc1693.wav",
         "santa": "/tutoriales/narration/v1/santa/012b9d30a1cc1693.wav"
       }
@@ -93,6 +107,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/0175989715ee094f.wav",
         "alex": "/tutoriales/narration/v1/alex/0175989715ee094f.wav",
         "santa": "/tutoriales/narration/v1/santa/0175989715ee094f.wav"
       }
@@ -108,6 +123,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/01b6ecabb12ccd8b.wav",
         "alex": "/tutoriales/narration/v1/alex/01b6ecabb12ccd8b.wav",
         "santa": "/tutoriales/narration/v1/santa/01b6ecabb12ccd8b.wav"
       }
@@ -123,6 +139,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/08c60100468914b5.wav",
         "alex": "/tutoriales/narration/v1/alex/08c60100468914b5.wav",
         "santa": "/tutoriales/narration/v1/santa/08c60100468914b5.wav"
       }
@@ -138,6 +155,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/0f9aac59a0e3bbdd.wav",
         "alex": "/tutoriales/narration/v1/alex/0f9aac59a0e3bbdd.wav",
         "santa": "/tutoriales/narration/v1/santa/0f9aac59a0e3bbdd.wav"
       }
@@ -153,6 +171,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/105f9c5d436762e7.wav",
         "alex": "/tutoriales/narration/v1/alex/105f9c5d436762e7.wav",
         "santa": "/tutoriales/narration/v1/santa/105f9c5d436762e7.wav"
       }
@@ -168,6 +187,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/192d44e44aa38d0e.wav",
         "alex": "/tutoriales/narration/v1/alex/192d44e44aa38d0e.wav",
         "santa": "/tutoriales/narration/v1/santa/192d44e44aa38d0e.wav"
       }
@@ -183,6 +203,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/1a6220d4edea759f.wav",
         "alex": "/tutoriales/narration/v1/alex/1a6220d4edea759f.wav",
         "santa": "/tutoriales/narration/v1/santa/1a6220d4edea759f.wav"
       }
@@ -198,6 +219,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/1de29088a5047d51.wav",
         "alex": "/tutoriales/narration/v1/alex/1de29088a5047d51.wav",
         "santa": "/tutoriales/narration/v1/santa/1de29088a5047d51.wav"
       }
@@ -213,6 +235,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/1e96509424751eb1.wav",
         "alex": "/tutoriales/narration/v1/alex/1e96509424751eb1.wav",
         "santa": "/tutoriales/narration/v1/santa/1e96509424751eb1.wav"
       }
@@ -228,6 +251,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/1ec9a11fc752c8d4.wav",
         "alex": "/tutoriales/narration/v1/alex/1ec9a11fc752c8d4.wav",
         "santa": "/tutoriales/narration/v1/santa/1ec9a11fc752c8d4.wav"
       }
@@ -243,6 +267,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/20c19f4336223acd.wav",
         "alex": "/tutoriales/narration/v1/alex/20c19f4336223acd.wav",
         "santa": "/tutoriales/narration/v1/santa/20c19f4336223acd.wav"
       }
@@ -258,6 +283,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/282f47c9500169f7.wav",
         "alex": "/tutoriales/narration/v1/alex/282f47c9500169f7.wav",
         "santa": "/tutoriales/narration/v1/santa/282f47c9500169f7.wav"
       }
@@ -273,6 +299,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/30a4a8b0bc064875.wav",
         "alex": "/tutoriales/narration/v1/alex/30a4a8b0bc064875.wav",
         "santa": "/tutoriales/narration/v1/santa/30a4a8b0bc064875.wav"
       }
@@ -288,6 +315,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/30dec08650539a69.wav",
         "alex": "/tutoriales/narration/v1/alex/30dec08650539a69.wav",
         "santa": "/tutoriales/narration/v1/santa/30dec08650539a69.wav"
       }
@@ -303,6 +331,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/31bb5db48a1b6847.wav",
         "alex": "/tutoriales/narration/v1/alex/31bb5db48a1b6847.wav",
         "santa": "/tutoriales/narration/v1/santa/31bb5db48a1b6847.wav"
       }
@@ -318,6 +347,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/337ea574f2ef6be4.wav",
         "alex": "/tutoriales/narration/v1/alex/337ea574f2ef6be4.wav",
         "santa": "/tutoriales/narration/v1/santa/337ea574f2ef6be4.wav"
       }
@@ -333,6 +363,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/34722ed61b10c380.wav",
         "alex": "/tutoriales/narration/v1/alex/34722ed61b10c380.wav",
         "santa": "/tutoriales/narration/v1/santa/34722ed61b10c380.wav"
       }
@@ -348,6 +379,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/3624146e2e5d11e8.wav",
         "alex": "/tutoriales/narration/v1/alex/3624146e2e5d11e8.wav",
         "santa": "/tutoriales/narration/v1/santa/3624146e2e5d11e8.wav"
       }
@@ -363,6 +395,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/3981c4f3705e161c.wav",
         "alex": "/tutoriales/narration/v1/alex/3981c4f3705e161c.wav",
         "santa": "/tutoriales/narration/v1/santa/3981c4f3705e161c.wav"
       }
@@ -378,6 +411,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/3a2a22c6ebc94102.wav",
         "alex": "/tutoriales/narration/v1/alex/3a2a22c6ebc94102.wav",
         "santa": "/tutoriales/narration/v1/santa/3a2a22c6ebc94102.wav"
       }
@@ -393,6 +427,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/3b4b71dc4b12e71d.wav",
         "alex": "/tutoriales/narration/v1/alex/3b4b71dc4b12e71d.wav",
         "santa": "/tutoriales/narration/v1/santa/3b4b71dc4b12e71d.wav"
       }
@@ -408,6 +443,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/3e2e7758c1b69395.wav",
         "alex": "/tutoriales/narration/v1/alex/3e2e7758c1b69395.wav",
         "santa": "/tutoriales/narration/v1/santa/3e2e7758c1b69395.wav"
       }
@@ -423,6 +459,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/3e8d2a14b0a3ebf9.wav",
         "alex": "/tutoriales/narration/v1/alex/3e8d2a14b0a3ebf9.wav",
         "santa": "/tutoriales/narration/v1/santa/3e8d2a14b0a3ebf9.wav"
       }
@@ -438,6 +475,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/3e94aed3d8e59ff2.wav",
         "alex": "/tutoriales/narration/v1/alex/3e94aed3d8e59ff2.wav",
         "santa": "/tutoriales/narration/v1/santa/3e94aed3d8e59ff2.wav"
       }
@@ -453,6 +491,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/4223cf80980c305b.wav",
         "alex": "/tutoriales/narration/v1/alex/4223cf80980c305b.wav",
         "santa": "/tutoriales/narration/v1/santa/4223cf80980c305b.wav"
       }
@@ -468,6 +507,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/43183f356191a115.wav",
         "alex": "/tutoriales/narration/v1/alex/43183f356191a115.wav",
         "santa": "/tutoriales/narration/v1/santa/43183f356191a115.wav"
       }
@@ -483,6 +523,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/43a59ff1c6708f26.wav",
         "alex": "/tutoriales/narration/v1/alex/43a59ff1c6708f26.wav",
         "santa": "/tutoriales/narration/v1/santa/43a59ff1c6708f26.wav"
       }
@@ -498,6 +539,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/4405af59d0f0d467.wav",
         "alex": "/tutoriales/narration/v1/alex/4405af59d0f0d467.wav",
         "santa": "/tutoriales/narration/v1/santa/4405af59d0f0d467.wav"
       }
@@ -513,6 +555,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/4531e0d293abaf19.wav",
         "alex": "/tutoriales/narration/v1/alex/4531e0d293abaf19.wav",
         "santa": "/tutoriales/narration/v1/santa/4531e0d293abaf19.wav"
       }
@@ -528,6 +571,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/466459b12bac84e2.wav",
         "alex": "/tutoriales/narration/v1/alex/466459b12bac84e2.wav",
         "santa": "/tutoriales/narration/v1/santa/466459b12bac84e2.wav"
       }
@@ -543,6 +587,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/487081a937c033e8.wav",
         "alex": "/tutoriales/narration/v1/alex/487081a937c033e8.wav",
         "santa": "/tutoriales/narration/v1/santa/487081a937c033e8.wav"
       }
@@ -558,6 +603,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/48c35a6121356acb.wav",
         "alex": "/tutoriales/narration/v1/alex/48c35a6121356acb.wav",
         "santa": "/tutoriales/narration/v1/santa/48c35a6121356acb.wav"
       }
@@ -573,6 +619,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/4c376ef5b785f8c1.wav",
         "alex": "/tutoriales/narration/v1/alex/4c376ef5b785f8c1.wav",
         "santa": "/tutoriales/narration/v1/santa/4c376ef5b785f8c1.wav"
       }
@@ -588,6 +635,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/4f33b3271d3f8909.wav",
         "alex": "/tutoriales/narration/v1/alex/4f33b3271d3f8909.wav",
         "santa": "/tutoriales/narration/v1/santa/4f33b3271d3f8909.wav"
       }
@@ -603,6 +651,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/528c92f0dffdad4d.wav",
         "alex": "/tutoriales/narration/v1/alex/528c92f0dffdad4d.wav",
         "santa": "/tutoriales/narration/v1/santa/528c92f0dffdad4d.wav"
       }
@@ -618,6 +667,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/529ea09d0ecef618.wav",
         "alex": "/tutoriales/narration/v1/alex/529ea09d0ecef618.wav",
         "santa": "/tutoriales/narration/v1/santa/529ea09d0ecef618.wav"
       }
@@ -633,6 +683,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/552d63946f4be6f3.wav",
         "alex": "/tutoriales/narration/v1/alex/552d63946f4be6f3.wav",
         "santa": "/tutoriales/narration/v1/santa/552d63946f4be6f3.wav"
       }
@@ -648,6 +699,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/55ff7ba2f46fe5ba.wav",
         "alex": "/tutoriales/narration/v1/alex/55ff7ba2f46fe5ba.wav",
         "santa": "/tutoriales/narration/v1/santa/55ff7ba2f46fe5ba.wav"
       }
@@ -663,6 +715,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/564584c9691f24dd.wav",
         "alex": "/tutoriales/narration/v1/alex/564584c9691f24dd.wav",
         "santa": "/tutoriales/narration/v1/santa/564584c9691f24dd.wav"
       }
@@ -678,6 +731,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/564761f282d872d3.wav",
         "alex": "/tutoriales/narration/v1/alex/564761f282d872d3.wav",
         "santa": "/tutoriales/narration/v1/santa/564761f282d872d3.wav"
       }
@@ -693,6 +747,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/596af9de4dfb72a3.wav",
         "alex": "/tutoriales/narration/v1/alex/596af9de4dfb72a3.wav",
         "santa": "/tutoriales/narration/v1/santa/596af9de4dfb72a3.wav"
       }
@@ -708,6 +763,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/5a5dd5c45e707f14.wav",
         "alex": "/tutoriales/narration/v1/alex/5a5dd5c45e707f14.wav",
         "santa": "/tutoriales/narration/v1/santa/5a5dd5c45e707f14.wav"
       }
@@ -723,6 +779,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/5dcf9466c0adca86.wav",
         "alex": "/tutoriales/narration/v1/alex/5dcf9466c0adca86.wav",
         "santa": "/tutoriales/narration/v1/santa/5dcf9466c0adca86.wav"
       }
@@ -738,6 +795,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/61df2eaac4885bfb.wav",
         "alex": "/tutoriales/narration/v1/alex/61df2eaac4885bfb.wav",
         "santa": "/tutoriales/narration/v1/santa/61df2eaac4885bfb.wav"
       }
@@ -753,6 +811,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/6aa6740ff9fd8a07.wav",
         "alex": "/tutoriales/narration/v1/alex/6aa6740ff9fd8a07.wav",
         "santa": "/tutoriales/narration/v1/santa/6aa6740ff9fd8a07.wav"
       }
@@ -768,6 +827,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/703a28a238f646c2.wav",
         "alex": "/tutoriales/narration/v1/alex/703a28a238f646c2.wav",
         "santa": "/tutoriales/narration/v1/santa/703a28a238f646c2.wav"
       }
@@ -783,6 +843,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/70b26cadae864997.wav",
         "alex": "/tutoriales/narration/v1/alex/70b26cadae864997.wav",
         "santa": "/tutoriales/narration/v1/santa/70b26cadae864997.wav"
       }
@@ -798,6 +859,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/781f4066ae071fd7.wav",
         "alex": "/tutoriales/narration/v1/alex/781f4066ae071fd7.wav",
         "santa": "/tutoriales/narration/v1/santa/781f4066ae071fd7.wav"
       }
@@ -813,6 +875,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/797d881c80818869.wav",
         "alex": "/tutoriales/narration/v1/alex/797d881c80818869.wav",
         "santa": "/tutoriales/narration/v1/santa/797d881c80818869.wav"
       }
@@ -828,6 +891,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/798d759fb9af037f.wav",
         "alex": "/tutoriales/narration/v1/alex/798d759fb9af037f.wav",
         "santa": "/tutoriales/narration/v1/santa/798d759fb9af037f.wav"
       }
@@ -843,6 +907,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/7b6caedbf266c850.wav",
         "alex": "/tutoriales/narration/v1/alex/7b6caedbf266c850.wav",
         "santa": "/tutoriales/narration/v1/santa/7b6caedbf266c850.wav"
       }
@@ -858,6 +923,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/7d95cb64ffc5ebba.wav",
         "alex": "/tutoriales/narration/v1/alex/7d95cb64ffc5ebba.wav",
         "santa": "/tutoriales/narration/v1/santa/7d95cb64ffc5ebba.wav"
       }
@@ -873,6 +939,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/7dd949d645e9a29c.wav",
         "alex": "/tutoriales/narration/v1/alex/7dd949d645e9a29c.wav",
         "santa": "/tutoriales/narration/v1/santa/7dd949d645e9a29c.wav"
       }
@@ -888,6 +955,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/7e5783579ad13b3b.wav",
         "alex": "/tutoriales/narration/v1/alex/7e5783579ad13b3b.wav",
         "santa": "/tutoriales/narration/v1/santa/7e5783579ad13b3b.wav"
       }
@@ -903,6 +971,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/7fd86d855f8ba54b.wav",
         "alex": "/tutoriales/narration/v1/alex/7fd86d855f8ba54b.wav",
         "santa": "/tutoriales/narration/v1/santa/7fd86d855f8ba54b.wav"
       }
@@ -918,6 +987,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/804d8ac2944a6dc4.wav",
         "alex": "/tutoriales/narration/v1/alex/804d8ac2944a6dc4.wav",
         "santa": "/tutoriales/narration/v1/santa/804d8ac2944a6dc4.wav"
       }
@@ -933,6 +1003,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/83234e6afd27d417.wav",
         "alex": "/tutoriales/narration/v1/alex/83234e6afd27d417.wav",
         "santa": "/tutoriales/narration/v1/santa/83234e6afd27d417.wav"
       }
@@ -948,6 +1019,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/847706eaddcaa949.wav",
         "alex": "/tutoriales/narration/v1/alex/847706eaddcaa949.wav",
         "santa": "/tutoriales/narration/v1/santa/847706eaddcaa949.wav"
       }
@@ -963,6 +1035,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/84fa37289fae7a15.wav",
         "alex": "/tutoriales/narration/v1/alex/84fa37289fae7a15.wav",
         "santa": "/tutoriales/narration/v1/santa/84fa37289fae7a15.wav"
       }
@@ -978,6 +1051,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/8568db76d48e8f10.wav",
         "alex": "/tutoriales/narration/v1/alex/8568db76d48e8f10.wav",
         "santa": "/tutoriales/narration/v1/santa/8568db76d48e8f10.wav"
       }
@@ -993,6 +1067,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/860bb136f7bc9765.wav",
         "alex": "/tutoriales/narration/v1/alex/860bb136f7bc9765.wav",
         "santa": "/tutoriales/narration/v1/santa/860bb136f7bc9765.wav"
       }
@@ -1008,6 +1083,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/86c259d42a33d3e3.wav",
         "alex": "/tutoriales/narration/v1/alex/86c259d42a33d3e3.wav",
         "santa": "/tutoriales/narration/v1/santa/86c259d42a33d3e3.wav"
       }
@@ -1023,6 +1099,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/8bc3386c0f9858a5.wav",
         "alex": "/tutoriales/narration/v1/alex/8bc3386c0f9858a5.wav",
         "santa": "/tutoriales/narration/v1/santa/8bc3386c0f9858a5.wav"
       }
@@ -1038,6 +1115,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/90f566f8e56e3121.wav",
         "alex": "/tutoriales/narration/v1/alex/90f566f8e56e3121.wav",
         "santa": "/tutoriales/narration/v1/santa/90f566f8e56e3121.wav"
       }
@@ -1053,6 +1131,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/923e88b4367aca1e.wav",
         "alex": "/tutoriales/narration/v1/alex/923e88b4367aca1e.wav",
         "santa": "/tutoriales/narration/v1/santa/923e88b4367aca1e.wav"
       }
@@ -1068,6 +1147,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/92966be3d0a16713.wav",
         "alex": "/tutoriales/narration/v1/alex/92966be3d0a16713.wav",
         "santa": "/tutoriales/narration/v1/santa/92966be3d0a16713.wav"
       }
@@ -1083,6 +1163,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/9482b8eb3714653a.wav",
         "alex": "/tutoriales/narration/v1/alex/9482b8eb3714653a.wav",
         "santa": "/tutoriales/narration/v1/santa/9482b8eb3714653a.wav"
       }
@@ -1098,6 +1179,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/95823bffbc11d5b1.wav",
         "alex": "/tutoriales/narration/v1/alex/95823bffbc11d5b1.wav",
         "santa": "/tutoriales/narration/v1/santa/95823bffbc11d5b1.wav"
       }
@@ -1113,6 +1195,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/9aa22198ffbb4cfc.wav",
         "alex": "/tutoriales/narration/v1/alex/9aa22198ffbb4cfc.wav",
         "santa": "/tutoriales/narration/v1/santa/9aa22198ffbb4cfc.wav"
       }
@@ -1128,6 +1211,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/9e34f9bdf45a70e4.wav",
         "alex": "/tutoriales/narration/v1/alex/9e34f9bdf45a70e4.wav",
         "santa": "/tutoriales/narration/v1/santa/9e34f9bdf45a70e4.wav"
       }
@@ -1143,6 +1227,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/a8a24fe9bbdb7f8e.wav",
         "alex": "/tutoriales/narration/v1/alex/a8a24fe9bbdb7f8e.wav",
         "santa": "/tutoriales/narration/v1/santa/a8a24fe9bbdb7f8e.wav"
       }
@@ -1158,6 +1243,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/a8acd2593269144d.wav",
         "alex": "/tutoriales/narration/v1/alex/a8acd2593269144d.wav",
         "santa": "/tutoriales/narration/v1/santa/a8acd2593269144d.wav"
       }
@@ -1173,6 +1259,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/a97f00a1113b9e64.wav",
         "alex": "/tutoriales/narration/v1/alex/a97f00a1113b9e64.wav",
         "santa": "/tutoriales/narration/v1/santa/a97f00a1113b9e64.wav"
       }
@@ -1188,6 +1275,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/aa6181b234daf9f9.wav",
         "alex": "/tutoriales/narration/v1/alex/aa6181b234daf9f9.wav",
         "santa": "/tutoriales/narration/v1/santa/aa6181b234daf9f9.wav"
       }
@@ -1203,6 +1291,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/aaf7282b174ce973.wav",
         "alex": "/tutoriales/narration/v1/alex/aaf7282b174ce973.wav",
         "santa": "/tutoriales/narration/v1/santa/aaf7282b174ce973.wav"
       }
@@ -1218,6 +1307,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/ae6428e44c3d4c0f.wav",
         "alex": "/tutoriales/narration/v1/alex/ae6428e44c3d4c0f.wav",
         "santa": "/tutoriales/narration/v1/santa/ae6428e44c3d4c0f.wav"
       }
@@ -1233,6 +1323,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/b03a3bf687b93c74.wav",
         "alex": "/tutoriales/narration/v1/alex/b03a3bf687b93c74.wav",
         "santa": "/tutoriales/narration/v1/santa/b03a3bf687b93c74.wav"
       }
@@ -1248,6 +1339,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/b1b4996b0ba0dc7a.wav",
         "alex": "/tutoriales/narration/v1/alex/b1b4996b0ba0dc7a.wav",
         "santa": "/tutoriales/narration/v1/santa/b1b4996b0ba0dc7a.wav"
       }
@@ -1263,6 +1355,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/b276268de5dbb3b9.wav",
         "alex": "/tutoriales/narration/v1/alex/b276268de5dbb3b9.wav",
         "santa": "/tutoriales/narration/v1/santa/b276268de5dbb3b9.wav"
       }
@@ -1278,6 +1371,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/bd89ca6fb58b42c4.wav",
         "alex": "/tutoriales/narration/v1/alex/bd89ca6fb58b42c4.wav",
         "santa": "/tutoriales/narration/v1/santa/bd89ca6fb58b42c4.wav"
       }
@@ -1293,6 +1387,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/bfa6b15143463f37.wav",
         "alex": "/tutoriales/narration/v1/alex/bfa6b15143463f37.wav",
         "santa": "/tutoriales/narration/v1/santa/bfa6b15143463f37.wav"
       }
@@ -1308,6 +1403,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/bff1d50aaa2093f2.wav",
         "alex": "/tutoriales/narration/v1/alex/bff1d50aaa2093f2.wav",
         "santa": "/tutoriales/narration/v1/santa/bff1d50aaa2093f2.wav"
       }
@@ -1323,6 +1419,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/c0c278a3e5f79a14.wav",
         "alex": "/tutoriales/narration/v1/alex/c0c278a3e5f79a14.wav",
         "santa": "/tutoriales/narration/v1/santa/c0c278a3e5f79a14.wav"
       }
@@ -1338,6 +1435,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/c1fffc7850dd49f4.wav",
         "alex": "/tutoriales/narration/v1/alex/c1fffc7850dd49f4.wav",
         "santa": "/tutoriales/narration/v1/santa/c1fffc7850dd49f4.wav"
       }
@@ -1353,6 +1451,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/c36974d317cb1b48.wav",
         "alex": "/tutoriales/narration/v1/alex/c36974d317cb1b48.wav",
         "santa": "/tutoriales/narration/v1/santa/c36974d317cb1b48.wav"
       }
@@ -1368,6 +1467,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/c58508ca4b70e282.wav",
         "alex": "/tutoriales/narration/v1/alex/c58508ca4b70e282.wav",
         "santa": "/tutoriales/narration/v1/santa/c58508ca4b70e282.wav"
       }
@@ -1383,6 +1483,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/c73f3a1467a712b1.wav",
         "alex": "/tutoriales/narration/v1/alex/c73f3a1467a712b1.wav",
         "santa": "/tutoriales/narration/v1/santa/c73f3a1467a712b1.wav"
       }
@@ -1398,6 +1499,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/c748ea1c0bc57fc6.wav",
         "alex": "/tutoriales/narration/v1/alex/c748ea1c0bc57fc6.wav",
         "santa": "/tutoriales/narration/v1/santa/c748ea1c0bc57fc6.wav"
       }
@@ -1413,6 +1515,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/c884d18726338186.wav",
         "alex": "/tutoriales/narration/v1/alex/c884d18726338186.wav",
         "santa": "/tutoriales/narration/v1/santa/c884d18726338186.wav"
       }
@@ -1428,6 +1531,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/c93725de46089cc0.wav",
         "alex": "/tutoriales/narration/v1/alex/c93725de46089cc0.wav",
         "santa": "/tutoriales/narration/v1/santa/c93725de46089cc0.wav"
       }
@@ -1443,6 +1547,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/c9ed1797ee1ba0c3.wav",
         "alex": "/tutoriales/narration/v1/alex/c9ed1797ee1ba0c3.wav",
         "santa": "/tutoriales/narration/v1/santa/c9ed1797ee1ba0c3.wav"
       }
@@ -1458,6 +1563,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/cbb6d2c658360829.wav",
         "alex": "/tutoriales/narration/v1/alex/cbb6d2c658360829.wav",
         "santa": "/tutoriales/narration/v1/santa/cbb6d2c658360829.wav"
       }
@@ -1473,6 +1579,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/cf994e51019d447c.wav",
         "alex": "/tutoriales/narration/v1/alex/cf994e51019d447c.wav",
         "santa": "/tutoriales/narration/v1/santa/cf994e51019d447c.wav"
       }
@@ -1488,6 +1595,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/d035409da7ca9b2c.wav",
         "alex": "/tutoriales/narration/v1/alex/d035409da7ca9b2c.wav",
         "santa": "/tutoriales/narration/v1/santa/d035409da7ca9b2c.wav"
       }
@@ -1503,6 +1611,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/d24231874414c363.wav",
         "alex": "/tutoriales/narration/v1/alex/d24231874414c363.wav",
         "santa": "/tutoriales/narration/v1/santa/d24231874414c363.wav"
       }
@@ -1518,6 +1627,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/d3b983f2cafda522.wav",
         "alex": "/tutoriales/narration/v1/alex/d3b983f2cafda522.wav",
         "santa": "/tutoriales/narration/v1/santa/d3b983f2cafda522.wav"
       }
@@ -1533,6 +1643,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/d4533f5d55f9ea7e.wav",
         "alex": "/tutoriales/narration/v1/alex/d4533f5d55f9ea7e.wav",
         "santa": "/tutoriales/narration/v1/santa/d4533f5d55f9ea7e.wav"
       }
@@ -1548,6 +1659,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/d4dad4cbadf7343d.wav",
         "alex": "/tutoriales/narration/v1/alex/d4dad4cbadf7343d.wav",
         "santa": "/tutoriales/narration/v1/santa/d4dad4cbadf7343d.wav"
       }
@@ -1563,6 +1675,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/d670bf0393d66615.wav",
         "alex": "/tutoriales/narration/v1/alex/d670bf0393d66615.wav",
         "santa": "/tutoriales/narration/v1/santa/d670bf0393d66615.wav"
       }
@@ -1578,6 +1691,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/d8b98a2a05e3ea47.wav",
         "alex": "/tutoriales/narration/v1/alex/d8b98a2a05e3ea47.wav",
         "santa": "/tutoriales/narration/v1/santa/d8b98a2a05e3ea47.wav"
       }
@@ -1593,6 +1707,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/daef77aaf792065f.wav",
         "alex": "/tutoriales/narration/v1/alex/daef77aaf792065f.wav",
         "santa": "/tutoriales/narration/v1/santa/daef77aaf792065f.wav"
       }
@@ -1608,6 +1723,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/dbb0313d0587d653.wav",
         "alex": "/tutoriales/narration/v1/alex/dbb0313d0587d653.wav",
         "santa": "/tutoriales/narration/v1/santa/dbb0313d0587d653.wav"
       }
@@ -1623,6 +1739,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/dd3e3655f912d27b.wav",
         "alex": "/tutoriales/narration/v1/alex/dd3e3655f912d27b.wav",
         "santa": "/tutoriales/narration/v1/santa/dd3e3655f912d27b.wav"
       }
@@ -1638,6 +1755,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/e10f632ce8be1ed2.wav",
         "alex": "/tutoriales/narration/v1/alex/e10f632ce8be1ed2.wav",
         "santa": "/tutoriales/narration/v1/santa/e10f632ce8be1ed2.wav"
       }
@@ -1653,6 +1771,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/e219105291aa7b67.wav",
         "alex": "/tutoriales/narration/v1/alex/e219105291aa7b67.wav",
         "santa": "/tutoriales/narration/v1/santa/e219105291aa7b67.wav"
       }
@@ -1668,6 +1787,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/e69f88cd518a220f.wav",
         "alex": "/tutoriales/narration/v1/alex/e69f88cd518a220f.wav",
         "santa": "/tutoriales/narration/v1/santa/e69f88cd518a220f.wav"
       }
@@ -1683,6 +1803,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/e78fb9db6e60c61a.wav",
         "alex": "/tutoriales/narration/v1/alex/e78fb9db6e60c61a.wav",
         "santa": "/tutoriales/narration/v1/santa/e78fb9db6e60c61a.wav"
       }
@@ -1698,6 +1819,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/e8b5d751041ce7e5.wav",
         "alex": "/tutoriales/narration/v1/alex/e8b5d751041ce7e5.wav",
         "santa": "/tutoriales/narration/v1/santa/e8b5d751041ce7e5.wav"
       }
@@ -1713,6 +1835,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/ea1ede1116a9a927.wav",
         "alex": "/tutoriales/narration/v1/alex/ea1ede1116a9a927.wav",
         "santa": "/tutoriales/narration/v1/santa/ea1ede1116a9a927.wav"
       }
@@ -1728,6 +1851,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/ea6e9fc4a430585d.wav",
         "alex": "/tutoriales/narration/v1/alex/ea6e9fc4a430585d.wav",
         "santa": "/tutoriales/narration/v1/santa/ea6e9fc4a430585d.wav"
       }
@@ -1743,6 +1867,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/ebf21d55578d2337.wav",
         "alex": "/tutoriales/narration/v1/alex/ebf21d55578d2337.wav",
         "santa": "/tutoriales/narration/v1/santa/ebf21d55578d2337.wav"
       }
@@ -1758,6 +1883,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/edd9e48ff403174c.wav",
         "alex": "/tutoriales/narration/v1/alex/edd9e48ff403174c.wav",
         "santa": "/tutoriales/narration/v1/santa/edd9e48ff403174c.wav"
       }
@@ -1773,6 +1899,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/ef05ce528fc7ea98.wav",
         "alex": "/tutoriales/narration/v1/alex/ef05ce528fc7ea98.wav",
         "santa": "/tutoriales/narration/v1/santa/ef05ce528fc7ea98.wav"
       }
@@ -1788,6 +1915,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/f1d966f3f10d06ec.wav",
         "alex": "/tutoriales/narration/v1/alex/f1d966f3f10d06ec.wav",
         "santa": "/tutoriales/narration/v1/santa/f1d966f3f10d06ec.wav"
       }
@@ -1803,6 +1931,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/f2bda98b1f622d96.wav",
         "alex": "/tutoriales/narration/v1/alex/f2bda98b1f622d96.wav",
         "santa": "/tutoriales/narration/v1/santa/f2bda98b1f622d96.wav"
       }
@@ -1818,6 +1947,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/f43c904e68afed0f.wav",
         "alex": "/tutoriales/narration/v1/alex/f43c904e68afed0f.wav",
         "santa": "/tutoriales/narration/v1/santa/f43c904e68afed0f.wav"
       }
@@ -1833,6 +1963,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/f4c6914ec1c293fe.wav",
         "alex": "/tutoriales/narration/v1/alex/f4c6914ec1c293fe.wav",
         "santa": "/tutoriales/narration/v1/santa/f4c6914ec1c293fe.wav"
       }
@@ -1848,6 +1979,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/f597ebca5c89bb3f.wav",
         "alex": "/tutoriales/narration/v1/alex/f597ebca5c89bb3f.wav",
         "santa": "/tutoriales/narration/v1/santa/f597ebca5c89bb3f.wav"
       }
@@ -1863,6 +1995,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/f60c406fba2ed471.wav",
         "alex": "/tutoriales/narration/v1/alex/f60c406fba2ed471.wav",
         "santa": "/tutoriales/narration/v1/santa/f60c406fba2ed471.wav"
       }
@@ -1878,6 +2011,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/f6dc1c5de7421cca.wav",
         "alex": "/tutoriales/narration/v1/alex/f6dc1c5de7421cca.wav",
         "santa": "/tutoriales/narration/v1/santa/f6dc1c5de7421cca.wav"
       }
@@ -1893,6 +2027,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/f7fb847a914e5019.wav",
         "alex": "/tutoriales/narration/v1/alex/f7fb847a914e5019.wav",
         "santa": "/tutoriales/narration/v1/santa/f7fb847a914e5019.wav"
       }
@@ -1908,6 +2043,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/f9f31703c4ef300c.wav",
         "alex": "/tutoriales/narration/v1/alex/f9f31703c4ef300c.wav",
         "santa": "/tutoriales/narration/v1/santa/f9f31703c4ef300c.wav"
       }
@@ -1923,6 +2059,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/fbdeb5d2103516e5.wav",
         "alex": "/tutoriales/narration/v1/alex/fbdeb5d2103516e5.wav",
         "santa": "/tutoriales/narration/v1/santa/fbdeb5d2103516e5.wav"
       }
@@ -1938,6 +2075,7 @@
         }
       ],
       "files": {
+        "dora": "/tutoriales/narration/v1/dora/ff6cbf9b85db601d.wav",
         "alex": "/tutoriales/narration/v1/alex/ff6cbf9b85db601d.wav",
         "santa": "/tutoriales/narration/v1/santa/ff6cbf9b85db601d.wav"
       }

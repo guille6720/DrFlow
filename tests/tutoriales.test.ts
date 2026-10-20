@@ -110,13 +110,14 @@ describe("tutoriales generators and helpers", () => {
     expect(normalizeSpokenText("Abrí /turnos/agenda en NexClinic")).toContain("agenda de turnos");
   });
 
-  it("uses Kokoro Alex and Santa voice profiles", () => {
-    expect([...NARRATION_VOICE_PROFILES]).toEqual(["alex", "santa"]);
+  it("uses Kokoro Dora, Alex and Santa voice profiles", () => {
+    expect([...NARRATION_VOICE_PROFILES]).toEqual(["dora", "alex", "santa"]);
+    expect(NARRATION_VOICE_LABELS.dora).toBe("Dora");
     expect(NARRATION_VOICE_LABELS.alex).toBe("Alex");
     expect(NARRATION_VOICE_LABELS.santa).toBe("Santa");
-    expect(migrateLegacyVoiceProfile("browser-es")).toBe("alex");
+    expect(migrateLegacyVoiceProfile("browser-es")).toBe("dora");
+    expect(migrateLegacyVoiceProfile("female")).toBe("dora");
     expect(migrateLegacyVoiceProfile("browser-es-alt")).toBe("santa");
-    expect(migrateLegacyVoiceProfile("brian")).toBe("alex");
     expect(migrateLegacyVoiceProfile("horacio")).toBe("santa");
   });
 

@@ -71,6 +71,7 @@ const payload = {
   generatedAt: new Date().toISOString(),
   clipCount: clips.length,
   voices: [
+    { id: "dora", kokoroId: "ef_dora", label: "Dora" },
     { id: "alex", kokoroId: "em_alex", label: "Alex" },
     { id: "santa", kokoroId: "em_santa", label: "Santa" },
   ],

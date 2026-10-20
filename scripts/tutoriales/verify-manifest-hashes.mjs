@@ -27,7 +27,7 @@ for (const clip of manifest.clips) {
     mismatches += 1;
     console.error("hash mismatch", clip.textHash, hash);
   }
-  for (const voice of ["alex", "santa"]) {
+  for (const voice of ["dora", "alex", "santa"]) {
     const rel = clip.files?.[voice];
     if (!rel || !existsSync(join(root, "public", rel.replace(/^\//, "")))) {
       missing += 1;

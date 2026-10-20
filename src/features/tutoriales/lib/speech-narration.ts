@@ -1,6 +1,6 @@
 /**
  * Browser Web Speech API narration for Tutoriales NexClinic (fallback).
- * Prefers male Spanish voices to match Kokoro Alex / Santa.
+ * Matches Kokoro Dora (female) / Alex / Santa.
  */
 
 import {
@@ -18,13 +18,14 @@ export interface NarrationPreferences {
   voiceProfile: StoredVoiceProfile;
 }
 
-export const NARRATION_PREF_KEY = "nexclinic.tutoriales.narration.v2";
+export const NARRATION_PREF_KEY = "nexclinic.tutoriales.narration.v3";
 const NARRATION_PREF_KEY_V1 = "nexclinic.tutoriales.narration.v1";
+const NARRATION_PREF_KEY_V2 = "nexclinic.tutoriales.narration.v2";
 
 export const DEFAULT_NARRATION_PREFS: NarrationPreferences = {
   muted: false,
-  rate: 1,
-  voiceProfile: "alex",
+  rate: 0.85,
+  voiceProfile: "dora",
 };
 
 export function clampNarrationRate(rate: number): number {
@@ -45,6 +46,7 @@ export function readNarrationPreferences(): NarrationPreferences {
   try {
     const raw =
       window.localStorage.getItem(NARRATION_PREF_KEY) ??
+      window.localStorage.getItem(NARRATION_PREF_KEY_V2) ??
       window.localStorage.getItem(NARRATION_PREF_KEY_V1);
     if (!raw) return { ...DEFAULT_NARRATION_PREFS };
     const parsed = JSON.parse(raw) as Partial<NarrationPreferences>;
@@ -84,7 +86,7 @@ export class SpeechNarrationEngine {
   private generation = 0;
   private rate = 1;
   private muted = false;
-  private voiceProfile: StoredVoiceProfile = "alex";
+  private voiceProfile: StoredVoiceProfile = "dora";
   private voices: SpeechSynthesisVoice[] = [];
   private currentUtterance: SpeechSynthesisUtterance | null = null;
 
@@ -154,8 +156,7 @@ export class SpeechNarrationEngine {
     utterance.lang = "es-AR";
     utterance.rate = this.rate;
     utterance.pitch = 1;
-    // Alex / Santa are male — prefer male Spanish browser voices when falling back.
-    const voice = pickVoiceForProfile(this.voices, "es-AR", this.voiceProfile === "santa");
+    const voice = pickVoiceForProfile(this.voices, "es-AR", this.voiceProfile);
     if (voice) utterance.voice = voice;
     this.currentUtterance = utterance;
     this.setStatus("speaking");

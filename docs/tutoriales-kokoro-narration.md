@@ -2,12 +2,13 @@
 
 ## Qué es
 
-Los tutoriales reproducen audios **pregenerados** con [Kokoro-82M](https://github.com/hexgrad/kokoro) (`pip install kokoro`), voces masculinas españolas:
+Los tutoriales reproducen audios **pregenerados** con [Kokoro-82M](https://github.com/hexgrad/kokoro) (`pip install kokoro`), tono suave/cordial (`speed≈0.88`):
 
-| UI     | Kokoro id | Archivos                         |
-|--------|-----------|----------------------------------|
-| Alex   | `em_alex` | `public/tutoriales/narration/v1/alex/<hash>.wav` |
-| Santa  | `em_santa`| `public/tutoriales/narration/v1/santa/<hash>.wav` |
+| UI     | Kokoro id  | Género   | Archivos                                      |
+|--------|------------|----------|-----------------------------------------------|
+| Dora   | `ef_dora`  | femenina | `public/tutoriales/narration/v1/dora/<hash>.wav` |
+| Alex   | `em_alex`  | masculina | `public/tutoriales/narration/v1/alex/<hash>.wav` |
+| Santa  | `em_santa` | masculina | `public/tutoriales/narration/v1/santa/<hash>.wav` |
 
 No hay modelo en el navegador, ni en funciones de Vercel, ni claves de API (ElevenLabs retirado del recorrido activo).
 
