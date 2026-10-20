@@ -24,7 +24,7 @@ const NARRATION_PREF_KEY_V2 = "nexclinic.tutoriales.narration.v2";
 
 export const DEFAULT_NARRATION_PREFS: NarrationPreferences = {
   muted: false,
-  rate: 0.85,
+  rate: 1,
   voiceProfile: "dora",
 };
 
