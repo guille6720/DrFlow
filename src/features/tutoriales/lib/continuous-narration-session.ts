@@ -1,9 +1,9 @@
 /**
- * Audio-driven continuous tutorial narration (browser speech).
- * Playlist advances steps — React step changes must NOT restart speech.
- * Without speech support or when muted, uses caption hold timers (never cuts mid-phrase).
+ * Audio-driven continuous tutorial narration.
+ * Prefers ElevenLabs Brian C / Horacio; falls back to male browser Spanish TTS.
  */
 
+import { getElevenLabsAudioEngine } from "@/features/tutoriales/lib/elevenlabs-audio";
 import {
   getSpeechNarrationEngine,
   type SpeechNarrationStatus,
@@ -30,7 +30,7 @@ function estimateHoldMs(text: string): number {
 export class ContinuousNarrationSession {
   private clips: ContinuousNarrationClip[] = [];
   private index = -1;
-  private voice: StoredVoiceProfile = "browser-es";
+  private voice: StoredVoiceProfile = "brian";
   private rate = 1;
   private muted = false;
   private paused = false;
@@ -38,6 +38,8 @@ export class ContinuousNarrationSession {
   private generation = 0;
   private handlers: ContinuousNarrationHandlers | null = null;
   private holdTimer: ReturnType<typeof setTimeout> | null = null;
+  private useEleven = true;
+  private eleven = getElevenLabsAudioEngine();
   private browser = getSpeechNarrationEngine();
   private unsub: (() => void) | null = null;
 
@@ -49,7 +51,7 @@ export class ContinuousNarrationSession {
     if (!this.running) return "idle";
     if (this.paused) return "paused";
     if (this.muted) return "idle";
-    return this.browser.getStatus();
+    return this.useEleven ? this.eleven.getStatus() : this.browser.getStatus();
   }
 
   async start(
@@ -85,14 +87,31 @@ export class ContinuousNarrationSession {
     this.generation += 1;
     const gen = this.generation;
 
-    this.browser.setRate(this.rate);
-    this.browser.setVoiceProfile(this.voice);
-    this.browser.setMuted(this.muted);
-    this.unsub = this.browser.subscribe((status) => {
-      handlers.onStatus?.(this.paused ? "paused" : status);
-    });
-    await this.browser.ensureVoices();
+    this.useEleven = await this.eleven.isAvailable();
     if (gen !== this.generation || !this.running) return;
+
+    if (this.useEleven) {
+      this.eleven.setRate(this.rate);
+      this.eleven.setMuted(this.muted);
+      this.unsub = this.eleven.subscribe((status) => {
+        handlers.onStatus?.(this.paused ? "paused" : status);
+      });
+      const first = cleaned[this.index];
+      if (first) {
+        await this.eleven.prefetch(first.text, this.voice);
+      }
+      if (gen !== this.generation || !this.running) return;
+      void this.prefetchFrom(this.index + 1, gen);
+    } else {
+      this.browser.setRate(this.rate);
+      this.browser.setVoiceProfile(this.voice);
+      this.browser.setMuted(this.muted);
+      this.unsub = this.browser.subscribe((status) => {
+        handlers.onStatus?.(this.paused ? "paused" : status);
+      });
+      await this.browser.ensureVoices();
+      if (gen !== this.generation || !this.running) return;
+    }
 
     await this.playIndex(this.index, gen);
   }
@@ -104,7 +123,8 @@ export class ContinuousNarrationSession {
       clearTimeout(this.holdTimer);
       this.holdTimer = null;
     }
-    this.browser.pause();
+    if (this.useEleven) this.eleven.pause();
+    else this.browser.pause();
     this.handlers?.onStatus?.("paused");
   }
 
@@ -115,9 +135,10 @@ export class ContinuousNarrationSession {
       void this.scheduleMutedHold(this.generation);
       return;
     }
-    const status = this.browser.getStatus();
+    const status = this.useEleven ? this.eleven.getStatus() : this.browser.getStatus();
     if (status === "paused") {
-      this.browser.resume();
+      if (this.useEleven) this.eleven.resume();
+      else this.browser.resume();
       this.handlers?.onStatus?.("speaking");
       return;
     }
@@ -126,9 +147,11 @@ export class ContinuousNarrationSession {
 
   setMuted(muted: boolean): void {
     this.muted = muted;
+    this.eleven.setMuted(muted);
     this.browser.setMuted(muted);
     if (!this.running || this.paused) return;
     if (muted) {
+      this.eleven.stop();
       this.browser.stop();
       void this.scheduleMutedHold(this.generation);
     } else {
@@ -138,6 +161,7 @@ export class ContinuousNarrationSession {
 
   setRate(rate: number): void {
     this.rate = rate;
+    this.eleven.setRate(rate);
     this.browser.setRate(rate);
   }
 
@@ -145,7 +169,12 @@ export class ContinuousNarrationSession {
     this.voice = voice;
     this.browser.setVoiceProfile(voice);
     if (!this.running || this.paused || this.muted) return;
+    this.eleven.stop();
     this.browser.stop();
+    if (this.useEleven) {
+      const remaining = this.clips.slice(this.index);
+      await Promise.all(remaining.map((clip) => this.eleven.prefetch(clip.text, voice)));
+    }
     await this.playIndex(this.index, this.generation);
   }
 
@@ -153,7 +182,7 @@ export class ContinuousNarrationSession {
     this.stopInternal(true);
   }
 
-  private stopInternal(notifyIdle: boolean): void {
+  private stopInternal(_notifyIdle: boolean): void {
     this.generation += 1;
     this.running = false;
     this.paused = false;
@@ -161,14 +190,22 @@ export class ContinuousNarrationSession {
       clearTimeout(this.holdTimer);
       this.holdTimer = null;
     }
+    this.eleven.stop();
     this.browser.stop();
     this.unsub?.();
     this.unsub = null;
     this.handlers = null;
     this.clips = [];
     this.index = -1;
-    if (notifyIdle) {
-      // no-op for UI; status readers return idle when !running
+  }
+
+  private async prefetchFrom(startIndex: number, gen: number): Promise<void> {
+    if (!this.useEleven) return;
+    for (let i = startIndex; i < this.clips.length; i += 1) {
+      if (gen !== this.generation || !this.running) return;
+      const clip = this.clips[i];
+      if (!clip) continue;
+      await this.eleven.prefetch(clip.text, this.voice);
     }
   }
 
@@ -182,9 +219,32 @@ export class ContinuousNarrationSession {
     }
     this.index = index;
     this.handlers?.onStep(clip.stepIndex);
+    void this.prefetchFrom(index + 1, gen);
 
     if (this.muted) {
       await this.scheduleMutedHold(gen);
+      return;
+    }
+
+    if (this.useEleven) {
+      const result = await this.eleven.speak(clip.text, this.voice, { rate: this.rate });
+      if (gen !== this.generation || !this.running || this.paused) return;
+      if (result === "ended") {
+        await this.advance(gen);
+        return;
+      }
+      if (result === "error" || result === "muted") {
+        const fallback = await this.browser.speak(clip.text);
+        if (gen !== this.generation || !this.running || this.paused) return;
+        if (fallback === "ended" || fallback === "unsupported" || fallback === "error" || fallback === "muted") {
+          if (fallback === "unsupported" || fallback === "error") {
+            await this.scheduleMutedHold(gen, true);
+            return;
+          }
+          await this.advance(gen);
+        }
+        return;
+      }
       return;
     }
 
@@ -192,13 +252,11 @@ export class ContinuousNarrationSession {
     if (gen !== this.generation || !this.running || this.paused) return;
 
     if (result === "ended" || result === "unsupported" || result === "error" || result === "muted") {
-      // unsupported/error: still advance via hold so the tour never freezes
       if (result === "unsupported" || result === "error") {
         await this.scheduleMutedHold(gen, true);
         return;
       }
       await this.advance(gen);
-      return;
     }
   }
 

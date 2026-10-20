@@ -13,6 +13,7 @@ import {
   type ContinuousNarrationClip,
   getContinuousNarrationSession,
 } from "@/features/tutoriales/lib/continuous-narration-session";
+import { getElevenLabsAudioEngine } from "@/features/tutoriales/lib/elevenlabs-audio";
 import { prefersReducedMotion } from "@/features/tutoriales/lib/prefers-reduced-motion";
 import {
   clampNarrationRate,
@@ -21,6 +22,7 @@ import {
   type StoredVoiceProfile,
   writeNarrationPreferences,
 } from "@/features/tutoriales/lib/speech-narration";
+import { migrateLegacyVoiceProfile } from "@/features/tutoriales/lib/voice-profiles";
 
 interface TutorialOverlayProps {
   engine: TutorialEngineApi;
@@ -54,12 +56,15 @@ export function TutorialOverlay({ engine }: TutorialOverlayProps) {
 
   const [muted, setMuted] = useState(initialPrefs.muted);
   const [rate, setRate] = useState(initialPrefs.rate);
-  const [voiceProfile, setVoiceProfile] = useState<StoredVoiceProfile>(initialPrefs.voiceProfile);
+  const [voiceProfile, setVoiceProfile] = useState<StoredVoiceProfile>(
+    migrateLegacyVoiceProfile(initialPrefs.voiceProfile)
+  );
   const [status, setStatus] = useState<SpeechNarrationStatus>("idle");
+  const [elevenLabsAvailable, setElevenLabsAvailable] = useState(false);
   const narrationPrefsRef = useRef({
     muted: initialPrefs.muted,
     rate: initialPrefs.rate,
-    voiceProfile: initialPrefs.voiceProfile,
+    voiceProfile: migrateLegacyVoiceProfile(initialPrefs.voiceProfile),
   });
 
   useEffect(() => {
@@ -69,6 +74,18 @@ export function TutorialOverlay({ engine }: TutorialOverlayProps) {
   useEffect(() => {
     narrationPrefsRef.current = { muted, rate, voiceProfile };
   }, [muted, rate, voiceProfile]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getElevenLabsAudioEngine()
+      .isAvailable()
+      .then((available) => {
+        if (!cancelled) setElevenLabsAvailable(available);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const tutorialId = state.tutorial?.id ?? null;
 
@@ -208,6 +225,7 @@ export function TutorialOverlay({ engine }: TutorialOverlayProps) {
             muted={muted}
             rate={rate}
             voiceProfile={voiceProfile}
+            elevenLabsAvailable={elevenLabsAvailable}
             onTogglePause={() => {
               if (state.paused) resume();
               else pause();
@@ -233,12 +251,13 @@ export function TutorialOverlay({ engine }: TutorialOverlayProps) {
               });
             }}
             onVoiceProfileChange={(profile) => {
-              setVoiceProfile(profile);
-              void session.setVoice(profile);
+              const next = migrateLegacyVoiceProfile(profile);
+              setVoiceProfile(next);
+              void session.setVoice(next);
               writeNarrationPreferences({
                 muted,
                 rate,
-                voiceProfile: profile,
+                voiceProfile: next,
               });
             }}
             onClose={skip}
