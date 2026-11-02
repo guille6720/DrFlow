@@ -104,5 +104,34 @@ activación, conservar ledger y reservas inciertas; desactivar el ingreso nuevo 
 configuración controlada y continuar conciliación. No volver automáticamente a políticas
 permisivas ni borrar tablas/reservas para restaurar disponibilidad.
 
+## Continuación con Docker
+
+Docker Engine 29.7.2 accesible mediante permisos del usuario. Se creó exclusivamente
+el contenedor local nexclinic-storage-test-20261102, PostgreSQL 17 Alpine, puerto
+127.0.0.1:55439. Usa autenticación trust para fixtures desechables; no usar para datos
+reales ni exponer a la red. No se montaron directorios ni credenciales reales.
+
+supabase/tests/storage-reservation-candidate.sql es un prototipo SQL de pruebas,
+fuera del directorio de migraciones: no se aplica al desplegar. No es todavía una
+migración Supabase ni sincroniza el catálogo comercial real. Su saldo inicial y límite
+son fixtures explícitos. Bloquea una cuenta por clínica, serializa las reservas y
+actualizaciones del límite, conserva incertidumbres y no ofrece liberación por edad.
+El esquema privado, las tablas con RLS y la revocación de funciones a PUBLIC impiden
+acceso directo. Las funciones son SECURITY INVOKER; los tests operan como postgres.
+Esto no sustituye pruebas con identidades Supabase, service_role, Auth y Storage reales.
+
+Pruebas locales reproducibles: crear una base vacía con nombre storage_test_<sufijo>
+en ese contenedor y ejecutar node scripts/test-storage-postgres.mjs <nombre_base>.
+El script solo acepta ese prefijo y usa 127.0.0.1:55439; rechaza un esquema existente.
+La primera ejecución aprobó 20 reservas concurrentes (10 admitidas), 12 reintentos
+idénticos, conflictos de hash, incertidumbre retenida, integridad, finalización
+idempotente, reducción de límite, ilimitados, inventario faltante y roles ficticios.
+La ejecución final en storage_test_final pasó además reducción concurrente del límite,
+tamaño inválido y ruta de otra clínica. ESLint focalizado y las 11 pruebas unitarias
+del protocolo volvieron a pasar. Una ejecución intermedia detectó colisión de roles
+entre bases del mismo clúster: se corrigió usando roles con prefijo por base.
+No hay jobs ni puertos de app conectados a este prototipo. Las migraciones aditivas,
+el cierre de bypass y el QA de app siguen pendientes; Docker dejó de ser bloqueo.
+
 Estado: base de implementación revisable, no candidata de activación. No fusionar ni
 promover como control completo de cuotas hasta resolver los pendientes anteriores.
