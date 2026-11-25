@@ -66,6 +66,7 @@ type Props = {
   defaultDuration: number;
   canOverbook: boolean;
   defaultProfessionalId?: string;
+  defaultSharedRoomId?: string;
   initialStartAt?: string;
   initialWizardSlots?: {
     slots: Slot[];
@@ -281,6 +282,7 @@ export function TurnosNuevoWizard({
   defaultDuration,
   canOverbook,
   defaultProfessionalId,
+  defaultSharedRoomId,
   initialStartAt,
   initialWizardSlots,
 }: Props) {
@@ -310,7 +312,7 @@ export function TurnosNuevoWizard({
   }, [patientId, patientOptions, selectedPatient]);
   const [professionalId, setProfessionalId] = useState(() => defaultProfessional?.id ?? "");
   const [specialtyId, setSpecialtyId] = useState(() => defaultProfessional?.specialty_id ?? "");
-  const [locationId, setLocationId] = useState(() => defaultProfessional?.location_id ?? "");
+  const [locationId, setLocationId] = useState(() => defaultProfessional?.location_id ?? defaultSharedRoomId ?? "");
   const [slots, setSlots] = useState<Slot[]>(() => initialWizardSlots?.slots ?? []);
   const [bookedAppointments, setBookedAppointments] = useState<AppointmentAgendaRow[]>(
     () => initialWizardSlots?.appointments ?? []
@@ -472,19 +474,34 @@ export function TurnosNuevoWizard({
     setInsurancePlan(defaultInsurancePlanForProvider(provider));
   }, []);
 
+  const clearSharedRoomSlots = useCallback(() => {
+    setSlots([]);
+    setBookedAppointments([]);
+    setScheduleBlocks([]);
+    setSelectedDay(null);
+    setSelectedSlot(null);
+    setSelectedExisting(null);
+  }, []);
+
   const handleProfessionalChange = useCallback(
     (id: string) => {
       setProfessionalId(id);
       const pro = professionals.find((p) => p.id === id);
       if (pro?.specialty_id) setSpecialtyId(pro.specialty_id);
-      if (pro?.location_id) setLocationId(pro.location_id);
-      void loadProfessionalData(id);
+      if (defaultSharedRoomId) {
+        clearSharedRoomSlots();
+        if (!id) setLoadingSlots(false);
+      } else {
+        if (pro?.location_id) setLocationId(pro.location_id);
+        void loadProfessionalData(id);
+      }
     },
-    [loadProfessionalData, professionals]
+    [clearSharedRoomSlots, defaultSharedRoomId, loadProfessionalData, professionals]
   );
 
+  const slotProfessionalId = defaultSharedRoomId ? professionalId : defaultProfessional?.id;
   useEffect(() => {
-    const proId = defaultProfessional?.id;
+    const proId = slotProfessionalId;
     if (!proId) return;
 
     if (prefetchedProfessionalIdRef.current === proId) {
@@ -513,7 +530,7 @@ export function TurnosNuevoWizard({
       setBookedAppointments(result.appointments);
       setScheduleBlocks(result.scheduleBlocks);
 
-      if (!initialStartAt) return;
+      if (!initialStartAt || defaultSharedRoomId) return;
 
       const targetTime = parseISO(initialStartAt).getTime();
       const slot =
@@ -529,7 +546,7 @@ export function TurnosNuevoWizard({
     return () => {
       cancelled = true;
     };
-  }, [defaultProfessional?.id, initialStartAt, initialWizardSlots, locationId]);
+  }, [defaultSharedRoomId, initialStartAt, initialWizardSlots, locationId, slotProfessionalId]);
 
   const handleSelectFreeSlot = useCallback((slot: Slot) => {
     setSelectedSlot(slot);
@@ -718,9 +735,12 @@ export function TurnosNuevoWizard({
               <Select
                 label="Consultorio"
                 value={locationId}
-                onChange={(e) => setLocationId(e.target.value)}
+                onChange={(e) => {
+                  if (defaultSharedRoomId) clearSharedRoomSlots();
+                  setLocationId(e.target.value);
+                }}
                 options={[
-                  { value: "", label: "Sin especificar" },
+                  ...(defaultSharedRoomId ? [] : [{ value: "", label: "Sin especificar" }]),
                   ...locations.map((l) => ({ value: l.id, label: l.name })),
                 ]}
               />

@@ -5701,6 +5701,10 @@ export type Database = {
         Returns: number
       }
       feature_usage_period_start: { Args: { p_at?: string }; Returns: string }
+      get_lamejor_demo_room_busy: {
+        Args: { p_location_id: string; p_range_start: string; p_range_end: string }
+        Returns: { start_at: string; end_at: string }[]
+      }
       get_clinic_entitlement_usage: {
         Args: { p_clinic_id: string }
         Returns: Json

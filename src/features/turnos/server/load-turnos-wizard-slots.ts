@@ -9,6 +9,13 @@ import { selectAppointmentAgendaRows } from "@/core/supabase/appointment-agenda-
 import { getAppointmentHorizonDaysAhead } from "@/lib/utils/appointment-booking-horizon";
 import type { Database } from "@/types/supabase";
 
+export function getSharedDemoRoomId(clinicId: string | null | undefined) {
+  if (process.env.APP_ENV === "fiscalization" && clinicId === "3e31ffeb-052f-46d2-9eeb-2f69fb1b34fa") {
+    return "9572c488-e9cb-4021-af8d-7f93a03d9f71";
+  }
+  return undefined;
+}
+
 export async function loadTurnosWizardSlots(
   supabase: SupabaseClient<Database>,
   clinicId: string,
@@ -28,7 +35,16 @@ export async function loadTurnosWizardSlots(
     .eq("professional_id", professionalId)
     .eq("is_active", true);
 
-  const [{ data: rulesRaw }, agendaResult, { data: blocks }] = await Promise.all([
+  const sharedRoom = getSharedDemoRoomId(clinicId);
+  const roomBusyQuery = sharedRoom
+    ? supabase.rpc("get_lamejor_demo_room_busy", {
+        p_location_id: locationId ?? sharedRoom,
+        p_range_start: rangeStart,
+        p_range_end: rangeEnd,
+      })
+    : Promise.resolve(null);
+
+  const [{ data: rulesRaw }, agendaResult, { data: blocks }, roomBusy] = await Promise.all([
     rulesQuery,
     selectAppointmentAgendaRows(supabase, {
       clinicId,
@@ -45,18 +61,17 @@ export async function loadTurnosWizardSlots(
       .or(`professional_id.is.null,professional_id.eq.${professionalId}`)
       .gte("start_at", rangeStart)
       .lte("start_at", rangeEnd),
+    roomBusyQuery,
   ]);
 
   const rules = filterAvailabilityRulesByLocation(rulesRaw ?? [], locationId);
 
   const appointmentRows = agendaResult.rows;
-  const blockRows = (blocks ?? []).map((block) => ({
-    start_at: block.start_at,
-    end_at: block.end_at,
-    reason: block.reason as string | null,
-  }));
-
-  const slots = generateAvailableSlots({
+  const blockRows = [
+    ...(blocks ?? []),
+    ...(roomBusy?.data ?? []).map((interval) => ({ ...interval, reason: "Consultorio ocupado" })),
+  ];
+  const slots = roomBusy?.error ? [] : generateAvailableSlots({
     rules: rules ?? [],
     appointments: appointmentRows.map((row) => ({
       start_at: row.start_at,
