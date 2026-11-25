@@ -8,7 +8,7 @@ import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 import { patientFichaPath } from "@/shared/utils/clinical-navigation";
 
 import { Button } from "@/components/ui/button";
-import { canStartConsultation } from "@/lib/utils/appointment";
+import { canStartConsultation, isLaMejorDemoOnlineAppointment } from "@/lib/utils/appointment";
 
 const agendaBtn =
   "border-slate-500/80 bg-slate-700/90 text-slate-50 hover:bg-slate-600 hover:border-slate-400";
@@ -39,6 +39,9 @@ export function AppointmentRowActions({
   setStatus,
   onCancel,
 }: Props) {
+  const pendingOnlineConfirmation =
+    appointment.status === "pending" && isLaMejorDemoOnlineAppointment(appointment);
+
   return (
     <div className="flex flex-wrap gap-2">
       <Link href={patientFichaPath(appointment.patient_id)}>
@@ -48,7 +51,7 @@ export function AppointmentRowActions({
         </Button>
       </Link>
 
-      {canStartClinical && canStartConsultation(appointment.status) && (
+      {canStartClinical && !pendingOnlineConfirmation && canStartConsultation(appointment.status) && (
         <Link href={startHref}>
           <Button type="button" size="sm">
             <Play className="h-3.5 w-3.5" />
@@ -99,7 +102,7 @@ export function AppointmentRowActions({
           onClick={() => setStatus("confirmed")}
         >
           <Check className="h-3.5 w-3.5" />
-          Confirmar
+          {pendingOnlineConfirmation ? "Confirmar turno online" : "Confirmar"}
         </Button>
       )}
 

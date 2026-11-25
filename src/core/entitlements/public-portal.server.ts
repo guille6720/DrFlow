@@ -7,6 +7,8 @@ import { FEATURES } from "@/core/entitlements/features";
 import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { createClient } from "@/core/supabase/server";
 
+import { LAMEJOR_DEMO_CLINIC_ID } from "@/lib/utils/appointment";
+
 export function isLaMejorDemoPortalSlug(slug: string): boolean {
   return process.env.APP_ENV === "fiscalization" && slug === "nexclinic-demo-medica-15d";
 }
@@ -18,8 +20,8 @@ export const getLaMejorDemoPublicPortal = cache(async (slug: string) => {
 
   const { data } = await createAdminClient()
     .from("clinics")
-    .select("id, name")
-    .eq("id", "3e31ffeb-052f-46d2-9eeb-2f69fb1b34fa")
+    .select("id, name, trial_ends_at")
+    .eq("id", LAMEJOR_DEMO_CLINIC_ID)
     .eq("slug", slug)
     .eq("is_fiscalization", true)
     .eq("is_active", true)

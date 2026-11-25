@@ -123,6 +123,7 @@ export function PatientPortalView({
             slug={slug}
             clinicName={clinicName}
             refreshTrigger={portal.requestsVersion}
+            demoBooking={demoBooking}
           />
         )}
       </main>

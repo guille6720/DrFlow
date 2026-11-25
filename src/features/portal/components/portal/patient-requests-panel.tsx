@@ -11,10 +11,11 @@ interface Props {
   slug: string;
   clinicName: string;
   refreshTrigger?: number;
+  demoBooking?: boolean;
 }
 
-export function PatientRequestsPanel({ slug, clinicName, refreshTrigger = 0 }: Props) {
-  const panel = usePatientRequestsPanel({ slug, refreshTrigger });
+export function PatientRequestsPanel({ slug, clinicName, refreshTrigger = 0, demoBooking = false }: Props) {
+  const panel = usePatientRequestsPanel({ slug, refreshTrigger, demoBooking });
 
   return (
     <div className="space-y-4">
@@ -24,10 +25,11 @@ export function PatientRequestsPanel({ slug, clinicName, refreshTrigger = 0 }: P
           <div>
             <p className="font-semibold text-slate-900">Mis turnos y solicitudes</p>
             <p className="mt-1 text-sm text-slate-600">
-              Acá ves el estado de tus pedidos a {clinicName}. Podés cancelar turnos confirmados o
-              pendientes.
+              {demoBooking
+                ? <>Acá ves el estado de los turnos de prueba que pediste a {clinicName} desde este navegador.</>
+                : <>Acá ves el estado de tus pedidos a {clinicName}. Podés cancelar turnos confirmados o pendientes.</>}
             </p>
-            <p className="mt-2 text-xs text-slate-500">Acceso protegido al Portal del Paciente.</p>
+            {!demoBooking && <p className="mt-2 text-xs text-slate-500">Acceso protegido al Portal del Paciente.</p>}
           </div>
         </div>
       </div>
@@ -61,13 +63,13 @@ export function PatientRequestsPanel({ slug, clinicName, refreshTrigger = 0 }: P
         </p>
       )}
 
-      {!panel.authenticated && !panel.loadError ? (
+      {!demoBooking && !panel.authenticated && !panel.loadError ? (
         <p className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
           Para ver tus turnos necesitás ingresar desde el enlace seguro enviado por el consultorio.
         </p>
       ) : null}
 
-      {panel.authenticated && panel.items.length === 0 && !panel.loadError ? (
+      {(panel.authenticated || demoBooking) && panel.items.length === 0 && !panel.loadError && !panel.refreshing ? (
         <p className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
           No tenés turnos online para mostrar. Podés pedir uno nuevo desde Inicio.
         </p>

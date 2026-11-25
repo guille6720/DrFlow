@@ -12,6 +12,7 @@ export type PatientPortalAppointmentRow = {
   professionalName: string | null;
   patientName: string;
   createdAt: string;
+  trackingOnly?: boolean;
 };
 
 export type PatientRequestItem = {
@@ -27,6 +28,7 @@ export type PatientRequestItem = {
   cancelledAt?: string | null;
   cancelledByType?: string | null;
   professionalName?: string | null;
+  trackingOnly?: boolean;
 };
 
 export function mapPortalAppointmentToRequestItem(
@@ -45,6 +47,7 @@ export function mapPortalAppointmentToRequestItem(
     cancelledAt: row.cancelledAt,
     cancelledByType: row.cancelledByType,
     professionalName: row.professionalName,
+    ...(row.trackingOnly ? { trackingOnly: true } : {}),
   };
 }
 

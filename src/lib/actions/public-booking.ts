@@ -1,18 +1,19 @@
 "use server";
 
-import { isLaMejorDemoPortalSlug, isPublicPortalAllowedForSlug } from "@/core/entitlements/public-portal.server";
+import { getLaMejorDemoPublicPortal, isLaMejorDemoPortalSlug, isPublicPortalAllowedForSlug } from "@/core/entitlements/public-portal.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import {
   CONSENT_TYPES,
   LEGAL_PATIENT_NOTICE_VERSION,
 } from "@/core/legal/documents";
+import { readDemoBookingIds, rememberDemoBooking } from "@/core/portal/demo-booking-cookie";
 import {
   getPortalAuthErrorMessage,
   getPortalSessionRequiredMessage,
   readPatientPortalToken,
 } from "@/core/portal/patient-portal-cookie";
-import { nullToUndefined } from "@/core/supabase/json";
 import { createAdminClient } from "@/core/supabase/admin";
+import { nullToUndefined } from "@/core/supabase/json";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
 import {
@@ -23,6 +24,8 @@ import {
   publicBookingStatusesSchema,
 } from "@/core/validations/public-booking";
 import { sanitizeText } from "@/core/validations/schemas";
+
+import type { PatientPortalAppointmentRow } from "@/features/portal/utils/patient-portal-appointments";
 
 const PORTAL_UNAVAILABLE = "La reserva online no está disponible.";
 
@@ -58,7 +61,10 @@ export async function submitPublicBooking(formData: FormData) {
     if (!parsed.success || !Number.isFinite(Date.parse(startAt))) {
       return { error: "Seleccioná un profesional y un horario disponible." };
     }
-    if (!(await isPublicPortalAllowedForSlug(slug))) return { error: PORTAL_UNAVAILABLE };
+    const clinic = await getLaMejorDemoPublicPortal(slug);
+    if (!clinic?.trial_ends_at || !(await isPublicPortalAllowedForSlug(slug))) {
+      return { error: PORTAL_UNAVAILABLE };
+    }
 
     const { data, error } = await createAdminClient().rpc("submit_lamejor_demo_online_booking", {
       p_professional_id: parsed.data.professional_id,
@@ -71,6 +77,7 @@ export async function submitPublicBooking(formData: FormData) {
           : "No pudimos registrar la solicitud de prueba. Intentá de nuevo.",
       };
     }
+    await rememberDemoBooking(data, new Date(clinic.trial_ends_at));
     return { success: true, appointmentId: data, startAt, documentNumber: "" };
   }
 
@@ -233,21 +240,64 @@ export async function cancelPatientAppointment(
   return { success: true };
 }
 
+async function fetchDemoPortalAppointments(slug: string): Promise<{
+  appointments: PatientPortalAppointmentRow[];
+  error?: string;
+}> {
+  if (!isLaMejorDemoPortalSlug(slug)) return { appointments: [] };
+  const ids = await readDemoBookingIds();
+  if (!ids.length) return { appointments: [] };
+
+  const clinic = await getLaMejorDemoPublicPortal(slug);
+  if (!clinic || !(await isPublicPortalAllowedForSlug(slug))) {
+    return { appointments: [], error: PORTAL_UNAVAILABLE };
+  }
+
+  const { data, error } = await createAdminClient()
+    .from("appointments")
+    .select("id, status, start_at, end_at, created_at, cancelled_at, cancelled_by_type, patients!inner(document_number), professionals(display_name)")
+    .eq("clinic_id", clinic.id)
+    .eq("booking_source", "online")
+    .eq("patients.document_number", "NEX-DEMO-ONLINE")
+    .in("id", ids);
+
+  if (error) return { appointments: [], error: "No pudimos consultar tus turnos" };
+  return {
+    appointments: (data ?? []).map((row) => ({
+      appointmentId: row.id,
+      status: row.status,
+      startAt: row.start_at,
+      endAt: row.end_at,
+      bookingSource: "online",
+      cancellationReason: null,
+      cancelledAt: row.cancelled_at,
+      cancelledByType: row.cancelled_by_type,
+      professionalName: row.professionals?.display_name ?? null,
+      patientName: "Paciente de prueba",
+      createdAt: row.created_at,
+      trackingOnly: true,
+    })),
+  };
+}
+
 export async function fetchPatientPortalAppointments(slug: string) {
   const parsed = publicBookingPortalAppointmentsSchema.safeParse({ slug });
   if (!parsed.success) {
     return { error: firstZodIssue(parsed.error), appointments: [], authenticated: false };
   }
 
-  const token = await readPatientPortalToken();
+  const [token, demo] = await Promise.all([
+    readPatientPortalToken(),
+    fetchDemoPortalAppointments(parsed.data.slug),
+  ]);
   if (!token) {
     // No session yet — UI shows the secure-link prompt (not a hard error).
-    return { appointments: [], authenticated: false };
+    return { ...demo, authenticated: false };
   }
 
   const auth = await requireValidPortalToken(parsed.data.slug);
   if (!auth.ok) {
-    return { error: auth.error, appointments: [], authenticated: false };
+    return { ...demo, error: auth.error, authenticated: false };
   }
 
   const supabase = await createClient();
@@ -260,7 +310,7 @@ export async function fetchPatientPortalAppointments(slug: string) {
   });
 
   if (error) {
-    return { error: "No pudimos consultar tus turnos", appointments: [], authenticated: true };
+    return { ...demo, error: "No pudimos consultar tus turnos", authenticated: true };
   }
 
   const appointments = (data ?? []).map(
@@ -291,7 +341,12 @@ export async function fetchPatientPortalAppointments(slug: string) {
     })
   );
 
-  return { appointments, authenticated: true };
+  const existingIds = new Set(appointments.map((appointment) => appointment.appointmentId));
+  return {
+    error: demo.error,
+    appointments: [...appointments, ...demo.appointments.filter((appointment) => !existingIds.has(appointment.appointmentId))],
+    authenticated: true,
+  };
 }
 
 export async function loadPublicBookingSlots(

@@ -18,6 +18,7 @@ import { appointmentSchema, sanitizeText, updateAppointmentBodySchema } from "@/
 import { recordAppointmentStatusHistory } from "@/features/turnos/server/record-appointment-status-history";
 
 import type { ConsultationModality } from "@/lib/constants/consultation-modality";
+import { isLaMejorDemoOnlineAppointment } from "@/lib/utils/appointment";
 import type { Database } from "@/types/supabase";
 
 type AppointmentUpdate = Database["public"]["Tables"]["appointments"]["Update"];
@@ -246,7 +247,7 @@ async function updateAppointmentStatusInternal(
 
   const { data: before } = await supabase
     .from("appointments")
-    .select("id, start_at, patient_id, status, waiting_room_status, patients(first_name, last_name, phone)")
+    .select("id, clinic_id, start_at, patient_id, status, booking_source, waiting_room_status, patients(first_name, last_name, phone)")
     .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
@@ -275,16 +276,25 @@ async function updateAppointmentStatusInternal(
     updatePayload.consultation_modality = modalityParsed.data;
   }
 
-  const { error } = await updateAppointmentRow(
-    supabase,
-    idParsed.data,
-    clinicId,
-    updatePayload
-  );
+  let updateError;
+  const demoOnline = process.env.APP_ENV === "fiscalization" && before && isLaMejorDemoOnlineAppointment(before);
+  if (demoOnline && statusParsed.data === "confirmed") {
+    const { data: confirmed, error } = await supabase.from("appointments")
+      .update(updatePayload)
+      .eq("id", idParsed.data)
+      .eq("clinic_id", clinicId)
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
+    if (!error && !confirmed) return { error: "El turno ya no está pendiente de confirmación." };
+    updateError = error;
+  } else {
+    ({ error: updateError } = await updateAppointmentRow(supabase, idParsed.data, clinicId, updatePayload));
+  }
 
-  if (error) {
+  if (updateError) {
     return {
-      error: resolvePostgresUserMessage(error, { fallback: error.message }),
+      error: resolvePostgresUserMessage(updateError, { fallback: updateError.message }),
     };
   }
 
@@ -330,7 +340,7 @@ async function updateAppointmentStatusInternal(
   return {
     success: true,
     whatsapp:
-      statusParsed.data === "confirmed" && patientRow?.phone
+      statusParsed.data === "confirmed" && !demoOnline && patientRow?.phone
         ? {
             phone: patientRow.phone,
             firstName: patientRow.first_name,
@@ -352,7 +362,7 @@ export async function startConsultationFromAppointment(appointmentId: string) {
   if (!idParsed.ok) return { error: idParsed.error };
   const { data: appointment } = await supabase
     .from("appointments")
-    .select("id, status, patient_id, professional_id")
+    .select("id, clinic_id, status, patient_id, professional_id, booking_source")
     .eq("id", idParsed.data)
     .eq("clinic_id", clinicId)
     .single();
@@ -360,6 +370,9 @@ export async function startConsultationFromAppointment(appointmentId: string) {
   if (!appointment) return { error: "Turno no encontrado" };
 
   if (appointment.status === "pending") {
+    if (process.env.APP_ENV === "fiscalization" && isLaMejorDemoOnlineAppointment(appointment)) {
+      return { error: "Confirmá el turno online desde la agenda antes de iniciar la consulta." };
+    }
     await supabase
       .from("appointments")
       .update({ status: "confirmed", updated_at: new Date().toISOString() })

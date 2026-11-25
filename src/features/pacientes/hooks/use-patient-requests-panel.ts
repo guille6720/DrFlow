@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import {
   getWhatsappPatientRequests,
@@ -21,6 +21,7 @@ import {
 type Options = {
   slug: string;
   refreshTrigger?: number;
+  demoBooking?: boolean;
 };
 
 function mapWhatsappRequest(record: PatientRequestRecord): PatientRequestItem {
@@ -35,7 +36,7 @@ function mapWhatsappRequest(record: PatientRequestRecord): PatientRequestItem {
   };
 }
 
-export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
+export function usePatientRequestsPanel({ slug, refreshTrigger = 0, demoBooking = false }: Options) {
   const [authenticated, setAuthenticated] = useState(false);
   const [items, setItems] = useState<PatientRequestItem[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -45,30 +46,49 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
   const [cancelReason, setCancelReason] = useState("");
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [cancelling, startCancel] = useTransition();
+  const latestRequest = useRef(0);
 
   const loadAppointments = useCallback(() => {
+    const request = ++latestRequest.current;
     startRefresh(async () => {
       setLoadError(null);
       const result = await fetchPatientPortalAppointments(slug);
+      if (request !== latestRequest.current) return;
       setAuthenticated(Boolean(result.authenticated));
       if (result.error) {
         setLoadError(result.error);
       }
 
       const serverItems = (result.appointments ?? []).map(mapPortalAppointmentToRequestItem);
-      const localWhatsapp = result.authenticated
+      const localWhatsapp = result.authenticated && !demoBooking
         ? getWhatsappPatientRequests(slug).map(mapWhatsappRequest)
         : [];
 
       setItems(mergePatientRequestItems(serverItems, localWhatsapp));
     });
-  }, [slug]);
+  }, [slug, demoBooking]);
 
   useEffect(() => {
     queueMicrotask(() => {
       loadAppointments();
     });
   }, [slug, refreshTrigger, loadAppointments]);
+
+  const pendingDemoBooking = demoBooking && items.some((item) => item.trackingOnly && item.status === "pending");
+  useEffect(() => {
+    if (!pendingDemoBooking) return;
+
+    function refreshWhenVisible() {
+      if (document.visibilityState === "visible") loadAppointments();
+    }
+
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    const timer = window.setInterval(refreshWhenVisible, 15_000);
+    return () => {
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+      window.clearInterval(timer);
+    };
+  }, [pendingDemoBooking, loadAppointments]);
 
   const handleRefresh = () => {
     loadAppointments();
@@ -77,6 +97,7 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
   const handleLogout = () => {
     startLogout(async () => {
       await logoutPatientPortalSession();
+      latestRequest.current++;
       setAuthenticated(false);
       setItems([]);
       setLoadError(null);
@@ -88,7 +109,7 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0 }: Options) {
   const isCancelled = (request: PatientRequestItem) => request.status === "cancelled";
 
   const canCancel = (request: PatientRequestItem) => {
-    if (!request.appointmentId) return false;
+    if (!request.appointmentId || request.trackingOnly) return false;
     return request.status === "pending" || request.status === "confirmed";
   };
 
