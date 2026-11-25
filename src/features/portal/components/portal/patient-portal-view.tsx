@@ -31,6 +31,7 @@ interface Props {
   doctor?: DoctorShareInfo | null;
   offersPami?: boolean;
   portalError?: boolean;
+  demoBooking?: boolean;
 }
 
 /** App pacientes estilo Crontu: inicio con accesos grandes + navegación inferior. */
@@ -43,6 +44,7 @@ export function PatientPortalView({
   doctor,
   offersPami = false,
   portalError = false,
+  demoBooking = false,
 }: Props) {
   const portal = usePatientPortal({ slug, clinicName, doctor, offersPami });
 
@@ -65,7 +67,8 @@ export function PatientPortalView({
             clinicPhone={clinicPhone}
             portalReady={portal.portalReady}
             setPortalReady={portal.setPortalReady}
-            quickActions={portal.quickActions}
+            quickActions={demoBooking ? portal.quickActions.filter((action) => action.id !== "whatsapp") : portal.quickActions}
+            demoBooking={demoBooking}
             setScreen={portal.setScreen}
           />
         )}
@@ -73,7 +76,7 @@ export function PatientPortalView({
         {portal.screen === "turno" &&
           (professionals.length === 0 ? (
             <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              Turnos online no disponibles. Usá WhatsApp para contactar al consultorio.
+              {demoBooking ? "Por ahora no hay profesionales disponibles para pedir turno." : "Turnos online no disponibles. Usá WhatsApp para contactar al consultorio."}
             </p>
           ) : (
             <PublicBookingForm
@@ -81,10 +84,15 @@ export function PatientPortalView({
               clinicName={clinicName}
               professionals={professionals}
               onRequestSaved={portal.bumpRequestsVersion}
+              demoBooking={demoBooking}
             />
           ))}
 
-        {portal.screen === "receta" && (
+        {portal.screen === "receta" && (demoBooking ? (
+          <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
+            La solicitud de recetas no está habilitada en esta demo.
+          </p>
+        ) : (
           <PatientPortalRecetaScreen
             offersPami={offersPami}
             clinicPhone={clinicPhone}
@@ -99,9 +107,9 @@ export function PatientPortalView({
             recetaMessage={portal.recetaMessage}
             logWhatsappRequest={portal.logWhatsappRequest}
           />
-        )}
+        ))}
 
-        {portal.screen === "whatsapp" && (
+        {!demoBooking && portal.screen === "whatsapp" && (
           <PatientPortalWhatsappScreen
             clinicName={clinicName}
             clinicPhone={clinicPhone}

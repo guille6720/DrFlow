@@ -5701,6 +5701,14 @@ export type Database = {
         Returns: number
       }
       feature_usage_period_start: { Args: { p_at?: string }; Returns: string }
+      get_lamejor_demo_online_slots: {
+        Args: { p_professional_id: string }
+        Returns: { start_at: string; end_at: string; location_id: string }[]
+      }
+      submit_lamejor_demo_online_booking: {
+        Args: { p_professional_id: string; p_start_at: string }
+        Returns: string
+      }
       get_lamejor_demo_room_busy: {
         Args: { p_location_id: string; p_range_start: string; p_range_end: string }
         Returns: { start_at: string; end_at: string }[]

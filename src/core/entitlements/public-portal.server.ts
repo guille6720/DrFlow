@@ -29,6 +29,20 @@ export const getLaMejorDemoPublicPortal = cache(async (slug: string) => {
   return data;
 });
 
+export async function getLaMejorDemoBookingProfessionals(clinicId: string) {
+  const admin = createAdminClient();
+  const { data: flag } = await admin.from("clinic_feature_flags")
+    .select("enabled").eq("clinic_id", clinicId).eq("flag_id", "public_booking_online").maybeSingle();
+  if (!flag?.enabled) return [];
+
+  const { data } = await admin.from("professionals")
+    .select("id, display_name").eq("clinic_id", clinicId).eq("is_active", true)
+    .is("user_id", null).in("license_number", ["DEMO-1", "DEMO-2", "DEMO-3", "DEMO-4", "DEMO-5"])
+    .order("display_name");
+
+  return data ?? [];
+}
+
 export async function clinicIdForPublicSlug(slug: string): Promise<string | null> {
   if (isLaMejorDemoPortalSlug(slug)) {
     return (await getLaMejorDemoPublicPortal(slug))?.id ?? null;

@@ -32,9 +32,10 @@ interface Props {
   clinicName: string;
   professionals: Professional[];
   onRequestSaved?: () => void;
+  demoBooking?: boolean;
 }
 
-export function PublicBookingForm({ slug, clinicName, professionals, onRequestSaved }: Props) {
+export function PublicBookingForm({ slug, clinicName, professionals, onRequestSaved, demoBooking = false }: Props) {
   const router = useRouter();
   const [professionalId, setProfessionalId] = useState("");
   const [startAt, setStartAt] = useState("");
@@ -57,8 +58,8 @@ export function PublicBookingForm({ slug, clinicName, professionals, onRequestSa
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    const formData = new FormData(e.currentTarget);
     startSubmit(async () => {
-      const formData = new FormData(e.currentTarget);
       formData.set("slug", slug);
       formData.set("professional_id", professionalId);
       formData.set("start_at", startAt);
@@ -86,8 +87,9 @@ export function PublicBookingForm({ slug, clinicName, professionals, onRequestSa
           <CheckCircle2 className="h-14 w-14 text-emerald-600" />
           <h2 className="mt-4 text-xl font-bold text-slate-900">¡Solicitud enviada!</h2>
           <p className="mt-2 max-w-sm text-sm text-slate-600">
-            {clinicName} recibió tu pedido por <strong>web</strong>. Para ver el estado necesitás el
-            enlace seguro enviado por el consultorio (Mis turnos).
+            {demoBooking
+              ? "La solicitud de prueba quedó pendiente en la agenda del consultorio."
+              : <>{clinicName} recibió tu pedido por <strong>web</strong>. Para ver el estado necesitás el enlace seguro enviado por el consultorio (Mis turnos).</>}
           </p>
         </div>
       </Card>
@@ -149,7 +151,13 @@ export function PublicBookingForm({ slug, clinicName, professionals, onRequestSa
           </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        {demoBooking ? (
+          <p className="text-sm text-slate-600">
+            La prueba usa un paciente ficticio y asigna un consultorio libre.
+          </p>
+        ) : (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2">
           <Input name="first_name" label="Nombre" required />
           <Input name="last_name" label="Apellido" required />
           <Input name="document_number" label="DNI" required />
@@ -157,7 +165,9 @@ export function PublicBookingForm({ slug, clinicName, professionals, onRequestSa
           <Input name="email" label="Email" type="email" className="sm:col-span-2" />
         </div>
 
-        <Textarea name="reason" label="Motivo de consulta (opcional)" rows={2} />
+            <Textarea name="reason" label="Motivo de consulta (opcional)" rows={2} />
+          </>
+        )}
 
         <p className="text-xs text-slate-500">
           Tu turno quedará <strong>pendiente</strong> hasta que el consultorio lo confirme.
@@ -167,7 +177,7 @@ export function PublicBookingForm({ slug, clinicName, professionals, onRequestSa
           <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
         )}
 
-        <PatientDataConsentCheckbox slug={slug} />
+        {!demoBooking && <PatientDataConsentCheckbox slug={slug} />}
 
         <Button
           type="submit"

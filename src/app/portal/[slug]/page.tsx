@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import {
+  getLaMejorDemoBookingProfessionals,
   getLaMejorDemoPublicPortal,
   isLaMejorDemoPortalSlug,
   isPublicPortalAllowedForClinic,
@@ -28,7 +29,9 @@ export async function generateMetadata({
   }
   return {
     title: `App pacientes — ${slug} | NexClinic`,
-    description: "Pedí turno, recetas y contactá a tu consultorio por WhatsApp.",
+    description: isLaMejorDemoPortalSlug(slug)
+      ? "Probá el portal de pacientes y solicitá un turno ficticio."
+      : "Pedí turno, recetas y contactá a tu consultorio por WhatsApp.",
   };
 }
 
@@ -63,7 +66,8 @@ export default async function PatientPortalPage({
         clinicName={demo.name}
         clinicPhone={null}
         clinicAddress={null}
-        professionals={[]}
+        professionals={await getLaMejorDemoBookingProfessionals(demo.id)}
+        demoBooking
         portalError={portalError}
       />
     );

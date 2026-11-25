@@ -1,6 +1,6 @@
 "use server";
 
-import { isPublicPortalAllowedForSlug } from "@/core/entitlements/public-portal.server";
+import { isLaMejorDemoPortalSlug, isPublicPortalAllowedForSlug } from "@/core/entitlements/public-portal.server";
 import { resolvePostgresUserMessage } from "@/core/errors/postgres-error";
 import {
   CONSENT_TYPES,
@@ -12,6 +12,7 @@ import {
   readPatientPortalToken,
 } from "@/core/portal/patient-portal-cookie";
 import { nullToUndefined } from "@/core/supabase/json";
+import { createAdminClient } from "@/core/supabase/admin";
 import { createClient } from "@/core/supabase/server";
 import { firstZodIssue } from "@/core/validations/params";
 import {
@@ -50,6 +51,29 @@ async function requireValidPortalToken(slug: string): Promise<
 }
 
 export async function submitPublicBooking(formData: FormData) {
+  const slug = String(formData.get("slug") ?? "");
+  if (isLaMejorDemoPortalSlug(slug)) {
+    const parsed = publicBookingSlotsSchema.safeParse({ slug, professional_id: formData.get("professional_id") });
+    const startAt = String(formData.get("start_at") ?? "");
+    if (!parsed.success || !Number.isFinite(Date.parse(startAt))) {
+      return { error: "Seleccioná un profesional y un horario disponible." };
+    }
+    if (!(await isPublicPortalAllowedForSlug(slug))) return { error: PORTAL_UNAVAILABLE };
+
+    const { data, error } = await createAdminClient().rpc("submit_lamejor_demo_online_booking", {
+      p_professional_id: parsed.data.professional_id,
+      p_start_at: startAt,
+    });
+    if (error || !data) {
+      return {
+        error: error?.message === "SLOT_NOT_AVAILABLE" || error?.code === "23P01"
+          ? "El horario ya no está disponible. Elegí otro."
+          : "No pudimos registrar la solicitud de prueba. Intentá de nuevo.",
+      };
+    }
+    return { success: true, appointmentId: data, startAt, documentNumber: "" };
+  }
+
   const parsed = publicBookingSchema.safeParse({
     slug: formData.get("slug"),
     professional_id: formData.get("professional_id"),
@@ -282,6 +306,22 @@ export async function loadPublicBookingSlots(
   const supabase = await createClient();
   if (!(await isPublicPortalAllowedForSlug(parsed.data.slug))) {
     return { error: PORTAL_UNAVAILABLE, slots: [] };
+  }
+
+  if (isLaMejorDemoPortalSlug(parsed.data.slug)) {
+    const { data, error } = await createAdminClient().rpc("get_lamejor_demo_online_slots", {
+      p_professional_id: parsed.data.professional_id,
+    });
+    if (error) return { error: "No pudimos consultar los horarios.", slots: [] };
+
+    const { formatClinicDateTime, DEFAULT_CLINIC_TIMEZONE } = await import("@/shared/utils/clinic-timezone");
+    const unique = new Map((data ?? []).map(({ start_at, end_at }) => [start_at, { start_at, end_at }]));
+    return {
+      slots: Array.from(unique.values()).map((slot) => ({
+        ...slot,
+        label: formatClinicDateTime(new Date(slot.start_at), "EEE d 'de' MMM · HH:mm 'hs'", DEFAULT_CLINIC_TIMEZONE),
+      })),
+    };
   }
 
   const { data: link } = await supabase

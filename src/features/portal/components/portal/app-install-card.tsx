@@ -37,6 +37,7 @@ interface AppInstallCardProps {
   className?: string;
   /** En portal pacientes: ocultar tras instalar la app */
   portalMode?: boolean;
+  patientDescription?: string;
   onPortalReady?: () => void;
 }
 
@@ -47,6 +48,7 @@ export function AppInstallCard({
   compact = false,
   className,
   portalMode = false,
+  patientDescription,
   onPortalReady,
 }: AppInstallCardProps) {
   const [deferredPrompt, setDeferredPrompt] =
@@ -63,7 +65,7 @@ export function AppInstallCard({
       : "App NexClinic para pacientes";
   const subtitle = isClinic
     ? "Agregá NexClinic a la pantalla de inicio para acceder al dashboard y la agenda."
-    : "Agregá la app a la pantalla de inicio para pedir turnos, recetas y WhatsApp.";
+    : (patientDescription ?? "Agregá la app a la pantalla de inicio para pedir turnos, recetas y WhatsApp.");
 
   const markInstalled = useCallback(() => {
     if (portalMode && slug) {

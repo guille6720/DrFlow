@@ -14,6 +14,7 @@ type Props = Pick<PatientPortalState, "quickActions" | "setScreen"> & {
   clinicAddress: string | null;
   clinicPhone: string | null;
   portalReady: boolean;
+  demoBooking?: boolean;
   setPortalReady: (ready: boolean) => void;
 };
 
@@ -25,6 +26,7 @@ export function PatientPortalHomeScreen({
   portalReady,
   setPortalReady,
   quickActions,
+  demoBooking = false,
   setScreen,
 }: Props) {
   return (
@@ -35,6 +37,7 @@ export function PatientPortalHomeScreen({
             slug={slug}
             clinicName={clinicName}
             portalMode
+            patientDescription={demoBooking ? "Agregá la app a la pantalla de inicio para probar los turnos online." : undefined}
             className="mb-4"
             onPortalReady={() => setPortalReady(true)}
           />
