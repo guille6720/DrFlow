@@ -19,6 +19,8 @@ export default async function DashboardPage() {
   const { profile, clinics, clinicId, clinic, role, isSuperadmin, permissionOverrides } = shell;
   const clinicDisplayName = resolveClinicDisplayName(clinicId, clinic, clinics) ?? "Consultorio";
   const now = new Date();
+  const showCenteredUser =
+    process.env.APP_ENV === "fiscalization" && clinicId === "3e31ffeb-052f-46d2-9eeb-2f69fb1b34fa";
 
   return (
     <>
@@ -29,6 +31,7 @@ export default async function DashboardPage() {
         activeClinicId={clinicId}
         role={role}
         userName={profile?.full_name}
+        centerUserIdentity={showCenteredUser}
         isSuperadmin={isSuperadmin}
       />
 

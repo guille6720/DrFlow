@@ -1,6 +1,6 @@
 "use client";
 
-import { Palette, Settings, SlidersHorizontal } from "lucide-react";
+import { Palette, Settings, SlidersHorizontal, UserRound } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
 
@@ -27,6 +27,7 @@ interface HeaderProps {
   activeClinicId?: string | null;
   role: UserRole | null;
   userName?: string;
+  centerUserIdentity?: boolean;
   isSuperadmin?: boolean;
   compact?: boolean;
 }
@@ -40,6 +41,7 @@ export function Header({
   activeClinicId,
   role,
   userName,
+  centerUserIdentity = false,
   isSuperadmin = false,
   compact = false,
 }: HeaderProps) {
@@ -49,6 +51,7 @@ export function Header({
   const theme = useUiThemeOptional();
   /** Prefer light chrome until theme hydrates — avoids pale ink on white topbar. */
   const shellDark = theme?.clinicalDark ?? false;
+  const showCenteredIdentity = Boolean(centerUserIdentity && userName && role);
 
   return (
     <header
@@ -58,7 +61,12 @@ export function Header({
         compact && "nexclinic-patient-header-compact"
       )}
     >
-      <div className="grid min-w-0 grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
+      <div className={cn(
+        "grid min-w-0 grid-cols-1 gap-3 xl:items-center",
+        showCenteredIdentity
+          ? "xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+          : "xl:grid-cols-[minmax(0,1fr)_auto]"
+      )}>
         <div className="min-w-0 pl-12 lg:pl-0">
           <h1
             id={titleId}
@@ -76,6 +84,16 @@ export function Header({
           )}
           {meta ? <div className="mt-2 min-w-0">{meta}</div> : null}
         </div>
+        {showCenteredIdentity && role && (
+          <div role="group" aria-label="Usuario y rol" className="min-w-0 text-center">
+            <p className={cn("break-words text-base font-semibold", shellDark ? "text-slate-100" : "text-slate-900")}>
+              {userName}
+            </p>
+            <p className={cn("break-words text-sm font-medium", shellDark ? "text-teal-300" : "text-teal-700")}>
+              {ROLE_LABELS[role]}
+            </p>
+          </div>
+        )}
         <details open={compact ? undefined : true} className="nexclinic-header-tools min-w-0">
           <summary
             className={compact ? "inline-flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-md border border-[var(--border)] text-[var(--foreground)]" : "hidden"}
@@ -125,7 +143,8 @@ export function Header({
               type="button"
               onClick={() => setProfileOpen(true)}
               className={cn(
-                "min-w-0 max-w-full rounded-2xl border px-4 py-2 text-right shadow-sm transition focus:outline-none focus:ring-2 focus:ring-teal-500/30",
+                "min-w-0 max-w-full rounded-2xl border shadow-sm transition focus:outline-none focus:ring-2 focus:ring-teal-500/30",
+                showCenteredIdentity ? "inline-flex h-11 w-11 items-center justify-center" : "px-4 py-2 text-right",
                 shellDark
                   ? "border-slate-600 bg-slate-800 hover:border-teal-500/40 hover:bg-slate-700"
                   : "border-slate-200 bg-white hover:border-teal-200 hover:bg-teal-50/80"
@@ -133,18 +152,24 @@ export function Header({
               title="Mi cuenta y permisos"
               aria-label="Abrir mi cuenta"
             >
-              <p className={cn("break-words text-sm font-semibold", shellDark ? "text-slate-100" : "text-slate-900")}>
-                {userName}
-              </p>
-              {role && (
-                <p
-                  className={cn(
-                    "text-xs font-medium",
-                    shellDark ? "text-teal-300" : "text-teal-700"
+              {showCenteredIdentity ? (
+                <UserRound className={cn("h-5 w-5", shellDark ? "text-teal-300" : "text-teal-700")} aria-hidden />
+              ) : (
+                <>
+                  <p className={cn("break-words text-sm font-semibold", shellDark ? "text-slate-100" : "text-slate-900")}>
+                    {userName}
+                  </p>
+                  {role && (
+                    <p
+                      className={cn(
+                        "text-xs font-medium",
+                        shellDark ? "text-teal-300" : "text-teal-700"
+                      )}
+                    >
+                      {ROLE_LABELS[role]}
+                    </p>
                   )}
-                >
-                  {ROLE_LABELS[role]}
-                </p>
+                </>
               )}
             </button>
           )}
