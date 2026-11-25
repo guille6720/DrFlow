@@ -21,6 +21,7 @@ import { createClient } from "@/core/supabase/server";
 export type SuperadminClinicCommercialRow = {
   clinicId: string;
   clinicName: string;
+  clinicActive: boolean;
   ownerName: string | null;
   ownerEmail: string | null;
   planKey: string | null;
@@ -92,7 +93,7 @@ export async function listSuperadminClinicCommercialRows(): Promise<
 
   const { data: clinics, error } = await supabase
     .from("clinics")
-    .select("id, name")
+    .select("id, name, is_active")
     .order("name")
     .limit(2000);
   if (error || !clinics) {
@@ -365,6 +366,7 @@ export async function listSuperadminClinicCommercialRows(): Promise<
         {
           clinicId: clinic.id,
           clinicName: clinic.name,
+          clinicActive: clinic.is_active !== false,
           ownerName: ownerByClinic.get(clinic.id)?.name ?? null,
           ownerEmail: ownerByClinic.get(clinic.id)?.email ?? null,
           planKey,
@@ -393,6 +395,7 @@ export async function listSuperadminClinicCommercialRows(): Promise<
         {
           clinicId: clinic.id,
           clinicName: clinic.name,
+          clinicActive: clinic.is_active !== false,
           ownerName: null,
           ownerEmail: null,
           planKey: null,
@@ -434,7 +437,12 @@ export async function getSuperadminDashboardStats(): Promise<SuperadminDashboard
     byPlan[key] = (byPlan[key] ?? 0) + 1;
     if (row.status === "active" || row.status === "trialing") activeSubscriptions += 1;
     if (row.status === "expired") expiredTrials += 1;
-    if (row.status === "past_due" || row.status === "cancelled" || row.status === "expired") {
+    if (
+      !row.clinicActive ||
+      row.status === "past_due" ||
+      row.status === "cancelled" ||
+      row.status === "expired"
+    ) {
       suspended += 1;
     }
     if (row.shouldRecommendUpgrade) upgradeRecommendations += 1;

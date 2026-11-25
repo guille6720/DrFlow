@@ -36,7 +36,12 @@ export default async function SuperadminClinicsPage({
     }
     if (
       filter === "inactive" &&
-      !(row.status === "cancelled" || row.status === "expired" || row.status === "past_due")
+      !(
+        !row.clinicActive ||
+        row.status === "cancelled" ||
+        row.status === "expired" ||
+        row.status === "past_due"
+      )
     ) {
       return false;
     }
