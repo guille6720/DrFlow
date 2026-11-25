@@ -29,23 +29,18 @@ Protecciones:
 - Superadmin → Clínica → **Usuarios de la clínica**
 - Configuración → Equipo / Médicos → Equipo
 
-## Staging
+## Staging (`gprmsufvhabntbrytwyi`) — aplicado 2026-11-25
 
-```powershell
-$env:ALLOW_STAGING_DB_PUSH="1"
-$env:CONFIRM_STAGING_DB_PUSH="gprmsufvhabntbrytwyi"
-npm run supabase:db-push:staging
+- Migración 159 aplicada vía `supabase db query --linked --yes`
+- Verify RPCs/columnas: PASS
+- Smoke sintético (auth delete + email reuse + professional unlink + HC identity): PASS
+- Conteos post-smoke: clínicas/pacientes/HC intactos (sin wipe)
 
-npx supabase db query --linked -f supabase/migrations/rollback/VERIFY_USER_LIFECYCLE_159_staging.sql
-```
+## Producción (`nipqdarduknydqptqzup`) — aplicado 2026-11-25
 
-Smoke sintético (opcional): `node scripts/user-lifecycle-staging-smoke.mjs` con env documentados en el script.
+- Migración 159 aplicada vía `supabase db query --linked --yes`
+- Verify RPCs/columnas: PASS (`account_status`, created_by/changed_by nullable, 4 RPCs + last-admin)
+- Smoke aislado (clínica desechable, sin hard-delete de HC): PASS
+- Conteos verify: 5 clínicas, 3673 pacientes, 24507 HC, 5 miembros (sin wipe)
 
-## Producción
-
-Solo tras:
-
-1. Verify SQL OK en staging
-2. Smoke sintético PASS
-3. Respaldo / procedimiento de recuperación confirmado
-4. Push controlado a `nipqdarduknydqptqzup` (nunca con el script de staging)
+Smoke Auth vía Node (opcional): `node scripts/user-lifecycle-staging-smoke.mjs`
