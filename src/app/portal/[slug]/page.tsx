@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { isPublicPortalAllowedForClinic, isPublicPortalAllowedForSlug } from "@/core/entitlements/public-portal.server";
+import {
+  getLaMejorDemoPublicPortal,
+  isLaMejorDemoPortalSlug,
+  isPublicPortalAllowedForClinic,
+  isPublicPortalAllowedForSlug,
+} from "@/core/entitlements/public-portal.server";
 import { createClient } from "@/core/supabase/server";
 
 import { PatientPortalView } from "@/features/portal/components/portal/patient-portal-view";
@@ -48,6 +53,22 @@ export default async function PatientPortalPage({
   const { slug } = await params;
   const query = await searchParams;
   const portalError = query.portal_error === "1";
+
+  if (isLaMejorDemoPortalSlug(slug)) {
+    const demo = await getLaMejorDemoPublicPortal(slug);
+    if (!demo || !(await isPublicPortalAllowedForClinic(demo.id))) notFound();
+    return (
+      <PatientPortalView
+        slug={slug}
+        clinicName={demo.name}
+        clinicPhone={null}
+        clinicAddress={null}
+        professionals={[]}
+        portalError={portalError}
+      />
+    );
+  }
+
   const supabase = await createClient();
 
   const { data: link } = await supabase

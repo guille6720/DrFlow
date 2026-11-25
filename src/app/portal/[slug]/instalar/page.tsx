@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { isPublicPortalAllowedForSlug } from "@/core/entitlements/public-portal.server";
+import {
+  getLaMejorDemoPublicPortal,
+  isLaMejorDemoPortalSlug,
+  isPublicPortalAllowedForSlug,
+} from "@/core/entitlements/public-portal.server";
 import { getSiteUrl } from "@/core/supabase/env";
 
 import {
@@ -12,6 +16,20 @@ import { PatientAppInstallView } from "@/features/portal/components/portal/patie
 
 import { resolvePortalDoctorInfo } from "@/lib/utils/portal-doctor-info";
 
+async function getInstallDoctor(slug: string) {
+  if (!isLaMejorDemoPortalSlug(slug)) return resolvePortalDoctorInfo(slug);
+
+  const demo = await getLaMejorDemoPublicPortal(slug);
+  if (!demo) return null;
+  return {
+    fullName: demo.name,
+    clinicName: demo.name,
+    licenseLabel: null,
+    specialty: null,
+    phone: null,
+  };
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -21,7 +39,7 @@ export async function generateMetadata({
   if (!(await isPublicPortalAllowedForSlug(slug))) {
     return { title: "Instalar app | NexClinic" };
   }
-  const doctor = await resolvePortalDoctorInfo(slug);
+  const doctor = await getInstallDoctor(slug);
   if (!doctor) {
     return { title: "Instalar app | NexClinic" };
   }
@@ -66,7 +84,7 @@ export default async function PatientAppInstallPage({
 }) {
   const { slug } = await params;
   if (!(await isPublicPortalAllowedForSlug(slug))) notFound();
-  const doctor = await resolvePortalDoctorInfo(slug);
+  const doctor = await getInstallDoctor(slug);
   if (!doctor) notFound();
 
   return <PatientAppInstallView slug={slug} clinicName={doctor.clinicName} doctor={doctor} />;

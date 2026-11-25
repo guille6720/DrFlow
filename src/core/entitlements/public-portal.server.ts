@@ -1,10 +1,38 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { canUseFeatureAsSystem } from "@/core/entitlements/entitlements.server";
 import { FEATURES } from "@/core/entitlements/features";
+import { createAdminClient, hasAdminClient } from "@/core/supabase/admin";
 import { createClient } from "@/core/supabase/server";
 
+export function isLaMejorDemoPortalSlug(slug: string): boolean {
+  return process.env.APP_ENV === "fiscalization" && slug === "nexclinic-demo-medica-15d";
+}
+
+// The install page only needs the demo's public name. Keep public booking and
+// anonymous access to the clinics table on their existing permission checks.
+export const getLaMejorDemoPublicPortal = cache(async (slug: string) => {
+  if (!isLaMejorDemoPortalSlug(slug) || !hasAdminClient()) return null;
+
+  const { data } = await createAdminClient()
+    .from("clinics")
+    .select("id, name")
+    .eq("id", "3e31ffeb-052f-46d2-9eeb-2f69fb1b34fa")
+    .eq("slug", slug)
+    .eq("is_fiscalization", true)
+    .eq("is_active", true)
+    .gt("trial_ends_at", new Date().toISOString())
+    .maybeSingle();
+
+  return data;
+});
+
 export async function clinicIdForPublicSlug(slug: string): Promise<string | null> {
+  if (isLaMejorDemoPortalSlug(slug)) {
+    return (await getLaMejorDemoPublicPortal(slug))?.id ?? null;
+  }
   const supabase = await createClient();
   const { data: link } = await supabase
     .from("public_booking_links")

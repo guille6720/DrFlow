@@ -1,4 +1,7 @@
-import { isPublicPortalAllowedForSlug } from "@/core/entitlements/public-portal.server";
+import {
+  getLaMejorDemoPublicPortal,
+  isPublicPortalAllowedForSlug,
+} from "@/core/entitlements/public-portal.server";
 import { createClient } from "@/core/supabase/server";
 import { bookingSlugSchema } from "@/core/validations/params";
 
@@ -23,7 +26,8 @@ export async function GET(
   const origin = new URL(request.url).origin;
   const supabase = await createClient();
 
-  let clinicName = "Consultorio";
+  const demo = await getLaMejorDemoPublicPortal(slug);
+  let clinicName = demo?.name ?? "Consultorio";
 
   const { data: link } = await supabase
     .from("public_booking_links")
@@ -33,9 +37,9 @@ export async function GET(
     .maybeSingle();
 
   const linkedClinic = link?.clinics as { name: string } | { name: string }[] | null;
-  if (linkedClinic) {
+  if (!demo && linkedClinic) {
     clinicName = Array.isArray(linkedClinic) ? linkedClinic[0]?.name : linkedClinic.name;
-  } else {
+  } else if (!demo) {
     const { data: clinic } = await supabase
       .from("clinics")
       .select("name")
@@ -66,7 +70,7 @@ export async function GET(
   return Response.json(manifest, {
     headers: {
       "Content-Type": "application/manifest+json",
-      "Cache-Control": "public, max-age=3600",
+      "Cache-Control": demo ? "no-store" : "public, max-age=3600",
     },
   });
 }
