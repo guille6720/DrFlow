@@ -4,13 +4,16 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
-  deactivateClinicMember,
-  removeClinicMemberPermanently,
   resendClinicMemberInviteEmail,
   updateClinicMemberPassword,
   updateClinicMemberProfile,
   updateClinicMemberRole,
 } from "@/lib/actions/invitations";
+import {
+  deactivateClinicMemberLifecycle,
+  permanentlyDeleteClinicUserLifecycle,
+  reactivateClinicMemberLifecycle,
+} from "@/lib/actions/user-lifecycle";
 import type { EnrichedTeamMember } from "@/lib/utils/team-member-display";
 import type { UserRole } from "@/types/database";
 
@@ -85,20 +88,30 @@ export function useClinicTeamMemberPanel(member: EnrichedTeamMember | null) {
 
   function handleDeactivate() {
     if (!member) return;
+    if (member.is_active === false) {
+      if (!confirm(`¿Reactivar el acceso de ${member.display_name}?`)) return;
+      runAction(`${member.id}-reactivate`, () => reactivateClinicMemberLifecycle(member.id));
+      return;
+    }
     if (!confirm(`¿Desactivar el acceso de ${member.display_name}?`)) return;
-    runAction(`${member.id}-deactivate`, () => deactivateClinicMember(member.id));
+    runAction(`${member.id}-deactivate`, () => deactivateClinicMemberLifecycle(member.id));
   }
 
   function handleRemove() {
     if (!member) return;
+    const email = member.display_email ?? "";
     if (
       !confirm(
-        `¿Eliminar permanentemente a ${member.display_name}? Se borra la cuenta de acceso. Los registros clínicos históricos se conservan.`
+        `¿Eliminar DEFINITIVAMENTE a ${member.display_name}?\nSe libera el correo ${email}. La ficha profesional y la HC se conservan.`
       )
     ) {
       return;
     }
-    runAction(`${member.id}-remove`, () => removeClinicMemberPermanently(member.id));
+    const typed = window.prompt(`Para confirmar, escribí el email exacto:\n${email}`);
+    if (!typed) return;
+    runAction(`${member.id}-remove`, () =>
+      permanentlyDeleteClinicUserLifecycle(member.id, undefined, typed)
+    );
   }
 
   return {

@@ -43,7 +43,15 @@ const FUNCTION_MIGRATION_HINTS: Record<string, string> = {
   delete_own_account:
     "Ejecutá la migración 039/093 en Supabase SQL Editor (delete_own_account) y volvé a intentar.",
   remove_clinic_member_user:
-    "Ejecutá las migraciones 035 y 036 en Supabase SQL Editor y volvé a intentar.",
+    "Ejecutá la migración 159 (ciclo de vida de usuarios) en Supabase y volvé a intentar.",
+  admin_deactivate_clinic_member:
+    "Ejecutá la migración 159 en Supabase SQL Editor (admin_deactivate_clinic_member).",
+  admin_reactivate_clinic_member:
+    "Ejecutá la migración 159 en Supabase SQL Editor (admin_reactivate_clinic_member).",
+  admin_unlink_clinic_member:
+    "Ejecutá la migración 159 en Supabase SQL Editor (admin_unlink_clinic_member).",
+  admin_permanently_delete_clinic_user:
+    "Ejecutá la migración 159 en Supabase SQL Editor (admin_permanently_delete_clinic_user).",
   seed_demo_patients_for_clinic:
     "Falta la función en Supabase. Ejecutá las migraciones 017 y 019 en el SQL Editor.",
   seed_pami_cabecera_for_clinic:

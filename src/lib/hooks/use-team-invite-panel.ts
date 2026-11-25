@@ -4,13 +4,17 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
-  deactivateClinicMember,
   inviteClinicMember,
-  removeClinicMemberPermanently,
   restoreClinicMemberLoginAccess,
   revokeClinicInvitation,
   updateClinicMemberRole,
 } from "@/lib/actions/invitations";
+import {
+  deactivateClinicMemberLifecycle,
+  permanentlyDeleteClinicUserLifecycle,
+  reactivateClinicMemberLifecycle,
+  unlinkClinicMemberLifecycle,
+} from "@/lib/actions/user-lifecycle";
 
 interface Member {
   id: string;
@@ -56,29 +60,51 @@ export function useTeamInvitePanel(members: Member[], invitations: Invitation[])
     }
   }
 
-  async function runAction(id: string, action: () => Promise<{ error?: string }>) {
+  async function runAction(
+    id: string,
+    action: () => Promise<{ error?: string; message?: string; success?: boolean }>
+  ) {
     setActing(id);
     setErr(null);
     const result = await action();
     setActing(null);
     if (result.error) setErr(result.error);
-    else router.refresh();
+    else {
+      if (result.message) setMsg(result.message);
+      router.refresh();
+    }
   }
 
   function handleRemoveMember(m: Member) {
     const name = m.display_name ?? m.profiles?.full_name ?? m.profiles?.email ?? "este usuario";
+    const email = m.display_email ?? m.profiles?.email ?? "";
     if (
       !confirm(
-        `¿Eliminar permanentemente a ${name}? Se borra la cuenta de acceso. Los registros clínicos históricos se conservan. También podés hacerlo desde Supabase → Authentication después de aplicar la migración 036.`
+        `¿Eliminar DEFINITIVAMENTE a ${name}?\n\nSe borra la cuenta de acceso y se libera el correo ${email} para futuros registros.\nLa ficha profesional, historias clínicas y auditorías se conservan.\nNo se eliminan pacientes ni datos de otros usuarios.`
       )
     ) {
       return;
     }
-    runAction(`${m.id}-remove`, () => removeClinicMemberPermanently(m.id));
+    const typed = window.prompt(`Para confirmar, escribí el email exacto:\n${email}`);
+    if (!typed) return;
+    runAction(`${m.id}-remove`, () => permanentlyDeleteClinicUserLifecycle(m.id, undefined, typed));
+  }
+
+  function handleUnlinkMember(m: Member) {
+    const name = m.display_name ?? m.profiles?.full_name ?? m.profiles?.email ?? "este usuario";
+    if (
+      !confirm(
+        `¿Desvincular a ${name} de esta clínica?\nLa cuenta Auth no se borra. La historia clínica se conserva.`
+      )
+    ) {
+      return;
+    }
+    runAction(`${m.id}-unlink`, () => unlinkClinicMemberLifecycle(m.id));
   }
 
   const pending = invitations.filter((i) => i.status === "pending");
   const activeMembers = members.filter((m) => m.is_active !== false);
+  const inactiveMembers = members.filter((m) => m.is_active === false);
 
   return {
     loading,
@@ -89,10 +115,13 @@ export function useTeamInvitePanel(members: Member[], invitations: Invitation[])
     handleInvite,
     runAction,
     handleRemoveMember,
+    handleUnlinkMember,
     pending,
     activeMembers,
+    inactiveMembers,
     updateClinicMemberRole,
-    deactivateClinicMember,
+    deactivateClinicMember: deactivateClinicMemberLifecycle,
+    reactivateClinicMember: reactivateClinicMemberLifecycle,
     restoreClinicMemberLoginAccess,
     revokeClinicInvitation,
   };

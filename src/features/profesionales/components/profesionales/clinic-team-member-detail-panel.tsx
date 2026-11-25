@@ -163,10 +163,12 @@ export function ClinicTeamMemberDetailPanel({
         <Button
           type="button"
           variant="outline"
-          loading={acting === `${member.id}-deactivate`}
+          loading={
+            acting === `${member.id}-deactivate` || acting === `${member.id}-reactivate`
+          }
           onClick={onDeactivate}
         >
-          Desactivar acceso
+          {member.is_active === false ? "Reactivar acceso" : "Desactivar acceso"}
         </Button>
         <Button
           type="button"
@@ -175,7 +177,7 @@ export function ClinicTeamMemberDetailPanel({
           loading={acting === `${member.id}-remove`}
           onClick={onRemove}
         >
-          Eliminar cuenta
+          Eliminar definitivamente
         </Button>
       </div>
     </Card>

@@ -4,6 +4,10 @@ import { notFound } from "next/navigation";
 import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
 import { ManualHelpLink } from "@/core/components/superadmin/manual/manual-help-link";
 import { SuperadminClearOverrideButton } from "@/core/components/superadmin/superadmin-clear-override-button";
+import {
+  type SuperadminClinicMemberRow,
+  SuperadminClinicMembersPanel,
+} from "@/core/components/superadmin/superadmin-clinic-members-panel";
 import { SuperadminClinicPlanForm } from "@/core/components/superadmin/superadmin-clinic-plan-form";
 import { SuperadminClinicProductsForm } from "@/core/components/superadmin/superadmin-clinic-products-form";
 import { SuperadminOverrideForm } from "@/core/components/superadmin/superadmin-override-form";
@@ -13,6 +17,7 @@ import { listSuperadminClinicCommercialRows } from "@/core/entitlements/superadm
 import { requireSuperadminPage } from "@/core/entitlements/superadmin-guard.server";
 import { logServerError } from "@/core/errors/log-error.server";
 import { loadClinicProducts } from "@/core/products/products.server";
+import { listClinicMembersForSuperadmin } from "@/lib/actions/user-lifecycle";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -28,13 +33,15 @@ export default async function SuperadminClinicDetailPage({
   let clinic: Awaited<ReturnType<typeof listSuperadminClinicCommercialRows>>[number] | undefined;
   let clinicOverrides: Awaited<ReturnType<typeof listEntitlementsAdminOverrides>> = [];
   let products = { clinic: true, geriatrics: false, catalogAvailable: false };
+  let membersResult: Awaited<ReturnType<typeof listClinicMembersForSuperadmin>> = { members: [] };
   let loadError: string | null = null;
 
   try {
-    const [rows, overrides, productsSnap] = await Promise.all([
+    const [rows, overrides, productsSnap, membersSnap] = await Promise.all([
       listSuperadminClinicCommercialRows(),
       listEntitlementsAdminOverrides(),
       loadClinicProducts(clinicId),
+      listClinicMembersForSuperadmin(clinicId),
     ]);
     clinic = rows.find((r) => r.clinicId === clinicId);
     clinicOverrides = overrides.filter((o) => o.clinicId === clinicId);
@@ -43,6 +50,7 @@ export default async function SuperadminClinicDetailPage({
       geriatrics: productsSnap.geriatrics,
       catalogAvailable: productsSnap.catalogAvailable,
     };
+    membersResult = membersSnap;
   } catch (err) {
     loadError = err instanceof Error ? err.message : "Error al cargar datos comerciales";
     logServerError("superadmin.clinic-detail", err, { persist: false });
@@ -70,6 +78,9 @@ export default async function SuperadminClinicDetailPage({
   }
 
   if (!clinic) notFound();
+  const members = (
+    "members" in membersResult ? membersResult.members : []
+  ) as SuperadminClinicMemberRow[];
 
   return (
     <div className="space-y-4">
@@ -177,6 +188,16 @@ export default async function SuperadminClinicDetailPage({
             <li className="py-3 text-slate-500">Sin overrides activos.</li>
           ) : null}
         </ul>
+      </Card>
+
+      <Card
+        title="Usuarios de la clínica"
+        description="Desactivar, reactivar, desvincular o eliminar definitivamente (libera el email; conserva HC y profesional)."
+      >
+        {"error" in membersResult && membersResult.error ? (
+          <p className="mb-3 text-sm text-red-700">{membersResult.error}</p>
+        ) : null}
+        <SuperadminClinicMembersPanel clinicId={clinic.clinicId} members={members} />
       </Card>
 
       <Link href="/superadmin/clinics" className="text-sm font-medium text-teal-700 hover:underline">

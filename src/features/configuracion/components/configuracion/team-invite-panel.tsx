@@ -45,8 +45,10 @@ export function TeamInvitePanel({ members, invitations, teamAccess }: Props) {
     <div id="equipo">
       <Card title="Equipo e invitaciones">
         <p className="mb-4 text-sm text-slate-700">
-          Invitá médicos o secretaría por email. <strong>Desactivar</strong> suspende el acceso (no
-          puede iniciar sesión). <strong>Eliminar cuenta</strong> borra el usuario de Auth.
+          Invitá médicos o secretaría por email. <strong>Desactivar</strong> suspende el login.{" "}
+          <strong>Reactivar</strong> lo rehabilita. <strong>Desvincular</strong> quita el acceso a
+          esta clínica. <strong>Eliminar definitivamente</strong> borra Auth y libera el email; la
+          historia clínica y la ficha profesional se conservan.
         </p>
 
         {panel.msg && (
@@ -68,11 +70,14 @@ export function TeamInvitePanel({ members, invitations, teamAccess }: Props) {
         <TeamInviteFormSection loading={panel.loading} onSubmit={panel.handleInvite} />
         <TeamMembersListSection
           activeMembers={panel.activeMembers}
+          inactiveMembers={panel.inactiveMembers}
           acting={panel.acting}
           runAction={panel.runAction}
           handleRemoveMember={panel.handleRemoveMember}
+          handleUnlinkMember={panel.handleUnlinkMember}
           updateClinicMemberRole={panel.updateClinicMemberRole}
           deactivateClinicMember={panel.deactivateClinicMember}
+          reactivateClinicMember={panel.reactivateClinicMember}
           restoreClinicMemberLoginAccess={panel.restoreClinicMemberLoginAccess}
         />
         <TeamPendingInvitesSection

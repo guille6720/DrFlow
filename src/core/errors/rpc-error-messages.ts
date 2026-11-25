@@ -34,6 +34,7 @@ export const RPC_ERROR_CODES = {
   ONBOARDING_PLAN_FORBIDDEN: "ONBOARDING_PLAN_FORBIDDEN",
   INVALID_STATUS: "INVALID_STATUS",
   NO_LIVE_SUBSCRIPTION: "NO_LIVE_SUBSCRIPTION",
+  LAST_CLINIC_ADMIN: "LAST_CLINIC_ADMIN",
 } as const;
 
 export type RpcErrorCode = (typeof RPC_ERROR_CODES)[keyof typeof RPC_ERROR_CODES];
@@ -74,6 +75,8 @@ export const RPC_USER_MESSAGES: Record<RpcErrorCode, string> = {
   ONBOARDING_PLAN_FORBIDDEN: "El plan de alta automática no es asignable.",
   INVALID_STATUS: "Estado comercial inválido.",
   NO_LIVE_SUBSCRIPTION: "El consultorio no tiene una suscripción comercial vigente.",
+  LAST_CLINIC_ADMIN:
+    "No se puede dar de baja al último administrador activo de la clínica. Designá otro admin primero.",
 };
 
 export function isKnownRpcErrorCode(value: string | undefined): value is RpcErrorCode {
