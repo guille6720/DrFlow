@@ -18,6 +18,7 @@ import {
 import { AgendaDayStatusFilters } from "@/features/agenda/components/agenda/agenda-day-status-filters";
 import { AppointmentAttendanceSelector } from "@/features/agenda/components/agenda/appointment-attendance-selector";
 import { filterAppointmentsForDay } from "@/features/agenda/components/agenda/appointment-row";
+import { ConfirmOnlineAppointmentButton } from "@/features/agenda/components/agenda/confirm-online-appointment-button";
 import { WaitingRoomWaitTimer } from "@/features/agenda/components/agenda/waiting-room-wait-timer";
 import { AppointmentLifecycleBadge } from "@/features/turnos/components/appointment-lifecycle-badge";
 import {
@@ -28,7 +29,7 @@ import {
   type WaitingRoomStatus,
 } from "@/features/turnos/utils/appointment-lifecycle";
 
-import { isOnlineBooking } from "@/lib/utils/appointment";
+import { isLaMejorDemoOnlineAppointment, isOnlineBooking } from "@/lib/utils/appointment";
 import { getProfessionalDisplayName } from "@/lib/utils/professional";
 
 interface AgendaDayListProps {
@@ -80,6 +81,8 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
   const phone = patient?.phone?.trim() || null;
   const insurance = patient?.insurance_provider?.trim() || null;
   const online = isOnlineBooking(appointment);
+  const pendingOnlineConfirmation =
+    appointment.status === "pending" && isLaMejorDemoOnlineAppointment(appointment);
   const professionalName = professionalLabel(appointment);
   const specialtyName =
     (appointment.specialties as { name?: string } | undefined)?.name ?? null;
@@ -97,6 +100,7 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
   const modality =
     appointment.consultation_modality === "virtual" ? "Virtual" : "Consulta";
   const canAttend =
+    !pendingOnlineConfirmation &&
     Boolean(canStartClinical) &&
     Boolean(enteredAt) &&
     (waitingStatus === "waiting" ||
@@ -104,7 +108,7 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
       waitingStatus === "in_consultation");
   const attendHref = `/consultas?appointment=${appointment.id}&action=nueva&professional=${appointment.professional_id}`;
 
-  const attendance = canManage ? (
+  const attendance = canManage && !pendingOnlineConfirmation ? (
     <AppointmentAttendanceSelector
       appointmentId={appointment.id}
       status={appointment.status}
@@ -190,6 +194,9 @@ const AgendaDayListItem = memo(function AgendaDayListItem({
             Atender
           </span>
         </Link>
+      ) : null}
+      {canManage && pendingOnlineConfirmation ? (
+        <ConfirmOnlineAppointmentButton appointment={appointment} />
       ) : null}
       {attendance}
     </div>

@@ -14,13 +14,14 @@ import {
 } from "@/shared/utils/patient-display";
 
 import { CancelAppointmentDialog } from "@/features/agenda/components/agenda/cancel-appointment-dialog";
+import { ConfirmOnlineAppointmentButton } from "@/features/agenda/components/agenda/confirm-online-appointment-button";
 import { TelemedicineJoinButton } from "@/features/agenda/components/agenda/telemedicine-join-button";
 import { useAppointmentRow } from "@/features/agenda/hooks/use-appointment-row";
 import { useClinicFeatures } from "@/features/plugins/components/plugins/clinic-features-provider";
 import { AppointmentLifecycleBadge } from "@/features/turnos/components/appointment-lifecycle-badge";
 
 import { Button } from "@/components/ui/button";
-import { canStartConsultation } from "@/lib/utils/appointment";
+import { canStartConsultation, isLaMejorDemoOnlineAppointment } from "@/lib/utils/appointment";
 
 type Props = {
   appointment: AppointmentAgendaRow;
@@ -41,6 +42,8 @@ function CalendarAppointmentDialogContent({
   const clinicFeatures = useClinicFeatures();
   const telemedicineEnabled = clinicFeatures.plugins.telemedicina;
   const isVirtual = appointment.consultation_modality === "virtual";
+  const pendingOnlineConfirmation =
+    appointment.status === "pending" && isLaMejorDemoOnlineAppointment(appointment);
 
   const patient = resolveAppointmentPatient(appointment.patients);
   const patientName = formatPatientName(appointment.patients);
@@ -128,7 +131,11 @@ function CalendarAppointmentDialogContent({
               <TelemedicineJoinButton appointmentId={appointment.id} />
             ) : null}
 
-            {canStartClinical && canStartConsultation(appointment.status) ? (
+            {canManage && pendingOnlineConfirmation ? (
+              <ConfirmOnlineAppointmentButton appointment={appointment} onConfirmed={onClose} />
+            ) : null}
+
+            {canStartClinical && !pendingOnlineConfirmation && canStartConsultation(appointment.status) ? (
               <Link href={row.startHref} onClick={onClose}>
                 <Button type="button" className="w-full">
                   <Play className="mr-1 h-4 w-4" />
