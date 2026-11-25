@@ -233,8 +233,8 @@ export function SuperadminClinicsTable({ rows }: { rows: SuperadminClinicCommerc
           <h4 className="text-sm font-semibold text-red-950">Eliminar clínica (baja lógica)</h4>
           <p className="mt-2 text-sm text-red-900">
             Se va a dar de baja <strong>{deleteTarget.clinicName.replace(/^\[ELIMINADA\]\s*/i, "")}</strong>.
-            Se bloquea el acceso de todos los usuarios (admins, médicos, secretaría).{" "}
-            <strong>No se borran pacientes ni historias clínicas.</strong>
+            Se bloquea el acceso de todos los usuarios y se liberan sus correos en Auth (si no están en
+            otra clínica activa). <strong>No se borran pacientes ni historias clínicas.</strong>
           </p>
           <div className="mt-3 max-w-md">
             <Input

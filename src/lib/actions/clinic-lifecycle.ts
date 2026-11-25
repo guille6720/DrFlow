@@ -228,6 +228,59 @@ export async function superadminSoftDeleteClinic(
     reason: "Superadmin eliminó (baja lógica) la clínica desde el listado",
   });
 
+  // Free Auth emails for users who no longer belong to any *active* clinic.
+  const purgedEmails: string[] = [];
+  for (const userId of membersResult.userIds) {
+    const { data: otherMemberships, error: memErr } = await supabase
+      .from("clinic_members")
+      .select("clinic_id, clinics(is_active)")
+      .eq("user_id", userId);
+    if (memErr) continue;
+
+    const anyActiveClinic = (otherMemberships ?? []).some((row) => {
+      const clinic = row.clinics as { is_active?: boolean } | { is_active?: boolean }[] | null;
+      const active = Array.isArray(clinic) ? clinic[0]?.is_active : clinic?.is_active;
+      return active === true;
+    });
+    if (anyActiveClinic) continue;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("email, is_superadmin")
+      .eq("id", userId)
+      .maybeSingle();
+    if (profile?.is_superadmin) continue;
+
+    const { error: delErr } = await (supabase as unknown as {
+      rpc: (
+        fn: string,
+        args: { p_clinic_id: string; p_user_id: string }
+      ) => Promise<{ error: { message: string } | null }>;
+    }).rpc("admin_permanently_delete_clinic_user", {
+      p_clinic_id: idParsed.data,
+      p_user_id: userId,
+    });
+
+    if (delErr) {
+      if (!hasAdminClient()) continue;
+      const admin = createAdminClient();
+      const { error: authDelErr } = await admin.auth.admin.deleteUser(userId);
+      if (authDelErr) {
+        // Immutable legal rows may block Auth delete — free the original email instead.
+        const { data: released, error: releaseErr } = await (admin as unknown as {
+          rpc: (
+            fn: string,
+            args: { p_user_id: string }
+          ) => Promise<{ data: string | null; error: { message: string } | null }>;
+        }).rpc("release_auth_email_for_deleted_user", { p_user_id: userId });
+        if (releaseErr || !released) continue;
+        purgedEmails.push(released);
+        continue;
+      }
+    }
+    if (profile?.email) purgedEmails.push(profile.email);
+  }
+
   await recordAudit({
     clinicId: idParsed.data,
     module: "settings",
@@ -238,14 +291,19 @@ export async function superadminSoftDeleteClinic(
     metadata: {
       clinic_name: baseName,
       banned_users: membersResult.userIds.length,
+      purged_auth_emails: purgedEmails,
       patients_preserved: true,
       clinical_records_preserved: true,
     },
   });
 
   revalidateClinicPaths(idParsed.data);
+  const purgeNote =
+    purgedEmails.length > 0
+      ? ` Correos liberados en Auth: ${purgedEmails.join(", ")}.`
+      : " Los correos que siguen en otras clínicas activas no se borraron de Auth.";
   return {
     success: true,
-    message: `Clínica «${baseName}» eliminada (baja lógica). Pacientes e historias se conservan. Los accesos quedaron bloqueados.`,
+    message: `Clínica «${baseName}» eliminada (baja lógica). Pacientes e historias se conservan.${purgeNote}`,
   };
 }
