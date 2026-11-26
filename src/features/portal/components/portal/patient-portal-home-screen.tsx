@@ -6,8 +6,10 @@ import Link from "next/link";
 import { cn } from "@/shared/utils/cn";
 
 import type { PatientPortalState } from "@/features/pacientes/hooks/use-patient-portal";
+import { usePatientRequestsPanel } from "@/features/pacientes/hooks/use-patient-requests-panel";
 import { AppInstallCard } from "@/features/portal/components/portal/app-install-card";
 import { DemoBookingStatus } from "@/features/portal/components/portal/demo-booking-status";
+import { PatientPortalCalendar } from "@/features/portal/components/portal/patient-portal-calendar";
 
 type Props = Pick<PatientPortalState, "quickActions" | "setScreen"> & {
   slug: string;
@@ -32,9 +34,10 @@ export function PatientPortalHomeScreen({
   refreshTrigger = 0,
   setScreen,
 }: Props) {
+  const { items } = usePatientRequestsPanel({ slug, refreshTrigger, demoBooking, enabled: demoBooking });
   return (
     <>
-      {demoBooking && <DemoBookingStatus slug={slug} refreshTrigger={refreshTrigger} onOpen={() => setScreen("turnos")} />}
+      {demoBooking && <DemoBookingStatus booking={items.find((item) => item.type === "turno")} onOpen={() => setScreen("turnos")} />}
       {!portalReady && (
         <>
           <AppInstallCard
@@ -55,7 +58,7 @@ export function PatientPortalHomeScreen({
         </>
       )}
 
-      <div className="space-y-4">
+      <div className={cn(demoBooking ? "flex flex-1 flex-col gap-4" : "space-y-4")}>
         <div className="grid grid-cols-2 gap-3">
           {quickActions.map((action) => {
             const Icon = action.icon;
@@ -76,6 +79,8 @@ export function PatientPortalHomeScreen({
             );
           })}
         </div>
+
+        {demoBooking && <PatientPortalCalendar items={items} />}
 
         {clinicAddress ? (
           <p className="text-center text-xs text-slate-500">{clinicAddress}</p>

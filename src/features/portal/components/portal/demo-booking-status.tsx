@@ -4,7 +4,7 @@ import { CalendarCheck } from "lucide-react";
 
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
 
-import { usePatientRequestsPanel } from "@/features/pacientes/hooks/use-patient-requests-panel";
+import type { PatientRequestItem } from "@/features/portal/utils/patient-portal-appointments";
 
 const LABELS: Record<string, string> = {
   pending: "Pendiente de confirmación",
@@ -14,13 +14,10 @@ const LABELS: Record<string, string> = {
   no_show: "Ausencia registrada",
 };
 
-export function DemoBookingStatus({ slug, refreshTrigger, onOpen }: {
-  slug: string;
-  refreshTrigger: number;
+export function DemoBookingStatus({ booking, onOpen }: {
+  booking?: PatientRequestItem;
   onOpen: () => void;
 }) {
-  const { items } = usePatientRequestsPanel({ slug, refreshTrigger, demoBooking: true });
-  const booking = items.find((item) => item.type === "turno");
   if (!booking) return null;
 
   return (

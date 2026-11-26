@@ -69,10 +69,10 @@ export function PatientPortalView({
   }, [demoBooking, setScreen, slug]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-100 pb-20">
+    <div className={demoBooking ? "flex min-h-dvh flex-col bg-slate-100 pb-20" : "flex min-h-screen flex-col bg-slate-100 pb-20"}>
       <PatientPortalHeader doctorName={portal.doctorName} doctor={doctor} />
 
-      <main className="mx-auto w-full max-w-lg flex-1 px-4 pt-4">
+      <main className={demoBooking ? "mx-auto flex w-full max-w-lg flex-1 flex-col px-4 pt-4" : "mx-auto w-full max-w-lg flex-1 px-4 pt-4"}>
         {portalError || linkError ? (
           <p className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
             {linkError ?? "El enlace de acceso no es válido o venció."}
@@ -150,7 +150,7 @@ export function PatientPortalView({
         )}
       </main>
 
-      <footer className="mx-auto max-w-lg px-4 pb-24 pt-6 text-center text-[11px] text-slate-500">
+      <footer className={`mx-auto max-w-lg px-4 pt-6 text-center text-[11px] text-slate-500 ${demoBooking ? "pb-3" : "pb-24"}`}>
         <Link href={`/aviso-paciente?clinic=${encodeURIComponent(slug)}`} className="underline">
           Información al paciente
         </Link>

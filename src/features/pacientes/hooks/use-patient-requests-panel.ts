@@ -22,6 +22,7 @@ type Options = {
   slug: string;
   refreshTrigger?: number;
   demoBooking?: boolean;
+  enabled?: boolean;
 };
 
 function mapWhatsappRequest(record: PatientRequestRecord): PatientRequestItem {
@@ -36,7 +37,7 @@ function mapWhatsappRequest(record: PatientRequestRecord): PatientRequestItem {
   };
 }
 
-export function usePatientRequestsPanel({ slug, refreshTrigger = 0, demoBooking = false }: Options) {
+export function usePatientRequestsPanel({ slug, refreshTrigger = 0, demoBooking = false, enabled = true }: Options) {
   const [authenticated, setAuthenticated] = useState(false);
   const [items, setItems] = useState<PatientRequestItem[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -69,10 +70,11 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0, demoBooking 
   }, [slug, demoBooking]);
 
   useEffect(() => {
+    if (!enabled) return;
     queueMicrotask(() => {
       loadAppointments();
     });
-  }, [slug, refreshTrigger, loadAppointments]);
+  }, [enabled, refreshTrigger, loadAppointments]);
 
   const activeDemoBooking = demoBooking && items.some(
     (item) => item.trackingOnly && (item.status === "pending" || item.status === "confirmed")
