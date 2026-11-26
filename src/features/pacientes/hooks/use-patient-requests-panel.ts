@@ -74,9 +74,11 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0, demoBooking 
     });
   }, [slug, refreshTrigger, loadAppointments]);
 
-  const pendingDemoBooking = demoBooking && items.some((item) => item.trackingOnly && item.status === "pending");
+  const activeDemoBooking = demoBooking && items.some(
+    (item) => item.trackingOnly && (item.status === "pending" || item.status === "confirmed")
+  );
   useEffect(() => {
-    if (!pendingDemoBooking) return;
+    if (!activeDemoBooking) return;
 
     function refreshWhenVisible() {
       if (document.visibilityState === "visible") loadAppointments();
@@ -88,7 +90,7 @@ export function usePatientRequestsPanel({ slug, refreshTrigger = 0, demoBooking 
       document.removeEventListener("visibilitychange", refreshWhenVisible);
       window.clearInterval(timer);
     };
-  }, [pendingDemoBooking, loadAppointments]);
+  }, [activeDemoBooking, loadAppointments]);
 
   const handleRefresh = () => {
     loadAppointments();

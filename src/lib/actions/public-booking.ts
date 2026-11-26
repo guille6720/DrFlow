@@ -6,7 +6,12 @@ import {
   CONSENT_TYPES,
   LEGAL_PATIENT_NOTICE_VERSION,
 } from "@/core/legal/documents";
-import { readDemoBookingIds, rememberDemoBooking } from "@/core/portal/demo-booking-cookie";
+import {
+  createDemoBookingReceipt,
+  readDemoBookingIds,
+  rememberDemoBooking,
+  verifyDemoBookingReceipt,
+} from "@/core/portal/demo-booking-cookie";
 import {
   getPortalAuthErrorMessage,
   getPortalSessionRequiredMessage,
@@ -78,7 +83,7 @@ export async function submitPublicBooking(formData: FormData) {
       };
     }
     await rememberDemoBooking(data, new Date(clinic.trial_ends_at));
-    return { success: true, appointmentId: data, startAt, documentNumber: "" };
+    return { success: true, appointmentId: data, startAt, documentNumber: "", demoReceipt: createDemoBookingReceipt(data) };
   }
 
   const parsed = publicBookingSchema.safeParse({
@@ -240,6 +245,44 @@ export async function cancelPatientAppointment(
   return { success: true };
 }
 
+function queryDemoAppointments(clinicId: string, ids: string[]) {
+  return createAdminClient()
+    .from("appointments")
+    .select("id, status, start_at, end_at, created_at, cancelled_at, cancelled_by_type, patients!inner(document_number), professionals(display_name)")
+    .eq("clinic_id", clinicId)
+    .eq("booking_source", "online")
+    .eq("patients.document_number", "NEX-DEMO-ONLINE")
+    .in("id", ids);
+}
+
+export async function restoreDemoPortalBooking(slug: string, receipt: string) {
+  if (!isLaMejorDemoPortalSlug(slug)) return { error: PORTAL_UNAVAILABLE };
+  const appointmentId = verifyDemoBookingReceipt(receipt);
+  if (!appointmentId) return { error: "El enlace de seguimiento no es válido." };
+  const clinic = await getLaMejorDemoPublicPortal(slug);
+  if (!clinic?.trial_ends_at || !(await isPublicPortalAllowedForSlug(slug))) {
+    return { error: PORTAL_UNAVAILABLE };
+  }
+  const { data, error } = await queryDemoAppointments(clinic.id, [appointmentId]).maybeSingle();
+  if (error || !data) return { error: "No encontramos el turno de ese enlace." };
+  await rememberDemoBooking(appointmentId, new Date(clinic.trial_ends_at));
+  return { success: true };
+}
+
+export async function getDemoBookingReceiptForStaff(appointmentId: string) {
+  const { requireClinicPermission } = await import("@/core/actions/clinic-guard");
+  const { LAMEJOR_DEMO_CLINIC_ID } = await import("@/lib/utils/appointment");
+  const slug = "nexclinic-demo-medica-15d";
+  if (!isLaMejorDemoPortalSlug(slug)) return { error: PORTAL_UNAVAILABLE };
+  const access = await requireClinicPermission("manageAppointments");
+  if (!access.ok || access.clinicId !== LAMEJOR_DEMO_CLINIC_ID) return { error: "Sin permisos" };
+  const receipt = createDemoBookingReceipt(appointmentId);
+  if (!receipt || !(await isPublicPortalAllowedForSlug(slug))) return { error: PORTAL_UNAVAILABLE };
+  const { data, error } = await queryDemoAppointments(access.clinicId, [appointmentId]).maybeSingle();
+  if (error || !data) return { error: "No encontramos el turno de prueba." };
+  return { receipt };
+}
+
 async function fetchDemoPortalAppointments(slug: string): Promise<{
   appointments: PatientPortalAppointmentRow[];
   error?: string;
@@ -253,13 +296,7 @@ async function fetchDemoPortalAppointments(slug: string): Promise<{
     return { appointments: [], error: PORTAL_UNAVAILABLE };
   }
 
-  const { data, error } = await createAdminClient()
-    .from("appointments")
-    .select("id, status, start_at, end_at, created_at, cancelled_at, cancelled_by_type, patients!inner(document_number), professionals(display_name)")
-    .eq("clinic_id", clinic.id)
-    .eq("booking_source", "online")
-    .eq("patients.document_number", "NEX-DEMO-ONLINE")
-    .in("id", ids);
+  const { data, error } = await queryDemoAppointments(clinic.id, ids);
 
   if (error) return { appointments: [], error: "No pudimos consultar tus turnos" };
   return {

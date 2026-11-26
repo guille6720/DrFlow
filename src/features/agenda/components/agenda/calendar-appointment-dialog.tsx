@@ -1,9 +1,10 @@
 "use client";
 
-import { CalendarClock, Play, Trash2, X } from "lucide-react";
+import { CalendarClock, Copy, Play, Trash2, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState, useTransition } from "react";
 
+import { toast } from "@/core/notifications/toast";
 import type { AppointmentAgendaRow } from "@/core/supabase/query-types";
 
 import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
@@ -18,9 +19,11 @@ import { ConfirmOnlineAppointmentButton } from "@/features/agenda/components/age
 import { TelemedicineJoinButton } from "@/features/agenda/components/agenda/telemedicine-join-button";
 import { useAppointmentRow } from "@/features/agenda/hooks/use-appointment-row";
 import { useClinicFeatures } from "@/features/plugins/components/plugins/clinic-features-provider";
+import { demoBookingLink } from "@/features/portal/utils/demo-booking-link";
 import { AppointmentLifecycleBadge } from "@/features/turnos/components/appointment-lifecycle-badge";
 
 import { Button } from "@/components/ui/button";
+import { getDemoBookingReceiptForStaff } from "@/lib/actions/public-booking";
 import { canStartConsultation, isLaMejorDemoOnlineAppointment } from "@/lib/utils/appointment";
 
 type Props = {
@@ -42,8 +45,31 @@ function CalendarAppointmentDialogContent({
   const clinicFeatures = useClinicFeatures();
   const telemedicineEnabled = clinicFeatures.plugins.telemedicina;
   const isVirtual = appointment.consultation_modality === "virtual";
-  const pendingOnlineConfirmation =
-    appointment.status === "pending" && isLaMejorDemoOnlineAppointment(appointment);
+  const demoOnline = isLaMejorDemoOnlineAppointment(appointment);
+  const pendingOnlineConfirmation = appointment.status === "pending" && demoOnline;
+  const [copying, startCopy] = useTransition();
+  const [receiptLink, setReceiptLink] = useState("");
+
+  function copyTrackingLink() {
+    startCopy(async () => {
+      try {
+        const result = await getDemoBookingReceiptForStaff(appointment.id);
+        if (!result.receipt) {
+          toast.error(result.error ?? "No pudimos generar el enlace.");
+          return;
+        }
+        const link = demoBookingLink("nexclinic-demo-medica-15d", result.receipt);
+        try {
+          await navigator.clipboard.writeText(link);
+          toast.success("Enlace de seguimiento copiado");
+        } catch {
+          setReceiptLink(link);
+        }
+      } catch {
+        toast.error("No pudimos generar el enlace.");
+      }
+    });
+  }
 
   const patient = resolveAppointmentPatient(appointment.patients);
   const patientName = formatPatientName(appointment.patients);
@@ -133,6 +159,16 @@ function CalendarAppointmentDialogContent({
 
             {canManage && pendingOnlineConfirmation ? (
               <ConfirmOnlineAppointmentButton appointment={appointment} onConfirmed={onClose} />
+            ) : null}
+
+            {canManage && demoOnline ? (
+              <>
+                <Button type="button" variant="outline" onClick={copyTrackingLink} loading={copying}>
+                  <Copy aria-hidden="true" className="h-4 w-4" />
+                  Copiar enlace de seguimiento
+                </Button>
+                {receiptLink && <input aria-label="Enlace de seguimiento" value={receiptLink} readOnly onFocus={(event) => event.target.select()} className="w-full rounded-lg border border-slate-200 p-2 text-xs" />}
+              </>
             ) : null}
 
             {canStartClinical && !pendingOnlineConfirmation && canStartConsultation(appointment.status) ? (

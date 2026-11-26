@@ -1,11 +1,14 @@
 "use client";
 
 import { Bell, LogOut, RefreshCw } from "lucide-react";
+import { useState, useTransition } from "react";
 
 import { usePatientRequestsPanel } from "@/features/pacientes/hooks/use-patient-requests-panel";
 import { PatientRequestCard } from "@/features/portal/components/portal/patient-request-card";
+import { readDemoBookingLink } from "@/features/portal/utils/demo-booking-link";
 
 import { Button } from "@/components/ui/button";
+import { restoreDemoPortalBooking } from "@/lib/actions/public-booking";
 
 interface Props {
   slug: string;
@@ -16,6 +19,31 @@ interface Props {
 
 export function PatientRequestsPanel({ slug, clinicName, refreshTrigger = 0, demoBooking = false }: Props) {
   const panel = usePatientRequestsPanel({ slug, refreshTrigger, demoBooking });
+  const [linkError, setLinkError] = useState<string | null>(null);
+  const [restoring, startRestore] = useTransition();
+
+  function restore(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const receipt = readDemoBookingLink(String(new FormData(form).get("link") ?? ""));
+    if (!receipt) {
+      setLinkError("Pegá el enlace de seguimiento completo.");
+      return;
+    }
+    setLinkError(null);
+    startRestore(async () => {
+      try {
+        const result = await restoreDemoPortalBooking(slug, receipt);
+        if (result.error) setLinkError(result.error);
+        else {
+          form.reset();
+          panel.handleRefresh();
+        }
+      } catch {
+        setLinkError("No pudimos abrir el enlace. Volvé a intentarlo.");
+      }
+    });
+  }
 
   return (
     <div className="space-y-4">
@@ -81,6 +109,19 @@ export function PatientRequestsPanel({ slug, clinicName, refreshTrigger = 0, dem
             <PatientRequestCard key={request.id} request={request} panel={panel} />
           ))}
         </ul>
+      ) : null}
+      {demoBooking ? (
+        <details className="rounded-xl border border-slate-200 bg-white p-4">
+          <summary className="cursor-pointer text-sm font-semibold text-slate-800">¿Pediste el turno desde otro navegador?</summary>
+          <form onSubmit={restore} className="mt-3 space-y-2">
+            <label className="block text-sm text-slate-600">
+              Pegá el enlace de seguimiento
+              <input name="link" required autoComplete="off" className="mt-1 w-full rounded-lg border border-slate-200 p-2" />
+            </label>
+            {linkError && <p role="alert" className="text-sm text-red-700">{linkError}</p>}
+            <Button type="submit" variant="outline" loading={restoring}>Recuperar turno</Button>
+          </form>
+        </details>
       ) : null}
     </div>
   );

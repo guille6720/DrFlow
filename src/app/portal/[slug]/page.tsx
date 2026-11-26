@@ -68,6 +68,7 @@ export default async function PatientPortalPage({
         clinicAddress={null}
         professionals={await getLaMejorDemoBookingProfessionals(demo.id)}
         demoBooking
+        startOnBooking={query.turno === "1"}
         portalError={portalError}
       />
     );

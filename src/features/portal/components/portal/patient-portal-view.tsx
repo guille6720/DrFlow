@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { PublicBookingForm } from "@/core/components/booking/public-booking-form";
 
@@ -11,7 +12,9 @@ import { PatientPortalHomeScreen } from "@/features/portal/components/portal/pat
 import { PatientPortalRecetaScreen } from "@/features/portal/components/portal/patient-portal-receta-screen";
 import { PatientPortalWhatsappScreen } from "@/features/portal/components/portal/patient-portal-whatsapp-screen";
 import { PatientRequestsPanel } from "@/features/portal/components/portal/patient-requests-panel";
+import { readDemoBookingLink } from "@/features/portal/utils/demo-booking-link";
 
+import { restoreDemoPortalBooking } from "@/lib/actions/public-booking";
 import type { DoctorShareInfo } from "@/lib/utils/doctor-share-info";
 
 interface Professional {
@@ -32,6 +35,7 @@ interface Props {
   offersPami?: boolean;
   portalError?: boolean;
   demoBooking?: boolean;
+  startOnBooking?: boolean;
 }
 
 /** App pacientes estilo Crontu: inicio con accesos grandes + navegación inferior. */
@@ -45,17 +49,33 @@ export function PatientPortalView({
   offersPami = false,
   portalError = false,
   demoBooking = false,
+  startOnBooking = false,
 }: Props) {
-  const portal = usePatientPortal({ slug, clinicName, doctor, offersPami });
+  const portal = usePatientPortal({ slug, clinicName, doctor, offersPami, initialScreen: startOnBooking ? "turno" : "inicio" });
+  const { setScreen } = portal;
+  const [linkError, setLinkError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!demoBooking) return;
+    const receipt = readDemoBookingLink(window.location.hash);
+    if (!receipt) return;
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    restoreDemoPortalBooking(slug, receipt)
+      .then((result) => {
+        if (result.error) setLinkError(result.error);
+        else setScreen("turnos");
+      })
+      .catch(() => setLinkError("No pudimos abrir el enlace de seguimiento."));
+  }, [demoBooking, setScreen, slug]);
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-100 pb-20">
       <PatientPortalHeader doctorName={portal.doctorName} doctor={doctor} />
 
       <main className="mx-auto w-full max-w-lg flex-1 px-4 pt-4">
-        {portalError ? (
+        {portalError || linkError ? (
           <p className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-            El enlace de acceso no es válido o venció.
+            {linkError ?? "El enlace de acceso no es válido o venció."}
           </p>
         ) : null}
 
@@ -70,6 +90,7 @@ export function PatientPortalView({
             quickActions={demoBooking ? portal.quickActions.filter((action) => action.id !== "whatsapp") : portal.quickActions}
             demoBooking={demoBooking}
             setScreen={portal.setScreen}
+            refreshTrigger={portal.requestsVersion}
           />
         )}
 
@@ -85,6 +106,7 @@ export function PatientPortalView({
               professionals={professionals}
               onRequestSaved={portal.bumpRequestsVersion}
               demoBooking={demoBooking}
+              onViewRequests={() => setScreen("turnos")}
             />
           ))}
 

@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { PublicBookingForm } from "@/core/components/booking/public-booking-form";
 import { DrFlowLogo } from "@/core/components/brand/drflow-logo";
-import { isPublicPortalAllowedForClinic } from "@/core/entitlements/public-portal.server";
+import { isLaMejorDemoPortalSlug, isPublicPortalAllowedForClinic } from "@/core/entitlements/public-portal.server";
 import { PUBLIC_BOOKING_LINK_COLUMNS } from "@/core/supabase/select-columns";
 import { createClient } from "@/core/supabase/server";
 import { unwrapJoin } from "@/core/supabase/unwrap-join";
@@ -14,6 +14,7 @@ export default async function SolicitarTurnoPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  if (isLaMejorDemoPortalSlug(slug)) redirect(`/portal/${encodeURIComponent(slug)}?turno=1`);
   const supabase = await createClient();
 
   const { data: link } = await supabase

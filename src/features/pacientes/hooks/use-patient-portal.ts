@@ -26,10 +26,11 @@ type Options = {
   clinicName: string;
   doctor?: DoctorShareInfo | null;
   offersPami?: boolean;
+  initialScreen?: PatientPortalScreen;
 };
 
-export function usePatientPortal({ slug, clinicName, doctor, offersPami = false }: Options) {
-  const [screen, setScreen] = useState<PatientPortalScreen>("inicio");
+export function usePatientPortal({ slug, clinicName, doctor, offersPami = false, initialScreen = "inicio" }: Options) {
+  const [screen, setScreen] = useState<PatientPortalScreen>(initialScreen);
   const [portalReady, setPortalReady] = useState(false);
   const [patientName, setPatientName] = useState("");
   const [documentNumber, setDocumentNumber] = useState("");

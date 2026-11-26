@@ -16,6 +16,22 @@ function signBookingId(appointmentId: string, secret: string) {
     .digest();
 }
 
+export function createDemoBookingReceipt(appointmentId: string): string | null {
+  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret || !ID_PATTERN.test(appointmentId)) return null;
+  return `${appointmentId}.${signBookingId(appointmentId, secret).toString("hex")}`;
+}
+
+export function verifyDemoBookingReceipt(receipt: string): string | null {
+  if (typeof receipt !== "string" || receipt.length !== 101) return null;
+  const [id, signature] = receipt.split(".");
+  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret || !ID_PATTERN.test(id) || !/^[0-9a-f]{64}$/.test(signature)) return null;
+  return timingSafeEqual(signBookingId(id, secret), Buffer.from(signature, "hex"))
+    ? id
+    : null;
+}
+
 export async function rememberDemoBooking(appointmentId: string, expiresAt: Date) {
   const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!secret || !ID_PATTERN.test(appointmentId)) return;
@@ -31,16 +47,12 @@ export async function rememberDemoBooking(appointmentId: string, expiresAt: Date
 }
 
 export async function readDemoBookingIds(): Promise<string[]> {
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!secret) return [];
-
   const jar = await cookies();
   return jar.getAll()
     .filter((entry) => entry.name.startsWith(PREFIX))
     .slice(-MAX_BOOKINGS)
     .flatMap(({ name, value }) => {
-      const id = name.slice(PREFIX.length);
-      if (!ID_PATTERN.test(id) || !/^[0-9a-f]{64}$/.test(value)) return [];
-      return timingSafeEqual(signBookingId(id, secret), Buffer.from(value, "hex")) ? [id] : [];
+      const id = verifyDemoBookingReceipt(`${name.slice(PREFIX.length)}.${value}`);
+      return id ? [id] : [];
     });
 }

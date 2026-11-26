@@ -7,6 +7,7 @@ import { useEffect, useState, useTransition } from "react";
 import { PatientDataConsentCheckbox } from "@/core/components/legal/legal-consent-fields";
 
 import { setStoredDocument } from "@/features/pacientes/utils/patient-requests-storage";
+import { demoBookingLink } from "@/features/portal/utils/demo-booking-link";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -33,15 +34,18 @@ interface Props {
   professionals: Professional[];
   onRequestSaved?: () => void;
   demoBooking?: boolean;
+  onViewRequests?: () => void;
 }
 
-export function PublicBookingForm({ slug, clinicName, professionals, onRequestSaved, demoBooking = false }: Props) {
+export function PublicBookingForm({ slug, clinicName, professionals, onRequestSaved, demoBooking = false, onViewRequests }: Props) {
   const router = useRouter();
   const [professionalId, setProfessionalId] = useState("");
   const [startAt, setStartAt] = useState("");
   const [slots, setSlots] = useState<Array<{ start_at: string; label: string }>>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [receiptLink, setReceiptLink] = useState("");
+  const [receiptCopied, setReceiptCopied] = useState(false);
   const [loadingSlots, startLoadSlots] = useTransition();
   const [submitting, startSubmit] = useTransition();
 
@@ -73,6 +77,7 @@ export function PublicBookingForm({ slug, clinicName, professionals, onRequestSa
         if (documentNumber.trim()) {
           setStoredDocument(slug, documentNumber);
         }
+        if (result.demoReceipt) setReceiptLink(demoBookingLink(slug, result.demoReceipt));
         onRequestSaved?.();
         setSuccess(true);
         router.refresh();
@@ -91,6 +96,25 @@ export function PublicBookingForm({ slug, clinicName, professionals, onRequestSa
               ? "El consultorio tiene que confirmar la solicitud de prueba. Podés consultar el estado en Mis turnos."
               : <>{clinicName} recibió tu pedido por <strong>web</strong>. Para ver el estado necesitás el enlace seguro enviado por el consultorio (Mis turnos).</>}
           </p>
+          {demoBooking && onViewRequests ? (
+            <Button type="button" className="mt-4" onClick={onViewRequests}>Ver mis turnos</Button>
+          ) : null}
+          {receiptLink ? (
+            <div className="mt-4 w-full max-w-sm space-y-2">
+              <p className="text-xs text-slate-600">Guardá este enlace si querés ver el turno desde otro navegador o teléfono.</p>
+              <Button type="button" variant="outline" onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(receiptLink);
+                  setReceiptCopied(true);
+                } catch {
+                  setReceiptCopied(false);
+                }
+              }}>
+                {receiptCopied ? "Enlace copiado" : "Copiar enlace de seguimiento"}
+              </Button>
+              <input aria-label="Enlace de seguimiento" value={receiptLink} readOnly onFocus={(event) => event.target.select()} className="w-full rounded-lg border border-slate-200 p-2 text-xs text-slate-600" />
+            </div>
+          ) : null}
         </div>
       </Card>
     );

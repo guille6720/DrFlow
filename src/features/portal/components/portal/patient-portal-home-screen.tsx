@@ -7,6 +7,7 @@ import { cn } from "@/shared/utils/cn";
 
 import type { PatientPortalState } from "@/features/pacientes/hooks/use-patient-portal";
 import { AppInstallCard } from "@/features/portal/components/portal/app-install-card";
+import { DemoBookingStatus } from "@/features/portal/components/portal/demo-booking-status";
 
 type Props = Pick<PatientPortalState, "quickActions" | "setScreen"> & {
   slug: string;
@@ -15,6 +16,7 @@ type Props = Pick<PatientPortalState, "quickActions" | "setScreen"> & {
   clinicPhone: string | null;
   portalReady: boolean;
   demoBooking?: boolean;
+  refreshTrigger?: number;
   setPortalReady: (ready: boolean) => void;
 };
 
@@ -27,10 +29,12 @@ export function PatientPortalHomeScreen({
   setPortalReady,
   quickActions,
   demoBooking = false,
+  refreshTrigger = 0,
   setScreen,
 }: Props) {
   return (
     <>
+      {demoBooking && <DemoBookingStatus slug={slug} refreshTrigger={refreshTrigger} onOpen={() => setScreen("turnos")} />}
       {!portalReady && (
         <>
           <AppInstallCard

@@ -39,7 +39,7 @@ export async function getLaMejorDemoBookingProfessionals(clinicId: string) {
 
   const { data } = await admin.from("professionals")
     .select("id, display_name").eq("clinic_id", clinicId).eq("is_active", true)
-    .is("user_id", null).in("license_number", ["DEMO-1", "DEMO-2", "DEMO-3", "DEMO-4", "DEMO-5"])
+    .or("id.eq.db2d20bb-1671-4fc3-b564-a6960a6d1e74,and(user_id.is.null,license_number.in.(DEMO-1,DEMO-2,DEMO-3,DEMO-4,DEMO-5))")
     .order("display_name");
 
   return data ?? [];
