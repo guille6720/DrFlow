@@ -1,13 +1,22 @@
 "use server";
 
+import { fromZonedTime } from "date-fns-tz";
 import { revalidatePath } from "next/cache";
 
+import { setActiveClinic } from "@/core/auth/session.actions";
 import { assignClinicEntitlementPlan } from "@/core/entitlements/admin.server";
 import { compareClinicPlans } from "@/core/entitlements/superadmin-catalog.server";
 import { requireSuperadminOrDeny } from "@/core/entitlements/superadmin-guard.server";
 import { untypedDb } from "@/core/entitlements/untyped-db.server";
+import { isFiscalization } from "@/core/environment/runtime";
 import { recordAudit } from "@/core/security/audit-service";
+import { createAdminClient } from "@/core/supabase/admin";
 import { createClient } from "@/core/supabase/server";
+
+import { formatClinicDateTime } from "@/shared/utils/clinic-timezone";
+import { DEFAULT_CLINIC_TIMEZONE } from "@/shared/utils/clinic-timezone";
+
+import { LAMEJOR_DEMO_CLINIC_ID } from "@/lib/utils/appointment";
 
 function revalidateSuperadmin(clinicId?: string) {
   revalidatePath("/superadmin");
@@ -18,6 +27,66 @@ function revalidateSuperadmin(clinicId?: string) {
   revalidatePath("/superadmin/recommendations");
   revalidatePath("/qa/comercial");
   if (clinicId) revalidatePath(`/superadmin/clinics/${clinicId}`);
+}
+
+export async function openLaMejorTeamPermissions() {
+  if (!isFiscalization() || !(await requireSuperadminOrDeny()).ok) {
+    return { ok: false as const, error: "Solo superadmin de Fiscalización." };
+  }
+  try {
+    await setActiveClinic(LAMEJOR_DEMO_CLINIC_ID);
+    return { ok: true as const };
+  } catch {
+    return { ok: false as const, error: "No pudimos seleccionar LaMejor." };
+  }
+}
+
+export async function changeLaMejorTrialEnd(formData: FormData) {
+  if (!isFiscalization()) return { ok: false as const, error: "La demo se administra en Fiscalización." };
+  const access = await requireSuperadminOrDeny();
+  if (!access.ok) return { ok: false as const, error: access.error };
+  const value = String(formData.get("endsAt") ?? "");
+  const expected = String(formData.get("expectedAt") ?? "");
+  const reason = String(formData.get("reason") ?? "").trim();
+  const dateFormat = "yyyy-MM-dd'T'HH:mm";
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) || !Number.isFinite(Date.parse(expected))) {
+    return { ok: false as const, error: "Ingresá una fecha y una hora válidas." };
+  }
+  if (!reason || reason.length > 250) {
+    return { ok: false as const, error: "Ingresá un motivo de hasta 250 caracteres." };
+  }
+  const endsAt = fromZonedTime(value, DEFAULT_CLINIC_TIMEZONE);
+  if (!Number.isFinite(endsAt.getTime()) || formatClinicDateTime(endsAt, dateFormat) !== value) {
+    return { ok: false as const, error: "Ingresá una fecha y una hora válidas." };
+  }
+
+  const { data, error } = await untypedDb(createAdminClient()).rpc("set_lamejor_demo_trial_end", {
+    p_expected_at: expected,
+    p_ends_at: endsAt.toISOString(),
+  });
+  if (error || typeof data !== "string") {
+    if (error?.message === "DEMO_TRIAL_CONFLICT") {
+      return { ok: false as const, error: "El vencimiento cambió. Recargá la página antes de editarlo." };
+    }
+    if (error?.message === "DEMO_TRIAL_DATE_INVALID") {
+      return { ok: false as const, error: "El vencimiento debe ser posterior al inicio de la prueba." };
+    }
+    return { ok: false as const, error: "No pudimos cambiar el vencimiento de LaMejor." };
+  }
+  await recordAudit({
+    clinicId: LAMEJOR_DEMO_CLINIC_ID,
+    userId: access.userId,
+    entityId: LAMEJOR_DEMO_CLINIC_ID,
+    entityType: "clinic",
+    action: "update",
+    metadata: { source: "fiscalization_lamejor_trial_end", reason },
+    oldValues: { trial_ends_at: expected },
+    newValues: { trial_ends_at: data },
+  });
+  revalidateSuperadmin(LAMEJOR_DEMO_CLINIC_ID);
+  revalidatePath("/portal/nexclinic-demo-medica-15d", "layout");
+  revalidatePath("/dashboard", "layout");
+  return { ok: true as const, endsAt: data };
 }
 
 export async function previewClinicPlanChangeAction(currentPlanKey: string, newPlanKey: string) {

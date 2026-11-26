@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DashboardPageHeader } from "@/core/components/layout/dashboard-page-header";
+import { LaMejorTrialControls } from "@/core/components/superadmin/lamejor-trial-controls";
 import { ManualHelpLink } from "@/core/components/superadmin/manual/manual-help-link";
 import { SuperadminClearOverrideButton } from "@/core/components/superadmin/superadmin-clear-override-button";
 import { SuperadminClinicPlanForm } from "@/core/components/superadmin/superadmin-clinic-plan-form";
@@ -11,11 +12,14 @@ import { listEntitlementsAdminOverrides } from "@/core/entitlements/admin.server
 import { ADMIN_ASSIGNABLE_PLAN_KEYS } from "@/core/entitlements/admin-constants";
 import { listSuperadminClinicCommercialRows } from "@/core/entitlements/superadmin-clinics.server";
 import { requireSuperadminPage } from "@/core/entitlements/superadmin-guard.server";
+import { isFiscalization } from "@/core/environment/runtime";
 import { logServerError } from "@/core/errors/log-error.server";
 import { loadClinicProducts } from "@/core/products/products.server";
+import { createAdminClient } from "@/core/supabase/admin";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { LAMEJOR_DEMO_CLINIC_ID } from "@/lib/utils/appointment";
 
 export default async function SuperadminClinicDetailPage({
   params,
@@ -71,6 +75,11 @@ export default async function SuperadminClinicDetailPage({
 
   if (!clinic) notFound();
 
+  const demoTrial = isFiscalization() && clinicId === LAMEJOR_DEMO_CLINIC_ID
+    ? await createAdminClient().from("clinics").select("trial_ends_at")
+      .eq("id", LAMEJOR_DEMO_CLINIC_ID).eq("is_fiscalization", true).maybeSingle()
+    : null;
+
   return (
     <div className="space-y-4">
       <DashboardPageHeader
@@ -96,6 +105,7 @@ export default async function SuperadminClinicDetailPage({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
+        {demoTrial?.data?.trial_ends_at && <LaMejorTrialControls endsAt={demoTrial.data.trial_ends_at} />}
         <Card title="Suscripción" description="Estado comercial actual">
           <dl className="space-y-2 text-sm">
             <Row label="Plan" value={clinic.planKey ?? "—"} />
