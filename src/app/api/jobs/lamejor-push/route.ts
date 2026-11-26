@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 
-import webpush from "web-push";
+import { sendNotification } from "web-push";
 
 import { isFiscalization } from "@/core/environment/runtime";
 import { DEMO_PORTAL_PATH, demoSubscriptionSchema } from "@/core/portal/demo-push.server";
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
         return;
       }
       try {
-        await webpush.sendNotification(parsed.data, JSON.stringify({
+        await sendNotification(parsed.data, JSON.stringify({
           kind: "lamejor-turno-hoy",
           count: row.appointment_count,
           day: row.day_key,
