@@ -33,14 +33,26 @@ export async function rememberDemoPushDevice(raw: unknown, expiresAt: Date) {
   const subscription = input.data;
   const id = createHash("sha256").update(subscription.endpoint).update("\0").update(subscription.keys.auth).digest("hex");
   const appointmentIds = await readDemoBookingIds();
-  const { error } = await createAdminClient().from("lamejor_demo_push_devices").upsert({
+  const jar = await cookies();
+  const previous = jar.get(DEVICE_COOKIE)?.value;
+  const replacing = previous && previous !== id && /^[a-f0-9]{64}$/.test(previous);
+  const db = createAdminClient();
+  const existing = replacing
+    ? await db.from("lamejor_demo_push_devices").select("last_day").eq("device_id", previous).maybeSingle()
+    : null;
+  if (existing?.error) return false;
+  const { error } = await db.from("lamejor_demo_push_devices").upsert({
     device_id: id,
     subscription,
     appointment_ids: appointmentIds,
+    ...(existing?.data?.last_day ? { last_day: existing.data.last_day } : {}),
   });
   if (error) return false;
 
-  (await cookies()).set(DEVICE_COOKIE, id, { ...buildPortalCookieOptions(expiresAt), path: DEMO_PORTAL_PATH });
+  if (replacing) {
+    await db.from("lamejor_demo_push_devices").delete().eq("device_id", previous);
+  }
+  jar.set(DEVICE_COOKIE, id, { ...buildPortalCookieOptions(expiresAt), path: DEMO_PORTAL_PATH });
   return true;
 }
 
