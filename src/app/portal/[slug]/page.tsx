@@ -68,6 +68,7 @@ export default async function PatientPortalPage({
         clinicAddress={null}
         professionals={await getLaMejorDemoBookingProfessionals(demo.id)}
         demoBooking
+        pushPublicKey={process.env.LAMEJOR_PUSH_PUBLIC_KEY}
         startOnBooking={query.turno === "1"}
         portalError={portalError}
       />

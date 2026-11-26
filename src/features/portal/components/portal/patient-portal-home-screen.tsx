@@ -9,6 +9,7 @@ import type { PatientPortalState } from "@/features/pacientes/hooks/use-patient-
 import { usePatientRequestsPanel } from "@/features/pacientes/hooks/use-patient-requests-panel";
 import { AppInstallCard } from "@/features/portal/components/portal/app-install-card";
 import { DemoBookingStatus } from "@/features/portal/components/portal/demo-booking-status";
+import { DemoTurnNotifications } from "@/features/portal/components/portal/demo-turn-notifications";
 import { PatientPortalCalendar } from "@/features/portal/components/portal/patient-portal-calendar";
 
 type Props = Pick<PatientPortalState, "quickActions" | "setScreen"> & {
@@ -19,6 +20,7 @@ type Props = Pick<PatientPortalState, "quickActions" | "setScreen"> & {
   portalReady: boolean;
   demoBooking?: boolean;
   refreshTrigger?: number;
+  pushPublicKey?: string;
   setPortalReady: (ready: boolean) => void;
 };
 
@@ -32,6 +34,7 @@ export function PatientPortalHomeScreen({
   quickActions,
   demoBooking = false,
   refreshTrigger = 0,
+  pushPublicKey,
   setScreen,
 }: Props) {
   const { items } = usePatientRequestsPanel({ slug, refreshTrigger, demoBooking, enabled: demoBooking });
@@ -81,6 +84,8 @@ export function PatientPortalHomeScreen({
         </div>
 
         {demoBooking && <PatientPortalCalendar items={items} />}
+
+        {demoBooking && pushPublicKey && <DemoTurnNotifications slug={slug} publicKey={pushPublicKey} />}
 
         {clinicAddress ? (
           <p className="text-center text-xs text-slate-500">{clinicAddress}</p>

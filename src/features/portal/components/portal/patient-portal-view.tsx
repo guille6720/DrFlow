@@ -36,6 +36,7 @@ interface Props {
   portalError?: boolean;
   demoBooking?: boolean;
   startOnBooking?: boolean;
+  pushPublicKey?: string;
 }
 
 /** App pacientes estilo Crontu: inicio con accesos grandes + navegación inferior. */
@@ -50,6 +51,7 @@ export function PatientPortalView({
   portalError = false,
   demoBooking = false,
   startOnBooking = false,
+  pushPublicKey,
 }: Props) {
   const portal = usePatientPortal({ slug, clinicName, doctor, offersPami, initialScreen: startOnBooking ? "turno" : "inicio" });
   const { setScreen } = portal;
@@ -91,6 +93,7 @@ export function PatientPortalView({
             demoBooking={demoBooking}
             setScreen={portal.setScreen}
             refreshTrigger={portal.requestsVersion}
+            pushPublicKey={pushPublicKey}
           />
         )}
 

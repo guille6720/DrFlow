@@ -12,6 +12,7 @@ import {
   rememberDemoBooking,
   verifyDemoBookingReceipt,
 } from "@/core/portal/demo-booking-cookie";
+import { syncDemoPushAppointments } from "@/core/portal/demo-push.server";
 import {
   getPortalAuthErrorMessage,
   getPortalSessionRequiredMessage,
@@ -83,6 +84,7 @@ export async function submitPublicBooking(formData: FormData) {
       };
     }
     await rememberDemoBooking(data, new Date(clinic.trial_ends_at));
+    await syncDemoPushAppointments(data).catch(() => {});
     return { success: true, appointmentId: data, startAt, documentNumber: "", demoReceipt: createDemoBookingReceipt(data) };
   }
 
@@ -266,6 +268,7 @@ export async function restoreDemoPortalBooking(slug: string, receipt: string) {
   const { data, error } = await queryDemoAppointments(clinic.id, [appointmentId]).maybeSingle();
   if (error || !data) return { error: "No encontramos el turno de ese enlace." };
   await rememberDemoBooking(appointmentId, new Date(clinic.trial_ends_at));
+  await syncDemoPushAppointments(appointmentId).catch(() => {});
   return { success: true };
 }
 

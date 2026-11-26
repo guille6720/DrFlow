@@ -149,6 +149,7 @@
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.6.0",
     "unpdf": "^1.8.0",
+    "web-push": "4.0.0",
     "web-vitals": "^5.3.0",
     "xlsx": "^0.18.5",
     "zod": "^4.4.3"
@@ -165,6 +166,7 @@
     "@types/qrcode-generator": "^0.0.16",
     "@types/react": "19.2.18",
     "@types/react-dom": "^19",
+    "@types/web-push": "3.6.4",
     "@vitejs/plugin-react": "^6.0.2",
     "@vitest/coverage-v8": "^4.1.10",
     "babel-plugin-react-compiler": "^1.0.0",

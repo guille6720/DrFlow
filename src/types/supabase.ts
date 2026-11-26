@@ -317,6 +317,12 @@ export type Database = {
           },
         ]
       }
+      lamejor_demo_push_devices: {
+        Row: { device_id: string; subscription: Json; appointment_ids: string[]; last_day: string | null }
+        Insert: { device_id: string; subscription: Json; appointment_ids?: string[]; last_day?: string | null }
+        Update: { device_id?: string; subscription?: Json; appointment_ids?: string[]; last_day?: string | null }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: Database["public"]["Enums"]["audit_action"]
@@ -5708,6 +5714,15 @@ export type Database = {
       submit_lamejor_demo_online_booking: {
         Args: { p_professional_id: string; p_start_at: string }
         Returns: string
+      }
+      claim_lamejor_demo_push_reminders: {
+        Args: never
+        Returns: {
+          appointment_count: number
+          day_key: string
+          device_id: string
+          subscription: Json
+        }[]
       }
       get_lamejor_demo_room_busy: {
         Args: { p_location_id: string; p_range_start: string; p_range_end: string }
