@@ -7,115 +7,115 @@
 /* Reference: white clinical chrome + teal active nav (claro). */
 html[data-ui-style="2"][data-ui-palette="clinical-blue"]:not([data-clinical-dark="1"]),
 html[data-ui-style="2"]:not([data-clinical-dark="1"]):not([data-ui-palette]) {
-  --background: #f5f7f9;
-  --foreground: #172033;
+  --background: #f2f6fa;
+  --foreground: #18263c;
   --card: #ffffff;
-  --card-foreground: #172033;
-  --border: #e2e8f0;
+  --card-foreground: #18263c;
+  --border: #dce5ef;
   --input: #ffffff;
-  --muted: #eef3f8;
-  --muted-foreground: #475569;
-  --primary: #0d63d8;
-  --primary-hover: #0a52b4;
-  --primary-dark: #0a52b4;
+  --muted: #edf3f8;
+  --muted-foreground: #506179;
+  --primary: #1754b8;
+  --primary-hover: #12479e;
+  --primary-dark: #12479e;
   --primary-light: #1677ff;
   --primary-foreground: #ffffff;
   --secondary: #0f766e;
   --secondary-foreground: #ffffff;
-  --accent: #0d9488;
+  --accent: #0d746e;
   --accent-foreground: #ffffff;
-  --accent-soft: #ccfbf1;
+  --accent-soft: #e4f2fa;
   --destructive: #d92d20;
   --destructive-foreground: #ffffff;
   --success: #168a5b;
   --warning: #c87800;
   --info: #1769c2;
-  --ring: #0d63d8;
+  --ring: #1754b8;
   --sidebar: #ffffff;
-  --sidebar-accent: #0f766e;
-  --sidebar-active-bg: #0f766e;
+  --sidebar-accent: #0d746e;
+  --sidebar-active-bg: #e4f2fa;
   --table-hover: #eef3f8;
-  --placeholder: #64748b;
+  --placeholder: #506179;
   --radius: 0.75rem;
 
-  --text-primary: #172033;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --text-disabled: #94a3b8;
+  --text-primary: #18263c;
+  --text-secondary: #334155;
+  --text-muted: #506179;
+  --text-disabled: #64748b;
   --text-on-primary: #ffffff;
   --text-on-secondary: #ffffff;
   --text-on-accent: #ffffff;
-  --text-on-card: #172033;
+  --text-on-card: #18263c;
   --text-on-sidebar: #1e293b;
-  --text-on-selected: #0f172a;
+  --text-on-selected: #115278;
 
-  --surface-page: #f5f7f9;
+  --surface-page: #f2f6fa;
   --surface-card: #ffffff;
   --surface-elevated: #ffffff;
   --surface-sidebar: #ffffff;
   --surface-input: #ffffff;
   --surface-hover: #f1f5f9;
-  --surface-selected: #ccfbf1;
+  --surface-selected: #e4f2fa;
 
-  --border-default: #e2e8f0;
+  --border-default: #dce5ef;
   --border-strong: #cbd5e1;
 }
 
 /* ——— Clinical Blue · Dark ——— */
 html[data-ui-style="2"][data-ui-palette="clinical-blue"][data-clinical-dark="1"],
 html[data-ui-style="2"][data-clinical-dark="1"]:not([data-ui-palette]) {
-  --background: #08111f;
-  --foreground: #f3f7fc;
-  --card: #101b2d;
-  --card-foreground: #f3f7fc;
-  --border: #26364d;
-  --input: #0e1a2c;
-  --muted: #162338;
-  --muted-foreground: #aab7c8;
-  --primary: #4d9cff;
-  --primary-hover: #72b1ff;
+  --background: #0c1626;
+  --foreground: #edf4ff;
+  --card: #142238;
+  --card-foreground: #edf4ff;
+  --border: #2d4059;
+  --input: #101e32;
+  --muted: #1a2b43;
+  --muted-foreground: #aebed3;
+  --primary: #86b7ff;
+  --primary-hover: #a5cbff;
   --primary-dark: #1677ff;
-  --primary-light: #72b1ff;
-  --primary-foreground: #08111f;
+  --primary-light: #a5cbff;
+  --primary-foreground: #10213a;
   --secondary: #32c6c8;
   --secondary-foreground: #08111f;
-  --accent: #32c6c8;
+  --accent: #62d6c6;
   --accent-foreground: #08111f;
-  --accent-soft: #12353a;
+  --accent-soft: #193c57;
   --destructive: #ff6b64;
   --destructive-foreground: #08111f;
   --success: #43d39e;
   --warning: #f5b84c;
   --info: #62a8ff;
-  --ring: #4d9cff;
-  --sidebar: #07101d;
-  --sidebar-accent: #4d9cff;
-  --sidebar-active-bg: #12253d;
-  --table-hover: #162338;
-  --placeholder: #aab7c8;
+  --ring: #86b7ff;
+  --sidebar: #142238;
+  --sidebar-accent: #86b7ff;
+  --sidebar-active-bg: #193c57;
+  --table-hover: #1a2b43;
+  --placeholder: #aebed3;
   --radius: 0.75rem;
 
-  --text-primary: #f3f7fc;
-  --text-secondary: #aab7c8;
-  --text-muted: #aab7c8;
+  --text-primary: #edf4ff;
+  --text-secondary: #aebed3;
+  --text-muted: #aebed3;
   --text-disabled: #667085;
-  --text-on-primary: #08111f;
+  --text-on-primary: #10213a;
   --text-on-secondary: #08111f;
   --text-on-accent: #08111f;
-  --text-on-card: #f3f7fc;
+  --text-on-card: #edf4ff;
   --text-on-sidebar: #e8eef6;
-  --text-on-selected: #f3f7fc;
+  --text-on-selected: #b2e3ff;
 
-  --surface-page: #08111f;
-  --surface-card: #101b2d;
-  --surface-elevated: #162338;
-  --surface-sidebar: #07101d;
-  --surface-input: #0e1a2c;
-  --surface-hover: #162338;
-  --surface-selected: #14345c;
+  --surface-page: #0c1626;
+  --surface-card: #142238;
+  --surface-elevated: #1a2b43;
+  --surface-sidebar: #142238;
+  --surface-input: #101e32;
+  --surface-hover: #1a2b43;
+  --surface-selected: #193c57;
 
-  --border-default: #26364d;
-  --border-strong: #3a4d68;
+  --border-default: #2d4059;
+  --border-strong: #607692;
 }
 
 /* ——— Medical Slate · Light ——— */

@@ -5338,6 +5338,122 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main article.drflow
   font-weight: 600;
 }
 
+/* Clinical Blue: align the legacy agenda and patient workspace with the app theme. */
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-sidebar-nav-active,
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-sidebar-nav-active svg {
+  color: var(--text-on-selected) !important;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drflow-agenda-view {
+  background: var(--surface-page) !important;
+  color: var(--foreground);
+  box-shadow: none;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drflow-agenda-view :is(
+  .drflow-card-light, .drflow-surface-light, .bg-white, .bg-amber-50,
+  .bg-yellow-50, .bg-emerald-50, .bg-rose-50, .bg-rose-50\/80
+) {
+  background: var(--surface-card) !important;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drflow-agenda-view :is(
+  .bg-slate-50, .bg-slate-50\/80, .bg-slate-100, .bg-slate-100\/80
+) {
+  background: var(--muted) !important;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drflow-agenda-view :is(
+  h1, h2, h3, h4, .text-slate-800, .text-slate-900
+):not(.drflow-badge-default) {
+  color: var(--foreground) !important;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drflow-agenda-view :is(
+  .text-slate-400, .text-slate-500, .text-slate-600, .text-slate-700
+) {
+  color: var(--muted-foreground) !important;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drflow-agenda-view :is(
+  .border-slate-200, .border-slate-200\/80, .border-slate-300
+) {
+  border-color: var(--border) !important;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drflow-agenda-view :is(
+  .ring-slate-200, .ring-slate-200\/90
+) {
+  --tw-ring-color: var(--border);
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drflow-agenda-view :is(
+  .drflow-agenda-nav-btn, .drflow-agenda-date-btn, .drflow-ui-input, .drflow-ui-select,
+  .drflow-ui-button.border-slate-200, .drflow-ui-button.bg-white
+) {
+  border-color: var(--border-strong) !important;
+  background: var(--surface-input) !important;
+  color: var(--foreground) !important;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drflow-agenda-view :is(
+  .drflow-agenda-nav-btn, .drflow-agenda-date-btn, .drflow-ui-button.border-slate-200, .drflow-ui-button.bg-white
+):hover {
+  background: var(--surface-hover) !important;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drflow-agenda-view :is(
+  .drflow-agenda-date-btn[data-selected="true"], button[aria-selected="true"], button[aria-pressed="true"]
+) {
+  border-color: var(--ring) !important;
+  background: var(--surface-selected) !important;
+  color: var(--text-on-selected) !important;
+  box-shadow: none;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drflow-agenda-view :is(
+  .drflow-agenda-date-btn[data-selected="true"], button[aria-selected="true"], button[aria-pressed="true"]
+) > span {
+  color: var(--text-on-selected) !important;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] :is(.drflow-ehr-shell, .drflow-ehr-table-panel) {
+  --ehr-bg: var(--surface-page);
+  --ehr-panel: var(--surface-card);
+  --ehr-text: var(--foreground);
+  --ehr-muted: var(--muted-foreground);
+  --ehr-accent: var(--accent);
+  --ehr-accent-soft: var(--accent);
+  --ehr-accent-bright: var(--ring);
+  --ehr-label: var(--accent);
+  --ehr-evolution-bg: var(--surface-selected);
+  --ehr-sidebar-active: var(--surface-selected);
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drapp-consulta-shell :is(
+  .drapp-consulta-composer, .drapp-consulta-actions, .drapp-consulta-evolution,
+  .drflow-ehr-table-panel, .drflow-ehr-table-title
+) {
+  background: var(--surface-card) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drapp-consulta-shell :is(
+  .drapp-consulta-evolution-input, .drapp-consulta-evolution textarea
+) {
+  background: var(--surface-input) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--foreground) !important;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drapp-consulta-shell :is(
+  .drapp-consulta-evolution-input, .drapp-consulta-evolution textarea
+):focus {
+  border-color: var(--ring) !important;
+  box-shadow: 0 0 0 1px var(--ring) !important;
+}
+
 /* â€”â€”â€” Legibilidad nÃ­tida: EHR en overlay claro + comboboxes clÃ­nicos â€”â€”â€” */
 
 /* El overlay fuerza color oscuro; restaurar tokens EHR dentro del shell */
