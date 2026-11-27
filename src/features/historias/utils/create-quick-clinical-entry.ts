@@ -1,5 +1,6 @@
 import {
   buildDiagnosisText,
+  buildIndicationsSnapshot,
   type ClinicalDiagnosisEntry,
   type ClinicalTreatmentEntry,
   mergeTreatmentsForPersist,
@@ -157,11 +158,10 @@ export async function saveQuickDiagnosis(
 export async function saveQuickTreatment(
   ctx: QuickClinicalSaveContext,
   treatment: ClinicalTreatmentEntry,
-  medications: PrescriptionMedication[] = []
+  additionalMedications: PrescriptionMedication[] = []
 ): Promise<QuickClinicalSaveResult> {
-  const clinicalTreatments = [treatment];
-  const merged = mergeTreatmentsForPersist(clinicalTreatments, medications);
-  const indications = buildConsultIndicationsText(medications, "", clinicalTreatments);
+  const merged = mergeTreatmentsForPersist([treatment], additionalMedications);
+  const indications = buildIndicationsSnapshot(merged);
   const evolution = treatment.product;
   const formData = baseFormData(ctx);
   formData.set("chief_complaint", "Tratamiento");

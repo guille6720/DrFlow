@@ -49,6 +49,7 @@ export type PatientEhrTreatmentRow = {
 };
 
 import {
+  buildIndicationsSnapshot,
   type ClinicalDiagnosisEntry,
   type ClinicalTreatmentEntry,
   resolveDiagnosesForRecord,
@@ -140,6 +141,29 @@ export function sanitizeEhrPayload(payload: {
   return { ...payload, diagnosisRows, treatmentRows };
 }
 
+function hasLegacyQuickMedicationDuplicate(
+  chiefComplaint: string | null,
+  evolution: string | null,
+  indications: string,
+  treatments: ClinicalTreatmentEntry[]
+): boolean {
+  const [edited, original] = treatments;
+  return chiefComplaint === "Tratamiento" &&
+    edited?.kind === "medication" &&
+    original?.kind === "medication" &&
+    edited.product === evolution &&
+    edited.product === original.product &&
+    (edited.dose ?? "") === (original.dose ?? "") &&
+    (edited.frequency ?? "") === (original.frequency ?? "") &&
+    (edited.vademecum_code ?? null) === (original.vademecum_code ?? null) &&
+    (edited.catalog_source ?? null) === (original.catalog_source ?? null) &&
+    (edited.active_ingredient ?? null) === (original.active_ingredient ?? null) &&
+    edited.quantity === original.quantity &&
+    original.status === "Actual" &&
+    (!original.notes || edited.notes?.split(" · ").includes(original.notes) === true) &&
+    indications.trim() === buildIndicationsSnapshot(treatments);
+}
+
 export function buildEhrPayloadFromRecords(
   records: Array<{
     id: string;
@@ -180,7 +204,12 @@ export function buildEhrPayloadFromRecords(
     const dateLabel = formatShortDate(r.created_at);
     const recordCreatedAt = r.created_at;
     const structuredDiagnoses = resolveDiagnosesForRecord(r);
-    const structuredTreatments = resolveTreatmentsForRecord(r);
+    let structuredTreatments = resolveTreatmentsForRecord(r);
+    let indications = r.indications ?? "";
+    if (hasLegacyQuickMedicationDuplicate(r.chief_complaint, r.evolution, indications, structuredTreatments)) {
+      structuredTreatments = [structuredTreatments[0], ...structuredTreatments.slice(2)];
+      indications = buildIndicationsSnapshot(structuredTreatments);
+    }
 
     const skipSidebar =
       !includeHceStructural && isHceStructuralChiefComplaint(r.chief_complaint);
@@ -199,7 +228,7 @@ export function buildEhrPayloadFromRecords(
         diagnosis,
         evolution,
         // Phase 3: indications TEXT is a printable snapshot only.
-        indications: sanitizeClinicalDisplayText(r.indications ?? ""),
+        indications: sanitizeClinicalDisplayText(indications),
         category,
       });
     }

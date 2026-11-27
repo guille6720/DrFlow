@@ -610,13 +610,13 @@ function DrappConsultaWorkspaceInner({
 
   async function handleSaveTreatment(
     treatment: ClinicalTreatmentEntry,
-    medications: PrescriptionMedication[]
+    additionalMedications: PrescriptionMedication[]
   ) {
     if (!quickCtx) {
       toast.error("Seleccioná un profesional");
       return;
     }
-    await runQuickSave(() => saveQuickTreatment(quickCtx, treatment, medications));
+    await runQuickSave(() => saveQuickTreatment(quickCtx, treatment, additionalMedications));
   }
 
   async function handleSaveVitals(values: VitalsFormValues) {

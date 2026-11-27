@@ -16,7 +16,10 @@ import type { PrescriptionMedication } from "@/types/prescription";
 type Props = {
   onDirtyChange: (dirty: boolean) => void;
   onCancel: () => void;
-  onSave: (treatment: ClinicalTreatmentEntry, medications: PrescriptionMedication[]) => Promise<void>;
+  onSave: (
+    treatment: ClinicalTreatmentEntry,
+    additionalMedications: PrescriptionMedication[]
+  ) => Promise<void>;
   saving: boolean;
 };
 
@@ -102,12 +105,16 @@ export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, savin
   }
 
   async function handleSave() {
-    const fromMeds = medicationsToTreatmentEntries(medications);
-    const base = catalogTreatments[0] ?? fromMeds[0];
+    const catalogTreatment = catalogTreatments[0];
+    const selectedMedication = medications.at(-1);
+    const base = catalogTreatment ?? (
+      selectedMedication ? medicationsToTreatmentEntries([selectedMedication])[0] : undefined
+    );
     const productName = (base?.product || product).trim();
     if (!productName) return;
 
     const noteParts = [
+      base?.notes?.trim(),
       instructions.trim(),
       notes.trim(),
       route.trim() ? `Vía: ${route.trim()}` : "",
@@ -121,7 +128,7 @@ export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, savin
         product: productName,
         dose: (dose || base?.dose || "").trim() || undefined,
         frequency: (frequency || base?.frequency || "").trim() || undefined,
-        notes: noteParts.join(" · ") || undefined,
+        notes: [...new Set(noteParts)].join(" · ") || undefined,
         status,
         active_ingredient: (activeIngredient || base?.active_ingredient || "").trim() || undefined,
         kind: base?.kind ?? (medications.length > 0 ? "medication" : "free_text"),
@@ -131,7 +138,7 @@ export function DrappTreatmentQuickForm({ onDirtyChange, onCancel, onSave, savin
         catalog_source: base?.catalog_source ?? null,
         quantity: base?.quantity,
       },
-      medications
+      catalogTreatment ? medications : medications.slice(0, -1)
     );
   }
 
