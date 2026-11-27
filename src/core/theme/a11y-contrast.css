@@ -107,8 +107,9 @@ html[data-clinical-dark="1"] [data-selected="true"]:not(option) {
 }
 
 /* Light islands inside dark themes + Cobalt cards: never pale text on white */
-html[data-clinical-dark="1"] .drflow-card-light,
-html[data-clinical-dark="1"] .drflow-surface-light {
+html[data-clinical-dark="1"] :is(.drflow-card-light, .drflow-surface-light):where(
+  :not([data-ui-palette="clinical-blue"] .drflow-agenda-view, [data-ui-palette="clinical-blue"] .drflow-agenda-view *)
+) {
   --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-muted: #475569;
