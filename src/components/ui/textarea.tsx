@@ -168,7 +168,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                 aria-label={listening ? "Detener dictado por voz" : "Iniciar dictado por voz"}
                 aria-pressed={listening}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition",
+                  "drflow-dictation-toggle inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition",
                   listening
                     ? "bg-red-100 text-red-700 ring-1 ring-red-200"
                     : "bg-teal-50 text-teal-700 ring-1 ring-teal-200 hover:bg-teal-100"

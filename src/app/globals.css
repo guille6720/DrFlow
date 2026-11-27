@@ -5342,6 +5342,26 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main article.drflow
 }
 
 /* Clinical Blue: align the legacy agenda and patient workspace with the app theme. */
+html[data-ui-style="2"][data-ui-palette="clinical-blue"]:not([data-clinical-dark="1"]) .drflow-ui-topnav a[aria-current="page"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"][data-clinical-dark="1"] .drapp-consulta-shell .drflow-dictation-toggle[aria-pressed="false"] {
+  background: var(--surface-elevated);
+  color: var(--text-on-selected) !important;
+  --tw-ring-color: var(--border-strong);
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"][data-clinical-dark="1"] .drapp-consulta-shell .drflow-dictation-toggle[aria-pressed="false"]:hover {
+  background: var(--surface-selected);
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"][data-clinical-dark="1"] .drapp-consulta-shell .drflow-dictation-toggle:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
 html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-ui-sidebar a.drflow-sidebar-nav-active,
 html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-ui-sidebar a.drflow-sidebar-nav-active :is(svg, span) {
   color: var(--text-on-selected) !important;
