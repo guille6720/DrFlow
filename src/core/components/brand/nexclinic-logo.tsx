@@ -58,8 +58,11 @@ export function NexClinicLogo({
           BRAND_NAME
         ) : (
           <>
-            <span style={{ color: BRAND_COLORS.navy }}>Nex</span>
+            <span className="nexclinic-wordmark-prefix" style={{ color: BRAND_COLORS.navy }}>
+              Nex
+            </span>
             <span
+              className="nexclinic-wordmark-accent"
               style={{
                 backgroundImage: `linear-gradient(90deg, ${BRAND_COLORS.turquoise}, ${BRAND_COLORS.green})`,
                 WebkitBackgroundClip: "text",
