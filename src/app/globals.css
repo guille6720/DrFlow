@@ -5370,7 +5370,7 @@ html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drfl
 }
 
 html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drflow-agenda-view :is(
-  .bg-slate-50, .bg-slate-50\/80, .bg-slate-100, .bg-slate-100\/80
+  .bg-slate-50, .bg-slate-50\/80, .bg-slate-100, .bg-slate-100\/80, .from-slate-50.to-white
 ) {
   background: var(--muted) !important;
 }
@@ -5382,7 +5382,7 @@ html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drfl
 }
 
 html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-mesh main .drflow-agenda-view :is(
-  .text-slate-400, .text-slate-500, .text-slate-600, .text-slate-700
+  .text-slate-400, .text-slate-500, .text-slate-600, .text-slate-700, label.drflow-ui-label
 ) {
   color: var(--muted-foreground) !important;
 }
@@ -5464,6 +5464,11 @@ html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drapp-consulta-shell :
 ):focus {
   border-color: var(--ring) !important;
   box-shadow: 0 0 0 1px var(--ring) !important;
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-patient-workspace-tab-active :is(span, svg),
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drapp-consulta-shell .drflow-btn-primary {
+  color: var(--text-on-primary) !important;
 }
 
 /* â€”â€”â€” Legibilidad nÃ­tida: EHR en overlay claro + comboboxes clÃ­nicos â€”â€”â€” */

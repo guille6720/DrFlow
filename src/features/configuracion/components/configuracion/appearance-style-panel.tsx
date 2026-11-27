@@ -26,7 +26,7 @@ const STYLE_ICONS: Record<UiStyleId, typeof Sparkles> = {
 };
 
 const STYLE_SWATCHES: Record<UiStyleId, string[]> = {
-  "clinical-blue": ["#F5F7F9", "#FFFFFF", "#0D63D8", "#0F766E", "#08111F"],
+  "clinical-blue": ["#F2F6FA", "#FFFFFF", "#1754B8", "#0D746E", "#0C1626"],
   "medical-slate": ["#F5F7F9", "#FFFFFF", "#2563EB", "#0F766E", "#0D1117"],
 };
 
@@ -97,7 +97,7 @@ function AppearanceStyleControls() {
                 </div>
                 <p className="drflow-theme-option-desc mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
                   {id === "clinical-blue"
-                    ? "Azul clínico con sidebar navy y acentos teal. Alta legibilidad médica."
+                    ? "Azul clínico y turquesa, con superficies claras o azul noche."
                     : "Slate médico con acento violeta. Profesional y neutro."}
                 </p>
               </button>
@@ -106,7 +106,7 @@ function AppearanceStyleControls() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-4">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-hover)] p-4">
         <p className="mb-3 font-semibold text-[var(--text-primary,var(--foreground))]">Modo</p>
         <div className="grid grid-cols-3 gap-2">
           {APPEARANCE_MODES.map((mode) => {
@@ -137,7 +137,7 @@ function AppearanceStyleControls() {
       </div>
 
       {voice ? (
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-4">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-hover)] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="flex items-center gap-2 font-semibold text-[var(--text-primary,var(--foreground))]">
