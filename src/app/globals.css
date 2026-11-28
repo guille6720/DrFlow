@@ -5342,6 +5342,22 @@ html[data-ui-style="2"][data-clinical-dark="1"] .drflow-mesh main article.drflow
 }
 
 /* Clinical Blue: align the legacy agenda and patient workspace with the app theme. */
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-command-palette-trigger {
+  background: var(--surface-card);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-command-palette-trigger:hover {
+  background: var(--surface-hover);
+  border-color: var(--ring);
+}
+
+html[data-ui-style="2"][data-ui-palette="clinical-blue"] .drflow-command-palette-trigger :is(span, kbd) {
+  border-color: var(--border);
+  color: var(--muted-foreground);
+}
+
 html[data-ui-style="2"][data-ui-palette="clinical-blue"]:not([data-clinical-dark="1"]) .drflow-ui-topnav a[aria-current="page"] {
   border-color: var(--accent);
   color: var(--accent);

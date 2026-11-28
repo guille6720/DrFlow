@@ -24,7 +24,7 @@ export function CommandPaletteTrigger({ className, compact = false }: Props) {
       type="button"
       onClick={() => setOpen(true)}
       className={cn(
-        "inline-flex items-center gap-2 rounded-2xl border text-sm transition focus:outline-none focus:ring-2 focus:ring-teal-500/30",
+        "drflow-command-palette-trigger inline-flex items-center gap-2 rounded-2xl border text-sm transition focus:outline-none focus:ring-2 focus:ring-teal-500/30",
         compact
           ? "h-11 w-11 justify-center border-slate-600 bg-slate-800 text-teal-300 hover:border-teal-500/50 hover:bg-slate-700"
           : "border-slate-600/80 bg-slate-800/80 px-3 py-2 text-slate-300 hover:border-teal-500/40 hover:bg-slate-800",
