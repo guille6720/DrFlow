@@ -47,7 +47,7 @@ export function PatientPortalView({
   const portal = usePatientPortal({ slug, clinicName, doctor, offersPami });
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-100 pb-20">
+    <div className="flex min-h-dvh flex-col bg-slate-100 pb-20">
       <PatientPortalHeader doctorName={portal.doctorName} doctor={doctor} />
 
       <main className="mx-auto w-full max-w-lg flex-1 px-4 pt-4">
@@ -64,6 +64,7 @@ export function PatientPortalView({
             clinicAddress={clinicAddress}
             clinicPhone={clinicPhone}
             portalReady={portal.portalReady}
+            refreshTrigger={portal.requestsVersion}
             setPortalReady={portal.setPortalReady}
             quickActions={portal.quickActions}
             setScreen={portal.setScreen}

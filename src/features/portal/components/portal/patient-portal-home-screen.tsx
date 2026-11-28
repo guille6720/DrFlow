@@ -6,7 +6,10 @@ import Link from "next/link";
 import { cn } from "@/shared/utils/cn";
 
 import type { PatientPortalState } from "@/features/pacientes/hooks/use-patient-portal";
+import { usePatientRequestsPanel } from "@/features/pacientes/hooks/use-patient-requests-panel";
 import { AppInstallCard } from "@/features/portal/components/portal/app-install-card";
+import { PatientPortalBookingStatus } from "@/features/portal/components/portal/patient-portal-booking-status";
+import { PatientPortalCalendar } from "@/features/portal/components/portal/patient-portal-calendar";
 
 type Props = Pick<PatientPortalState, "quickActions" | "setScreen"> & {
   slug: string;
@@ -14,6 +17,7 @@ type Props = Pick<PatientPortalState, "quickActions" | "setScreen"> & {
   clinicAddress: string | null;
   clinicPhone: string | null;
   portalReady: boolean;
+  refreshTrigger: number;
   setPortalReady: (ready: boolean) => void;
 };
 
@@ -23,12 +27,22 @@ export function PatientPortalHomeScreen({
   clinicAddress,
   clinicPhone,
   portalReady,
+  refreshTrigger,
   setPortalReady,
   quickActions,
   setScreen,
 }: Props) {
+  const { authenticated, items } = usePatientRequestsPanel({ slug, refreshTrigger });
+  const appointments = authenticated
+    ? items.filter((item) => item.type === "turno" && item.channel === "web" && item.appointmentId)
+    : [];
+
   return (
     <>
+      <PatientPortalBookingStatus
+        booking={appointments[0]}
+        onOpen={() => setScreen("turnos")}
+      />
       {!portalReady && (
         <>
           <AppInstallCard
@@ -69,6 +83,8 @@ export function PatientPortalHomeScreen({
             );
           })}
         </div>
+
+        <PatientPortalCalendar items={appointments} />
 
         {clinicAddress ? (
           <p className="text-center text-xs text-slate-500">{clinicAddress}</p>
